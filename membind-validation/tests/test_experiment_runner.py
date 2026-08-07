@@ -13,8 +13,10 @@ from experiment_runner import (  # noqa: E402
     ExperimentRunFailed,
     RunArtifactExists,
     cache_for_spec,
+    embedding_cache_for_spec,
     run_experiment,
 )
+from embedding_cache import CachingCountingEmbedder, EmbeddingCache  # noqa: E402
 from response_cache import PromptCache, PromptParts, UnexpectedPromptError  # noqa: E402
 
 
@@ -102,6 +104,36 @@ class CacheModeTests(TestCase):
             with self.assertRaises(RunArtifactExists):
                 cache_for_spec(spec("capture"), Path(tmp))
 
+    def test_embedding_capture_then_replay_share_file_and_live_has_no_artifact(self):
+        with tempfile.TemporaryDirectory() as tmp:
+            artifacts = Path(tmp)
+            capture = embedding_cache_for_spec(spec("capture"), artifacts)
+            capture.put("same", [1.0, 2.0])
+            replay = embedding_cache_for_spec(spec("replay"), artifacts)
+
+            self.assertFalse(capture.read_only)
+            self.assertTrue(replay.read_only)
+            self.assertEqual(replay.get("same"), [1.0, 2.0])
+            self.assertIsNone(embedding_cache_for_spec(spec("live"), artifacts))
+            self.assertEqual(
+                sorted((artifacts / "embedding_cache").glob("*.jsonl")),
+                [artifacts / "embedding_cache" / "q.jsonl"],
+            )
+
+    def test_embedding_capture_refuses_to_overwrite_an_existing_cache(self):
+        with tempfile.TemporaryDirectory() as tmp:
+            path = Path(tmp) / "embedding_cache" / "q.jsonl"
+            path.parent.mkdir(parents=True)
+            path.write_text("already exists\n", encoding="utf-8")
+
+            with self.assertRaises(RunArtifactExists):
+                embedding_cache_for_spec(spec("capture"), Path(tmp))
+
+    def test_embedding_replay_requires_capture_file(self):
+        with tempfile.TemporaryDirectory() as tmp:
+            with self.assertRaisesRegex(FileNotFoundError, "embedding capture cache"):
+                embedding_cache_for_spec(spec("replay"), Path(tmp))
+
 
 class RunExperimentTests(IsolatedAsyncioTestCase):
     async def test_run_uses_full_isolation_lifecycle_and_persists_outputs(self):
@@ -129,7 +161,7 @@ class RunExperimentTests(IsolatedAsyncioTestCase):
                 instance(),
                 arrival_interval_ms=100,
                 artifacts=artifacts,
-                graphiti_factory=lambda prompt_cache=None: graphiti,
+                graphiti_factory=lambda prompt_cache=None, embedding_cache=None: graphiti,
                 method_runners={"M0": runner},
                 service_checker=service_check,
                 graph_exporter=exporter,
@@ -184,7 +216,7 @@ class RunExperimentTests(IsolatedAsyncioTestCase):
                     instance(),
                     arrival_interval_ms=100,
                     artifacts=artifacts,
-                    graphiti_factory=lambda prompt_cache=None: graphiti,
+                    graphiti_factory=lambda prompt_cache=None, embedding_cache=None: graphiti,
                     method_runners={"M0": runner},
                     service_checker=lambda: _async_none(),
                 )
@@ -217,7 +249,7 @@ class RunExperimentTests(IsolatedAsyncioTestCase):
             )
             graphiti = Graphiti()
 
-            def factory(prompt_cache=None):
+            def factory(prompt_cache=None, embedding_cache=None):
                 graphiti.llm_client = SimpleNamespace(
                     inner=graphiti.llm_client,
                     cache=prompt_cache,
@@ -286,7 +318,7 @@ class RunExperimentTests(IsolatedAsyncioTestCase):
                     instance(),
                     arrival_interval_ms=100,
                     artifacts=artifacts,
-                    graphiti_factory=lambda prompt_cache=None: graphiti,
+                    graphiti_factory=lambda prompt_cache=None, embedding_cache=None: graphiti,
                     method_runners={"M0": runner},
                     service_checker=lambda: _async_none(),
                 )
@@ -300,6 +332,66 @@ class RunExperimentTests(IsolatedAsyncioTestCase):
                 (artifacts / "runs" / "run-live.json").read_text(encoding="utf-8")
             )
             self.assertEqual(status["search_forensics_path"], str(diagnostic_path))
+
+    async def test_embedding_replay_miss_diagnostic_is_persisted_without_live_call(self):
+        class Inner:
+            def __init__(self):
+                self.calls = 0
+
+            async def create(self, _value):
+                self.calls += 1
+                return [999.0]
+
+            async def create_batch(self, _values):
+                self.calls += 1
+                return [[999.0]]
+
+        with tempfile.TemporaryDirectory() as tmp:
+            artifacts = Path(tmp)
+            prompt_path = artifacts / "prompt_cache" / "q.jsonl"
+            PromptCache(prompt_path, read_only=False).put(
+                PromptParts("rev", {}, {}, "s", "u"), "{}", {}, {}
+            )
+            embedding_path = artifacts / "embedding_cache" / "q.jsonl"
+            EmbeddingCache(embedding_path, read_only=False).put("known", [1.0])
+            graphiti = Graphiti()
+            inner = Inner()
+
+            def factory(prompt_cache=None, embedding_cache=None):
+                graphiti.embedder = CachingCountingEmbedder(
+                    inner,
+                    persistent_cache=embedding_cache,
+                )
+                return graphiti
+
+            async def runner(runtime, *_args):
+                await runtime.embedder.create(["missing secret text"])
+
+            with self.assertRaises(ExperimentRunFailed):
+                await run_experiment(
+                    spec("replay"),
+                    instance(),
+                    arrival_interval_ms=100,
+                    artifacts=artifacts,
+                    graphiti_factory=factory,
+                    method_runners={"M0": runner},
+                    service_checker=lambda: _async_none(),
+                )
+
+            self.assertEqual(inner.calls, 0)
+            diagnostic_path = artifacts / "unexpected_embeddings" / "run-replay.json"
+            self.assertTrue(diagnostic_path.exists())
+            payload = json.loads(diagnostic_path.read_text(encoding="utf-8"))
+            self.assertEqual(payload["run_id"], "run-replay")
+            self.assertEqual(payload["diagnostics"][0]["text_length"], 19)
+            self.assertNotIn("missing secret text", diagnostic_path.read_text(encoding="utf-8"))
+            status = json.loads(
+                (artifacts / "runs" / "run-replay.json").read_text(encoding="utf-8")
+            )
+            self.assertEqual(
+                status["unexpected_embedding_diagnostics_path"],
+                str(diagnostic_path),
+            )
 
 
 async def _async_none():

@@ -1,6 +1,7 @@
 # MemBind 基础验证实验规范
 
 > 文档状态：Pilot Protocol v1.1（已合并 Characterization / Fairness Addendum）
+> 当前执行覆盖：`MemBind_CURRENT_VALIDATION_PLAN_v1.2.md`（CURRENT VALIDATION PLAN v1.2）是当前阶段唯一执行顺序；本文保留冻结实验合同和历史背景。与旧 Phase/characterization 顺序冲突时，以 v1.2 的 V1→V7 单线状态机为准。
 > 目标：以单一 backend、单一数据集、单一 backbone，直接判断 Semantic Late Binding 是否值得继续研究。  
 > 本协议只验证核心 idea，不验证跨 backend 通用性、复杂调度、容错或完整线上部署。
 > 升级原则：v1.1 补充系统 characterization、公平性和环境噪声控制；除本文明确标为“替换”的条款外，v1.0 的 correctness、冻结数据划分、模型与 Graphiti 版本、Evidence Fence 以及 Go/No-Go 阈值保持不变。
@@ -28,7 +29,8 @@
 
 ### H1：性能假设
 
-在相同硬件、模型、prompt、数据库和并发额度下，MemBind 相比 Graphiti 原生串行执行：
+在相同硬件、模型、prompt、数据库和并发额度下，MemBind 相比 M0
+`Deterministic-Graphiti-Serial`：
 
 - 降低每个 episode 的 P95 `arrival_to_publish_ms`；
 - 降低每条 history 的总构建 makespan；
@@ -36,7 +38,8 @@
 
 ### H2：语义假设
 
-MemBind 在所有 episode 提交完成后，应与 Graphiti 原生串行执行得到相同的 canonical semantic graph：
+MemBind 在所有 episode 提交完成后，应与 M0
+`Deterministic-Graphiti-Serial` 得到相同的 canonical semantic graph：
 
 - episode 无丢失、无重复；
 - canonical entity 集合一致；
@@ -45,11 +48,20 @@ MemBind 在所有 episode 提交完成后，应与 Graphiti 原生串行执行�
 - retrieval 结果与原生串行一致或近似一致；
 - LongMemEval-S evidence-session recall 不下降。
 
-### H3：必要性假设
+### H3a：Execution equivalence
 
-粗粒度并发执行完整 `add_episode()` 虽可能更快，但可能改变 state-dependent binding/consolidation 的结果；MemBind 应在接近其性能的同时，保持原生语义。
+粗粒度并发执行完整 `add_episode()` 可能改变 state-dependent Graphiti operation
+的输入或 trajectory。M1 在冻结 M0 model oracle 时出现
+`execution_path_divergence`，只证明执行路径分叉；不得自动写成最终 graph 错误。
 
-如果粗粒度并发与原生串行在所有评测实例上完全一致且性能不差于 MemBind，则本实验不能证明 Late Binding 的必要性。
+### H3b：Practical sufficiency
+
+粗粒度并发可能无法同时提供与 M0 相同的最终 semantic guarantee 和与 M2 相当的
+live performance。只有完整 M1 replay 后的 graph/invalidation/retrieval divergence
+才能证明 final semantic result 改变；性能结论只来自 live performance lane。
+
+如果粗粒度并发与 M0 在所有评测实例上完全一致且性能不差于 MemBind，则本实验
+不能证明 Late Binding 的必要性。
 
 ---
 
@@ -66,8 +78,8 @@ MemBind 在所有 episode 提交完成后，应与 Graphiti 原生串行执行�
 ### 3.2 图数据库
 
 - 数据库：Neo4j Community 5.26
-- Docker tag：`neo4j:5.26-community`
-- 第一次拉取后记录镜像 digest 到 `artifacts/environment/manifest.json`。
+- 部署：实验主机本机直接运行，不使用 Docker；记录二进制版本、配置摘要和服务
+  地址到 `artifacts/environment/manifest.json`。
 - 每个 `(question_id, method, repeat)` 使用独立空数据库。
 - 禁止跨实验复用图状态。
 
@@ -99,19 +111,29 @@ seed: 20260806
 
 - 模型：`Qwen/Qwen3-Embedding-0.6B`
 - dtype：FP16 或 BF16；一旦选择必须冻结。
-- 相同输入必须通过 embedding cache 返回同一向量。
 - 禁止不同方法使用不同 embedding model 或维度。
+- Correctness lane：M0 按 canonical single-item embedding input capture exact vector；M1/M2 对同一输入只做只读 replay。Embedding cache miss 立即失败，禁止 live fallback。
+- correctness embedding namespace 至少包含 served model ID、endpoint-reported
+  revision 或 operator-supplied immutable deployment fingerprint、dimension、dtype、
+  pooling、normalization/instruction/input-transform configuration；身份来源写入
+  `artifacts/environment/embedding_model_fingerprint.json`，不能猜测 checkpoint
+  revision，也不能仅以 served alias/URL 冒充 immutable fingerprint。
+- item key 绑定 exact single-item UTF-8 input bytes；单 item 是 semantic key，API
+  batch composition 不是，因此 `create(["x"])` 与 `create_batch(["x"])` 共用记录。
+- Performance lane：M0/M1/M2 使用相同 live embedding server、dimension 和 run 内 exact-text cache policy；每个 run 冷启动应用级 embedding cache，不要求跨 run bitwise-identical vectors。
 
 ### 3.5 硬件
 
-固定使用：
+当前用户批准的固定拓扑替代原草案的双专业卡假设：
 
-- 2 × NVIDIA RTX PRO 6000；
-- GPU 0：启动一个 Qwen3-32B-FP8 vLLM construction server；
-- construction server 的 `max_num_seqs=8`，实验总 construction LLM 并发额度为 8；
-- GPU 1：独占运行 Qwen3-Embedding-0.6B embedding server；
-- 两个服务在全部方法中保持相同，不允许动态迁移或共享 GPU；
-- Neo4j、replay driver 和 Graphiti runtime 使用同一台 CPU 主机。
+- construction 与 embedding 均使用远端、内网 OpenAI-compatible vLLM endpoint；
+- construction endpoint 固定为 `http://10.87.5.247:8000/v1/`，vLLM 0.26.0，
+  `max_model_len=40960`，实验总 construction LLM 并发额度为 8；
+- embedding endpoint 固定为 `http://10.87.5.247:8001/v1`，dimension=1024；
+- Graphiti、replay driver 和本机直接运行的 Neo4j 使用同一实验主机；本机 RTX 3090
+  是用户批准的本地 GPU，不再要求原草案的双专业卡，当前远端模型请求的
+  计时资源对 M0/M1/M2 完全相同；
+- endpoint、路由和服务配置在全部方法间保持相同，运行期间不得动态迁移。
 
 必须记录：
 
@@ -123,7 +145,7 @@ Python
 PyTorch
 vLLM
 Graphiti commit
-Neo4j image digest
+Neo4j binary version + config hash
 模型 revision
 CPU 型号
 内存容量
@@ -217,9 +239,13 @@ Episode 文本格式固定为：
 
 所有条件使用相同输入、相同模型服务、相同数据库配置和相同最大 LLM 并发额度。
 
-### M0：Native-Serial
+### M0：Deterministic-Graphiti-Serial
 
-Graphiti 原生参考执行：
+`M0` 是为兼容已有代码、run ID 和 artifact 保留的内部 method ID；公开报告名为
+`Deterministic-Graphiti-Serial`。它使用 Graphiti v0.29.3，并与 M1/M2 一样安装
+公共 deterministic candidate-ordering adapter；不声称等同 untouched upstream。
+
+串行参考执行：
 
 ```text
 for episode in source_order:
@@ -340,17 +366,20 @@ state-dependent attribute/summary update
 
 ### 6.1 Correctness lane：确定性 artifact replay
 
-目的：隔离调度语义，判断 M2 是否与 M0 等价。
+目的：冻结实际参与当前路径的 model-derived outputs，隔离调度语义，判断 M1/M2 是否与 M0 等价。model-oracle replay = LLM response + embedding vector。
 
 步骤：
 
-1. 对每个 evaluation instance 运行一次 M0，并记录所有完整 prompt、raw response、parsed response 和 token usage；
-2. 使用完整 prompt hash 建立只读 response cache；
-3. 运行 M2-replay；
-4. M2 遇到与 M0 完全相同的 prompt 时，必须复用相同 response；
-5. M2 遇到 M0 从未产生的 prompt 时，立即标记 `unexpected_prompt=true`，不得调用 live model 补齐；
-6. `unexpected_prompt` 表明 M2 的状态或调用语义已偏离 M0，correctness run 判定失败；
-7. Correctness lane 不用于报告性能。
+1. 对每个 evaluation instance 运行一次 M0，capture 所有完整 prompt、raw/parsed response、token usage，以及每个 canonical single-item embedding input 的 exact vector；
+2. 建立只读 LLM response cache 和只读 embedding vector cache；
+3. 对同一个 M0 oracle 分别运行 M1 read-only replay 与 M2 read-only replay；
+4. cache hit 必须逐元素复用 captured output；任何 unexpected prompt 或 embedding
+   input 都立即停止且禁止 live fallback；M1 记
+   `completed_with_divergence`/`execution_path_divergence`，M2 记 correctness failure；
+5. replay 的 live LLM calls 和 live embedding calls 必须均为 0，不得 fallback；
+6. Neo4j graph state、candidate retrieval、resolution、invalidation 和 DB commit 不得 replay，必须在 M1/M2 各自的 fresh graph 上真实执行；
+7. 静态/trace audit 若证明 frozen construction/retrieval path 未调用 cross encoder，记录 `not_invoked`；若实际调用，则把它纳入同一 model oracle；
+8. Correctness lane 不用于报告性能。
 
 Cache key：
 
@@ -364,10 +393,28 @@ sha256(
 )
 ```
 
+Embedding key：
+
+```text
+sha256(
+    served embedding model ID
+    + endpoint-reported revision OR operator-supplied immutable deployment fingerprint
+    + embedding dimension
+    + dtype/pooling/normalization/instruction/input-transform configuration
+    + exact single-item input bytes
+)
+```
+
+M1 oracle miss 证明的是 state-dependent execution trajectory 已分叉，不等于已证明
+最终 graph divergence；必须保存 first divergent source、oracle 类型、此前 hit count、
+graph-state digest 和可取得的 prompt/candidate diff。M1 完整命中 oracle 后才比较
+canonical graph/invalidation/retrieval。M2 oracle miss 阻断 formal performance。
+
 Correctness lane 共：
 
 ```text
-8 M0 capture runs + 8 M2 replay runs = 16 runs
+8 M0 capture + 8 M1 read-only replay + 8 M2 read-only replay
+= 24 correctness runs
 ```
 
 ### 6.2 Performance lane：live model、禁用 response cache
@@ -381,7 +428,9 @@ Correctness lane 共：
 3. 采用 hot engine + cold cross-run prefix state：每个 measured run 前验证并重置 vLLM prefix cache，run 内允许自然 prefix reuse；
 4. 每个 measured run 从空 embedding cache 开始，run 内仅允许 exact-text reuse；
 5. 每个 evaluation instance、每种方法重复 2 次；
-6. 性能结果仅来自该 lane。
+6. 性能结果仅来自该 lane；
+7. 每个 measured run 使用 V4 frozen minimal lifecycle，不得引用历史 characterization lifecycle 来恢复
+   100/20 network probe 或高频 telemetry campaign。
 
 ---
 
@@ -389,7 +438,8 @@ Correctness lane 共：
 
 ### 7.1 校准 arrival interval
 
-先在 4 个 calibration instances 上运行 M0 Native-Serial。
+先在 4 个 calibration instances 上运行 M0
+`Deterministic-Graphiti-Serial`。
 
 对所有成功 episode 计算：
 
@@ -435,13 +485,15 @@ Performance lane 中，每个方法、每个实例重复 2 次：
 8 instances × 3 methods × 2 repeats = 48 live runs
 ```
 
-加上 correctness lane 的 16 runs，正式 evaluation 共 64 runs。
+加上 correctness lane 的 24 runs，正式 evaluation 共 72 runs。
 
 v1.1 明确将 performance lane 的 `global shuffle` 条款替换为
 `blocked randomization`：每个 `block = (question_id, repeat)` 包含 M0、M1、M2，
 用 seed `20260806` 在六种排列上均衡轮转。Correctness capture 必须仍先于对应 replay。
 
-每个 measured run 使用第 21.6 节的完整 lifecycle；正式数据 prompt 不得在 prefix-cache reset 后用于 warm-up。
+每个 measured run 使用 CURRENT VALIDATION v1.2 在 V4 frozen minimal lifecycle；
+不得从历史 characterization lifecycle 重新引入 100/20 network probe 或高频 telemetry campaign。
+正式数据 prompt 不得在 prefix-cache reset 后用于 warm-up。
 
 ---
 
@@ -691,9 +743,8 @@ seed = 20260806
 
 ```text
 M2 canonical_graph_parity 必须为 8/8
+M1 canonical_graph_parity 逐 instance 报告，来源必须是同一 M0 model oracle 的只读 replay
 ```
-
-同时报告 M1 parity 数量。
 
 ---
 
@@ -710,19 +761,23 @@ M2 canonical_graph_parity 必须为 8/8
 5. M2 Evidence Recall@10 不低于 M0 超过 1 个百分点；
 6. M2 LLM 总 token 相对 M0 增幅 ≤ 5%；
 7. M2 没有 episode 丢失、重复发布或 source-order 越界；
-8. M1 在至少 1 个 evaluation instance 上出现以下之一：
-   - canonical graph divergence；
-   - retrieval evidence recall 下降；
-   - source-order violation。
+8. M1 的必要性证据至少满足以下之一：
+   - 在冻结的 M0 model oracle 下，至少 1 个 evaluation instance 出现 canonical graph divergence；
+   - 在冻结的 M0 model oracle 下，至少 1 个 evaluation instance 出现 retrieval evidence recall 下降；
+   - M1 live performance 未满足本节第 1–3 条中至少一条，而 M2 满足全部第 1–3 条。
 
-第 8 条用于证明 Late Binding 相对“直接并发完整 update”的必要性。
+第 8 条用于证明 Late Binding 相对“直接并发完整 update”的必要性。M1 completion/source-order 仅为 diagnostic，不能单独作为 semantic failure 或 necessity evidence。
+M1 `execution_path_divergence` 单独支持 H3a，但不自动满足第 8 条；若因 oracle
+miss 无法跑到最终状态，必须报告
+`final_semantic_parity = not_evaluable_due_to_oracle_miss`，不能把它伪装成
+canonical graph divergence。
 
 ### INCONCLUSIVE
 
 出现以下任意情况则判定为 inconclusive，修复实验平台后重跑：
 
 - structured output parse success < 99.5%；
-- 任一方法失败 run 比例 > 5%；
+- infrastructure/protocol-invalid failure run 比例 > 5%；treatment failure 不得归入 infrastructure failure rate，也不得用平台 INCONCLUSIVE 洗掉；
 - response cache 在相同 prompt 上返回不同内容；
 - 数据库状态未完全隔离；
 - GPU 服务发生 OOM；
@@ -842,74 +897,23 @@ artifacts/final/VALIDATION_REPORT.md
 
 ## 16. 执行顺序
 
-Agent 必须严格按以下顺序执行，不得提前跑正式实验。
-
-### Phase 0：环境 Gate
-
-1. checkout Graphiti commit `021d3a5`；
-2. 启动 Neo4j；
-3. 启动两个 Qwen3-32B-FP8 replicas；
-4. 启动 embedding 服务；
-5. 验证 structured output；
-6. 跑 Graphiti quickstart；
-7. 保存环境 manifest。
-
-通过条件：
+当前执行严格由 CURRENT VALIDATION PLAN v1.2 的单线状态机决定；旧 Phase
+0→6 只保留为历史背景。环境、数据、M0/M1/M2 实现 gate 已完成，不重复搭建；
+每个 live 阶段前只做该阶段要求的轻量 contract check。
 
 ```text
-连续 20 次结构化抽取 parse success = 20/20
-Graphiti add_episode/search smoke test 通过
-数据库清理和重建测试通过
+V1 Correctness nondeterminism closure
+→ V2 Correctness oracle freeze
+→ V3 Full M0/M2 correctness smoke
+→ V4 Deterministic Graphiti calibration + minimal profiling
+→ V5 M1 one-instance oracle-replay smoke
+→ V6 Formal evaluation (24 correctness + 48 performance = 72 runs)
+→ V7 Analysis + validation verdict
+→ STOP
 ```
 
-### Phase 1：数据 Gate
-
-1. 下载 cleaned LongMemEval-S；
-2. 计算 SHA256；
-3. 按固定规则生成 split；
-4. 验证所有 session 有时间戳和内容；
-5. 生成 episode 输入；
-6. 检查未来 session 不进入当前输入。
-
-### Phase 2：Native Reference
-
-1. 实现 M0；
-2. 在 4 个 calibration 实例运行；
-3. 冻结 `DELTA_MS`；
-4. 在 1 个 evaluation 实例完成端到端 smoke；
-5. 保存原生 canonical graph 和 retrieval 结果。
-
-### Phase 3：Whole Parallel
-
-1. 实现 M1；
-2. 在同一个 smoke 实例运行；
-3. 确认最大并发不超过 8；
-4. 输出 parity 与 source-order 诊断。
-
-### Phase 4：MemBind-GO
-
-1. 定位 Graphiti 当前 extraction 与 resolution 的准确源码边界；
-2. 抽取 `semantic_compile()`；
-3. Compile 输出不得含已绑定 UUID；
-4. 实现 source-ordered bind/commit；
-5. 通过全部单元测试；
-6. 在同一 smoke 实例达到 M0 canonical parity。
-
-### Phase 5：正式评测
-
-1. 生成 correctness lane 16-run 计划与 performance lane 48-run 计划；
-2. 固定随机顺序；
-3. 执行全部 runs；
-4. 任何失败必须记录，不得静默重跑；
-5. 如需重跑，使用新的 run_id 并保留失败 artifact。
-
-### Phase 6：分析
-
-1. 生成 episode 和 instance 指标；
-2. 做配对 bootstrap；
-3. 生成 canonical parity；
-4. 生成 retrieval guardrail；
-5. 根据第 13 节自动输出 GO / INCONCLUSIVE / NO-GO。
+禁止跳阶段。每个代码或 instrumentation 变更都必须先红测、再实现、再定向
+转绿、最后全量回归；每个失败 attempt 保留并使用新 run_id 替代。
 
 ---
 
@@ -936,33 +940,25 @@ Agent 不得：
 
 `VALIDATION_REPORT.md` 必须按以下顺序回答：
 
-1. **是否保持原生语义？**  
+1. **是否保持 deterministic serial reference 语义？**  
    M2 correctness lane 的 canonical graph parity、retrieval parity、`unexpected_prompt` 和 episode exactly-once。
 
 2. **是否明显加速？**  
    P95 arrival-to-publish、makespan、drain time 与置信区间。
 
-3. **为什么不能直接并发完整 update？**  
-   M1 的性能与语义偏差；若无偏差，明确说明 Late Binding 的必要性未被证明。
+3. **直接并发完整 update 是否 execution-equivalent 且 practically sufficient？**  
+   M1 oracle miss 只记 execution-path divergence；最终 graph/retrieval 差异和 live
+   性能分别报告。若无差异且性能不差，明确说明 Late Binding 的必要性未被证明。
 
 4. **是否值得继续？**  
    严格根据 Go/No-Go 条件给出结论，不得使用主观措辞替代指标。
 
 ---
 
-## 19. 本实验成功后才允许的下一步
+## 19. 当前执行范围边界
 
-只有判定为 GO 后，才进入下一阶段：
-
-```text
-Predicate validation
-Selective rebind / continuation rerun
-Conflict-domain ordered commit
-Visibility-frontier scheduling
-第二 backend instrumentation
-```
-
-在本实验完成前，不实现上述机制。
+未来机制已移到 `FUTURE_WORK.md`，不属于 CURRENT VALIDATION PLAN v1.2 的输入。
+当前 Agent 在 V7 报告后停止，不读取或执行 future-work 文件。
 
 ---
 
@@ -975,6 +971,7 @@ Visibility-frontier scheduling
 - 两个 endpoint 使用同一个 API key，密钥只放在实验目录未跟踪的 .env 文件；
 - Graphiti、replay driver、Neo4j Community 5.26 在本机运行，不使用 Docker；
 - M0、M1、M2 必须使用相同的远程 endpoint、模型、解码参数、网络路径和并发上限；
+- 内部 method ID `M0` 的公开名称固定为 `Deterministic-Graphiti-Serial`，不声称 untouched upstream semantics；
 - 所有计时在本机使用 time.monotonic_ns()，不能使用模型服务器时间。
 - 固定请求预算仍为 max_tokens=2048；若受约束 JSON 在该上限被截断并解析失败，三个方法统一只允许一次 max_tokens=8192 的有界补请求，两个请求都计入 LLM call/token 指标，并在最终报告中列为 protocol deviation；该上限由 smoke04 的 4096 响应仍以 finish_reason=length 截断这一持久化证据确定；
 - 本实验每次 extraction 只包含一个 current episode，因此三个方法和 correctness cache hash 共用的 JSON schema 将 `episode_indices` 严格约束为单元素 `[0]`；Graphiti prompt 与事实字段不变，此约束修复了 vLLM 在无界整数数组中持续输出 `0,1,2,...` 直至 length 截断的问题；
@@ -985,7 +982,10 @@ Visibility-frontier scheduling
 - Graphiti node dedupe 的 Neo4j cosine 候选查询统一采用 `logical_node_content_ascending_before_top_k`：在每个 extracted entity 的 15-candidate `LIMIT` 前，对相同 score 按不含 UUID 的 name、summary 和 labels 排序，再由已有的 prompt-level node canonicalization 分配 `candidate_id`；
 - Graphiti 的 RRF 仍负责选择 edge-resolution top-K 候选集合；M0/M1/M2 在候选进入 LLM prompt 并获得连续 idx 前统一采用 `logical_content_ascending_after_top_k`，即按 fact、relation 和 temporal logical content 规范化已选集合，并让 score 随 edge 同步移动。该规则不改变 top-K membership 或 cutoff，只消除 fresh graph 的随机 UUID / Neo4j 物理返回顺序对完整 prompt hash 的影响，correctness 与 performance lane 均启用；
 - Graphiti 的 node semantic search 仍负责选择并去重 node-resolution 候选集合；M0/M1/M2 在 Graphiti 分配 `candidate_id` 前统一采用 `logical_content_ascending_before_candidate_id`，按 prompt 可见的 name、labels、summary、attributes 建立不含 UUID 的逻辑顺序，prompt 与 `candidate_id -> node` 映射必须共用同一个排序后列表；
-- correctness replay 的任何 cache miss 仍立即失败且禁止 live fallback；同时必须把 prompt name、五个组件 hash、请求 PromptParts 和最近 M0 cache record 持久化到 `artifacts/unexpected_prompts/`，API key 不得进入诊断 artifact；
+- correctness replay 的任何 cache miss 都立即停止且禁止 live fallback；M0 对照按
+  `prompt_name + source_sequence + invocation ordinal`（可取得时再加 call-site
+  identity）确定性对齐，禁止用“最近记录”猜测；把组件 hash、安全的请求诊断和
+  对齐 diff 持久化到 `artifacts/unexpected_prompts/`，API key 不得进入 artifact；
 
 正式实验前必须按以下测试驱动顺序执行：
 
@@ -994,19 +994,26 @@ Visibility-frontier scheduling
 3. 分别执行 construction / embedding endpoint contract smoke，校验 model id、结构化输出和 embedding dimension；
 4. 启动本机 Neo4j，执行索引创建、清库、warm-up、search、再次清库的隔离测试；
 5. 只在 smoke instance 达到 M0 parity 后冻结 DELTA_MS；
-6. 最后生成并冻结 64-run 随机计划，再执行 correctness lane 和 performance lane。
+6. 最后生成并冻结 72-run correctness-first blocked plan：先完成 24 correctness
+   runs；只有 M2 8/8 且 oracle miss/fallback 为 0，才执行 48 live performance
+   runs。M1 `completed_with_divergence` 是 treatment outcome，不阻断 performance。
 
 任何 TDD gate 失败都必须停在当前阶段，不能提前跑正式 evaluation。
 
-本次 smoke 失败证据必须保留：`smoke01` 因 Graphiti 的 16384 输出预算与 24577+ 输入 token 超过远端 40960 context 而失败，随后增加 2048 clamp；`smoke02` 因 2048-token edge JSON 在字符串中截断而失败；`smoke03` 暴露 DB instrumentation 参数冲突；`smoke04` 及其 diagnostic replay 证明 4096 补请求仍以 finish_reason=length 截断，因此一次性补请求上限调整为 8192；`smoke05` 暴露重启后 32768 context 的动态 completion budget 兼容问题；`smoke06` 则证明 source 19 的完整 prompt 本身已占 32757 tokens，32k 服务无法产生有效结构化输出；`smoke07` 在 40960/0.26.0 下完整成功捕获 46 episodes 和 702 条 prompt records，但首次 M2 load 暴露 U+2028 被 `splitlines()` 错当 JSONL 边界；`smoke08` 在修复 ASCII-LF framing 后证明 M2 previous episodes 错误地 newest-first 呈现，source 2-45 共 44 条只读 miss 均未调用 live model；`smoke09` 在 chronological fix 后推进到 source 1 bind，并证明同一 edge candidate 集合因 fresh Neo4j/RRF 物理顺序不同而产生不同 idx/hash，由此冻结三个方法共享的 `logical_content_ascending_after_top_k`；`smoke10` 的 M0 完成 46 episodes，M2 在 source 1 node resolution 失败，离线诊断证明七个语义 node 候选集合相同但 `USER`/`italki` 在 `candidate_id` 前交换，由此冻结 `logical_content_ascending_before_candidate_id`；`smoke11` 的 M0 再次完成 46 episodes并持久化 702 条 prompt records，M2 在 source 5 的 edge resolution 只读 replay 失败，离线对比证明十个 invalidation candidates 中九个公共项及其顺序完全相同、但 RRF cutoff 的第十个成员不同，由此先以红测试冻结 `logical_content_ascending_before_top_k`，同时保留 full-text procedure 内部 cutoff 的 residual risk。后续 attempt 必须使用新 run_id，不能覆盖这些失败 artifact。
-
-后续失败证据同样必须保留：`smoke12` 的 M0 完成 source 0-8 并写入 144 条 prompt records 后遭遇 construction model / runner 基础设施中断，M2 未启动，partial run、trace、cache 与显式 interruption summary 均已持久化；恢复后 `smoke13` 的 M0 完成 46 episodes 并写入 686 条 prompt records，M2 以零 live fallback 通过 source 0-5，随后在 source 6 的 `dedupe_nodes.nodes` 失败。结构化离线对比证明 M0 有 26 个 existing node candidates、M2 有 25 个，唯一缺失项为 `Sage Thrashers`；移除该 candidate block 后其余 user prompt 逐字符相同，由此先以红测试冻结 `logical_node_content_ascending_before_top_k`。后续 attempt 继续使用新 run ID，禁止覆盖 `smoke12` 或 `smoke13`。
+历史 smoke/diagnostic 的完整失败链已移到
+`membind-validation/artifacts/history/SMOKE_HISTORY.md`。这些 artifact 仍不可覆盖，
+但历史记录不再决定当前待办；当前阶段、blocker 和唯一下一步只读取
+`membind-validation/CURRENT_STATE.json`。
 
 ---
 
-## 21. v1.1 Characterization、Fairness 与环境噪声控制（已合并且具有执行优先级）
+## 21. v1.1 Characterization、Fairness 与环境噪声控制（历史背景；非当前执行计划）
 
-本节把 `MemBind_实验协议优化_Characterization_Fairness_v1.1.md` 合并为主协议的可执行条款。外部 addendum 是解释性来源；执行、测试和报告以本节为准。以下条款不改变 v1.0 的研究问题、Evidence Fence、source-ordered Bind/Commit、冻结 split、primary outcomes 或 Go/No-Go 阈值。
+本节保留 v1.1 设计的可追溯背景。CURRENT VALIDATION PLAN v1.2 已将当前
+基础验证收缩为 V1→V7，并明确禁止大规模 concurrency/load sweep、复杂
+telemetry 和额外 network campaign；所以下列 v1.1 子节不得再被解释为当前
+Agent 的执行队列。v1.2 仍保留 same-resource fairness、真实 E2E 网络路径、
+blocked method order、错误不静默丢弃和冻结 primary outcome 等不冲突原则。
 
 ### 21.1 执行前置条件与停止规则
 
@@ -1182,4 +1189,6 @@ correctness smoke PASS
 → original GO/INCONCLUSIVE/NO-GO + mechanism_verdict
 ```
 
-任一 v1.1 gate 失败都必须停在当前阶段，不得提前进入 formal 64-run。最终报告除 v1.0 四个问题外，必须回答 native bottleneck、compile hiding、frontier stall/ready queue、load regime、network fraction 和 fairness；额外输出 `MECHANISM_SUPPORTED`、`MECHANISM_PARTIAL` 或 `MECHANISM_NOT_SUPPORTED`，不改变原 Go/No-Go 判定。
+以上为历史 v1.1 设计，不再授权任何 live run。当前是否可以进入下一阶段只由
+`CURRENT_STATE.json` 和 v1.2 gate 决定；正式计划为 24 correctness runs +
+48 live performance runs = 72 runs，最终只输出 GO / INCONCLUSIVE / NO-GO。
