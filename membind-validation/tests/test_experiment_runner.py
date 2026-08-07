@@ -256,6 +256,51 @@ class RunExperimentTests(IsolatedAsyncioTestCase):
             )
             self.assertEqual(status["unexpected_prompt_diagnostics_path"], str(diagnostic_path))
 
+    async def test_search_forensics_are_persisted_before_failed_run_cleanup(self):
+        with tempfile.TemporaryDirectory() as tmp:
+            artifacts = Path(tmp)
+            graphiti = Graphiti()
+            graphiti.driver.search_forensic_events = [
+                {
+                    "episode_key": ["run-live", 8],
+                    "kind": "node_cosine_search",
+                    "parameters": {"search_vector_sha256": "vector-hash"},
+                    "backend_candidates": [{"name": "SDG"}],
+                }
+            ]
+            graphiti.driver.source_state_events = [
+                {
+                    "run_id": "run-live",
+                    "source_sequence": 8,
+                    "logical_graph_hash": "graph-hash",
+                }
+            ]
+
+            async def runner(runtime, *_args):
+                runtime.driver.node_count = 9
+                raise RuntimeError("diagnostic failure")
+
+            with self.assertRaises(ExperimentRunFailed):
+                await run_experiment(
+                    spec(),
+                    instance(),
+                    arrival_interval_ms=100,
+                    artifacts=artifacts,
+                    graphiti_factory=lambda prompt_cache=None: graphiti,
+                    method_runners={"M0": runner},
+                    service_checker=lambda: _async_none(),
+                )
+
+            diagnostic_path = artifacts / "search_forensics" / "run-live.json"
+            self.assertTrue(diagnostic_path.exists())
+            payload = json.loads(diagnostic_path.read_text(encoding="utf-8"))
+            self.assertEqual(payload["query_events"][0]["backend_candidates"], [{"name": "SDG"}])
+            self.assertEqual(payload["source_states"][0]["logical_graph_hash"], "graph-hash")
+            status = json.loads(
+                (artifacts / "runs" / "run-live.json").read_text(encoding="utf-8")
+            )
+            self.assertEqual(status["search_forensics_path"], str(diagnostic_path))
+
 
 async def _async_none():
     return None

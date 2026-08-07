@@ -1,0 +1,84 @@
+{
+  "diagnostics": [
+    {
+      "component_hashes": {
+        "decoding_config": "ab3087cd4c64182893f45dee10a80df49dec602feda7508d394f2457769ac577",
+        "model_revision": "e59e9a172c5904c0e0b1afde31a175eec6cf4dd87dbe109b0eecdd5c2339d8a4",
+        "structured_output_schema": "c48cac95be0e868c3520937aad9a1ab14ed8f9a25e19d1079d0a666a4c1260a8",
+        "system_prompt": "6fbd52dbb52a90452354cf36e0c7fb3f3ea63f3a03d4c65ec198eaddb66750f2",
+        "user_prompt": "2179f1ae81a0a26f1234ac36d148a1ac56280132526d7df1d25755614b0bb57b"
+      },
+      "nearest_cache_record": {
+        "component_hashes": {
+          "decoding_config": "ab3087cd4c64182893f45dee10a80df49dec602feda7508d394f2457769ac577",
+          "model_revision": "e59e9a172c5904c0e0b1afde31a175eec6cf4dd87dbe109b0eecdd5c2339d8a4",
+          "structured_output_schema": "c48cac95be0e868c3520937aad9a1ab14ed8f9a25e19d1079d0a666a4c1260a8",
+          "system_prompt": "6fbd52dbb52a90452354cf36e0c7fb3f3ea63f3a03d4c65ec198eaddb66750f2",
+          "user_prompt": "9ffe6298f4463af05a82cc8919bbe0cc55d18c0f3abdce91be9f28d2fb5c0f73"
+        },
+        "component_matches": {
+          "decoding_config": true,
+          "model_revision": true,
+          "structured_output_schema": true,
+          "system_prompt": true,
+          "user_prompt": false
+        },
+        "prompt_hash": "429e6aeadd27cd4ae1d6c95bf4865be667b4eaba15500b26d437f19e0502e13c",
+        "prompt_name": "dedupe_edges.resolve_edge",
+        "prompt_name_matches": true,
+        "system_prompt_length": 127,
+        "user_prompt_length": 3294,
+        "user_prompt_similarity": 0.9590163934426229,
+        "user_prompt_similarity_method": "token_multiset_dice"
+      },
+      "prompt_hash": "044bf756ec52b373381a210f2df912e7f07d7122a08fe89e95ea23c405daa7f8",
+      "prompt_name": "dedupe_edges.resolve_edge",
+      "requested_lengths": {
+        "system_prompt": 127,
+        "user_prompt": 3299
+      },
+      "requested_prompt_parts": {
+        "decoding_config": {
+          "attribute_extraction": false,
+          "group_id": null,
+          "max_tokens": 2048,
+          "model_size": "small",
+          "prompt_name": "dedupe_edges.resolve_edge",
+          "seed": 20260806,
+          "temperature": 0.0,
+          "top_p": 1.0
+        },
+        "model_revision": "6e2312b85c2ae9a31f629f24493b79d8b02eab1a",
+        "structured_output_schema": {
+          "properties": {
+            "contradicted_facts": {
+              "description": "List of idx values of contradicted facts (from full idx range). Empty list if none.",
+              "items": {
+                "type": "integer"
+              },
+              "title": "Contradicted Facts",
+              "type": "array"
+            },
+            "duplicate_facts": {
+              "description": "List of idx values of duplicate facts (only from EXISTING FACTS range). Empty list if none.",
+              "items": {
+                "type": "integer"
+              },
+              "title": "Duplicate Facts",
+              "type": "array"
+            }
+          },
+          "required": [
+            "duplicate_facts",
+            "contradicted_facts"
+          ],
+          "title": "EdgeDuplicate",
+          "type": "object"
+        },
+        "system_prompt": "You are a fact deduplication assistant. NEVER mark facts with key differences as duplicates.\nDo not escape unicode characters.\n",
+        "user_prompt": "\nNEVER mark facts as duplicates if they have key differences, particularly around numeric values, dates, or key qualifiers.\n\nIMPORTANT constraints:\n- duplicate_facts: ONLY idx values from EXISTING FACTS (NEVER include FACT INVALIDATION CANDIDATES)\n- contradicted_facts: idx values from EITHER list (EXISTING FACTS or FACT INVALIDATION CANDIDATES)\n- The idx values are continuous across both lists (INVALIDATION CANDIDATES start where EXISTING FACTS end)\n\n<EXISTING FACTS>\n[]\n</EXISTING FACTS>\n\n<FACT INVALIDATION CANDIDATES>\n[{'idx': 0, 'fact': 'Pygmy Rabbits use Sagebrush as a primary food source and for cover from predators.'}, {'idx': 1, 'fact': 'Sage-Grouse depend on Sagebrush as a food source and for cover during winter months.'}, {'idx': 2, 'fact': \"Sagebrush plays a critical role in maintaining the ecosystem's soil quality by reducing erosion and promoting nutrient cycling.\"}, {'idx': 3, 'fact': \"Sagebrush plays a critical role in maintaining the ecosystem's water quality by reducing erosion and promoting nutrient cycling.\"}, {'idx': 4, 'fact': 'Sagebrush promotes mineral cycling in the Great Basin region.'}, {'idx': 5, 'fact': 'Sagebrush regulates water flows in the Great Basin region.'}, {'idx': 6, 'fact': \"Sagebrush supports the livelihoods of Indigenous peoples who depend on the plants' medicinal and cultural resources.\"}, {'idx': 7, 'fact': 'USER had a biometrics appointment at the USCIS office.'}, {'idx': 8, 'fact': 'USER is planning to ask a language exchange partner about resume and cover letter writing in the US to adapt to US conventions.'}, {'idx': 9, 'fact': 'USER is preparing for an asylum interview and is discussing related topics with a language exchange partner.'}]\n</FACT INVALIDATION CANDIDATES>\n\n<NEW FACT>\nMembers of Parliament are given an annual allowance to cover the cost of running an office.\n</NEW FACT>\n\nYou will receive TWO lists of facts with CONTINUOUS idx numbering across both lists.\nEXISTING FACTS are indexed first, followed by FACT INVALIDATION CANDIDATES.\n\n1. DUPLICATE DETECTION:\n   - If the NEW FACT represents identical factual information as any fact in EXISTING FACTS, return those idx values in duplicate_facts.\n   - If no duplicates, return an empty list for duplicate_facts.\n\n2. CONTRADICTION DETECTION:\n   - Determine which facts the NEW FACT contradicts from either list.\n   - A fact from EXISTING FACTS can be both a duplicate AND contradicted (e.g., semantically the same but the new fact updates/supersedes it).\n   - Return all contradicted idx values in contradicted_facts.\n   - If no contradictions, return an empty list for contradicted_facts.\n\n<EXAMPLE>\nEXISTING FACT: idx=0, \"Alice joined Acme Corp in 2020\"\nNEW FACT: \"Alice joined Acme Corp in 2020\"\nResult: duplicate_facts=[0], contradicted_facts=[] (identical factual information)\n\nEXISTING FACT: idx=1, \"Alice works at Acme Corp as a software engineer\"\nNEW FACT: \"Alice works at Acme Corp as a senior engineer\"\nResult: duplicate_facts=[], contradicted_facts=[1] (same relationship but updated title — contradiction, NOT a duplicate)\n\nEXISTING FACT: idx=2, \"Bob ran 5 miles on Tuesday\"\nNEW FACT: \"Bob ran 3 miles on Wednesday\"\nResult: duplicate_facts=[], contradicted_facts=[] (different events on different days — neither duplicate nor contradiction)\n</EXAMPLE>\n"
+      }
+    }
+  ],
+  "run_id": "diagnostic_smoke14_source8_M0_002"
+}

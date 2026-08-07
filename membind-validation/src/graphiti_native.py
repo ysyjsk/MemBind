@@ -291,10 +291,16 @@ def build_qwen_graphiti_from_env(prompt_cache: Any | None = None) -> Any:
     from graphiti_core.cross_encoder.openai_reranker_client import OpenAIRerankerClient
     from graphiti_core.embedder.openai import OpenAIEmbedder, OpenAIEmbedderConfig
     from graphiti_core.llm_client.config import LLMConfig
-    from deterministic_search import install_edge_search_stabilizer
+    from deterministic_search import (
+        install_edge_query_stabilizer,
+        install_edge_search_stabilizer,
+        install_node_query_stabilizer,
+        install_node_resolution_stabilizer,
+    )
     from embedding_cache import CachingCountingEmbedder
 
     install_edge_search_stabilizer()
+    install_node_resolution_stabilizer()
 
     llm_key = os.environ.get("CONSTRUCTION_LLM_API_KEY") or os.environ.get("VLLM_API_KEY")
     if not llm_key:
@@ -332,7 +338,7 @@ def build_qwen_graphiti_from_env(prompt_cache: Any | None = None) -> Any:
         )
     )
     reranker = OpenAIRerankerClient(config=llm_config)
-    return Graphiti(
+    graphiti = Graphiti(
         uri=os.environ.get("NEO4J_URI", "bolt://localhost:7687"),
         user=os.environ.get("NEO4J_USER", "neo4j"),
         password=os.environ.get("NEO4J_PASSWORD", "password"),
@@ -341,6 +347,9 @@ def build_qwen_graphiti_from_env(prompt_cache: Any | None = None) -> Any:
         cross_encoder=reranker,
         max_coroutines=int(os.environ.get("GRAPHITI_MAX_COROUTINES", "8")),
     )
+    install_edge_query_stabilizer(graphiti.driver)
+    install_node_query_stabilizer(graphiti.driver)
+    return graphiti
 
 
 class QwenVLLMClient:

@@ -30,6 +30,7 @@ from instrumentation import install_driver_instrumentation
 from live_outputs import evaluate_retrieval, export_canonical_graph
 from live_runtime import clear_database, close, count_nodes, prepare_clean_graph
 from response_cache import PromptCache
+from search_forensics import search_forensic_payload
 from tracing import JsonlTraceWriter
 
 
@@ -82,6 +83,7 @@ async def run_experiment(
         "retrieval": artifacts / "retrieval" / f"{run_id}.json",
         "llm_failures": artifacts / "llm_failures" / f"{run_id}.json",
         "unexpected_prompts": artifacts / "unexpected_prompts" / f"{run_id}.json",
+        "search_forensics": artifacts / "search_forensics" / f"{run_id}.json",
     }
     _assert_fresh(paths.values())
 
@@ -136,6 +138,10 @@ async def run_experiment(
         if graphiti is not None:
             status.setdefault("llm_metrics", llm_metrics(graphiti.llm_client))
             status.setdefault("embedding_metrics", embedding_metrics(graphiti.embedder))
+            forensic_payload = search_forensic_payload(graphiti.driver)
+            if any(forensic_payload.values()):
+                _write_json(paths["search_forensics"], forensic_payload)
+                status["search_forensics_path"] = str(paths["search_forensics"])
             structured_failures = llm_failure_records(graphiti.llm_client)
             if structured_failures:
                 _write_json(paths["llm_failures"], structured_failures)

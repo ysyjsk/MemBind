@@ -1,0 +1,30 @@
+{
+  "attempt": "smoke12",
+  "ok": false,
+  "failure_class": "infrastructure_interruption",
+  "failure_reason": "construction model/runner interruption before M0 completion",
+  "retained": true,
+  "created_at": "2026-08-07T09:30:51Z",
+  "m0": {
+    "run_id": "smoke_smoke12_M0_c6853660",
+    "status": "failed",
+    "interrupted": true,
+    "completed_episode_count": 9,
+    "completed_source_sequences": [0, 1, 2, 3, 4, 5, 6, 7, 8],
+    "prompt_cache_record_count": 144,
+    "llm_call_count_in_completed_traces": 141,
+    "db_query_count_in_completed_traces": 366,
+    "db_write_count_in_completed_traces": 9
+  },
+  "m2_started": false,
+  "artifacts": {
+    "run": "artifacts/runs/smoke_smoke12_M0_c6853660.json",
+    "trace": "artifacts/traces/smoke_smoke12_M0_c6853660.jsonl",
+    "prompt_cache": "artifacts/prompt_cache/smoke_smoke12_c6853660.jsonl"
+  },
+  "recovery": {
+    "construction_models_http_status": 200,
+    "embedding_models_http_status": 200,
+    "target_next_attempt": "smoke13"
+  }
+}

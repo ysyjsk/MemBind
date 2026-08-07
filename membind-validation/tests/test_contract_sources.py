@@ -57,6 +57,41 @@ def _parse_plan_contract(path):
     }
 
 
+def _parse_nested_yaml_contract(path):
+    """Parse the scalar/list subset used by the frozen experiment config."""
+
+    result = {}
+    section = None
+    for raw_line in path.read_text(encoding="utf-8").splitlines():
+        if not raw_line.strip() or raw_line.lstrip().startswith("#"):
+            continue
+        indentation = len(raw_line) - len(raw_line.lstrip())
+        key, separator, value = raw_line.strip().partition(":")
+        if not separator:
+            continue
+        if indentation == 0 and not value.strip():
+            section = key
+            result[section] = {}
+            continue
+        target = result.setdefault(section, {}) if indentation else result
+        scalar = value.strip()
+        if scalar in {"true", "false"}:
+            parsed = scalar == "true"
+        elif scalar.startswith("[") and scalar.endswith("]"):
+            parsed = [
+                float(item) if "." in item else int(item)
+                for item in scalar[1:-1].split(",")
+                if item.strip()
+            ]
+        else:
+            try:
+                parsed = float(scalar) if "." in scalar else int(scalar)
+            except ValueError:
+                parsed = scalar
+        target[key] = parsed
+    return result
+
+
 class ContractSourceTests(TestCase):
     def test_plan_base_config_and_env_use_same_model_services(self):
         plan = _parse_plan_contract(ROOT / "EXPERIMENT_PLAN.md")
@@ -120,3 +155,111 @@ class ContractSourceTests(TestCase):
             ROOT.parent / "MemBind_basic_validation_experiment.md",
         ):
             self.assertIn(contract, path.read_text(encoding="utf-8"))
+
+    def test_node_candidate_canonicalization_contract_is_synced(self):
+        base = _parse_simple_yaml(ROOT / "configs" / "base.yaml")
+        contract = "logical_content_ascending_before_candidate_id"
+
+        self.assertEqual(base["prompt_node_candidate_order"], contract)
+        for path in (
+            ROOT / "README.md",
+            ROOT / "EXPERIMENT_PLAN.md",
+            ROOT.parent / "MemBind_basic_validation_experiment.md",
+        ):
+            self.assertIn(contract, path.read_text(encoding="utf-8"))
+
+    def test_edge_search_cutoff_tie_break_contract_is_synced(self):
+        base = _parse_simple_yaml(ROOT / "configs" / "base.yaml")
+        contract = "logical_content_ascending_before_top_k"
+
+        self.assertEqual(base["prompt_edge_search_tie_break"], contract)
+        for path in (
+            ROOT / "README.md",
+            ROOT / "EXPERIMENT_PLAN.md",
+            ROOT.parent / "MemBind_basic_validation_experiment.md",
+        ):
+            self.assertIn(contract, path.read_text(encoding="utf-8"))
+
+    def test_node_search_cutoff_tie_break_contract_is_synced(self):
+        base = _parse_simple_yaml(ROOT / "configs" / "base.yaml")
+        contract = "logical_node_content_ascending_before_top_k"
+
+        self.assertEqual(base["prompt_node_search_tie_break"], contract)
+        for path in (
+            ROOT / "README.md",
+            ROOT / "EXPERIMENT_PLAN.md",
+            ROOT.parent / "MemBind_basic_validation_experiment.md",
+        ):
+            self.assertIn(contract, path.read_text(encoding="utf-8"))
+
+    def test_v1_1_measurement_and_characterization_config_is_frozen(self):
+        config = _parse_nested_yaml_contract(ROOT / "configs" / "base.yaml")
+
+        self.assertEqual(
+            config["measurement"],
+            {
+                "network_gate": True,
+                "network_probe_count": 20,
+                "telemetry_interval_s": 1.0,
+                "block_randomization_seed": 20260806,
+                "reset_prefix_cache_between_runs": True,
+                "reset_embedding_cache_between_runs": True,
+                "instrumentation_overhead_limit": 0.02,
+            },
+        )
+        self.assertEqual(
+            config["characterization"],
+            {
+                "enabled": True,
+                "concurrency_levels": [1, 2, 4, 8],
+                "load_rho": [0.5, 1.0, 1.5],
+                "poisson_sensitivity": True,
+            },
+        )
+
+    def test_primary_protocol_integrates_v1_1_replacement_clauses(self):
+        protocol = (ROOT.parent / "MemBind_basic_validation_experiment.md").read_text(
+            encoding="utf-8"
+        )
+
+        required_contracts = (
+            "Pilot Protocol v1.1",
+            "Phase 4.5",
+            "correctness smoke",
+            "interval union",
+            "network_baseline.json",
+            "baseline_med + 5 * max(baseline_mad, 0.1 ms)",
+            "reset_prefix_cache",
+            "cold cross-run",
+            "block = (question_id, repeat)",
+            "entire block",
+            "instrumentation_overhead_limit: 0.02",
+            "Upstream-Native-Serial",
+            "Deterministic-Native-Serial",
+            "MECHANISM_SUPPORTED",
+        )
+        for contract in required_contracts:
+            with self.subTest(contract=contract):
+                self.assertIn(contract, protocol)
+
+        self.assertIn("global shuffle", protocol)
+        self.assertRegex(
+            protocol,
+            r"(?s)global shuffle.*(?:replaced|替换).*blocked randomization",
+        )
+
+    def test_v1_1_does_not_change_frozen_core_contracts(self):
+        protocol = (ROOT.parent / "MemBind_basic_validation_experiment.md").read_text(
+            encoding="utf-8"
+        )
+
+        for frozen in (
+            "021d3a5",
+            "Evidence Fence",
+            "temperature: 0.0",
+            "seed: 20260806",
+            "P95 `arrival_to_publish_ms`",
+            "canonical semantic graph",
+        ):
+            with self.subTest(frozen=frozen):
+                self.assertIn(frozen, protocol)

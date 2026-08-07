@@ -1,0 +1,31 @@
+{
+  "schema_version": 1,
+  "cycle": "search_forensics_edge_001",
+  "recorded_at": "2026-08-07T20:02:53+08:00",
+  "scope": "Neo4j cosine semantics plus opt-in edge cosine/full-text forensic capture",
+  "red": {
+    "command": ".venv/bin/python3 -m unittest tests.test_search_forensics.SearchForensicsTests.test_edge_cosine_and_fulltext_capture_include_rrf_source_membership -v",
+    "expected_failure": "existing forensic wrapper records no edge query events",
+    "result": "failed",
+    "evidence": "AssertionError: 0 != 2 for len(payload['query_events'])"
+  },
+  "red_harness_correction": {
+    "description": "The first invocation exposed a fake-driver parameter-name conflict. The fake positional parameter was renamed before accepting the behavioral red result; production code was unchanged."
+  },
+  "green": {
+    "command": ".venv/bin/python3 -m unittest tests.test_search_forensics -v",
+    "result": "passed",
+    "tests_run": 5
+  },
+  "full_regression": {
+    "command": ".venv/bin/python3 -m unittest discover -s tests -q",
+    "result": "passed",
+    "tests_run": 146
+  },
+  "privacy_contract": {
+    "api_keys_persisted": false,
+    "raw_query_vectors_persisted": false,
+    "raw_graph_embeddings_persisted": false,
+    "logical_candidate_membership_persisted": true
+  }
+}

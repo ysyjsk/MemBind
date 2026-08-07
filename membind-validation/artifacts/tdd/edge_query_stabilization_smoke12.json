@@ -1,0 +1,55 @@
+{
+  "feature": "UUID-independent Neo4j edge score tie-break before outer top-K input cutoff",
+  "contract": "logical_content_ascending_before_top_k",
+  "created_at": "2026-08-07T09:30:51Z",
+  "red": [
+    {
+      "test": "tests.test_deterministic_search",
+      "observed": "ImportError: install_edge_query_stabilizer was not implemented"
+    },
+    {
+      "test": "test_edge_search_ties_are_broken_by_logical_content_before_limit",
+      "observed": "injected first secondary key did not satisfy the frozen query-text contract"
+    },
+    {
+      "test": "test_edge_search_cutoff_tie_break_contract_is_synced",
+      "observed": "KeyError: prompt_edge_search_tie_break was absent from configs/base.yaml"
+    }
+  ],
+  "green": {
+    "targeted_test_count": 20,
+    "targeted_status": "passed",
+    "full_unit_test_count": 134,
+    "full_unit_status": "passed",
+    "factory_wrapper_installed": true,
+    "environment_gate": {
+      "construction_vllm_version": "0.26.0",
+      "construction_max_model_len": 40960,
+      "structured_success": 20,
+      "structured_checks": 20,
+      "embedding_dimension": 1024,
+      "ok": true
+    },
+    "neo4j_integration": {
+      "entity_count": 2,
+      "edge_count": 1,
+      "search_count": 1,
+      "node_count_after_clear": 0,
+      "ok": true
+    },
+    "interruption_retention_contract_test": "passed"
+  },
+  "implementation": [
+    "src/deterministic_search.py",
+    "src/graphiti_native.py",
+    "tests/test_deterministic_search.py",
+    "tests/test_contract_sources.py",
+    "configs/base.yaml",
+    "README.md",
+    "EXPERIMENT_PLAN.md",
+    "../MemBind_basic_validation_experiment.md"
+  ],
+  "residual_risk": "Neo4j full-text queryRelationships applies its internal limit before the outer deterministic ORDER BY; the next correctness smoke must validate the resulting final RRF membership.",
+  "smoke12_outcome": "infrastructure_interruption_after_9_m0_episodes",
+  "next_attempt": "smoke13"
+}

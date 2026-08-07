@@ -1,0 +1,84 @@
+{
+  "feature": "UUID-independent Neo4j node cosine tie-break before the dedupe candidate cutoff",
+  "contract": "logical_node_content_ascending_before_top_k",
+  "created_at": "2026-08-07T10:28:41Z",
+  "failure_evidence": {
+    "attempt": "smoke13",
+    "source_sequence": 6,
+    "prompt_name": "dedupe_nodes.nodes",
+    "m0_cache_physical_line": 64,
+    "m0_prompt_hash": "919821ab16088548b0a163c849a2727bef85fd195d8f4c77bff8d00613245d66",
+    "m2_prompt_hash": "ad3ca75382a7e6311eca494ac7c15bcb0278fc08334a41580aec9403f16954bb",
+    "m0_existing_candidate_count": 26,
+    "m2_existing_candidate_count": 25,
+    "only_m0_candidate": "Sage Thrashers",
+    "other_prompt_content_equal": true,
+    "m2_live_fallback_calls": 0,
+    "post_run_node_count": 0
+  },
+  "red": [
+    {
+      "test": "tests.test_deterministic_search",
+      "observed": "ImportError: install_node_query_stabilizer was not implemented"
+    },
+    {
+      "test": "test_node_search_cutoff_tie_break_contract_is_synced",
+      "observed": "KeyError: prompt_node_search_tie_break was absent from configs/base.yaml"
+    },
+    {
+      "test": "test_node_search_ties_are_broken_by_logical_content_before_limit",
+      "observed": "three assertions failed until lower-case and raw name/summary keys were both present"
+    },
+    {
+      "test": "live Neo4j integration",
+      "observed": "Neo4j rejected toString(labels(n)) because labels(n) is List<String>"
+    },
+    {
+      "test": "test_node_search_ties_are_broken_by_logical_content_before_limit",
+      "observed": "unit regression rejected toString(labels(n)) and required native labels(n) ordering"
+    }
+  ],
+  "green": {
+    "targeted_test_count": 26,
+    "targeted_status": "passed",
+    "full_unit_test_count": 140,
+    "full_unit_status": "passed",
+    "factory_edge_wrapper_installed": true,
+    "factory_node_wrapper_installed": true,
+    "environment_gate": {
+      "construction_vllm_version": "0.26.0",
+      "construction_max_model_len": 40960,
+      "structured_success": 20,
+      "structured_checks": 20,
+      "embedding_dimension": 1024,
+      "ok": true
+    },
+    "neo4j_integration": {
+      "entity_count": 2,
+      "edge_count": 1,
+      "search_count": 1,
+      "node_count_after_clear": 0,
+      "ok": true
+    }
+  },
+  "secondary_key": [
+    "score DESC",
+    "lower(name)",
+    "raw name",
+    "lower(summary)",
+    "raw summary",
+    "labels"
+  ],
+  "forbidden_key_fields": [
+    "uuid",
+    "created_at",
+    "name_embedding",
+    "properties(n)"
+  ],
+  "residual_risks": [
+    "The failure artifacts do not persist the exact cutoff scores, so they establish membership drift but not numeric score equality.",
+    "Neo4j full-text procedures apply their internal limit before the outer deterministic order; smoke13 used the direct cosine maintenance path.",
+    "Future custom entity attributes would require a separately tested canonical Cypher representation."
+  ],
+  "next_attempt": "smoke14"
+}

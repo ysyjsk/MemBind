@@ -1,4 +1,4 @@
-# MemBind Basic Validation: Optimized Execution Plan
+# MemBind Basic Validation: v1.1 Optimized Execution Plan
 
 This is the execution overlay for MemBind_basic_validation_experiment.md. It
 freezes the deployment topology requested for this run and makes TDD a hard
@@ -29,9 +29,12 @@ parameters, API key, network path, and concurrency cap.
    isolation check.
 5. Smoke gate: run one calibration instance through M0, M1, and M2; compare
    canonical graph and retrieval outputs before formal runs.
-6. Formal gate: freeze DELTA_MS, freeze the 64-run plan, then execute it in the
-   deterministic shuffled order. A failed run is retained and never silently
-   replaced.
+6. Characterization gate: after correctness smoke passes, implement tracing,
+   network/cache lifecycle, and statistics through red/green tests; then pass
+   overhead, cache-reset, network-baseline, and normalization guardrails.
+7. Formal gate: freeze DELTA_MS, phase map, fairness policies, and the 64-run
+   plan. Performance runs use balanced `(question_id, repeat)` method blocks.
+   A failed run is retained and never silently replaced.
 
 ## Structured-output budget
 
@@ -72,14 +75,34 @@ rewriting remain prohibited workarounds.
 ## Deterministic prompt candidate presentation
 
 Graphiti's edge RRF search retains responsibility for selecting the top-K
-candidate set. The original implementation then assigned prompt indices in the
-physical result order, which is not stable across fresh graphs because UUIDs
-and Neo4j equal-score order are not protocol fields. All three methods now use
+candidate set. Its Neo4j BM25 and cosine source queries now use
+`logical_content_ascending_before_top_k`: immediately before their outer
+database cutoff, equal scores are ordered by fact, relation, temporal fields,
+and endpoint names without UUIDs. This stabilizes the ranked inputs consumed by
+RRF. Neo4j's full-text procedure applies its own internal limit before that
+outer ordering, so an exact tie at the procedure boundary remains a documented
+residual risk to be tested by the next correctness smoke.
+
+Graphiti's node-dedup maintenance path uses direct cosine searches with a
+15-candidate cutoff. Those Neo4j queries use
+`logical_node_content_ascending_before_top_k`: equal scores are ordered by
+UUID-independent name, summary, and labels before `LIMIT`. The rule stabilizes
+candidate membership before the later prompt-level canonical presentation.
+
+The original implementation then assigned prompt indices in the physical
+result order, which is not stable across fresh graphs because UUIDs and Neo4j
+equal-score order are not protocol fields. All three methods also use
 `logical_content_ascending_after_top_k`: after top-K selection, the selected
 edges are ordered by logical fact/relation/temporal content before prompt
 indices are assigned, and each reranker score moves with its edge. Candidate
 membership and search cutoffs are unchanged. This shared normalization is
 active in correctness and performance lanes.
+
+Node-resolution candidates use the companion contract
+`logical_content_ascending_before_candidate_id`. Graphiti still selects and
+deduplicates the candidate set; logical nodes are ordered by the prompt-visible
+name, labels, summary, and attributes before IDs are assigned. The prompt and
+the `candidate_id -> node` mapping share that same ordered list.
 
 A read-only miss remains a hard correctness failure and never calls the live
 model. The run additionally persists the requested PromptParts, per-component
@@ -91,7 +114,24 @@ hashes, prompt name, and nearest cache record under
 Correctness lane is eight M0 capture runs followed by eight M2 read-only replay
 runs. A prompt cache miss in replay is an immediate failure. Performance lane
 is 8 instances x 3 methods x 2 repeats, with application response cache
-disabled. The plan is shuffled with seed 20260806.
+disabled. The old global shuffle is replaced by balanced method blocks keyed
+by `(question_id, repeat)` with seed 20260806.
+
+## v1.1 Characterization and fairness gate
+
+No characterization or formal run starts before correctness smoke parity. The
+post-smoke sequence is fixed: instrumentation contract tests; in-memory spans
+and interval-union analysis; request/DB/pipeline tracing; overhead gate; live
+prefix/embedding cache-reset contract; 100-probe network baseline; upstream vs
+deterministic M0 guardrail; four M0 calibration instances; C1/C2/C4/C8
+sensitivity; rho 0.5/1.0/1.5 plus fixed-seed Poisson sensitivity; freeze; then
+the blocked 64-run formal plan.
+
+Each measured run uses hot engines with cold cross-run prefix, embedding, and
+logical graph state. Pre/post network gates run outside measurement, vLLM must
+be idle, and telemetry spans the measured run through drain-to-zero. Explicit
+infrastructure failure reruns the entire three-method block under a new block
+ID; treatment-induced overload remains a method result.
 
 ## Local Neo4j
 
@@ -148,5 +188,27 @@ written under artifacts/. Secrets are never copied to artifacts or logs.
   Neo4j/RRF presentation order and indices differed. This evidence motivated
   the shared `logical_content_ascending_after_top_k` contract; the failed run
   and trace remain immutable.
+- `smoke10`: M0 capture completed all 46 episodes; M2 replay failed at source 1
+  node resolution. Its seven semantic candidates matched M0, but `USER` and
+  `italki` were reversed before `candidate_id` assignment. The red regression
+  test motivated `logical_content_ascending_before_candidate_id`; all smoke10
+  artifacts remain immutable.
+- `smoke11`: M0 again completed 46 episodes and persisted 702 prompt records;
+  M2 failed read-only replay at source 5. Offline comparison found nine common
+  edge candidates in identical presentation order but a different tenth
+  member at the RRF cutoff. The red query-rewrite tests motivated
+  `logical_content_ascending_before_top_k`; the procedure-internal cutoff risk
+  remains explicit, and all smoke11 artifacts remain immutable.
+- `smoke12`: M0 completed sources 0-8 and persisted 144 prompt records before
+  a construction-model/runner infrastructure interruption. M2 never started;
+  the partial run, trace, cache, and explicit interruption summary are retained.
+- `smoke13`: after the recovered environment and Neo4j gates passed, M0
+  completed all 46 episodes and persisted 686 prompt records. M2 replay passed
+  sources 0-5, then failed at source 6 `dedupe_nodes.nodes` with zero live
+  fallback calls. The M0 prompt had 26 existing candidates while M2 had 25;
+  `Sage Thrashers` was the only missing logical candidate and all other prompt
+  content was byte-identical after normalizing that block. This evidence
+  motivated `logical_node_content_ascending_before_top_k`; all smoke13
+  artifacts remain immutable.
 
 No failed attempt is overwritten. A replacement uses a new attempt/run id.

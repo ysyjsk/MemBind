@@ -53,11 +53,24 @@ Notes for this machine:
   response gets one shared, bounded 8192-token retry; both attempts are metered.
 - Because every call extracts one current episode, the constrained JSON schema
   freezes `episode_indices` to `[0]`; the same schema is part of cache hashing.
+- Neo4j edge score queries feeding RRF use
+  `logical_content_ascending_before_top_k`: equal scores are ordered by
+  UUID-independent fact, relation, temporal fields, and endpoint names before
+  the outer database `LIMIT`. The full-text procedure's own internal cutoff is
+  a retained residual risk and must be checked by the next correctness smoke.
+- Neo4j node score queries use
+  `logical_node_content_ascending_before_top_k`: equal cosine scores are
+  ordered by UUID-independent name, summary, and labels before `LIMIT`. This
+  stabilizes the per-entity candidate membership consumed by node dedupe.
 - Graphiti RRF still selects the edge-resolution top-K candidate set. Before
   candidates receive prompt indices, all methods canonically present that
   selected set using `logical_content_ascending_after_top_k`; associated scores
   move with their edges. This removes database/UUID ordering drift without
   changing candidate membership.
+- Node semantic search still selects the node-resolution candidate set. All
+  methods apply `logical_content_ascending_before_candidate_id` to the merged
+  set before Graphiti assigns candidate IDs; the prompt and ID-to-node mapping
+  therefore consume the same UUID-independent logical order.
 - A vLLM context-budget 400 triggers a one-token exact-usage probe, then retries
   within the true remainder minus 32 tokens; input prompts are never clipped.
 - The construction runtime is frozen at the user-approved vLLM 0.26.0 with

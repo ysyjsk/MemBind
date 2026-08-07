@@ -11,6 +11,9 @@ structured_overflow_retry_max_tokens: 8192
 context_budget_safety_tokens: 32
 single_episode_indices_schema_constraint: true
 prompt_candidate_order: logical_content_ascending_after_top_k
+prompt_node_candidate_order: logical_content_ascending_before_candidate_id
+prompt_edge_search_tie_break: logical_content_ascending_before_top_k
+prompt_node_search_tie_break: logical_node_content_ascending_before_top_k
 max_construction_concurrency: 8
 embedding_model: qwen3-embedding-0.6b
 embedding_dtype: fp16
@@ -21,3 +24,18 @@ neo4j_user: neo4j
 neo4j_password_env: NEO4J_PASSWORD
 api_key_env: VLLM_API_KEY
 embedding_base_url: http://10.87.5.247:8001/v1
+
+measurement:
+  network_gate: true
+  network_probe_count: 20
+  telemetry_interval_s: 1.0
+  block_randomization_seed: 20260806
+  reset_prefix_cache_between_runs: true
+  reset_embedding_cache_between_runs: true
+  instrumentation_overhead_limit: 0.02
+
+characterization:
+  enabled: true
+  concurrency_levels: [1, 2, 4, 8]
+  load_rho: [0.5, 1.0, 1.5]
+  poisson_sensitivity: true

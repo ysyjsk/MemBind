@@ -1,8 +1,9 @@
 # MemBind 基础验证实验规范
 
-> 文档状态：Pilot Protocol v1.0  
+> 文档状态：Pilot Protocol v1.1（已合并 Characterization / Fairness Addendum）
 > 目标：以单一 backend、单一数据集、单一 backbone，直接判断 Semantic Late Binding 是否值得继续研究。  
 > 本协议只验证核心 idea，不验证跨 backend 通用性、复杂调度、容错或完整线上部署。
+> 升级原则：v1.1 补充系统 characterization、公平性和环境噪声控制；除本文明确标为“替换”的条款外，v1.0 的 correctness、冻结数据划分、模型与 Graphiti 版本、Evidence Fence 以及 Go/No-Go 阈值保持不变。
 
 ---
 
@@ -377,8 +378,8 @@ Correctness lane 共：
 
 1. M0、M1、M2 均真实调用同一个 live model server；
 2. 禁用应用级 prompt/response cache；
-3. 允许 vLLM 自身正常的 KV/prefix cache，但三种方法配置必须完全一致；
-4. embedding cache 仅允许复用完全相同文本的 embedding，并且三种方法规则一致；
+3. 采用 hot engine + cold cross-run prefix state：每个 measured run 前验证并重置 vLLM prefix cache，run 内允许自然 prefix reuse；
+4. 每个 measured run 从空 embedding cache 开始，run 内仅允许 exact-text reuse；
 5. 每个 evaluation instance、每种方法重复 2 次；
 6. 性能结果仅来自该 lane。
 
@@ -436,19 +437,11 @@ Performance lane 中，每个方法、每个实例重复 2 次：
 
 加上 correctness lane 的 16 runs，正式 evaluation 共 64 runs。
 
-执行顺序必须使用固定随机化：
+v1.1 明确将 performance lane 的 `global shuffle` 条款替换为
+`blocked randomization`：每个 `block = (question_id, repeat)` 包含 M0、M1、M2，
+用 seed `20260806` 在六种排列上均衡轮转。Correctness capture 必须仍先于对应 replay。
 
-```python
-random.Random(20260806).shuffle(run_plan)
-```
-
-每个 run 前：
-
-- 清空数据库；
-- 创建索引和约束；
-- 等待模型服务稳定；
-- 执行一个不计入结果的 warm-up episode；
-- 重置所有 runtime counters。
+每个 measured run 使用第 21.6 节的完整 lifecycle；正式数据 prompt 不得在 prefix-cache reset 后用于 warm-up。
 
 ---
 
@@ -532,7 +525,7 @@ M2 相对 M0 必须逐 instance 比较。
 
 ```text
 P50 arrival_to_publish_ms
-P99 arrival_to_publish_ms
+P99 arrival_to_publish_ms（仅 descriptive trace metric，不作正式 tail claim）
 drain_ms
 construction throughput
 LLM input tokens
@@ -988,7 +981,10 @@ Visibility-frontier scheduling
 - 主机第一次重启后的 construction context window 曾为 32768；若 vLLM 因声明的 completion budget 越界返回 400，先用同一完整 prompt 的 1-token probe 从成功响应 usage 获取精确 input tokens，再以“context 上限 - 精确 input tokens - 32”作为有界重发预算；probe 与重发都计量，禁止裁剪输入；
 - 完整 `smoke06` 证明历史 32768 context 不足以执行冻结输入：M0 source sequence 19 的原生 Graphiti node-resolution prompt 精确占用 32757 tokens，在安全余量前也只剩 11 completion tokens；保留的 `diagnostic_context_cap_005` 给出 primary 2048 预算所需最小 context 34837、完整 overflow 8192 预算所需 40981；因此远端最低门槛冻结为 `max_model_len>=40960`，禁止通过裁剪 history 或改写 prompt 绕过；
 - 2026-08-07 用户将远端 `max_model_len` 恢复为 40960，并明确批准本次协议统一使用 vLLM 0.26.0 替代原定的 0.23.0；代码、`.env`、配置和 gate 期望值均冻结为 0.26.0，历史 blocker 与失败 attempt 继续保留并由新的成功 gate 标记为 resolved；
+- Graphiti edge RRF 的 Neo4j BM25 / cosine 源查询统一采用 `logical_content_ascending_before_top_k`：在外层数据库 `LIMIT` 前，对相同 score 按 fact、relation、valid/invalid temporal fields 和 source/target name 排序，禁止 UUID 进入 secondary key，从而稳定送入最终 RRF top-K 的 ranked inputs。Neo4j full-text procedure 会在此外层排序前执行自身的内部 limit，因此 procedure cutoff 恰有并列项仍是必须由下一次 correctness smoke 验证的 residual risk，不得宣称已被理论消除；
+- Graphiti node dedupe 的 Neo4j cosine 候选查询统一采用 `logical_node_content_ascending_before_top_k`：在每个 extracted entity 的 15-candidate `LIMIT` 前，对相同 score 按不含 UUID 的 name、summary 和 labels 排序，再由已有的 prompt-level node canonicalization 分配 `candidate_id`；
 - Graphiti 的 RRF 仍负责选择 edge-resolution top-K 候选集合；M0/M1/M2 在候选进入 LLM prompt 并获得连续 idx 前统一采用 `logical_content_ascending_after_top_k`，即按 fact、relation 和 temporal logical content 规范化已选集合，并让 score 随 edge 同步移动。该规则不改变 top-K membership 或 cutoff，只消除 fresh graph 的随机 UUID / Neo4j 物理返回顺序对完整 prompt hash 的影响，correctness 与 performance lane 均启用；
+- Graphiti 的 node semantic search 仍负责选择并去重 node-resolution 候选集合；M0/M1/M2 在 Graphiti 分配 `candidate_id` 前统一采用 `logical_content_ascending_before_candidate_id`，按 prompt 可见的 name、labels、summary、attributes 建立不含 UUID 的逻辑顺序，prompt 与 `candidate_id -> node` 映射必须共用同一个排序后列表；
 - correctness replay 的任何 cache miss 仍立即失败且禁止 live fallback；同时必须把 prompt name、五个组件 hash、请求 PromptParts 和最近 M0 cache record 持久化到 `artifacts/unexpected_prompts/`，API key 不得进入诊断 artifact；
 
 正式实验前必须按以下测试驱动顺序执行：
@@ -1002,4 +998,188 @@ Visibility-frontier scheduling
 
 任何 TDD gate 失败都必须停在当前阶段，不能提前跑正式 evaluation。
 
-本次 smoke 失败证据必须保留：`smoke01` 因 Graphiti 的 16384 输出预算与 24577+ 输入 token 超过远端 40960 context 而失败，随后增加 2048 clamp；`smoke02` 因 2048-token edge JSON 在字符串中截断而失败；`smoke03` 暴露 DB instrumentation 参数冲突；`smoke04` 及其 diagnostic replay 证明 4096 补请求仍以 finish_reason=length 截断，因此一次性补请求上限调整为 8192；`smoke05` 暴露重启后 32768 context 的动态 completion budget 兼容问题；`smoke06` 则证明 source 19 的完整 prompt 本身已占 32757 tokens，32k 服务无法产生有效结构化输出；`smoke07` 在 40960/0.26.0 下完整成功捕获 46 episodes 和 702 条 prompt records，但首次 M2 load 暴露 U+2028 被 `splitlines()` 错当 JSONL 边界；`smoke08` 在修复 ASCII-LF framing 后证明 M2 previous episodes 错误地 newest-first 呈现，source 2-45 共 44 条只读 miss 均未调用 live model；`smoke09` 在 chronological fix 后推进到 source 1 bind，并证明同一 edge candidate 集合因 fresh Neo4j/RRF 物理顺序不同而产生不同 idx/hash，由此冻结三个方法共享的 `logical_content_ascending_after_top_k`。后续 attempt 必须使用新 run_id，不能覆盖这些失败 artifact。
+本次 smoke 失败证据必须保留：`smoke01` 因 Graphiti 的 16384 输出预算与 24577+ 输入 token 超过远端 40960 context 而失败，随后增加 2048 clamp；`smoke02` 因 2048-token edge JSON 在字符串中截断而失败；`smoke03` 暴露 DB instrumentation 参数冲突；`smoke04` 及其 diagnostic replay 证明 4096 补请求仍以 finish_reason=length 截断，因此一次性补请求上限调整为 8192；`smoke05` 暴露重启后 32768 context 的动态 completion budget 兼容问题；`smoke06` 则证明 source 19 的完整 prompt 本身已占 32757 tokens，32k 服务无法产生有效结构化输出；`smoke07` 在 40960/0.26.0 下完整成功捕获 46 episodes 和 702 条 prompt records，但首次 M2 load 暴露 U+2028 被 `splitlines()` 错当 JSONL 边界；`smoke08` 在修复 ASCII-LF framing 后证明 M2 previous episodes 错误地 newest-first 呈现，source 2-45 共 44 条只读 miss 均未调用 live model；`smoke09` 在 chronological fix 后推进到 source 1 bind，并证明同一 edge candidate 集合因 fresh Neo4j/RRF 物理顺序不同而产生不同 idx/hash，由此冻结三个方法共享的 `logical_content_ascending_after_top_k`；`smoke10` 的 M0 完成 46 episodes，M2 在 source 1 node resolution 失败，离线诊断证明七个语义 node 候选集合相同但 `USER`/`italki` 在 `candidate_id` 前交换，由此冻结 `logical_content_ascending_before_candidate_id`；`smoke11` 的 M0 再次完成 46 episodes并持久化 702 条 prompt records，M2 在 source 5 的 edge resolution 只读 replay 失败，离线对比证明十个 invalidation candidates 中九个公共项及其顺序完全相同、但 RRF cutoff 的第十个成员不同，由此先以红测试冻结 `logical_content_ascending_before_top_k`，同时保留 full-text procedure 内部 cutoff 的 residual risk。后续 attempt 必须使用新 run_id，不能覆盖这些失败 artifact。
+
+后续失败证据同样必须保留：`smoke12` 的 M0 完成 source 0-8 并写入 144 条 prompt records 后遭遇 construction model / runner 基础设施中断，M2 未启动，partial run、trace、cache 与显式 interruption summary 均已持久化；恢复后 `smoke13` 的 M0 完成 46 episodes 并写入 686 条 prompt records，M2 以零 live fallback 通过 source 0-5，随后在 source 6 的 `dedupe_nodes.nodes` 失败。结构化离线对比证明 M0 有 26 个 existing node candidates、M2 有 25 个，唯一缺失项为 `Sage Thrashers`；移除该 candidate block 后其余 user prompt 逐字符相同，由此先以红测试冻结 `logical_node_content_ascending_before_top_k`。后续 attempt 继续使用新 run ID，禁止覆盖 `smoke12` 或 `smoke13`。
+
+---
+
+## 21. v1.1 Characterization、Fairness 与环境噪声控制（已合并且具有执行优先级）
+
+本节把 `MemBind_实验协议优化_Characterization_Fairness_v1.1.md` 合并为主协议的可执行条款。外部 addendum 是解释性来源；执行、测试和报告以本节为准。以下条款不改变 v1.0 的研究问题、Evidence Fence、source-ordered Bind/Commit、冻结 split、primary outcomes 或 Go/No-Go 阈值。
+
+### 21.1 执行前置条件与停止规则
+
+1. 当前及历史 smoke attempt 必须自然结束并保留所有 artifact；任何替代 attempt 使用新的 attempt/run ID。
+2. correctness smoke PASS 之前，禁止加入 characterization instrumentation，也禁止启动 calibration、load sensitivity、concurrency sweep 或 formal lane。
+3. 每一个新增埋点、网络 gate、cache lifecycle、blocked schedule 和统计派生量都必须遵循“先写红测试、确认失败、实现、转绿、全量回归”的 TDD 顺序。
+4. characterization 只能解释机制，不能事后选择 instance、arrival、并发度、primary outcome 或 Go/No-Go 阈值。
+5. instrumentation、cache、network、server、fairness 任一 gate 失败时，停止在当前阶段；不得以删除异常结果或只重跑一个方法来“修复” gate。
+
+### 21.2 指标分层与统一记录合同
+
+v1.0 的 primary outcomes 保持不变：P95 `arrival_to_publish_ms`、instance `makespan_ms`、canonical graph parity 和 Evidence Recall@10。P99 仅作 descriptive trace metric。
+
+每个 run 必须记录以下 cost/fairness guardrails：
+
+```text
+llm_input_tokens, llm_output_tokens, llm_call_count
+embedding_call_count, http_request_count
+db_query_count, db_write_count
+structured_retry_count, transport_retry_count
+bytes_sent, bytes_received
+```
+
+`transport_retry_count` 在 performance lane 原则上必须为 0；冻结的 structured-output bounded retry 必须计入调用、token 和时间。HTTP 5xx、429、timeout、OOM、DB error 和 transport error 不得静默丢弃。
+
+M0 native characterization 必须按 pinned Graphiti `v0.29.3 / 021d3a5` 的真实函数边界记录 phase span。逻辑 phase 至少包括：
+
+```text
+add_episode
+source_context_prepare, node_extract, edge_extract
+node_embedding, edge_embedding
+node_candidate_search, node_resolve_llm
+edge_candidate_search, edge_resolve_llm
+invalidation, attribute_or_summary_update, db_publication
+```
+
+每个 span 至少包含：`run_id`、`question_id`、`method`、`episode_sequence`、`span_id`、`parent_span_id`、`phase`、`semantic_class`、`start_ns`、`end_ns`、`duration_ns`、`status`、`exception_class`。`semantic_class` 只能是 `compile_eligible`、`bind_state_dependent`、`commit` 或 `other`，并在 formal performance 前冻结到 `artifacts/characterization/phase_map.json`。
+
+嵌套 span 禁止 duration double-count。报告同时给 inclusive duration 与
+exclusive/interval-union duration（interval union，区间并集）；`F_compile`、
+`F_bind`、`F_commit` 用区间并集除以 `T_add_episode`，并报告未分类 gap。
+
+每个 construction LLM request 记录：`prompt_name`、完整 prompt hash、request id、client send/first-byte/done 时间、observed latency、input/output tokens、finish reason、structured/transport retry index、提交/完成时 inflight 数和 response hash。无法从 vLLM 取得 server-side 时间时不得虚构 compute time，只报告 client latency、run-level server metrics、GPU telemetry 与 network probes。
+
+每个 episode 记录 DB/search 聚合：`previous_episode_lookup`、`entity_candidate_search`、`edge_candidate_search`、`write_publication` 的 query count 和 latency，以及 candidate counts、graph node/edge count before/after。M2 另记录 `compiled_ready_count`、`compile_inflight_count`、`bind_busy`、`source_frontier`、`arrival_queue_depth` 时间序列，并派生 ready-queue mean/P95/max、frontier stall 和 utilization。
+
+### 21.3 远程网络、vLLM 状态与资源公平
+
+E2E `arrival_to_publish_ms` 和 makespan 继续包含真实远程 API 路径；禁止 RTT subtraction。campaign 开始前，construction 与 embedding endpoint 各执行 100 次不含 inference 的 lightweight `/models` probe，使用实验相同 NIC、路由和 proxy 环境，保存 `artifacts/environment/network_baseline.json`，包括 n、success、median、P95、P99、MAD、route 和 proxy 状态。
+
+每个 measured run 在计时区间之外执行 pre/post 各 20 次 probe，保存 `artifacts/network/<run_id>.json`。任一阶段 success < 100%，或 probe median 满足：
+
+```text
+baseline_med + 5 * max(baseline_mad, 0.1 ms)
+```
+
+即标记 `network_unstable=true`，同时报告 P95，不自动删除结果。baseline 本身不稳定时停止 formal lane。内网 endpoint 必须进入 `NO_PROXY/no_proxy` 或确认不使用 proxy。
+
+正式 run 前必须确认 construction server running/waiting request 为 0、无第三方 workload、无 restart 和 thermal/power throttling；若无法确认，写入 `shared_server=true` 并暂停 performance gate。以约 1 s 采样（先过 overhead gate）保存 GPU utilization、显存、功耗、clock、temperature、vLLM running/waiting/KV usage 到 `artifacts/telemetry/<run_id>.parquet`。server queue、batching 和 GPU utilization 是 treatment 路径的一部分，不从主 latency 中扣除。
+
+M0/M1/M2 共享同一 checkpoint/revision、vLLM 0.26.0/config、GPU、schema、decode、global LLM cap=8、embedding endpoint/dimension、Neo4j/index、HTTP client/pool/timeouts/keep-alive、network route、telemetry rate 和 DB pool。公平性是 same resource envelope，不是强行让瞬时 utilization 相同；M0 的真实串行约束不得人为并行化，M2 的并行收益不得归一化。
+
+### 21.4 Cache、warm-up、DB 和错误生命周期
+
+性能 lane 的状态定义是 **hot engine + cold cross-run application/prefix state + natural within-run reuse**：
+
+1. 服务启动后只用 synthetic warm-up 预热 CUDA/kernel/runtime；等待 server running/waiting=0。
+2. 调用 pinned vLLM `0.26.0` 的 `reset_prefix_cache` endpoint，并验证返回值；endpoint 不可用时使用已测试的等价隔离方式，不能假设成功。
+3. 清空/rebuild 本 run logical DB，验证 node/edge count=0、索引/约束 ready。
+4. 清空本 run embedding cache，建立正式 HTTP client pool，做一次不计时 health preconnect。
+5. 完成 pre-run network gate 后才开始 measured trace；正式数据 prompt 不得用于 cache reset 后 warm-up。
+6. run drain 到 client requests 完成且 vLLM running/waiting=0，再停止 telemetry、执行 post-run network gate、导出 graph 和 flush artifact。
+
+Neo4j 不重启、不清 Linux page cache；保持 hot DB engine + cold logical graph。每 run 删除前一 run 逻辑数据，验证 node/edge=0，重建统一 indexes/constraints，并使用相同 connection-pool 配置。
+
+错误分类固定为：
+
+- protocol-approved semantic retry：所有方法一致，计入 call/token/time；
+- infrastructure failure：connection/DNS/route、server restart、无关 host failure；不静默 retry，标记 `infra_failed=true`；
+- treatment-induced failure：方法自身并发引起的 429/5xx、OOM、DB conflict/deadlock；计入该方法结果，不按 infra 删除。
+
+### 21.5 Calibration、characterization 与强 baseline
+
+correctness smoke PASS 后，先对 4 个冻结 calibration instances 运行带 tracing 的 M0，生成 service-time distribution（mean、p25、p50、p75、p90、p95、std、CV、SCV），以 native median 冻结 formal `DELTA_MS`，不得看 M1/M2 后调整。
+
+Phase 4.5 只使用一个预先冻结的 calibration instance 做：
+
+- M1 与 M2 的 C1/C2/C4/C8 sensitivity；报告 makespan、P95 freshness、GPU/vLLM queue、frontier stall 和可用的 parity/retrieval；
+- M0 vs M2-C8 的 `rho≈0.5/1.0/1.5` load sensitivity，其中 `DELTA = 2.0×/1.0×/0.67× median_service`；
+- 相同 fixed RNG seed 的小型 Poisson arrival replay（Gamma 仅在预算允许且主 Pilot 值得继续时增加）。
+
+必须输出 `best_m1_concurrency_on_calibration` 与 `best_m2_concurrency_on_calibration`。formal primary 仍保留冻结 M1-C8/M2-C8 iso-resource 比较；若 M1-C4 更快，报告 Best-Tuned-M1 但不得冒充全量 paired primary baseline。
+
+### 21.6 Blocked randomization、重复稳定性与 run lifecycle
+
+performance 的 run 单位替换为 `block = (question_id, repeat)`，每个 block 包含 M0、M1、M2。固定 seed `20260806` 在六种 method permutation 上平衡轮转：`M0-M1-M2`、`M1-M2-M0`、`M2-M0-M1`、`M0-M2-M1`、`M2-M1-M0`、`M1-M0-M2`。block 内三方法共享相近 wall-clock 区间，但每次 run 仍执行 cache/DB/network isolation。
+
+若 block 内任一方法明确 infra/network failure：保留旧 artifact，生成新 block ID，**entire block** 的 M0/M1/M2 全部重跑；旧 block 不进 primary paired statistics，但进入 failure appendix。若是 treatment-induced failure，则保留并计入该方法，不得当作环境异常。
+
+2 repeats 完成后预注册计算 P95 与 makespan 的 `relative_repeat_gap = |x1-x2|/mean(x1,x2)`。若超过 25% 的 `(instance, method)` gap >10%，设置 `stability_inconclusive=true`；若增加第三 repeat，必须对全部 8 instances×3 methods 使用新完整 blocks，禁止按结果方向补跑。统计 resampling unit 始终是 question_id；单 instance 的 P99 只作描述性指标。
+
+每个 measured run 的状态机固定为：
+
+```text
+PRECHECK → SERVER_IDLE_GATE → CACHE_RESET → DB_RESET → NETWORK_PRE_GATE
+→ TELEMETRY_START → MEASURED_OPEN_LOOP_RUN → DRAIN_TO_ZERO
+→ TELEMETRY_STOP → NETWORK_POST_GATE → DB_CANONICAL_EXPORT
+→ ARTIFACT_FLUSH → RUN_FINALIZE
+```
+
+### 21.7 Instrumentation overhead 与 deterministic normalization guardrail
+
+Instrumentation 使用 `time.monotonic_ns()`，span 先写内存 buffer，run 结束批量 flush；telemetry 低频采样，critical path 禁止 per-span fsync 或 pretty JSON。用 deterministic response replay/fake model 交替运行 M0 instrumentation OFF×5 与 ON×5，定义：
+
+```text
+median(on) / median(off) - 1
+```
+
+上限为 2%（`instrumentation_overhead_limit: 0.02`）；2–5% 是 warning，>5% 是 fail，不能进入 formal performance。
+
+为审计当前 `logical_content_ascending_after_top_k` 对 upstream 的影响，在 4 个 calibration instances 上运行 `Upstream-Native-Serial` 与 `Deterministic-Native-Serial`，比较 canonical graph、entity/edge F1、Evidence Recall@10、LLM calls/tokens 和 makespan。若无法 4/4 exact parity，M0 报告名称改为 `Deterministic-Native-Serial`，保留 upstream 作为 semantic guardrail；不得删除差异。
+
+performance live lane 对相同 prompt hash 记录 response hash、finish reason 和 token usage，派生 `live_response_divergence_rate`。高 divergence 导致 work volume 不同则标记 `performance_confounded=true`，不能解释为 correctness failure。
+
+### 21.8 v1.1 新增 artifact 与冻结文件
+
+除第 15 节既有 artifact 外，必须生成：
+
+```text
+artifacts/environment/network_baseline.json
+artifacts/environment/server_capability.json
+artifacts/environment/cache_reset_contract.json
+artifacts/characterization/phase_map.json
+artifacts/characterization/native_phase_spans.parquet
+artifacts/characterization/native_llm_requests.parquet
+artifacts/characterization/native_db_operations.parquet
+artifacts/characterization/native_phase_summary.json
+artifacts/characterization/concurrency_sensitivity.parquet
+artifacts/characterization/load_sensitivity.parquet
+artifacts/characterization/instrumentation_overhead.json
+artifacts/characterization/upstream_normalization_guardrail.json
+artifacts/characterization/CHARACTERIZATION_REPORT.md
+artifacts/characterization/freeze.json
+artifacts/telemetry/<run_id>.parquet
+artifacts/network/<run_id>.json
+artifacts/final/mechanism_metrics.parquet
+```
+
+`freeze.json` 必须固定 phase map hash、instrumentation code hash、network baseline hash、cache/HTTP/DB pool policy、formal `DELTA_MS`、method configs 和 blocked run blocks。API key 只能存在未跟踪 `.env`，禁止进入上述任何 artifact。
+
+### 21.9 严格执行顺序与报告扩展
+
+v1.1 的完整 TDD/实验顺序为：
+
+```text
+correctness smoke PASS
+→ instrumentation contract red tests
+→ span/network/cache/lifecycle implementation
+→ full unit regression
+→ instrumentation overhead gate
+→ live cache-reset contract
+→ 100-probe network baseline
+→ upstream normalization guardrail
+→ 4 calibration M0 characterization
+→ freeze DELTA_MS + phase_map
+→ C sensitivity
+→ load/Poisson sensitivity
+→ characterization freeze
+→ blocked formal plan
+→ correctness lane
+→ performance lane
+→ instance-level paired statistics
+→ original GO/INCONCLUSIVE/NO-GO + mechanism_verdict
+```
+
+任一 v1.1 gate 失败都必须停在当前阶段，不得提前进入 formal 64-run。最终报告除 v1.0 四个问题外，必须回答 native bottleneck、compile hiding、frontier stall/ready queue、load regime、network fraction 和 fairness；额外输出 `MECHANISM_SUPPORTED`、`MECHANISM_PARTIAL` 或 `MECHANISM_NOT_SUPPORTED`，不改变原 Go/No-Go 判定。
