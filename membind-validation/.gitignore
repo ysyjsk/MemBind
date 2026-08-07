@@ -1,0 +1,46 @@
+.env
+.env.*
+!.env.example
+.venv/
+.venv-embedding/
+runtime/
+__pycache__/
+*.py[cod]
+.pytest_cache/
+
+# Python packaging / build outputs
+build/
+dist/
+*.egg-info/
+.eggs/
+
+# Test / quality tool caches
+.coverage
+coverage.xml
+htmlcov/
+.tox/
+.nox/
+.ruff_cache/
+.mypy_cache/
+.pyright/
+.ipynb_checkpoints/
+
+# Local editor / OS files
+.DS_Store
+Thumbs.db
+.vscode/
+.idea/
+
+# Runtime logs / pids
+*.log
+*.pid
+
+
+artifacts/runs/
+artifacts/traces/
+artifacts/prompt_cache/
+artifacts/retrieval/
+artifacts/graphs/
+artifacts/llm_failures/
+artifacts/environment/*.log
+artifacts/environment/*.pid

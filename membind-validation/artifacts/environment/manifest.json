@@ -1,0 +1,47 @@
+{
+  "construction_base_url": "http://10.87.5.247:8000/v1/",
+  "created_at": "2026-08-07T06:46:15.230304+00:00",
+  "cwd": "/data/predator/ly/MemBind/membind-validation",
+  "embedding_base_url": "http://10.87.5.247:8001/v1",
+  "embedding_probe": {
+    "base_url": "http://10.87.5.247:8001/v1",
+    "dimension": 1024,
+    "embedding_ok": true,
+    "expected_dimension": 1024,
+    "models": [
+      "qwen3-embedding-0.6b"
+    ],
+    "models_ok": true,
+    "ok": true,
+    "requested_model": "qwen3-embedding-0.6b"
+  },
+  "graphiti_import": "ok",
+  "local_protocol_deviations": [
+    "User authorized local RTX 3090 instead of protocol RTX PRO 6000 pair.",
+    "User authorized vLLM 0.26.0 instead of the original protocol vLLM 0.23.0; the version is frozen uniformly for all methods.",
+    "Secrets are read from environment variables and are not written to artifacts.",
+    "A structured response truncated at 2048 tokens receives at most one bounded retry at 8192 tokens; all methods share this behavior.",
+    "Single-episode extraction constrains every episode_indices JSON-schema field to exactly [0], matching Graphiti's field contract and preventing an unbounded guided-decoding array.",
+    "When vLLM reports a context-budget 400, a one-token probe obtains exact prompt usage before retrying within the true remainder with a 32-token margin; inputs are never truncated.",
+    "RRF still selects edge-resolution top-K membership; every method canonically presents that selected set in logical-content order before assigning prompt indices."
+  ],
+  "model_probe": {
+    "base_url": "http://10.87.5.247:8000/v1",
+    "context_ok": true,
+    "expected_vllm_version": "0.26.0",
+    "max_model_len": 40960,
+    "minimum_context_tokens": 40960,
+    "models": [
+      "qwen3-32b-fp8"
+    ],
+    "models_ok": true,
+    "ok": true,
+    "requested_model": "qwen3-32b-fp8",
+    "runtime_contract_ok": true,
+    "structured_checks": 20,
+    "structured_success": 20,
+    "version_ok": true,
+    "vllm_version": "0.26.0"
+  },
+  "python": "3.12.3 (main, Jun 19 2026, 12:46:00) [GCC 13.3.0]"
+}

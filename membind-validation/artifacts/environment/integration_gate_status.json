@@ -1,0 +1,73 @@
+{
+  "graphiti_smoke": {
+    "checked_at": "2026-08-07T06:46:50.931777+00:00",
+    "edge_count": 1,
+    "entity_count": 2,
+    "episode_uuid": "b889869a-5163-4e1d-8dc9-b01b284603f5",
+    "node_count_after_clear": 0,
+    "ok": true,
+    "search_count": 1,
+    "search_facts": [
+      "Alice works at Adidas"
+    ]
+  },
+  "ok": true,
+  "phase": "integration_gate",
+  "remote_construction_contract": {
+    "base_url": "http://10.87.5.247:8000/v1",
+    "context_ok": true,
+    "expected_vllm_version": "0.26.0",
+    "max_model_len": 40960,
+    "minimum_context_tokens": 40960,
+    "models": [
+      "qwen3-32b-fp8"
+    ],
+    "models_ok": true,
+    "ok": true,
+    "requested_model": "qwen3-32b-fp8",
+    "runtime_contract_ok": true,
+    "structured_checks": 20,
+    "structured_success": 20,
+    "version_ok": true,
+    "vllm_version": "0.26.0"
+  },
+  "remote_embedding_contract": {
+    "base_url": "http://10.87.5.247:8001/v1",
+    "dimension": 1024,
+    "embedding_ok": true,
+    "expected_dimension": 1024,
+    "models": [
+      "qwen3-embedding-0.6b"
+    ],
+    "models_ok": true,
+    "ok": true,
+    "requested_model": "qwen3-embedding-0.6b"
+  },
+  "tdd_unit_tests": {
+    "command": "/data/predator/ly/MemBind/membind-validation/.venv/bin/python -m unittest discover -s tests -q",
+    "count": 123,
+    "ok": true,
+    "output_tail": [
+      "----------------------------------------------------------------------",
+      "Ran 123 tests in 1.510s",
+      "",
+      "OK",
+      "{",
+      "  \"attempt\": \"calibration07\",",
+      "  \"run_ids\": [",
+      "    \"calibration07_calibration_M0_c0\",",
+      "    \"calibration07_calibration_M0_c1\",",
+      "    \"calibration07_calibration_M0_c2\",",
+      "    \"calibration07_calibration_M0_c3\"",
+      "  ],",
+      "  \"DELTA_MS\": 100,",
+      "  \"median_native_episode_service_ms\": 100.0,",
+      "  \"successful_episode_count\": 4,",
+      "  \"source_artifact\": \"/tmp/tmpvsgf20k7/artifacts/calibration/attempts/calibration07.native_episode_latency.parquet\",",
+      "  \"frozen_at\": \"2026-08-07T06:46:52.784033+00:00\"",
+      "}",
+      "wrote 64 planned runs for formal07 to /tmp/tmp9xff_tmh/artifacts/plans/formal07.jsonl and /tmp/tmp9xff_tmh/artifacts/final/run_plan.jsonl"
+    ]
+  },
+  "updated_at": "2026-08-07T06:46:53.468288+00:00"
+}

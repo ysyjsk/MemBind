@@ -1,0 +1,56 @@
+{
+  "active_reasons": [],
+  "checked_at": "2026-08-07T01:56:11+08:00",
+  "completion_tokens_without_safety": 11,
+  "context_safety_tokens": 32,
+  "diagnostic_failure_artifact": "artifacts/llm_failures/diagnostic_context_cap_005.json",
+  "diagnostic_run_id": "diagnostic_context_cap_005",
+  "endpoint": "http://10.87.5.247:8000/v1/",
+  "formal_gate_allowed": true,
+  "last_checked_at": "2026-08-07T05:08:14.231631+00:00",
+  "last_observed_probe": {
+    "context_ok": false,
+    "expected_vllm_version": "0.23.0",
+    "max_model_len": 32768,
+    "minimum_context_tokens": 40960,
+    "models": [
+      "qwen3-32b-fp8"
+    ],
+    "models_ok": true,
+    "runtime_contract_ok": false,
+    "version_ok": false,
+    "vllm_version": "0.26.0"
+  },
+  "minimum_context_for_full_overflow_8192_budget": 40981,
+  "minimum_context_for_primary_2048_budget": 34837,
+  "minimum_practical_restoration": 40960,
+  "prohibited_workarounds": [
+    "truncate any Graphiti input or history",
+    "rewrite method-specific prompts",
+    "run formal evaluation while the environment gate is blocked"
+  ],
+  "prompt_tokens": 32757,
+  "protocol_vllm_version": "0.23.0",
+  "required_remote_action": "Restore the frozen vLLM version and restart the construction server with max_model_len at least 40960 before a new smoke attempt.",
+  "resolution_probe": {
+    "context_ok": true,
+    "expected_vllm_version": "0.26.0",
+    "max_model_len": 40960,
+    "minimum_context_tokens": 40960,
+    "models": [
+      "qwen3-32b-fp8"
+    ],
+    "models_ok": true,
+    "runtime_contract_ok": true,
+    "version_ok": true,
+    "vllm_version": "0.26.0"
+  },
+  "resolved_at": "2026-08-07T06:46:15.229922+00:00",
+  "served_max_model_len": 32768,
+  "served_model": "qwen3-32b-fp8",
+  "served_vllm_version": "0.26.0",
+  "source_sequence": 19,
+  "status": "resolved",
+  "usable_completion_tokens": -21,
+  "version_matches_protocol": false
+}
