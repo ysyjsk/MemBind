@@ -1,5 +1,7 @@
 import copy
+import hashlib
 import json
+import subprocess
 import sys
 import tempfile
 from pathlib import Path
@@ -193,6 +195,62 @@ class RetainedEmbeddingNondeterminismTests(TestCase):
         with tempfile.TemporaryDirectory() as tmp:
             with self.assertRaisesRegex(FileNotFoundError, "required retained artifact"):
                 analyze_retained_artifacts(Path(tmp))
+
+    def test_cli_persists_auditable_summary_and_refuses_overwrite(self):
+        script = ROOT / "scripts" / "analyze_embedding_nondeterminism.py"
+        with tempfile.TemporaryDirectory() as tmp:
+            output = Path(tmp) / "embedding_nondeterminism_source5.json"
+            command = [
+                sys.executable,
+                str(script),
+                "--artifacts-root",
+                str(self.artifacts),
+                "--output",
+                str(output),
+            ]
+
+            first = subprocess.run(
+                command,
+                cwd=ROOT,
+                check=False,
+                capture_output=True,
+                text=True,
+            )
+
+            self.assertEqual(first.returncode, 0, first.stderr)
+            summary = json.loads(first.stdout)
+            self.assertEqual(summary["status"], "written")
+            self.assertEqual(
+                summary["schema_version"],
+                "membind.v1.retained_embedding_closure.v1",
+            )
+            self.assertEqual(
+                summary["v1_gate_status"],
+                "pass_with_explicit_evidence_limits",
+            )
+            self.assertEqual(summary["embedding_hash_changed_counts"], {
+                "entities": 5,
+                "edges": 2,
+            })
+            self.assertEqual(
+                summary["output_sha256"],
+                hashlib.sha256(output.read_bytes()).hexdigest(),
+            )
+            self.assertNotIn("prompt", first.stdout.casefold())
+            self.assertNotIn("api_key", first.stdout.casefold())
+
+            original_hash = hashlib.sha256(output.read_bytes()).hexdigest()
+            second = subprocess.run(
+                command,
+                cwd=ROOT,
+                check=False,
+                capture_output=True,
+                text=True,
+            )
+
+            self.assertNotEqual(second.returncode, 0)
+            self.assertIn("already exists", second.stderr)
+            self.assertEqual(hashlib.sha256(output.read_bytes()).hexdigest(), original_hash)
 
 
 if __name__ == "__main__":

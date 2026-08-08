@@ -33,6 +33,7 @@ from graphiti_native import (
     run_whole_parallel,
 )
 from integration_gate import graphiti_integration_smoke
+from v2_oracle_integration import V2_ORACLE_CACHE_ID, run_v2_oracle_integration
 from live_runtime import close as close_graphiti
 from canonicalize_graph import compare_canonical_graphs
 from retrieval_eval import retrieval_metrics
@@ -789,6 +790,19 @@ def cmd_run(args: argparse.Namespace) -> None:
     print(json.dumps(result, ensure_ascii=False, indent=2))
 
 
+def cmd_v2_oracle_integration(args: argparse.Namespace) -> None:
+    result = asyncio.run(
+        run_v2_oracle_integration(
+            artifacts=ARTIFACTS,
+            attempt=args.attempt,
+            arrival_interval_ms=args.arrival_interval_ms,
+        )
+    )
+    print(json.dumps(result, ensure_ascii=False, indent=2))
+    if result.get("status") != "success":
+        raise SystemExit(1)
+
+
 def cmd_calibrate(args: argparse.Namespace) -> None:
     attempt = validate_attempt_id(args.attempt, kind="calibration")
     attempt_dir = ARTIFACTS / "calibration" / "attempts"
@@ -1046,6 +1060,101 @@ def cmd_smoke(args: argparse.Namespace) -> None:
     print(json.dumps(status, ensure_ascii=False, indent=2))
 
 
+def cmd_v3_smoke(args: argparse.Namespace) -> None:
+    split = read_json(ARTIFACTS / "dataset" / "frozen_split.json")
+    question_id = args.question_id or split["evaluation_question_ids"][0]
+    instance = load_instance(args.data, question_id)
+    attempt = str(args.attempt)
+    capture_attempt = str(args.reference_attempt or attempt)
+    cache_id = f"v3_smoke_{capture_attempt}_{question_id}"
+    run_ids = {
+        "M0": f"v3_smoke_{capture_attempt}_M0_{question_id}",
+        "M2": f"v3_smoke_{attempt}_M2_{question_id}",
+    }
+    status_path = ARTIFACTS / "smoke" / f"{attempt}.json"
+    status: dict[str, Any] = {
+        "ok": False,
+        "stage": "V3",
+        "attempt": attempt,
+        "reference_attempt": capture_attempt,
+        "question_id": question_id,
+        "run_ids": run_ids,
+        "cache_id": cache_id,
+        "forbidden_methods": [M1_WHOLE_PARALLEL_C8],
+        "started_at": datetime.now(timezone.utc).isoformat(),
+    }
+    try:
+        if args.reference_attempt is None:
+            asyncio.run(
+                run_one(
+                    M0_NATIVE_SERIAL,
+                    instance,
+                    run_ids["M0"],
+                    0,
+                    args.arrival_interval_ms,
+                    lane="v3_smoke",
+                    mode="capture",
+                    cache_id=cache_id,
+                )
+            )
+        else:
+            reference_status = read_json(ARTIFACTS / "runs" / f"{run_ids['M0']}.json")
+            if reference_status.get("status") != "success":
+                raise RuntimeError("referenced V3 M0 smoke capture did not succeed")
+        asyncio.run(
+            run_one(
+                M2_MEMBIND_GO_C8,
+                instance,
+                run_ids["M2"],
+                0,
+                args.arrival_interval_ms,
+                lane="v3_smoke",
+                mode="replay",
+                cache_id=cache_id,
+            )
+        )
+
+        graphs = {
+            method: read_json(ARTIFACTS / "graphs" / f"{run_id}.canonical.json")
+            for method, run_id in run_ids.items()
+        }
+        retrieval = {
+            method: read_json(ARTIFACTS / "retrieval" / f"{run_id}.json")
+            for method, run_id in run_ids.items()
+        }
+        episode_count = len(build_episodes(instance))
+        status["m2_vs_m0"] = compare_canonical_graphs(graphs["M0"], graphs["M2"])
+        status["retrieval"] = {
+            "M2_vs_M0": _retrieval_with_reference(retrieval["M2"], retrieval["M0"]),
+        }
+        status["source_order"] = {
+            method: _source_order_diagnostics(
+                ARTIFACTS / "traces" / f"{run_id}.jsonl", episode_count
+            )
+            for method, run_id in run_ids.items()
+        }
+        m2_run = read_json(ARTIFACTS / "runs" / f"{run_ids['M2']}.json")
+        status["unexpected_prompt"] = bool(
+            m2_run.get("llm_metrics", {}).get("unexpected_prompt", False)
+        )
+        status["ok"] = (
+            status["m2_vs_m0"]["canonical_graph_parity"]
+            and not status["unexpected_prompt"]
+            and status["source_order"]["M2"]["exactly_once"]
+            and not status["source_order"]["M2"]["source_order_violation"]
+        )
+        if not status["ok"]:
+            raise RuntimeError("V3 smoke M2 did not preserve the frozen correctness invariants")
+    except Exception as exc:
+        status["error"] = repr(exc)
+        status["traceback_tail"] = traceback.format_exc().splitlines()[-30:]
+        raise
+    finally:
+        status["finished_at"] = datetime.now(timezone.utc).isoformat()
+        write_json(status_path, status)
+    print(json.dumps(status, ensure_ascii=False, indent=2))
+
+
 def _formal_plan() -> list[dict[str, Any]]:
     path = ARTIFACTS / "final" / "run_plan.jsonl"
     return [json.loads(line) for line in path.read_text(encoding="utf-8").splitlines() if line.strip()]
@@ -1188,6 +1297,13 @@ def main() -> None:
     smoke.add_argument("--reference-attempt")
     smoke.add_argument("--arrival-interval-ms", type=int, default=0)
     smoke.set_defaults(func=cmd_smoke)
+    v3_smoke = sub.add_parser("v3-smoke")
+    v3_smoke.add_argument("--data", required=True)
+    v3_smoke.add_argument("--question-id")
+    v3_smoke.add_argument("--attempt", default="v3smoke01")
+    v3_smoke.add_argument("--reference-attempt")
+    v3_smoke.add_argument("--arrival-interval-ms", type=int, default=0)
+    v3_smoke.set_defaults(func=cmd_v3_smoke)
     execute = sub.add_parser("execute")
     execute.add_argument("--data", required=True)
     execute.add_argument("--max-runs", type=int)
@@ -1203,6 +1319,10 @@ def main() -> None:
     run.add_argument("--lane", default="ad_hoc")
     run.add_argument("--mode", choices=["live", "capture", "replay"], default="live")
     run.set_defaults(func=cmd_run)
+    v2 = sub.add_parser("v2-oracle-integration")
+    v2.add_argument("--attempt", default=V2_ORACLE_CACHE_ID)
+    v2.add_argument("--arrival-interval-ms", type=int, default=0)
+    v2.set_defaults(func=cmd_v2_oracle_integration)
     analyze = sub.add_parser("analyze")
     analyze.add_argument("--bootstrap-samples", type=int, default=10_000)
     analyze.set_defaults(func=cmd_analyze)

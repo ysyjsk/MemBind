@@ -1,0 +1,70 @@
+{
+  "attempt": "gpt55_temporary_001",
+  "checked_at": "2026-08-08T08:37:14.222070+00:00",
+  "dependencies": {
+    "embedding": {
+      "artifact": "gpt55_temporary/artifacts/diagnostics/gpt55_temporary_001_embedding_preflight.json",
+      "base_url_origin": "http://10.87.5.247:8001/v1",
+      "embedding_error_preview": "URLError(ConnectionRefusedError(111, 'Connection refused'))",
+      "embedding_error_type": "URLError",
+      "embedding_status": null,
+      "model": "qwen3-embedding-0.6b",
+      "models_error_preview": "URLError(ConnectionRefusedError(111, 'Connection refused'))",
+      "models_error_type": "URLError",
+      "models_status": null,
+      "ok": false,
+      "sha256": "3733467f9f4d1c4378bb4721eca36e77211041a6af0cefc753f5292930add03c"
+    },
+    "gpt55_chat": {
+      "artifact": "gpt55_temporary/artifacts/diagnostics/gpt55_temporary_001_labforge_standalone_preflight.json",
+      "classification": "success",
+      "latency_ms": 6633.4,
+      "ok": true,
+      "sha256": "0811a854993f9a39b9de2ad5433808f6482fbd34b3214040cd39cbfc4bb1f429",
+      "status": 200
+    },
+    "gpt55_models": {
+      "classification": "success",
+      "ok": true,
+      "status": 200
+    },
+    "neo4j": {
+      "artifact": "artifacts/environment/neo4j_daemon_status.json",
+      "bolt_open": true,
+      "http_open": true,
+      "ok": true,
+      "phase": "already_ready",
+      "sha256": "4834e16ac35a548ab391b4e5afb75b4ea866ddd309341368148472787787af43"
+    }
+  },
+  "lane": "gpt55_temporary_diagnostic",
+  "live_graphiti_started": false,
+  "next_step": "Restart or expose the embedding vLLM service at EMBEDDING_BASE_URL, then rerun with a fresh attempt id; do not reuse partial caches.",
+  "ok": false,
+  "reason": "embedding endpoint refused TCP connection; Graphiti live M0 requires embeddings and was not started",
+  "schema_version": "membind.gpt55_temporary.blocker.v1",
+  "selected_question_id": "07741c45",
+  "status": "blocked_dependency",
+  "tdd": {
+    "compileall": {
+      "artifact": "gpt55_temporary/artifacts/tdd/gpt55_temporary_compile_green_20260808_continue.log",
+      "ok": true,
+      "sha256": "e3b0c44298fc1c149afbf4c8996fb92427ae41e4649b934ca495991b7852b855"
+    },
+    "current_validation_plan": {
+      "artifact": "gpt55_temporary/artifacts/tdd/current_validation_plan_green_20260808_continue.log",
+      "ok": true,
+      "sha256": "ffb31e17ace2df8de204af45d861c163f3199cdb74cbb9555c5e632151e0c910"
+    },
+    "root_isolation_tests": {
+      "artifact": "gpt55_temporary/artifacts/tdd/gpt55_temporary_root_isolation_green_20260808_continue.log",
+      "ok": true,
+      "sha256": "190206de365f6e101a5361ed58bc0d9faaf76fb33b540df918723c2680618ceb"
+    },
+    "temporary_lane_tests": {
+      "artifact": "gpt55_temporary/artifacts/tdd/gpt55_temporary_tests_green_20260808_continue.log",
+      "ok": true,
+      "sha256": "f8d4ad99d1d27c8b301d463305bcdc43aace3b61beb6166c5cfb1f5c74d5f6af"
+    }
+  }
+}

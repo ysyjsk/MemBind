@@ -217,7 +217,7 @@ class ContractSourceTests(TestCase):
             },
         )
 
-    def test_primary_protocol_integrates_v1_1_replacement_clauses(self):
+    def test_v1_1_replacement_clauses_are_retained_as_history_only(self):
         protocol = (ROOT.parent / "MemBind_basic_validation_experiment.md").read_text(
             encoding="utf-8"
         )
@@ -236,7 +236,6 @@ class ContractSourceTests(TestCase):
             "instrumentation_overhead_limit: 0.02",
             "Upstream-Native-Serial",
             "Deterministic-Native-Serial",
-            "MECHANISM_SUPPORTED",
         )
         for contract in required_contracts:
             with self.subTest(contract=contract):
@@ -247,6 +246,10 @@ class ContractSourceTests(TestCase):
             protocol,
             r"(?s)global shuffle.*(?:replaced|替换).*blocked randomization",
         )
+        self.assertIn("历史背景；非当前执行计划", protocol)
+        self.assertIn("不得再被解释为当前", protocol)
+        self.assertIn("最终只输出 GO / INCONCLUSIVE / NO-GO", protocol)
+        self.assertNotIn("MECHANISM_SUPPORTED", protocol)
 
     def test_v1_1_does_not_change_frozen_core_contracts(self):
         protocol = (ROOT.parent / "MemBind_basic_validation_experiment.md").read_text(

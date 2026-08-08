@@ -13,7 +13,13 @@ from pathlib import Path
 from typing import Any, Awaitable, Callable
 
 from dataset import build_episodes
-from embedding_cache import embedding_metrics
+from embedding_cache import (
+    EmbeddingCache,
+    EmbeddingNamespace,
+    UnexpectedEmbeddingError,
+    embedding_metrics,
+    unexpected_embedding_records,
+)
 from graphiti_membind import M2_MEMBIND_GO_C8, run_membind_go
 from graphiti_native import (
     M0_NATIVE_SERIAL,
@@ -29,7 +35,13 @@ from graphiti_native import (
 from instrumentation import install_driver_instrumentation
 from live_outputs import evaluate_retrieval, export_canonical_graph
 from live_runtime import clear_database, close, count_nodes, prepare_clean_graph
-from response_cache import PromptCache
+from embedding_identity import validate_embedding_model_manifest
+from model_oracle_audit import (
+    model_oracle_audit_payload,
+    model_oracle_phase,
+    write_model_oracle_audit,
+)
+from response_cache import PromptCache, UnexpectedPromptError
 from search_forensics import search_forensic_payload
 from tracing import JsonlTraceWriter
 
@@ -61,6 +73,58 @@ def cache_for_spec(spec: dict[str, Any], artifacts: Path) -> PromptCache | None:
     raise ValueError(f"unknown run mode: {mode}")
 
 
+def _embedding_namespace_for_spec(
+    spec: dict[str, Any], artifacts: Path
+) -> EmbeddingNamespace:
+    value = spec.get("embedding_namespace")
+    if value is None:
+        manifest_path = (
+            artifacts / "environment" / "embedding_model_fingerprint.json"
+        )
+        if not manifest_path.is_file():
+            raise FileNotFoundError(
+                "missing immutable embedding model fingerprint: "
+                + str(manifest_path)
+            )
+        try:
+            manifest = json.loads(manifest_path.read_text(encoding="utf-8"))
+        except json.JSONDecodeError as exc:
+            raise ValueError("invalid embedding model fingerprint JSON") from exc
+        namespace = validate_embedding_model_manifest(manifest)
+    else:
+        namespace = EmbeddingNamespace.from_dict(value)
+    if namespace.dimension != 1024:
+        raise ValueError(
+            "formal correctness embedding namespace dimension must be 1024"
+        )
+    return namespace
+
+
+def embedding_cache_for_spec(
+    spec: dict[str, Any], artifacts: Path
+) -> EmbeddingCache | None:
+    mode = str(spec.get("mode", "live"))
+    if mode == "live":
+        return None
+    namespace = _embedding_namespace_for_spec(spec, artifacts)
+    cache_id = str(spec.get("cache_id") or spec["question_id"])
+    path = artifacts / "embedding_cache" / f"{cache_id}.jsonl"
+    if mode == "capture":
+        if path.exists():
+            raise RunArtifactExists(f"embedding capture cache already exists: {path}")
+        try:
+            return EmbeddingCache(path, read_only=False, namespace=namespace)
+        except FileExistsError as exc:
+            raise RunArtifactExists(
+                f"embedding capture cache already exists: {path}"
+            ) from exc
+    if mode == "replay":
+        if not path.exists():
+            raise FileNotFoundError(f"missing embedding capture cache: {path}")
+        return EmbeddingCache(path, read_only=True, namespace=namespace)
+    raise ValueError(f"unknown run mode: {mode}")
+
+
 async def run_experiment(
     spec: dict[str, Any],
     instance: dict[str, Any],
@@ -73,6 +137,7 @@ async def run_experiment(
     graph_exporter: Callable[..., Awaitable[dict[str, Any]]] = export_canonical_graph,
     retrieval_evaluator: Callable[..., Awaitable[dict[str, Any]]] = evaluate_retrieval,
     collect_outputs: bool = True,
+    model_oracle_audit_path: str | Path | None = None,
 ) -> dict[str, Any]:
     artifacts = Path(artifacts)
     run_id = str(spec["run_id"])
@@ -83,8 +148,13 @@ async def run_experiment(
         "retrieval": artifacts / "retrieval" / f"{run_id}.json",
         "llm_failures": artifacts / "llm_failures" / f"{run_id}.json",
         "unexpected_prompts": artifacts / "unexpected_prompts" / f"{run_id}.json",
+        "unexpected_embeddings": artifacts
+        / "unexpected_embeddings"
+        / f"{run_id}.json",
         "search_forensics": artifacts / "search_forensics" / f"{run_id}.json",
     }
+    if model_oracle_audit_path is not None:
+        paths["model_oracle_audit"] = Path(model_oracle_audit_path)
     _assert_fresh(paths.values())
 
     started_wall = datetime.now(timezone.utc)
@@ -102,40 +172,82 @@ async def run_experiment(
     graphiti = None
     failure: Exception | None = None
     cleanup_errors: list[str] = []
+    oracle_miss: UnexpectedPromptError | UnexpectedEmbeddingError | None = None
+    audit_written = False
     try:
         prompt_cache = cache_for_spec(spec, artifacts)
+        embedding_cache = embedding_cache_for_spec(spec, artifacts)
         await (service_checker or wait_for_model_services)()
-        graphiti = graphiti_factory(prompt_cache=prompt_cache)
+        graphiti = graphiti_factory(
+            prompt_cache=prompt_cache,
+            embedding_cache=embedding_cache,
+        )
         install_driver_instrumentation(graphiti)
-        await prepare_clean_graph(graphiti, _warm_up_episode)
+        with model_oracle_phase("warmup"):
+            await prepare_clean_graph(graphiti, _warm_up_episode)
 
         episodes = build_episodes(instance)
         trace_writer = JsonlTraceWriter(paths["trace"])
-        await _run_method(
-            spec,
-            graphiti,
-            episodes,
-            int(arrival_interval_ms),
-            trace_writer,
-            method_runners,
-        )
+        with model_oracle_phase("construction"):
+            await _run_method(
+                spec,
+                graphiti,
+                episodes,
+                int(arrival_interval_ms),
+                trace_writer,
+                method_runners,
+            )
 
         status["episode_count"] = len(episodes)
         status["llm_metrics"] = llm_metrics(graphiti.llm_client)
         status["embedding_metrics"] = embedding_metrics(graphiti.embedder)
         if collect_outputs:
             graph = await graph_exporter(graphiti, episodes, str(spec["question_id"]))
-            retrieval = await retrieval_evaluator(graphiti, instance, episodes)
+            with model_oracle_phase("final_retrieval"):
+                retrieval = await retrieval_evaluator(graphiti, instance, episodes)
             _write_json(paths["graph"], graph)
             _write_json(paths["retrieval"], retrieval)
             status["canonical_graph_hash"] = graph.get("canonical_graph_hash")
             status["retrieval_metrics"] = retrieval.get("metrics", {})
+        if model_oracle_audit_path is not None:
+            audit = write_model_oracle_audit(
+                graphiti.cross_encoder,
+                paths["model_oracle_audit"],
+                run_id=run_id,
+            )
+            audit_written = True
+            status["model_oracle_audit_path"] = str(paths["model_oracle_audit"])
+            status["rank_call_count"] = audit["rank_call_count"]
     except Exception as exc:
         failure = exc
-        status["error"] = repr(exc)
-        status["traceback_tail"] = traceback.format_exc().splitlines()[-30:]
+        if isinstance(exc, (UnexpectedPromptError, UnexpectedEmbeddingError)):
+            oracle_miss = exc
+            status["error"] = f"{type(exc).__name__}: {exc}"
+            status["traceback_tail"] = [status["error"]]
+            status["oracle_type"] = (
+                "embedding"
+                if isinstance(exc, UnexpectedEmbeddingError)
+                else "llm"
+            )
+        else:
+            status["error"] = repr(exc)
+            status["traceback_tail"] = traceback.format_exc().splitlines()[-30:]
     finally:
         if graphiti is not None:
+            if model_oracle_audit_path is not None and not audit_written:
+                try:
+                    audit = write_model_oracle_audit(
+                        graphiti.cross_encoder,
+                        paths["model_oracle_audit"],
+                        run_id=run_id,
+                    )
+                    audit_written = True
+                    status["model_oracle_audit_path"] = str(paths["model_oracle_audit"])
+                    status["rank_call_count"] = audit["rank_call_count"]
+                except Exception as exc:
+                    cleanup_errors.append("model oracle audit: " + repr(exc))
+                    if failure is None:
+                        failure = exc
             status.setdefault("llm_metrics", llm_metrics(graphiti.llm_client))
             status.setdefault("embedding_metrics", embedding_metrics(graphiti.embedder))
             forensic_payload = search_forensic_payload(graphiti.driver)
@@ -155,6 +267,16 @@ async def run_experiment(
                 status["unexpected_prompt_count"] = len(prompt_diagnostics)
                 status["unexpected_prompt_diagnostics_path"] = str(
                     paths["unexpected_prompts"]
+                )
+            embedding_diagnostics = unexpected_embedding_records(graphiti.embedder)
+            if embedding_diagnostics:
+                _write_json(
+                    paths["unexpected_embeddings"],
+                    {"run_id": run_id, "diagnostics": embedding_diagnostics},
+                )
+                status["unexpected_embedding_count"] = len(embedding_diagnostics)
+                status["unexpected_embedding_diagnostics_path"] = str(
+                    paths["unexpected_embeddings"]
                 )
             try:
                 await clear_database(graphiti)
@@ -177,11 +299,44 @@ async def run_experiment(
     status["elapsed_ms"] = (time.monotonic_ns() - started_ns) / 1_000_000
     if cleanup_errors:
         status["cleanup_errors"] = cleanup_errors
-    status["status"] = "failed" if failure is not None else "success"
+    if graphiti is not None:
+        status["llm_metrics"] = llm_metrics(graphiti.llm_client)
+        status["embedding_metrics"] = embedding_metrics(graphiti.embedder)
+        if hasattr(graphiti, "cross_encoder"):
+            audit = model_oracle_audit_payload(
+                graphiti.cross_encoder,
+                run_id=run_id,
+            )
+            status["rank_call_count"] = audit["rank_call_count"]
+    m1_path_divergence = (
+        oracle_miss is not None
+        and str(spec.get("method")) == M1_WHOLE_PARALLEL_C8
+        and not cleanup_errors
+    )
+    if m1_path_divergence:
+        status.update(
+            {
+                "status": "completed_with_divergence",
+                "outcome": "execution_path_divergence",
+                "final_semantic_parity": "not_evaluable_due_to_oracle_miss",
+                "live_fallback": False,
+            }
+        )
+    else:
+        status["status"] = "failed" if failure is not None else "success"
+        if oracle_miss is not None:
+            status.update(
+                {
+                    "outcome": "model_oracle_input_divergence",
+                    "blocks_performance": str(spec.get("method"))
+                    == M2_MEMBIND_GO_C8,
+                    "live_fallback": False,
+                }
+            )
     if failure is not None and "error" not in status:
         status["error"] = repr(failure)
     _write_json(paths["status"], status)
-    if failure is not None:
+    if failure is not None and not m1_path_divergence:
         raise ExperimentRunFailed(status) from failure
     return status
 

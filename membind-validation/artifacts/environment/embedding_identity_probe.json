@@ -1,0 +1,26 @@
+{
+  "blocks_v2_live_integration": true,
+  "checked_at": "2026-08-07T16:02:27.289257+00:00",
+  "endpoint_reported_revision": null,
+  "identity_kind": null,
+  "identity_value": null,
+  "probe_mode": "read_only_endpoint_metadata",
+  "rejected_identity_sources": [
+    "served_alias",
+    "endpoint_url",
+    "model_root_path",
+    "vllm_version",
+    "behavior_probe"
+  ],
+  "reported_max_model_len": 32768,
+  "reported_model_root": "/home/lhx/liuyi/models/Qwen3-Embedding-0.6B",
+  "required_identity_sources": [
+    "endpoint_reported_revision",
+    "operator_supplied_immutable_deployment_fingerprint"
+  ],
+  "required_operator_action": "supply a SHA256 deployment fingerprint derived from the immutable model/config/tokenizer/weight-index manifest and launch config",
+  "schema_version": "membind.embedding_identity_probe.v1",
+  "served_model_id": "qwen3-embedding-0.6b",
+  "status": "blocked_missing_immutable_identity",
+  "vllm_version": "0.26.0"
+}

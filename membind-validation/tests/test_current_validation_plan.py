@@ -24,17 +24,65 @@ class CurrentValidationPlanTests(TestCase):
         self.assertIn("V1 Correctness nondeterminism closure", protocol)
         self.assertIn("V1 Correctness nondeterminism closure", execution)
 
-    def test_current_state_allows_only_the_bounded_v1_diagnostic(self):
+    def test_current_state_advances_to_v3_only_after_persisted_v2_pass(self):
         state = json.loads((ROOT / "CURRENT_STATE.json").read_text(encoding="utf-8"))
+        diagnostic = json.loads(
+            (
+                ROOT
+                / "artifacts"
+                / "diagnostics"
+                / "embedding_nondeterminism_source5.json"
+            ).read_text(encoding="utf-8")
+        )
 
         self.assertEqual(state["protocol_version"], "current-validation-v1.2")
-        self.assertEqual(state["current_stage"], "V1")
-        self.assertEqual(state["status"], "in_progress")
-        self.assertIn("retained source-5 artifacts", state["next_allowed_action"])
-        self.assertIn("not_computable", state["next_allowed_action"])
+        self.assertEqual(state["current_stage"], "V3")
+        self.assertEqual(state["status"], "ready_for_full_correctness_smoke")
+        self.assertEqual(
+            diagnostic["v1_gate"]["status"],
+            "pass_with_explicit_evidence_limits",
+        )
+        self.assertEqual(
+            state["completed_stages"]["V1"]["artifact_sha256"],
+            "58651ad4a343678934ed88225bafe6ad284bce116680d7dac6e04bfa79691b5c",
+        )
+        self.assertEqual(
+            state["stage_progress"]["embedding_oracle_unit_contracts"],
+            "pass",
+        )
+        self.assertEqual(
+            state["stage_progress"]["full_unit_regression"],
+            "pass",
+        )
+        self.assertEqual(state["completed_stages"]["V2"]["status"], "pass")
+        self.assertEqual(state["stage_progress"]["embedding_identity"], "operator_fingerprint_persisted")
+        self.assertEqual(
+            state["stage_progress"]["embedding_runtime_config"],
+            "pass",
+        )
+        self.assertEqual(
+            state["stage_progress"]["runtime_cross_encoder_audit"],
+            "pass_not_invoked",
+        )
+        self.assertEqual(
+            state["evidence"]["embedding_identity_probe_sha256"],
+            "c693905ad3db6d95575a191efa38848f3a4b976606eebff5195d6c42b49276ac",
+        )
+        self.assertEqual(
+            state["evidence"]["embedding_model_fingerprint_sha256"],
+            "389fb4c9cf87217c333741170c9162cf7353cb05026de510685b27fa336299d0",
+        )
+        self.assertEqual(
+            state["evidence"]["v2_oracle_integration_verification_sha256"],
+            "ef9c20578a9ab418630e650cca76d2b7c3c75601f56fa440eb698b947f1a12aa",
+        )
+        self.assertIn(
+            "V3",
+            state["next_allowed_action"],
+        )
         self.assertEqual(
             state["forbidden_until_pass"],
-            ["V2", "V3", "V4", "V5", "V6", "future_work"],
+            ["V4", "V5", "V6", "future_work"],
         )
 
     def test_v1_closes_from_retained_artifacts_without_live_recapture(self):
@@ -217,6 +265,20 @@ class CurrentValidationPlanTests(TestCase):
         self.assertIn("不要求跨 run bitwise-identical vectors", protocol)
         self.assertIn("endpoint-reported revision", protocol)
         self.assertIn("operator-supplied immutable deployment fingerprint", protocol)
+
+    def test_v2_pilot_boundary_matches_bounded_integration_harness(self):
+        current = (REPO / "MemBind_CURRENT_VALIDATION_PLAN_v1.2.md").read_text(
+            encoding="utf-8"
+        )
+        protocol = (REPO / "MemBind_basic_validation_experiment.md").read_text(
+            encoding="utf-8"
+        )
+        execution = (ROOT / "EXPERIMENT_PLAN.md").read_text(encoding="utf-8")
+        for text in (current, protocol, execution):
+            self.assertIn("M0 capture", text)
+            self.assertIn("M0 read-only replay", text)
+            self.assertIn("v2-oracle-integration", text)
+        self.assertIn("V3", execution)
 
     def test_m1_completion_order_is_diagnostic_not_semantic_failure(self):
         protocol = (REPO / "MemBind_basic_validation_experiment.md").read_text(

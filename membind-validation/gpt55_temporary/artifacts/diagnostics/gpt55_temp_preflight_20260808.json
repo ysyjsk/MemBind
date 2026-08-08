@@ -1,0 +1,84 @@
+{
+  "artifact_type": "labforge_openai_compatibility_diagnostic",
+  "base_url_origin": "https://api.labforge.cc",
+  "base_url_path": "/v1",
+  "credential_fingerprint": "sha256:e5d1c4eddaccf32a",
+  "default_user_agent": "OpenAI/Python 1.0.0",
+  "proxy": {
+    "HTTPS_PROXY": "http://127.0.0.1:17897",
+    "HTTP_PROXY": "http://127.0.0.1:17897",
+    "NO_PROXY": "127.0.0.1,localhost"
+  },
+  "tests": [
+    {
+      "authenticated": false,
+      "body_preview": "{\"error\":{\"code\":\"\",\"message\":\"Invalid token (request id: 202608080820385677116358268d9d6a6GdDuny)\",\"type\":\"new_api_error\"}}",
+      "body_sha256": "61ec129049ba565188b828572bce656bb183500a6c0128bb6249eb99cdb050c3",
+      "classification": "application_reached_invalid_token",
+      "latency_ms": 1428.5,
+      "method": "GET",
+      "name": "models_unauthenticated_openai_ua",
+      "path": "/models",
+      "response_headers": {
+        "cf-ray": "a27d1a5a9dfb9d09-SJC",
+        "content-length": "124",
+        "content-type": "application/json; charset=utf-8",
+        "server": "cloudflare"
+      },
+      "status": 401
+    },
+    {
+      "authenticated": true,
+      "body_preview": "{\"data\":[{\"id\":\"gpt-5.4-mini\",\"object\":\"model\",\"created\":1626777600,\"owned_by\":\"custom\",\"supported_endpoint_types\":[\"openai-response\",\"openai\"]},{\"id\":\"gpt-5.5-openai-compact\",\"object\":\"model\",\"created\":1626777600,\"owned_by\":\"custom\",\"supported_endpoint_types\":[\"openai-response\",\"openai\"]},{\"id\":\"gpt-5.4\",\"object\":\"model\",\"created\":1626777600,\"owned_by\":\"codex\",\"supported_endpoint_types\":[\"openai-response\",\"openai\"]},{\"id\":\"gpt-5.6-terra\",\"object\":\"model\",\"created\":1626777600,\"owned_by\":\"custom\"",
+      "body_sha256": "e53426ae05765eab17e499fa955ecad5139feccab1603dc3b817e248977d39fb",
+      "classification": "success",
+      "latency_ms": 965.2,
+      "method": "GET",
+      "name": "models_authenticated_openai_ua",
+      "path": "/models",
+      "response_headers": {
+        "cf-ray": "a27d1a615b89b860-LAX",
+        "content-length": "1133",
+        "content-type": "application/json; charset=utf-8",
+        "server": "cloudflare"
+      },
+      "status": 200
+    },
+    {
+      "authenticated": true,
+      "body_preview": "{\"id\":\"resp_0ce3122379217afe016a76e6dcb89481919dc5ecaf3e572dd0\",\"object\":\"chat.completion\",\"created\":1786177247,\"model\":\"gpt-5.5\",\"choices\":[{\"index\":0,\"message\":{\"role\":\"assistant\",\"content\":\"OK\"},\"finish_reason\":\"stop\"}],\"usage\":{\"prompt_tokens\":147,\"completion_tokens\":34,\"total_tokens\":181,\"completion_tokens_details\":{\"reasoning_tokens\":27}}}",
+      "body_sha256": "f6a0c4e66130781708689bdd5ac11be8e3cb2aa56ef7e9eeaed850be4a83db65",
+      "classification": "success",
+      "latency_ms": 8295.1,
+      "method": "POST",
+      "name": "chat_model_openai_ua",
+      "path": "/chat/completions",
+      "response_headers": {
+        "cf-ray": "a27d1a67d9731b51-SJC",
+        "content-length": "347",
+        "content-type": "application/json",
+        "server": "cloudflare",
+        "x-request-id": "5a100640-f4c7-436e-9e5c-9ac9edb1bcf1"
+      },
+      "status": 200
+    },
+    {
+      "authenticated": true,
+      "body_preview": "{\"background\":false,\"completed_at\":1786177253,\"created_at\":1786177252,\"error\":null,\"frequency_penalty\":0,\"id\":\"resp_0080fe3d60b9ec57016a76e6e484e48193b49f692450f6de85\",\"incomplete_details\":null,\"instructions\":\"You are Codex, a coding agent based on GPT-5. You and the user share one workspace, and your job is to collaborate with them until their goal is genuinely handled.\\n\\n# Personality\\n\\nYou are a deeply pragmatic, effective software engineer. You take engineering quality seriously, and colla",
+      "body_sha256": "e406a76e30790214a5b33acd1499337505b0367eda4c1b14a0b15ab95aa4dbd3",
+      "classification": "success",
+      "latency_ms": 6878.0,
+      "method": "POST",
+      "name": "responses_model_openai_ua",
+      "path": "/responses",
+      "response_headers": {
+        "cf-ray": "a27d1aa16cfbc236-SJC",
+        "content-length": "24225",
+        "content-type": "application/json",
+        "server": "cloudflare",
+        "x-request-id": "6af1dcdc-2fd3-4e7d-a6b4-e26dbb06727a"
+      },
+      "status": 200
+    }
+  ]
+}

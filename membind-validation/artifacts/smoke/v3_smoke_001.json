@@ -1,0 +1,50 @@
+{
+  "attempt": "v3_smoke_001",
+  "cache_id": "v3_smoke_v3_smoke_001_c6853660",
+  "error": "ExperimentRunFailed(\"experiment run v3_smoke_v3_smoke_001_M0_c6853660 failed: APIConnectionError('Connection error.')\")",
+  "finished_at": "2026-08-08T04:14:06.757325+00:00",
+  "forbidden_methods": [
+    "M1"
+  ],
+  "ok": false,
+  "question_id": "c6853660",
+  "reference_attempt": "v3_smoke_001",
+  "run_ids": {
+    "M0": "v3_smoke_v3_smoke_001_M0_c6853660",
+    "M2": "v3_smoke_v3_smoke_001_M2_c6853660"
+  },
+  "stage": "V3",
+  "started_at": "2026-08-08T03:39:11.298302+00:00",
+  "traceback_tail": [
+    "  File \"/data/predator/ly/MemBind/membind-validation/.venv/lib/python3.12/site-packages/openai/resources/chat/completions/completions.py\", line 2907, in create",
+    "    return await self._post(",
+    "           ^^^^^^^^^^^^^^^^^",
+    "  File \"/data/predator/ly/MemBind/membind-validation/.venv/lib/python3.12/site-packages/openai/_base_client.py\", line 1992, in post",
+    "    return await self.request(cast_to, opts, stream=stream, stream_cls=stream_cls)",
+    "           ^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^",
+    "  File \"/data/predator/ly/MemBind/membind-validation/.venv/lib/python3.12/site-packages/openai/_base_client.py\", line 1744, in request",
+    "    raise APIConnectionError(request=request) from err",
+    "openai.APIConnectionError: Connection error.",
+    "",
+    "The above exception was the direct cause of the following exception:",
+    "",
+    "Traceback (most recent call last):",
+    "  File \"/data/predator/ly/MemBind/membind-validation/src/replay_driver.py\", line 1088, in cmd_v3_smoke",
+    "    asyncio.run(",
+    "  File \"/usr/lib/python3.12/asyncio/runners.py\", line 194, in run",
+    "    return runner.run(main)",
+    "           ^^^^^^^^^^^^^^^^",
+    "  File \"/usr/lib/python3.12/asyncio/runners.py\", line 118, in run",
+    "    return self._loop.run_until_complete(task)",
+    "           ^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^",
+    "  File \"/usr/lib/python3.12/asyncio/base_events.py\", line 687, in run_until_complete",
+    "    return future.result()",
+    "           ^^^^^^^^^^^^^^^",
+    "  File \"/data/predator/ly/MemBind/membind-validation/src/replay_driver.py\", line 763, in run_one",
+    "    return await run_experiment(",
+    "           ^^^^^^^^^^^^^^^^^^^^^",
+    "  File \"/data/predator/ly/MemBind/membind-validation/src/experiment_runner.py\", line 340, in run_experiment",
+    "    raise ExperimentRunFailed(status) from failure",
+    "experiment_runner.ExperimentRunFailed: experiment run v3_smoke_v3_smoke_001_M0_c6853660 failed: APIConnectionError('Connection error.')"
+  ]
+}

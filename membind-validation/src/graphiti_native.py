@@ -196,13 +196,14 @@ def decoding_config_from_env() -> dict[str, Any]:
     }
 
 
-def wrap_prompt_cache(inner: Any, prompt_cache: Any) -> Any:
+def wrap_prompt_cache(inner: Any, prompt_cache: Any, model_revision: str | None = None) -> Any:
     from response_cache import GraphitiPromptCacheLLM
 
     return GraphitiPromptCacheLLM(
         inner,
         prompt_cache,
-        os.environ.get("CONSTRUCTION_MODEL_REVISION", CONSTRUCTION_MODEL_REVISION),
+        model_revision
+        or os.environ.get("CONSTRUCTION_MODEL_REVISION", CONSTRUCTION_MODEL_REVISION),
         decoding_config_from_env(),
     )
 
@@ -285,7 +286,10 @@ def unexpected_prompt_records(llm_client: Any) -> list[dict[str, Any]]:
     return list(getattr(cache, "unexpected_prompt_diagnostics", []) or [])
 
 
-def build_qwen_graphiti_from_env(prompt_cache: Any | None = None) -> Any:
+def build_qwen_graphiti_from_env(
+    prompt_cache: Any | None = None,
+    embedding_cache: Any | None = None,
+) -> Any:
     load_env_file()
     from graphiti_core import Graphiti
     from graphiti_core.cross_encoder.openai_reranker_client import OpenAIRerankerClient
@@ -298,6 +302,7 @@ def build_qwen_graphiti_from_env(prompt_cache: Any | None = None) -> Any:
         install_node_resolution_stabilizer,
     )
     from embedding_cache import CachingCountingEmbedder
+    from model_oracle_audit import CrossEncoderAuditWrapper
 
     install_edge_search_stabilizer()
     install_node_resolution_stabilizer()
@@ -322,7 +327,10 @@ def build_qwen_graphiti_from_env(prompt_cache: Any | None = None) -> Any:
         structured_output_mode="json_schema",
     )
     if prompt_cache is not None:
-        llm_client = wrap_prompt_cache(llm_client, prompt_cache)
+        llm_client = wrap_prompt_cache(
+            llm_client,
+            prompt_cache,
+        )
 
     embed_base_url = os.environ.get("EMBEDDING_BASE_URL", "http://10.87.5.247:8001/v1")
     if not embed_base_url:
@@ -335,9 +343,10 @@ def build_qwen_graphiti_from_env(prompt_cache: Any | None = None) -> Any:
                 embedding_model=os.environ.get("EMBEDDING_MODEL", "qwen3-embedding-0.6b"),
                 embedding_dim=int(os.environ.get("EMBEDDING_DIM", "1024")),
             )
-        )
+        ),
+        persistent_cache=embedding_cache,
     )
-    reranker = OpenAIRerankerClient(config=llm_config)
+    reranker = CrossEncoderAuditWrapper(OpenAIRerankerClient(config=llm_config))
     graphiti = Graphiti(
         uri=os.environ.get("NEO4J_URI", "bolt://localhost:7687"),
         user=os.environ.get("NEO4J_USER", "neo4j"),
@@ -356,9 +365,12 @@ class QwenVLLMClient:
     def __new__(cls, *args: Any, **kwargs: Any) -> Any:
         from graphiti_core.llm_client.openai_generic_client import OpenAIGenericClient
 
+        vllm_options_enabled = bool(kwargs.pop("vllm_options_enabled", True))
+
         class Client(OpenAIGenericClient):  # type: ignore[misc]
             def __init__(self, *client_args: Any, **client_kwargs: Any) -> None:
                 super().__init__(*client_args, **client_kwargs)
+                self.vllm_options_enabled = vllm_options_enabled
                 self.call_count = 0
                 self.parse_failure_count = 0
                 self.structured_request_count = 0
@@ -402,16 +414,20 @@ class QwenVLLMClient:
                 attempted_budgets: set[int] = set()
 
                 async def create_response(budget: int) -> Any:
-                    return await self.client.chat.completions.create(
-                            model=self.model,
-                            messages=openai_messages,
-                            temperature=self.temperature,
-                            top_p=float(os.environ.get("CONSTRUCTION_TOP_P", "1.0")),
-                            max_tokens=budget,
-                            seed=int(os.environ.get("CONSTRUCTION_SEED", "20260806")),
-                            response_format=response_format,
-                            extra_body={"chat_template_kwargs": {"enable_thinking": False}},
-                        )
+                    request: dict[str, Any] = {
+                        "model": self.model,
+                        "messages": openai_messages,
+                        "temperature": self.temperature,
+                        "top_p": float(os.environ.get("CONSTRUCTION_TOP_P", "1.0")),
+                        "max_tokens": budget,
+                        "response_format": response_format,
+                    }
+                    if self.vllm_options_enabled:
+                        request["seed"] = int(os.environ.get("CONSTRUCTION_SEED", "20260806"))
+                        request["extra_body"] = {
+                            "chat_template_kwargs": {"enable_thinking": False}
+                        }
+                    return await self.client.chat.completions.create(**request)
 
                 for configured_budget in budgets:
                     budget = min(configured_budget, context_budget) if context_budget else configured_budget

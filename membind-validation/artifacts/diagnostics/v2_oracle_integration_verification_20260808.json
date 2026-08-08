@@ -1,0 +1,77 @@
+{
+  "artifact_sha256": {
+    "artifacts/diagnostics/model_oracle_audit.json": "ae0680d40dfadf5004efe60cd4700cc65b79c792be0e6901398a146aa00d63ba",
+    "artifacts/diagnostics/v2_oracle_integration_001_summary.json": "1c2189bf284c09b68abf8e370e91e75f7971f9bc64f0734c872d1d466e896c79",
+    "artifacts/embedding_cache/v2_oracle_integration_001.jsonl": "a4caf68fafd98b5f240c924eae3ca0e20975fc9ece7d721fc5eae48d7904160c",
+    "artifacts/prompt_cache/v2_oracle_integration_001.jsonl": "204a3544b15b766947368252c3e11e0fca4907be2778c4c2620f1f220952f390",
+    "artifacts/runs/v2_oracle_integration_001_M0_capture.json": "a3bdb8bf80f3194e38cbc068160ff2b1cac96413ac4b35d557b4d36f08e279ee",
+    "artifacts/runs/v2_oracle_integration_001_M0_replay.json": "e076083aee6bee715a30f1ee8af4a63a4bf390fa7a7ce86e5c15a5923178f21f"
+  },
+  "cache_id": "v2_oracle_integration_001",
+  "canonical_graph_hash": "2daa5976f003bfa65e2e8c4bd3c0ea3cef101a2bf932535e7f432e45649e888b",
+  "capture_metrics": {
+    "elapsed_ms": 13631.981551,
+    "embedding": {
+      "embedding_cache_hits": 6,
+      "embedding_call_count": 4,
+      "embedding_oracle_misses": 0,
+      "embedding_oracle_successful_hits": 0,
+      "embedding_text_count": 5
+    },
+    "llm": {
+      "llm_call_count": 5,
+      "llm_input_tokens": 7043,
+      "llm_output_tokens": 161,
+      "llm_total_tokens": 7204,
+      "structured_parse_failures": 0,
+      "structured_request_count": 5,
+      "structured_response_failures": 0,
+      "unexpected_prompt": false
+    }
+  },
+  "checks": {
+    "cache_unchanged": true,
+    "capture_live_embedding_positive": true,
+    "capture_live_llm_positive": true,
+    "capture_success": true,
+    "cross_encoder_not_invoked": true,
+    "graph_hash_equal": true,
+    "neo4j_cleanup_zero": true,
+    "replay_live_embedding_zero": true,
+    "replay_live_llm_zero": true,
+    "replay_oracle_misses_zero": true,
+    "replay_success": true,
+    "retrieval_metrics_equal": true,
+    "summary_success": true
+  },
+  "replay_metrics": {
+    "elapsed_ms": 2250.651214,
+    "embedding": {
+      "embedding_cache_hits": 11,
+      "embedding_call_count": 0,
+      "embedding_oracle_misses": 0,
+      "embedding_oracle_successful_hits": 5,
+      "embedding_text_count": 0
+    },
+    "llm": {
+      "llm_call_count": 0,
+      "llm_input_tokens": 0,
+      "llm_output_tokens": 0,
+      "llm_total_tokens": 0,
+      "structured_parse_failures": 0,
+      "structured_request_count": 0,
+      "structured_response_failures": 0,
+      "unexpected_prompt": false
+    }
+  },
+  "retrieval_metrics": {
+    "evidence_recall_at_10": 1.0,
+    "evidence_recall_at_5": 1.0
+  },
+  "run_ids": [
+    "v2_oracle_integration_001_M0_capture",
+    "v2_oracle_integration_001_M0_replay"
+  ],
+  "schema_version": "membind.v2_oracle_integration_verification.v1",
+  "status": "pass"
+}

@@ -1,0 +1,43 @@
+{
+  "schema_version": "membind.embedding_runtime_dtype_evidence.v1",
+  "provided_by_operator": "lhx@ZJU-Pro6000",
+  "provided_at_local_time": "2026-08-08",
+  "evidence_mode": "operator_read_only_remote_proc_and_deployed_config_snapshot",
+  "remote_host": "10.87.5.247",
+  "deployment_root": "/home/lhx/liuyi/models/Qwen3-Embedding-0.6B",
+  "processes": [
+    {
+      "pid": 3512752,
+      "selected_args": {
+        "--dtype": "bfloat16",
+        "--model": null,
+        "--override-pooler-config": null,
+        "--pooler-config": null,
+        "--port": "8001",
+        "--revision": null,
+        "--served-model-name": "qwen3-embedding-0.6b",
+        "--task": null
+      }
+    }
+  ],
+  "deployed_config": {
+    "default_prompt_name": null,
+    "hidden_size": 1024,
+    "modules": [
+      "sentence_transformers.models.Transformer",
+      "sentence_transformers.models.Pooling",
+      "sentence_transformers.models.Normalize"
+    ],
+    "pooling_mode_lasttoken": true,
+    "torch_dtype": "bfloat16",
+    "word_embedding_dimension": 1024
+  },
+  "resolved_namespace_fields": {
+    "dtype": "bfloat16",
+    "pooling": "last_token",
+    "normalization": "l2",
+    "instruction_policy": "none",
+    "dimension": 1024
+  },
+  "secrets_persisted": false
+}

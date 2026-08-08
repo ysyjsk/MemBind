@@ -1,0 +1,65 @@
+{
+  "artifact_type": "labforge_openai_compatibility_diagnostic",
+  "base_url_origin": "https://api.labforge.cc",
+  "base_url_path": "/v1",
+  "credential_fingerprint": "sha256:e5d1c4eddaccf32a",
+  "default_user_agent": "OpenAI/Python 1.0.0",
+  "proxy": {
+    "HTTPS_PROXY": "http://127.0.0.1:17897",
+    "HTTP_PROXY": "http://127.0.0.1:17897",
+    "NO_PROXY": "127.0.0.1,localhost"
+  },
+  "tests": [
+    {
+      "authenticated": false,
+      "body_preview": "{\"error\":{\"code\":\"\",\"message\":\"Invalid token (request id: 202608081013265283862838268d9d6UGeA0vKW)\",\"type\":\"new_api_error\"}}",
+      "body_sha256": "d6f8f12f9e379eac19620a8f954bffb9d75ae2f2c2171d837ff425ce5fcb8da0",
+      "classification": "application_reached_invalid_token",
+      "latency_ms": 750.5,
+      "method": "GET",
+      "name": "models_unauthenticated_openai_ua",
+      "path": "/models",
+      "response_headers": {
+        "cf-ray": "a27dbf984c6cd942-LAX",
+        "content-length": "124",
+        "content-type": "application/json; charset=utf-8",
+        "server": "cloudflare"
+      },
+      "status": 401
+    },
+    {
+      "authenticated": true,
+      "body_preview": "{\"data\":[{\"id\":\"gpt-5.4-mini\",\"object\":\"model\",\"created\":1626777600,\"owned_by\":\"custom\",\"supported_endpoint_types\":[\"openai-response\",\"openai\"]},{\"id\":\"gpt-5.5-openai-compact\",\"object\":\"model\",\"created\":1626777600,\"owned_by\":\"custom\",\"supported_endpoint_types\":[\"openai-response\",\"openai\"]},{\"id\":\"gpt-5.4\",\"object\":\"model\",\"created\":1626777600,\"owned_by\":\"codex\",\"supported_endpoint_types\":[\"openai-response\",\"openai\"]},{\"id\":\"gpt-5.6-terra\",\"object\":\"model\",\"created\":1626777600,\"owned_by\":\"custom\"",
+      "body_sha256": "e53426ae05765eab17e499fa955ecad5139feccab1603dc3b817e248977d39fb",
+      "classification": "success",
+      "latency_ms": 778.1,
+      "method": "GET",
+      "name": "models_authenticated_openai_ua",
+      "path": "/models",
+      "response_headers": {
+        "cf-ray": "a27dbf9d1d3755da-LAX",
+        "content-length": "1133",
+        "content-type": "application/json; charset=utf-8",
+        "server": "cloudflare"
+      },
+      "status": 200
+    },
+    {
+      "authenticated": true,
+      "body_preview": "{\"id\":\"resp_0b9fd7af5b7a8390016a770148b2dc8194b7b247dc6031d6bd\",\"object\":\"chat.completion\",\"created\":1786184008,\"model\":\"gpt-5.5\",\"choices\":[{\"index\":0,\"message\":{\"role\":\"assistant\",\"content\":\"OK\",\"reasoning_content\":null,\"tool_calls\":null},\"finish_reason\":\"stop\",\"native_finish_reason\":\"stop\"}],\"usage\":{\"completion_tokens\":5,\"prompt_tokens\":4443,\"prompt_tokens_details\":{\"cached_tokens\":3840,\"cached_creation_tokens\":0},\"total_tokens\":4448,\"completion_tokens_details\":{\"reasoning_tokens\":0}}}",
+      "body_sha256": "d3e0fd8f87ac72749cb2f8900702d82b209c4e7446dcfe08db71ec2b16299733",
+      "classification": "success",
+      "latency_ms": 2095.0,
+      "method": "POST",
+      "name": "chat_model_openai_ua",
+      "path": "/chat/completions",
+      "response_headers": {
+        "cf-ray": "a27dbfa22904314f-LAX",
+        "content-length": "494",
+        "content-type": "application/json",
+        "server": "cloudflare"
+      },
+      "status": 200
+    }
+  ]
+}

@@ -1,0 +1,40 @@
+{
+  "artifact_type": "labforge_api_diagnosis_summary",
+  "generated_at": "2026-08-08",
+  "default_base_url": "https://api.labforge.cc/v1",
+  "credential_fingerprint": "sha256:e5d1c4eddaccf32a",
+  "findings": [
+    {
+      "test": "direct_no_proxy_models_default_python_urllib_user_agent",
+      "http_status": 403,
+      "response_body": "error code: 1010",
+      "response_server": "cloudflare",
+      "interpretation": "Cloudflare WAF rejects Python-urllib's default User-Agent before the API application handles the request."
+    },
+    {
+      "test": "direct_no_proxy_models_openai_python_user_agent_without_authentication",
+      "http_status": 401,
+      "response_message": "Invalid token",
+      "interpretation": "The request reaches the LabForge API application when an OpenAI-style User-Agent is used."
+    },
+    {
+      "test": "direct_no_proxy_models_openai_python_user_agent_with_default_credential",
+      "http_status": 200,
+      "interpretation": "The default credential is valid for the LabForge model-list endpoint."
+    },
+    {
+      "test": "direct_no_proxy_chat_completions_gpt_5_5_openai_python_user_agent_with_default_credential",
+      "http_status": 200,
+      "response_model": "gpt-5.5",
+      "interpretation": "The gpt-5.5 model is available through Chat Completions."
+    },
+    {
+      "test": "direct_no_proxy_responses_gpt_5_5_openai_python_user_agent_with_default_credential",
+      "http_status": 200,
+      "response_model": "gpt-5.5",
+      "interpretation": "The gpt-5.5 model is available through the Responses API."
+    }
+  ],
+  "root_cause": "The prior 403 failures were caused by Cloudflare WAF rule 1010 matching the default Python-urllib User-Agent, not by an invalid API key, an unavailable gpt-5.5 model, an unsupported endpoint, or a proxy setting.",
+  "remediation": "Use the official OpenAI SDK or explicitly supply an OpenAI-compatible User-Agent for this LabForge gateway. Do not use bare urllib.request without setting User-Agent."
+}

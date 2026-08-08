@@ -82,6 +82,49 @@ class LLMInstrumentationTests(TestCase):
 
 
 class QwenFailureCaptureTests(IsolatedAsyncioTestCase):
+    async def test_qwen_vllm_client_keeps_vllm_specific_chat_options(self):
+        class ResponseModel(BaseModel):
+            ok: bool
+
+        response = SimpleNamespace(
+            usage=SimpleNamespace(prompt_tokens=7, completion_tokens=3, total_tokens=10),
+            choices=[
+                SimpleNamespace(
+                    finish_reason="stop",
+                    message=SimpleNamespace(content='{"ok":true}'),
+                )
+            ],
+        )
+        client = QwenVLLMClient(
+            config=LLMConfig(
+                api_key="test",
+                model="qwen3-32b-fp8",
+                small_model="qwen3-32b-fp8",
+                base_url="http://127.0.0.1:1/v1",
+                temperature=0.0,
+                max_tokens=2048,
+            ),
+            max_tokens=2048,
+            structured_output_mode="json_schema",
+        )
+        create = AsyncMock(return_value=response)
+        client.client = SimpleNamespace(
+            chat=SimpleNamespace(completions=SimpleNamespace(create=create))
+        )
+
+        await client._generate_response(
+            [SimpleNamespace(role="user", content="return json")],
+            response_model=ResponseModel,
+            max_tokens=2048,
+        )
+
+        request = create.await_args.kwargs
+        self.assertEqual(request["seed"], 20260806)
+        self.assertEqual(
+            request["extra_body"],
+            {"chat_template_kwargs": {"enable_thinking": False}},
+        )
+
     async def test_invalid_structured_responses_capture_each_budget_and_raw_body(self):
         class ResponseModel(BaseModel):
             ok: bool

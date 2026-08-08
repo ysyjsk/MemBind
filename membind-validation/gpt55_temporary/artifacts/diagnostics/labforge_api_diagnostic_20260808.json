@@ -1,0 +1,165 @@
+{
+  "artifact_type": "labforge_openai_compatibility_diagnostic",
+  "authenticated_openai_user_agent_probes": [
+    {
+      "body_preview": "{\"data\":[{\"id\":\"gpt-5.4-mini\",\"object\":\"model\",\"created\":1626777600,\"owned_by\":\"custom\",\"supported_endpoint_types\":[\"openai-response\",\"openai\"]},{\"id\":\"gpt-5.5-openai-compact\",\"object\":\"model\",\"created\":1626777600,\"owned_by\":\"custom\",\"supported_endpoint_types\":[\"openai-response\",\"openai\"]},{\"id\":\"gpt-5.4\",\"object\":\"model\",\"created\":1626777600,\"owned_by\":\"codex\",\"supported_endpoint_types\":[\"openai-response\",\"openai\"]},{\"id\":\"gpt-5.6-terra\",\"object\":\"model\",\"created\":1626777600,\"owned_by\":\"custom\"",
+      "latency_ms": 815.9,
+      "name": "models_authenticated_openai_ua",
+      "response_model": null,
+      "status": 200
+    },
+    {
+      "body_preview": "{\"id\":\"resp_07c34aed1c2b35b5016a76cb8e48cc81948a380495cc1042a8\",\"object\":\"response\",\"created_at\":1786170254,\"status\":\"completed\",\"background\":false,\"completed_at\":1786170255,\"error\":null,\"frequency_penalty\":0.0,\"incomplete_details\":null,\"instructions\":\"You are Codex, a coding agent based on GPT-5. You and the user share one workspace, and your job is to collaborate with them until their goal is genuinely handled.\\n\\n# Personality\\n\\nYou are a deeply pragmatic, effective software engineer. You ta",
+      "latency_ms": 32370.0,
+      "name": "responses_gpt55_openai_ua",
+      "response_model": null,
+      "status": 200
+    },
+    {
+      "body_preview": "{\"background\":false,\"completed_at\":1786170263,\"created_at\":1786170261,\"error\":null,\"frequency_penalty\":0,\"id\":\"resp_0b760cfd96780e84016a76cb957d2c819a93ca22a456f57a9b\",\"incomplete_details\":null,\"instructions\":\"You are Codex, a coding agent based on GPT-5. You and the user share one workspace, and your job is to collaborate with them until their goal is genuinely handled.\\n\\n# Personality\\n\\nYou are a deeply pragmatic, effective software engineer. You take engineering quality seriously, and colla",
+      "latency_ms": 9073.5,
+      "name": "responses_codex_model_openai_ua",
+      "response_model": null,
+      "status": 200
+    },
+    {
+      "body_preview": "{\"id\":\"resp_09d6dac68a709eab016a76cb9baf488197a6d328ba76d2365b\",\"object\":\"chat.completion\",\"created\":1786170270,\"model\":\"gpt-5.5\",\"choices\":[{\"index\":0,\"message\":{\"role\":\"assistant\",\"content\":\"OK.\"},\"finish_reason\":\"stop\"}],\"usage\":{\"prompt_tokens\":147,\"completion_tokens\":44,\"total_tokens\":191,\"completion_tokens_details\":{\"reasoning_tokens\":36}}}",
+      "latency_ms": 5622.3,
+      "name": "chat_gpt55_openai_ua",
+      "response_model": "gpt-5.5",
+      "status": 200
+    }
+  ],
+  "base_url_origin": "https://api.labforge.cc",
+  "base_url_path": "/v1",
+  "credential_fingerprint": "sha256:e5d1c4eddaccf32a",
+  "direct_no_proxy_models_probe": {
+    "body_preview": "error code: 1010\n",
+    "cf_ray": "a27c6c2c8954b7fd-LAX",
+    "latency_ms": 646.4,
+    "route": "direct_no_proxy",
+    "server": "cloudflare",
+    "status": 403
+  },
+  "direct_no_proxy_user_agent_probes": [
+    {
+      "body_preview": "error code: 1010\n",
+      "cf_ray": "a27c6cc00ed22ac4-LAX",
+      "client": "python_urllib_default",
+      "latency_ms": 888.7,
+      "server": "cloudflare",
+      "status": 403
+    },
+    {
+      "body_preview": "{\"error\":{\"code\":\"\",\"message\":\"Invalid token (request id: 202608080622092453673818268d9d6TK9Mmp0f)\",\"type\":\"new_api_error\"}}",
+      "cf_ray": "a27c6cc94dc95024-SJC",
+      "client": "openai_python_style",
+      "latency_ms": 1963.1,
+      "server": "cloudflare",
+      "status": 401
+    },
+    {
+      "body_preview": "{\"error\":{\"code\":\"\",\"message\":\"Invalid token (request id: 202608080622104676417648268d9d6LsOQJRnJ)\",\"type\":\"new_api_error\"}}",
+      "cf_ray": "a27c6cd0fa48d8a6-LAX",
+      "client": "codex_style",
+      "latency_ms": 1209.2,
+      "server": "cloudflare",
+      "status": 401
+    },
+    {
+      "body_preview": "{\"error\":{\"code\":\"\",\"message\":\"Invalid token (request id: 202608080622115915280488268d9d6l4v9vkWh)\",\"type\":\"new_api_error\"}}",
+      "cf_ray": "a27c6cd7bc39f4ef-LAX",
+      "client": "curl_style",
+      "latency_ms": 1113.6,
+      "server": "cloudflare",
+      "status": 401
+    }
+  ],
+  "proxy": {
+    "HTTPS_PROXY": "http://127.0.0.1:17897",
+    "HTTP_PROXY": "http://127.0.0.1:17897",
+    "NO_PROXY": "127.0.0.1,localhost"
+  },
+  "tests": [
+    {
+      "authenticated": false,
+      "body_preview": "error code: 1010\n",
+      "body_sha256": "2938e9f1284180959e33ab1718d0793a72ff6e4cdb8108c34dcd14e69446de5c",
+      "latency_ms": 619.4,
+      "method": "GET",
+      "name": "models_unauthenticated",
+      "path": "/models",
+      "response_headers": {
+        "cf-ray": "a27c6a792a612ec7-LAX",
+        "content-length": "17",
+        "content-type": "text/plain; charset=UTF-8",
+        "server": "cloudflare"
+      },
+      "status": 403
+    },
+    {
+      "authenticated": true,
+      "body_preview": "error code: 1010\n",
+      "body_sha256": "2938e9f1284180959e33ab1718d0793a72ff6e4cdb8108c34dcd14e69446de5c",
+      "latency_ms": 643.7,
+      "method": "GET",
+      "name": "models_authenticated",
+      "path": "/models",
+      "response_headers": {
+        "cf-ray": "a27c6a7d3ab17aa4-LAX",
+        "content-length": "17",
+        "content-type": "text/plain; charset=UTF-8",
+        "server": "cloudflare"
+      },
+      "status": 403
+    },
+    {
+      "authenticated": true,
+      "body_preview": "error code: 1010\n",
+      "body_sha256": "2938e9f1284180959e33ab1718d0793a72ff6e4cdb8108c34dcd14e69446de5c",
+      "latency_ms": 371.8,
+      "method": "POST",
+      "name": "chat_gpt55",
+      "path": "/chat/completions",
+      "response_headers": {
+        "cf-ray": "a27c6a7f7986fb84-LAX",
+        "content-length": "17",
+        "content-type": "text/plain; charset=UTF-8",
+        "server": "cloudflare"
+      },
+      "status": 403
+    },
+    {
+      "authenticated": true,
+      "body_preview": "error code: 1010\n",
+      "body_sha256": "2938e9f1284180959e33ab1718d0793a72ff6e4cdb8108c34dcd14e69446de5c",
+      "latency_ms": 457.1,
+      "method": "POST",
+      "name": "responses_gpt55",
+      "path": "/responses",
+      "response_headers": {
+        "cf-ray": "a27c6a825e854818-LAX",
+        "content-length": "17",
+        "content-type": "text/plain; charset=UTF-8",
+        "server": "cloudflare"
+      },
+      "status": 403
+    },
+    {
+      "authenticated": true,
+      "body_preview": "error code: 1010\n",
+      "body_sha256": "2938e9f1284180959e33ab1718d0793a72ff6e4cdb8108c34dcd14e69446de5c",
+      "latency_ms": 426.2,
+      "method": "POST",
+      "name": "responses_codex_config_model",
+      "path": "/responses",
+      "response_headers": {
+        "cf-ray": "a27c6a850f8d2b97-LAX",
+        "content-length": "17",
+        "content-type": "text/plain; charset=UTF-8",
+        "server": "cloudflare"
+      },
+      "status": 403
+    }
+  ]
+}

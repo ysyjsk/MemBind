@@ -16,7 +16,12 @@ from experiment_runner import (  # noqa: E402
     embedding_cache_for_spec,
     run_experiment,
 )
-from embedding_cache import CachingCountingEmbedder, EmbeddingCache  # noqa: E402
+from embedding_cache import (  # noqa: E402
+    CachingCountingEmbedder,
+    EmbeddingCache,
+    EmbeddingNamespace,
+)
+from embedding_identity import build_operator_fingerprint_manifest  # noqa: E402
 from response_cache import PromptCache, PromptParts, UnexpectedPromptError  # noqa: E402
 
 
@@ -60,14 +65,29 @@ class Graphiti:
         self.events.append("close")
 
 
-def spec(mode="live"):
+def embedding_namespace():
+    return EmbeddingNamespace(
+        served_model_id="qwen3-embedding-0.6b",
+        identity_kind="deployment_fingerprint",
+        identity_value="a" * 64,
+        dimension=1024,
+        dtype="float32",
+        pooling="last_token",
+        normalization="l2",
+        instruction_policy="none",
+        input_transform="utf8_exact_v1",
+    )
+
+
+def spec(mode="live", method="M0"):
     return {
         "run_id": f"run-{mode}",
         "lane": "correctness" if mode != "live" else "performance",
         "mode": mode,
-        "method": "M0",
+        "method": method,
         "question_id": "q",
         "repeat": 0,
+        "embedding_namespace": embedding_namespace().to_dict(),
     }
 
 
@@ -108,12 +128,12 @@ class CacheModeTests(TestCase):
         with tempfile.TemporaryDirectory() as tmp:
             artifacts = Path(tmp)
             capture = embedding_cache_for_spec(spec("capture"), artifacts)
-            capture.put("same", [1.0, 2.0])
+            capture.put("same", [1.0] * 1024)
             replay = embedding_cache_for_spec(spec("replay"), artifacts)
 
             self.assertFalse(capture.read_only)
             self.assertTrue(replay.read_only)
-            self.assertEqual(replay.get("same"), [1.0, 2.0])
+            self.assertEqual(replay.get("same"), [1.0] * 1024)
             self.assertIsNone(embedding_cache_for_spec(spec("live"), artifacts))
             self.assertEqual(
                 sorted((artifacts / "embedding_cache").glob("*.jsonl")),
@@ -133,6 +153,123 @@ class CacheModeTests(TestCase):
         with tempfile.TemporaryDirectory() as tmp:
             with self.assertRaisesRegex(FileNotFoundError, "embedding capture cache"):
                 embedding_cache_for_spec(spec("replay"), Path(tmp))
+
+    def test_correctness_namespace_requires_manifest_and_production_dimension(self):
+        with tempfile.TemporaryDirectory() as tmp:
+            artifacts = Path(tmp)
+            missing = spec("capture")
+            missing.pop("embedding_namespace")
+            with self.assertRaisesRegex(
+                FileNotFoundError,
+                "immutable embedding model fingerprint",
+            ):
+                embedding_cache_for_spec(missing, artifacts)
+
+            wrong_dimension = spec("capture")
+            wrong_dimension["embedding_namespace"] = {
+                **wrong_dimension["embedding_namespace"],
+                "dimension": 2,
+            }
+            with self.assertRaisesRegex(ValueError, "must be 1024"):
+                embedding_cache_for_spec(wrong_dimension, artifacts)
+
+    def test_correctness_namespace_loads_from_operator_manifest(self):
+        with tempfile.TemporaryDirectory() as tmp:
+            artifacts = Path(tmp)
+            manifest = artifacts / "environment" / "embedding_model_fingerprint.json"
+            manifest.parent.mkdir(parents=True)
+            namespace = embedding_namespace().to_dict()
+            evidence = {
+                field: {
+                    "value": namespace[field],
+                    "status": "verified",
+                    "source": f"test evidence for {field}",
+                }
+                for field in (
+                    "served_model_id",
+                    "identity_value",
+                    "dimension",
+                    "dtype",
+                    "pooling",
+                    "normalization",
+                    "instruction_policy",
+                    "input_transform",
+                )
+            }
+            manifest.write_text(
+                json.dumps(
+                    build_operator_fingerprint_manifest(
+                        operator_fingerprint="a" * 64,
+                        namespace=namespace,
+                        field_evidence=evidence,
+                        endpoint_observation={
+                            "served_model_id": "qwen3-embedding-0.6b"
+                        },
+                    )
+                ),
+                encoding="utf-8",
+            )
+            from_manifest = spec("capture")
+            from_manifest.pop("embedding_namespace")
+
+            cache = embedding_cache_for_spec(from_manifest, artifacts)
+
+            self.assertEqual(cache.namespace, embedding_namespace())
+            self.assertTrue(
+                (artifacts / "embedding_cache" / "q.jsonl").is_file()
+            )
+
+    def test_correctness_namespace_rejects_unresolved_manifest_before_cache_create(self):
+        with tempfile.TemporaryDirectory() as tmp:
+            artifacts = Path(tmp)
+            manifest_path = (
+                artifacts / "environment" / "embedding_model_fingerprint.json"
+            )
+            manifest_path.parent.mkdir(parents=True)
+            namespace = embedding_namespace().to_dict()
+            namespace["dtype"] = "unresolved"
+            evidence = {
+                field: {
+                    "value": namespace[field],
+                    "status": "verified",
+                    "source": f"test evidence for {field}",
+                }
+                for field in (
+                    "served_model_id",
+                    "identity_value",
+                    "dimension",
+                    "dtype",
+                    "pooling",
+                    "normalization",
+                    "instruction_policy",
+                    "input_transform",
+                )
+            }
+            evidence["dtype"] = {
+                "value": None,
+                "status": "unresolved",
+                "source": "actual remote launch dtype is unavailable",
+            }
+            manifest_path.write_text(
+                json.dumps(
+                    build_operator_fingerprint_manifest(
+                        operator_fingerprint="a" * 64,
+                        namespace=namespace,
+                        field_evidence=evidence,
+                        endpoint_observation={
+                            "served_model_id": "qwen3-embedding-0.6b"
+                        },
+                    )
+                ),
+                encoding="utf-8",
+            )
+            from_manifest = spec("capture")
+            from_manifest.pop("embedding_namespace")
+
+            with self.assertRaisesRegex(ValueError, "unresolved runtime config.*dtype"):
+                embedding_cache_for_spec(from_manifest, artifacts)
+
+            self.assertFalse((artifacts / "embedding_cache").exists())
 
 
 class RunExperimentTests(IsolatedAsyncioTestCase):
@@ -247,6 +384,11 @@ class RunExperimentTests(IsolatedAsyncioTestCase):
                 parsed_response={},
                 token_usage={},
             )
+            EmbeddingCache(
+                artifacts / "embedding_cache" / "q.jsonl",
+                read_only=False,
+                namespace=embedding_namespace(),
+            )
             graphiti = Graphiti()
 
             def factory(prompt_cache=None, embedding_cache=None):
@@ -353,7 +495,11 @@ class RunExperimentTests(IsolatedAsyncioTestCase):
                 PromptParts("rev", {}, {}, "s", "u"), "{}", {}, {}
             )
             embedding_path = artifacts / "embedding_cache" / "q.jsonl"
-            EmbeddingCache(embedding_path, read_only=False).put("known", [1.0])
+            EmbeddingCache(
+                embedding_path,
+                read_only=False,
+                namespace=embedding_namespace(),
+            ).put("known", [1.0] * 1024)
             graphiti = Graphiti()
             inner = Inner()
 
@@ -392,6 +538,117 @@ class RunExperimentTests(IsolatedAsyncioTestCase):
                 status["unexpected_embedding_diagnostics_path"],
                 str(diagnostic_path),
             )
+            for path in artifacts.rglob("*"):
+                if path.is_file():
+                    self.assertNotIn(
+                        "missing secret text",
+                        path.read_text(encoding="utf-8"),
+                    )
+
+    async def test_m1_embedding_oracle_miss_completes_as_path_divergence(self):
+        with tempfile.TemporaryDirectory() as tmp:
+            artifacts = Path(tmp)
+            PromptCache(
+                artifacts / "prompt_cache" / "q.jsonl",
+                read_only=False,
+            ).put(PromptParts("rev", {}, {}, "s", "u"), "{}", {}, {})
+            EmbeddingCache(
+                artifacts / "embedding_cache" / "q.jsonl",
+                read_only=False,
+                namespace=embedding_namespace(),
+            ).put("known", [1.0] * 1024)
+            graphiti = Graphiti()
+
+            class Inner:
+                calls = 0
+
+                async def create(self, _value):
+                    self.calls += 1
+                    return [999.0]
+
+            inner = Inner()
+
+            def factory(prompt_cache=None, embedding_cache=None):
+                graphiti.embedder = CachingCountingEmbedder(
+                    inner,
+                    persistent_cache=embedding_cache,
+                )
+                return graphiti
+
+            async def runner(runtime, *_args):
+                await runtime.embedder.create(["m1 divergent input"])
+
+            result = await run_experiment(
+                spec("replay", method="M1"),
+                instance(),
+                arrival_interval_ms=100,
+                artifacts=artifacts,
+                graphiti_factory=factory,
+                method_runners={"M1": runner},
+                service_checker=lambda: _async_none(),
+            )
+
+            self.assertEqual(result["status"], "completed_with_divergence")
+            self.assertEqual(result["outcome"], "execution_path_divergence")
+            self.assertEqual(
+                result["final_semantic_parity"],
+                "not_evaluable_due_to_oracle_miss",
+            )
+            self.assertFalse(result["live_fallback"])
+            self.assertEqual(inner.calls, 0)
+
+    async def test_m2_embedding_oracle_miss_is_correctness_failure(self):
+        with tempfile.TemporaryDirectory() as tmp:
+            artifacts = Path(tmp)
+            PromptCache(
+                artifacts / "prompt_cache" / "q.jsonl",
+                read_only=False,
+            ).put(PromptParts("rev", {}, {}, "s", "u"), "{}", {}, {})
+            EmbeddingCache(
+                artifacts / "embedding_cache" / "q.jsonl",
+                read_only=False,
+                namespace=embedding_namespace(),
+            ).put("known", [1.0] * 1024)
+            graphiti = Graphiti()
+
+            class Inner:
+                calls = 0
+
+                async def create(self, _value):
+                    self.calls += 1
+                    return [999.0]
+
+            inner = Inner()
+
+            def factory(prompt_cache=None, embedding_cache=None):
+                graphiti.embedder = CachingCountingEmbedder(
+                    inner,
+                    persistent_cache=embedding_cache,
+                )
+                return graphiti
+
+            async def runner(runtime, *_args):
+                await runtime.embedder.create(["m2 divergent input"])
+
+            with self.assertRaises(ExperimentRunFailed) as raised:
+                await run_experiment(
+                    spec("replay", method="M2"),
+                    instance(),
+                    arrival_interval_ms=100,
+                    artifacts=artifacts,
+                    graphiti_factory=factory,
+                    method_runners={"M2": runner},
+                    service_checker=lambda: _async_none(),
+                )
+
+            self.assertEqual(raised.exception.status["status"], "failed")
+            self.assertEqual(
+                raised.exception.status["outcome"],
+                "model_oracle_input_divergence",
+            )
+            self.assertTrue(raised.exception.status["blocks_performance"])
+            self.assertFalse(raised.exception.status["live_fallback"])
+            self.assertEqual(inner.calls, 0)
 
 
 async def _async_none():

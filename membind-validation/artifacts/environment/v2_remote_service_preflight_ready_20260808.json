@@ -1,0 +1,88 @@
+{
+  "checks": [
+    {
+      "checked_at": "2026-08-08T03:12:33.238930+00:00",
+      "ordinal": 0,
+      "services": {
+        "construction": {
+          "models_status": 200,
+          "ok": true,
+          "reported_max_model_len": 40960,
+          "served_model_id": "qwen3-32b-fp8",
+          "version_status": 200,
+          "vllm_version": "0.26.0"
+        },
+        "embedding": {
+          "models_status": 200,
+          "ok": true,
+          "reported_max_model_len": 32768,
+          "served_model_id": "qwen3-embedding-0.6b",
+          "version_status": 200,
+          "vllm_version": "0.26.0"
+        }
+      }
+    },
+    {
+      "checked_at": "2026-08-08T03:12:34.261571+00:00",
+      "ordinal": 1,
+      "services": {
+        "construction": {
+          "models_status": 200,
+          "ok": true,
+          "reported_max_model_len": 40960,
+          "served_model_id": "qwen3-32b-fp8",
+          "version_status": 200,
+          "vllm_version": "0.26.0"
+        },
+        "embedding": {
+          "models_status": 200,
+          "ok": true,
+          "reported_max_model_len": 32768,
+          "served_model_id": "qwen3-embedding-0.6b",
+          "version_status": 200,
+          "vllm_version": "0.26.0"
+        }
+      }
+    },
+    {
+      "checked_at": "2026-08-08T03:12:35.272573+00:00",
+      "ordinal": 2,
+      "services": {
+        "construction": {
+          "models_status": 200,
+          "ok": true,
+          "reported_max_model_len": 40960,
+          "served_model_id": "qwen3-32b-fp8",
+          "version_status": 200,
+          "vllm_version": "0.26.0"
+        },
+        "embedding": {
+          "models_status": 200,
+          "ok": true,
+          "reported_max_model_len": 32768,
+          "served_model_id": "qwen3-embedding-0.6b",
+          "version_status": 200,
+          "vllm_version": "0.26.0"
+        }
+      }
+    }
+  ],
+  "construction_contract_ok": true,
+  "embedding_probe": {
+    "all_finite": true,
+    "dimension": 1024,
+    "http_status": 200,
+    "l2_norm": 0.999999990201578,
+    "model": "qwen3-embedding-0.6b",
+    "vector_persisted": false
+  },
+  "local_neo4j_ports": {
+    "7474": "open",
+    "7687": "open"
+  },
+  "mode": "read_only_metadata_plus_fixed_nonsecret_embedding_dimension_probe",
+  "schema_version": "membind.v2_remote_service_preflight.v1",
+  "secrets_persisted": false,
+  "stable_checks_passed": 3,
+  "stable_checks_required": 3
+}

@@ -1,0 +1,84 @@
+{
+  "checked_at": "2026-08-07T16:55:57.695531+00:00",
+  "endpoint_observation": {
+    "probe_artifact": "artifacts/environment/embedding_identity_probe.json",
+    "reported_max_model_len": 32768,
+    "reported_model_root": "/home/lhx/liuyi/models/Qwen3-Embedding-0.6B",
+    "reported_revision": null,
+    "served_model_id": "qwen3-embedding-0.6b",
+    "vllm_version": "0.26.0"
+  },
+  "field_evidence": {
+    "dimension": {
+      "source": "artifacts/environment/manifest.json and retained vectors",
+      "status": "runtime_contract_observed",
+      "value": 1024
+    },
+    "dtype": {
+      "candidate_values": [
+        "float16",
+        "bfloat16"
+      ],
+      "source": "missing remote argv, startup log, or deployed config evidence",
+      "status": "unresolved",
+      "value": null
+    },
+    "identity_value": {
+      "source": "operator-supplied deployment-directory SHA256",
+      "status": "operator_asserted",
+      "value": "5f5a8400eeaa2f07d167d8b5b7e63d615945a8f54f506e02342840cd4e3fe626"
+    },
+    "input_transform": {
+      "source": "src/embedding_cache.py exact UTF-8 item key",
+      "status": "client_code_verified",
+      "value": "utf8_exact_v1"
+    },
+    "instruction_policy": {
+      "source": "src/graphiti_native.py and installed Graphiti OpenAIEmbedder.create",
+      "status": "client_code_verified",
+      "value": "none"
+    },
+    "normalization": {
+      "source": "retained unit-norm vectors plus Qwen checkpoint modules.json Normalize reference at 97b0c614be4d77ee51c0cef4e5f07c00f9eb65b3",
+      "status": "retained_behavior_and_external_reference",
+      "value": "l2"
+    },
+    "pooling": {
+      "source": "Qwen/Qwen3-Embedding-0.6B checkpoint reference at 97b0c614be4d77ee51c0cef4e5f07c00f9eb65b3: 1_Pooling/config.json",
+      "status": "external_checkpoint_reference",
+      "value": "last_token"
+    },
+    "served_model_id": {
+      "source": "artifacts/environment/embedding_identity_probe.json",
+      "status": "endpoint_observed",
+      "value": "qwen3-embedding-0.6b"
+    }
+  },
+  "gate_status": "blocked_unresolved_runtime_config",
+  "identity": {
+    "algorithm": "sha256",
+    "kind": "deployment_fingerprint",
+    "provenance": "operator_supplied",
+    "scope": "operator_supplied_deployment_directory_tree_sha256",
+    "value": "5f5a8400eeaa2f07d167d8b5b7e63d615945a8f54f506e02342840cd4e3fe626"
+  },
+  "namespace": {
+    "dimension": 1024,
+    "dtype": "unresolved",
+    "identity_kind": "deployment_fingerprint",
+    "identity_value": "5f5a8400eeaa2f07d167d8b5b7e63d615945a8f54f506e02342840cd4e3fe626",
+    "input_transform": "utf8_exact_v1",
+    "instruction_policy": "none",
+    "model_fingerprint": "5f5a8400eeaa2f07d167d8b5b7e63d615945a8f54f506e02342840cd4e3fe626",
+    "normalization": "l2",
+    "pooling": "last_token",
+    "schema_version": "membind.embedding_oracle.v1",
+    "served_model_id": "qwen3-embedding-0.6b",
+    "tokenizer_fingerprint": null
+  },
+  "namespace_sha256": "2b909704578f4793a836f44a92c1fe43e5ce3acfa75058b8b01db7ccf6080392",
+  "schema_version": "membind.embedding_model_fingerprint.v1",
+  "unresolved_fields": [
+    "dtype"
+  ]
+}

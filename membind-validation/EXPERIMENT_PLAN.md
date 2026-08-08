@@ -130,6 +130,29 @@ actual `rank()` path over construction and frozen final retrieval, persist
 `artifacts/diagnostics/model_oracle_audit.json`, and write `not_invoked` only if
 the count is zero. A nonzero count blocks V2 until that oracle is frozen.
 
+### Bounded V2 pilot boundary
+
+Before V3, the only live integration allowed in V2 is:
+
+```text
+M0 capture -> M0 read-only replay
+```
+
+Run it with:
+
+```text
+.venv/bin/python src/replay_driver.py v2-oracle-integration \
+  --attempt v2_oracle_integration_001
+```
+
+The pilot uses one fixed single-episode integration instance and checks zero
+replay LLM/embedding calls, zero cross-encoder calls, fresh Neo4j cleanup, equal
+graph/retrieval outputs, and unchanged prompt/embedding cache hashes. It does
+not run M1 and does not substitute for V3's full M0 -> M2 smoke. A runtime
+namespace field without actual remote argv, startup-log, or deployed-config
+evidence remains in `unresolved_fields` and blocks the live gate; local templates
+and external checkpoint references are provenance, not runtime proof.
+
 ## V3-V5 Gates
 
 V3 runs one full M0 capture followed by one full M2 read-only replay on the

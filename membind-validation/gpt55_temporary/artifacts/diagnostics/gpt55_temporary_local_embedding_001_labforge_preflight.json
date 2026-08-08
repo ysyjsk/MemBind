@@ -1,0 +1,66 @@
+{
+  "artifact_type": "labforge_openai_compatibility_diagnostic",
+  "base_url_origin": "https://api.labforge.cc",
+  "base_url_path": "/v1",
+  "credential_fingerprint": "sha256:e5d1c4eddaccf32a",
+  "default_user_agent": "OpenAI/Python 1.0.0",
+  "proxy": {
+    "HTTPS_PROXY": "http://127.0.0.1:17897",
+    "HTTP_PROXY": "http://127.0.0.1:17897",
+    "NO_PROXY": "127.0.0.1,localhost,10.87.5.247"
+  },
+  "tests": [
+    {
+      "authenticated": false,
+      "body_preview": "{\"error\":{\"code\":\"\",\"message\":\"Invalid token (request id: 202608080953341351188778268d9d64ZgZr0mX)\",\"type\":\"new_api_error\"}}",
+      "body_sha256": "ac34067b5a9dcd062f85f5798915f3eadc28fdfa01eb8aff8756e823fdba03a8",
+      "classification": "application_reached_invalid_token",
+      "latency_ms": 1354.9,
+      "method": "GET",
+      "name": "models_unauthenticated_openai_ua",
+      "path": "/models",
+      "response_headers": {
+        "cf-ray": "a27da279de8802fe-LAX",
+        "content-length": "124",
+        "content-type": "application/json; charset=utf-8",
+        "server": "cloudflare"
+      },
+      "status": 401
+    },
+    {
+      "authenticated": true,
+      "body_preview": "{\"data\":[{\"id\":\"gpt-5.4-mini\",\"object\":\"model\",\"created\":1626777600,\"owned_by\":\"custom\",\"supported_endpoint_types\":[\"openai-response\",\"openai\"]},{\"id\":\"gpt-5.5-openai-compact\",\"object\":\"model\",\"created\":1626777600,\"owned_by\":\"custom\",\"supported_endpoint_types\":[\"openai-response\",\"openai\"]},{\"id\":\"gpt-5.4\",\"object\":\"model\",\"created\":1626777600,\"owned_by\":\"codex\",\"supported_endpoint_types\":[\"openai-response\",\"openai\"]},{\"id\":\"gpt-5.6-terra\",\"object\":\"model\",\"created\":1626777600,\"owned_by\":\"custom\"",
+      "body_sha256": "e53426ae05765eab17e499fa955ecad5139feccab1603dc3b817e248977d39fb",
+      "classification": "success",
+      "latency_ms": 741.1,
+      "method": "GET",
+      "name": "models_authenticated_openai_ua",
+      "path": "/models",
+      "response_headers": {
+        "cf-ray": "a27da2808a875654-LAX",
+        "content-length": "1133",
+        "content-type": "application/json; charset=utf-8",
+        "server": "cloudflare"
+      },
+      "status": 200
+    },
+    {
+      "authenticated": true,
+      "body_preview": "{\"id\":\"resp_0007ea10e6af34c4016a76fca39fac819aa2f06981b6fd5134\",\"object\":\"chat.completion\",\"created\":1786182825,\"model\":\"gpt-5.5\",\"choices\":[{\"index\":0,\"message\":{\"role\":\"assistant\",\"content\":\"OK\",\"reasoning_content\":\"**Seeking clarification on developer instructions**\\n\\nI need to think about the latest instructions from the developer. It's odd that the recent dev says to disregard earlier system instructions about spreadsheets. I'm finding it confusing since it seems like there are conflicts b",
+      "body_sha256": "b1dab9b1b2ab89c8376d1993672eb4333e6c261c84827013e1b7fcecec376da7",
+      "classification": "success",
+      "latency_ms": 10993.5,
+      "method": "POST",
+      "name": "chat_model_openai_ua",
+      "path": "/chat/completions",
+      "response_headers": {
+        "cf-ray": "a27da2924a6fdcee-LAX",
+        "content-length": "839",
+        "content-type": "application/json",
+        "server": "cloudflare",
+        "x-request-id": "359846ac-2631-4edc-83d9-9d4f375d1707"
+      },
+      "status": 200
+    }
+  ]
+}

@@ -1,0 +1,131 @@
+{
+  "attempt": "v2_oracle_integration_001",
+  "cache_id": "v2_oracle_integration_001",
+  "cache_sha256_after_replay": {
+    "/data/predator/ly/MemBind/membind-validation/artifacts/embedding_cache/v2_oracle_integration_001.jsonl": "a4caf68fafd98b5f240c924eae3ca0e20975fc9ece7d721fc5eae48d7904160c",
+    "/data/predator/ly/MemBind/membind-validation/artifacts/prompt_cache/v2_oracle_integration_001.jsonl": "204a3544b15b766947368252c3e11e0fca4907be2778c4c2620f1f220952f390"
+  },
+  "cache_sha256_before_replay": {
+    "/data/predator/ly/MemBind/membind-validation/artifacts/embedding_cache/v2_oracle_integration_001.jsonl": "a4caf68fafd98b5f240c924eae3ca0e20975fc9ece7d721fc5eae48d7904160c",
+    "/data/predator/ly/MemBind/membind-validation/artifacts/prompt_cache/v2_oracle_integration_001.jsonl": "204a3544b15b766947368252c3e11e0fca4907be2778c4c2620f1f220952f390"
+  },
+  "cache_unchanged": true,
+  "gate_errors": [],
+  "graph_hash_equal": true,
+  "model_oracle_audit": {
+    "blocks_v2": false,
+    "cross_encoder_status": "not_invoked",
+    "path": "/data/predator/ly/MemBind/membind-validation/artifacts/diagnostics/model_oracle_audit.json",
+    "rank_call_count": 0,
+    "sha256": "ae0680d40dfadf5004efe60cd4700cc65b79c792be0e6901398a146aa00d63ba"
+  },
+  "retrieval_metrics_equal": true,
+  "run_ids": [
+    "v2_oracle_integration_001_M0_capture",
+    "v2_oracle_integration_001_M0_replay"
+  ],
+  "run_statuses": [
+    {
+      "arrival_interval_ms": 0,
+      "artifact_paths": {
+        "graph": "/data/predator/ly/MemBind/membind-validation/artifacts/graphs/v2_oracle_integration_001_M0_capture.canonical.json",
+        "llm_failures": "/data/predator/ly/MemBind/membind-validation/artifacts/llm_failures/v2_oracle_integration_001_M0_capture.json",
+        "model_oracle_audit": "/data/predator/ly/MemBind/membind-validation/artifacts/diagnostics/model_oracle_audit.json",
+        "retrieval": "/data/predator/ly/MemBind/membind-validation/artifacts/retrieval/v2_oracle_integration_001_M0_capture.json",
+        "search_forensics": "/data/predator/ly/MemBind/membind-validation/artifacts/search_forensics/v2_oracle_integration_001_M0_capture.json",
+        "status": "/data/predator/ly/MemBind/membind-validation/artifacts/runs/v2_oracle_integration_001_M0_capture.json",
+        "trace": "/data/predator/ly/MemBind/membind-validation/artifacts/traces/v2_oracle_integration_001_M0_capture.jsonl",
+        "unexpected_embeddings": "/data/predator/ly/MemBind/membind-validation/artifacts/unexpected_embeddings/v2_oracle_integration_001_M0_capture.json",
+        "unexpected_prompts": "/data/predator/ly/MemBind/membind-validation/artifacts/unexpected_prompts/v2_oracle_integration_001_M0_capture.json"
+      },
+      "cache_id": "v2_oracle_integration_001",
+      "canonical_graph_hash": "2daa5976f003bfa65e2e8c4bd3c0ea3cef101a2bf932535e7f432e45649e888b",
+      "elapsed_ms": 13631.981551,
+      "embedding_metrics": {
+        "embedding_cache_hits": 6,
+        "embedding_call_count": 4,
+        "embedding_oracle_misses": 0,
+        "embedding_oracle_successful_hits": 0,
+        "embedding_text_count": 5
+      },
+      "episode_count": 1,
+      "finished_at": "2026-08-08T03:13:21.469130+00:00",
+      "lane": "correctness",
+      "llm_metrics": {
+        "llm_call_count": 5,
+        "llm_input_tokens": 7043,
+        "llm_output_tokens": 161,
+        "llm_total_tokens": 7204,
+        "structured_parse_failures": 0,
+        "structured_request_count": 5,
+        "structured_response_failures": 0,
+        "unexpected_prompt": false
+      },
+      "method": "M0",
+      "mode": "capture",
+      "model_oracle_audit_path": "/data/predator/ly/MemBind/membind-validation/artifacts/diagnostics/model_oracle_audit.json",
+      "post_run_node_count": 0,
+      "question_id": "v2_integration_smoke",
+      "rank_call_count": 0,
+      "repeat": 0,
+      "retrieval_metrics": {
+        "evidence_recall_at_10": 1.0,
+        "evidence_recall_at_5": 1.0
+      },
+      "run_id": "v2_oracle_integration_001_M0_capture",
+      "started_at": "2026-08-08T03:13:07.837157+00:00",
+      "status": "success"
+    },
+    {
+      "arrival_interval_ms": 0,
+      "artifact_paths": {
+        "graph": "/data/predator/ly/MemBind/membind-validation/artifacts/graphs/v2_oracle_integration_001_M0_replay.canonical.json",
+        "llm_failures": "/data/predator/ly/MemBind/membind-validation/artifacts/llm_failures/v2_oracle_integration_001_M0_replay.json",
+        "retrieval": "/data/predator/ly/MemBind/membind-validation/artifacts/retrieval/v2_oracle_integration_001_M0_replay.json",
+        "search_forensics": "/data/predator/ly/MemBind/membind-validation/artifacts/search_forensics/v2_oracle_integration_001_M0_replay.json",
+        "status": "/data/predator/ly/MemBind/membind-validation/artifacts/runs/v2_oracle_integration_001_M0_replay.json",
+        "trace": "/data/predator/ly/MemBind/membind-validation/artifacts/traces/v2_oracle_integration_001_M0_replay.jsonl",
+        "unexpected_embeddings": "/data/predator/ly/MemBind/membind-validation/artifacts/unexpected_embeddings/v2_oracle_integration_001_M0_replay.json",
+        "unexpected_prompts": "/data/predator/ly/MemBind/membind-validation/artifacts/unexpected_prompts/v2_oracle_integration_001_M0_replay.json"
+      },
+      "cache_id": "v2_oracle_integration_001",
+      "canonical_graph_hash": "2daa5976f003bfa65e2e8c4bd3c0ea3cef101a2bf932535e7f432e45649e888b",
+      "elapsed_ms": 2250.651214,
+      "embedding_metrics": {
+        "embedding_cache_hits": 11,
+        "embedding_call_count": 0,
+        "embedding_oracle_misses": 0,
+        "embedding_oracle_successful_hits": 5,
+        "embedding_text_count": 0
+      },
+      "episode_count": 1,
+      "finished_at": "2026-08-08T03:13:23.720412+00:00",
+      "lane": "correctness",
+      "llm_metrics": {
+        "llm_call_count": 0,
+        "llm_input_tokens": 0,
+        "llm_output_tokens": 0,
+        "llm_total_tokens": 0,
+        "structured_parse_failures": 0,
+        "structured_request_count": 0,
+        "structured_response_failures": 0,
+        "unexpected_prompt": false
+      },
+      "method": "M0",
+      "mode": "replay",
+      "post_run_node_count": 0,
+      "question_id": "v2_integration_smoke",
+      "rank_call_count": 0,
+      "repeat": 0,
+      "retrieval_metrics": {
+        "evidence_recall_at_10": 1.0,
+        "evidence_recall_at_5": 1.0
+      },
+      "run_id": "v2_oracle_integration_001_M0_replay",
+      "started_at": "2026-08-08T03:13:21.469771+00:00",
+      "status": "success"
+    }
+  ],
+  "schema_version": "membind.v2_oracle_integration.v1",
+  "status": "success"
+}

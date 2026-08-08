@@ -1,0 +1,78 @@
+{
+  "checked_at": "2026-08-08T03:11:54.682302+00:00",
+  "endpoint_observation": {
+    "probe_artifact": "artifacts/environment/embedding_identity_probe.json",
+    "reported_max_model_len": 32768,
+    "reported_model_root": "/home/lhx/liuyi/models/Qwen3-Embedding-0.6B",
+    "reported_revision": null,
+    "served_model_id": "qwen3-embedding-0.6b",
+    "vllm_version": "0.26.0"
+  },
+  "field_evidence": {
+    "dimension": {
+      "source": "artifacts/environment/manifest.json and retained vectors",
+      "status": "runtime_contract_observed",
+      "value": 1024
+    },
+    "dtype": {
+      "source": "artifacts/environment/embedding_runtime_dtype_evidence_20260808.json",
+      "status": "deployment_config_verified",
+      "value": "bfloat16"
+    },
+    "identity_value": {
+      "source": "operator-supplied deployment-directory SHA256",
+      "status": "operator_asserted",
+      "value": "5f5a8400eeaa2f07d167d8b5b7e63d615945a8f54f506e02342840cd4e3fe626"
+    },
+    "input_transform": {
+      "source": "src/embedding_cache.py exact UTF-8 item key",
+      "status": "client_code_verified",
+      "value": "utf8_exact_v1"
+    },
+    "instruction_policy": {
+      "source": "artifacts/environment/embedding_runtime_dtype_evidence_20260808.json; src/graphiti_native.py and installed Graphiti OpenAIEmbedder.create",
+      "status": "deployment_config_and_client_code_verified",
+      "value": "none"
+    },
+    "normalization": {
+      "source": "artifacts/environment/embedding_runtime_dtype_evidence_20260808.json",
+      "status": "deployment_config_verified",
+      "value": "l2"
+    },
+    "pooling": {
+      "source": "artifacts/environment/embedding_runtime_dtype_evidence_20260808.json",
+      "status": "deployment_config_verified",
+      "value": "last_token"
+    },
+    "served_model_id": {
+      "source": "artifacts/environment/embedding_identity_probe.json",
+      "status": "endpoint_observed",
+      "value": "qwen3-embedding-0.6b"
+    }
+  },
+  "gate_status": "pass",
+  "identity": {
+    "algorithm": "sha256",
+    "kind": "deployment_fingerprint",
+    "provenance": "operator_supplied",
+    "scope": "operator_supplied_deployment_directory_tree_sha256",
+    "value": "5f5a8400eeaa2f07d167d8b5b7e63d615945a8f54f506e02342840cd4e3fe626"
+  },
+  "namespace": {
+    "dimension": 1024,
+    "dtype": "bfloat16",
+    "identity_kind": "deployment_fingerprint",
+    "identity_value": "5f5a8400eeaa2f07d167d8b5b7e63d615945a8f54f506e02342840cd4e3fe626",
+    "input_transform": "utf8_exact_v1",
+    "instruction_policy": "none",
+    "model_fingerprint": "5f5a8400eeaa2f07d167d8b5b7e63d615945a8f54f506e02342840cd4e3fe626",
+    "normalization": "l2",
+    "pooling": "last_token",
+    "schema_version": "membind.embedding_oracle.v1",
+    "served_model_id": "qwen3-embedding-0.6b",
+    "tokenizer_fingerprint": null
+  },
+  "namespace_sha256": "3b66bf6f5c014e291066a770c0c7ab26fd1061164227116b30b63b9401966433",
+  "schema_version": "membind.embedding_model_fingerprint.v1",
+  "unresolved_fields": []
+}

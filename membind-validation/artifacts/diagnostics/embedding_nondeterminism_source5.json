@@ -1,0 +1,383 @@
+{
+  "analysis_mode": "retained_artifact_only",
+  "claims": {
+    "aggregate_cosine_ranking_evidence_varied": true,
+    "embedding_drift_caused_prompt_divergence": "not_established",
+    "embedding_drift_caused_ranking_divergence": "not_established",
+    "final_graph_semantic_error_established": false,
+    "fulltext_query_and_candidate_path_stable_in_source5_pair": true,
+    "live_embedding_bitwise_deterministic": false,
+    "live_embedding_suitable_as_bitwise_correctness_oracle": false,
+    "same_retained_logical_source_state_has_changed_embedding_hashes": true,
+    "separate_downstream_prompt_candidate_divergence_observed": true
+  },
+  "controls": {
+    "embedding_metrics": [
+      {
+        "embedding_cache_hits": 99,
+        "embedding_call_count": 42,
+        "embedding_text_count": 95
+      },
+      {
+        "embedding_cache_hits": 99,
+        "embedding_call_count": 42,
+        "embedding_text_count": 95
+      }
+    ],
+    "episode_count_each": 6,
+    "live_llm_calls_each": 0,
+    "post_run_node_count_each": 0,
+    "retained_run_contract_pass": true,
+    "run_ids": [
+      "diagnostic_smoke14_source5_M0_001",
+      "diagnostic_smoke14_source5_M0_002"
+    ],
+    "same_llm_cache_id": true,
+    "same_method": true,
+    "same_mode": true,
+    "same_question_id": true,
+    "statuses": [
+      "success",
+      "success"
+    ]
+  },
+  "evidence_sources": [
+    {
+      "path": "unexpected_prompts/diagnostic_smoke14_source8_M0_002.json",
+      "role": "prompt_divergence_diagnostic",
+      "sha256": "49bb47ccc82d2c85fc849b21277557613039b05c6677c3b0ba31f3c85f535083",
+      "size_bytes": 6852
+    },
+    {
+      "path": "runs/diagnostic_smoke14_source8_M0_002.json",
+      "role": "prompt_divergence_status",
+      "sha256": "e68e5a23631e35fd58e62f293cd8ec54cda3bba5298eb7058323fe1c912074e8",
+      "size_bytes": 5093
+    },
+    {
+      "path": "traces/diagnostic_smoke14_source8_M0_002.jsonl",
+      "role": "prompt_divergence_trace",
+      "sha256": "ce58711940494665e2b03e249213a5bb5493ae7452cd63fd78f3ff9c46afff98",
+      "size_bytes": 5801
+    },
+    {
+      "path": "prompt_cache/smoke_smoke14_c6853660.jsonl",
+      "role": "smoke14_prompt_cache",
+      "sha256": "691b58d3b231446765f81d6df5d9b0afe244e3cb2126da6db8d43f50dc754e82",
+      "size_bytes": 20160259
+    },
+    {
+      "path": "search_forensics/diagnostic_smoke14_source5_M0_001.json",
+      "role": "source5_run_a_forensics",
+      "sha256": "2f8f8ff951e91604be513b7cdc19b42972123c8e60390f0b0517cc352e7255d3",
+      "size_bytes": 793064
+    },
+    {
+      "path": "runs/diagnostic_smoke14_source5_M0_001.json",
+      "role": "source5_run_a_status",
+      "sha256": "f3daf9ef2449a2c8edc2727631f8076ba723bcdce699bd7b53b18f36010aa979",
+      "size_bytes": 1892
+    },
+    {
+      "path": "search_forensics/diagnostic_smoke14_source5_M0_002.json",
+      "role": "source5_run_b_forensics",
+      "sha256": "e5377a47f3799bb6b63120ec0ca2a568524abc613d980b81689dd7506125b45d",
+      "size_bytes": 855034
+    },
+    {
+      "path": "runs/diagnostic_smoke14_source5_M0_002.json",
+      "role": "source5_run_b_status",
+      "sha256": "2e36fe82d186ec2ba9194d8a4f56943898a9e0e90bd72cbc827ff5b7e2c65059",
+      "size_bytes": 1892
+    }
+  ],
+  "generated_at": "2026-08-07T15:39:55.081165+00:00",
+  "numerical_metrics": {
+    "changed_component_count": {
+      "reason": "raw vectors were not persisted in the retained artifacts",
+      "status": "not_computable_from_retained_artifacts",
+      "value": null
+    },
+    "cosine_cross_run": {
+      "reason": "raw vectors were not persisted in the retained artifacts",
+      "status": "not_computable_from_retained_artifacts",
+      "value": null
+    },
+    "embedding_norm_abs_diff": {
+      "edge_max": 9.275672652186984e-08,
+      "entity_max": 1.0235835656846604e-07,
+      "status": "computed",
+      "warning": "norm delta is not a component-wise vector delta"
+    },
+    "exact_embedding_request_bytes_equal": {
+      "reason": "retained cosine events lack exact input bytes/hash and a stable call correlation id",
+      "status": "not_computable_from_retained_artifacts",
+      "value": null
+    },
+    "l2_cross_run": {
+      "reason": "raw vectors were not persisted in the retained artifacts",
+      "status": "not_computable_from_retained_artifacts",
+      "value": null
+    },
+    "max_abs_diff": {
+      "reason": "raw vectors were not persisted in the retained artifacts",
+      "status": "not_computable_from_retained_artifacts",
+      "value": null
+    },
+    "neo4j_cosine_score_delta": {
+      "reason": "raw vectors were not persisted in the retained artifacts",
+      "status": "not_computable_from_retained_artifacts",
+      "value": null
+    }
+  },
+  "prompt_comparison": {
+    "candidate_membership_changed": true,
+    "candidate_order_changed": true,
+    "candidate_substitution_count": 1,
+    "causal_link_to_embedding": "not_established",
+    "common_candidate_relative_order_changed": false,
+    "diagnostic_nearest_record_ignored": "429e6aeadd27cd4ae1d6c95bf4865be667b4eaba15500b26d437f19e0502e13c",
+    "evidence_scope": "separate_source5_failure_run",
+    "existing_facts_equal": true,
+    "expected_prompt_hash": "61854cc6cdb1c7b1de8b3e355a3a9dc9f8221e8a90c0ea941123e8f93f226570",
+    "expected_user_prompt_length": 3381,
+    "failed_source_sequences": [
+      5
+    ],
+    "live_llm_call_count": 0,
+    "new_fact_equal": true,
+    "non_user_components_equal": true,
+    "pairing_rule": [
+      "model_revision",
+      "decoding_config",
+      "structured_output_schema",
+      "system_prompt",
+      "exact NEW FACT section",
+      "exact EXISTING FACTS section"
+    ],
+    "prompt_hash_changed": true,
+    "relationship": "downstream divergence observed; embedding cause not established",
+    "requested_prompt_hash": "044bf756ec52b373381a210f2df912e7f07d7122a08fe89e95ea23c405daa7f8",
+    "requested_user_prompt_length": 3299,
+    "run_id": "diagnostic_smoke14_source8_M0_002",
+    "run_status": "failed",
+    "substitutions": [
+      {
+        "expected_fact": "Sagebrush supports economic activities like ranching, hunting, outdoor recreation, mining, and energy development in the Great Basin region.",
+        "idx": 5,
+        "requested_fact": "Sagebrush regulates water flows in the Great Basin region."
+      }
+    ]
+  },
+  "query_comparison": {
+    "cosine": {
+      "aggregate_backend_membership_bag_equal": true,
+      "aggregate_backend_order_bag_equal": false,
+      "aggregate_python_order_bag_equal": false,
+      "aggregate_python_selected_membership_bag_equal": false,
+      "aggregate_vector_hash_bag_equal": false,
+      "event_count_a": 25,
+      "event_count_b": 25,
+      "pairing_status": "not_computable_per_input",
+      "reason": "retained cosine events have no exact input hash or call correlation id; array order reflects completion order",
+      "top_k_membership_changed_per_input": "not_computable_from_retained_artifacts",
+      "top_k_order_changed_per_input": "not_computable_from_retained_artifacts",
+      "vector_hash_summary": {
+        "edge_cosine_search": {
+          "event_count_a": 16,
+          "event_count_b": 16,
+          "hash_bag_equal": false,
+          "run_a_only_unique_hash_count": 5,
+          "run_b_only_unique_hash_count": 5,
+          "shared_unique_hash_count": 3,
+          "unique_hash_count_a": 8,
+          "unique_hash_count_b": 8
+        },
+        "node_cosine_search": {
+          "event_count_a": 9,
+          "event_count_b": 9,
+          "hash_bag_equal": false,
+          "run_a_only_unique_hash_count": 2,
+          "run_b_only_unique_hash_count": 2,
+          "shared_unique_hash_count": 7,
+          "unique_hash_count_a": 9,
+          "unique_hash_count_b": 9
+        }
+      }
+    },
+    "fulltext": {
+      "candidate_membership_equal": true,
+      "candidate_order_equal": true,
+      "event_count_a": 16,
+      "event_count_b": 16,
+      "input_keys_equal": true,
+      "paired_count": 16,
+      "pairing_key": [
+        "source_sequence",
+        "kind",
+        "normalized_query_sha256",
+        "query_sha256",
+        "query_length",
+        "group_ids",
+        "limit",
+        "min_score"
+      ],
+      "pairing_status": "exact"
+    }
+  },
+  "schema_version": "membind.v1.retained_embedding_closure.v1",
+  "source_state": {
+    "edges": {
+      "changed_items": [
+        {
+          "duplicate_ordinal": 1,
+          "embedding_dimension_a": 1024,
+          "embedding_dimension_b": 1024,
+          "embedding_norm_a": 1.0000000105808668,
+          "embedding_norm_abs_diff": 2.7693588311450412e-08,
+          "embedding_norm_b": 0.9999999828872785,
+          "embedding_sha256_a": "656e3019a13e4d6cff04202798c3909057a9a2f7e99f14a729c58ed18e77d51d",
+          "embedding_sha256_b": "def4aa9e64bb73e62f51902dddbc1383ec2d75fcbe325240dd20f31e2cf66c5f",
+          "fact": "Sage Sparrows rely on Sagebrush for survival in the Great Basin region.",
+          "logical_key_sha256": "abf083eeda42d688cf321686f60903f2d8ba975aae3a227217f95f84f1004bf5",
+          "name": "DEPENDS_ON",
+          "source_name": "Sagebrush",
+          "target_name": "Sage Sparrows"
+        },
+        {
+          "duplicate_ordinal": 1,
+          "embedding_dimension_a": 1024,
+          "embedding_dimension_b": 1024,
+          "embedding_norm_a": 0.9999999477200499,
+          "embedding_norm_abs_diff": 9.275672652186984e-08,
+          "embedding_norm_b": 1.0000000404767764,
+          "embedding_sha256_a": "53c91fef27fc7caad6ea9c75589ef9023a50902a4f704d041b7a6dedbe6c134a",
+          "embedding_sha256_b": "e7b6b7c6b0e607f80d14a116d534f4c6d314f1ab11be70c443f0a1771987b1d8",
+          "fact": "USER is creating a profile on italki to find a language exchange partner.",
+          "logical_key_sha256": "b083cd681284efeceea55ebb6e14b3c935e05a21c9b99447754d572493b228b4",
+          "name": "USES_SERVICE",
+          "source_name": "USER",
+          "target_name": "italki"
+        }
+      ],
+      "count_a": 25,
+      "count_b": 25,
+      "count_each": 25,
+      "embedding_dimension_equal_for_all_pairs": true,
+      "embedding_dimensions": [
+        1024
+      ],
+      "embedding_hash_changed_count": 2,
+      "embedding_hash_equal_count": 23,
+      "exact_embedding_request_bytes_equal": "not_available",
+      "logical_content_equal": true,
+      "max_embedding_norm_abs_diff": 9.275672652186984e-08,
+      "paired_count": 25,
+      "pairing_key": [
+        "fact",
+        "name",
+        "source_name",
+        "target_name",
+        "valid_at",
+        "invalid_at",
+        "duplicate_ordinal"
+      ],
+      "stored_logical_graph_hash_ignored": true,
+      "stored_logical_graph_hash_reason": "the retained hash includes embedding metadata and is not semantic-only"
+    },
+    "entities": {
+      "changed_items": [
+        {
+          "duplicate_ordinal": 1,
+          "embedding_dimension_a": 1024,
+          "embedding_dimension_b": 1024,
+          "embedding_norm_a": 1.000000076293417,
+          "embedding_norm_abs_diff": 1.0235835656846604e-07,
+          "embedding_norm_b": 0.9999999739350603,
+          "embedding_sha256_a": "4197e6ade9638e492794f055fb1c2b79ce4c19228a54c6bc36c30434495f5333",
+          "embedding_sha256_b": "04f4db146c3f4a6014d4f3ff869184a1076e8ffb8f6ba6b061a92520031be8b8",
+          "logical_key_sha256": "b0f9fdf82f10532060f81310004dd062a915b4f7ac1387cc9dc1673106c917ef",
+          "name": "Great Basin region"
+        },
+        {
+          "duplicate_ordinal": 1,
+          "embedding_dimension_a": 1024,
+          "embedding_dimension_b": 1024,
+          "embedding_norm_a": 1.000000016138399,
+          "embedding_norm_abs_diff": 1.5805780462230246e-08,
+          "embedding_norm_b": 1.0000000003326186,
+          "embedding_sha256_a": "a4ab0bab04cf3e2230fea011c4e7c0bd5c7afc39ee26e52e2ef616c5b58b774c",
+          "embedding_sha256_b": "9cbc908b0bb580b3000b153fd6c09352356ff75fd6273c8e051d44db85c9ccb9",
+          "logical_key_sha256": "a8dd40721b1ce5b057f206ea19bb44bb04fdfaceba5076728f70fbc493244e7d",
+          "name": "Sage-Grouse"
+        },
+        {
+          "duplicate_ordinal": 1,
+          "embedding_dimension_a": 1024,
+          "embedding_dimension_b": 1024,
+          "embedding_norm_a": 0.9999999833116499,
+          "embedding_norm_abs_diff": 4.702030798053869e-08,
+          "embedding_norm_b": 1.0000000303319578,
+          "embedding_sha256_a": "40659cba11d0d8f94adcc86346de674ce93ac7b66b192073e73f6c4a5cb73e80",
+          "embedding_sha256_b": "9e1d8b7b94f0f410bcf0871aebf964197e47fed97a9c1df79ccfef4d0d719b96",
+          "logical_key_sha256": "b4a19ffc06a1e48a3fd46ac93a8130d4675bf966cacaf5716d3d185a0a38e42e",
+          "name": "Sagebrush"
+        },
+        {
+          "duplicate_ordinal": 1,
+          "embedding_dimension_a": 1024,
+          "embedding_dimension_b": 1024,
+          "embedding_norm_a": 1.0000000509058298,
+          "embedding_norm_abs_diff": 3.3597682191910394e-08,
+          "embedding_norm_b": 1.0000000173081476,
+          "embedding_sha256_a": "a4794e7a15c0d7d189d0660ff51f8394981801db71d464459c5b6b47c1af1481",
+          "embedding_sha256_b": "7e5e472081a5d2b7dd9075f38f9ac8739923ecadc93a21590f1ca9b86b8286d9",
+          "logical_key_sha256": "56c2b47ee77052704c947162572a44fa96c2ec78a6ab77e53705610f8fe76ffa",
+          "name": "US job market"
+        },
+        {
+          "duplicate_ordinal": 1,
+          "embedding_dimension_a": 1024,
+          "embedding_dimension_b": 1024,
+          "embedding_norm_a": 1.0000000456520066,
+          "embedding_norm_abs_diff": 3.231753908927715e-08,
+          "embedding_norm_b": 1.0000000133344675,
+          "embedding_sha256_a": "79092e92d435e941a5622fd16caa77b13547a06cc2599725f57830ef8dd92af8",
+          "embedding_sha256_b": "3474030135ccd5fd39cd04d1034ff4288943dc86545518b33c7abacd3724dd5b",
+          "logical_key_sha256": "7f3639502b6666d0ce40c6026b6855aec20da5ab3b3f728c62a74a06191919aa",
+          "name": "resume and cover letter writing in the US"
+        }
+      ],
+      "count_a": 18,
+      "count_b": 18,
+      "count_each": 18,
+      "embedding_dimension_equal_for_all_pairs": true,
+      "embedding_dimensions": [
+        1024
+      ],
+      "embedding_hash_changed_count": 5,
+      "embedding_hash_equal_count": 13,
+      "exact_embedding_request_bytes_equal": "not_available",
+      "logical_content_equal": true,
+      "max_embedding_norm_abs_diff": 1.0235835656846604e-07,
+      "paired_count": 18,
+      "pairing_key": [
+        "name",
+        "summary",
+        "labels",
+        "duplicate_ordinal"
+      ],
+      "stored_logical_graph_hash_ignored": true,
+      "stored_logical_graph_hash_reason": "the retained hash includes embedding metadata and is not semantic-only"
+    },
+    "pairing_contract": "full retained logical fields plus deterministic duplicate ordinal; embedding metadata excluded"
+  },
+  "v1_gate": {
+    "closure_question": "live embedding suitability as a bitwise correctness oracle",
+    "live_calls_authorized": false,
+    "next_stage": "V2",
+    "numerical_root_cause_established": false,
+    "raw_vector_recapture_required": false,
+    "status": "pass_with_explicit_evidence_limits"
+  }
+}

@@ -1,0 +1,102 @@
+{
+  "schema_version": "membind.embedding_runtime_identity_evidence.v1",
+  "checked_at": "2026-08-08T01:37:23+08:00",
+  "operator_identity": {
+    "kind": "deployment_fingerprint",
+    "value": "5f5a8400eeaa2f07d167d8b5b7e63d615945a8f54f506e02342840cd4e3fe626",
+    "provenance": "operator_supplied_deployment_directory_tree_sha256",
+    "manifest_artifact": "artifacts/environment/embedding_model_fingerprint.json",
+    "manifest_sha256": "738f945d339000101c0f54358ea107a9a7b8e4c70033d81784f6017796adbf5b",
+    "namespace_sha256": "2b909704578f4793a836f44a92c1fe43e5ce3acfa75058b8b01db7ccf6080392"
+  },
+  "endpoint_observation": {
+    "artifact": "artifacts/environment/embedding_identity_probe.json",
+    "artifact_sha256": "c693905ad3db6d95575a191efa38848f3a4b976606eebff5195d6c42b49276ac",
+    "served_model_id": "qwen3-embedding-0.6b",
+    "reported_model_root": "/home/lhx/liuyi/models/Qwen3-Embedding-0.6B",
+    "reported_max_model_len": 32768,
+    "reported_revision": null,
+    "vllm_version": "0.26.0",
+    "metadata_limitations": [
+      "served alias is not immutable identity",
+      "model root path is not immutable identity",
+      "endpoint exposes no launch argv or model dtype",
+      "endpoint exposes no pooling, normalization, or instruction configuration"
+    ]
+  },
+  "graphiti_client_evidence": {
+    "source": "src/graphiti_native.py",
+    "installed_openai_embedder_source_sha256": "6c84e15282cc7869471b6fb75629332ba2597ce1ca9f83cabd4331e6c1f1272f",
+    "model": "qwen3-embedding-0.6b",
+    "dimension": 1024,
+    "input_policy": "raw input forwarded as OpenAI embeddings input; no client instruction prefix",
+    "returned_vector_policy": "first 1024 values are retained by Graphiti OpenAIEmbedder",
+    "cache_key_policy": "exact UTF-8 bytes; no strip or Unicode normalization"
+  },
+  "external_checkpoint_reference": {
+    "repository": "Qwen/Qwen3-Embedding-0.6B",
+    "revision": "97b0c614be4d77ee51c0cef4e5f07c00f9eb65b3",
+    "not_endpoint_identity": true,
+    "files": {
+      "config.json": {
+        "sha256": "b5bf1f51fc45be473a54718cef92448d90a1be001bf9b9a44b8c7f10a19feaa9",
+        "selected": {
+          "hidden_size": 1024,
+          "model_type": "qwen3",
+          "torch_dtype": "bfloat16"
+        }
+      },
+      "modules.json": {
+        "sha256": "84e40c8e006c9b1d6c122e02cba9b02458120b5fb0c87b746c41e0207cf642cf",
+        "selected": {
+          "modules": [
+            "sentence_transformers.models.Transformer",
+            "sentence_transformers.models.Pooling",
+            "sentence_transformers.models.Normalize"
+          ]
+        }
+      },
+      "1_Pooling/config.json": {
+        "sha256": "37bf193fa101f19101bfad9c31d3eb0f786e247b7b1e5cb7f007d730eed1ddbd",
+        "selected": {
+          "pooling_mode_lasttoken": true,
+          "word_embedding_dimension": 1024
+        }
+      },
+      "config_sentence_transformers.json": {
+        "sha256": "10667c72ddb7726271bf1780cb7f86af8e2ae0032b8c243c731172064105c6961",
+        "selected": {
+          "default_prompt_name": null,
+          "document_prompt": "",
+          "query_prompt_present": true
+        }
+      }
+    }
+  },
+  "retained_behavior_evidence": {
+    "artifact": "artifacts/diagnostics/embedding_nondeterminism_source5.json",
+    "dimension": 1024,
+    "effective_norm_observation": "retained vectors have unit-norm behavior within recorded tolerance",
+    "does_not_prove": [
+      "the exact server normalization implementation",
+      "the actual remote launch dtype",
+      "the actual remote launch override for pooling or instruction"
+    ]
+  },
+  "runtime_field_verdict": {
+    "served_model_id": "resolved_endpoint_observed",
+    "dimension": "resolved_runtime_contract_observed",
+    "pooling": "external_reference_only",
+    "normalization": "effective_behavior_plus_external_reference",
+    "instruction_policy": "resolved_client_code_no_prefix",
+    "input_transform": "resolved_client_code_exact_utf8",
+    "dtype": "unresolved_missing_remote_argv_startup_log_or_deployed_config"
+  },
+  "gate_status": "blocked_unresolved_runtime_config",
+  "unresolved_fields": ["dtype"],
+  "required_next_evidence": [
+    "read-only remote vLLM launch argv containing --dtype, or",
+    "remote vLLM startup log containing resolved model dtype, or",
+    "the deployed model config file plus evidence that the process uses --dtype auto/config dtype"
+  ]
+}
