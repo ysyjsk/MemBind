@@ -1,0 +1,97 @@
+{
+  "analysis_mode": "retained_vs_current_exact_prompt_controls",
+  "claims": {
+    "checkpoint_identity_proven_equal": false,
+    "construction_runtime_identity_drift_detected": true,
+    "current_parsing_success_is_a_v3_pass": false,
+    "structured_output_backend_proven_equal": false,
+    "tokenizer_or_chat_template_identity_proven_equal": false
+  },
+  "controls": {
+    "constrained_schema_hash_matches": true,
+    "database_called": false,
+    "decoding_parameters_match": true,
+    "embedding_called": false,
+    "source0_prompt_bytes_match_history": true,
+    "source1_reconstruction_method_validated_by_source0": true
+  },
+  "current_outcomes": {
+    "source0": "parsed",
+    "source0_body_sha256": "74c291a9940a579feb9f5161a9c2be5e8957fe1b50b7abaf5073d4d84993d427",
+    "source1": "parsed",
+    "source1_body_sha256": "4440173b52e29b346dd15599678b6c34fab99cc9b6345614b526e14596d7472b"
+  },
+  "current_service": {
+    "models": [
+      {
+        "id": "qwen3-32b-fp8",
+        "max_model_len": 40960,
+        "parent": null,
+        "root": "/home/lhx/liuyi/models/Qwen3-32B-FP8"
+      }
+    ],
+    "proxy_bypass_for_target": true,
+    "server_config_available": false,
+    "vllm_version": "0.26.0"
+  },
+  "evidence_sources": [
+    {
+      "path": "artifacts/environment/v3_actual_schema_compatibility_probe_20260809_002_source0_control.json",
+      "sha256": "b590efd73d0eaeef664d862db0d14f06d290ecdf4b67cc6371912cdc3970064d",
+      "size_bytes": 2646
+    },
+    {
+      "path": "artifacts/environment/v3_actual_schema_compatibility_probe_20260809_001.json",
+      "sha256": "0321d63e53a6adbbfe2e317d455d55097e0b1a6f05c026f98510b6511377c414",
+      "size_bytes": 2685
+    },
+    {
+      "path": "artifacts/prompt_cache/v3_smoke_v3_smoke_002_c6853660.jsonl",
+      "sha256": "d130b6595632a53bb2e118553bbf9c7a498092a92162ef4ac3e31db40d975b0a",
+      "size_bytes": 84837
+    },
+    {
+      "path": "artifacts/llm_failures/v3_smoke_v3_smoke_002_M0_c6853660.json",
+      "sha256": "718e09c45f10744f2a1a7a7027a37df23566bf21716ace1e7b3b8f0827a4cd53",
+      "size_bytes": 124371
+    },
+    {
+      "path": "artifacts/environment/v3_vllm_metadata_probe_20260809_attempt03.json",
+      "sha256": "8f734c49f065f269fdbda22a721d67c93dec580e4e4210872a6be8e71249992b",
+      "size_bytes": 1709
+    }
+  ],
+  "gate": {
+    "new_v3_attempt_allowed": false,
+    "required_evidence": [
+      "construction process argv and startup log",
+      "construction model directory immutable fingerprint",
+      "tokenizer.json and chat_template/config fingerprints",
+      "structured-output backend configuration"
+    ],
+    "status": "blocked_construction_runtime_identity_drift"
+  },
+  "historical_outcomes": {
+    "source0": "parsed",
+    "source0_body_sha256": "1f859365e64ed96b2c521c0998a133d88b197d44b0d7c54ab4cef16d6583055b",
+    "source1": "length_truncated"
+  },
+  "response_bodies_persisted": false,
+  "schema_version": "membind.v3.construction_runtime_drift.v1",
+  "secrets_persisted": false,
+  "token_counts": {
+    "source0": {
+      "current": 4472,
+      "historical": 4515
+    },
+    "source1": {
+      "current": 5752,
+      "historical": 5795
+    }
+  },
+  "token_deltas": {
+    "equal_across_controls": true,
+    "source0": -43,
+    "source1": -43
+  }
+}

@@ -2,6 +2,10 @@
 
 > 文档状态：Pilot Protocol v1.1（已合并 Characterization / Fairness Addendum）
 > 当前执行覆盖：`MemBind_CURRENT_VALIDATION_PLAN_v1.2.md`（CURRENT VALIDATION PLAN v1.2）是当前阶段唯一执行顺序；本文保留冻结实验合同和历史背景。与旧 Phase/characterization 顺序冲突时，以 v1.2 的 V1→V7 单线状态机为准。
+> 当前恢复点：`V3 / v3_smoke_002_m0_structured_output_failure`；当前动作范围为
+> `blocked_waiting_for_explicit_protocol_deviation`。唯一 fresh-runtime public-path
+> probe `005_fresh_restart` 已逐字节复现历史截断；`v3_smoke_003 remains forbidden`，
+> 且 `forbidden_until_pass: V4/V5/V6/future_work`。
 > 目标：以单一 backend、单一数据集、单一 backbone，直接判断 Semantic Late Binding 是否值得继续研究。  
 > 本协议只验证核心 idea，不验证跨 backend 通用性、复杂调度、容错或完整线上部署。
 > 升级原则：v1.1 补充系统 characterization、公平性和环境噪声控制；除本文明确标为“替换”的条款外，v1.0 的 correctness、冻结数据划分、模型与 Graphiti 版本、Evidence Fence 以及 Go/No-Go 阈值保持不变。
@@ -121,6 +125,29 @@ seed: 20260806
 - item key 绑定 exact single-item UTF-8 input bytes；单 item 是 semantic key，API
   batch composition 不是，因此 `create(["x"])` 与 `create_batch(["x"])` 共用记录。
 - Performance lane：M0/M1/M2 使用相同 live embedding server、dimension 和 run 内 exact-text cache policy；每个 run 冷启动应用级 embedding cache，不要求跨 run bitwise-identical vectors。
+
+### V2 pilot boundary (current execution)
+
+在正式 V3 full correctness smoke 之前，V2 只允许执行一个有界的 harness
+integration：
+
+```text
+M0 capture -> M0 read-only replay
+```
+
+入口固定为：
+
+```text
+.venv/bin/python src/replay_driver.py v2-oracle-integration \
+  --attempt v2_oracle_integration_001
+```
+
+该 pilot 使用一个固定单 episode integration instance，只验证 LLM + embedding
+oracle 的 capture/replay、零 live fallback、fresh Neo4j cleanup、cross-encoder
+audit 和 cache 不可变性；它不替代 V3 的 M0 -> M2，也不运行 M1。任何 manifest
+runtime 字段无法从实际远端 argv、启动日志或部署配置证明时必须写入
+`unresolved_fields` 并在 live gate 前 fail closed，不能用本地模板或官方参考值
+冒充实际 dtype/pooling/normalization 配置。
 
 ### 3.5 硬件
 

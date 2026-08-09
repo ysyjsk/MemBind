@@ -1,0 +1,147 @@
+{
+  "analysis_mode": "offline_retained_failure_artifact",
+  "claims": {
+    "frozen_retry_budget_was_sufficient": false,
+    "guided_decoding_configuration_root_cause_proven": false,
+    "protocol_change_authorized": false,
+    "qwen_model_root_cause_proven": false,
+    "recorded_attempts_are_bitwise_repeated": true,
+    "schema_caused_model_repetition_proven": false,
+    "schema_permits_unbounded_entity_count": true
+  },
+  "classification": "deterministic_length_truncation_with_schema_permitted_unbounded_array",
+  "next_evidence_required": [
+    "vllm_process_argv_or_startup_log_with_guided_decoding_configuration",
+    "frozen_request_compatibility_probe_covering_the_actual_extraction_schema"
+  ],
+  "retry_analysis": {
+    "all_completion_budgets_saturated": true,
+    "all_finish_reason_length": true,
+    "attempt_signature_sha256": [
+      "b6285fa1ddb4a15214e918c30814336e9eaf060e63359225e073ebddc9d4cf37",
+      "b6285fa1ddb4a15214e918c30814336e9eaf060e63359225e073ebddc9d4cf37",
+      "b6285fa1ddb4a15214e918c30814336e9eaf060e63359225e073ebddc9d4cf37",
+      "b6285fa1ddb4a15214e918c30814336e9eaf060e63359225e073ebddc9d4cf37"
+    ],
+    "budget_sequences": [
+      [
+        2048,
+        8192
+      ],
+      [
+        2048,
+        8192
+      ],
+      [
+        2048,
+        8192
+      ],
+      [
+        2048,
+        8192
+      ]
+    ],
+    "deterministic_repetition_across_attempts": true,
+    "expected_budget_sequence_observed": true,
+    "expected_budgets": [
+      2048,
+      8192
+    ],
+    "identical_attempt_pair_count": 4,
+    "primary_prefix_of_retry_count": 4,
+    "prompt_token_counts": [
+      5795
+    ],
+    "record_count": 8,
+    "request_attempt_count": 4,
+    "response_evidence": [
+      {
+        "body_length": 5386,
+        "body_sha256": "d9340f0bc347bbb5d7049aa55bee2739485755444f28e216e523c4bd3a5b0a16",
+        "completion_tokens": 2048,
+        "finish_reason": "length",
+        "max_tokens": 2048,
+        "ordinal": 0
+      },
+      {
+        "body_length": 21456,
+        "body_sha256": "94fb64c3921b3e1e7bfecee99e6faa00e620fea7f949cc0d839d8b185035aef0",
+        "completion_tokens": 8192,
+        "finish_reason": "length",
+        "max_tokens": 8192,
+        "ordinal": 1
+      },
+      {
+        "body_length": 5386,
+        "body_sha256": "d9340f0bc347bbb5d7049aa55bee2739485755444f28e216e523c4bd3a5b0a16",
+        "completion_tokens": 2048,
+        "finish_reason": "length",
+        "max_tokens": 2048,
+        "ordinal": 2
+      },
+      {
+        "body_length": 21456,
+        "body_sha256": "94fb64c3921b3e1e7bfecee99e6faa00e620fea7f949cc0d839d8b185035aef0",
+        "completion_tokens": 8192,
+        "finish_reason": "length",
+        "max_tokens": 8192,
+        "ordinal": 3
+      },
+      {
+        "body_length": 5386,
+        "body_sha256": "d9340f0bc347bbb5d7049aa55bee2739485755444f28e216e523c4bd3a5b0a16",
+        "completion_tokens": 2048,
+        "finish_reason": "length",
+        "max_tokens": 2048,
+        "ordinal": 4
+      },
+      {
+        "body_length": 21456,
+        "body_sha256": "94fb64c3921b3e1e7bfecee99e6faa00e620fea7f949cc0d839d8b185035aef0",
+        "completion_tokens": 8192,
+        "finish_reason": "length",
+        "max_tokens": 8192,
+        "ordinal": 5
+      },
+      {
+        "body_length": 5386,
+        "body_sha256": "d9340f0bc347bbb5d7049aa55bee2739485755444f28e216e523c4bd3a5b0a16",
+        "completion_tokens": 2048,
+        "finish_reason": "length",
+        "max_tokens": 2048,
+        "ordinal": 6
+      },
+      {
+        "body_length": 21456,
+        "body_sha256": "94fb64c3921b3e1e7bfecee99e6faa00e620fea7f949cc0d839d8b185035aef0",
+        "completion_tokens": 8192,
+        "finish_reason": "length",
+        "max_tokens": 8192,
+        "ordinal": 7
+      }
+    ],
+    "unique_response_count_by_budget": {
+      "2048": 1,
+      "8192": 1
+    }
+  },
+  "schema_analysis": {
+    "constrained_schema_sha256": "96cedd296936b90ddbed2156b20411b1662389f1c94c7a0b57df00f3cadd21d5",
+    "episode_indices_constraint": {
+      "item_const": 0,
+      "max_items": 1,
+      "min_items": 1
+    },
+    "extracted_entities_has_finite_max_items": false,
+    "response_model": "graphiti_core.prompts.extract_nodes.ExtractedEntities",
+    "unbounded_array_paths": [
+      "$[schema].properties.extracted_entities"
+    ]
+  },
+  "schema_version": "membind.v3.structured_failure_diagnostic.v1",
+  "source": {
+    "path": "artifacts/llm_failures/v3_smoke_v3_smoke_002_M0_c6853660.json",
+    "sha256": "718e09c45f10744f2a1a7a7027a37df23566bf21716ace1e7b3b8f0827a4cd53",
+    "size_bytes": 124371
+  }
+}

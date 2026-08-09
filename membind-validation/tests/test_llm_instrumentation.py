@@ -17,6 +17,7 @@ from graphiti_native import (  # noqa: E402
     constrain_single_episode_indices,
     context_window_from_error,
     llm_metrics,
+    safe_structured_request_evidence,
     structured_retry_budgets,
     token_usage_dict,
     wrap_prompt_cache,
@@ -27,6 +28,44 @@ from graphiti_core.llm_client.client import LLMClient  # noqa: E402
 
 
 class LLMInstrumentationTests(TestCase):
+    def test_structured_request_evidence_hashes_but_never_persists_messages(self):
+        request = {
+            "model": "qwen3-32b-fp8",
+            "messages": [
+                {"role": "system", "content": "private system"},
+                {"role": "user", "content": "private user"},
+            ],
+            "temperature": 0.0,
+            "top_p": 1.0,
+            "max_tokens": 2048,
+            "seed": 20260806,
+            "response_format": {
+                "type": "json_schema",
+                "json_schema": {
+                    "name": "Result",
+                    "schema": {
+                        "type": "object",
+                        "properties": {"ok": {"type": "boolean"}},
+                    },
+                },
+            },
+            "extra_body": {"chat_template_kwargs": {"enable_thinking": False}},
+        }
+
+        evidence = safe_structured_request_evidence(request)
+        encoded = json.dumps(evidence, sort_keys=True)
+
+        self.assertEqual(evidence["message_count"], 2)
+        self.assertEqual(evidence["message_roles"], ["system", "user"])
+        self.assertEqual(len(evidence["message_content_sha256"]), 2)
+        self.assertEqual(evidence["response_format_type"], "json_schema")
+        self.assertEqual(evidence["json_schema_name"], "Result")
+        self.assertEqual(evidence["structured_output_backend_requested"], None)
+        self.assertFalse(evidence["chat_template_kwargs"]["enable_thinking"])
+        self.assertNotIn("private system", encoded)
+        self.assertNotIn("private user", encoded)
+        self.assertNotIn("messages", evidence)
+
     def test_graphiti_internal_token_request_is_clamped_to_frozen_protocol_limit(self):
         self.assertEqual(clamp_max_tokens(16_384, 2_048), 2_048)
         self.assertEqual(clamp_max_tokens(512, 2_048), 512)
@@ -166,6 +205,13 @@ class QwenFailureCaptureTests(IsolatedAsyncioTestCase):
         self.assertEqual([event["max_tokens"] for event in client.failure_events], [2048, 8192])
         self.assertEqual(client.failure_events[-1]["finish_reason"], "length")
         self.assertEqual(client.failure_events[-1]["raw_response"], '{"ok": "unterminated')
+        for event in client.failure_events:
+            evidence = event["request_evidence"]
+            self.assertEqual(evidence["message_count"], 1)
+            self.assertEqual(evidence["message_roles"], ["user"])
+            self.assertEqual(evidence["response_format_type"], "json_schema")
+            self.assertEqual(evidence["json_schema_name"], "ResponseModel")
+            self.assertEqual(evidence["structured_output_backend_requested"], None)
         self.assertEqual(client.structured_request_count, 1)
         self.assertEqual(client.structured_response_failure_count, 1)
         self.assertEqual(token_usage_dict(None), {})

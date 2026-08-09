@@ -1,0 +1,66 @@
+{
+  "base_url": "http://10.87.5.247:8000/v1",
+  "blocker": null,
+  "checked_at": "2026-08-09T02:19:47.246209+00:00",
+  "endpoint_results": [
+    {
+      "body_bytes": 20,
+      "body_sha256": "773a9a7ab215c7b3376ce5a4f72214136fa7aaa2b71a9b9d117396e79b19c589",
+      "content_type": "application/json",
+      "elapsed_ms": 13.214,
+      "ok": true,
+      "path": "/version",
+      "status": 200
+    },
+    {
+      "body_bytes": 484,
+      "body_sha256": "f171c2b1a9ecac0e0db28849a0b17405e5fd0f4ef83bad6a0a6d9e55c53bc26c",
+      "content_type": "application/json",
+      "elapsed_ms": 1.51,
+      "ok": true,
+      "path": "/v1/models",
+      "status": 200
+    },
+    {
+      "elapsed_ms": 0.922,
+      "error_type": "HTTPError",
+      "ok": false,
+      "path": "/server_info?config_format=json",
+      "status": 404
+    },
+    {
+      "body_bytes": 0,
+      "body_sha256": "e3b0c44298fc1c149afbf4c8996fb92427ae41e4649b934ca495991b7852b855",
+      "content_type": "",
+      "elapsed_ms": 0.971,
+      "ok": true,
+      "path": "/health",
+      "status": 200
+    }
+  ],
+  "generation_endpoint_called": false,
+  "mode": "read_only_metadata_no_generation",
+  "models": [
+    {
+      "id": "qwen3-32b-fp8",
+      "max_model_len": 40960,
+      "parent": null,
+      "root": "/home/lhx/liuyi/models/Qwen3-32B-FP8"
+    }
+  ],
+  "ok": true,
+  "private_target": true,
+  "proxy_bypass_for_target": true,
+  "requested_paths": [
+    "/version",
+    "/v1/models",
+    "/server_info?config_format=json",
+    "/health"
+  ],
+  "route_contract_ok": true,
+  "schema_version": "membind.v3.vllm_metadata_probe.v1",
+  "secrets_persisted": false,
+  "server_config": null,
+  "server_config_available": false,
+  "version": "0.26.0"
+}

@@ -5,6 +5,7 @@ from __future__ import annotations
 import asyncio
 import contextvars
 import hashlib
+import json
 import os
 import re
 from datetime import datetime, timezone
@@ -219,6 +220,92 @@ def token_usage_dict(usage: Any) -> dict[str, int]:
     return result
 
 
+def safe_structured_request_evidence(request: dict[str, Any]) -> dict[str, Any]:
+    """Fingerprint a structured request without retaining any message content."""
+
+    messages = request.get("messages")
+    if not isinstance(messages, list):
+        raise TypeError("structured request messages must be a list")
+    roles: list[str] = []
+    content_hashes: list[str] = []
+    content_lengths: list[int] = []
+    content_byte_lengths: list[int] = []
+    for index, message in enumerate(messages):
+        if not isinstance(message, dict):
+            raise TypeError(f"structured request message {index} must be an object")
+        content = message.get("content")
+        if not isinstance(content, str):
+            raise TypeError(f"structured request message {index} content must be text")
+        encoded = content.encode("utf-8")
+        roles.append(str(message.get("role") or ""))
+        content_hashes.append(hashlib.sha256(encoded).hexdigest())
+        content_lengths.append(len(content))
+        content_byte_lengths.append(len(encoded))
+
+    response_format = request.get("response_format")
+    if not isinstance(response_format, dict):
+        raise TypeError("structured request response_format must be an object")
+    json_schema_wrapper = response_format.get("json_schema")
+    json_schema_wrapper = (
+        json_schema_wrapper if isinstance(json_schema_wrapper, dict) else {}
+    )
+    schema = json_schema_wrapper.get("schema")
+    schema = schema if isinstance(schema, dict) else {}
+    structured_outputs = request.get("structured_outputs")
+    backend_requested = (
+        structured_outputs.get("backend")
+        if isinstance(structured_outputs, dict)
+        else None
+    )
+    extra_body = request.get("extra_body")
+    extra_body = extra_body if isinstance(extra_body, dict) else {}
+    chat_template_kwargs = extra_body.get("chat_template_kwargs")
+    chat_template_kwargs = (
+        dict(chat_template_kwargs) if isinstance(chat_template_kwargs, dict) else {}
+    )
+
+    canonical_request = json.dumps(
+        request,
+        ensure_ascii=False,
+        sort_keys=True,
+        separators=(",", ":"),
+        default=str,
+    ).encode("utf-8")
+    canonical_format = json.dumps(
+        response_format,
+        ensure_ascii=True,
+        sort_keys=True,
+        separators=(",", ":"),
+        default=str,
+    ).encode("ascii")
+    canonical_schema = json.dumps(
+        schema,
+        ensure_ascii=True,
+        sort_keys=True,
+        separators=(",", ":"),
+        default=str,
+    ).encode("ascii")
+    return {
+        "request_envelope_sha256": hashlib.sha256(canonical_request).hexdigest(),
+        "model": str(request.get("model") or ""),
+        "temperature": request.get("temperature"),
+        "top_p": request.get("top_p"),
+        "max_tokens": request.get("max_tokens"),
+        "seed": request.get("seed"),
+        "message_count": len(messages),
+        "message_roles": roles,
+        "message_content_sha256": content_hashes,
+        "message_content_lengths": content_lengths,
+        "message_content_byte_lengths": content_byte_lengths,
+        "response_format_type": response_format.get("type"),
+        "response_format_sha256": hashlib.sha256(canonical_format).hexdigest(),
+        "json_schema_name": json_schema_wrapper.get("name"),
+        "json_schema_sha256": hashlib.sha256(canonical_schema).hexdigest(),
+        "structured_output_backend_requested": backend_requested,
+        "chat_template_kwargs": chat_template_kwargs,
+    }
+
+
 def clamp_max_tokens(requested: int | None, frozen_limit: int) -> int:
     if frozen_limit <= 0:
         raise ValueError("frozen max_tokens must be positive")
@@ -392,8 +479,6 @@ class QwenVLLMClient:
                 return record
 
             async def _generate_response(self, messages, response_model=None, max_tokens=2048, model_size=None):
-                import json
-
                 self.structured_request_count += 1
                 openai_messages = []
                 for m in messages:
@@ -412,6 +497,7 @@ class QwenVLLMClient:
                 context_budget: int | None = None
                 context_limit: int | None = None
                 attempted_budgets: set[int] = set()
+                request_evidence_by_budget: dict[int, dict[str, Any]] = {}
 
                 async def create_response(budget: int) -> Any:
                     request: dict[str, Any] = {
@@ -427,6 +513,9 @@ class QwenVLLMClient:
                         request["extra_body"] = {
                             "chat_template_kwargs": {"enable_thinking": False}
                         }
+                    request_evidence_by_budget[budget] = safe_structured_request_evidence(
+                        request
+                    )
                     return await self.client.chat.completions.create(**request)
 
                 for configured_budget in budgets:
@@ -478,6 +567,7 @@ class QwenVLLMClient:
                                 {
                                     "failure_type": "context_budget_exhausted",
                                     "episode_key": current_episode_key(),
+                                    "request_evidence": request_evidence_by_budget[budget],
                                     "max_tokens": budget,
                                     "finish_reason": finish_reason,
                                     "raw_response": result,
@@ -518,6 +608,7 @@ class QwenVLLMClient:
                                     "context_probe" if is_context_probe else "structured_parse"
                                 ),
                                 "episode_key": current_episode_key(),
+                                "request_evidence": request_evidence_by_budget[budget],
                                 "max_tokens": budget,
                                 "finish_reason": finish_reason,
                                 "raw_response": result,

@@ -4,13 +4,35 @@
 >
 > **目标**：先完成 Graphiti 上的基础可行性验证。验证完成之前，不设计、不实现、不运行任何后续扩展机制。
 >
-> **当前阶段**：`V1 — Correctness Determinism Closure`
+> **当前阶段**：`V3 — Full Correctness Smoke`
+>
+> **当前阻塞**：`v3_smoke_002_m0_structured_output_failure`
+>
+> **当前动作范围**：`blocked_waiting_for_explicit_protocol_deviation`。
+>
+> **当前唯一允许动作**：保持 structured-output blocker，并等待明确批准的 protocol
+> deviation 或有新证据的 service-side correction。唯一冻结 probe
+> `005_fresh_restart` 已复现历史截断，sanitized post-request evidence 已审阅；
+> `v3_smoke_003 remains forbidden`。
+>
+> `forbidden_until_pass: V4/V5/V6/future_work`
 >
 > **权威关系**：
 > - 本文件：决定“现在按什么顺序执行”。
 > - `MemBind_basic_validation_experiment.md`：提供已冻结的数据集、模型、Graphiti 版本、指标定义等背景合同。
 > - 历史 `smoke01...`：只作为失败证据，不决定下一步任务。
 > - 如果旧文档与本文件的执行顺序冲突，以本文件为准；任何涉及模型、数据集、Graphiti 版本或方法语义的实质变更仍视为 protocol deviation，不能由 Agent 自行修改。
+
+模型主机取证只允许使用 `ssh zju-liuyi '<forced-command>'`，合同固定为：
+
+```text
+remote_scope: /home/lhx/liuyi/**
+allowed_forced_commands: status/list/read/tail/follow
+```
+
+所有命令均为只读。禁止请求 ordinary shell、绕过 forced-command、扩大权限，或访问
+`/home/lhx` 其他目录及系统目录。当前没有 remote write permission；如任务确需修改
+允许范围内文件，必须先明确报告并等待受限脚本扩展写权限，不得自行绕过。
 
 ---
 
@@ -229,6 +251,27 @@ M1 read-only replay 与 M2 read-only replay 必须共享对应 instance 的同�
 capture oracle。这样 M1 的 semantic divergence 才能归因于执行组织，而不是
 另一次 live model sample。correctness replay 不用于性能计时。
 
+### V2 current bounded pilot
+
+在 V3 full correctness smoke 之前，当前 V2 只执行一个专用的 harness integration：
+
+```text
+M0 capture -> M0 read-only replay
+```
+
+命令为：
+
+```text
+.venv/bin/python src/replay_driver.py v2-oracle-integration \
+  --attempt v2_oracle_integration_001
+```
+
+该 pilot 只使用固定单 episode integration instance，验证模型 oracle、零 live
+fallback、fresh Neo4j、cross-encoder audit 和 prompt/embedding cache hash 不变。
+它不运行 M1，也不提前执行 V3 的 M0 -> M2。manifest 的 runtime 字段必须有实际
+远端 argv、启动日志或部署配置的证据；无法证明的字段进入 `unresolved_fields`，
+live gate 保持 fail closed。
+
 ### 重要边界
 
 **不得 replay：**
@@ -370,11 +413,91 @@ post-run DB cleanup = 0 nodes
    - harness bug；
    - upstream physical nondeterminism；
    - actual M0/M2 semantic divergence；
+   - frozen request 下的 upstream/model structured-output failure；
 4. 只允许修复 harness bug；
 5. 若修复需要改变 Graphiti semantic behavior、prompt 或 candidate membership，停止并记录 protocol deviation，不自行继续；
 6. 新 attempt 必须新 run_id。
 
+新 attempt 只有在服务侧修复已由冻结协议下的证据证明，或用户明确批准
+protocol deviation 后才允许启动；拥有一个新的 run ID 本身不构成重跑授权。
+
 **禁止同时修多个未证明问题。**
+
+### V3 截断记录与当前 structured-output blocker
+
+`v3_smoke_002` 在 M0 的第二个 source episode 进行结构化抽取时失败。冻结的
+2048 与 8192 completion budgets 均以 `finish_reason=length` 结束，M2 未启动，
+M1 仍按协议禁止。当前证据只支持“冻结 Graphiti 请求下的 upstream/model
+structured-output failure”，尚不能在 vLLM guided decoding、模型行为和其他
+request/runtime interaction 之间完成归因。
+
+完整证据保存在：
+
+```text
+membind-validation/artifacts/diagnostics/v3_smoke_002_failure_report_20260809.md
+SHA256 060e59eeb5e68015f8b0a022b5e266e19be15dd16dcac7fe240e7c20e8a5b09e
+```
+
+只允许离线诊断和收集服务侧配置证据。不得复用该 attempt 的 partial prompt /
+embedding cache，不得修改 Graphiti prompt、schema、decoding policy、模型或冻结
+retry budget 来追求通过。
+
+当前离线诊断已经持久化为：
+
+```text
+artifacts/diagnostics/v3_smoke_002_structured_failure_diagnosis_20260809.md
+artifacts/diagnostics/v3_smoke_002_structured_failure_diagnostic_20260809.json
+```
+
+诊断证明四轮 `2048 -> 8192` 响应逐字节重复且均以 `length` 截断；实际
+`ExtractedEntities.extracted_entities` 数组没有有限 `maxItems`。这解释了
+“schema-compatible prefix”现象，但不证明 deployed guided-decoding backend 的
+选择或配置。metadata attempt02 后来被证明错误经过了外网 proxy，不能作为服务
+状态证据。直连 attempt03 的 version/models/health 均通过，`/server_info` 未开放。
+
+construction service 恢复后执行的只读直连 attempt04 再次证明
+version/models/health 可用，但 `/server_info` 仍为 404，且没有调用 generation：
+
+```text
+artifacts/environment/v3_vllm_metadata_probe_20260809_attempt04_restored.json
+classification: service_restored_backend_config_unavailable
+```
+
+因此“服务恢复”只关闭 availability 条件，不关闭 backend/config 证据 gate，也不
+授权 compatibility probe 或 `v3_smoke_003`。
+
+随后通过受限 `ssh zju-liuyi` 取得的 startup log 证明当前重启实例配置为
+`StructuredOutputsConfig(backend='auto', ...)`，且在哈希日志快照中尚无 generation：
+
+```text
+artifacts/environment/v3_construction_runtime_evidence_20260809.json
+classification: configured_backend_auto_fresh_service_no_generation_observed
+```
+
+这不证明实际 request-selected backend，也不证明历史失败已修复；它曾把 gate 推进
+为单次 `frozen_public_path_compatibility_probe_only`。该 one-shot 现已执行完毕：
+
+```text
+artifacts/environment/v3_actual_schema_compatibility_probe_20260809_005_fresh_restart.json
+classification: exact_historical_truncation_reproduced
+```
+
+它在 5795 prompt tokens 下再次逐字节复现四组 `2048 -> 8192` 截断，post-request
+restricted log 同时记录 8/8 HTTP 200 且没有 server error。当前动作范围因此收紧为
+`blocked_waiting_for_explicit_protocol_deviation`；`v3_smoke_003 remains forbidden`。
+
+最初的 source-0/source-1 probe 直接调用 private `_generate_response`，漏掉 public
+`generate_response` wrapper 注入的 227 字符 language instruction；其 `-43` token
+结果及 runtime-drift 诊断无效。修正后的 public-path probe 恢复历史 5795 prompt
+tokens，并在四次 high-level attempts 中逐字节复现历史 `2048 -> 8192` 两个失败
+response hashes。当前 blocker 因而仍是已确认的 structured-output truncation。
+
+机器证据为：
+
+```text
+artifacts/environment/v3_actual_schema_compatibility_probe_20260809_004_reclassified.json
+SHA256 d3caf163af7639f2dcbc5322d4f1e3e5a3d23067f2638bb4398d15c4c2b9bcfb
+```
 
 ### V3 PASS 后动作
 
@@ -939,18 +1062,21 @@ next_allowed_action
 membind-validation/CURRENT_STATE.json
 ```
 
-格式固定：
+当前格式固定，并以实际 `CURRENT_STATE.json` 为准：
 
 ```json
 {
   "protocol_version": "current-validation-v1.2",
-  "current_stage": "V1",
-  "status": "in_progress",
-  "current_blocker": "embedding nondeterminism diagnosis",
-  "next_allowed_action": "analyze retained source-5 artifacts and persist not_computable fields without live recapture",
-  "forbidden_until_pass": ["V2", "V3", "V4", "V5", "V6", "future_work"]
+  "current_stage": "V3",
+  "status": "blocked_v3_structured_output_reproduced",
+  "current_blocker": "v3_smoke_002_m0_structured_output_failure",
+  "current_action_scope": "blocked_waiting_for_explicit_protocol_deviation",
+  "next_allowed_action": "no further live execution; retain the structured-output blocker and wait for an explicit protocol deviation or evidenced service-side correction; v3_smoke_003 remains forbidden",
+  "forbidden_until_pass": ["V4", "V5", "V6", "future_work"]
 }
 ```
+
+摘要合同：`forbidden_until_pass: V4/V5/V6/future_work`。
 
 每个阶段 PASS 后只更新：
 
@@ -967,29 +1093,23 @@ Agent 不应该根据聊天历史或旧 smoke 记录自行重排任务。
 
 # 6. 当前此刻的唯一下一步
 
-Agent **现在只允许做这一件事**：
+Agent **现在只允许维持 blocker 并等待明确决策**：
 
 ```text
-只读分析 retained source-5/source-8 evidence
-→ 比较 logical key、embedding hash/norm、saved rank/top-K/prompt
-→ cosine/L2/max-abs 明确 not_computable_from_retained_artifacts
-→ 保存 artifact
+blocked_waiting_for_explicit_protocol_deviation
+→ 不再运行 live probe；等待明确批准的 deviation 或有证据的 service-side correction
 ```
 
-旧 snapshot 不含 raw vector 已是已知事实；不得启动 6-episode 或 full-trace
-recapture，不得用新的 live vector 冒充历史向量。
-
-完成后：
-
-```text
-进入 V2
-实现 correctness-only embedding capture/read-only replay
-```
+冻结 probe `005_fresh_restart` 已失败并完成证据审阅，当前 blocker 保持不变。
+不得修改 construction service；如确需改变冻结合同或远端配置，先停止并请求明确
+批准 deviation，远端修改还必须先扩展受限脚本的 write permission。
 
 现在不要：
 
 ```text
-跑新的 full smoke
+复用 v3_smoke_002 partial cache
+重复运行 frozen public-path compatibility probe
+跑新的 full smoke / v3_smoke_003
 跑 calibration
 跑 M1
 跑 72 runs

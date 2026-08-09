@@ -1,0 +1,55 @@
+{
+  "checked_at": "2026-08-08T17:15:49.854167+00:00",
+  "construction": {
+    "base_url": "http://10.87.5.247:8000/v1",
+    "context_ok": true,
+    "expected_vllm_version": "0.26.0",
+    "max_model_len": 40960,
+    "minimum_context_tokens": 40960,
+    "models": [
+      "qwen3-32b-fp8"
+    ],
+    "models_ok": true,
+    "ok": true,
+    "requested_model": "qwen3-32b-fp8",
+    "runtime_contract_ok": true,
+    "structured_checks": 1,
+    "structured_success": 1,
+    "version_ok": true,
+    "vllm_version": "0.26.0"
+  },
+  "construction_provider": "vllm",
+  "embedding": {
+    "base_url": "http://10.87.5.247:8001/v1",
+    "dimension": 1024,
+    "embedding_ok": true,
+    "expected_dimension": 1024,
+    "models": [
+      "qwen3-embedding-0.6b"
+    ],
+    "models_ok": true,
+    "ok": true,
+    "requested_model": "qwen3-embedding-0.6b"
+  },
+  "mode": "read_only_health_plus_one_structured_and_embedding_contract_probe",
+  "neo4j": {
+    "node_count": 0,
+    "ok": true
+  },
+  "ok": true,
+  "schema_version": "membind.v3_remote_service_preflight.v1",
+  "secrets_persisted": false,
+  "stable_model_checks": [
+    {
+      "elapsed_ms": 18.934,
+      "ok": true,
+      "ordinal": 0
+    },
+    {
+      "elapsed_ms": 5.308,
+      "ok": true,
+      "ordinal": 1
+    }
+  ],
+  "stage": "V3"
+}

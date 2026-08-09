@@ -1,0 +1,83 @@
+{
+  "checked_at": "2026-08-08T19:01:01.199562+00:00",
+  "classification": "frozen_actual_schema_request_parsed",
+  "database_called": false,
+  "embedding_called": false,
+  "error_type": null,
+  "historical_prompt_token_count": 5795,
+  "llm_call_count": 1,
+  "mode": "one_exact_extraction_request_no_database_no_embedding",
+  "observed_events": [
+    {
+      "body_length": 492,
+      "body_sha256": "4440173b52e29b346dd15599678b6c34fab99cc9b6345614b526e14596d7472b",
+      "completion_tokens": 175,
+      "failure_type": null,
+      "finish_reason": "stop",
+      "max_tokens": 2048,
+      "ordinal": 0,
+      "prompt_tokens": 5752,
+      "total_tokens": 5927
+    }
+  ],
+  "observed_prompt_token_counts": [
+    5752
+  ],
+  "ok": false,
+  "outer_retry_count": 0,
+  "parsed_entity_count": 10,
+  "probe_contract": {
+    "budget_sequence": [
+      2048,
+      8192
+    ],
+    "chat_template_kwargs": {
+      "enable_thinking": false
+    },
+    "database_called": false,
+    "dataset_path": "/data/predator/ly/Mem/data/raw/longmemeval-cleaned/longmemeval_s_cleaned.json",
+    "dataset_sha256": "d6f21ea9d60a0d56f34a05b609c79c88a451d2ae03597821ea3d5a9678c3a442",
+    "embedding_called": false,
+    "json_schema_name": "ExtractedEntities",
+    "json_schema_sha256": "96cedd296936b90ddbed2156b20411b1662389f1c94c7a0b57df00f3cadd21d5",
+    "max_tokens": 2048,
+    "message_content_byte_lengths": [
+      164,
+      26579
+    ],
+    "message_content_lengths": [
+      164,
+      26559
+    ],
+    "message_content_sha256": [
+      "da974483b3b54c8388e1ff5ef78b344599d191d56a36b13b687ef570c173ef3e",
+      "e257dc7a1014282f8f2447a5f95fc7349488d07d7da3c26671e7e825d04de7b7"
+    ],
+    "message_count": 2,
+    "message_roles": [
+      "system",
+      "user"
+    ],
+    "model": "qwen3-32b-fp8",
+    "previous_source_hashes": [
+      "7e25231116afa6797c4e614f851e55e4f8e0e3c33817a24ee9bbff49277c81ea"
+    ],
+    "question_id": "c6853660",
+    "request_envelope_sha256": "b28920b8444c033925b4b04a78ad922ed318a955cccf8fb357243b7f4a7e0b70",
+    "response_format_sha256": "8e07a3d3669c75c478a4375feb6e4067728a01d9f0e3eb6b6ecfe67683bb1f32",
+    "response_format_type": "json_schema",
+    "seed": 20260806,
+    "source_hash": "90f8ffc85858a5db4b0ef53b769b8e4ced76ec39c764fd436c85b243cf3fb802",
+    "source_sequence": 1,
+    "structured_output_backend_requested": null,
+    "temperature": 0.0,
+    "top_p": 1.0
+  },
+  "prompt_token_count_matches_history": false,
+  "response_bodies_persisted": false,
+  "schema_version": "membind.v3.actual_schema_compatibility_probe.v1",
+  "secrets_persisted": false,
+  "structured_parse_failures": 0,
+  "structured_request_count": 1,
+  "structured_response_failures": 0
+}

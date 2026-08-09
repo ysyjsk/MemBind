@@ -1,0 +1,50 @@
+{
+  "attempt": "v3_smoke_002",
+  "cache_id": "v3_smoke_v3_smoke_002_c6853660",
+  "error": "ExperimentRunFailed(\"experiment run v3_smoke_v3_smoke_002_M0_c6853660 failed: JSONDecodeError('Expecting property name enclosed in double quotes: line 1 column 21457 (char 21456)')\")",
+  "finished_at": "2026-08-08T17:35:56.224937+00:00",
+  "forbidden_methods": [
+    "M1"
+  ],
+  "ok": false,
+  "question_id": "c6853660",
+  "reference_attempt": "v3_smoke_002",
+  "run_ids": {
+    "M0": "v3_smoke_v3_smoke_002_M0_c6853660",
+    "M2": "v3_smoke_v3_smoke_002_M2_c6853660"
+  },
+  "stage": "V3",
+  "started_at": "2026-08-08T17:18:02.109421+00:00",
+  "traceback_tail": [
+    "    return _default_decoder.decode(s)",
+    "           ^^^^^^^^^^^^^^^^^^^^^^^^^^",
+    "  File \"/usr/lib/python3.12/json/decoder.py\", line 337, in decode",
+    "    obj, end = self.raw_decode(s, idx=_w(s, 0).end())",
+    "               ^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^",
+    "  File \"/usr/lib/python3.12/json/decoder.py\", line 353, in raw_decode",
+    "    obj, end = self.scan_once(s, idx)",
+    "               ^^^^^^^^^^^^^^^^^^^^^^",
+    "json.decoder.JSONDecodeError: Expecting property name enclosed in double quotes: line 1 column 21457 (char 21456)",
+    "",
+    "The above exception was the direct cause of the following exception:",
+    "",
+    "Traceback (most recent call last):",
+    "  File \"/data/predator/ly/MemBind/membind-validation/src/replay_driver.py\", line 1088, in cmd_v3_smoke",
+    "    asyncio.run(",
+    "  File \"/usr/lib/python3.12/asyncio/runners.py\", line 194, in run",
+    "    return runner.run(main)",
+    "           ^^^^^^^^^^^^^^^^",
+    "  File \"/usr/lib/python3.12/asyncio/runners.py\", line 118, in run",
+    "    return self._loop.run_until_complete(task)",
+    "           ^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^",
+    "  File \"/usr/lib/python3.12/asyncio/base_events.py\", line 687, in run_until_complete",
+    "    return future.result()",
+    "           ^^^^^^^^^^^^^^^",
+    "  File \"/data/predator/ly/MemBind/membind-validation/src/replay_driver.py\", line 763, in run_one",
+    "    return await run_experiment(",
+    "           ^^^^^^^^^^^^^^^^^^^^^",
+    "  File \"/data/predator/ly/MemBind/membind-validation/src/experiment_runner.py\", line 340, in run_experiment",
+    "    raise ExperimentRunFailed(status) from failure",
+    "experiment_runner.ExperimentRunFailed: experiment run v3_smoke_v3_smoke_002_M0_c6853660 failed: JSONDecodeError('Expecting property name enclosed in double quotes: line 1 column 21457 (char 21456)')"
+  ]
+}

@@ -1,3 +1,4 @@
+import json
 import re
 import sys
 from pathlib import Path
@@ -93,6 +94,27 @@ def _parse_nested_yaml_contract(path):
 
 
 class ContractSourceTests(TestCase):
+    def test_vllm_0_26_structured_output_contract_has_immutable_upstream_sources(self):
+        evidence = json.loads(
+            (
+                ROOT
+                / "artifacts"
+                / "environment"
+                / "vllm_0_26_structured_output_contract_20260809.json"
+            ).read_text(encoding="utf-8")
+        )
+
+        self.assertEqual(evidence["tag"], "v0.26.0")
+        self.assertEqual(evidence["tag_commit"], "568afb3a13806beb53bb2e6bd518269357b237c0")
+        self.assertEqual(evidence["default_backend"], "auto")
+        self.assertIn("xgrammar", evidence["supported_backends"])
+        self.assertIn("guidance", evidence["supported_backends"])
+        self.assertTrue(evidence["response_format_json_schema_is_normalized"])
+        self.assertFalse(evidence["deployed_backend_proven"])
+        self.assertGreaterEqual(len(evidence["sources"]), 5)
+        for source in evidence["sources"]:
+            self.assertRegex(source["sha256"], r"^[0-9a-f]{64}$")
+
     def test_plan_base_config_and_env_use_same_model_services(self):
         plan = _parse_plan_contract(ROOT / "EXPERIMENT_PLAN.md")
         base = _parse_simple_yaml(ROOT / "configs" / "base.yaml")

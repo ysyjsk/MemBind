@@ -6,14 +6,80 @@ order. `../MemBind_basic_validation_experiment.md` remains the source for frozen
 models, data, methods, metrics, and decision thresholds.
 
 ```text
-current_stage: V1
-current_blocker: retained-artifact embedding nondeterminism closure
-next_allowed_action: analyze retained source-5 evidence and persist not_computable fields
+current_stage: V3
+current_blocker: v3_smoke_002_m0_structured_output_failure
+current_action_scope: blocked_waiting_for_explicit_protocol_deviation
+next_allowed_action: no further live execution; retain the structured-output blocker and wait for an explicit protocol deviation or evidenced service-side correction; v3_smoke_003 remains forbidden
+forbidden_until_pass: V4/V5/V6/future_work
 ```
+
+The single authorized frozen public-path probe has now been consumed. Artifact
+`artifacts/environment/v3_actual_schema_compatibility_probe_20260809_005_fresh_restart.json`
+reproduces all four historical `2048 -> 8192` truncation pairs byte-for-byte at
+the historical 5795 prompt tokens. The sanitized post-request restricted-log
+evidence records 8/8 HTTP 200 completions and no server error, so connectivity
+is not the blocker.
+The configured structured-output backend remains `auto`, while the
+request-selected backend is still unobserved.
+No additional probe, full smoke, construction service change, V4, V5, or V6
+execution is authorized.
 
 Machine-readable state is in `CURRENT_STATE.json`. Historical smoke failures do
 not create new tasks; their retained evidence index is
 `artifacts/history/SMOKE_HISTORY.md`.
+
+Remote model-host inspection is restricted to
+`ssh zju-liuyi '<forced-command>'` with
+`remote_scope: /home/lhx/liuyi/**` and
+`allowed_forced_commands: status/list/read/tail/follow`. These operations are
+read-only. An ordinary shell, access outside that scope, forced-command bypass,
+and privilege expansion are forbidden. Remote write permission must be
+explicitly reported as necessary and enabled in the restricted script before
+any modification is attempted.
+
+`v3_smoke_002` failed during M0 structured extraction after both frozen
+completion budgets ended with `finish_reason=length`; M2 never started. Its
+prompt and embedding caches are partial and must not be reused. The immutable
+failure report is
+`artifacts/diagnostics/v3_smoke_002_failure_report_20260809.md`. A new live
+attempt is forbidden until offline evidence demonstrates service compatibility
+under the unchanged protocol, or an explicit protocol deviation is approved.
+
+Offline diagnosis is persisted in
+`artifacts/diagnostics/v3_smoke_002_structured_failure_diagnosis_20260809.md`
+and the redacted machine-readable analysis in
+`artifacts/diagnostics/v3_smoke_002_structured_failure_diagnostic_20260809.json`.
+It proves four identical `2048 -> 8192` truncation trajectories and identifies
+the installed extraction schema's unbounded `extracted_entities` array, without
+claiming a backend root cause. The corrected no-generation metadata probe is
+`artifacts/environment/v3_vllm_metadata_probe_20260809_attempt03.json`; direct
+version/models/health checks pass, while `/server_info` is not enabled. The
+first source-0/source-1 probes incorrectly called the private generation method
+and omitted the public wrapper's language instruction; their `-43` token result
+and runtime-drift diagnosis are invalidated. The corrected public path reports
+the historical 5795 prompt tokens and reproduces all four exact
+`2048 -> 8192` failure pairs byte-for-byte. The current blocker is therefore
+the confirmed structured-output failure. `v3_smoke_003` remains forbidden until
+the deployed backend/config is evidenced and the same public-path probe parses,
+or an explicit protocol deviation is approved.
+
+After the service was restored, the read-only direct metadata probe
+`artifacts/environment/v3_vllm_metadata_probe_20260809_attempt04_restored.json`
+again passed version/models/health but `/server_info` remained 404. Its
+classification is `service_restored_backend_config_unavailable`: availability
+is restored, while the current `evidence_collection_only` gate is unchanged.
+No generation or compatibility probe was run.
+
+Restricted startup evidence is now persisted as
+`artifacts/environment/v3_construction_runtime_evidence_20260809.json`. It
+proves the configured backend is `auto` and the restarted log snapshot contains
+no generation. Classification:
+`configured_backend_auto_fresh_service_no_generation_observed`. The authorized
+probe against that fresh runtime then reproduced the historical truncation in
+`005_fresh_restart`; the detailed conclusion is persisted in
+`artifacts/diagnostics/v3_fresh_runtime_compatibility_failure_report_20260809.md`.
+The actual request-selected backend remains unobserved. Further live execution
+requires an explicit protocol deviation or an evidenced service-side correction.
 
 ## Frozen Topology
 
@@ -67,7 +133,7 @@ V1 Correctness nondeterminism closure
 
 Skipping a stage is prohibited.
 
-## V1 Current Action
+## V1 Closed Contract
 
 The existing source-5 snapshots prove that some equal logical edge texts and
 query paths have different vector hashes, while logical graph size and

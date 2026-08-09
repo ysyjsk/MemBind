@@ -1,0 +1,53 @@
+{
+  "checked_at": "2026-08-09T11:14:48+08:00",
+  "classification": "configured_backend_auto_fresh_service_no_generation_observed",
+  "commands_used": [
+    "status",
+    "list logs",
+    "tail logs/qwen3-32b-fp8-server.log",
+    "read logs/qwen3-32b-fp8-server.log"
+  ],
+  "evidence_limits": [
+    "configured backend is proven but request-selected backend is not exposed",
+    "absence of generation applies only through the hashed log snapshot",
+    "restart is a runtime-state reset, not proof that the historical failure is corrected"
+  ],
+  "fallback_transport_attempted": false,
+  "forced_command_enforced": true,
+  "generation_request_observed": false,
+  "gate_decision": "authorize_exact_frozen_public_path_compatibility_probe_only",
+  "raw_remote_log_persisted": false,
+  "remote_contacted": true,
+  "remote_log_path": "logs/qwen3-32b-fp8-server.log",
+  "remote_log_sha256": "59633742b4a260682f08bc8f1838a9fcf6631d6ab582393a1686050c16e6eaac",
+  "remote_paths_accessed": [
+    "logs",
+    "logs/qwen3-32b-fp8-server.log"
+  ],
+  "remote_scope": "/home/lhx/liuyi/**",
+  "runtime": {
+    "default_chat_template_kwargs": {
+      "enable_thinking": false
+    },
+    "dtype": "bfloat16",
+    "engine": "V1",
+    "max_model_len": 40960,
+    "model_root": "/home/lhx/liuyi/models/Qwen3-32B-FP8",
+    "model_runner": "V2",
+    "quantization": "fp8",
+    "served_model_name": "qwen3-32b-fp8",
+    "structured_outputs_config": {
+      "backend": "auto",
+      "disable_additional_properties": false,
+      "disable_any_whitespace": false,
+      "enable_in_reasoning": false,
+      "reasoning_parser": "",
+      "reasoning_parser_plugin": ""
+    },
+    "vllm_version": "0.26.0"
+  },
+  "schema_version": "membind.v3.construction_runtime_evidence.v2",
+  "secrets_persisted": false,
+  "ssh_alias": "zju-liuyi",
+  "writes_performed": false
+}

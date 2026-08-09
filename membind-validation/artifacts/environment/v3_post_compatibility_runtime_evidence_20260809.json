@@ -1,0 +1,33 @@
+{
+  "chat_completion_200_count": 8,
+  "chat_completion_post_count": 8,
+  "classification": "post_request_log_confirms_eight_successful_http_completions_without_server_error",
+  "commands_used": [
+    "tail logs/qwen3-32b-fp8-server.log",
+    "read logs/qwen3-32b-fp8-server.log"
+  ],
+  "error_marker_count": 0,
+  "evidence_limits": [
+    "HTTP 200 proves transport completion but not structured JSON validity",
+    "the server log does not expose the request-selected structured-output backend",
+    "the raw remote log was inspected and hashed but was not persisted locally"
+  ],
+  "forced_command_enforced": true,
+  "generation_request_observed": true,
+  "local_post_processing": [
+    "tail last 40 lines for final request and idle-state review",
+    "SHA256 of the complete forced-command read stream",
+    "allowlisted counts of chat completion POST, HTTP 200, and error-marker lines"
+  ],
+  "probe_artifact": "artifacts/environment/v3_actual_schema_compatibility_probe_20260809_005_fresh_restart.json",
+  "probe_artifact_sha256": "fd1b23026689008ce9a5976581b519c2a7d62fc5c2ea05eb0964f5387e10a041",
+  "probe_request_count_matches_remote_post_count": true,
+  "raw_remote_log_persisted": false,
+  "remote_log_relative_path": "logs/qwen3-32b-fp8-server.log",
+  "remote_log_sha256": "d71df1614b6da7d4d9549d739d1f2c0d67351916aa88ef5be0cc7aa2c818a761",
+  "remote_scope": "/home/lhx/liuyi/**",
+  "schema_version": "membind.v3.post_compatibility_runtime_evidence.v1",
+  "secrets_persisted": false,
+  "ssh_alias": "zju-liuyi",
+  "writes_performed": false
+}
