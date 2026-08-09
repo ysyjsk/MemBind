@@ -1,0 +1,126 @@
+{
+  "protocol_version": "current-validation-v1.3",
+  "audit_date": "2026-08-09",
+  "audit_scope": "offline_protocol_plan_proposal_and_public_source_review",
+  "live_calls_performed": false,
+  "remote_access_performed": false,
+  "secrets_persisted": false,
+  "accept_modify_reject": {
+    "pre_freeze_host_qualification": "accept_with_modification",
+    "historical_blocker_reclassification": "accept_with_dual_identity",
+    "q1_q2_q3_first_passing": "accept_with_content_addressed_shared_base_and_delta_specs",
+    "q0_to_q1_budget_only_causal_claim": "reject_different_qualification_wrappers",
+    "h0_trial_independence_claim": "reject_fixed_seed_repeated_bounded_trials",
+    "candidate_files_as_complete_manifests": "reject_until_shared_base_unresolved_hashes_are_closed",
+    "v1_3_split_reproducibility": "accept_after_dedicated_generator_red_green",
+    "c6853660_as_candidate_canary": "reject_evaluation_leakage",
+    "three_of_three_as_reliability_proof": "reject_statistical_claim_accept_engineering_gate",
+    "parse_only_qualification": "reject_require_semantic_utility",
+    "qualified_oracle_namespace": "accept_content_addressed",
+    "correctness_replay_performance_live": "accept",
+    "u0_d0_dual_baseline": "accept_with_preregistered_guardrail",
+    "m1_m2_concurrency_tuning": "accept_quality_feasible_only",
+    "pilot_8_by_2": "accept_for_internal_pilot_only",
+    "paper_p1_p4_execution": "defer",
+    "general_agent_memory_runtime_claim": "reject_until_second_architecture"
+  },
+  "sources": [
+    {
+      "name": "Graphiti 021d3a5 OpenAIGenericClient",
+      "source_url": "https://github.com/getzep/graphiti/blob/021d3a57d511f21b10adaf7fa923bd5c1fce5e9d/graphiti_core/llm_client/openai_generic_client.py",
+      "accessed_at": "2026-08-09",
+      "supported_claim": "constructor default max_tokens is 16384; json_schema and json_object modes exist; json_object explicitly injects the Pydantic schema",
+      "unsupported_or_qualified_claim": "json_object is explicit configuration, not an automatic switch after json_schema failure"
+    },
+    {
+      "name": "Graphiti 021d3a5 pinned README",
+      "source_url": "https://github.com/getzep/graphiti/blob/021d3a57d511f21b10adaf7fa923bd5c1fce5e9d/README.md",
+      "accessed_at": "2026-08-09",
+      "supported_claim": "json_object is a documented local/OpenAI-compatible provider fallback",
+      "unsupported_or_qualified_claim": "main branch is not immutable evidence for the pinned experiment"
+    },
+    {
+      "name": "Qwen3-32B-FP8 model card",
+      "source_url": "https://huggingface.co/Qwen/Qwen3-32B-FP8/blob/aa55da1ecc13d006e8b8e4f54579b1ea8c3db2df/README.md",
+      "accessed_at": "2026-08-09",
+      "supported_claim": "non-thinking mode suggests temperature 0.7, top_p 0.8, top_k 20, min_p 0",
+      "unsupported_or_qualified_claim": "the card does not prove that sampling fixes the observed Graphiti truncation; 16384 comes from Graphiti, not Qwen's overall output-length advice"
+    },
+    {
+      "name": "vLLM 0.26.0 structured outputs",
+      "source_url": "https://github.com/vllm-project/vllm/blob/v0.26.0/vllm/config/structured_outputs.py",
+      "accessed_at": "2026-08-09",
+      "supported_claim": "backend auto makes opinionated release-dependent choices",
+      "unsupported_or_qualified_claim": "response_format json_schema alone does not identify the per-request selected backend"
+    },
+    {
+      "name": "vLLM 0.26.0 auto resolution",
+      "source_url": "https://github.com/vllm-project/vllm/blob/v0.26.0/vllm/sampling_params.py",
+      "accessed_at": "2026-08-09",
+      "supported_claim": "v0.26.0 auto resolution tries xgrammar and can fall back to guidance or outlines",
+      "unsupported_or_qualified_claim": "configured auto is not observed request-selected backend evidence"
+    },
+    {
+      "name": "ContextPilot MLSys 2026",
+      "source_url": "https://proceedings.mlsys.org/paper_files/paper/2026/hash/b0131b6ee02a00b03fc3320176fec8f5-Abstract-Conference.html",
+      "accessed_at": "2026-08-09",
+      "supported_claim": "baselines were tuned for performance and accuracy and aligned with their best reported configurations",
+      "unsupported_or_qualified_claim": "this is precedent for fair tuning, not proof that any MemBind threshold is universally correct"
+    },
+    {
+      "name": "Agentix NSDI 2026",
+      "source_url": "https://www.usenix.org/conference/nsdi26/presentation/luo",
+      "accessed_at": "2026-08-09",
+      "supported_claim": "evaluation includes vLLM, vLLM-opt, MLFQ and Agentix plus program-level Poisson arrivals",
+      "unsupported_or_qualified_claim": "its baseline ladder is methodological precedent, not a directly interchangeable MemBind baseline"
+    },
+    {
+      "name": "Pie SOSP 2025",
+      "source_url": "https://doi.org/10.1145/3731569.3764814",
+      "accessed_at": "2026-08-09",
+      "supported_claim": "systems share FlashInfer, reproduce common high-level workflows, use best-effort baseline optimization and report overhead",
+      "unsupported_or_qualified_claim": "Pie does not authorize method-specific compatibility changes"
+    },
+    {
+      "name": "Agent Memory arXiv 2606.06448v1",
+      "source_url": "https://export.arxiv.org/api/query?id_list=2606.06448",
+      "accessed_at": "2026-08-09",
+      "supported_claim": "public record identifies an arXiv preprint submitted 2026-06-04; paper content uses Qwen3-32B FP8, Qwen3-Embedding-0.6B and minimal interface adaptations",
+      "unsupported_or_qualified_claim": "public metadata does not independently establish an IISWC 2026 acceptance or to-appear status"
+    },
+    {
+      "name": "DistServe OSDI 2024",
+      "source_url": "https://www.usenix.org/conference/osdi24/presentation/zhong-yinmin",
+      "accessed_at": "2026-08-09",
+      "supported_claim": "when datasets lacked timestamps, evaluation synthesized Poisson arrivals at different request rates",
+      "unsupported_or_qualified_claim": "this supports a future load sweep, not its execution in the current pilot"
+    },
+    {
+      "name": "Parrot OSDI 2024",
+      "source_url": "https://www.usenix.org/conference/osdi24/presentation/lin-chaofan",
+      "accessed_at": "2026-08-09",
+      "supported_claim": "end-to-end chain analysis includes client interaction and request re-entry effects",
+      "unsupported_or_qualified_claim": "MemBind's no-RTT-subtraction rule is a deployment and causal contract, not a universal rule established by Parrot"
+    },
+    {
+      "name": "OSDI 2026 Call for Artifacts",
+      "source_url": "https://www.usenix.org/conference/osdi26/call-for-artifacts",
+      "accessed_at": "2026-08-09",
+      "supported_claim": "artifact claims should be concrete and reproduction instructions, dependencies and limitations should be documented",
+      "unsupported_or_qualified_claim": "Artifacts Available evaluation is not itself proof of full result reproducibility"
+    },
+    {
+      "name": "NSDI 2026 Call for Artifacts",
+      "source_url": "https://www.usenix.org/conference/nsdi26/call-for-artifacts",
+      "accessed_at": "2026-08-09",
+      "supported_claim": "artifact-paper claim alignment, clear setup and stable availability matter",
+      "unsupported_or_qualified_claim": "artifact guidance does not choose MemBind's experimental thresholds"
+    }
+  ],
+  "current_authorization": {
+    "scope": "h0_offline_tdd_and_harness_only",
+    "live_h0_candidate_authorized": false,
+    "v3_smoke_003_retired": true,
+    "paper_stages_authorized": false
+  }
+}

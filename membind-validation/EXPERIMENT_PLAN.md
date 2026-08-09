@@ -1,19 +1,33 @@
-# MemBind Basic Validation: Current Validation v1.2 Execution Plan
+# MemBind Basic Validation: Current Validation v1.3 Execution Plan
 
 This is the concise execution overlay for
-`../MemBind_CURRENT_VALIDATION_PLAN_v1.2.md`. The current plan controls task
+`../MemBind_CURRENT_VALIDATION_PLAN_v1.3.md`. The current plan controls task
 order. `../MemBind_basic_validation_experiment.md` remains the source for frozen
 models, data, methods, metrics, and decision thresholds.
 
 ```text
-current_stage: V3
-current_blocker: v3_smoke_002_m0_structured_output_failure
-current_action_scope: blocked_waiting_for_explicit_protocol_deviation
-next_allowed_action: no further live execution; retain the structured-output blocker and wait for an explicit protocol deviation or evidenced service-side correction; v3_smoke_003 remains forbidden
-forbidden_until_pass: V4/V5/V6/future_work
+protocol_version: current-validation-v1.3
+current_stage: H0
+status: h0_protocol_accepted_harness_not_implemented
+current_blocker: late_discovered_pre_freeze_host_compatibility_failure
+current_action_scope: h0_offline_tdd_and_harness_only
+live_h0_candidate_authorized=false
+v3_smoke_003_retired=true
+next_allowed_action: implement and verify the H0 harness offline; a live Q1 request requires a separate explicit gate
+forbidden_until_pass: live-H0/V2-R/V3-R/V4/V5/V6/V7/P1/P2/P3/P4/future_work
 ```
 
-The single authorized frozen public-path probe has now been consumed. Artifact
+The active revision accepts a pre-freeze Host Stack Qualification stage but does
+not authorize a candidate request. H0 is calibration-only, content-addressed,
+first-passing, and performance-blind. Q1/Q2/Q3 are exact candidate delta specs
+under `configs/h0/` and share a content-addressed base spec. They are not
+runnable manifests: every unresolved client/prompt/schema/HTTP/retry hash must
+be closed before a separate live gate. Valid-but-empty output fails the semantic
+utility gate. Q3 is explicit and remains forbidden until its injected schema
+hash equals the effective `[0]` shim schema hash.
+
+The historical single authorized frozen public-path probe was consumed under
+v1.2. Artifact
 `artifacts/environment/v3_actual_schema_compatibility_probe_20260809_005_fresh_restart.json`
 reproduces all four historical `2048 -> 8192` truncation pairs byte-for-byte at
 the historical 5795 prompt tokens. The sanitized post-request restricted-log
@@ -21,7 +35,9 @@ evidence records 8/8 HTTP 200 completions and no server error, so connectivity
 is not the blocker.
 The configured structured-output backend remains `auto`, while the
 request-selected backend is still unobserved.
-No additional probe, full smoke, construction service change, V4, V5, or V6
+It remains `historical_negative_host_qualification_evidence`; the historical
+blocker ID is `v3_smoke_002_m0_structured_output_failure`. No live H0, full
+smoke, construction service change, V2-R, V3-R, V4, V5, V6, V7, or paper-stage
 execution is authorized.
 
 Machine-readable state is in `CURRENT_STATE.json`. Historical smoke failures do
@@ -99,10 +115,13 @@ is `Deterministic-Graphiti-Serial`, meaning Graphiti v0.29.3 with the same
 deterministic candidate-ordering adapter applied to M0/M1/M2. It is not claimed
 to be untouched upstream Graphiti.
 
-The previously approved structured-output compatibility rules remain frozen:
-the first completion budget is 2048, one shared bounded parse-truncation retry
-may use at most 8192, and single-episode `episode_indices` is constrained to
-`[0]`. Input prompts are never truncated.
+The previous `2048 -> 8192`, temperature 0, top_p 1 and `json_schema` rules are
+the Q0 historical failure contract, not the v1.3 final host configuration.
+Q1-Q3 request 16384 but use the frozen context-safe effective-budget formula;
+Q2/Q3 must prove `top_k/min_p` entered the request payload; Q3 must inject the
+effective `[0]` schema. The first candidate passing all calibration reliability
+and semantic-utility gates is frozen symmetrically for M0/M1/M2. Input prompts
+are never truncated.
 
 ## TDD Protocol
 
@@ -121,17 +140,22 @@ is immutable and a replacement always uses a new run ID.
 ## Single-Line State Machine
 
 ```text
-V1 Correctness nondeterminism closure
-  -> V2 Correctness oracle freeze
-  -> V3 Full M0/M2 correctness smoke
-  -> V4 Deterministic Graphiti calibration + minimal profiling
-  -> V5 M1 one-instance oracle-replay smoke
-  -> V6 Formal evaluation
+H0 Host Stack Qualification: offline contracts/harness
+  -> separate live-Q1 gate
+  -> freeze first calibration-qualified shared stack
+  -> V2-R Correctness oracle requalification
+  -> V3-R Full M0/M2 correctness smoke
+  -> V4 U0/D0 guardrail + calibration + minimal profiling
+  -> V5 quality-feasible M1/M2 concurrency tuning
+  -> V6 Formal evaluation (24 correctness + 48 performance)
   -> V7 Analysis + validation verdict
   -> STOP
 ```
 
-Skipping a stage is prohibited.
+Skipping a stage is prohibited. P1-P4 are future-work-only and unauthorized.
+The closed V1/V2 artifacts and the old V3 failure remain historical evidence;
+they are not skipped or relabeled as v1.3 passes.
+Historical stage label: `V1 Correctness nondeterminism closure`.
 
 ## V1 Closed Contract
 
@@ -188,7 +212,8 @@ and input-transform configuration. Its source manifest is
 `artifacts/environment/embedding_model_fingerprint.json`; an alias, URL, or
 behavioral probe cannot masquerade as checkpoint identity. Batch composition is
 excluded from the item key, so `create(["x"])` and `create_batch(["x"])` share
-the exact single-item UTF-8 record.
+the exact single-item UTF-8 record. The verified deployment dtype is BF16;
+`configs/base.yaml` must not retain the historical FP16 placeholder.
 
 Cross-encoder status is **expected not invoked; measurement decides**. Audit the
 actual `rank()` path over construction and frozen final retrieval, persist
@@ -196,9 +221,10 @@ actual `rank()` path over construction and frozen final retrieval, persist
 `artifacts/diagnostics/model_oracle_audit.json`, and write `not_invoked` only if
 the count is zero. A nonzero count blocks V2 until that oracle is frozen.
 
-### Bounded V2 pilot boundary
+### Historical bounded V2 pilot boundary
 
-Before V3, the only live integration allowed in V2 is:
+The following v1.2 integration is completed historical evidence. Its oracle
+namespace cannot be reused after H0 changes the qualified host identity:
 
 ```text
 M0 capture -> M0 read-only replay
@@ -219,32 +245,30 @@ namespace field without actual remote argv, startup-log, or deployed-config
 evidence remains in `unresolved_fields` and blocks the live gate; local templates
 and external checkpoint references are provenance, not runtime proof.
 
-## V3-V5 Gates
+## V3-R, V4, and V5 Gates
 
-V3 runs one full M0 capture followed by one full M2 read-only replay on the
-existing smoke instance. It requires zero oracle misses/fallback calls,
-exactly-once/source mapping parity, canonical graph parity, retrieval guardrail,
-and post-run database cleanup. M1 does not run in V3.
+V3-R starts only after H0 and V2-R pass. It uses a new calibration smoke ID `v3r_smoke_001`,
+never the exposed historical canary or `v3_smoke_003`. It runs
+one qualified M0 capture followed by one qualified M2 read-only replay and
+requires zero oracle miss/fallback, exactly-once/source mapping, canonical graph
+parity, retrieval guardrail, and fresh-database cleanup. M1 does not run in V3-R.
 
-V4 uses only the four frozen M0 calibration instances for both DELTA_MS and a
-coarse deterministic-Graphiti profile: total, extraction, embedding/search,
-resolution/invalidation, DB publication, and unclassified. It records interval
-boundaries and basic LLM/embedding/DB counts without a concurrency/load sweep,
-GPU kernel profiler, or concurrent network probes.
+V4 first runs the instrumentation OFF/ON replay gate, then the required
+`U0=Upstream-Qualified-Graphiti-Serial` versus
+`D0=Deterministic-Graphiti-Serial` representativeness guardrail on all four
+calibration histories. Only after that gate is retained does D0 produce the
+coarse phase characterization and frozen DELTA_MS. V4 records total,
+extraction, embedding/search, resolution/invalidation, DB publication,
+unclassified intervals, and basic LLM/embedding/DB work counts. It does not run
+the future paper-level load/Poisson sweep.
 
-One model-free guardrail remains. A fixed oracle-replay prefix uses four
-counterbalanced OFF/ON pairs for each of M0 and M2, requires semantic parity,
-and reports per-method `median(on)/median(off)-1` plus the percentage-point
-difference. Method-specific overhead above 5% blocks formal performance; this
-is a preregistered Pilot engineering gate. Because the method label is already
-`Deterministic-Graphiti-Serial`, the current Pilot does not run an upstream
-semantic guardrail.
-
-V5 reuses the V3 M0 oracle for one M1 read-only replay. A first oracle miss ends
-as `completed_with_divergence` and proves only execution-path divergence; a
-fully matched replay can additionally compare final graph/retrieval semantics.
-Completion/source order is diagnostic only. M1 performance is measured only in
-V6's live lane.
+V5 first performs the bounded M1 read-only replay diagnostic using the qualified
+M0 oracle. A first miss is `completed_with_divergence`, not a final semantic
+claim. It then tunes both M1 and M2 over `C={1,2,4,8}` on calibration only. A
+point is quality-feasible only if its correctness, retrieval, completion, and
+exactly-once guardrails pass. Among feasible points, minimize calibration median
+makespan and choose smaller C on an exact tie. The fixed C8 comparison is
+reported as `iso-cap`; actual work and utilization remain measured outcomes.
 
 The shared deterministic presentation contracts remain frozen across every
 method and lane:

@@ -1,0 +1,33 @@
+{
+  "protocol_version": "current-validation-v1.3",
+  "calibration_question_ids": [
+    "07741c45",
+    "b6019101",
+    "6071bd76",
+    "a2f3aa27"
+  ],
+  "compatibility_development_question_ids": [
+    "c6853660"
+  ],
+  "evaluation_question_ids": [
+    "b01defab",
+    "0f05491a",
+    "6aeb4375",
+    "06db6396",
+    "89941a94",
+    "c4ea545c",
+    "ce6d2d27",
+    "08e075c7"
+  ],
+  "selection_rule": "retain_original_four_calibration_ids; quarantine_previously_inspected_ids; choose_first_eight_remaining_eligible_ids_by_sha256_question_id_order",
+  "selection_uses_model_or_performance_results": false,
+  "legacy_split_path": "artifacts/dataset/frozen_split.json",
+  "legacy_split_sha256": "b40acce61defe0c809636dc9964cbfa8591fafde5e6330b81ed0e8214bcd71f7",
+  "generator_script": "src/dataset_v1_3.py",
+  "generator_script_version": "membind-validation.dataset-v1.3-exposure-quarantine.v1",
+  "generator_script_sha256": "df7e1f9603699ab899af4a3fb24e4f0e6a432d2342f2d4c2f296cb98a8f1171e",
+  "source_path": "/data/predator/ly/Mem/data/raw/longmemeval-cleaned/longmemeval_s_cleaned.json",
+  "source_sha256": "d6f21ea9d60a0d56f34a05b609c79c88a451d2ae03597821ea3d5a9678c3a442",
+  "quarantine_reason": "c6853660 was repeatedly inspected during pre-v1.3 development and cannot be represented as held-out evaluation data; the decision is exposure-based, not result-based",
+  "legacy_split_is_immutable": true
+}

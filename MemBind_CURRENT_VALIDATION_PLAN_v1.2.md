@@ -1,5 +1,10 @@
 # MemBind 当前基础验证执行计划 v1.2
 
+> **历史状态**：本文件已由 `MemBind_CURRENT_VALIDATION_PLAN_v1.3.md` supersede。
+> 下文保持 v1.2 当时的 V3 blocker、授权边界与证据指针，用于审计历史决策；不得再
+> 把“当前阶段唯一允许 Agent 直接执行的计划”等旧句解释为 2026-08-09 之后的机器
+> 状态。当前唯一执行 overlay 和 live gate 以 v1.3 与 `CURRENT_STATE.json` 为准。
+
 > **用途**：这是当前阶段唯一允许 Agent 直接执行的计划。
 >
 > **目标**：先完成 Graphiti 上的基础可行性验证。验证完成之前，不设计、不实现、不运行任何后续扩展机制。

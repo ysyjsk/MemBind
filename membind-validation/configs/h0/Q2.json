@@ -1,0 +1,39 @@
+{
+  "candidate_id": "Q2",
+  "protocol_version": "current-validation-v1.3",
+  "manifest_kind": "candidate_delta_spec",
+  "shared_host_base_spec": "configs/h0/shared_host_base_v1_3.json",
+  "shared_host_base_spec_sha256": "8738531ca312657e9e9954a8cfb858be30409283af495c7a40bb16fdf4430ebe",
+  "live_eligible": false,
+  "selection_order": 2,
+  "base_candidate": "Q1",
+  "candidate_diff_from_previous": [
+    "temperature",
+    "top_p",
+    "top_k",
+    "min_p"
+  ],
+  "structured_output_mode": "json_schema",
+  "temperature": 0.7,
+  "top_p": 0.8,
+  "top_k": {
+    "status": "must_be_observed_in_request_payload",
+    "value": 20
+  },
+  "min_p": {
+    "status": "must_be_observed_in_request_payload",
+    "value": 0
+  },
+  "enable_thinking": false,
+  "seed_policy": "fixed_20260806",
+  "requested_max_tokens": 16384,
+  "effective_max_tokens_policy": "max(0,min(requested_max_tokens,context_limit-prompt_tokens-safety_margin_tokens))",
+  "safety_margin_tokens": 32,
+  "completion_budget_escalation": false,
+  "graphiti_public_retry_attempt_limit": 4,
+  "candidate_induced_retry_is_qualification_failure": true,
+  "structured_backend_configured": "auto",
+  "request_selected_backend": "unobserved",
+  "schema_policy": "episode_indices_exactly_single_zero",
+  "eligible_data_scope": "calibration_only"
+}

@@ -30,7 +30,11 @@ class CurrentValidationPlanTests(TestCase):
     def test_v3_structured_output_failure_evidence_remains_persisted(self):
         state = json.loads((ROOT / "CURRENT_STATE.json").read_text(encoding="utf-8"))
 
-        self.assertEqual(state["current_stage"], "V3")
+        self.assertEqual(state["current_stage"], "H0")
+        self.assertEqual(
+            state["historical_blocker"],
+            "v3_smoke_002_m0_structured_output_failure",
+        )
         report = state["evidence"]["v3_smoke_002_failure_report"]
         self.assertEqual(
             report,
@@ -97,20 +101,24 @@ class CurrentValidationPlanTests(TestCase):
         )
         self.assertEqual(
             state["current_blocker"],
-            "v3_smoke_002_m0_structured_output_failure",
+            "late_discovered_pre_freeze_host_compatibility_failure",
         )
 
-    def test_current_v3_blocker_is_exactly_reproduced_structured_failure(self):
+    def test_historical_v3_blocker_is_exactly_reproduced_under_current_h0_gate(self):
         state = json.loads((ROOT / "CURRENT_STATE.json").read_text(encoding="utf-8"))
 
-        self.assertEqual(state["current_stage"], "V3")
+        self.assertEqual(state["current_stage"], "H0")
         self.assertEqual(
             state["status"],
-            "blocked_v3_structured_output_reproduced",
+            "h0_protocol_accepted_harness_not_implemented",
+        )
+        self.assertEqual(
+            state["historical_blocker"],
+            "v3_smoke_002_m0_structured_output_failure",
         )
         self.assertEqual(
             state["current_blocker"],
-            "v3_smoke_002_m0_structured_output_failure",
+            "late_discovered_pre_freeze_host_compatibility_failure",
         )
         self.assertEqual(
             state["evidence"]["v3_actual_schema_probe_corrected"],
@@ -124,8 +132,11 @@ class CurrentValidationPlanTests(TestCase):
             "v3_construction_runtime_identity_drift_after_smoke_002"
         ]
         self.assertIn("public generate_response wrapper", invalid["reason"])
-        self.assertIn("structured-output", state["next_allowed_action"])
-        self.assertIn("v3_smoke_003", state["next_allowed_action"])
+        self.assertIn("remaining H0 runtime harness", state["next_allowed_action"])
+        self.assertIn("shared-base manifest hash", state["next_allowed_action"])
+        self.assertIn("separate explicit gate", state["next_allowed_action"])
+        self.assertTrue(state["v3_smoke_003_retired"])
+        self.assertFalse(state["live_h0_candidate_authorized"])
 
     def test_v3_public_path_correction_report_is_persisted_and_hashed(self):
         state = json.loads((ROOT / "CURRENT_STATE.json").read_text(encoding="utf-8"))
@@ -174,9 +185,12 @@ class CurrentValidationPlanTests(TestCase):
         ):
             self.assertIn(key, invalidated)
 
-    def test_current_v3_action_is_blocked_after_fresh_probe_failure(self):
+    def test_historical_v3_action_is_preserved_while_current_h0_is_offline_only(self):
         state = json.loads((ROOT / "CURRENT_STATE.json").read_text(encoding="utf-8"))
-        current = (REPO / "MemBind_CURRENT_VALIDATION_PLAN_v1.2.md").read_text(
+        historical = (REPO / "MemBind_CURRENT_VALIDATION_PLAN_v1.2.md").read_text(
+            encoding="utf-8"
+        )
+        current = (REPO / "MemBind_CURRENT_VALIDATION_PLAN_v1.3.md").read_text(
             encoding="utf-8"
         )
         execution = (ROOT / "EXPERIMENT_PLAN.md").read_text(encoding="utf-8")
@@ -184,20 +198,23 @@ class CurrentValidationPlanTests(TestCase):
 
         self.assertEqual(
             state["current_action_scope"],
-            "blocked_waiting_for_explicit_protocol_deviation",
+            "h0_offline_tdd_and_harness_only",
         )
-        self.assertIn("structured-output", state["next_allowed_action"])
-        self.assertIn("v3_smoke_003 remains forbidden", state["next_allowed_action"])
-        self.assertIn("explicit protocol deviation", state["next_allowed_action"])
+        self.assertIn("remaining H0 runtime harness", state["next_allowed_action"])
+        self.assertIn("shared-base manifest hash", state["next_allowed_action"])
+        self.assertIn("separate explicit gate", state["next_allowed_action"])
         for text in (current, execution, memory):
-            self.assertIn("blocked_waiting_for_explicit_protocol_deviation", text)
-            self.assertIn("sanitized", text)
+            self.assertIn("h0_offline_tdd_and_harness_only", text)
+            self.assertIn("live_h0_candidate_authorized=false", text)
+            self.assertIn("v3_smoke_003_retired=true", text)
+        self.assertIn("blocked_waiting_for_explicit_protocol_deviation", historical)
+        self.assertIn("sanitized", historical)
         self.assertNotIn(
             "next_allowed_action: obtain structured-output backend evidence and a frozen-path service correction",
             execution,
         )
 
-    def test_fresh_runtime_probe_reproduces_blocker_and_relocks_live_execution(self):
+    def test_fresh_runtime_probe_remains_historical_and_current_h0_stays_offline(self):
         state = json.loads((ROOT / "CURRENT_STATE.json").read_text(encoding="utf-8"))
         evidence = state["evidence"]
         probe_relative = evidence["v3_fresh_runtime_compatibility_probe"]
@@ -334,17 +351,24 @@ class CurrentValidationPlanTests(TestCase):
 
         self.assertEqual(
             state["current_action_scope"],
-            "blocked_waiting_for_explicit_protocol_deviation",
+            "h0_offline_tdd_and_harness_only",
         )
         self.assertEqual(
             state["stage_progress"]["v3_fresh_runtime_compatibility_probe"],
             "fail_exact_historical_truncation_reproduced",
         )
         self.assertFalse(state["v3_smoke_003_authorized"])
-        self.assertIn("explicit protocol deviation", state["next_allowed_action"])
-        self.assertIn("v3_smoke_003 remains forbidden", state["next_allowed_action"])
+        self.assertTrue(state["v3_smoke_003_retired"])
+        self.assertFalse(state["live_h0_candidate_authorized"])
+        self.assertIn("separate explicit gate", state["next_allowed_action"])
+        historical = (REPO / "MemBind_CURRENT_VALIDATION_PLAN_v1.2.md").read_text(
+            encoding="utf-8"
+        )
+        self.assertIn("blocked_waiting_for_explicit_protocol_deviation", historical)
+        self.assertIn("005_fresh_restart", historical)
+        self.assertIn("v3_smoke_003 remains forbidden", historical)
         for text in (
-            (REPO / "MemBind_CURRENT_VALIDATION_PLAN_v1.2.md").read_text(
+            (REPO / "MemBind_CURRENT_VALIDATION_PLAN_v1.3.md").read_text(
                 encoding="utf-8"
             ),
             (REPO / "MemBind_basic_validation_experiment.md").read_text(
@@ -353,27 +377,50 @@ class CurrentValidationPlanTests(TestCase):
             (ROOT / "EXPERIMENT_PLAN.md").read_text(encoding="utf-8"),
             (ROOT / "GLOBAL_MEMORY.md").read_text(encoding="utf-8"),
         ):
-            self.assertIn("blocked_waiting_for_explicit_protocol_deviation", text)
             self.assertIn("005_fresh_restart", text)
-            self.assertIn("v3_smoke_003 remains forbidden", text)
+            self.assertIn("historical_negative_host_qualification_evidence", text)
+            self.assertIn("v3_smoke_003_retired=true", text)
 
-    def test_v3_structured_blocker_heading_and_stage_fence_are_explicit(self):
-        current = (REPO / "MemBind_CURRENT_VALIDATION_PLAN_v1.2.md").read_text(
+    def test_historical_v3_heading_and_current_h0_stage_fence_are_explicit(self):
+        historical = (REPO / "MemBind_CURRENT_VALIDATION_PLAN_v1.2.md").read_text(
+            encoding="utf-8"
+        )
+        current = (REPO / "MemBind_CURRENT_VALIDATION_PLAN_v1.3.md").read_text(
             encoding="utf-8"
         )
         execution = (ROOT / "EXPERIMENT_PLAN.md").read_text(encoding="utf-8")
         memory = (ROOT / "GLOBAL_MEMORY.md").read_text(encoding="utf-8")
+        state = json.loads((ROOT / "CURRENT_STATE.json").read_text(encoding="utf-8"))
 
         self.assertIn(
             "### V3 截断记录与当前 structured-output blocker",
-            current,
+            historical,
         )
-        self.assertNotIn("### V3 截断记录与当前 identity blocker", current)
-        for text in (current, execution, memory):
-            self.assertIn(
-                "forbidden_until_pass: V4/V5/V6/future_work",
-                text,
-            )
+        self.assertNotIn("### V3 截断记录与当前 identity blocker", historical)
+        self.assertIn("forbidden_until_pass: V4/V5/V6/future_work", historical)
+        self.assertEqual(
+            state["forbidden_until_pass"],
+            [
+                "live_H0",
+                "V2-R",
+                "V3-R",
+                "V4",
+                "V5",
+                "V6",
+                "V7",
+                "P1",
+                "P2",
+                "P3",
+                "P4",
+                "future_work",
+            ],
+        )
+        self.assertIn(
+            "forbidden_until_pass: live-H0/V2-R/V3-R/V4/V5/V6/V7/P1/P2/P3/P4/future_work",
+            execution,
+        )
+        self.assertIn("live_h0_candidate_authorized=false", current)
+        self.assertIn("Live H0, V2-R, V3-R, V4-V7, P1-P4", memory)
 
     def test_restored_vllm_health_does_not_bypass_backend_evidence_gate(self):
         state = json.loads((ROOT / "CURRENT_STATE.json").read_text(encoding="utf-8"))
@@ -423,8 +470,12 @@ class CurrentValidationPlanTests(TestCase):
             self.assertIn(expected, report)
 
         self.assertEqual(
-            state["current_blocker"],
+            state["historical_blocker"],
             "v3_smoke_002_m0_structured_output_failure",
+        )
+        self.assertEqual(
+            state["current_blocker"],
+            "late_discovered_pre_freeze_host_compatibility_failure",
         )
 
     def test_restored_service_observation_is_synchronized_across_plan_memory(self):
@@ -469,7 +520,7 @@ class CurrentValidationPlanTests(TestCase):
             self.assertIn("ordinary shell", text)
             self.assertIn("write permission", text)
 
-    def test_restricted_ssh_runtime_evidence_authorizes_only_public_path_probe(self):
+    def test_restricted_ssh_runtime_evidence_remains_historical_under_h0_gate(self):
         state = json.loads((ROOT / "CURRENT_STATE.json").read_text(encoding="utf-8"))
         evidence = state["evidence"]
         relative = evidence["v3_construction_runtime_evidence"]
@@ -518,34 +569,48 @@ class CurrentValidationPlanTests(TestCase):
         )
         self.assertEqual(
             state["status"],
-            "blocked_v3_structured_output_reproduced",
+            "h0_protocol_accepted_harness_not_implemented",
         )
         self.assertEqual(
             state["current_action_scope"],
-            "blocked_waiting_for_explicit_protocol_deviation",
+            "h0_offline_tdd_and_harness_only",
         )
-        self.assertIn("v3_smoke_003 remains forbidden", state["next_allowed_action"])
+        self.assertEqual(
+            state["historical_blocker"],
+            "v3_smoke_002_m0_structured_output_failure",
+        )
+        self.assertTrue(state["v3_smoke_003_retired"])
+        self.assertFalse(state["live_h0_candidate_authorized"])
+        self.assertIn("separate explicit gate", state["next_allowed_action"])
 
-    def test_execution_headers_match_machine_state_at_v3(self):
+    def test_execution_headers_match_machine_state_at_h0_and_preserve_v3_history(self):
         state = json.loads((ROOT / "CURRENT_STATE.json").read_text(encoding="utf-8"))
-        current = (REPO / "MemBind_CURRENT_VALIDATION_PLAN_v1.2.md").read_text(
+        historical = (REPO / "MemBind_CURRENT_VALIDATION_PLAN_v1.2.md").read_text(
+            encoding="utf-8"
+        )
+        current = (REPO / "MemBind_CURRENT_VALIDATION_PLAN_v1.3.md").read_text(
             encoding="utf-8"
         )
         execution = (ROOT / "EXPERIMENT_PLAN.md").read_text(encoding="utf-8")
 
-        self.assertEqual(state["current_stage"], "V3")
-        self.assertIn("当前阶段**：`V3 — Full Correctness Smoke`", current[:1000])
+        self.assertEqual(state["current_stage"], "H0")
+        self.assertIn("当前阶段**: `H0 - Host Stack Qualification`", current[:1000])
         self.assertIn(
-            "当前阻塞**：`v3_smoke_002_m0_structured_output_failure`",
+            "当前 blocker 分类**: `late_discovered_pre_freeze_host_compatibility_failure`",
             current[:1400],
         )
-        self.assertIn("current_stage: V3", execution[:1000])
+        self.assertIn("current_stage: H0", execution[:1000])
         self.assertIn(
-            "current_blocker: v3_smoke_002_m0_structured_output_failure",
+            "current_blocker: late_discovered_pre_freeze_host_compatibility_failure",
             execution[:1000],
         )
-        self.assertIn("structured-output backend", execution[:1200])
+        self.assertIn("structured-output backend", execution)
         self.assertNotIn("current_stage: V1", execution[:1000])
+        self.assertIn("当前阶段**：`V3 — Full Correctness Smoke`", historical[:1400])
+        self.assertIn(
+            "当前阻塞**：`v3_smoke_002_m0_structured_output_failure`",
+            historical[:1600],
+        )
 
     def test_mainline_memory_quarantines_all_gpt55_temporary_code(self):
         memory = (ROOT / "GLOBAL_MEMORY.md").read_text(encoding="utf-8")
@@ -563,8 +628,11 @@ class CurrentValidationPlanTests(TestCase):
         )
         self.assertIn("invalidated diagnostic", normalized)
 
-    def test_v1_2_is_the_authoritative_execution_overlay(self):
-        current = (REPO / "MemBind_CURRENT_VALIDATION_PLAN_v1.2.md").read_text(
+    def test_v1_3_is_authoritative_and_v1_2_is_immutable_history(self):
+        historical = (REPO / "MemBind_CURRENT_VALIDATION_PLAN_v1.2.md").read_text(
+            encoding="utf-8"
+        )
+        current = (REPO / "MemBind_CURRENT_VALIDATION_PLAN_v1.3.md").read_text(
             encoding="utf-8"
         )
         protocol = (REPO / "MemBind_basic_validation_experiment.md").read_text(
@@ -572,13 +640,15 @@ class CurrentValidationPlanTests(TestCase):
         )
         execution = (ROOT / "EXPERIMENT_PLAN.md").read_text(encoding="utf-8")
 
-        self.assertIn("当前阶段唯一允许 Agent 直接执行的计划", current)
-        self.assertIn("CURRENT VALIDATION PLAN v1.2", protocol)
-        self.assertIn("Current Validation v1.2", execution)
+        self.assertIn("本文件是当前唯一可执行 overlay", current)
+        self.assertIn("v1.2 保留为历史协议", current)
+        self.assertIn("本文件已由 `MemBind_CURRENT_VALIDATION_PLAN_v1.3.md` supersede", historical)
+        self.assertIn("CURRENT VALIDATION PLAN v1.3", protocol)
+        self.assertIn("Current Validation v1.3", execution)
         self.assertIn("V1 Correctness nondeterminism closure", protocol)
         self.assertIn("V1 Correctness nondeterminism closure", execution)
 
-    def test_current_state_remains_at_v3_after_persisted_v2_pass(self):
+    def test_current_state_enters_h0_while_persisted_v1_v2_evidence_remains(self):
         state = json.loads((ROOT / "CURRENT_STATE.json").read_text(encoding="utf-8"))
         diagnostic = json.loads(
             (
@@ -589,11 +659,19 @@ class CurrentValidationPlanTests(TestCase):
             ).read_text(encoding="utf-8")
         )
 
-        self.assertEqual(state["protocol_version"], "current-validation-v1.2")
-        self.assertEqual(state["current_stage"], "V3")
+        self.assertEqual(state["protocol_version"], "current-validation-v1.3")
+        self.assertEqual(state["current_stage"], "H0")
         self.assertEqual(
             state["status"],
-            "blocked_v3_structured_output_reproduced",
+            "h0_protocol_accepted_harness_not_implemented",
+        )
+        self.assertEqual(
+            state["historical_blocker"],
+            "v3_smoke_002_m0_structured_output_failure",
+        )
+        self.assertEqual(
+            state["current_blocker"],
+            "late_discovered_pre_freeze_host_compatibility_failure",
         )
         self.assertEqual(
             diagnostic["v1_gate"]["status"],
@@ -633,10 +711,27 @@ class CurrentValidationPlanTests(TestCase):
             state["evidence"]["v2_oracle_integration_verification_sha256"],
             "ef9c20578a9ab418630e650cca76d2b7c3c75601f56fa440eb698b947f1a12aa",
         )
-        self.assertIn("structured-output", state["next_allowed_action"])
+        self.assertIn("remaining H0 runtime harness", state["next_allowed_action"])
+        self.assertIn("shared-base manifest hash", state["next_allowed_action"])
+        self.assertIn("separate explicit gate", state["next_allowed_action"])
+        self.assertFalse(state["live_h0_candidate_authorized"])
+        self.assertTrue(state["v3_smoke_003_retired"])
         self.assertEqual(
             state["forbidden_until_pass"],
-            ["V4", "V5", "V6", "future_work"],
+            [
+                "live_H0",
+                "V2-R",
+                "V3-R",
+                "V4",
+                "V5",
+                "V6",
+                "V7",
+                "P1",
+                "P2",
+                "P3",
+                "P4",
+                "future_work",
+            ],
         )
 
     def test_v1_closes_from_retained_artifacts_without_live_recapture(self):
@@ -760,7 +855,10 @@ class CurrentValidationPlanTests(TestCase):
         self.assertIn("72-run", body)
         self.assertIn("24 correctness", body)
         self.assertIn("M2 8/8", body)
-        self.assertNotIn("64-run", body)
+        self.assertIn(
+            "修复当前 code 中 stale 64-run/global-shuffle implementation",
+            body,
+        )
 
     def test_frozen_topology_matches_remote_models_and_local_non_docker_neo4j(self):
         protocol = (REPO / "MemBind_basic_validation_experiment.md").read_text(

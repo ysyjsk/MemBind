@@ -1,11 +1,14 @@
 # MemBind 基础验证实验规范
 
 > 文档状态：Pilot Protocol v1.1（已合并 Characterization / Fairness Addendum）
-> 当前执行覆盖：`MemBind_CURRENT_VALIDATION_PLAN_v1.2.md`（CURRENT VALIDATION PLAN v1.2）是当前阶段唯一执行顺序；本文保留冻结实验合同和历史背景。与旧 Phase/characterization 顺序冲突时，以 v1.2 的 V1→V7 单线状态机为准。
-> 当前恢复点：`V3 / v3_smoke_002_m0_structured_output_failure`；当前动作范围为
-> `blocked_waiting_for_explicit_protocol_deviation`。唯一 fresh-runtime public-path
-> probe `005_fresh_restart` 已逐字节复现历史截断；`v3_smoke_003 remains forbidden`，
-> 且 `forbidden_until_pass: V4/V5/V6/future_work`。
+> 当前执行覆盖：`MemBind_CURRENT_VALIDATION_PLAN_v1.3.md`（CURRENT VALIDATION PLAN v1.3，protocol `current-validation-v1.3`）是当前唯一执行 overlay；v1.2 原文只作历史协议。与旧 Phase/characterization 顺序冲突时，以 v1.3 的 H0→V2-R→V7 单线状态机为准。
+> 当前恢复点：`H0 / late_discovered_pre_freeze_host_compatibility_failure`；状态为
+> `h0_protocol_accepted_harness_not_implemented`，动作范围为
+> `h0_offline_tdd_and_harness_only`，`live_h0_candidate_authorized=false`，
+> `v3_smoke_003_retired=true`。
+> 历史 ID `v3_smoke_002_m0_structured_output_failure` 与
+> `artifacts/environment/v3_actual_schema_compatibility_probe_20260809_005_fresh_restart.json`
+> 保留为 `historical_negative_host_qualification_evidence`，不改写 raw failure。
 > 目标：以单一 backend、单一数据集、单一 backbone，直接判断 Semantic Late Binding 是否值得继续研究。  
 > 本协议只验证核心 idea，不验证跨 backend 通用性、复杂调度、容错或完整线上部署。
 > 升级原则：v1.1 补充系统 characterization、公平性和环境噪声控制；除本文明确标为“替换”的条款外，v1.0 的 correctness、冻结数据划分、模型与 Graphiti 版本、Evidence Fence 以及 Go/No-Go 阈值保持不变。
@@ -93,10 +96,11 @@ live performance。只有完整 M1 replay 后的 graph/invalidation/retrieval di
 - Hugging Face revision：`6e2312b85c2ae9a31f629f24493b79d8b02eab1a`
 - 推理框架：vLLM `v0.26.0`（用户于 2026-08-07 明确批准替代原协议的 `v0.23.0`；本次执行对 M0/M1/M2 统一冻结该版本）
 - 模式：`enable_thinking=false`
-- 结构化输出：必须使用 vLLM guided JSON 或 Graphiti 当前 structured-output schema。
+- 结构化输出、sampling 与 completion policy：由 v1.3 H0 的首个通过候选冻结；
+  Q1/Q2 使用 `json_schema`，Q3 是显式 `json_object` compatibility candidate。
 - 所有方法必须使用完全相同的 Graphiti prompt、schema 和模型参数。
 
-固定解码参数：
+历史 Q0 解码参数（失败证据；不是 v1.3 最终 host config）：
 
 ```yaml
 temperature: 0.0
@@ -105,16 +109,19 @@ max_tokens: 2048
 seed: 20260806
 ```
 
-若 Qwen3/vLLM 在 `temperature=0` 下无法稳定返回合法结构化输出，可将 `temperature` 改为 `0.01`，但必须：
-
-1. 所有方法统一修改；
-2. 将变更记录到 protocol deviation；
-3. 启用按完整 prompt hash 共享的 response cache。
+禁止临时改为 `temperature=0.01` 或增加未注册 candidate。H0 只按内容寻址的
+shared-base + Q1→Q2→Q3 delta specs 执行 first-passing qualification，选择只用
+calibration、只判 qualification，不看 M2 或 performance。当前 specs 不是
+runnable manifests；live 前必须解析 client/prompt/schema/HTTP/retry 等所有
+共享字段的 hash。H0 PASS 后，M0/M1/M2 的 exact shared host manifest 冻结；
+任何变化都需要新 protocol version。Q0 与 Q1 使用不同世代的 qualification
+wrapper，不构成 causal A/B；Q1-Q3 与 Q0 均保持固定 `seed=20260806`。
 
 ### 3.4 Embedding model
 
 - 模型：`Qwen/Qwen3-Embedding-0.6B`
-- dtype：FP16 或 BF16；一旦选择必须冻结。
+- dtype：BF16（已由部署进程、模型配置与
+  `artifacts/environment/embedding_model_fingerprint.json` 交叉核实并冻结）。
 - 禁止不同方法使用不同 embedding model 或维度。
 - Correctness lane：M0 按 canonical single-item embedding input capture exact vector；M1/M2 对同一输入只做只读 replay。Embedding cache miss 立即失败，禁止 live fallback。
 - correctness embedding namespace 至少包含 served model ID、endpoint-reported
@@ -126,10 +133,10 @@ seed: 20260806
   batch composition 不是，因此 `create(["x"])` 与 `create_batch(["x"])` 共用记录。
 - Performance lane：M0/M1/M2 使用相同 live embedding server、dimension 和 run 内 exact-text cache policy；每个 run 冷启动应用级 embedding cache，不要求跨 run bitwise-identical vectors。
 
-### V2 pilot boundary (current execution)
+### V2 pilot boundary (historical completed evidence)
 
-在正式 V3 full correctness smoke 之前，V2 只允许执行一个有界的 harness
-integration：
+该 v1.2 有界 integration 已完成并仅作历史 evidence；v1.3 因 qualified host
+identity 将变化，不得将该 oracle/cache 直接复用为 V2-R。当时的边界为：
 
 ```text
 M0 capture -> M0 read-only replay
@@ -205,7 +212,7 @@ question_id 不以 "_abs" 结尾
 - 最终问题可检查更新后的记忆是否正确；
 - 每个实例包含约数十个 session，足以形成连续构建队列。
 
-### 4.2 冻结划分
+### 4.2 冻结划分与 v1.3 exposure quarantine
 
 不要人工挑选样本。
 
@@ -224,7 +231,7 @@ calibration = eligible[:4]
 evaluation = eligible[4:12]
 ```
 
-即：
+上述规则生成的 v1.2 split 原样保留：
 
 - calibration：4 个实例；
 - evaluation：8 个实例；
@@ -235,6 +242,27 @@ evaluation = eligible[4:12]
 ```text
 artifacts/dataset/frozen_split.json
 ```
+
+v1.3 发现 `c6853660` 已被多轮 prompt/schema/ordering/structured-output 调试暴露，
+因此不能继续把它称为 held-out evaluation。不得覆盖旧 split；新增：
+
+```text
+artifacts/dataset/frozen_split_v1_3.json
+h0_data_scope=calibration_only
+evaluation_split_access=false
+canary_selection_eligible=false
+candidate_selection_metric=first_passing_only
+generator_script=src/dataset_v1_3.py
+```
+
+v1.3 保持原四个 calibration IDs，将 `c6853660` 放入
+compatibility/development quarantine，并按相同 SHA256(question_id) 顺序加入下一个
+未观察 ID `08e075c7`，保持八个 evaluation instances。该规则只看 exposure 与 ID
+hash，不看模型、quality、latency 或 MemBind 结果。H0 只能读取 calibration；
+quarantined canary 只保留 Q0 历史证据，不参与 candidate selection。
+新 split 由独立的 v1.3 generator 校验原始数据 hash 与 immutable legacy split
+hash，再只按 exposure quarantine 和原 SHA256(question_id) 顺序派生。旧
+`src/dataset.py` 不改动，以保留 v1.2 manifest 记录的脚本 hash。
 
 ### 4.3 Session 输入规则
 
@@ -412,6 +440,8 @@ Cache key：
 
 ```text
 sha256(
+    protocol_version
+    + qualified_host_manifest_sha256
     model_revision
     + decoding_config
     + structured_output_schema
@@ -419,6 +449,11 @@ sha256(
     + user_prompt
 )
 ```
+
+v1.3 correctness oracle namespace 必须内容寻址，并至少绑定 protocol、qualified
+host manifest、Graphiti commit、effective prompt/schema hashes、deterministic
+adapter hash 与 embedding deployment fingerprint。H0 禁止写 formal oracle；旧 V2/V3
+cache 只作历史 artifact，禁止跨 namespace lookup 或 mutable `latest` alias。
 
 Embedding key：
 
@@ -518,7 +553,7 @@ v1.1 明确将 performance lane 的 `global shuffle` 条款替换为
 `blocked randomization`：每个 `block = (question_id, repeat)` 包含 M0、M1、M2，
 用 seed `20260806` 在六种排列上均衡轮转。Correctness capture 必须仍先于对应 replay。
 
-每个 measured run 使用 CURRENT VALIDATION v1.2 在 V4 frozen minimal lifecycle；
+每个 measured run 使用 CURRENT VALIDATION v1.3 V4 frozen minimal lifecycle；
 不得从历史 characterization lifecycle 重新引入 100/20 network probe 或高频 telemetry campaign。
 正式数据 prompt 不得在 prefix-cache reset 后用于 warm-up。
 
@@ -924,16 +959,16 @@ artifacts/final/VALIDATION_REPORT.md
 
 ## 16. 执行顺序
 
-当前执行严格由 CURRENT VALIDATION PLAN v1.2 的单线状态机决定；旧 Phase
-0→6 只保留为历史背景。环境、数据、M0/M1/M2 实现 gate 已完成，不重复搭建；
-每个 live 阶段前只做该阶段要求的轻量 contract check。
+当前执行严格由 CURRENT VALIDATION PLAN v1.3 的单线状态机决定；旧 Phase 0→6 与
+v1.2 V1→V7 只保留为历史背景。H0 只先授权 offline contracts/harness；live Q1 必须
+经过单独 machine-state gate。
 
 ```text
-V1 Correctness nondeterminism closure
-→ V2 Correctness oracle freeze
-→ V3 Full M0/M2 correctness smoke
-→ V4 Deterministic Graphiti calibration + minimal profiling
-→ V5 M1 one-instance oracle-replay smoke
+H0 Host Stack Qualification（offline TDD -> separate live gate -> first passing freeze）
+→ V2-R Correctness oracle requalification
+→ V3-R Full M0/M2 correctness smoke
+→ V4 U0/D0 representativeness + calibration + minimal profiling
+→ V5 Quality-feasible M1/M2 concurrency tuning
 → V6 Formal evaluation (24 correctness + 48 performance = 72 runs)
 → V7 Analysis + validation verdict
 → STOP
@@ -941,6 +976,8 @@ V1 Correctness nondeterminism closure
 
 禁止跳阶段。每个代码或 instrumentation 变更都必须先红测、再实现、再定向
 转绿、最后全量回归；每个失败 attempt 保留并使用新 run_id 替代。
+历史 v1.2 阶段标签 `V1 Correctness nondeterminism closure` 仅用于对齐已保留
+artifact，不是 v1.3 的当前恢复点。
 
 ---
 
@@ -984,8 +1021,12 @@ Agent 不得：
 
 ## 19. 当前执行范围边界
 
-未来机制已移到 `FUTURE_WORK.md`，不属于 CURRENT VALIDATION PLAN v1.2 的输入。
+未来机制已移到 `FUTURE_WORK.md`，不属于 CURRENT VALIDATION PLAN v1.3 的输入。
 当前 Agent 在 V7 报告后停止，不读取或执行 future-work 文件。
+
+当前 Pilot 结果不得声称 General Agent Memory Runtime。P1 architecture abstraction
+audit、P2 second host、P3 MemoryArena timing-trace replay/live extension、P4 paper-level
+baseline/load matrix 均为 `authorized=false`，只在 V7 GO 后由新协议决定。
 
 ---
 
@@ -1000,10 +1041,21 @@ Agent 不得：
 - M0、M1、M2 必须使用相同的远程 endpoint、模型、解码参数、网络路径和并发上限；
 - 内部 method ID `M0` 的公开名称固定为 `Deterministic-Graphiti-Serial`，不声称 untouched upstream semantics；
 - 所有计时在本机使用 time.monotonic_ns()，不能使用模型服务器时间。
-- 固定请求预算仍为 max_tokens=2048；若受约束 JSON 在该上限被截断并解析失败，三个方法统一只允许一次 max_tokens=8192 的有界补请求，两个请求都计入 LLM call/token 指标，并在最终报告中列为 protocol deviation；该上限由 smoke04 的 4096 响应仍以 finish_reason=length 截断这一持久化证据确定；
+- 历史 Q0 请求预算为 `2048 -> 8192`，并已在 public path 上失败；它只保留为
+  `historical_negative_host_qualification_evidence`。v1.3 Q1-Q3 的
+  `requested_max_tokens=16384` 来自 pinned Graphiti constructor default；每次实际
+  budget 固定按
+  `min(requested_max_tokens, context_limit-prompt_tokens-32)` 计算并同时记录
+  requested/effective 值。禁止裁剪输入、无限增大 budget 或临时增加 retry；
 - 本实验每次 extraction 只包含一个 current episode，因此三个方法和 correctness cache hash 共用的 JSON schema 将 `episode_indices` 严格约束为单元素 `[0]`；Graphiti prompt 与事实字段不变，此约束修复了 vLLM 在无界整数数组中持续输出 `0,1,2,...` 直至 length 截断的问题；
-- 主机第一次重启后的 construction context window 曾为 32768；若 vLLM 因声明的 completion budget 越界返回 400，先用同一完整 prompt 的 1-token probe 从成功响应 usage 获取精确 input tokens，再以“context 上限 - 精确 input tokens - 32”作为有界重发预算；probe 与重发都计量，禁止裁剪输入；
-- 完整 `smoke06` 证明历史 32768 context 不足以执行冻结输入：M0 source sequence 19 的原生 Graphiti node-resolution prompt 精确占用 32757 tokens，在安全余量前也只剩 11 completion tokens；保留的 `diagnostic_context_cap_005` 给出 primary 2048 预算所需最小 context 34837、完整 overflow 8192 预算所需 40981；因此远端最低门槛冻结为 `max_model_len>=40960`，禁止通过裁剪 history 或改写 prompt 绕过；
+- 历史 1-token context probe 只作 Q0 诊断。H0 harness 必须在每个 attempt 中显式
+  记录 prompt tokens、context limit、安全余量和 effective budget；不得把 probe 或
+  retry 计为独立 logical trial；candidate-induced retry 即 qualification failure。
+  H0-A 的三次 repeated logical trials 共用固定 `seed=20260806`，不得称为
+  statistically independent samples；
+- 完整 `smoke06` 的 32757-token prompt 证明 40960 context 在 32-token safety 后最多
+  提供 8171 completion tokens，不能声称所有 request 都恢复完整 16K；budget
+  insufficiency 必须显式失败，禁止通过裁剪 history 或改写 prompt 绕过；
 - 2026-08-07 用户将远端 `max_model_len` 恢复为 40960，并明确批准本次协议统一使用 vLLM 0.26.0 替代原定的 0.23.0；代码、`.env`、配置和 gate 期望值均冻结为 0.26.0，历史 blocker 与失败 attempt 继续保留并由新的成功 gate 标记为 resolved；
 - Graphiti edge RRF 的 Neo4j BM25 / cosine 源查询统一采用 `logical_content_ascending_before_top_k`：在外层数据库 `LIMIT` 前，对相同 score 按 fact、relation、valid/invalid temporal fields 和 source/target name 排序，禁止 UUID 进入 secondary key，从而稳定送入最终 RRF top-K 的 ranked inputs。Neo4j full-text procedure 会在此外层排序前执行自身的内部 limit，因此 procedure cutoff 恰有并列项仍是必须由下一次 correctness smoke 验证的 residual risk，不得宣称已被理论消除；
 - Graphiti node dedupe 的 Neo4j cosine 候选查询统一采用 `logical_node_content_ascending_before_top_k`：在每个 extracted entity 的 15-candidate `LIMIT` 前，对相同 score 按不含 UUID 的 name、summary 和 labels 排序，再由已有的 prompt-level node canonicalization 分配 `candidate_id`；
@@ -1016,12 +1068,16 @@ Agent 不得：
 
 正式实验前必须按以下测试驱动顺序执行：
 
-1. 先新增或修改不变量测试，覆盖数据 split、evidence fence、future evidence、cache replay、source order、exactly-once 和 canonical parity；
-2. 在没有启动任何服务时，运行全部单元测试并保持通过；
-3. 分别执行 construction / embedding endpoint contract smoke，校验 model id、结构化输出和 embedding dimension；
-4. 启动本机 Neo4j，执行索引创建、清库、warm-up、search、再次清库的隔离测试；
-5. 只在 smoke instance 达到 M0 parity 后冻结 DELTA_MS；
-6. 最后生成并冻结 72-run correctness-first blocked plan：先完成 24 correctness
+1. 先新增 H0 RED contracts，覆盖 v1.3 split/exposure quarantine、candidate registry、
+   first-pass stop、context-safe budget、logical trial/HTTP attempt、payload observation、
+   Q3 effective schema、semantic utility、manifest immutability 和 live state gate；
+2. 持久化 RED 日志/hash，再做最小 offline implementation、focused GREEN 和全量回归；
+3. 审阅 candidate/split/semantic manifest hashes 后，用单独 machine-state transition
+   只开放 Q1 H0-A；不得由文档更新直接调用服务；
+4. H0 首个候选通过并 freeze 后，重新做 V2-R oracle 与 V3-R correctness；
+5. V4 完成 U0/D0 guardrail 和 calibration，V5 完成 quality-feasible tuning；
+6. 修复当前 code 中 stale 64-run/global-shuffle implementation，生成并冻结 72-run
+   correctness-first blocked plan：先完成 24 correctness
    runs；只有 M2 8/8 且 oracle miss/fallback 为 0，才执行 48 live performance
    runs。M1 `completed_with_divergence` 是 treatment outcome，不阻断 performance。
 
@@ -1036,11 +1092,11 @@ Agent 不得：
 
 ## 21. v1.1 Characterization、Fairness 与环境噪声控制（历史背景；非当前执行计划）
 
-本节保留 v1.1 设计的可追溯背景。CURRENT VALIDATION PLAN v1.2 已将当前
-基础验证收缩为 V1→V7，并明确禁止大规模 concurrency/load sweep、复杂
-telemetry 和额外 network campaign；所以下列 v1.1 子节不得再被解释为当前
-Agent 的执行队列。v1.2 仍保留 same-resource fairness、真实 E2E 网络路径、
-blocked method order、错误不静默丢弃和冻结 primary outcome 等不冲突原则。
+本节保留 v1.1 设计的可追溯背景。CURRENT VALIDATION PLAN v1.3 将当前执行改为
+H0→V7，并明确禁止大规模 load sweep、复杂 telemetry 和额外 network campaign；
+所以下列 v1.1 子节不得再被解释为当前 Agent 队列。只有 v1.3 明确重新授权的
+§21.5 `C={1,2,4,8}` quality-feasible tuning、§21.7 U0/D0 guardrail 和 live work-volume
+ledger 在对应 V4/V5 阶段生效；这些阶段目前仍被 H0 gate 禁止。
 
 ### 21.1 执行前置条件与停止规则
 
@@ -1132,7 +1188,11 @@ Phase 4.5 只使用一个预先冻结的 calibration instance 做：
 - M0 vs M2-C8 的 `rho≈0.5/1.0/1.5` load sensitivity，其中 `DELTA = 2.0×/1.0×/0.67× median_service`；
 - 相同 fixed RNG seed 的小型 Poisson arrival replay（Gamma 仅在预算允许且主 Pilot 值得继续时增加）。
 
-必须输出 `best_m1_concurrency_on_calibration` 与 `best_m2_concurrency_on_calibration`。formal primary 仍保留冻结 M1-C8/M2-C8 iso-resource 比较；若 M1-C4 更快，报告 Best-Tuned-M1 但不得冒充全量 paired primary baseline。
+必须输出 `best_m1_concurrency_on_calibration` 与 `best_m2_concurrency_on_calibration`。
+只有 correctness/retrieval/exactly-once quality-feasible 的点才进入速度选择；按
+calibration median makespan 最小化，完全相同时选较小 C。formal primary 仍保留
+M1-C8/M2-C8 `iso-cap` 比较；若 M1-C4 更快且 quality-feasible，报告
+Best-Tuned-M1，但不得冒充全量 paired primary baseline。
 
 ### 21.6 Blocked randomization、重复稳定性与 run lifecycle
 
@@ -1161,9 +1221,20 @@ median(on) / median(off) - 1
 
 上限为 2%（`instrumentation_overhead_limit: 0.02`）；2–5% 是 warning，>5% 是 fail，不能进入 formal performance。
 
-为审计当前 `logical_content_ascending_after_top_k` 对 upstream 的影响，在 4 个 calibration instances 上运行 `Upstream-Native-Serial` 与 `Deterministic-Native-Serial`，比较 canonical graph、entity/edge F1、Evidence Recall@10、LLM calls/tokens 和 makespan。若无法 4/4 exact parity，M0 报告名称改为 `Deterministic-Native-Serial`，保留 upstream 作为 semantic guardrail；不得删除差异。
+为审计 deterministic adapter 对 upstream representativeness 的影响，在 4 个
+calibration instances 上运行 `U0=Upstream-Qualified-Graphiti-Serial` 与
+`D0=Deterministic-Graphiti-Serial`，比较 canonical graph、entity/edge F1、Evidence
+Recall@10、LLM calls/tokens 和 makespan。若预注册 guardrail 未通过，保留两者并
+收缩 external-validity claim；D0 名称不随结果改写。
+历史 v1.1 文本中的 `Upstream-Native-Serial` / `Deterministic-Native-Serial` 仅为
+旧 alias，v1.3 报告统一使用 U0/D0 名称。
 
-performance live lane 对相同 prompt hash 记录 response hash、finish reason 和 token usage，派生 `live_response_divergence_rate`。高 divergence 导致 work volume 不同则标记 `performance_confounded=true`，不能解释为 correctness failure。
+performance live lane 对相同 logical prompt 记录 response hash、finish reason、
+logical/HTTP/retry ledger 和 token usage，派生 descriptive
+`live_response_divergence_rate`。相对 D0 的 call ledger 不一致，或 input/output token、
+embedding item ratio 超出双侧 `[0.95,1.05]`，标记
+`performance_confounded=true`；结果仍报告为 descriptive E2E，但不能解释为同
+工作量 scheduling speedup，也不能解释为 correctness failure。
 
 ### 21.8 v1.1 新增 artifact 与冻结文件
 
@@ -1217,5 +1288,5 @@ correctness smoke PASS
 ```
 
 以上为历史 v1.1 设计，不再授权任何 live run。当前是否可以进入下一阶段只由
-`CURRENT_STATE.json` 和 v1.2 gate 决定；正式计划为 24 correctness runs +
+`CURRENT_STATE.json` 和 v1.3 gate 决定；正式计划为 24 correctness runs +
 48 live performance runs = 72 runs，最终只输出 GO / INCONCLUSIVE / NO-GO。
