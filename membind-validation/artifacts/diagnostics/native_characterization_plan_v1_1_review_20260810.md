@@ -15,6 +15,10 @@ Authoritative plan after this review:
 MemBind_NATIVE_GRAPHITI_CHARACTERIZATION_WORKPLAN_v1.1.md
 protocol_id=native-characterization-v1.1
 instrumentation_contract_status=specified_not_yet_qualified
+WORKPLAN_FREEZE=true
+protocol_review_status=closed
+experiment_surface=C0-C6_only
+next_allowed_work=C1_instrumentation_implementation
 ```
 
 `MemBind_NATIVE_GRAPHITI_CHARACTERIZATION_WORKPLAN_v1.0.md` remains immutable
@@ -36,16 +40,17 @@ supports measurement practice, not a universal numerical rule.
 |---|---|---|
 | C0 should be one bounded Native episode | Adopt | Matches artifact-evaluation kick-the-tires practice. C0 is viability only and MUST NOT grow into H0. |
 | Freeze instrumentation scope | Adopt | C1 now has a frozen minimum schema; only a C0-C5 measurement-correctness defect can add telemetry. |
-| Treat <=2% as an absolute tracing law | Correct and soften | DistServe's sub-2% number is simulator SLO-attainment error, not tracing overhead. v1.1 uses <=2% ideal, 2-5% conditional, >5% default hard fail, with semantic parity, stability, full reporting, and no G1/G2 interpretation reversal. |
+| Treat <=2% as an absolute tracing law | Correct and soften | DistServe's sub-2% number is simulator SLO-attainment error, not tracing overhead. v1.1 uses <=2% clean pass, 2-5% warning-and-continue after parity, and >5% block-and-repair. No optimization/re-test is required solely to cross below 2%. |
 | Keep a Native occupancy/work-volume breakdown | Adopt | Critical-path and interval-union accounting answers the first characterization question without introducing a treatment. |
 | Use D0/D1/D2/D3/unknown and p_L/p_U | Adopt | Static source evidence plus dynamic trace and input-ready-at-arrival form a conservative ledger. Unknown remains first-class; an unobserved read is not proof of independence. |
 | Add a counterfactual dependency microexperiment | Reject for screening | It expands implementation before the basic signal is known. v1.1 records unknown rather than manufacturing certainty. |
 | Make S_8(p_U)<1.2 or S_8(p_L)>=1.5 hard gates | Reject | Amdahl-style `S_C(p)` omits remote capacity, DB contention, batching, instrumentation, and commit ordering. v1.1 reports S_2/S_4/S_8 descriptively. |
-| Run both normalized loads and 20/10/5/2 seconds | Reject duplication | One frozen normalized sweep is sufficient for bounded screening; actual seconds are derived after `S_ref` is frozen. |
+| Run both normalized loads and 20/10/5/2 seconds | Reject duplication | One frozen normalized sweep is sufficient. `S_ref` is derived from the already-completed C2 trace for the pre-frozen E3 history, so no hidden calibration block is added; actual seconds are written to `freeze.json`. |
 | Use strict rho/utilization language | Correct | Evolving Graphiti state and finite replay do not establish steady state. v1.1 calls it `rho_proxy` and freezes `S_ref` before E3 outcomes. |
 | Add Poisson arrival now | Reject for this screening | Literature uses it when a timestamp-free workload model is needed. The current deterministic open-loop replay is a controlled screening trace and must not be called a real workload distribution. |
 | Rename stale metric | Adopt | `post_return_stale_window = max(0, publish_timestamp - caller_return_timestamp)` reflects that Async returns before publish. |
 | Interpret one no-failure parallel pass as sufficiency | Reject | A single history/interleaving cannot prove universal safety. v1.1 allows only `NO_NAIVE_PARALLEL_INSUFFICIENCY_OBSERVED`. |
+| Treat an offline E4 fixture as another experiment lane | Reject | The deterministic fixture is an already-required TDD check for path/invariant-checker behavior, not a treatment, live run, repetition, or experimental block. |
 | Stop after the characterization verdict | Adopt | C6 records verdict, supporting observations, and unresolved evidence; it cannot select or authorize M2. |
 
 ## Codebase evidence that constrains the plan
@@ -103,12 +108,14 @@ available, or that a particular speedup threshold is scientifically meaningful.
 
 ## TDD evidence
 
-The new document contract was added before the v1.1 workplan (RED first):
+The document and final-freeze contracts were changed RED first:
 
 ```text
 tests/test_native_characterization_workplan_v1_1.py
-RED: 11 failures (target plan absent), 2026-08-10
-GREEN: 11 tests OK, together with v1.0 contract tests: 23 tests OK
+initial RED: 11 failures (target plan absent), 2026-08-10
+final-freeze RED: 4 failures (C1/load/E4/freeze ambiguity)
+pointer-freeze RED: 1 failure
+final focused GREEN: 25/25 OK
 ```
 
 The failed `pytest` invocations were environment preflights only (`pytest` is
@@ -118,8 +125,8 @@ repository's `unittest` entry point. No live experiment was run.
 Final offline verification:
 
 ```text
-focused: 24/24 OK
-full discovery: 596 tests; 588 passed; 7 failed; 1 error
+focused: 25/25 OK
+full discovery: 597 tests; 589 passed; 7 failed; 1 error
 git diff --check: PASS
 ```
 
@@ -132,11 +139,12 @@ the opposite direction. This review did not rewrite state or historical tests.
 Evidence hashes after the final run:
 
 ```text
-workplan_sha256=d4d0435957c5577cf555c296f69763e795a7b5f79ed0f747c6213ccf26eb4433
-test_sha256=141372e29918e989971c5084b20f6b7692f9c94bf870fbc83557f3a9f227236f
-red_log_sha256=78a1947f782a3f4abca779270d0cfa60f73d9bfcedb28ae949d4c7352e4d9644
-focused_green_log_sha256=f4d6812f12d50ef37a4e303ec8b992038e1944b1414fe6508f38f81bdddd92ea
-full_regression_log_sha256=181df06a0538732b3f12b658d64361348ddd96144c594508ae39b24587f6a6b1
+workplan_sha256=be3112cc2da4080ce98f9c94f1ab510ba5cc8350dca108a15e304da04c996b5b
+test_sha256=9c044034b37a657b57cb052f61c4fc369cc6a7c5f12e95b77b491daf44027546
+final_freeze_red_log_sha256=0fd3fe3b939adda728ab681937338384851ae3803526ed5cd6a50dd73ebe5ec1
+pointer_freeze_red_log_sha256=8dfda5b8c5844b532223478fe9b64639e4c0d45b0f3bfe23781ff953f550b593
+focused_green_log_sha256=3fd6115b5e50e764cc2f0f37cca04994196017ef5c9160e6b50967fb74b078b0
+full_regression_log_sha256=7c2a5d392f0f0cd8bf77aa030c3a78f5066b8ed9440f17aa817a671cf8c3ae10
 unchanged_current_state_sha256=fb57c0edb6388c2ae94c6ba338e1671c39fa08e218cfc96566ee4d315b2e231d
 ```
 
@@ -144,6 +152,9 @@ unchanged_current_state_sha256=fb57c0edb6388c2ae94c6ba338e1671c39fa08e218cfc9656
 
 - The instrumentation implementation is still unqualified; the status is
   explicitly `specified_not_yet_qualified`.
+- Protocol review is closed. Only C1 implementation and later C0-C6 execution
+  under the frozen workplan are allowed; no experiment-surface expansion is a
+  legal continuation.
 - No C0-C5 scientific result exists yet under v1.1.
 - The current full offline suite retains the previously known R5/R6 state-drift
   debt; it must be reported separately from this plan contract and must not be

@@ -15,6 +15,9 @@ current_action_scope: h0_q1_b_live_only
 > `current research-priority override`。旧版
 > [`MemBind_NATIVE_GRAPHITI_CHARACTERIZATION_WORKPLAN_v1.0.md`](../MemBind_NATIVE_GRAPHITI_CHARACTERIZATION_WORKPLAN_v1.0.md)
 > 保留为不可变历史版本。
+> Freeze status: `WORKPLAN_FREEZE=true`；
+> `protocol_review_status=closed`；
+> `next_allowed_work=C1_instrumentation_implementation`。
 > 本文件是 frozen solution-validation lane 的执行镜像，不得启动 H0/M1/M2 或
 > replacement-004；characterization live grant 必须先经离线 TDD 状态转换。
 

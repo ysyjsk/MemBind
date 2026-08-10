@@ -6,6 +6,9 @@
 > `native-characterization-v1.1`。v1.0 的
 > [`MemBind_NATIVE_GRAPHITI_CHARACTERIZATION_WORKPLAN_v1.0.md`](MemBind_NATIVE_GRAPHITI_CHARACTERIZATION_WORKPLAN_v1.0.md)
 > 仅作不可变历史版本。
+> Freeze status: `WORKPLAN_FREEZE=true`；
+> `protocol_review_status=closed`；
+> `next_allowed_work=C1_instrumentation_implementation`。
 > 本文件仍是 solution-validation lane 的唯一可执行 overlay，但该 lane
 > 已 frozen，仅保存 H0/M1/M2 历史契约。不得恢复 H0、replacement-004 或 M2 formal
 > work，除非 characterization verdict 后另行完成 TDD 状态转换和授权。

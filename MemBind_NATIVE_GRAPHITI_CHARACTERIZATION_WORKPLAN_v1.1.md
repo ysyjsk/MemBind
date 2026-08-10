@@ -8,6 +8,18 @@
 > **Instrumentation status**: `instrumentation_contract_status=specified_not_yet_qualified`  
 > **Revision relation**: this document supersedes v1.0 for future characterization actions; v1.0 remains immutable historical rationale.
 
+```text
+WORKPLAN_FREEZE=true
+protocol_review_status=closed
+experiment_surface=C0-C6_only
+next_allowed_work=C1_instrumentation_implementation
+```
+
+No further protocol review is authorized. Execution may fix a demonstrated
+C0-C5 measurement-correctness defect through RED/GREEN evidence, but may add no
+new stage, no new metric, and no new experiment. The C0-C6 order, screening
+matrix, artifact surface, and terminal C6 stop are frozen.
+
 <!-- Maintainability: this is the only authoritative C0-C6 characterization
 plan. Historical solution-validation documents retain their evidence, but must
 not be used to add experiments or mechanisms to this bounded screening plan. -->
@@ -157,18 +169,21 @@ The A/A gate uses five alternating trace-off/trace-on pairs and reports the
 paired distribution rather than only an aggregate mean:
 
 ```text
-<=2%: ideal target and ordinary pass
-2-5%: conditional screening pass
->5%: default hard fail; repair instrumentation and re-test
+<=2%: clean pass
+2-5%: warning; report overhead and continue
+>5%: block and repair
 ```
 
-The `2-5%: conditional screening pass` is legal only when semantic parity holds,
-overhead is stable across alternating pairs, the overhead is fully reported,
-and sensitivity analysis shows no phase ranking or G1/G2 interpretation change.
-These are project guardrails, not a universal systems-paper threshold. In
-particular, DistServe's <2% result is simulator accuracy against hardware SLO
-attainment, not a tracing-overhead rule. A percentage below 5% cannot override
-a semantic mismatch or a conclusion reversal.
+All three ranges first require wrapper semantic parity for bound arguments, call
+order, returned and parsed outputs, exception behavior, and deterministic
+fixture graph state. In the 2-5% range, overhead must be stable across
+alternating pairs and fully reported, after which screening continues. The
+implementation MUST NOT optimize solely to move a result from 2-5% to <=2%.
+No optimization or re-test is required solely to reduce overhead below 2%.
+Direct evidence that tracing changes semantics remains a measurement-correctness
+defect at any percentage. These are project guardrails, not a universal
+systems-paper threshold. In particular, DistServe's <2% result is simulator
+accuracy against hardware SLO attainment, not a tracing-overhead rule.
 
 ## 5. C2 / E1 - Native construction breakdown
 
@@ -247,23 +262,32 @@ baseline. E3 therefore compares:
 - `Native-Async-Serial`: caller returns after durable enqueue acknowledgement,
   while one FIFO worker publishes in source order.
 
-Both methods use the same U0 service path and absolute arrival schedule. Before
-any E3 treatment outcome is observed, calculate and freeze:
+Both methods use the same U0 service path and absolute arrival schedule. The E3
+history is deterministically selected from the four C2 histories and frozen
+before C2 outcomes are inspected. Before any E3 treatment outcome is observed,
+calculate and freeze:
 
 ```text
-S_ref = mean U0 service time from one frozen U0 calibration on the exact E3 history
+mean_native_service_time = mean U0 add_episode service time from the
+                           C2 trace for the exact frozen E3 history
+S_ref = mean_native_service_time
 lambda = 1 / interarrival
 rho_proxy = lambda * S_ref
+normalized_offered_load = rho_proxy
 rho_proxy in {0.5, 0.8, 1.0, 1.2, 1.5}
 interarrival = S_ref / rho_proxy
 ```
 
 This is the only E3 load sweep. `S_ref` is shared by both methods and is never
-recomputed after observing method outcomes. actual seconds are a derived result
-column, not a second treatment grid. Because service time evolves with graph
+recomputed after observing method outcomes. There is no additional live
+calibration run: the five actual interarrival values are analyzer-derived from
+the retained C2 trace and written to `freeze.json`. actual seconds are a derived
+result column, not a second treatment grid. Because service time evolves with graph
 prefix, `rho_proxy` is a finite-trace offered-load proxy rather than strict
-steady-state utilization. The schedule is a controlled deterministic open-loop
-replay and cannot establish a real workload distribution.
+steady-state utilization. `normalized_offered_load` is the only persisted load
+field; `rho_proxy` is its mathematical name, not a second artifact field. The
+schedule is a controlled deterministic open-loop replay and cannot establish a
+real workload distribution.
 
 Use fixed timestamp boundaries and calculate:
 
@@ -289,9 +313,10 @@ remain symmetric. Persist checkpoints after every concurrency block.
 Measure makespan, service throughput, visibility lag, work counts, service
 errors, lost/duplicate episodes, transaction errors, source and temporal
 invariants, publication loss, canonical graph parity, retrieval parity, and
-execution-path evidence. A deterministic fixture/replay lane establishes path
-and invariant behavior; live graph differences with unfixed model outputs stay
-confounded.
+execution-path evidence. The already-required offline deterministic TDD fixture
+validates path and invariant-checker behavior; it is not an additional E4
+treatment, live run, screening repetition, or experimental block. Live graph
+differences with unfixed model outputs stay confounded.
 
 The only legal screening interpretations are:
 
@@ -306,9 +331,11 @@ The only legal screening interpretations are:
 
 An oracle miss alone establishes trajectory divergence, not a semantic failure.
 A lost/duplicate episode, transaction failure, source-order violation, temporal
-invariant violation, or publication loss is direct evidence. If the simple
-baseline performs well and respects the bounded guardrails, the current data do
-not establish the need for a more complex runtime.
+invariant violation, or publication loss is direct evidence. If the legal
+interpretation is `NO_NAIVE_PARALLEL_INSUFFICIENCY_OBSERVED`, the current
+screening does not establish a need for a more complex runtime, but it also does
+not establish Whole-Update Parallel safety, sufficiency, repeatability, or
+generality. No additional E4 repetition is authorized by that outcome.
 
 ## 9. C6 - problem verdict and immediate STOP
 

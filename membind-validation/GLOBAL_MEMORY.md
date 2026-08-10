@@ -13,6 +13,10 @@ and starts with Native Graphiti construction characterization. The prior
 immutable historical plan. The old H0/M1/M2/
 MemBind solution lane is frozen exploratory prototype/history: do not resume H0,
 replacement-004, M2 formalization, or live solution validation from this pointer.
+The final characterization markers are `WORKPLAN_FREEZE=true`,
+`protocol_review_status=closed`, and
+`next_allowed_work=C1_instrumentation_implementation`; no further protocol
+review or experiment-surface expansion is authorized.
 Before any live characterization action, an offline TDD state transition must
 revoke the old solution-lane grant and issue a scoped characterization grant.
 Historical checkpoints, hashes, failures, credential fences, remote

@@ -50,6 +50,9 @@ class NativeCharacterizationWorkplanV11ContractTests(TestCase):
             self.assertIn(WORKPLAN.name, text)
             self.assertIn("native-characterization-v1.1", text)
             self.assertIn(V1_0.name, text)
+            self.assertIn("WORKPLAN_FREEZE=true", text)
+            self.assertIn("protocol_review_status=closed", text)
+            self.assertIn("next_allowed_work=C1_instrumentation_implementation", text)
             self.assertLess(text.index(WORKPLAN.name), text.index(V1_0.name))
 
     def test_c0_is_exactly_one_bounded_native_episode(self):
@@ -75,22 +78,25 @@ class NativeCharacterizationWorkplanV11ContractTests(TestCase):
             "Only a measurement-correctness bug in C0-C5",
             "telemetry scope is frozen",
             "semantic parity",
-            "phase ranking",
-            "G1/G2 interpretation",
         ):
             self.assertIn(token, plan)
 
+        c1 = plan.split("## 4. C1", 1)[1].split("## 5. C2", 1)[0]
+        self.assertNotIn("phase ranking", c1.lower())
+        self.assertNotIn("G1/G2", c1)
         self.assertNotIn("instrumentation is already complete", plan.lower())
         self.assertNotIn("instrumentation is already qualified", plan.lower())
 
     def test_overhead_gate_is_conditional_and_not_a_literature_standard(self):
         plan = _normalized(self._workplan())
         for token in (
-            "<=2%: ideal target",
-            "2-5%: conditional screening pass",
-            ">5%: default hard fail",
+            "<=2%: clean pass",
+            "2-5%: warning; report overhead and continue",
+            ">5%: block and repair",
             "stable across alternating pairs",
             "fully reported",
+            "MUST NOT optimize solely to move a result from 2-5% to <=2%",
+            "No optimization or re-test is required solely to reduce overhead below 2%",
             "not a universal systems-paper threshold",
             "DistServe's <2% result is simulator accuracy",
         ):
@@ -140,9 +146,12 @@ class NativeCharacterizationWorkplanV11ContractTests(TestCase):
         for token in (
             "lambda = 1 / interarrival",
             "rho_proxy = lambda * S_ref",
+            "normalized_offered_load = rho_proxy",
             "rho_proxy in {0.5, 0.8, 1.0, 1.2, 1.5}",
             "interarrival = S_ref / rho_proxy",
-            "frozen U0 calibration",
+            "C2 trace for the exact frozen E3 history",
+            "no additional live calibration run",
+            "the only persisted load field",
             "actual seconds are a derived result column",
             "the only E3 load sweep",
             "controlled deterministic open-loop replay",
@@ -169,9 +178,15 @@ class NativeCharacterizationWorkplanV11ContractTests(TestCase):
             "one fixed history",
             "one screening pass",
             "existence counterexample",
+            "already-required offline deterministic TDD fixture",
+            "not an additional E4 treatment, live run, screening repetition, or experimental block",
+            "does not establish Whole-Update Parallel safety, sufficiency, repeatability, or generality",
+            "No additional E4 repetition is authorized by that outcome",
         ):
             self.assertIn(token, plan)
         self.assertNotIn("WHOLE_UPDATE_PARALLEL_IS_SUFFICIENT", plan)
+        self.assertNotIn("repeated-run stability", plan)
+        self.assertNotIn("fixture/replay lane", plan)
 
     def test_c6_records_a_verdict_and_stops_before_design(self):
         plan = _normalized(self._workplan())
@@ -204,6 +219,20 @@ class NativeCharacterizationWorkplanV11ContractTests(TestCase):
             "no oracle namespace",
             "no formal split system",
             "no future-work artifact",
+        ):
+            self.assertIn(token, plan)
+
+    def test_workplan_is_finally_frozen_without_expanding_c0_c6(self):
+        plan = _normalized(self._workplan())
+        for token in (
+            "WORKPLAN_FREEZE=true",
+            "protocol_review_status=closed",
+            "experiment_surface=C0-C6_only",
+            "next_allowed_work=C1_instrumentation_implementation",
+            "No further protocol review is authorized",
+            "no new stage",
+            "no new metric",
+            "no new experiment",
         ):
             self.assertIn(token, plan)
 
