@@ -1,5 +1,12 @@
 # MemBind 当前基础验证执行计划 v1.3
 
+> **当前 research-priority override**：当前科研执行以
+> [`MemBind_NATIVE_GRAPHITI_CHARACTERIZATION_WORKPLAN_v1.0.md`](MemBind_NATIVE_GRAPHITI_CHARACTERIZATION_WORKPLAN_v1.0.md)
+> 为准。Machine-searchable status: `current research-priority override`.
+> 本文件仍是 solution-validation lane 的唯一可执行 overlay，但该 lane
+> 已 frozen，仅保存 H0/M1/M2 历史契约。不得恢复 H0、replacement-004 或 M2 formal
+> work，除非 characterization verdict 后另行完成 TDD 状态转换和授权。
+
 > **Protocol ID**: `current-validation-v1.3`  
 > **文档地位**: 本文件是当前唯一可执行 overlay；v1.2 保留为历史协议。  
 > **当前阶段**: `H0 - Host Stack Qualification`  

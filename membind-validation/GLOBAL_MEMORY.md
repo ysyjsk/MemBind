@@ -3,6 +3,24 @@
 This file is the compact memory for the validation mainline. It records the
 authoritative resume point and the boundaries that future agents must preserve.
 
+## Current research-priority override
+
+The current research priority is the independent
+`../MemBind_NATIVE_GRAPHITI_CHARACTERIZATION_WORKPLAN_v1.0.md`
+(`native-characterization-v1.0`). It is the current research-priority override
+and starts with Native Graphiti construction characterization. The old H0/M1/M2/
+MemBind solution lane is frozen exploratory prototype/history: do not resume H0,
+replacement-004, M2 formalization, or live solution validation from this pointer.
+Before any live characterization action, an offline TDD state transition must
+revoke the old solution-lane grant and issue a scoped characterization grant.
+Historical checkpoints, hashes, failures, credential fences, remote
+forced-command limits, and `gpt55_temporary/**` exclusion remain unchanged.
+The persisted reset rationale and TDD status are in
+`artifacts/diagnostics/native_characterization_research_reset_20260810.md`.
+
+<!-- Maintainability: keep this pointer short; detailed characterization rules
+live only in the authoritative workplan to prevent document drift. -->
+
 ## Mainline validation memory
 
 - `CURRENT_STATE.json` is the machine-readable authority. Active protocol:

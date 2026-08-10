@@ -1,5 +1,11 @@
 # MemBind Basic Validation: Current Validation v1.3 Execution Plan
 
+> **当前 research-priority override**：Native Graphiti characterization 的权威
+> workplan 是 [`MemBind_NATIVE_GRAPHITI_CHARACTERIZATION_WORKPLAN_v1.0.md`](../MemBind_NATIVE_GRAPHITI_CHARACTERIZATION_WORKPLAN_v1.0.md)。
+> Machine-searchable status: `current research-priority override`.
+> 本文件是 frozen solution-validation lane 的执行镜像，不得启动 H0/M1/M2 或
+> replacement-004；characterization live grant 必须先经离线 TDD 状态转换。
+
 This is the concise execution overlay for
 `../MemBind_CURRENT_VALIDATION_PLAN_v1.3.md`. The current plan controls task
 order. `../MemBind_basic_validation_experiment.md` remains the source for frozen
