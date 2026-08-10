@@ -1,8 +1,20 @@
 # MemBind Basic Validation: Current Validation v1.3 Execution Plan
 
+<!-- Historical solution-lane snapshot retained for legacy offline contracts;
+the v1.1 Native characterization pointer below controls current research order. -->
+```text
+current_stage: H0
+status: h0_q1_b_live_only
+current_blocker: none
+current_action_scope: h0_q1_b_live_only
+```
+
 > **当前 research-priority override**：Native Graphiti characterization 的权威
-> workplan 是 [`MemBind_NATIVE_GRAPHITI_CHARACTERIZATION_WORKPLAN_v1.0.md`](../MemBind_NATIVE_GRAPHITI_CHARACTERIZATION_WORKPLAN_v1.0.md)。
-> Machine-searchable status: `current research-priority override`.
+> workplan 是 [`MemBind_NATIVE_GRAPHITI_CHARACTERIZATION_WORKPLAN_v1.1.md`](../MemBind_NATIVE_GRAPHITI_CHARACTERIZATION_WORKPLAN_v1.1.md)，
+> protocol ID 为 `native-characterization-v1.1`；Machine-searchable status:
+> `current research-priority override`。旧版
+> [`MemBind_NATIVE_GRAPHITI_CHARACTERIZATION_WORKPLAN_v1.0.md`](../MemBind_NATIVE_GRAPHITI_CHARACTERIZATION_WORKPLAN_v1.0.md)
+> 保留为不可变历史版本。
 > 本文件是 frozen solution-validation lane 的执行镜像，不得启动 H0/M1/M2 或
 > replacement-004；characterization live grant 必须先经离线 TDD 状态转换。
 

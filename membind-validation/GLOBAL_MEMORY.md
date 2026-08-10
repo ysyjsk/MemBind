@@ -6,9 +6,11 @@ authoritative resume point and the boundaries that future agents must preserve.
 ## Current research-priority override
 
 The current research priority is the independent
-`../MemBind_NATIVE_GRAPHITI_CHARACTERIZATION_WORKPLAN_v1.0.md`
-(`native-characterization-v1.0`). It is the current research-priority override
-and starts with Native Graphiti construction characterization. The old H0/M1/M2/
+`../MemBind_NATIVE_GRAPHITI_CHARACTERIZATION_WORKPLAN_v1.1.md`
+(`native-characterization-v1.1`). It is the current research-priority override
+and starts with Native Graphiti construction characterization. The prior
+`../MemBind_NATIVE_GRAPHITI_CHARACTERIZATION_WORKPLAN_v1.0.md` remains an
+immutable historical plan. The old H0/M1/M2/
 MemBind solution lane is frozen exploratory prototype/history: do not resume H0,
 replacement-004, M2 formalization, or live solution validation from this pointer.
 Before any live characterization action, an offline TDD state transition must
@@ -17,6 +19,10 @@ Historical checkpoints, hashes, failures, credential fences, remote
 forced-command limits, and `gpt55_temporary/**` exclusion remain unchanged.
 The persisted reset rationale and TDD status are in
 `artifacts/diagnostics/native_characterization_research_reset_20260810.md`.
+The v1.1 literature review and scope decisions are in
+`artifacts/diagnostics/native_characterization_plan_v1_1_review_20260810.md`.
+Current status is `instrumentation_contract_status=specified_not_yet_qualified`;
+the plan revision produced no C0-C5 live or scientific result.
 
 <!-- Maintainability: keep this pointer short; detailed characterization rules
 live only in the authoritative workplan to prevent document drift. -->

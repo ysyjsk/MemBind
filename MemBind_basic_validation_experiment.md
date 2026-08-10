@@ -1,8 +1,11 @@
 # MemBind 基础验证实验规范
 
 > **当前 research-priority override**：研究主线已切换到
-> [`MemBind_NATIVE_GRAPHITI_CHARACTERIZATION_WORKPLAN_v1.0.md`](MemBind_NATIVE_GRAPHITI_CHARACTERIZATION_WORKPLAN_v1.0.md)。
-> Machine-searchable status: `current research-priority override`.
+> [`MemBind_NATIVE_GRAPHITI_CHARACTERIZATION_WORKPLAN_v1.1.md`](MemBind_NATIVE_GRAPHITI_CHARACTERIZATION_WORKPLAN_v1.1.md)。
+> Machine-searchable status: `current research-priority override`；protocol ID:
+> `native-characterization-v1.1`。v1.0 的
+> [`MemBind_NATIVE_GRAPHITI_CHARACTERIZATION_WORKPLAN_v1.0.md`](MemBind_NATIVE_GRAPHITI_CHARACTERIZATION_WORKPLAN_v1.0.md)
+> 保留为不可变历史版本，不再授权新的 characterization action。
 > 本文件及 v1.3 overlay 现在保留为 frozen solution-validation / exploratory
 > prototype material；M1/M2/MemBind、H0 recovery 和 replacement-004 不属于当前
 > characterization 执行。任何 live characterization 之前必须先通过离线 TDD
