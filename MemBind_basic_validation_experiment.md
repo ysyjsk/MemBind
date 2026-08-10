@@ -2,9 +2,10 @@
 
 > 文档状态：Pilot Protocol v1.1（已合并 Characterization / Fairness Addendum）
 > 当前执行覆盖：`MemBind_CURRENT_VALIDATION_PLAN_v1.3.md`（CURRENT VALIDATION PLAN v1.3，protocol `current-validation-v1.3`）是当前唯一执行 overlay；v1.2 原文只作历史协议。与旧 Phase/characterization 顺序冲突时，以 v1.3 的 H0→V2-R→V7 单线状态机为准。
-> 当前恢复点：`H0 / late_discovered_pre_freeze_host_compatibility_failure`；状态为
-> `h0_protocol_accepted_harness_not_implemented`，动作范围为
-> `h0_offline_tdd_and_harness_only`，`live_h0_candidate_authorized=false`，
+> 当前恢复点：`H0 / Q1 H0-B replacement-003 live-only`；002 的 live grant 已撤销，
+> R5 artifact、透明非盲 repair decision、离线 bind 与独立 authorization 已完成，
+> 状态为 `h0_q1_b_live_only`，动作范围为 `h0_q1_b_live_only`，当前 blocker 为
+> `none`，`live_h0_candidate_authorized=true`，
 > `v3_smoke_003_retired=true`。
 > 历史 ID `v3_smoke_002_m0_structured_output_failure` 与
 > `artifacts/environment/v3_actual_schema_compatibility_probe_20260809_005_fresh_restart.json`
@@ -14,6 +15,182 @@
 > 升级原则：v1.1 补充系统 characterization、公平性和环境噪声控制；除本文明确标为“替换”的条款外，v1.0 的 correctness、冻结数据划分、模型与 Graphiti 版本、Evidence Fence 以及 Go/No-Go 阈值保持不变。
 
 ---
+
+## 当前 H0-B recovery ledger（2026-08-10）
+
+<!-- Maintainability: this machine-searchable block is mirrored in the current
+plan, execution plan, and global memory. H0-B attempt-001 is harness evidence,
+not candidate/model performance evidence. -->
+
+```text
+current_recovery_stage=h0_b_harness_recovery_r3_one_shot_replacement
+historical_r2_evidence_preserved=true
+h0_a_replacement_attempt_id=h0-q1-a-20260809-replacement-001
+checkpoint_index_sha256=91c202b2494a690483a345fb73d04733c8f68b9c980edef8caa46565868438f7
+runtime_definition_sha256=ada353cf5a418005e06ed5b9549d277b8c72a4aa08aec278d242e4df65f74739
+terminal_result_sha256=f5315092bc3942cbd1ced6d3673730d17aa65f7483f5f20c1be97de705dc5227
+trial_response_sha256[0]=a84685fc62c8c82f8f59e62d4c3cbbc9772e7fe3c99e026b3eaeeb4dbfe6703e
+trial_response_sha256[1]=a84685fc62c8c82f8f59e62d4c3cbbc9772e7fe3c99e026b3eaeeb4dbfe6703e
+trial_response_sha256[2]=a84685fc62c8c82f8f59e62d4c3cbbc9772e7fe3c99e026b3eaeeb4dbfe6703e
+logical_trials=3/3
+http_attempts=3/3
+json_parse=3/3
+pydantic_validation=3/3
+semantic_utility=3/3
+h0_b_failed_attempt_id=h0-q1-b-20260809-attempt-001
+checkpoint_index_sha256=fa6280ede4387775c719abd410478b5e1db358d840a10a69025c5a6cddd48896
+classification=harness_compatibility_failure_not_candidate_result
+logical_trial_count=0
+http_attempt_count=0
+embedding_workload_request_count=0
+history_count=0
+source_checkpoint_count=0
+fresh_graph_count=0
+old_attempt_immutable=true
+old_attempt_resumable=false
+old_and_new_evidence_mergeable=false
+Graphiti nominal clients: EmbedderClient + CrossEncoderClient
+preworkload_progress=corpus_ready,history_factory_ready,graph_construction_started,graph_construction_ready
+artifact_set_id=v1_3_harness_r3
+execution_harness_revision=3
+index=artifacts/h0_manifest_sets/v1_3_harness_r3/resolved_manifest_index_v1_3_harness_r3.json
+execution_source_count=32
+revoke -> r3 TDD/artifact -> transparent decision -> bind offline -> exact one-shot replacement authorize -> 49 sources
+connection/timeout/429/5xx -> durable checkpoint -> immediate stop_and_report
+startup_monitoring=frequent; stable_monitoring=long_interval; program_output=detailed_segmented
+mainline_gpt55_temporary_access=forbidden
+```
+
+```text
+current_recovery_stage=h0_b_infrastructure_rerun_r4_offline_binding
+h0_b_interrupted_attempt_id=h0-q1-b-20260809-replacement-001
+checkpoint_index_sha256=7305c1ff2c5790223bb22a0ad8a3e6749c3752950164641eb5a546cfe8aa4553
+classification=infrastructure_interruption_not_candidate_result
+stop_reason=vllm_unreachable
+construction_version_probe_attempt_count=1
+model_workload_http_attempt_count=0
+logical_trial_count=0
+embedding_workload_request_count=0
+history_count=0
+source_checkpoint_count=0
+fresh_graph_count=0
+interrupted_attempt_resumable=false
+partial_qualification_reusable=false
+old_and_new_evidence_mergeable=false
+artifact_set_id=v1_3_harness_r4
+execution_harness_revision=4
+index=artifacts/h0_manifest_sets/v1_3_harness_r4/resolved_manifest_index_v1_3_harness_r4.json
+index_sha256=a08b3f704c9680476990f24edc239d4af50ced39edcf9aae0d529b5ed14332d7
+execution_source_count=32
+replacement_attempt_id=h0-q1-b-20260810-replacement-002
+revoke consumed r3 grant -> R4 TDD/artifact -> transparent infrastructure decision -> bind offline -> exact one-shot replacement-002 authorize
+```
+
+```text
+current_recovery_stage=h0_b_infrastructure_rerun_r4_live_authorized
+status=h0_q1_b_live_only
+current_blocker=none
+current_action_scope=h0_q1_b_live_only
+live_h0_candidate_authorized=true
+authorized_live_actions=h0_candidate
+authorized_h0_candidate_id=Q1
+authorized_stage_attempt_id=h0-q1-b-20260810-replacement-002
+r4_decision_sha256=ec0c8b6c6d10c0a69e8a4fb3793ccb47f865f00668b58e2c9cce02bd5a2b5a8d
+r4_tdd_evidence_sha256=316769827a48b940dc6cb33ca4284c9244aafef8e45a8046f2977fd00d5e87a1
+state_sha256=558c93b76a0b9b8056d01efa5e013ab5992f767eb6c7047739925f39040690d1
+replacement_checkpoint_exists=false
+next_allowed_action=run_q1_h0-b-infrastructure-rerun
+```
+
+上一个代码块记录已消费并撤销的 R4 历史授权。以下是已经完成的 R5 离线恢复节点；
+R5 生成本身当时并不构成 repair bind 或 live authorization：
+
+```text
+current_recovery_stage=h0_b_post_workload_harness_repair_r5_offline_only
+h0_b_post_workload_failed_attempt_id=h0-q1-b-20260810-replacement-002
+checkpoint_index_sha256=e2187d3e101459e9c9a873d8dffb3fbcc858d139833f7f392eedff1c2c78c665
+failure_segment_sha256=689285595818aac01f008cb279d3a71cdb084abe35dd79e04e23e93d9d3eadd5
+source_checkpoint_sha256=1cdb5b70c86790d144179e855143018d2a97cd32d9e9fc70d5c1e218cd88211c
+classification=local_execution_harness_interface_contract_not_candidate_result
+workload_reached=true
+logical_trial_count=6
+http_attempt_count=6
+embedding_workload_request_count=4
+source_checkpoint_count=1
+old_attempt_resumable=false
+old_and_new_evidence_mergeable=false
+artifact_set_id=v1_3_harness_r5
+execution_harness_revision=5
+index=artifacts/h0_manifest_sets/v1_3_harness_r5/resolved_manifest_index_v1_3_harness_r5.json
+index_sha256=3f41f7520255a1ab64e9ee34efebaccbb05a1d580b7a390057ced0f02b3d13dd
+execution_source_count=32
+r5_status=offline_resolved_not_live_authorized
+status=h0_b_post_workload_harness_failure_live_revoked
+current_blocker=manifest_contract_failure
+current_action_scope=h0_b_post_workload_harness_repair_offline_only
+live_h0_candidate_authorized=false
+authorized_live_actions=none
+authorized_h0_candidate_id=none
+h0_live_gate=forbidden
+replacement_attempt_id=h0-q1-b-20260810-replacement-003
+next_allowed_action=prepare_h0_b_post_workload_harness_repair
+```
+
+002 已进入 workload，但其 6 次 construction 调用、4 次 embedding 请求、source-0
+checkpoint、graph 与 history 均不得用于候选 qualification，也不得复制或合并到 003。
+R5 decision、bind 与独立 authorization 已分别 dry-run 后提交；授权本身不是实验结果：
+
+```text
+current_recovery_stage=h0_b_post_workload_harness_repair_r5_live_authorized
+status=h0_q1_b_live_only
+current_blocker=none
+current_action_scope=h0_q1_b_live_only
+live_h0_candidate_authorized=true
+authorized_live_actions=h0_candidate
+authorized_h0_candidate_id=Q1
+authorized_stage_attempt_id=h0-q1-b-20260810-replacement-003
+artifact_set_id=v1_3_harness_r5
+execution_harness_revision=5
+index_sha256=3f41f7520255a1ab64e9ee34efebaccbb05a1d580b7a390057ced0f02b3d13dd
+r5_decision_sha256=98841771c9ccf35fca6526e36295cb5f1439c256332a47a62ffac87693cc0084
+r5_tdd_evidence_sha256=cb2b6d8a2e56f4ee207dbaf538da2c5c273dc701977b013fefb7af482207b89a
+decision_result_blind=false
+prior_model_workload_output_observed=true
+repair_required_independent_of_model_response_content=true
+old_attempt_qualification_reusable=false
+old_and_new_trial_counts_mergeable=false
+resume_failed_attempt_allowed=false
+state_sha256=e4c376bdb4559140d2380144c76bc33579c694d90cf098330cb4ede9b462c6c3
+replacement_checkpoint_exists=false
+next_allowed_action=run_q1_h0-b-post-workload-replacement
+```
+
+replacement-003 随后在 source 6 的并发 construction 请求中出现 vLLM 不可达。
+以下 stop fence 覆盖上一个已消费授权块的执行含义；Q1 不能判负，Q2 不能启动：
+
+```text
+current_recovery_stage=h0_b_replacement_003_infrastructure_stop_pending_offline_closure
+terminal_attempt_id=h0-q1-b-20260810-replacement-003
+terminal_checkpoint_index_sha256=0b813ee7c9f4940e6981398520bf823ced3544ff540f66e03a8181ead5622a76
+recorded_terminal_status=candidate_failed
+recorded_failure_code=candidate_qualification_failure
+evidence_classification=infrastructure_interruption_misclassified_as_candidate_qualification_failure
+construction_vllm_unreachable_count=7
+wire_request_observation_failure_count=3
+incomplete_concurrent_attempt_count=2
+retry_count=0
+source_checkpoint_count=6
+candidate_selection_continuation_allowed=false
+current_state_live_grant_consumed=true
+live_execution_allowed=false
+next_allowed_action=stop_and_report_then_offline_tdd
+replacement_003_report_sha256=218b062834ed66e4bbdf6b65ecb405c5c17ce7c3889360534f2bec484c43a6ac
+```
+
+H0-A replacement 的 3/3 是固定 seed bounded canary，不是独立统计样本。H0-B
+attempt-001 在 readiness 后、首个 workload 前失败，因而 0 请求证据只能支持 harness
+兼容性修复。程序输出保留详细安全分段；启动时频繁检查，稳定后延长监听间隔。
+连接、timeout、429 或 5xx 必须先 checkpoint，再立即停止并报告。
 
 ## 1. 唯一研究问题
 
@@ -1053,6 +1230,31 @@ baseline/load matrix 均为 `authorized=false`，只在 V7 GO 后由新协议决
   retry 计为独立 logical trial；candidate-induced retry 即 qualification failure。
   H0-A 的三次 repeated logical trials 共用固定 `seed=20260806`，不得称为
   statistically independent samples；
+- H0 长阶段采用内容寻址的细粒度安全 checkpoint：H0-A 在每个 logical trial 完成后
+  checkpoint，H0-B/H0-C 在每个 `source_sequence` 完成后 checkpoint。每个 checkpoint
+  输出阶段、候选、segment、累计 logical-call/HTTP-attempt/retry 计数、sanitized detailed
+  ledger、hash、failure code、artifact 路径与 SHA256；禁止保存 raw prompt/response、
+  Authorization/API key 或环境 dump；
+- checkpoint 只用于保留中断前的诊断证据。若 pre/post health evidence 将故障分类为
+  infrastructure failure，部分 evidence 必须保留，但不得与恢复后的补跑拼接为
+  qualification PASS；整个受影响 H0 stage 必须使用新 attempt ID 重跑。vLLM 连接失败
+  必须立即停止并向 operator 汇报，禁止静默重试或自动推进到 Q2/Q3；
+- H0-A 的执行单元固定为公开 `extract_nodes` direct call：三个 repeated trials 各用
+  fresh client、共享一个 stage ledger，且不得调用 Neo4j 或 embedding。H0-B/C 每个
+  history 必须使用经断言为空的新 graph，不得增加 LLM warmup；nonempty 定义为
+  `entity_count > 0`，完整 source mapping 同时核对 episodic set 与 resolved-edge
+  attribution，Evidence Recall@10 只统计最多 10 条 RRF edges 中依次出现的前 10 个
+  unique session IDs。H0-C 任一基础设施中断要求三个 histories 用新 attempt ID 整体
+  重跑，旧 attempt 仅保留诊断证据；
+- Q1/H0-A attempt `h0-q1-a-20260809-attempt-001` 的三次固定 seed 技术检查均成功，
+  但因绑定实现可能在 state gate 前进入 Graphiti 顶层 `load_dotenv()`，整体状态固定为
+  `invalidated_protocol_gate_order`。旧 checkpoint 只作诊断，不能算 H0-A PASS、不能
+  选择 candidate、不能推进 H0-B，也不能自动重跑；
+- 修复不改变科学协议或 Q1：`current-validation-v1.3`、候选顺序、spec、input、threshold、
+  seed/trial、request/retry 均保持不变。旧 `artifacts/h0/**` 原地不可变；完整 H0-A/B/C
+  runtime 先经离线 TDD 冻结，再生成 `artifacts/h0_manifest_sets/v1_3_harness_r2/`。
+  replacement 必须由披露旧 3/3 观测的 one-shot deviation 单独授权，使用新 attempt ID
+  整阶段重跑，旧、新 trial 永不合并；
 - 完整 `smoke06` 的 32757-token prompt 证明 40960 context 在 32-token safety 后最多
   提供 8171 completion tokens，不能声称所有 request 都恢复完整 16K；budget
   insufficiency 必须显式失败，禁止通过裁剪 history 或改写 prompt 绕过；
@@ -1068,20 +1270,32 @@ baseline/load matrix 均为 `authorized=false`，只在 V7 GO 后由新协议决
 
 正式实验前必须按以下测试驱动顺序执行：
 
-1. 先新增 H0 RED contracts，覆盖 v1.3 split/exposure quarantine、candidate registry、
-   first-pass stop、context-safe budget、logical trial/HTTP attempt、payload observation、
-   Q3 effective schema、semantic utility、manifest immutability 和 live state gate；
-2. 持久化 RED 日志/hash，再做最小 offline implementation、focused GREEN 和全量回归；
-3. 审阅 candidate/split/semantic manifest hashes 后，用单独 machine-state transition
-   只开放 Q1 H0-A；不得由文档更新直接调用服务；
-4. H0 首个候选通过并 freeze 后，重新做 V2-R oracle 与 V3-R correctness；
-5. V4 完成 U0/D0 guardrail 和 calibration，V5 完成 quality-feasible tuning；
-6. 修复当前 code 中 stale 64-run/global-shuffle implementation，生成并冻结 72-run
+1. 保留失效 attempt/checkpoint，完成 dotenv/telemetry bootstrap、撤权与 artifact
+   disposition 的 RED/GREEN；
+2. 先为 H0-A→B completion validator、H0-B/C runtime/readiness/lifecycle/cleanup、r2
+   namespace immutability 和 one-shot admission 新增 RED，再做最小实现和 focused GREEN；
+3. 完整回归 GREEN 后生成 `v1_3_harness_r2`，持久化透明 deviation/repair decision，
+   再以独立 machine-state transition 只开放一次新 Q1/H0-A；文档更新不得调用服务；
+4. 只有新 Q1/H0-A attempt 合格才依次执行 H0-B/H0-C；连接、429 或 5xx 在 durable
+   checkpoint 后立即停止汇报，不自动推进；
+5. H0 首个候选通过并 freeze 后，重新做 V2-R oracle 与 V3-R correctness；
+6. V4 完成 U0/D0 guardrail 和 calibration，V5 完成 quality-feasible tuning；
+7. 修复当前 code 中 stale 64-run/global-shuffle implementation，生成并冻结 72-run
    correctness-first blocked plan：先完成 24 correctness
    runs；只有 M2 8/8 且 oracle miss/fallback 为 0，才执行 48 live performance
    runs。M1 `completed_with_divergence` 是 treatment outcome，不阻断 performance。
 
 任何 TDD gate 失败都必须停在当前阶段，不能提前跑正式 evaluation。
+
+当前离线执行记录（2026-08-09）：第 2 项的 H0-A/B/C 执行链、三服务 readiness、
+逐 source checkpoint、terminal validation、one-shot repair admission 与 A→B→C state
+progression 已实现；r2 通过 `execution_source_bundle` 绑定 31 个主线本地源文件，首轮
+完整回归 `479/479 OK`。正式 r2 写入、repair decision 写入、machine-state live grant
+及任何模型/embedding/Neo4j workload 仍未执行，因此这里不报告 H0 PASS 或实验收益。
+
+<!-- Maintainability: H0 checkpoint/failure semantics are normative in the current
+v1.3 overlay; keep this proposal summary synchronized without copying implementation
+details or weakening CURRENT_STATE.json live authorization. -->
 
 历史 smoke/diagnostic 的完整失败链已移到
 `membind-validation/artifacts/history/SMOKE_HISTORY.md`。这些 artifact 仍不可覆盖，

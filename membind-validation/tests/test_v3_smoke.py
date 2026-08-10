@@ -74,6 +74,7 @@ class V3SmokeTests(TestCase):
                 attempt="v3test",
                 reference_attempt=None,
                 arrival_interval_ms=25,
+                authorization_checker=lambda *_args, **_kwargs: None,
             )
 
             with (

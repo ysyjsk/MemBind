@@ -1,0 +1,97 @@
+{
+  "attempt": {
+    "candidate_id": "Q1",
+    "phase": "H0-B",
+    "stage_attempt_id": "h0-q1-b-20260810-replacement-003"
+  },
+  "classification": {
+    "candidate_model_failure_supported": false,
+    "candidate_selection_continuation_allowed": false,
+    "construction_vllm_unreachable_supported": true,
+    "infrastructure_interruption_supported": true,
+    "model_response_content_used_for_classification": false,
+    "recorded_terminal_classification_reliable": false,
+    "result": "infrastructure_interruption_misclassified_as_candidate_qualification_failure",
+    "scientific_disposition": "inconclusive_not_candidate_performance_evidence"
+  },
+  "durable_evidence": {
+    "checkpoint_index_path": "artifacts/h0_runs/h0/checkpoints/h0-q1-b-20260810-replacement-003/index.json",
+    "checkpoint_index_sha256": "0b813ee7c9f4940e6981398520bf823ced3544ff540f66e03a8181ead5622a76",
+    "failure_evidence_sha256": "54d4e9f9bbd27ab7d53e4efcbd191c097368623fe67b51dc25f1d3dac66e8ad8",
+    "failure_segment_path": "artifacts/h0_runs/h0/checkpoints/h0-q1-b-20260810-replacement-003/000019.candidate_failure.candidate_qualification_failure.d1fad184dec05c3e32907c142382d9d1dd3b5655f2042205b201da3b21d2b732.json",
+    "failure_segment_sha256": "d1fad184dec05c3e32907c142382d9d1dd3b5655f2042205b201da3b21d2b732",
+    "live_log_path": "artifacts/live_logs/h0_q1_b_20260810_replacement_003.log",
+    "live_log_sha256": "adf687a3a73f8acf100b5be561b2b471878b4e7fe696bf2c3200878501fea24e",
+    "r5_manifest_index_path": "artifacts/h0_manifest_sets/v1_3_harness_r5/resolved_manifest_index_v1_3_harness_r5.json",
+    "r5_manifest_index_sha256": "3f41f7520255a1ab64e9ee34efebaccbb05a1d580b7a390057ced0f02b3d13dd"
+  },
+  "observed_runtime": {
+    "closed_graph_count": 1,
+    "completed_attempt_record_count": 33,
+    "construction_http_200_count": 26,
+    "construction_http_attempt_count": 35,
+    "construction_incomplete_attempt_count": 2,
+    "construction_json_parse_success_count": 23,
+    "construction_logical_trial_count": 35,
+    "construction_pydantic_validation_success_count": 23,
+    "construction_semantic_utility_success_count": 23,
+    "construction_vllm_unreachable_count": 7,
+    "cross_encoder_rank_call_count": 0,
+    "embedding_workload_request_count": 44,
+    "fresh_graph_count": 1,
+    "history_count": 1,
+    "last_completed_source_id": "07741c45-005",
+    "retry_count": 0,
+    "source_checkpoint_count": 6,
+    "terminal_segment_count": 20,
+    "wire_request_observation_failure_count": 3
+  },
+  "recorded_terminal": {
+    "candidate_advance_allowed": false,
+    "candidate_selection_may_continue": true,
+    "failure_code": "candidate_qualification_failure",
+    "failure_stage": "history_workload",
+    "partial_qualification_reusable": false,
+    "requires_whole_stage_rerun": false,
+    "runner_exit_code": 20,
+    "status": "candidate_failed"
+  },
+  "recovery_fence": {
+    "advance_to_q2_allowed": false,
+    "current_state_sha256": "e4c376bdb4559140d2380144c76bc33579c694d90cf098330cb4ede9b462c6c3",
+    "current_state_still_contains_consumed_live_grant": true,
+    "next_allowed_action": "offline_tdd_for_r5_consumed_grant_closure_and_concurrent_failure_precedence",
+    "old_and_new_trial_counts_mergeable": false,
+    "partial_qualification_reusable": false,
+    "repeat_live_probe_allowed": false,
+    "resume_attempt_allowed": false,
+    "stale_live_grant_operationally_usable": false
+  },
+  "root_cause_boundary": {
+    "concurrent_call_group": "07741c45:6:dedupe_edges.resolve_edge",
+    "incomplete_call_suffixes": [
+      10,
+      11
+    ],
+    "runner_defect": "concurrent qualification exception won terminal classification before infrastructure exceptions",
+    "vllm_unreachable_call_suffixes": [
+      3,
+      4,
+      5,
+      6,
+      7,
+      8,
+      9
+    ],
+    "wire_observation_failure_call_suffixes": [
+      0,
+      1,
+      2
+    ]
+  },
+  "raw_prompts_persisted": false,
+  "raw_responses_persisted": false,
+  "schema_version": "membind.h0.infrastructure-misclassification-report.v1",
+  "secrets_persisted": false,
+  "protocol_version": "current-validation-v1.3"
+}

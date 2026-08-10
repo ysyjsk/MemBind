@@ -1,0 +1,220 @@
+{
+  "attempt": {
+    "candidate_id": "Q1",
+    "checkpoint_index_path": "artifacts/h0_runs/h0/checkpoints/h0-q1-b-20260810-replacement-002/index.json",
+    "checkpoint_index_sha256": "e2187d3e101459e9c9a873d8dffb3fbcc858d139833f7f392eedff1c2c78c665",
+    "failure_code": "manifest_contract_failure",
+    "failure_evidence_sha256": "78d4331229bb8419cb6c690ce1bd52209feb387545188e17490c1b66aa96039f",
+    "failure_stage": "history_workload",
+    "phase": "H0-B",
+    "stage_attempt_id": "h0-q1-b-20260810-replacement-002",
+    "status": "candidate_failed",
+    "terminal": true
+  },
+  "execution_binding": {
+    "artifact_set_id": "v1_3_harness_r4",
+    "embedding_adapter_path": "src/h0_embedding.py",
+    "embedding_adapter_sha256": "3a8e70acdf8de2ced070a6916846b879d8e380e22b4fd3f06cd74def9e2fe50e",
+    "execution_harness_revision": 4,
+    "execution_source_bundle_path": "artifacts/h0_manifest_sets/v1_3_harness_r4/manifests/execution_source_bundle_v1_3.67c605107eeb2d1f3659f8dab1112298e7909bf597b02d8dd8faf73d6e510919.json",
+    "execution_source_bundle_sha256": "67c605107eeb2d1f3659f8dab1112298e7909bf597b02d8dd8faf73d6e510919",
+    "execution_source_count": 32,
+    "resolved_manifest_index_path": "artifacts/h0_manifest_sets/v1_3_harness_r4/resolved_manifest_index_v1_3_harness_r4.json",
+    "resolved_manifest_index_sha256": "a08b3f704c9680476990f24edc239d4af50ced39edcf9aae0d529b5ed14332d7"
+  },
+  "generated_at": "2026-08-10T01:33:53+08:00",
+  "high_confidence_causal_inference": {
+    "candidate_model_failure_supported": false,
+    "classification": "local_embedding_adapter_interface_contract_failure_before_transport",
+    "confidence": "high",
+    "content_independent": true,
+    "inference_basis": [
+      "The r4-bound adapter accepted only the scalar form of Graphiti create input at the failing boundary, while the installed Graphiti interface permits list[str].",
+      "The installed EntityNode, CommunityNode, and LLM utility call paths pass a single text as list[str].",
+      "The offline MockTransport probe reproduced single_input_invalid with list[str] and transport_request_count=0.",
+      "The terminal ledger records four successful embedding transport events before the next unique Graphiti control-flow embedding boundary.",
+      "All six construction-model HTTP attempts completed with status 200 and passed JSON, Pydantic, and semantic-utility checks."
+    ],
+    "repair_required_independent_of_model_response_content": true,
+    "scientific_configuration_change_required": false
+  },
+  "observed_facts": {
+    "attempt_ledger": {
+      "call_keys": [
+        "07741c45:0:extract_nodes.extract_message",
+        "07741c45:0:extract_edges.edge",
+        "07741c45:0:extract_nodes.extract_summaries_batch",
+        "07741c45:1:extract_nodes.extract_message",
+        "ungrouped:1:dedupe_nodes.nodes",
+        "07741c45:1:extract_edges.edge"
+      ],
+      "http_200_count": 6,
+      "http_attempt_count": 6,
+      "json_parse_success_count": 6,
+      "logical_trial_count": 6,
+      "pydantic_validation_success_count": 6,
+      "retry_count": 0,
+      "semantic_utility_success_count": 6
+    },
+    "checkpoint": {
+      "candidate_advance_allowed": false,
+      "failure_segment_count": 1,
+      "partial_qualification_reusable": false,
+      "segment_count": 15,
+      "source_checkpoint_count": 1,
+      "terminal_status": "candidate_failed"
+    },
+    "failure_segment": {
+      "failure_code": "manifest_contract_failure",
+      "failure_stage": "history_workload",
+      "segment_ordinal": 14
+    },
+    "graphiti_runtime": {
+      "abstract_create_input_includes_list_string": true,
+      "entity_node_uses_single_element_list": true,
+      "llm_utility_uses_single_element_list": true,
+      "version": "0.29.3"
+    },
+    "offline_probe": {
+      "adapter_signature": "create(input_data: str)",
+      "classification": "local_adapter_interface_contract_failure_before_transport",
+      "exception_code": "single_input_invalid",
+      "graphiti_input_runtime_type": "list[str]",
+      "transport_request_count": 0
+    },
+    "runtime_evidence": {
+      "cleanup_failure_count": 0,
+      "closed_graph_count": 1,
+      "cross_encoder_rank_call_count": 0,
+      "embedding_workload_request_count": 4,
+      "fresh_graph_count": 1,
+      "history_count": 1,
+      "source_zero_http_attempt_count": 3,
+      "source_zero_logical_call_count": 3,
+      "source_zero_retry_count": 0
+    },
+    "stage_readiness": {
+      "authorization_recheck_passed": true,
+      "construction_health_passed": true,
+      "construction_model_identity_passed": true,
+      "construction_version_passed": true,
+      "corpus_ready": true,
+      "embedding_readiness_passed": true,
+      "graph_construction_ready": true,
+      "history_factory_ready": true,
+      "neo4j_readiness_passed": true
+    }
+  },
+  "persisted_evidence": {
+    "failure_segment": {
+      "path": "artifacts/h0_runs/h0/checkpoints/h0-q1-b-20260810-replacement-002/000014.candidate_failure.manifest_contract_failure.689285595818aac01f008cb279d3a71cdb084abe35dd79e04e23e93d9d3eadd5.json",
+      "sha256": "689285595818aac01f008cb279d3a71cdb084abe35dd79e04e23e93d9d3eadd5"
+    },
+    "graphiti_embedder_client_source": {
+      "path": ".venv/lib/python3.12/site-packages/graphiti_core/embedder/client.py",
+      "sha256": "05714c5efb8f5b1680ccf68f20b9f1b6a410e09581150bfd19d04b3975168301"
+    },
+    "graphiti_llm_utility_source": {
+      "path": ".venv/lib/python3.12/site-packages/graphiti_core/llm_client/utils.py",
+      "sha256": "ccaa715c46ca6b7ebd9b85bb44311ffa6e7a907e3a575331dd1a30716644596b"
+    },
+    "graphiti_nodes_source": {
+      "path": ".venv/lib/python3.12/site-packages/graphiti_core/nodes.py",
+      "sha256": "529eb74b7c93e7551f6287b1a7bf6818d31fd045623b3260967dad573e4d801c"
+    },
+    "interface_contract_red_evidence": {
+      "path": "artifacts/tdd/h0_embedding_graphiti_create_contract_red_407p.log",
+      "sha256": "08ccef909576c3fd19235f4598fe9025305e3306d507209eee72ee7b38bf30cb"
+    },
+    "live_log": {
+      "path": "artifacts/live_logs/h0_q1_b_20260810_replacement_002.log",
+      "sha256": "3e6819b01be43045739cdc4c2d5cd95bf8e7b85bd001300dfa92eb1d36dc4deb"
+    },
+    "offline_interface_probe": {
+      "path": "artifacts/diagnostics/h0_q1_b_replacement_002_embedding_contract_offline_probe_20260810_002.log",
+      "sha256": "06b255f8450852c31afce839d13bedad97f32857c86ac204e86fc6857cb06a3e"
+    },
+    "source_zero_checkpoint": {
+      "path": "artifacts/h0_runs/h0/checkpoints/h0-q1-b-20260810-replacement-002/000013.source_sequence.07741c45-000.1cdb5b70c86790d144179e855143018d2a97cd32d9e9fc70d5c1e218cd88211c.json",
+      "sha256": "1cdb5b70c86790d144179e855143018d2a97cd32d9e9fc70d5c1e218cd88211c"
+    }
+  },
+  "protocol_version": "current-validation-v1.3",
+  "qualification_exclusion": {
+    "candidate_performance_claim_allowed": false,
+    "failure_is_candidate_quality_evidence": false,
+    "old_and_new_graph_evidence_mergeable": false,
+    "old_and_new_history_evidence_mergeable": false,
+    "old_and_new_trial_counts_mergeable": false,
+    "old_attempt_qualification_reusable": false,
+    "partial_source_checkpoint_reusable": false,
+    "prior_model_workload_output_observed": true,
+    "resume_failed_attempt_allowed": false,
+    "six_successful_model_calls_qualify_candidate": false
+  },
+  "raw_prompts_persisted": false,
+  "raw_responses_persisted": false,
+  "recovery_requirements": {
+    "decision_contract": {
+      "decision_result_blind": false,
+      "old_and_new_trial_counts_mergeable": false,
+      "old_attempt_qualification_reusable": false,
+      "one_shot_whole_stage_replacement": true,
+      "prior_model_workload_output_observed": true,
+      "repair_required_independent_of_model_response_content": true,
+      "replacement_attempt_id": "h0-q1-b-20260810-replacement-003",
+      "resume_failed_attempt_allowed": false,
+      "scientific_configuration_unchanged": true
+    },
+    "execution_binding": {
+      "new_artifact_set_id": "v1_3_harness_r5",
+      "new_execution_harness_revision": 5,
+      "r4_must_remain_immutable": true,
+      "source_bind_all_modified_production_files": true
+    },
+    "freshness": {
+      "copy_old_attempt_segments": false,
+      "merge_old_graph_or_history": false,
+      "reuse_allowed": "qualified_H0-A_terminal_binding_only",
+      "start_with_empty_replacement_segments": true
+    },
+    "historical_admission": {
+      "admit_exact_replacement_attempt_id_only": true,
+      "bind_original_candidate_failed_attempt_001": true,
+      "bind_post_workload_failed_replacement_002": true,
+      "bind_preworkload_infrastructure_interrupted_replacement_001": true,
+      "reject_duplicate_or_additional_replacements": true
+    },
+    "live_rerun_authorized_by_this_report": false,
+    "state_transition": {
+      "atomic_commit_required": true,
+      "concurrent_state_drift_must_fail_closed": true,
+      "dry_run_must_write_zero_files": true,
+      "revoke_consumed_replacement_002_grant_first": true
+    },
+    "tdd_gate": {
+      "full_offline_regression_required": true,
+      "green_required_before_r5_binding": true,
+      "required_red_contracts": [
+        "Graphiti create accepts a single-element list[str] and preserves fail-closed multi-element behavior.",
+        "Connection, timeout, rate-limit, and server failures through the list path remain sanitized infrastructure failures.",
+        "Interface evidence is content-independent and contains no request or response body.",
+        "A dedupe call without explicit group_id uses the active question ID instead of ungrouped.",
+        "Post-workload failure revocation, exact replacement-003 admission, tamper rejection, dry-run zero-write, atomic commit, and concurrent state drift are fail-closed.",
+        "R5 has a distinct identity and R4 remains byte-for-byte unchanged."
+      ]
+    }
+  },
+  "residual_uncertainty": {
+    "exact_terminal_exception_proven_by_checkpoint_alone": false,
+    "limitations": [
+      "The terminal failure segment does not persist an exception subtype, sanitized exception message, or traceback.",
+      "The causal attribution is therefore a high-confidence joint inference from source-bound code, installed Graphiti call paths, counter progression, and direct offline reproduction, not a traceback claim.",
+      "The observed ungrouped source-1 dedupe call key is a separate latent harness-contract risk; it is not asserted to be the terminal cause of replacement-002.",
+      "A later candidate qualification outcome cannot be inferred from this terminated attempt."
+    ],
+    "latent_call_key_observation": "ungrouped:1:dedupe_nodes.nodes"
+  },
+  "schema_version": "membind.h0.post-workload-harness-failure-report.v1",
+  "secrets_persisted": false
+}

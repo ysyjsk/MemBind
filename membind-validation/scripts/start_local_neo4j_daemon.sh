@@ -2,6 +2,7 @@
 set -euo pipefail
 
 ROOT="$(cd "$(dirname "$0")/.." && pwd)"
+"$ROOT/.venv/bin/python3" "$ROOT/src/current_state_gate.py" require --action service_admin
 ARTIFACT_DIR="$ROOT/artifacts/environment"
 VERSION="${NEO4J_VERSION:-5.26.0}"
 NEO4J_HOME="${NEO4J_HOME:-$ROOT/runtime/neo4j/neo4j-community-$VERSION}"

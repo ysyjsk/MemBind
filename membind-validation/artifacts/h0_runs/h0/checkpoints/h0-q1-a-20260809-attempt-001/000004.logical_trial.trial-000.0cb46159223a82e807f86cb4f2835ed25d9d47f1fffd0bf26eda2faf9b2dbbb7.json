@@ -1,0 +1,193 @@
+{
+  "payload": {
+    "attempt_ledger": {
+      "http_attempts": [
+        {
+          "candidate_id": "Q1",
+          "completed": true,
+          "context_limit": 40960,
+          "credentials_persisted": false,
+          "effective_max_tokens": 16384,
+          "effective_schema_sha256": "d4144fa2c87f24e57f1e71fe98b8096f2a768d56043936f9c5bd9fa9b235c718",
+          "failure_class": null,
+          "finish_non_length": true,
+          "finish_reason": "stop",
+          "http_200": true,
+          "http_attempt_id": "5b674f15daba5de7a94be044",
+          "http_status": 200,
+          "injected_schema_sha256": null,
+          "json_parse_success": true,
+          "json_schema_sha256": "d4144fa2c87f24e57f1e71fe98b8096f2a768d56043936f9c5bd9fa9b235c718",
+          "logical_trial_id": "e54dad096eb1cf2db064918e",
+          "max_tokens": 16384,
+          "message_content_byte_lengths": [
+            391,
+            15777
+          ],
+          "message_content_lengths": [
+            391,
+            15757
+          ],
+          "message_content_sha256": [
+            "0e8619b822b5e9b316819b46abc1b3c5bd616801f85c976fc2f2bcc1cd44574c",
+            "0f1dfa08c1ae939b21bbad636d3be3004905804200aaa41e30c5741f5a6d3f77"
+          ],
+          "message_count": 2,
+          "message_roles": [
+            "system",
+            "user"
+          ],
+          "min_p": null,
+          "model": "qwen3-32b-fp8",
+          "observed_message_content_sha256": [
+            "0e8619b822b5e9b316819b46abc1b3c5bd616801f85c976fc2f2bcc1cd44574c",
+            "0f1dfa08c1ae939b21bbad636d3be3004905804200aaa41e30c5741f5a6d3f77"
+          ],
+          "observed_request_payload_sha256": "4ecfd17ca583d2fae8cbf3f8ed0e996023feb5d6d1ba05af30570f5660f6a660",
+          "observed_response_format_sha256": "7e4b2ec211925648b273446fd18f031f3b2975493eef2739b176322d8b7a633b",
+          "observed_server_request_seed": 20260806,
+          "prompt_tokens": 3571,
+          "pydantic_validation_success": true,
+          "requested_max_tokens": 16384,
+          "requested_request_payload_sha256": "bc636c77c9cdf469653848f6e6aaf0b2c6e80ad5795716cb094a8f095b57719e",
+          "response_byte_length": 87,
+          "response_format_sha256": "7e4b2ec211925648b273446fd18f031f3b2975493eef2739b176322d8b7a633b",
+          "response_format_type": "json_schema",
+          "response_length": 87,
+          "response_prompt_tokens": 3571,
+          "response_sha256": "a84685fc62c8c82f8f59e62d4c3cbbc9772e7fe3c99e026b3eaeeb4dbfe6703e",
+          "retry_index": 0,
+          "retry_same_logical_trial": false,
+          "safety_margin_tokens": 32,
+          "semantic_utility_success": true,
+          "server_request_seed": 20260806,
+          "temperature": 0.0,
+          "top_k": null,
+          "top_p": 1.0,
+          "upstream_schema_sha256": "c2681b52e56c961c526bfdbc1ff8bdc3503cd9a635372de896c998bf83e2c35b"
+        }
+      ],
+      "logical_trials": [
+        {
+          "attempt_ids": [
+            "5b674f15daba5de7a94be044"
+          ],
+          "call_key": "07741c45:0:extract_nodes.extract_message",
+          "candidate_id": "Q1",
+          "logical_trial_id": "e54dad096eb1cf2db064918e",
+          "repeated_trial_index": 0,
+          "statistically_independent": false
+        }
+      ],
+      "protocol_version": "current-validation-v1.3",
+      "raw_prompts_persisted": false,
+      "raw_responses_persisted": false,
+      "schema_version": "membind.h0.attempt-ledger.v1",
+      "secrets_persisted": false,
+      "stage_attempt_id": "h0-q1-a-20260809-attempt-001"
+    },
+    "phase_checkpoint": {
+      "final_stage_checks_passed": false,
+      "http_attempt_count": 1,
+      "logical_call_count": 1,
+      "phase": "H0-A",
+      "prompt_evidence_sha256": "6959c9d61ff8028616dcd98a93d482d375d2bf3e1a2898b2523bfbe7ea3c2408",
+      "qualified": true,
+      "question_id": "07741c45",
+      "raw_prompts_persisted": false,
+      "raw_responses_persisted": false,
+      "repeated_trial_index": 0,
+      "retry_count": 0,
+      "schema_version": "membind.h0.phase-checkpoint.v1",
+      "secrets_persisted": false,
+      "semantic_payload_sha256": "ad82657500338cce369bee377fe8c631a68a5fddac909e2e470fd33b89c177eb",
+      "source_sequence": 0,
+      "stage_attempt_id": "h0-q1-a-20260809-attempt-001"
+    },
+    "runtime_definition_sha256": "fb74c0186e7e45542fd0f3a7dc746ac49e17ca62bb259d193caace2013c84d9a",
+    "runtime_evidence": {
+      "db_calls": 0,
+      "embedding_calls": 0,
+      "fresh_client_count": 1,
+      "raw_prompts_persisted": false,
+      "raw_responses_persisted": false,
+      "secrets_persisted": false,
+      "tokenize_events": [
+        [
+          {
+            "credentials_persisted": false,
+            "endpoint": "/tokenize",
+            "failure_class": null,
+            "http_status": 200,
+            "message_content_byte_lengths": [
+              391,
+              15777
+            ],
+            "message_content_lengths": [
+              391,
+              15757
+            ],
+            "message_content_sha256": [
+              "0e8619b822b5e9b316819b46abc1b3c5bd616801f85c976fc2f2bcc1cd44574c",
+              "0f1dfa08c1ae939b21bbad636d3be3004905804200aaa41e30c5741f5a6d3f77"
+            ],
+            "message_count": 2,
+            "message_roles": [
+              "system",
+              "user"
+            ],
+            "model": "qwen3-32b-fp8",
+            "prompt_tokens": 3571,
+            "raw_prompt_persisted": false,
+            "reported_max_model_len": 40960,
+            "request_sha256": "e9fb67f1689bcf3052c12669bb1c57f3aea3514bf92be5d3db93729a1ba2d31d"
+          }
+        ]
+      ],
+      "wire_events": [
+        [
+          {
+            "credentials_persisted": false,
+            "json_schema_sha256": "d4144fa2c87f24e57f1e71fe98b8096f2a768d56043936f9c5bd9fa9b235c718",
+            "max_tokens": 16384,
+            "message_content_byte_lengths": [
+              391,
+              15777
+            ],
+            "message_content_lengths": [
+              391,
+              15757
+            ],
+            "message_content_sha256": [
+              "0e8619b822b5e9b316819b46abc1b3c5bd616801f85c976fc2f2bcc1cd44574c",
+              "0f1dfa08c1ae939b21bbad636d3be3004905804200aaa41e30c5741f5a6d3f77"
+            ],
+            "message_count": 2,
+            "message_roles": [
+              "system",
+              "user"
+            ],
+            "min_p": null,
+            "model": "qwen3-32b-fp8",
+            "observed_request_payload_sha256": "4ecfd17ca583d2fae8cbf3f8ed0e996023feb5d6d1ba05af30570f5660f6a660",
+            "response_format_sha256": "7e4b2ec211925648b273446fd18f031f3b2975493eef2739b176322d8b7a633b",
+            "response_format_type": "json_schema",
+            "server_request_seed": 20260806,
+            "temperature": 0.0,
+            "top_k": null,
+            "top_p": 1.0
+          }
+        ]
+      ]
+    }
+  },
+  "protocol_version": "current-validation-v1.3",
+  "raw_prompts_persisted": false,
+  "raw_responses_persisted": false,
+  "schema_version": "membind.h0.checkpoint-segment.v1",
+  "secrets_persisted": false,
+  "segment_id": "trial-000",
+  "segment_kind": "logical_trial",
+  "segment_ordinal": 4,
+  "stage_attempt_id": "h0-q1-a-20260809-attempt-001"
+}

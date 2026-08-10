@@ -86,6 +86,7 @@ class VLLMMetadataProbeTests(TestCase):
             "top-secret-key",
             timeout=3.0,
             open_url=open_url,
+            authorization_checker=lambda *_args, **_kwargs: None,
         )
 
         self.assertEqual(
@@ -116,6 +117,7 @@ class VLLMMetadataProbeTests(TestCase):
             "secret",
             timeout=0.1,
             open_url=time_out,
+            authorization_checker=lambda *_args, **_kwargs: None,
         )
 
         self.assertFalse(result["ok"])
@@ -133,6 +135,7 @@ class VLLMMetadataProbeTests(TestCase):
                 "http://10.87.5.247:8000/v1",
                 "secret",
                 open_url=must_not_open,
+                authorization_checker=lambda *_args, **_kwargs: None,
             )
 
         self.assertFalse(result["ok"])
@@ -156,6 +159,7 @@ class VLLMMetadataProbeTests(TestCase):
                 output,
                 timeout=0.1,
                 open_url=time_out,
+                authorization_checker=lambda *_args, **_kwargs: None,
             )
             encoded = output.read_text(encoding="ascii")
 
@@ -168,6 +172,7 @@ class VLLMMetadataProbeTests(TestCase):
                     output,
                     timeout=0.1,
                     open_url=time_out,
+                    authorization_checker=lambda *_args, **_kwargs: None,
                 )
 
 

@@ -25,6 +25,7 @@ class ExecutionPreflightTests(TestCase):
                 max_runs=None,
                 stop_on_failure=False,
                 smoke_attempt=None,
+                authorization_checker=lambda *_args, **_kwargs: None,
             )
             with (
                 patch.object(replay_driver, "ARTIFACTS", artifacts),

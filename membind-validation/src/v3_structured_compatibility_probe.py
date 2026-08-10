@@ -17,6 +17,7 @@ from datetime import datetime, timezone
 from pathlib import Path
 from typing import Any, Iterable
 
+from current_state_gate import LiveAction, require_live_action
 from dataset import build_episodes, load_json_records, records_by_question_id, sha256_file
 from graphiti_native import (
     DEFAULT_CONSTRUCTION_MODEL,
@@ -296,9 +297,11 @@ async def run_compatibility_probe(
     question_id: str,
     *,
     source_sequence: int = 1,
+    authorization_checker: Any = require_live_action,
 ) -> dict[str, Any]:
     """Submit one bounded exact request trajectory and return redacted evidence."""
 
+    authorization_checker(LiveAction.STRUCTURED_COMPATIBILITY)
     from graphiti_core.llm_client.config import LLMConfig
 
     probe = build_extraction_probe(
@@ -400,9 +403,11 @@ async def write_compatibility_probe(
     output: str | Path,
     *,
     source_sequence: int = 1,
+    authorization_checker: Any = require_live_action,
 ) -> dict[str, Any]:
     """Run and exclusively persist a compatibility probe result."""
 
+    authorization_checker(LiveAction.STRUCTURED_COMPATIBILITY)
     output = Path(output)
     if output.exists():
         raise FileExistsError(f"compatibility probe output already exists: {output}")
@@ -410,6 +415,7 @@ async def write_compatibility_probe(
         data_path,
         question_id,
         source_sequence=source_sequence,
+        authorization_checker=lambda *_args, **_kwargs: None,
     )
     encoded = json.dumps(
         result,

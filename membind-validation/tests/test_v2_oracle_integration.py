@@ -138,6 +138,7 @@ class V2OracleIntegrationAsyncTests(IsolatedAsyncioTestCase):
             result = await run_v2_oracle_integration(
                 artifacts=artifacts,
                 run_experiment_fn=capture_without_audit,
+                authorization_checker=lambda *_args, **_kwargs: None,
             )
 
             self.assertEqual(calls, ["capture"])
@@ -198,6 +199,7 @@ class V2OracleIntegrationAsyncTests(IsolatedAsyncioTestCase):
             result = await run_v2_oracle_integration(
                 artifacts=artifacts,
                 run_experiment_fn=must_not_run,
+                authorization_checker=lambda *_args, **_kwargs: None,
             )
 
             self.assertEqual(calls, [])
@@ -299,6 +301,7 @@ class V2OracleIntegrationAsyncTests(IsolatedAsyncioTestCase):
                 artifacts=artifacts,
                 run_experiment_fn=fake_run,
                 service_checker=None,
+                authorization_checker=lambda *_args, **_kwargs: None,
             )
 
             self.assertEqual(result["status"], "failed")

@@ -18,6 +18,7 @@ from pathlib import Path
 from typing import Any, Callable
 from urllib.parse import urlsplit, urlunsplit
 
+from current_state_gate import LiveAction, require_live_action
 
 SCHEMA_VERSION = "membind.v3.vllm_metadata_probe.v1"
 METADATA_PATHS = (
@@ -114,9 +115,11 @@ def probe_vllm_metadata(
     *,
     timeout: float = 5.0,
     open_url: Callable[..., Any] = urllib.request.urlopen,
+    authorization_checker: Callable[..., Any] = require_live_action,
 ) -> dict[str, Any]:
     """Probe fixed metadata endpoints without issuing any generation request."""
 
+    authorization_checker(LiveAction.MODEL_METADATA)
     if timeout <= 0:
         raise ValueError("metadata probe timeout must be positive")
     root = _server_root(base_url)
@@ -219,14 +222,17 @@ def write_vllm_metadata_probe(
     *,
     timeout: float = 5.0,
     open_url: Callable[..., Any] = urllib.request.urlopen,
+    authorization_checker: Callable[..., Any] = require_live_action,
 ) -> dict[str, Any]:
     """Persist a sanitized metadata result using exclusive file creation."""
 
+    authorization_checker(LiveAction.MODEL_METADATA)
     payload = probe_vllm_metadata(
         base_url,
         api_key,
         timeout=timeout,
         open_url=open_url,
+        authorization_checker=lambda *_args, **_kwargs: None,
     )
     encoded = json.dumps(
         payload,

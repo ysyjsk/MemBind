@@ -105,6 +105,7 @@ class V3StructuredCompatibilityProbeTests(TestCase):
                             "c6853660",
                             output,
                             source_sequence=1,
+                            authorization_checker=lambda *_args, **_kwargs: None,
                         )
                     )
 

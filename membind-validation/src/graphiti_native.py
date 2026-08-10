@@ -12,6 +12,8 @@ from datetime import datetime, timezone
 from pathlib import Path
 from typing import Any
 
+from current_state_gate import LiveAction, require_live_action
+
 from dataset import Episode
 from instrumentation import apply_episode_metrics, current_episode_key, episode_scope
 from structured_output import constrain_single_episode_indices
@@ -376,7 +378,10 @@ def unexpected_prompt_records(llm_client: Any) -> list[dict[str, Any]]:
 def build_qwen_graphiti_from_env(
     prompt_cache: Any | None = None,
     embedding_cache: Any | None = None,
+    *,
+    authorization_checker: Any = require_live_action,
 ) -> Any:
+    authorization_checker(LiveAction.NEO4J_INTEGRATION)
     load_env_file()
     from graphiti_core import Graphiti
     from graphiti_core.cross_encoder.openai_reranker_client import OpenAIRerankerClient

@@ -12,6 +12,7 @@ from datetime import datetime, timezone
 from pathlib import Path
 from typing import Any, Awaitable, Callable
 
+from current_state_gate import LiveAction, require_live_action
 from dataset import build_episodes
 from embedding_cache import (
     EmbeddingCache,
@@ -54,6 +55,26 @@ class ExperimentRunFailed(RuntimeError):
     def __init__(self, status: dict[str, Any]):
         super().__init__(f"experiment run {status['run_id']} failed: {status.get('error')}")
         self.status = status
+
+
+def live_action_for_spec(spec: dict[str, Any]) -> tuple[LiveAction, str | None]:
+    """Classify a run before any artifact, model, embedding, or database I/O."""
+
+    candidate_id = spec.get("h0_candidate_id")
+    if candidate_id is not None:
+        return LiveAction.H0_CANDIDATE, str(candidate_id)
+    lane = str(spec.get("lane") or "").casefold().replace("-", "_")
+    if lane.startswith("v2_r") or lane.startswith("v2_oracle"):
+        return LiveAction.V2_R, None
+    if lane.startswith("v3_r") or lane.startswith("v3_smoke") or lane == "smoke":
+        return LiveAction.V3_R, None
+    if lane.startswith("calibration") or lane.startswith("characterization"):
+        return LiveAction.CALIBRATION, None
+    if lane in {"correctness", "performance", "formal"} or lane.startswith(
+        "formal_"
+    ):
+        return LiveAction.FORMAL, None
+    return LiveAction.NEO4J_INTEGRATION, None
 
 
 def cache_for_spec(spec: dict[str, Any], artifacts: Path) -> PromptCache | None:
@@ -138,7 +159,11 @@ async def run_experiment(
     retrieval_evaluator: Callable[..., Awaitable[dict[str, Any]]] = evaluate_retrieval,
     collect_outputs: bool = True,
     model_oracle_audit_path: str | Path | None = None,
+    authorization_checker: Callable[..., Any] = require_live_action,
 ) -> dict[str, Any]:
+    live_action, candidate_id = live_action_for_spec(spec)
+    authorization_checker(live_action, candidate_id=candidate_id)
+
     artifacts = Path(artifacts)
     run_id = str(spec["run_id"])
     paths = {
@@ -178,10 +203,14 @@ async def run_experiment(
         prompt_cache = cache_for_spec(spec, artifacts)
         embedding_cache = embedding_cache_for_spec(spec, artifacts)
         await (service_checker or wait_for_model_services)()
-        graphiti = graphiti_factory(
-            prompt_cache=prompt_cache,
-            embedding_cache=embedding_cache,
-        )
+        factory_kwargs: dict[str, Any] = {
+            "prompt_cache": prompt_cache,
+            "embedding_cache": embedding_cache,
+        }
+        if graphiti_factory is build_qwen_graphiti_from_env:
+            # run_experiment already obtained authorization before artifact creation.
+            factory_kwargs["authorization_checker"] = lambda *_args, **_kwargs: None
+        graphiti = graphiti_factory(**factory_kwargs)
         install_driver_instrumentation(graphiti)
         with model_oracle_phase("warmup"):
             await prepare_clean_graph(graphiti, _warm_up_episode)

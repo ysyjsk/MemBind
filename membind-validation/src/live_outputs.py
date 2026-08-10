@@ -2,6 +2,7 @@
 
 from __future__ import annotations
 
+from itertools import islice
 from typing import Any, Iterable
 
 from canonicalize_graph import canonical_graph_hash, canonicalize_graph
@@ -168,7 +169,7 @@ async def evaluate_retrieval(
     retrieved_episode_ids: list[str] = []
     seen: set[str] = set()
     serialized_results = []
-    for rank, result in enumerate(results, start=1):
+    for rank, result in enumerate(islice(results, top_k), start=1):
         episode_uuids = _value(result, "episodes") or []
         result_session_ids = []
         for episode_uuid in episode_uuids:
@@ -178,7 +179,8 @@ async def evaluate_retrieval(
             result_session_ids.append(session_id)
             if session_id not in seen:
                 seen.add(session_id)
-                retrieved_episode_ids.append(session_id)
+                if len(retrieved_episode_ids) < top_k:
+                    retrieved_episode_ids.append(session_id)
         serialized_results.append(
             {
                 "rank": rank,

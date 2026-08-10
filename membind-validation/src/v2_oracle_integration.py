@@ -13,6 +13,7 @@ import json
 from pathlib import Path
 from typing import Any, Awaitable, Callable
 
+from current_state_gate import LiveAction, require_live_action
 from embedding_identity import validate_embedding_model_manifest
 from experiment_runner import ExperimentRunFailed, run_experiment
 from graphiti_native import M0_NATIVE_SERIAL
@@ -123,7 +124,9 @@ async def run_v2_oracle_integration(
     run_experiment_fn: Callable[..., Awaitable[dict[str, Any]]] = run_experiment,
     graphiti_factory: Callable[..., Any] | None = None,
     service_checker: Callable[[], Awaitable[Any]] | None = None,
+    authorization_checker: Callable[..., Any] = require_live_action,
 ) -> dict[str, Any]:
+    authorization_checker(LiveAction.V2_R)
     artifacts = Path(artifacts)
     instance = instance or v2_integration_instance()
     specs = build_v2_oracle_specs(attempt, str(instance["question_id"]))
@@ -178,6 +181,8 @@ async def run_v2_oracle_integration(
             }
             if graphiti_factory is not None:
                 kwargs["graphiti_factory"] = graphiti_factory
+            if run_experiment_fn is run_experiment:
+                kwargs["authorization_checker"] = lambda *_args, **_kwargs: None
             if index == 0:
                 kwargs["model_oracle_audit_path"] = audit_path
             try:

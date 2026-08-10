@@ -1,0 +1,110 @@
+{
+  "candidate_id": "Q1",
+  "checkpoint": {
+    "index_path": "artifacts/h0_runs/h0/checkpoints/h0-q1-a-20260809-attempt-001/index.json",
+    "index_sha256": "127c81b39ccd705d7c67dc936e953992d5be97f4065fd56f3655db52d12ad309",
+    "preserved_byte_identical_after_invalidation": true,
+    "stage_result_segment_sha256": "2d146255bd7cb73cc16e106786645349a86d3988bce71bbb7660c500792b4437",
+    "technical_terminal_status": "stage_complete",
+    "terminal_result_sha256": "3f4e5bd4efefc8bc2e3aeff54af1bf85887318bd2d1a77a36acedcc99b501d4f"
+  },
+  "discovered_after_execution": true,
+  "phase": "H0-A",
+  "protocol_disposition": {
+    "automatic_rerun_authorized": false,
+    "candidate_advance_authorized": false,
+    "candidate_selection_evidence_eligible": false,
+    "h0_b_authorized": false,
+    "protocol_qualified": false,
+    "qualification_reusable": false,
+    "reason": "protocol_gate_order_violation"
+  },
+  "protocol_version": "current-validation-v1.3",
+  "purpose": "Bind the post-execution gate-order invalidation, fail-closed machine transition, immutable checkpoint, and TDD remediation evidence without reclassifying the recorded technical observations as qualification evidence.",
+  "reports": {
+    "json_path": "artifacts/diagnostics/h0_q1_a_result_20260809.json",
+    "json_sha256": "bbe375410b1962fceab71c495e5c29ec04e4e9077279a8276f4aa025593066d5",
+    "markdown_path": "artifacts/diagnostics/h0_q1_a_result_20260809.md",
+    "markdown_sha256": "7deed81ca3243c95e7828e89e9dee0570ca610f7948d239f4af427647cfb38cb"
+  },
+  "schema_version": "membind.h0.protocol-invalidation-diagnostic.v1",
+  "security": {
+    "credentials_persisted": false,
+    "environment_dump_persisted": false,
+    "raw_prompts_persisted": false,
+    "raw_responses_persisted": false
+  },
+  "source_remediation": {
+    "bootstrap_path": "src/h0_bootstrap.py",
+    "bootstrap_sha256": "054a1c52254a7e295a6a55dbfb26ab38f0c4e9bf5c32290bb46411896afe3f88",
+    "bootstrap_source_bound": true,
+    "h0_artifacts_sha256": "e966fbb487ebebd74b3339bea03409dee98cd17ed6da6f3153bae697c4ef29bf",
+    "h0_control_sha256": "7e4b981bb9bff40628598162a7f204a2e301a1d40a6844064157e76eb952b5ec",
+    "h0_state_transition_sha256": "e46a814f20d84846de4b54b843f313b657ea63b785ecf5bfe545178aadb66fd6"
+  },
+  "stage_attempt_id": "h0-q1-a-20260809-attempt-001",
+  "state_transition": {
+    "after_sha256": "939e887ba7c6b5649aae003fec325e0d7f597d973a0aebdda74875f35a402a91",
+    "before_sha256": "86a5712db9c0a9369bd83cf963ecc7ce168fc108077ba9d34136e840b27875c6",
+    "candidate_rerun_authorized": false,
+    "command": "revoke-h0-live",
+    "commit_count": 1,
+    "current_action_scope": "h0_live_forbidden",
+    "current_blocker": "h0_protocol_gate_order_violation",
+    "dry_run_preserved_state_bytes": true,
+    "live_h0_candidate_authorized": false,
+    "status": "h0_live_authorization_revoked"
+  },
+  "status": "invalidated_protocol_gate_order",
+  "tdd_evidence": [
+    {
+      "outcome": "red",
+      "path": "artifacts/tdd/h0_implicit_dotenv_bootstrap_red_272p.log",
+      "sha256": "02d8bc944e85270173afbc6ab181196a41dd62503d2a13fd18d2aa651eb1098b"
+    },
+    {
+      "outcome": "green",
+      "path": "artifacts/tdd/h0_bootstrap_final_green_275p.log",
+      "sha256": "0bb44c24cda408dcdff80e253e86182df3e93de6cbf6771bf6ed1073b1913c5e"
+    },
+    {
+      "outcome": "red",
+      "path": "artifacts/tdd/h0_bootstrap_source_binding_red_272p.log",
+      "sha256": "20144fd863f705efb9ef4dce8dd94b8ba869909c6343a39d3f5bd75f3ca9a37a"
+    },
+    {
+      "outcome": "green",
+      "path": "artifacts/tdd/h0_bootstrap_source_binding_related_green_274p.log",
+      "sha256": "62e8bdf2b1466e4e1c15562408af70d84e0bd60069c712a1f00fe4a962eaa5d5"
+    },
+    {
+      "outcome": "red",
+      "path": "artifacts/tdd/h0_live_authorization_revoke_red_275c.log",
+      "sha256": "522cf2fe31c33dba799d7631fe92ed3455ed88c0306512ea66c7a8c5baaf0a6d"
+    },
+    {
+      "outcome": "green",
+      "path": "artifacts/tdd/h0_revoke_state_cas_blocker_related_green_281c.log",
+      "sha256": "5dcfc5622dbe3e68bcbfcca6a226b500ed18b2e00d0b7d2e1b8aaab7722ae267"
+    },
+    {
+      "outcome": "red",
+      "path": "artifacts/tdd/h0_protocol_invalidation_artifacts_red_279p.log",
+      "sha256": "f61f76cbc8a80dc1d72e1b8f4001ee9b717ec4ead33be94570dacb4da489de8c"
+    },
+    {
+      "outcome": "green",
+      "path": "artifacts/tdd/h0_protocol_invalidation_artifacts_green_283p.log",
+      "sha256": "c17d0fde01eddb2e5cffe881f0815dde580c1b5c8781687ff74a030745ea23f2"
+    }
+  ],
+  "technical_observation": {
+    "database_calls": 0,
+    "embedding_calls": 0,
+    "http_attempt_count": 3,
+    "logical_trial_count": 3,
+    "recorded_checks_passed": true,
+    "retry_count": 0,
+    "statistically_independent_trials": false
+  }
+}

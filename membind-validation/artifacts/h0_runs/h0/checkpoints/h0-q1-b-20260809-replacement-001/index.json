@@ -1,0 +1,67 @@
+{
+  "candidate_advance_allowed": false,
+  "candidate_id": "Q1",
+  "candidate_selection_may_continue": false,
+  "harness_repair_replacement": true,
+  "infrastructure_interrupted_attempt_count": 0,
+  "partial_evidence_preserved": true,
+  "partial_qualification_reusable": false,
+  "phase": "H0-B",
+  "prior_matching_attempt_count": 1,
+  "protocol_repair_replacement": true,
+  "protocol_version": "current-validation-v1.3",
+  "raw_prompts_persisted": false,
+  "raw_responses_persisted": false,
+  "repair_admission": {
+    "candidate_id": "Q1",
+    "decision_path": "artifacts/h0_protocol_repair/decisions/q1_h0_b_harness_compatibility_repair.json",
+    "decision_result_blind": false,
+    "decision_sha256": "6f1b0480d0272ffe328fe2b1c2ec7ce5415e40ef92c076dd61079034774dcd59",
+    "failure_report_sha256": "2bde8463ba862a13d4e3b580e3accc7ce0cf15f1eccdd923fee167eb91b7be31",
+    "invalidated_checkpoint_index_sha256": "fa6280ede4387775c719abd410478b5e1db358d840a10a69025c5a6cddd48896",
+    "invalidated_stage_attempt_id": "h0-q1-b-20260809-attempt-001",
+    "old_and_new_trial_counts_mergeable": false,
+    "old_attempt_qualification_reusable": false,
+    "one_shot_whole_stage_replacement": true,
+    "phase": "H0-B",
+    "prior_manifest_index_sha256": "be31de29de13fb0d607570cbc1832c7df32fe83af51ec3ab31722ec036f172cf",
+    "prior_model_workload_output_observed": false,
+    "protocol_version": "current-validation-v1.3",
+    "repair_required_independent_of_model_output": true,
+    "repaired_manifest_index_sha256": "13adf4852194399985f5750ed8e91eed6990f9a07d8409feabc0dd3c9f9d7624",
+    "replacement_attempt_id": "h0-q1-b-20260809-replacement-001",
+    "schema_version": "membind.h0.harness-repair-admission.v1",
+    "scientific_configuration_unchanged": true,
+    "secrets_persisted": false
+  },
+  "requires_whole_stage_rerun": true,
+  "schema_version": "membind.h0.checkpoint-index.v1",
+  "secrets_persisted": false,
+  "segments": [
+    {
+      "artifact_path": "h0/checkpoints/h0-q1-b-20260809-replacement-001/000000.prior_phase_completion.qualified.9c241f8f30d17e5d72ec7d53bd60a7cbdd695c7309a7bb204418c9d44abf9f8f.json",
+      "artifact_sha256": "9c241f8f30d17e5d72ec7d53bd60a7cbdd695c7309a7bb204418c9d44abf9f8f",
+      "segment_id": "qualified",
+      "segment_kind": "prior_phase_completion",
+      "segment_ordinal": 0
+    },
+    {
+      "artifact_path": "h0/checkpoints/h0-q1-b-20260809-replacement-001/000001.stage_readiness_check.000-vllm_version.cc1175e20f0c8c2dc3e43bf28ef094fc24e1d23e9c776a229765cc053aa96776.json",
+      "artifact_sha256": "cc1175e20f0c8c2dc3e43bf28ef094fc24e1d23e9c776a229765cc053aa96776",
+      "segment_id": "000-vllm_version",
+      "segment_kind": "stage_readiness_check",
+      "segment_ordinal": 1
+    },
+    {
+      "artifact_path": "h0/checkpoints/h0-q1-b-20260809-replacement-001/000002.infrastructure_failure.vllm-unreachable.dc56703dd983d8f6d66869351fc82c86f1818a50a1a9743612a223792272348b.json",
+      "artifact_sha256": "dc56703dd983d8f6d66869351fc82c86f1818a50a1a9743612a223792272348b",
+      "segment_id": "vllm-unreachable",
+      "segment_kind": "infrastructure_failure",
+      "segment_ordinal": 2
+    }
+  ],
+  "stage_attempt_id": "h0-q1-b-20260809-replacement-001",
+  "status": "infrastructure_interrupted",
+  "stop_reason": "vllm_unreachable",
+  "whole_stage_rerun": true
+}

@@ -1,0 +1,65 @@
+{
+  "attempt": {
+    "candidate_id": "Q1",
+    "checkpoint_index_path": "artifacts/h0_runs/h0/checkpoints/h0-q1-b-20260809-replacement-001/index.json",
+    "checkpoint_index_sha256": "7305c1ff2c5790223bb22a0ad8a3e6749c3752950164641eb5a546cfe8aa4553",
+    "phase": "H0-B",
+    "stage_attempt_id": "h0-q1-b-20260809-replacement-001",
+    "status": "infrastructure_interrupted",
+    "stop_reason": "vllm_unreachable"
+  },
+  "classification": {
+    "candidate_model_failure_supported": false,
+    "candidate_qualification_interpretable": false,
+    "failed_boundary": "construction_vllm_version_readiness",
+    "failure_origin": "construction_service_connectivity",
+    "infrastructure_failure": true,
+    "partial_qualification_reusable": false,
+    "requires_whole_stage_rerun": true
+  },
+  "generated_at": "2026-08-09T23:52:45+08:00",
+  "live_attempt_evidence": {
+    "construction_health_check_reached": false,
+    "construction_version_probe_attempt_count": 1,
+    "embedding_readiness_count": 0,
+    "embedding_workload_request_count": 0,
+    "fresh_graph_count": 0,
+    "graph_construction_reached": false,
+    "history_count": 0,
+    "http_status": null,
+    "logical_trial_count": 0,
+    "model_workload_http_attempt_count": 0,
+    "neo4j_readiness_count": 0,
+    "response_byte_length": 0,
+    "served_model_check_reached": false,
+    "source_checkpoint_count": 0,
+    "stage_readiness_event_count": 1,
+    "workload_reached": false
+  },
+  "persisted_bindings": {
+    "current_state_path": "CURRENT_STATE.json",
+    "current_state_sha256": "b97694e557f9caf48811e8a759673de00fb88b514fa84b1ad3bfe7f04d92115f",
+    "full_regression_path": "artifacts/tdd/h0_b_recovery_pre_r3_full_regression_green_374p.log",
+    "full_regression_sha256": "96dc8fcc412e073ae1ff7674fe46d49dde80315d9482329e7ddd7c29784657ba",
+    "full_regression_test_count": 514,
+    "live_log_path": "artifacts/live_logs/h0_q1_b_20260809_replacement_001.log",
+    "live_log_sha256": "e6ccc5edb64fe0b3923e3cd9f68ee4237778d76737c5bcb26004408f55cf6dd0",
+    "repair_decision_path": "artifacts/h0_protocol_repair/decisions/q1_h0_b_harness_compatibility_repair.json",
+    "repair_decision_sha256": "6f1b0480d0272ffe328fe2b1c2ec7ce5415e40ef92c076dd61079034774dcd59",
+    "resolved_manifest_index_path": "artifacts/h0_manifest_sets/v1_3_harness_r3/resolved_manifest_index_v1_3_harness_r3.json",
+    "resolved_manifest_index_sha256": "13adf4852194399985f5750ed8e91eed6990f9a07d8409feabc0dd3c9f9d7624"
+  },
+  "protocol_version": "current-validation-v1.3",
+  "recovery_disposition": {
+    "automatic_candidate_advance_allowed": false,
+    "automatic_retry_allowed": false,
+    "current_attempt_resumable": false,
+    "further_endpoint_probes_performed": false,
+    "next_attempt_requires_new_stage_attempt_id": true,
+    "old_and_new_evidence_mergeable": false,
+    "operator_service_restore_required": true,
+    "rerun_blocker": "exact one-shot replacement grant and checkpoint admission currently bind the consumed replacement-001 ID; add an offline-tested infrastructure-rerun transition before any new live attempt"
+  },
+  "schema_version": "membind.h0.infrastructure-interruption-report.v1",
+  "secrets_persisted": false
+}

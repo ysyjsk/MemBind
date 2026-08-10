@@ -19,6 +19,7 @@ from datetime import datetime, timezone
 from pathlib import Path
 from typing import Any
 
+from current_state_gate import LiveAction, require_live_action
 from dataset import build_episodes, freeze_split, load_json_records, records_by_question_id, sha256_file
 from experiment_runner import ExperimentRunFailed, run_experiment
 from formal_gate import validate_formal_gate
@@ -47,6 +48,21 @@ ARTIFACTS = ROOT / "artifacts"
 ATTEMPT_ID_RE = re.compile(r"^[A-Za-z0-9][A-Za-z0-9_-]*$")
 DEFAULT_EXPECTED_VLLM_VERSION = "0.26.0"
 DEFAULT_MIN_CONSTRUCTION_CONTEXT_TOKENS = 40_960
+
+
+def _authorization_checker(args: argparse.Namespace) -> Any:
+    """Return the internal test seam or the production CURRENT_STATE checker."""
+
+    return getattr(args, "authorization_checker", require_live_action)
+
+
+def _require_command_action(
+    args: argparse.Namespace,
+    action: LiveAction,
+    *,
+    candidate_id: str | None = None,
+) -> None:
+    _authorization_checker(args)(action, candidate_id=candidate_id)
 
 
 def read_json(path: str | Path) -> Any:
@@ -221,6 +237,8 @@ def run_capture(cmd: list[str]) -> str:
 
 
 def cmd_gate(args: argparse.Namespace) -> None:
+    checker = _authorization_checker(args)
+    checker(LiveAction.ENVIRONMENT_GATE)
     load_env_file()
     out_dir = ARTIFACTS / "environment"
     out_dir.mkdir(parents=True, exist_ok=True)
@@ -237,7 +255,7 @@ def cmd_gate(args: argparse.Namespace) -> None:
     except Exception as exc:
         graphiti_status = repr(exc)
 
-    model_probe = probe_vllm(args.structured_checks)
+    model_probe = probe_vllm(args.structured_checks, authorization_checker=checker)
     update_construction_blocker(out_dir, model_probe)
     manifest = {
         "created_at": datetime.now(timezone.utc).isoformat(),
@@ -256,13 +274,18 @@ def cmd_gate(args: argparse.Namespace) -> None:
             "RRF still selects edge-resolution top-K membership; every method canonically presents that selected set in logical-content order before assigning prompt indices.",
         ],
         "model_probe": model_probe,
-        "embedding_probe": probe_embedding(),
+        "embedding_probe": probe_embedding(authorization_checker=checker),
     }
     write_json(out_dir / "manifest.json", manifest)
     print(json.dumps(manifest, ensure_ascii=False, indent=2))
 
 
-def probe_vllm(structured_checks: int) -> dict[str, Any]:
+def probe_vllm(
+    structured_checks: int,
+    *,
+    authorization_checker: Any = require_live_action,
+) -> dict[str, Any]:
+    authorization_checker(LiveAction.MODEL_METADATA)
     load_env_file()
     base_url = os.environ.get("CONSTRUCTION_LLM_BASE_URL", "http://10.87.5.247:8000/v1/").rstrip("/")
     api_key = os.environ.get("CONSTRUCTION_LLM_API_KEY") or os.environ.get("VLLM_API_KEY")
@@ -363,7 +386,10 @@ def probe_vllm(structured_checks: int) -> dict[str, Any]:
     return result
 
 
-def probe_embedding() -> dict[str, Any]:
+def probe_embedding(
+    *, authorization_checker: Any = require_live_action
+) -> dict[str, Any]:
+    authorization_checker(LiveAction.EMBEDDING_IDENTITY)
     load_env_file()
     base_url = os.environ.get("EMBEDDING_BASE_URL", "http://10.87.5.247:8001/v1").rstrip("/")
     api_key = os.environ.get("EMBEDDING_API_KEY") or os.environ.get("VLLM_API_KEY")
@@ -415,7 +441,7 @@ async def _run_integration_gate() -> dict[str, Any]:
 
 
 def cmd_integration(args: argparse.Namespace) -> None:
-    del args
+    _require_command_action(args, LiveAction.NEO4J_INTEGRATION)
     smoke_path = ARTIFACTS / "environment" / "graphiti_smoke.json"
     status_path = ARTIFACTS / "environment" / "integration_gate_status.json"
     try:
@@ -770,6 +796,7 @@ async def run_one(
 
 
 def cmd_run(args: argparse.Namespace) -> None:
+    _require_command_action(args, LiveAction.NEO4J_INTEGRATION)
     instance = load_instance(args.data, args.question_id)
     arrival_interval_ms = (
         args.arrival_interval_ms
@@ -791,11 +818,14 @@ def cmd_run(args: argparse.Namespace) -> None:
 
 
 def cmd_v2_oracle_integration(args: argparse.Namespace) -> None:
+    checker = _authorization_checker(args)
+    checker(LiveAction.V2_R)
     result = asyncio.run(
         run_v2_oracle_integration(
             artifacts=ARTIFACTS,
             attempt=args.attempt,
             arrival_interval_ms=args.arrival_interval_ms,
+            authorization_checker=checker,
         )
     )
     print(json.dumps(result, ensure_ascii=False, indent=2))
@@ -804,6 +834,7 @@ def cmd_v2_oracle_integration(args: argparse.Namespace) -> None:
 
 
 def cmd_calibrate(args: argparse.Namespace) -> None:
+    _require_command_action(args, LiveAction.CALIBRATION)
     attempt = validate_attempt_id(args.attempt, kind="calibration")
     attempt_dir = ARTIFACTS / "calibration" / "attempts"
     status_path = attempt_dir / f"{attempt}.json"
@@ -954,6 +985,7 @@ def _source_order_diagnostics(trace_path: Path, expected_count: int) -> dict[str
 
 
 def cmd_smoke(args: argparse.Namespace) -> None:
+    _require_command_action(args, LiveAction.V3_R)
     split = read_json(ARTIFACTS / "dataset" / "frozen_split.json")
     question_id = args.question_id or split["evaluation_question_ids"][0]
     instance = load_instance(args.data, question_id)
@@ -1061,6 +1093,7 @@ def cmd_smoke(args: argparse.Namespace) -> None:
 
 
 def cmd_v3_smoke(args: argparse.Namespace) -> None:
+    _require_command_action(args, LiveAction.V3_R)
     split = read_json(ARTIFACTS / "dataset" / "frozen_split.json")
     question_id = args.question_id or split["evaluation_question_ids"][0]
     instance = load_instance(args.data, question_id)
@@ -1189,6 +1222,7 @@ def _persist_formal_execution(plan: list[dict[str, Any]]) -> dict[str, Any]:
 
 
 def cmd_execute(args: argparse.Namespace) -> None:
+    _require_command_action(args, LiveAction.FORMAL)
     plan = _formal_plan()
     validate_formal_execution_gates(ARTIFACTS, args.data, plan)
     records = records_by_question_id(load_json_records(args.data))
@@ -1273,7 +1307,7 @@ def cmd_analyze(args: argparse.Namespace) -> None:
 
 def main() -> None:
     parser = argparse.ArgumentParser()
-    sub = parser.add_subparsers(required=True)
+    sub = parser.add_subparsers(dest="command", required=True)
     gate = sub.add_parser("gate")
     gate.add_argument("--structured-checks", type=int, default=20)
     gate.set_defaults(func=cmd_gate)

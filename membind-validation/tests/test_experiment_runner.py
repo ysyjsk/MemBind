@@ -303,6 +303,7 @@ class RunExperimentTests(IsolatedAsyncioTestCase):
                 service_checker=service_check,
                 graph_exporter=exporter,
                 retrieval_evaluator=retriever,
+                authorization_checker=lambda *_args, **_kwargs: None,
             )
 
             self.assertEqual(result["status"], "success")
@@ -356,6 +357,7 @@ class RunExperimentTests(IsolatedAsyncioTestCase):
                     graphiti_factory=lambda prompt_cache=None, embedding_cache=None: graphiti,
                     method_runners={"M0": runner},
                     service_checker=lambda: _async_none(),
+                    authorization_checker=lambda *_args, **_kwargs: None,
                 )
 
             status = json.loads((artifacts / "runs" / "run-live.json").read_text())
@@ -418,6 +420,7 @@ class RunExperimentTests(IsolatedAsyncioTestCase):
                     graphiti_factory=factory,
                     method_runners={"M0": runner},
                     service_checker=lambda: _async_none(),
+                    authorization_checker=lambda *_args, **_kwargs: None,
                 )
 
             diagnostic_path = artifacts / "unexpected_prompts" / "run-replay.json"
@@ -463,6 +466,7 @@ class RunExperimentTests(IsolatedAsyncioTestCase):
                     graphiti_factory=lambda prompt_cache=None, embedding_cache=None: graphiti,
                     method_runners={"M0": runner},
                     service_checker=lambda: _async_none(),
+                    authorization_checker=lambda *_args, **_kwargs: None,
                 )
 
             diagnostic_path = artifacts / "search_forensics" / "run-live.json"
@@ -522,6 +526,7 @@ class RunExperimentTests(IsolatedAsyncioTestCase):
                     graphiti_factory=factory,
                     method_runners={"M0": runner},
                     service_checker=lambda: _async_none(),
+                    authorization_checker=lambda *_args, **_kwargs: None,
                 )
 
             self.assertEqual(inner.calls, 0)
@@ -586,6 +591,7 @@ class RunExperimentTests(IsolatedAsyncioTestCase):
                 graphiti_factory=factory,
                 method_runners={"M1": runner},
                 service_checker=lambda: _async_none(),
+                authorization_checker=lambda *_args, **_kwargs: None,
             )
 
             self.assertEqual(result["status"], "completed_with_divergence")
@@ -639,6 +645,7 @@ class RunExperimentTests(IsolatedAsyncioTestCase):
                     graphiti_factory=factory,
                     method_runners={"M2": runner},
                     service_checker=lambda: _async_none(),
+                    authorization_checker=lambda *_args, **_kwargs: None,
                 )
 
             self.assertEqual(raised.exception.status["status"], "failed")

@@ -117,6 +117,7 @@ class ModelOracleAuditTests(IsolatedAsyncioTestCase):
                 graph_exporter=exporter,
                 retrieval_evaluator=retriever,
                 model_oracle_audit_path=output,
+                authorization_checker=lambda *_args, **_kwargs: None,
             )
 
             payload = json.loads(output.read_text(encoding="utf-8"))
@@ -156,6 +157,7 @@ class ModelOracleAuditTests(IsolatedAsyncioTestCase):
                     graph_exporter=exporter,
                     retrieval_evaluator=retriever,
                     model_oracle_audit_path=output,
+                    authorization_checker=lambda *_args, **_kwargs: None,
                 )
 
             payload = json.loads(output.read_text(encoding="utf-8"))

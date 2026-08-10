@@ -1,0 +1,83 @@
+{
+  "attempt": {
+    "candidate_id": "Q1",
+    "checkpoint_index_path": "artifacts/h0_runs/h0/checkpoints/h0-q1-b-20260809-attempt-001/index.json",
+    "checkpoint_index_sha256": "fa6280ede4387775c719abd410478b5e1db358d840a10a69025c5a6cddd48896",
+    "failure_code": "manifest_contract_failure",
+    "phase": "H0-B",
+    "stage_attempt_id": "h0-q1-b-20260809-attempt-001",
+    "status": "candidate_failed"
+  },
+  "classification": {
+    "candidate_model_failure_supported": false,
+    "failed_boundary": "first_real_graphiti_construction",
+    "failure_origin": "execution_harness_compatibility",
+    "partial_qualification_reusable": false,
+    "terminal_attempt_must_remain_immutable": true,
+    "zero_workload_candidate_evidence": true
+  },
+  "offline_diagnosis": {
+    "calibration_corpus": {
+      "history_order": [
+        "07741c45",
+        "b6019101",
+        "6071bd76",
+        "a2f3aa27"
+      ],
+      "status": "pass"
+    },
+    "h0_b_workload_selection": {
+      "history_count": 1,
+      "source_count": 49,
+      "status": "pass"
+    },
+    "history_factory_constructor": {
+      "http_attempt_count": 0,
+      "logical_trial_count": 0,
+      "resource_count": 0,
+      "status": "pass"
+    },
+    "real_graphiti_contract_probe": {
+      "network_requests_issued": 0,
+      "outer_exception_type": "H0ManifestError",
+      "root_exception_type": "ValidationError",
+      "status": "fail",
+      "violations": [
+        "H0EmbeddingAdapter is not an EmbedderClient instance",
+        "H0ForbiddenCrossEncoder is not a CrossEncoderClient instance"
+      ]
+    }
+  },
+  "observed_live_evidence": {
+    "authorization_recheck_count": 1,
+    "construction_readiness_count": 1,
+    "cross_encoder_rank_call_count": 0,
+    "embedding_readiness_count": 1,
+    "embedding_workload_request_count": 0,
+    "fresh_graph_count": 0,
+    "history_count": 0,
+    "http_attempt_count": 0,
+    "logical_trial_count": 0,
+    "neo4j_readiness_count": 1,
+    "source_checkpoint_count": 0,
+    "stage_readiness_status": "ready"
+  },
+  "protocol_version": "current-validation-v1.3",
+  "raw_prompts_persisted": false,
+  "raw_responses_persisted": false,
+  "recommended_recovery": {
+    "advance_allowed": false,
+    "current_live_grant_requires_fail_closed_revocation": true,
+    "harness_revision_r2_reusable_after_source_change": false,
+    "next_steps": [
+      "add a real Graphiti constructor compatibility test and capture RED evidence",
+      "make the adapters satisfy Graphiti's nominal client contracts with minimal behavior change",
+      "run focused GREEN and full offline regression",
+      "generate and verify a new source-bound harness revision",
+      "authorize a new whole-stage H0-B attempt; never resume or merge the failed attempt"
+    ],
+    "rerun_current_attempt_allowed": false
+  },
+  "schema_version": "membind.h0.preworkload-failure-report.v1",
+  "secrets_persisted": false
+}

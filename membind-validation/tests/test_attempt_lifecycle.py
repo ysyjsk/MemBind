@@ -27,6 +27,7 @@ class CalibrationAttemptTests(TestCase):
                             data="missing.json",
                             arrival_interval_ms=0,
                             attempt="calibration09",
+                            authorization_checker=lambda *_args, **_kwargs: None,
                         )
                     )
 
@@ -76,7 +77,12 @@ class CalibrationAttemptTests(TestCase):
                 ) as run_one,
             ):
                 replay_driver.cmd_calibrate(
-                    Namespace(data="data.json", arrival_interval_ms=0, attempt="calibration07")
+                    Namespace(
+                        data="data.json",
+                        arrival_interval_ms=0,
+                        attempt="calibration07",
+                        authorization_checker=lambda *_args, **_kwargs: None,
+                    )
                 )
 
             expected_run_ids = [f"calibration07_calibration_M0_{qid}" for qid in qids]
@@ -142,6 +148,7 @@ class CalibrationAttemptTests(TestCase):
                             data="data.json",
                             arrival_interval_ms=0,
                             attempt="calibration07",
+                            authorization_checker=lambda *_args, **_kwargs: None,
                         )
                     )
 
@@ -171,6 +178,7 @@ class CalibrationAttemptTests(TestCase):
                             data="data.json",
                             arrival_interval_ms=0,
                             attempt="calibration07",
+                            authorization_checker=lambda *_args, **_kwargs: None,
                         )
                     )
             run_one.assert_not_awaited()

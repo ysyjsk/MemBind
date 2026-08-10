@@ -1,0 +1,138 @@
+{
+  "candidate_id": "Q1",
+  "checkpoint": {
+    "index_path": "artifacts/h0_runs/h0/checkpoints/h0-q1-a-20260809-attempt-001/index.json",
+    "index_sha256": "127c81b39ccd705d7c67dc936e953992d5be97f4065fd56f3655db52d12ad309",
+    "segment_count": 8,
+    "stage_result_artifact_sha256": "2d146255bd7cb73cc16e106786645349a86d3988bce71bbb7660c500792b4437",
+    "terminal_result_sha256": "3f4e5bd4efefc8bc2e3aeff54af1bf85887318bd2d1a77a36acedcc99b501d4f",
+    "terminal_status": "stage_complete"
+  },
+  "construction_readiness": {
+    "configured_transport_retries": 0,
+    "context_limit": 40960,
+    "generation_requests_during_readiness": 0,
+    "observed_request_attempt_count": 3,
+    "served_model_id": "qwen3-32b-fp8",
+    "status": "ready",
+    "vllm_version": "0.26.0"
+  },
+  "live_scope_after_result": {
+    "h0_b_authorized": false,
+    "q2_authorized": false,
+    "q3_authorized": false
+  },
+  "manifest_binding": {
+    "resolved_candidate_manifest_sha256": "4a76ab5c1abb91e86f36787b7bc78bda12f000964e38c0b200925e86859056bb",
+    "resolved_manifest_index_sha256": "9fe8f4e5c4a8c85f5a8cf56a4e3f887f1d82d9082bc96f0775b327dd6c633334",
+    "resolved_shared_base_manifest_sha256": "8ea05bd9e280ff9537ad4c7a5f5035715ba4c6550458088826dae875f4cc8be4",
+    "runtime_definition_sha256": "fb74c0186e7e45542fd0f3a7dc746ac49e17ca62bb259d193caace2013c84d9a"
+  },
+  "phase": "H0-A",
+  "protocol_validity": {
+    "candidate_selection_evidence_eligible": false,
+    "candidate_advance_allowed": false,
+    "checkpoint_mutated": false,
+    "discovered_after_attempt": true,
+    "disposition": "diagnostic_only",
+    "h0_b_authorized": false,
+    "q2_authorized": false,
+    "q3_authorized": false,
+    "qualification_reusable": false,
+    "protocol_qualified": false,
+    "reason": "protocol_gate_order_violation",
+    "reason_detail": "The pinned upstream import chain graphiti_core/__init__.py -> graphiti.py executes a top-level load_dotenv() path. H0 modules imported graphiti_core before h0_control.main() and its live state gate, while this attempt did not instrument pre-gate dotenv access. The required gate-before-any-.env-access property was therefore not satisfied or proven for this bound runtime.",
+    "replacement_attempt_requirements": [
+      "fresh_offline_red_green_and_full_regression",
+      "regenerated_source_bound_manifests",
+      "explicit_state_transition",
+      "new_attempt_id"
+    ],
+    "rerun_automatically_authorized": false,
+    "status": "invalidated_protocol_gate_order"
+  },
+  "protocol_version": "current-validation-v1.3",
+  "report_correction": {
+    "correction_date": "2026-08-09",
+    "defect_evidence_logs": [
+      "artifacts/tdd/h0_implicit_dotenv_bootstrap_red_272p.log",
+      "artifacts/tdd/h0_implicit_dotenv_bootstrap_initial_green_273p.log",
+      "artifacts/tdd/h0_graphiti_telemetry_bootstrap_red_274p.log",
+      "artifacts/tdd/h0_bootstrap_final_green_275p.log",
+      "artifacts/tdd/h0_bootstrap_source_binding_red_272p.log"
+    ],
+    "original_json_sha256": "71efba92bf47c5bbf377a42b5ac99b4e112c014d9c0f5c25be10de826d0a60dd",
+    "original_markdown_sha256": "f2b41e77ef69052c412c858b6d97112079b816f2a67ee0ed3d4c5c4c1f99dccb",
+    "supersedes_interpretation_not_checkpoint": true
+  },
+  "runtime_calls": {
+    "completion_calls": 3,
+    "database_calls": 0,
+    "embedding_calls": 0,
+    "tokenize_calls": 3
+  },
+  "schema_version": "membind.h0.q1-a-result-summary.v2",
+  "security": {
+    "raw_prompts_persisted": false,
+    "raw_responses_persisted": false,
+    "secrets_persisted": false
+  },
+  "stage_attempt_id": "h0-q1-a-20260809-attempt-001",
+  "status": "invalidated_protocol_gate_order",
+  "technical_execution": {
+    "evidence_scope": "diagnostic_only",
+    "observations": {
+      "effective_max_tokens_per_attempt": [
+        16384,
+        16384,
+        16384
+      ],
+      "finish_reasons": [
+        "stop",
+        "stop",
+        "stop"
+      ],
+      "fresh_client_count": 3,
+      "http_attempt_count": 3,
+      "http_statuses": [
+        200,
+        200,
+        200
+      ],
+      "json_parse_success_count": 3,
+      "logical_call_count": 3,
+      "prompt_evidence_sha256": "6959c9d61ff8028616dcd98a93d482d375d2bf3e1a2898b2523bfbe7ea3c2408",
+      "prompt_tokens_per_attempt": [
+        3571,
+        3571,
+        3571
+      ],
+      "pydantic_validation_success_count": 3,
+      "question_id": "07741c45",
+      "repeated_trials_statistically_independent": false,
+      "response_byte_length_per_attempt": [
+        87,
+        87,
+        87
+      ],
+      "response_sha256_per_attempt": [
+        "a84685fc62c8c82f8f59e62d4c3cbbc9772e7fe3c99e026b3eaeeb4dbfe6703e",
+        "a84685fc62c8c82f8f59e62d4c3cbbc9772e7fe3c99e026b3eaeeb4dbfe6703e",
+        "a84685fc62c8c82f8f59e62d4c3cbbc9772e7fe3c99e026b3eaeeb4dbfe6703e"
+      ],
+      "retry_count": 0,
+      "semantic_record_count": 3,
+      "semantic_stage_sha256": "350ed3a7f9339a16de41aa73f418f07a40430e97ee86a0c5c59a629cc838a43c",
+      "semantic_utility_success_count": 3,
+      "server_request_seed_per_attempt": [
+        20260806,
+        20260806,
+        20260806
+      ],
+      "source_sequence": 0
+    },
+    "protocol_qualified": false,
+    "recorded_checks_passed": true,
+    "status": "passed_recorded_checks"
+  }
+}

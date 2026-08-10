@@ -6,10 +6,10 @@ authoritative resume point and the boundaries that future agents must preserve.
 ## Mainline validation memory
 
 - `CURRENT_STATE.json` is the machine-readable authority. Active protocol:
-  `current-validation-v1.3`; resume point `H0`; status
-  `h0_protocol_accepted_harness_not_implemented`; current classification
-  `late_discovered_pre_freeze_host_compatibility_failure`; action scope
-  `h0_offline_tdd_and_harness_only`; `live_h0_candidate_authorized=false` and
+  `current-validation-v1.3`; resume point `H0`; status `h0_q1_b_live_only`;
+  current blocker `none`; action scope `h0_q1_b_live_only`;
+  `live_h0_candidate_authorized=true`, `authorized_live_actions=[h0_candidate]`,
+  exact attempt `h0-q1-b-20260810-replacement-003`, and
   `v3_smoke_003_retired=true`.
 - `EXPERIMENT_PLAN.md` is the execution-facing plan for the frozen vLLM/Qwen
   validation lane.
@@ -28,14 +28,206 @@ authoritative resume point and the boundaries that future agents must preserve.
   historical truncation. The immediate action scope is now
   historical `blocked_waiting_for_explicit_protocol_deviation` state. v1.3
   supersedes its action gate but preserves all sanitized evidence.
-- The only next work is offline H0 registry/split/context/payload/schema/semantic
-  harness TDD. A live Q1 request requires a separate explicit state gate after
-  focused and full regression plus manifest review.
+- Q1/H0-A attempt `h0-q1-a-20260809-attempt-001` technically completed 3/3
+  fixed-seed checks but is `invalidated_protocol_gate_order`. It is diagnostic
+  only: protocol qualification, candidate-selection eligibility, H0-B advance,
+  and automatic rerun are all false. The immutable checkpoint index SHA256 is
+  `127c81b39ccd705d7c67dc936e953992d5be97f4065fd56f3655db52d12ad309`.
+- The next work is the exact offline H0-B post-workload recovery sequence
+  recorded below. The valid H0-A replacement is preserved; the terminal r2,
+  interrupted r3, and terminal replacement-002 attempts are never resumed or
+  merged. R5 has been generated offline but is not yet repair-bound or live-authorized.
+- Offline harness-r2 implementation is now complete through H0-A/B/C execution,
+  three-service stage readiness, per-source checkpoints, H0-B terminal validation,
+  one-shot repair admission, and A-to-B-to-C state progression. The first full
+  discovery regression is 479/479 green. Formal r2 generation and every live
+  request remain forbidden until the final regression/evidence bind and explicit
+  state transition.
+- r2 source binding includes `execution_source_bundle`: 31 explicit mainline and
+  transitive local Python sources, 11 generated JSON artifacts total, and 10
+  runtime bindings. Any bound-source edit requires a new r2 resolve before live.
 - Live H0, V2-R, V3-R, V4-V7, P1-P4, and future work remain forbidden.
 - Mainline construction uses Qwen3-32B-FP8 through vLLM 0.26.0 at the frozen
   internal endpoint. Embedding uses the frozen Qwen3-Embedding-0.6B endpoint.
   Its verified deployment dtype is BF16; the old FP16 config placeholder is
   invalid.
+
+### H0-B recovery ledger
+
+```text
+current_recovery_stage=h0_b_harness_recovery_r3_one_shot_replacement
+historical_r2_evidence_preserved=true
+h0_a_replacement_attempt_id=h0-q1-a-20260809-replacement-001
+checkpoint_index_sha256=91c202b2494a690483a345fb73d04733c8f68b9c980edef8caa46565868438f7
+runtime_definition_sha256=ada353cf5a418005e06ed5b9549d277b8c72a4aa08aec278d242e4df65f74739
+terminal_result_sha256=f5315092bc3942cbd1ced6d3673730d17aa65f7483f5f20c1be97de705dc5227
+trial_response_sha256[0]=a84685fc62c8c82f8f59e62d4c3cbbc9772e7fe3c99e026b3eaeeb4dbfe6703e
+trial_response_sha256[1]=a84685fc62c8c82f8f59e62d4c3cbbc9772e7fe3c99e026b3eaeeb4dbfe6703e
+trial_response_sha256[2]=a84685fc62c8c82f8f59e62d4c3cbbc9772e7fe3c99e026b3eaeeb4dbfe6703e
+logical_trials=3/3
+http_attempts=3/3
+json_parse=3/3
+pydantic_validation=3/3
+semantic_utility=3/3
+h0_b_failed_attempt_id=h0-q1-b-20260809-attempt-001
+checkpoint_index_sha256=fa6280ede4387775c719abd410478b5e1db358d840a10a69025c5a6cddd48896
+classification=harness_compatibility_failure_not_candidate_result
+logical_trial_count=0
+http_attempt_count=0
+embedding_workload_request_count=0
+history_count=0
+source_checkpoint_count=0
+fresh_graph_count=0
+old_attempt_immutable=true
+old_attempt_resumable=false
+old_and_new_evidence_mergeable=false
+Graphiti nominal clients: EmbedderClient + CrossEncoderClient
+preworkload_progress=corpus_ready,history_factory_ready,graph_construction_started,graph_construction_ready
+artifact_set_id=v1_3_harness_r3
+execution_harness_revision=3
+index=artifacts/h0_manifest_sets/v1_3_harness_r3/resolved_manifest_index_v1_3_harness_r3.json
+execution_source_count=32
+revoke -> r3 TDD/artifact -> transparent decision -> bind offline -> exact one-shot replacement authorize -> 49 sources
+connection/timeout/429/5xx -> durable checkpoint -> immediate stop_and_report
+startup_monitoring=frequent; stable_monitoring=long_interval; program_output=detailed_segmented
+mainline_gpt55_temporary_access=forbidden
+```
+
+```text
+current_recovery_stage=h0_b_infrastructure_rerun_r4_offline_binding
+h0_b_interrupted_attempt_id=h0-q1-b-20260809-replacement-001
+checkpoint_index_sha256=7305c1ff2c5790223bb22a0ad8a3e6749c3752950164641eb5a546cfe8aa4553
+classification=infrastructure_interruption_not_candidate_result
+stop_reason=vllm_unreachable
+construction_version_probe_attempt_count=1
+model_workload_http_attempt_count=0
+logical_trial_count=0
+embedding_workload_request_count=0
+history_count=0
+source_checkpoint_count=0
+fresh_graph_count=0
+interrupted_attempt_resumable=false
+partial_qualification_reusable=false
+old_and_new_evidence_mergeable=false
+artifact_set_id=v1_3_harness_r4
+execution_harness_revision=4
+index=artifacts/h0_manifest_sets/v1_3_harness_r4/resolved_manifest_index_v1_3_harness_r4.json
+index_sha256=a08b3f704c9680476990f24edc239d4af50ced39edcf9aae0d529b5ed14332d7
+execution_source_count=32
+replacement_attempt_id=h0-q1-b-20260810-replacement-002
+revoke consumed r3 grant -> R4 TDD/artifact -> transparent infrastructure decision -> bind offline -> exact one-shot replacement-002 authorize
+```
+
+```text
+current_recovery_stage=h0_b_infrastructure_rerun_r4_live_authorized
+status=h0_q1_b_live_only
+current_blocker=none
+current_action_scope=h0_q1_b_live_only
+live_h0_candidate_authorized=true
+authorized_live_actions=h0_candidate
+authorized_h0_candidate_id=Q1
+authorized_stage_attempt_id=h0-q1-b-20260810-replacement-002
+r4_decision_sha256=ec0c8b6c6d10c0a69e8a4fb3793ccb47f865f00668b58e2c9cce02bd5a2b5a8d
+r4_tdd_evidence_sha256=316769827a48b940dc6cb33ca4284c9244aafef8e45a8046f2977fd00d5e87a1
+state_sha256=558c93b76a0b9b8056d01efa5e013ab5992f767eb6c7047739925f39040690d1
+replacement_checkpoint_exists=false
+next_allowed_action=run_q1_h0-b-infrastructure-rerun
+```
+
+The preceding block is immutable R4 authorization history. The live grant was
+consumed by replacement-002 and revoked. The following block is the completed
+R5 offline-recovery history:
+
+```text
+current_recovery_stage=h0_b_post_workload_harness_repair_r5_offline_only
+h0_b_post_workload_failed_attempt_id=h0-q1-b-20260810-replacement-002
+checkpoint_index_sha256=e2187d3e101459e9c9a873d8dffb3fbcc858d139833f7f392eedff1c2c78c665
+failure_segment_sha256=689285595818aac01f008cb279d3a71cdb084abe35dd79e04e23e93d9d3eadd5
+source_checkpoint_sha256=1cdb5b70c86790d144179e855143018d2a97cd32d9e9fc70d5c1e218cd88211c
+classification=local_execution_harness_interface_contract_not_candidate_result
+workload_reached=true
+logical_trial_count=6
+http_attempt_count=6
+embedding_workload_request_count=4
+source_checkpoint_count=1
+old_attempt_resumable=false
+old_and_new_evidence_mergeable=false
+artifact_set_id=v1_3_harness_r5
+execution_harness_revision=5
+index=artifacts/h0_manifest_sets/v1_3_harness_r5/resolved_manifest_index_v1_3_harness_r5.json
+index_sha256=3f41f7520255a1ab64e9ee34efebaccbb05a1d580b7a390057ced0f02b3d13dd
+execution_source_count=32
+r5_status=offline_resolved_not_live_authorized
+status=h0_b_post_workload_harness_failure_live_revoked
+current_blocker=manifest_contract_failure
+current_action_scope=h0_b_post_workload_harness_repair_offline_only
+live_h0_candidate_authorized=false
+authorized_live_actions=none
+authorized_h0_candidate_id=none
+h0_live_gate=forbidden
+replacement_attempt_id=h0-q1-b-20260810-replacement-003
+next_allowed_action=prepare_h0_b_post_workload_harness_repair
+```
+
+R5 generation alone was not a repair decision, state bind, or live authorization.
+The transparent decision, offline bind, and independent authorization have now
+each passed a zero-write dry-run and been committed. Replacement-003 must begin
+from empty segments; none of replacement-002's workload evidence can qualify or
+merge. The authorization itself is not an experiment result:
+
+```text
+current_recovery_stage=h0_b_post_workload_harness_repair_r5_live_authorized
+status=h0_q1_b_live_only
+current_blocker=none
+current_action_scope=h0_q1_b_live_only
+live_h0_candidate_authorized=true
+authorized_live_actions=h0_candidate
+authorized_h0_candidate_id=Q1
+authorized_stage_attempt_id=h0-q1-b-20260810-replacement-003
+artifact_set_id=v1_3_harness_r5
+execution_harness_revision=5
+index_sha256=3f41f7520255a1ab64e9ee34efebaccbb05a1d580b7a390057ced0f02b3d13dd
+r5_decision_sha256=98841771c9ccf35fca6526e36295cb5f1439c256332a47a62ffac87693cc0084
+r5_tdd_evidence_sha256=cb2b6d8a2e56f4ee207dbaf538da2c5c273dc701977b013fefb7af482207b89a
+decision_result_blind=false
+prior_model_workload_output_observed=true
+repair_required_independent_of_model_response_content=true
+old_attempt_qualification_reusable=false
+old_and_new_trial_counts_mergeable=false
+resume_failed_attempt_allowed=false
+state_sha256=e4c376bdb4559140d2380144c76bc33579c694d90cf098330cb4ede9b462c6c3
+replacement_checkpoint_exists=false
+next_allowed_action=run_q1_h0-b-post-workload-replacement
+```
+
+Replacement-003 then encountered construction vLLM unreachability during the
+concurrent source-6 workload. The runner misclassified the terminal event, so
+the stop fence below supersedes the execution meaning of the consumed live bit;
+the state still needs a new offline, source-bound closure transition:
+
+```text
+current_recovery_stage=h0_b_replacement_003_infrastructure_stop_pending_offline_closure
+terminal_attempt_id=h0-q1-b-20260810-replacement-003
+terminal_checkpoint_index_sha256=0b813ee7c9f4940e6981398520bf823ced3544ff540f66e03a8181ead5622a76
+recorded_terminal_status=candidate_failed
+recorded_failure_code=candidate_qualification_failure
+evidence_classification=infrastructure_interruption_misclassified_as_candidate_qualification_failure
+construction_vllm_unreachable_count=7
+wire_request_observation_failure_count=3
+incomplete_concurrent_attempt_count=2
+retry_count=0
+source_checkpoint_count=6
+candidate_selection_continuation_allowed=false
+current_state_live_grant_consumed=true
+live_execution_allowed=false
+next_allowed_action=stop_and_report_then_offline_tdd
+replacement_003_report_sha256=218b062834ed66e4bbdf6b65ecb405c5c17ce7c3889360534f2bec484c43a6ac
+```
+
+The H0-A 3/3 observation is a bounded fixed-seed canary. The H0-B r2 failure
+contains zero model workload evidence and is not candidate performance data.
+Detailed safe program segments are persisted; monitoring is frequent at startup
+and uses longer intervals only after stable checkpoint progress.
 
 ## Protocol v1.3 invariants
 
@@ -56,6 +248,33 @@ authoritative resume point and the boundaries that future agents must preserve.
 - Parse/Pydantic success alone is insufficient. A pre-candidate,
   calibration-only semantic-invariant manifest rejects valid-but-empty,
   constant, blank-name, duplicate-name, or source-invalid output.
+- H0 checkpoint granularity is frozen: per logical trial for H0-A and per
+  `source_sequence` for H0-B/H0-C. Checkpoints retain sanitized detailed ledgers,
+  counts, hashes, failure codes, progress, artifact paths, and SHA256 values;
+  they never retain raw prompts/responses, credentials, or environment dumps.
+- Infrastructure interruption preserves partial evidence for diagnosis but
+  never for qualification reuse. After recovery, the whole affected H0 stage
+  uses a new attempt ID. vLLM connectivity failure means stop-and-report; it
+  must not silently retry or automatically advance to the next candidate.
+- H0-A is exactly three fresh-client public `extract_nodes` calls sharing one
+  stage ledger, with zero database or embedding calls. H0-B/C use an asserted
+  clean graph per history and no LLM warm-up. Graph nonempty means entity count
+  greater than zero; source mapping includes episodic-set and resolved-edge
+  attribution, and Recall@10 uses the first ten unique session IDs from at most
+  ten RRF edges. Any H0-C infrastructure interruption reruns all three histories
+  under one new attempt ID.
+- `src/h0_bootstrap.py` must run before every H0 Graphiti import, force
+  `PYTHON_DOTENV_DISABLED=1` and `GRAPHITI_TELEMETRY_ENABLED=false`, and remain in
+  the execution source hash set. Explicit project credential reads occur only
+  after the exact live gate.
+- Legacy `artifacts/h0/**` is path-bound to the invalid attempt and must not be
+  moved, deleted, or overwritten. The repaired set is
+  `artifact_set_id=v1_3_harness_r2`, `execution_harness_revision=2`, rooted at
+  `artifacts/h0_manifest_sets/v1_3_harness_r2/`.
+- A Q1 repair rerun is non-blind because the old 3/3 technical outcome is known.
+  It can be authorized once only after a durable deviation record proves no
+  change to candidate order/spec, calibration input, thresholds, seed/trials,
+  or request/retry policy. Old and new trials never combine into a pass.
 - H0 cannot write formal oracles. V2-R creates a content-addressed namespace
   bound to the qualified host manifest. Correctness uses capture/read-only
   replay; performance uses the same live model stack with response replay off.
@@ -63,6 +282,9 @@ authoritative resume point and the boundaries that future agents must preserve.
   V3-R. C8 is an `iso-cap` comparison, not a claim of equal observed usage.
 - The current Pilot does not support a General Agent Memory Runtime claim.
   P1-P4 remain `authorized=false` until a V7 GO and a new protocol.
+
+<!-- Maintainability: detailed H0 checkpoint semantics live in the authoritative
+v1.3 overlay; this file intentionally keeps only the resume-critical invariants. -->
 
 ## Mainline exclusion fence
 

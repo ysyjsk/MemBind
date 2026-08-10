@@ -35,6 +35,14 @@ HISTORICAL_ARTIFACT = (
 HISTORICAL_ARTIFACT_SHA256 = (
     "fd1b23026689008ce9a5976581b519c2a7d62fc5c2ea05eb0964f5387e10a041"
 )
+CURRENT_H0_STATUS = "h0_q1_b_live_only"
+CURRENT_H0_BLOCKER = None
+CURRENT_H0_BLOCKER_TEXT = "none"
+CURRENT_H0_ACTION_SCOPE = "h0_q1_b_live_only"
+CURRENT_H0_NEXT_ACTION = "run_q1_h0-b-post-workload-replacement"
+INVALIDATED_H0_A_CHECKPOINT_SHA256 = (
+    "127c81b39ccd705d7c67dc936e953992d5be97f4065fd56f3655db52d12ad309"
+)
 CANARY_ID = "c6853660"
 
 
@@ -90,32 +98,102 @@ class ProtocolV13DocumentContractTests(TestCase):
         for document in synchronized:
             for token in (
                 "current-validation-v1.3",
-                "h0_protocol_accepted_harness_not_implemented",
-                "late_discovered_pre_freeze_host_compatibility_failure",
-                "h0_offline_tdd_and_harness_only",
-                "live_h0_candidate_authorized=false",
+                CURRENT_H0_STATUS,
+                CURRENT_H0_BLOCKER_TEXT,
+                CURRENT_H0_ACTION_SCOPE,
+                "live_h0_candidate_authorized=true",
             ):
                 self.assertIn(token, document)
 
-    def test_state_enters_h0_offline_only_without_authorizing_a_live_candidate(self):
+    def test_state_authorizes_only_exact_r5_post_workload_replacement(self):
         state = self.state
         self.assertIn("protocol_version", state)
         self.assertEqual(state["protocol_version"], "current-validation-v1.3")
         self.assertEqual(state["current_stage"], "H0")
-        self.assertEqual(
-            state["status"], "h0_protocol_accepted_harness_not_implemented"
-        )
-        self.assertEqual(
-            state["current_blocker"],
-            "late_discovered_pre_freeze_host_compatibility_failure",
-        )
-        self.assertEqual(
-            state["current_action_scope"], "h0_offline_tdd_and_harness_only"
-        )
-        self.assertFalse(state["live_h0_candidate_authorized"])
+        self.assertEqual(state["status"], CURRENT_H0_STATUS)
+        self.assertEqual(state["current_blocker"], CURRENT_H0_BLOCKER)
+        self.assertEqual(state["current_action_scope"], CURRENT_H0_ACTION_SCOPE)
+        self.assertTrue(state["live_h0_candidate_authorized"])
+        self.assertEqual(state["authorized_h0_candidate_id"], "Q1")
+        self.assertEqual(state["authorized_live_actions"], ["h0_candidate"])
         self.assertFalse(state["v3_smoke_003_authorized"])
-        self.assertIn("offline", state["next_allowed_action"])
-        self.assertIn("separate explicit gate", state["next_allowed_action"])
+        self.assertEqual(state["next_allowed_action"], CURRENT_H0_NEXT_ACTION)
+        failure = state["h0_b_post_workload_harness_failure"]
+        self.assertEqual(
+            failure["stage_attempt_id"],
+            "h0-q1-b-20260810-replacement-002",
+        )
+        self.assertEqual(failure["phase"], "H0-B")
+        self.assertEqual(failure["status"], "candidate_failed")
+        self.assertEqual(failure["failure_origin"], "local_execution_harness_interface_contract")
+        authorization = state["live_h0_authorization"]
+        self.assertEqual(authorization["candidate_id"], "Q1")
+        self.assertEqual(authorization["phase"], "H0-B")
+        self.assertEqual(
+            authorization["authorized_stage_attempt_id"],
+            "h0-q1-b-20260810-replacement-003",
+        )
+        self.assertEqual(
+            authorization["resolved_manifest_index_sha256"],
+            "3f41f7520255a1ab64e9ee34efebaccbb05a1d580b7a390057ced0f02b3d13dd",
+        )
+        admission = authorization["post_workload_repair_admission"]
+        self.assertFalse(admission["decision_result_blind"])
+        self.assertTrue(admission["prior_model_workload_output_observed"])
+        self.assertFalse(admission["old_attempt_qualification_reusable"])
+        self.assertFalse(admission["old_and_new_trial_counts_mergeable"])
+        self.assertFalse(admission["resume_failed_attempt_allowed"])
+
+    def test_gate_order_repair_is_non_blind_one_shot_and_legacy_bound(self):
+        plan = self._plan()
+        documents = (plan, self.proposal, self.execution, self.memory)
+        state = self.state
+
+        for document in documents:
+            self.assertIn("invalidated_protocol_gate_order", document)
+            self.assertIn("v1_3_harness_r2", document)
+
+        invalidation = state["h0_live_authorization_invalidation"]
+        self.assertEqual(invalidation["reason"], "protocol_gate_order_violation")
+        self.assertEqual(
+            invalidation["status"],
+            "invalidated_no_rerun_or_advance_authorized",
+        )
+        self.assertEqual(
+            invalidation["checkpoint_index_sha256"],
+            INVALIDATED_H0_A_CHECKPOINT_SHA256,
+        )
+        checkpoint = ROOT / invalidation["checkpoint_index_path"]
+        self.assertEqual(
+            hashlib.sha256(checkpoint.read_bytes()).hexdigest(),
+            INVALIDATED_H0_A_CHECKPOINT_SHA256,
+        )
+        self.assertFalse(invalidation["candidate_rerun_authorized"])
+        self.assertFalse(invalidation["candidate_advance_authorized"])
+        self.assertFalse(invalidation["live_transition_authorized"])
+        self.assertIn(INVALIDATED_H0_A_CHECKPOINT_SHA256, plan)
+        self.assertIn(INVALIDATED_H0_A_CHECKPOINT_SHA256, self.memory)
+
+        for token in (
+            "artifact_set_id=v1_3_harness_r2",
+            "execution_harness_revision=2",
+            "legacy_artifact_root=artifacts/h0/",
+            "legacy_tree_mutation_forbidden=true",
+            "protocol_repair_rerun: one_shot_explicit_deviation_only",
+            "protocol_repair_decision_result_blind: false",
+            "protocol_repair_old_and_new_trial_counts_mergeable: false",
+            "旧、新 3/3 不得合并为 6/6",
+        ):
+            self.assertIn(token, plan)
+        self.assertIn("旧 `artifacts/h0/**` 原地不可变", self.proposal)
+        self.assertIn("one-shot deviation", self.proposal)
+        self.assertIn("旧、新 trial 永不合并", self.proposal)
+        self.assertIn("legacy `artifacts/h0/**` tree", self.execution)
+        self.assertIn("non-blind, one-shot deviation decision", self.execution)
+        self.assertIn("Old and new trials are never combined", self.execution)
+        self.assertIn("Legacy `artifacts/h0/**` is path-bound", self.memory)
+        self.assertIn("A Q1 repair rerun is non-blind", self.memory)
+        self.assertIn("Old and new trials never combine into a pass", self.memory)
 
     def test_historical_blocker_identity_and_artifact_survive_reclassification(self):
         state = self.state

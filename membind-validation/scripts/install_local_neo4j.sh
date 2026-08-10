@@ -2,6 +2,7 @@
 set -euo pipefail
 
 ROOT="$(cd "$(dirname "$0")/.." && pwd)"
+"$ROOT/.venv/bin/python3" "$ROOT/src/current_state_gate.py" require --action service_admin
 RUNTIME_DIR="$ROOT/runtime/neo4j"
 VERSION="${NEO4J_VERSION:-5.26.0}"
 DIST="neo4j-community-$VERSION"

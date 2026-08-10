@@ -135,6 +135,65 @@ class LiveOutputTests(IsolatedAsyncioTestCase):
         self.assertEqual(result["metrics"]["evidence_recall_at_10"], 1.0)
         self.assertEqual(result["metrics"]["episode_set_overlap_with_m0"], 1.0)
 
+    async def test_retrieval_uses_first_ten_edges_and_first_ten_unique_session_ids(self):
+        episodes = [episode(index, f"session-{index}") for index in range(12)]
+
+        class ProtocolDriver(FakeDriver):
+            async def execute_query(self, query, params=None):
+                if "MATCH (ep:Episodic)" in query:
+                    return Result(
+                        [
+                            {"uuid": f"ep-{index}", "name": item.name}
+                            for index, item in enumerate(episodes)
+                        ]
+                    )
+                return await super().execute_query(query, params=params)
+
+        class ProtocolGraphiti(FakeGraphiti):
+            def __init__(self):
+                super().__init__()
+                self.driver = ProtocolDriver()
+
+            async def search(self, query, group_ids, num_results):
+                self.search_calls.append((query, group_ids, num_results))
+                return [
+                    SimpleNamespace(
+                        uuid="edge-0",
+                        fact="first edge has more than ten source sessions",
+                        episodes=[f"ep-{index}" for index in range(11)],
+                    ),
+                    *[
+                        SimpleNamespace(
+                            uuid=f"edge-{index}",
+                            fact=f"duplicate edge {index}",
+                            episodes=["ep-0"],
+                        )
+                        for index in range(1, 10)
+                    ],
+                    SimpleNamespace(
+                        uuid="edge-10",
+                        fact="the eleventh edge must be ignored",
+                        episodes=["ep-11"],
+                    ),
+                ]
+
+        graphiti = ProtocolGraphiti()
+        result = await evaluate_retrieval(
+            graphiti,
+            {
+                "question": "Which sessions support the answer?",
+                "answer_session_ids": ["session-11"],
+            },
+            episodes,
+        )
+
+        self.assertEqual(
+            result["retrieved_episode_ids"],
+            [f"session-{index}" for index in range(10)],
+        )
+        self.assertEqual(len(result["results"]), 10)
+        self.assertEqual(result["metrics"]["evidence_recall_at_10"], 0.0)
+
 
 if __name__ == "__main__":
     import unittest
