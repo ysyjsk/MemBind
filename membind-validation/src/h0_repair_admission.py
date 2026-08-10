@@ -120,6 +120,39 @@ H0_B_R5_INDEX_PATH = (
     "artifacts/h0_manifest_sets/v1_3_harness_r5/"
     "resolved_manifest_index_v1_3_harness_r5.json"
 )
+H0_B_R5_INDEX_SHA256 = (
+    "3f41f7520255a1ab64e9ee34efebaccbb05a1d580b7a390057ced0f02b3d13dd"
+)
+H0_B_R6_ARTIFACT_SET_ID = "v1_3_harness_r6"
+H0_B_R6_HARNESS_REVISION = 6
+H0_B_R6_INDEX_PATH = (
+    "artifacts/h0_manifest_sets/v1_3_harness_r6/"
+    "resolved_manifest_index_v1_3_harness_r6.json"
+)
+H0_B_R6_INVALIDATED_ATTEMPT_ID = (
+    "h0-q1-b-20260810-replacement-003"
+)
+H0_B_R6_REPLACEMENT_ATTEMPT_ID = (
+    "h0-q1-b-20260810-replacement-004"
+)
+H0_B_R6_CHECKPOINT_INDEX_SHA256 = (
+    "0b813ee7c9f4940e6981398520bf823ced3544ff540f66e03a8181ead5622a76"
+)
+H0_B_R6_FAILURE_SEGMENT_SHA256 = (
+    "d1fad184dec05c3e32907c142382d9d1dd3b5655f2042205b201da3b21d2b732"
+)
+H0_B_R6_LIVE_LOG_SHA256 = (
+    "adf687a3a73f8acf100b5be561b2b471878b4e7fe696bf2c3200878501fea24e"
+)
+H0_B_R6_MISCLASSIFICATION_REPORT_SHA256 = (
+    "218b062834ed66e4bbdf6b65ecb405c5c17ce7c3889360534f2bec484c43a6ac"
+)
+H0_B_R6_ROOT_CAUSE_REPORT_SHA256 = (
+    "153d480e4af93a38a5305bcf2b35d4e19a99d9c59860c20455e27e9a3e44430b"
+)
+H0_B_R6_DECISION_PATH = (
+    "artifacts/h0_protocol_repair/decisions/q1_h0_b_r6_recovery.json"
+)
 H0_B_POST_WORKLOAD_DECISION_PATH = (
     "artifacts/h0_protocol_repair/decisions/"
     "q1_h0_b_post_workload_harness_repair.json"
@@ -1767,3 +1800,140 @@ def verify_h0_b_post_workload_harness_repair_decision(
     }
     _h0_b_assert_sanitized(admission, location="post_workload_admission")
     return admission
+
+
+def build_h0_b_r6_recovery_admission(
+    *,
+    classification: Mapping[str, Any],
+    manifest_verification: Mapping[str, Any],
+    replacement_attempt_id: str = H0_B_R6_REPLACEMENT_ATTEMPT_ID,
+) -> dict[str, Any]:
+    """Build a non-authorizing R5->R6 recovery projection for replacement-004."""
+
+    if replacement_attempt_id != H0_B_R6_REPLACEMENT_ATTEMPT_ID:
+        raise _fail("h0_b_r6_replacement_attempt_mismatch")
+    if not isinstance(classification, Mapping):
+        raise _fail("h0_b_r6_classification_not_object")
+    if not isinstance(manifest_verification, Mapping):
+        raise _fail("h0_b_r6_manifest_verification_not_object")
+    from h0_harness_recovery import validate_h0_b_r6_manifest_verification
+
+    verification = validate_h0_b_r6_manifest_verification(manifest_verification)
+    expected_classification = {
+        "stage_attempt_id": H0_B_R6_INVALIDATED_ATTEMPT_ID,
+        "scientific_status": "infrastructure_interrupted",
+        "scientific_failure_class": "infrastructure_interruption",
+        "stop_reason": "vllm_unreachable",
+        "candidate_selection_may_continue": False,
+        "requires_whole_stage_rerun": True,
+        "partial_qualification_reusable": False,
+        "old_and_new_trial_counts_mergeable": False,
+        "resume_interrupted_attempt_allowed": False,
+        "source_checkpoints_reusable": False,
+        "checkpoint_namespace_reusable": False,
+        "checkpoint_index_sha256": H0_B_R6_CHECKPOINT_INDEX_SHA256,
+        "failure_segment_sha256": H0_B_R6_FAILURE_SEGMENT_SHA256,
+        "live_log_sha256": H0_B_R6_LIVE_LOG_SHA256,
+        "misclassification_report_sha256": H0_B_R6_MISCLASSIFICATION_REPORT_SHA256,
+        "root_cause_report_sha256": H0_B_R6_ROOT_CAUSE_REPORT_SHA256,
+        "r5_manifest_index_sha256": H0_B_R5_INDEX_SHA256,
+    }
+    if any(classification.get(key) != value for key, value in expected_classification.items()):
+        raise _fail("h0_b_r6_classification_mismatch")
+    admission = {
+        "schema_version": "membind.h0.r6-recovery-admission.v1",
+        "protocol_version": PROTOCOL_VERSION,
+        "candidate_id": "Q1",
+        "phase": "H0-B",
+        "invalidated_stage_attempt_id": H0_B_R6_INVALIDATED_ATTEMPT_ID,
+        "invalidated_checkpoint_index_sha256": H0_B_R6_CHECKPOINT_INDEX_SHA256,
+        "failure_segment_sha256": H0_B_R6_FAILURE_SEGMENT_SHA256,
+        "live_log_sha256": H0_B_R6_LIVE_LOG_SHA256,
+        "misclassification_report_sha256": H0_B_R6_MISCLASSIFICATION_REPORT_SHA256,
+        "root_cause_report_sha256": H0_B_R6_ROOT_CAUSE_REPORT_SHA256,
+        "prior_manifest_index_sha256": H0_B_R5_INDEX_SHA256,
+        "repaired_manifest_index_sha256": _sha(
+            verification.get("index_sha256"), "h0_b_r6_repaired_manifest"
+        ),
+        "scientific_failure_class": "infrastructure_interruption",
+        "interrupted_stop_reason": "vllm_unreachable",
+        "replacement_attempt_id": H0_B_R6_REPLACEMENT_ATTEMPT_ID,
+        "one_shot_whole_stage_replacement": True,
+        "resume_interrupted_attempt_allowed": False,
+        "old_attempt_qualification_reusable": False,
+        "old_and_new_trial_counts_mergeable": False,
+        "source_checkpoints_reusable": False,
+        "fresh_checkpoint_namespace_required": True,
+        "scientific_configuration_unchanged": True,
+        "live_authorized_by_this_admission": False,
+        "secrets_persisted": False,
+    }
+    _h0_b_assert_sanitized(admission, location="r6_recovery_admission")
+    return admission
+
+
+def write_h0_b_r6_recovery_decision(
+    *,
+    root: str | Path,
+    classification: Mapping[str, Any],
+    manifest_verification: Mapping[str, Any],
+) -> dict[str, str]:
+    """Persist the R6 non-authorizing admission without overwriting drift."""
+
+    admission = build_h0_b_r6_recovery_admission(
+        classification=classification,
+        manifest_verification=manifest_verification,
+    )
+    payload = canonical_json_bytes(admission)
+    root_path = Path(root).resolve()
+    target = root_path / H0_B_R6_DECISION_PATH
+    target.parent.mkdir(parents=True, exist_ok=True)
+    descriptor, temporary_name = tempfile.mkstemp(
+        prefix=".h0-b-r6-recovery-", suffix=".tmp", dir=target.parent
+    )
+    temporary = Path(temporary_name)
+    try:
+        with os.fdopen(descriptor, "wb") as stream:
+            stream.write(payload)
+            stream.flush()
+            os.fsync(stream.fileno())
+        try:
+            os.link(temporary, target)
+        except FileExistsError:
+            if target.is_symlink() or not target.is_file() or target.read_bytes() != payload:
+                raise _fail("h0_b_existing_r6_decision_mismatch") from None
+        _h0_b_fsync_directory(target.parent)
+    finally:
+        temporary.unlink(missing_ok=True)
+    return {
+        "decision_path": H0_B_R6_DECISION_PATH,
+        "decision_sha256": sha256_file(target),
+    }
+
+
+def verify_h0_b_r6_recovery_decision(
+    *,
+    root: str | Path,
+    decision_path: str,
+    decision_sha256: str,
+    classification: Mapping[str, Any],
+    manifest_verification: Mapping[str, Any],
+) -> dict[str, Any]:
+    """Rebuild and verify the exact persisted R6 admission."""
+
+    if decision_path != H0_B_R6_DECISION_PATH:
+        raise _fail("h0_b_r6_decision_path_mismatch")
+    root_path = Path(root).resolve()
+    value, relative, digest = _read_bound_json(
+        root_path,
+        decision_path,
+        decision_sha256,
+        label="h0_b_r6_decision",
+    )
+    expected = build_h0_b_r6_recovery_admission(
+        classification=classification,
+        manifest_verification=manifest_verification,
+    )
+    if value != expected or digest != canonical_json_sha256(expected):
+        raise _fail("h0_b_r6_decision_not_reproducible")
+    return expected

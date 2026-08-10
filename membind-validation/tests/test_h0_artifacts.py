@@ -33,10 +33,10 @@ from h0_runtime import (  # noqa: E402
 )
 
 
-ARTIFACT_SET_ID = "v1_3_harness_r5"
+ARTIFACT_SET_ID = "v1_3_harness_r6"
 ARTIFACT_SET_REL = Path("artifacts/h0_manifest_sets") / ARTIFACT_SET_ID
-INDEX_REL = ARTIFACT_SET_REL / "resolved_manifest_index_v1_3_harness_r5.json"
-PREVIOUS_ARTIFACT_SET_REL = Path("artifacts/h0_manifest_sets/v1_3_harness_r4")
+INDEX_REL = ARTIFACT_SET_REL / "resolved_manifest_index_v1_3_harness_r6.json"
+PREVIOUS_ARTIFACT_SET_REL = Path("artifacts/h0_manifest_sets/v1_3_harness_r5")
 
 
 class H0ArtifactBuilderTests(TestCase):
@@ -331,7 +331,7 @@ class H0OfflineWriterVerificationTests(TestCase):
                 "membind.h0.offline-artifact-verification.v3",
             )
             self.assertEqual(verified["artifact_set_id"], ARTIFACT_SET_ID)
-            self.assertEqual(verified["execution_harness_revision"], 5)
+            self.assertEqual(verified["execution_harness_revision"], 6)
             self.assertEqual(verified["index_path"], INDEX_REL.as_posix())
             self.assertEqual(verified["binding_count"], 10)
             self.assertEqual(verified["resolved_wrapper_count"], 4)
@@ -346,7 +346,7 @@ class H0OfflineWriterVerificationTests(TestCase):
             index = written["index"]
             self.assertEqual(index["schema_version"], "membind.h0.offline-artifacts.v2")
             self.assertEqual(index["artifact_set_id"], ARTIFACT_SET_ID)
-            self.assertEqual(index["execution_harness_revision"], 5)
+            self.assertEqual(index["execution_harness_revision"], 6)
             self.assertEqual(written["index_path"], INDEX_REL.as_posix())
             references = (
                 list(index["shared_artifacts"].values())

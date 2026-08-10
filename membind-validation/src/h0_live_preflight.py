@@ -39,11 +39,11 @@ EXPECTED_SERVED_MODEL_ID = "qwen3-32b-fp8"
 EXPECTED_CONTEXT_LIMIT = 40960
 _SHA256_RE = re.compile(r"[0-9a-f]{64}")
 _INDEX_SCHEMA_VERSION = "membind.h0.offline-artifacts.v2"
-_ARTIFACT_SET_ID = "v1_3_harness_r5"
-_EXECUTION_HARNESS_REVISION = 5
+_ARTIFACT_SET_ID = "v1_3_harness_r6"
+_EXECUTION_HARNESS_REVISION = 6
 _ARTIFACT_SET_REL = f"artifacts/h0_manifest_sets/{_ARTIFACT_SET_ID}"
 _RESOLVED_INDEX_REL = (
-    f"{_ARTIFACT_SET_REL}/resolved_manifest_index_v1_3_harness_r5.json"
+    f"{_ARTIFACT_SET_REL}/resolved_manifest_index_v1_3_harness_r6.json"
 )
 _SHARED_ARTIFACT_NAMES = {
     "prompt_bundle",

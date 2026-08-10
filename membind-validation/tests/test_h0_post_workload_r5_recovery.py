@@ -92,6 +92,13 @@ R5_INDEX_REL = (
     "artifacts/h0_manifest_sets/v1_3_harness_r5/"
     "resolved_manifest_index_v1_3_harness_r5.json"
 )
+R5_INDEX_SHA256 = (
+    "3f41f7520255a1ab64e9ee34efebaccbb05a1d580b7a390057ced0f02b3d13dd"
+)
+R6_INDEX_REL = (
+    "artifacts/h0_manifest_sets/v1_3_harness_r6/"
+    "resolved_manifest_index_v1_3_harness_r6.json"
+)
 DECISION_REL = (
     "artifacts/h0_protocol_repair/decisions/"
     "q1_h0_b_post_workload_harness_repair.json"
@@ -355,17 +362,18 @@ class H0BPostWorkloadEvidenceRedTests(TestCase):
                 with self.assertRaises(recovery.H0HarnessRecoveryError):
                     classify(**changed)
 
-    def test_r4_remains_immutable_while_all_runtime_loaders_move_to_r5(self):
+    def test_r4_and_r5_remain_immutable_while_runtime_loaders_move_to_r6(self):
         self.assertEqual(sha256_file(ROOT / R4_INDEX_REL), R4_INDEX_SHA256)
-        self.assertEqual(h0_artifacts.H0_ARTIFACT_SET_ID, "v1_3_harness_r5")
-        self.assertEqual(h0_artifacts.H0_EXECUTION_HARNESS_REVISION, 5)
+        self.assertEqual(sha256_file(ROOT / R5_INDEX_REL), R5_INDEX_SHA256)
+        self.assertEqual(h0_artifacts.H0_ARTIFACT_SET_ID, "v1_3_harness_r6")
+        self.assertEqual(h0_artifacts.H0_EXECUTION_HARNESS_REVISION, 6)
         self.assertEqual(
             h0_artifacts.H0_RESOLVED_MANIFEST_INDEX_REL,
-            R5_INDEX_REL,
+            R6_INDEX_REL,
         )
-        self.assertEqual(h0_live_preflight._ARTIFACT_SET_ID, "v1_3_harness_r5")
-        self.assertEqual(h0_live_preflight._EXECUTION_HARNESS_REVISION, 5)
-        self.assertEqual(h0_live_preflight._RESOLVED_INDEX_REL, R5_INDEX_REL)
+        self.assertEqual(h0_live_preflight._ARTIFACT_SET_ID, "v1_3_harness_r6")
+        self.assertEqual(h0_live_preflight._EXECUTION_HARNESS_REVISION, 6)
+        self.assertEqual(h0_live_preflight._RESOLVED_INDEX_REL, R6_INDEX_REL)
 
 
 class H0BPostWorkloadStateRedTests(TestCase):

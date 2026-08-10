@@ -12,6 +12,7 @@ from h0_bootstrap import disable_implicit_dotenv
 disable_implicit_dotenv()
 
 import hashlib
+import asyncio
 import json
 import os
 import re
@@ -387,8 +388,27 @@ def build_h0_completion_request(
 class H0WireObserver:
     """Capture only a sanitized projection of actual serialized chat bodies."""
 
+    _MATCH_FIELDS = (
+        "model",
+        "temperature",
+        "top_p",
+        "top_k",
+        "min_p",
+        "max_tokens",
+        "server_request_seed",
+        "response_format_type",
+        "response_format_sha256",
+        "json_schema_sha256",
+        "message_count",
+        "message_roles",
+        "message_content_sha256",
+        "message_content_lengths",
+        "message_content_byte_lengths",
+    )
+
     def __init__(self) -> None:
         self.events: list[dict[str, Any]] = []
+        self._consumed_event_indexes: set[int] = set()
 
     async def __call__(self, request: httpx.Request) -> None:
         if not request.url.path.endswith("/chat/completions"):
@@ -397,6 +417,34 @@ class H0WireObserver:
         if not isinstance(payload, dict):
             raise TypeError("serialized H0 request body must be an object")
         self.events.append(_safe_payload_evidence(payload, observed=True))
+
+    def take_event_for_request(
+        self,
+        planned_evidence: Mapping[str, Any],
+    ) -> dict[str, Any] | None:
+        """Return one unconsumed wire event matching the planned safe projection."""
+
+        requested_payload_sha256 = str(
+            planned_evidence.get("requested_request_payload_sha256") or ""
+        )
+        if _SHA256_RE.fullmatch(str(requested_payload_sha256)) is None:
+            raise ValueError("planned request payload SHA-256 is required")
+        for index, event in enumerate(self.events):
+            if index in self._consumed_event_indexes:
+                continue
+            if event.get("observed_request_payload_sha256") == requested_payload_sha256:
+                self._consumed_event_indexes.add(index)
+                return deepcopy(event)
+        for index, event in enumerate(self.events):
+            if index in self._consumed_event_indexes:
+                continue
+            if all(
+                planned_evidence.get(field) == event.get(field)
+                for field in self._MATCH_FIELDS
+            ):
+                self._consumed_event_indexes.add(index)
+                return deepcopy(event)
+        return None
 
 
 def build_h0_openai_client(
@@ -1375,13 +1423,39 @@ class H0QwenVLLMClient:
                 )
                 attempt_id = self.h0_ledger.start_attempt(logical_id, plan.evidence)
                 observer = getattr(self.client, "_membind_h0_observer", None)
-                observer_start = len(observer.events) if observer is not None else 0
                 try:
                     response = await self.client.chat.completions.create(**plan.payload)
-                except Exception as exc:
-                    if observer is not None and len(observer.events) == observer_start + 1:
+                except asyncio.CancelledError:
+                    observed_event = (
+                        observer.take_event_for_request(plan.evidence)
+                        if observer is not None
+                        else None
+                    )
+                    if observed_event is not None:
                         self.h0_ledger.attach_observed_request(
-                            attempt_id, observer.events[-1]
+                            attempt_id, observed_event
+                        )
+                    self.h0_ledger.finish_attempt(
+                        attempt_id,
+                        http_status=None,
+                        finish_reason=None,
+                        response_text="",
+                        response_prompt_tokens=None,
+                        json_parse_success=False,
+                        pydantic_validation_success=False,
+                        semantic_utility_success=False,
+                        failure_class="concurrent_attempt_cancelled",
+                    )
+                    raise
+                except Exception as exc:
+                    observed_event = (
+                        observer.take_event_for_request(plan.evidence)
+                        if observer is not None
+                        else None
+                    )
+                    if observed_event is not None:
+                        self.h0_ledger.attach_observed_request(
+                            attempt_id, observed_event
                         )
                     failure_class = (
                         "vllm_unreachable"
@@ -1402,7 +1476,12 @@ class H0QwenVLLMClient:
                     if failure_class == "vllm_unreachable":
                         raise H0InfrastructureError("vllm_unreachable: stop_and_report") from exc
                     raise H0QualificationError("completion_transport_failure") from exc
-                if observer is None or len(observer.events) != observer_start + 1:
+                observed_event = (
+                    observer.take_event_for_request(plan.evidence)
+                    if observer is not None
+                    else None
+                )
+                if observed_event is None:
                     self.h0_ledger.finish_attempt(
                         attempt_id,
                         http_status=200,
@@ -1415,7 +1494,7 @@ class H0QwenVLLMClient:
                         failure_class="wire_request_observation_failure",
                     )
                     raise H0QualificationError("wire_request_observation_failure")
-                self.h0_ledger.attach_observed_request(attempt_id, observer.events[-1])
+                self.h0_ledger.attach_observed_request(attempt_id, observed_event)
                 finish_reason = getattr(response.choices[0], "finish_reason", None)
                 response_text = str(response.choices[0].message.content or "")
                 json_ok = False
@@ -1599,6 +1678,32 @@ class H0CheckpointStore:
         "repaired_manifest_index_sha256",
         "secrets_persisted",
     }
+    _H0_B_R6_RECOVERY_FIELDS = {
+        "schema_version",
+        "protocol_version",
+        "candidate_id",
+        "phase",
+        "invalidated_stage_attempt_id",
+        "invalidated_checkpoint_index_sha256",
+        "failure_segment_sha256",
+        "live_log_sha256",
+        "misclassification_report_sha256",
+        "root_cause_report_sha256",
+        "prior_manifest_index_sha256",
+        "repaired_manifest_index_sha256",
+        "scientific_failure_class",
+        "interrupted_stop_reason",
+        "replacement_attempt_id",
+        "one_shot_whole_stage_replacement",
+        "resume_interrupted_attempt_allowed",
+        "old_attempt_qualification_reusable",
+        "old_and_new_trial_counts_mergeable",
+        "source_checkpoints_reusable",
+        "fresh_checkpoint_namespace_required",
+        "scientific_configuration_unchanged",
+        "live_authorized_by_this_admission",
+        "secrets_persisted",
+    }
 
     def __init__(
         self,
@@ -1611,6 +1716,7 @@ class H0CheckpointStore:
         repair_admission: Mapping[str, Any] | None = None,
         infrastructure_rerun_admission: Mapping[str, Any] | None = None,
         post_workload_repair_admission: Mapping[str, Any] | None = None,
+        r6_recovery_admission: Mapping[str, Any] | None = None,
     ) -> None:
         if (
             not isinstance(stage_attempt_id, str)
@@ -1643,6 +1749,7 @@ class H0CheckpointStore:
                 repair_admission=repair_admission,
                 infrastructure_rerun_admission=infrastructure_rerun_admission,
                 post_workload_repair_admission=post_workload_repair_admission,
+                r6_recovery_admission=r6_recovery_admission,
             )
             self.directory.mkdir(exist_ok=False)
             self.index = {
@@ -1845,6 +1952,58 @@ class H0CheckpointStore:
             and "gpt55_temporary" not in Path(decision_path).parts
         )
 
+    @classmethod
+    def _valid_h0_b_r6_recovery_contract(
+        cls,
+        admission: Mapping[str, Any],
+        *,
+        stage_attempt_id: str,
+        post_workload_repair_admission: Mapping[str, Any],
+    ) -> bool:
+        """Validate the independent R5->R6 recovery projection."""
+
+        return (
+            set(admission) == cls._H0_B_R6_RECOVERY_FIELDS
+            and admission.get("schema_version")
+            == "membind.h0.r6-recovery-admission.v1"
+            and admission.get("protocol_version") == PROTOCOL_VERSION
+            and admission.get("candidate_id") == "Q1"
+            and admission.get("phase") == "H0-B"
+            and admission.get("invalidated_stage_attempt_id")
+            == "h0-q1-b-20260810-replacement-003"
+            and admission.get("invalidated_checkpoint_index_sha256")
+            == "0b813ee7c9f4940e6981398520bf823ced3544ff540f66e03a8181ead5622a76"
+            and admission.get("failure_segment_sha256")
+            == "d1fad184dec05c3e32907c142382d9d1dd3b5655f2042205b201da3b21d2b732"
+            and admission.get("live_log_sha256")
+            == "adf687a3a73f8acf100b5be561b2b471878b4e7fe696bf2c3200878501fea24e"
+            and admission.get("misclassification_report_sha256")
+            == "218b062834ed66e4bbdf6b65ecb405c5c17ce7c3889360534f2bec484c43a6ac"
+            and admission.get("root_cause_report_sha256")
+            == "153d480e4af93a38a5305bcf2b35d4e19a99d9c59860c20455e27e9a3e44430b"
+            and admission.get("prior_manifest_index_sha256")
+            == post_workload_repair_admission.get("repaired_manifest_index_sha256")
+            and admission.get("scientific_failure_class")
+            == "infrastructure_interruption"
+            and admission.get("interrupted_stop_reason") == "vllm_unreachable"
+            and admission.get("replacement_attempt_id") == stage_attempt_id
+            and stage_attempt_id == "h0-q1-b-20260810-replacement-004"
+            and admission.get("one_shot_whole_stage_replacement") is True
+            and admission.get("resume_interrupted_attempt_allowed") is False
+            and admission.get("old_attempt_qualification_reusable") is False
+            and admission.get("old_and_new_trial_counts_mergeable") is False
+            and admission.get("source_checkpoints_reusable") is False
+            and admission.get("fresh_checkpoint_namespace_required") is True
+            and admission.get("scientific_configuration_unchanged") is True
+            and admission.get("live_authorized_by_this_admission") is False
+            and admission.get("secrets_persisted") is False
+            and all(
+                _SHA256_RE.fullmatch(str(admission.get(field) or "")) is not None
+                for field in cls._H0_B_R6_RECOVERY_FIELDS
+                if field.endswith("sha256")
+            )
+        )
+
     def _validate_attempt_admission(
         self,
         *,
@@ -1854,6 +2013,7 @@ class H0CheckpointStore:
         repair_admission: Mapping[str, Any] | None,
         infrastructure_rerun_admission: Mapping[str, Any] | None,
         post_workload_repair_admission: Mapping[str, Any] | None,
+        r6_recovery_admission: Mapping[str, Any] | None,
     ) -> dict[str, Any]:
         prior_matching = 0
         infrastructure_interrupted = 0
@@ -2097,11 +2257,119 @@ class H0CheckpointStore:
                             infrastructure_rerun_admission=infrastructure,
                         )
                     )
+            r6 = (
+                dict(r6_recovery_admission)
+                if isinstance(r6_recovery_admission, Mapping)
+                else {}
+            )
+            exact_r6_recovery = False
+            if (
+                len(terminal_attempts) == 3
+                and len(interrupted_attempts) == 1
+                and prior_matching == 4
+                and infrastructure_interrupted == 1
+                and candidate_id == "Q1"
+                and phase == "H0-B"
+                and self.stage_attempt_id == "h0-q1-b-20260810-replacement-004"
+            ):
+                by_name = {path.name: (path, prior) for path, prior in terminal_attempts}
+                original_entry = by_name.get(str(repair.get("invalidated_stage_attempt_id")))
+                failed_entry = by_name.get(str(post_workload.get("invalidated_stage_attempt_id")))
+                misclassified_entry = by_name.get(
+                    "h0-q1-b-20260810-replacement-003"
+                )
+                interrupted_path, interrupted = interrupted_attempts[0]
+                if (
+                    original_entry is not None
+                    and failed_entry is not None
+                    and misclassified_entry is not None
+                ):
+                    original_path, original = original_entry
+                    failed_path, failed = failed_entry
+                    misclassified_path, misclassified = misclassified_entry
+                    mis_segments = misclassified.index.get("segments")
+                    mis_sources = (
+                        [
+                            entry
+                            for entry in mis_segments
+                            if isinstance(entry, Mapping)
+                            and entry.get("segment_kind") == "source_sequence"
+                        ]
+                        if isinstance(mis_segments, list)
+                        else []
+                    )
+                    mis_failures = (
+                        [
+                            entry
+                            for entry in mis_segments
+                            if isinstance(entry, Mapping)
+                            and entry.get("segment_kind") == "candidate_failure"
+                        ]
+                        if isinstance(mis_segments, list)
+                        else []
+                    )
+                    exact_r6_recovery = (
+                        original.index.get("status") == "candidate_failed"
+                        and original.index.get("failure_code") == "manifest_contract_failure"
+                        and sha256_file(original.index_path)
+                        == repair.get("invalidated_checkpoint_index_sha256")
+                        and self._valid_h0_b_harness_repair_contract(
+                            repair, stage_attempt_id=interrupted_path.name
+                        )
+                        and interrupted.index.get("status") == "infrastructure_interrupted"
+                        and interrupted.index.get("repair_admission") == repair
+                        and self._valid_h0_b_infrastructure_rerun_contract(
+                            infrastructure,
+                            stage_attempt_id=failed_path.name,
+                            interrupted_stage_attempt_id=interrupted_path.name,
+                            interrupted_checkpoint_index_sha256=sha256_file(
+                                interrupted.index_path
+                            ),
+                            interrupted_stop_reason=str(
+                                interrupted.index.get("stop_reason") or ""
+                            ),
+                            repair_admission=repair,
+                        )
+                        and failed.index.get("status") == "candidate_failed"
+                        and failed.index.get("failure_code") == "manifest_contract_failure"
+                        and failed.index.get("repair_admission") == repair
+                        and failed.index.get("infrastructure_rerun_admission") == infrastructure
+                        and self._valid_h0_b_post_workload_repair_contract(
+                            post_workload,
+                            stage_attempt_id=misclassified_path.name,
+                            failed_stage_attempt_id=failed_path.name,
+                            failed_checkpoint_index_sha256=sha256_file(
+                                failed.index_path
+                            ),
+                            repair_admission=repair,
+                            infrastructure_rerun_admission=infrastructure,
+                        )
+                        and misclassified.index.get("status") == "candidate_failed"
+                        and misclassified.index.get("failure_code")
+                        == "candidate_qualification_failure"
+                        and misclassified.index.get("repair_admission") == repair
+                        and misclassified.index.get("infrastructure_rerun_admission")
+                        == infrastructure
+                        and misclassified.index.get("post_workload_repair_admission")
+                        == post_workload
+                        and len(mis_sources) == 6
+                        and len(mis_failures) == 1
+                        and mis_failures[0].get("artifact_sha256")
+                        == r6.get("failure_segment_sha256")
+                        and sha256_file(misclassified.index_path)
+                        == r6.get("invalidated_checkpoint_index_sha256")
+                        and self._valid_h0_b_r6_recovery_contract(
+                            r6,
+                            stage_attempt_id=self.stage_attempt_id,
+                            post_workload_repair_admission=post_workload,
+                        )
+                    )
             if not (
                 exact_protocol_repair
                 or exact_harness_repair
                 or exact_infrastructure_rerun
                 or exact_post_workload_replacement
+                or exact_r6_recovery
             ):
                 raise H0StateGateError("H0 stage already has a non-rerunnable terminal")
             return {
@@ -2110,6 +2378,7 @@ class H0CheckpointStore:
                     1
                     if exact_infrastructure_rerun
                     or exact_post_workload_replacement
+                    or exact_r6_recovery
                     else 0
                 ),
                 "whole_stage_rerun": True,
@@ -2118,31 +2387,41 @@ class H0CheckpointStore:
                     exact_harness_repair
                     or exact_infrastructure_rerun
                     or exact_post_workload_replacement
+                    or exact_r6_recovery
                 ),
                 "infrastructure_rerun_replacement": (
                     exact_infrastructure_rerun
                     or exact_post_workload_replacement
+                    or exact_r6_recovery
                 ),
                 "post_workload_harness_replacement": (
-                    exact_post_workload_replacement
+                    exact_post_workload_replacement or exact_r6_recovery
+                ),
+                "r6_recovery_replacement": exact_r6_recovery,
+                "historically_misclassified_infrastructure_attempt_count": (
+                    1 if exact_r6_recovery else 0
                 ),
                 "repair_admission": repair,
                 **(
                     {"infrastructure_rerun_admission": infrastructure}
                     if exact_infrastructure_rerun
                     or exact_post_workload_replacement
+                    or exact_r6_recovery
                     else {}
                 ),
                 **(
                     {"post_workload_repair_admission": post_workload}
-                    if exact_post_workload_replacement
+                    if exact_post_workload_replacement or exact_r6_recovery
                     else {}
                 ),
+                **({"r6_recovery_admission": r6} if exact_r6_recovery else {}),
             }
         if infrastructure_rerun_admission is not None:
             raise H0StateGateError("H0 infrastructure rerun admission is not applicable")
         if post_workload_repair_admission is not None:
             raise H0StateGateError("H0 post-workload repair admission is not applicable")
+        if r6_recovery_admission is not None:
+            raise H0StateGateError("H0 R6 recovery admission is not applicable")
         return {
             "prior_matching_attempt_count": prior_matching,
             "infrastructure_interrupted_attempt_count": infrastructure_interrupted,
@@ -2151,6 +2430,8 @@ class H0CheckpointStore:
             "harness_repair_replacement": False,
             "infrastructure_rerun_replacement": False,
             "post_workload_harness_replacement": False,
+            "r6_recovery_replacement": False,
+            "historically_misclassified_infrastructure_attempt_count": 0,
         }
 
     @classmethod
@@ -2259,10 +2540,12 @@ class H0CheckpointStore:
         post_workload_replacement = (
             self.index.get("post_workload_harness_replacement") is True
         )
+        r6_recovery = self.index.get("r6_recovery_replacement") is True
         standard_admission = (
             not harness_repair
             and not infrastructure_rerun
             and not post_workload_replacement
+            and not r6_recovery
             and interrupted_count == prior_count
             and self.index.get("whole_stage_rerun") is (prior_count > 0)
         )
@@ -2420,6 +2703,87 @@ class H0CheckpointStore:
                     infrastructure_rerun_admission=infrastructure_admission,
                 )
             )
+        r6_recovery_admission = self.index.get("r6_recovery_admission")
+        r6_recovery_fields_valid = False
+        historical_misclassified_count = self.index.get(
+            "historically_misclassified_infrastructure_attempt_count"
+        )
+        if (
+            protocol_repair
+            and harness_repair
+            and infrastructure_rerun
+            and post_workload_replacement
+            and r6_recovery
+            and prior_count == 4
+            and interrupted_count == 1
+            and historical_misclassified_count == 1
+            and self.index.get("whole_stage_rerun") is True
+            and isinstance(repair_admission, Mapping)
+            and isinstance(infrastructure_admission, Mapping)
+            and isinstance(post_workload_admission, Mapping)
+            and isinstance(r6_recovery_admission, Mapping)
+        ):
+            misclassified_id = r6_recovery_admission.get(
+                "invalidated_stage_attempt_id"
+            )
+            misclassified_path = (
+                self.root / "h0" / "checkpoints" / str(misclassified_id) / "index.json"
+            )
+            try:
+                misclassified_index = json.loads(
+                    misclassified_path.read_text(encoding="utf-8")
+                )
+            except (OSError, UnicodeDecodeError, json.JSONDecodeError):
+                misclassified_index = None
+            mis_segments = (
+                misclassified_index.get("segments")
+                if isinstance(misclassified_index, Mapping)
+                else None
+            )
+            mis_failures = (
+                [
+                    entry
+                    for entry in mis_segments
+                    if isinstance(entry, Mapping)
+                    and entry.get("segment_kind") == "candidate_failure"
+                ]
+                if isinstance(mis_segments, list)
+                else []
+            )
+            mis_sources = (
+                [
+                    entry
+                    for entry in mis_segments
+                    if isinstance(entry, Mapping)
+                    and entry.get("segment_kind") == "source_sequence"
+                ]
+                if isinstance(mis_segments, list)
+                else []
+            )
+            r6_recovery_fields_valid = (
+                isinstance(misclassified_index, Mapping)
+                and misclassified_index.get("stage_attempt_id") == misclassified_id
+                and misclassified_index.get("candidate_id")
+                == self.index.get("candidate_id")
+                and misclassified_index.get("phase") == self.index.get("phase")
+                and misclassified_index.get("status") == "candidate_failed"
+                and misclassified_index.get("failure_code")
+                == "candidate_qualification_failure"
+                and misclassified_index.get("repair_admission") == repair_admission
+                and misclassified_index.get("infrastructure_rerun_admission")
+                == infrastructure_admission
+                and misclassified_index.get("post_workload_repair_admission")
+                == post_workload_admission
+                and len(mis_sources) == 6
+                and len(mis_failures) == 1
+                and mis_failures[0].get("artifact_sha256")
+                == r6_recovery_admission.get("failure_segment_sha256")
+                and self._valid_h0_b_r6_recovery_contract(
+                    r6_recovery_admission,
+                    stage_attempt_id=self.stage_attempt_id,
+                    post_workload_repair_admission=post_workload_admission,
+                )
+            )
         if (
             isinstance(prior_count, bool)
             or not isinstance(prior_count, int)
@@ -2434,6 +2798,7 @@ class H0CheckpointStore:
                     or harness_repair_fields_valid
                     or infrastructure_rerun_fields_valid
                     or post_workload_fields_valid
+                    or r6_recovery_fields_valid
                 )
             )
         ):

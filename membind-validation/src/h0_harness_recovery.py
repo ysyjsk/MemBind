@@ -57,6 +57,52 @@ R5_INDEX_PATH = (
     "artifacts/h0_manifest_sets/v1_3_harness_r5/"
     "resolved_manifest_index_v1_3_harness_r5.json"
 )
+R6_ARTIFACT_SET_ID = "v1_3_harness_r6"
+R6_HARNESS_REVISION = 6
+R6_INDEX_PATH = (
+    "artifacts/h0_manifest_sets/v1_3_harness_r6/"
+    "resolved_manifest_index_v1_3_harness_r6.json"
+)
+R6_INVALIDATED_ATTEMPT_ID = "h0-q1-b-20260810-replacement-003"
+R6_REPLACEMENT_ATTEMPT_ID = "h0-q1-b-20260810-replacement-004"
+R6_CHECKPOINT_INDEX_PATH = (
+    "artifacts/h0_runs/h0/checkpoints/"
+    f"{R6_INVALIDATED_ATTEMPT_ID}/index.json"
+)
+R6_CHECKPOINT_INDEX_SHA256 = (
+    "0b813ee7c9f4940e6981398520bf823ced3544ff540f66e03a8181ead5622a76"
+)
+R6_FAILURE_SEGMENT_PATH = (
+    "artifacts/h0_runs/h0/checkpoints/"
+    f"{R6_INVALIDATED_ATTEMPT_ID}/"
+    "000019.candidate_failure.candidate_qualification_failure."
+    "d1fad184dec05c3e32907c142382d9d1dd3b5655f2042205b201da3b21d2b732.json"
+)
+R6_FAILURE_SEGMENT_SHA256 = (
+    "d1fad184dec05c3e32907c142382d9d1dd3b5655f2042205b201da3b21d2b732"
+)
+R6_LIVE_LOG_PATH = "artifacts/live_logs/h0_q1_b_20260810_replacement_003.log"
+R6_LIVE_LOG_SHA256 = (
+    "adf687a3a73f8acf100b5be561b2b471878b4e7fe696bf2c3200878501fea24e"
+)
+R6_MISCLASSIFICATION_REPORT_PATH = (
+    "artifacts/h0_protocol_repair/reports/"
+    "q1_h0_b_replacement_003_infrastructure_misclassification_20260810.json"
+)
+R6_MISCLASSIFICATION_REPORT_SHA256 = (
+    "218b062834ed66e4bbdf6b65ecb405c5c17ce7c3889360534f2bec484c43a6ac"
+)
+R6_ROOT_CAUSE_REPORT_PATH = (
+    "artifacts/h0_protocol_repair/reports/"
+    "q1_h0_b_replacement_003_concurrent_failure_root_cause_20260810.md"
+)
+R6_ROOT_CAUSE_REPORT_SHA256 = (
+    "153d480e4af93a38a5305bcf2b35d4e19a99d9c59860c20455e27e9a3e44430b"
+)
+R6_R5_MANIFEST_INDEX_PATH = R5_INDEX_PATH
+R6_R5_MANIFEST_INDEX_SHA256 = (
+    "3f41f7520255a1ab64e9ee34efebaccbb05a1d580b7a390057ced0f02b3d13dd"
+)
 REVOKED_STATUS = "h0_b_harness_compatibility_failure_live_revoked"
 REVOKED_SCOPE = "h0_b_harness_repair_offline_only"
 REPAIR_BOUND_STATUS = "h0_b_harness_repair_verified_not_live_authorized"
@@ -481,6 +527,314 @@ def classify_h0_b_post_workload_harness_failure(
         "raw_prompts_persisted": False,
         "raw_responses_persisted": False,
     }
+
+
+def classify_h0_b_r5_infrastructure_misclassification(
+    *,
+    root: str | Path,
+    stage_attempt_id: str,
+    checkpoint_index_path: str,
+    checkpoint_index_sha256: str,
+    failure_segment_path: str,
+    failure_segment_sha256: str,
+    live_log_path: str,
+    live_log_sha256: str,
+    misclassification_report_path: str,
+    misclassification_report_sha256: str,
+    root_cause_report_path: str,
+    root_cause_report_sha256: str,
+    r5_manifest_index_path: str,
+    r5_manifest_index_sha256: str,
+) -> dict[str, Any]:
+    """Project the frozen R5/003 terminal to an independent R6 disposition."""
+
+    if stage_attempt_id != R6_INVALIDATED_ATTEMPT_ID:
+        raise _fail("r6_invalidated_attempt_mismatch")
+    expected = {
+        "checkpoint_index_path": R6_CHECKPOINT_INDEX_PATH,
+        "failure_segment_path": R6_FAILURE_SEGMENT_PATH,
+        "live_log_path": R6_LIVE_LOG_PATH,
+        "misclassification_report_path": R6_MISCLASSIFICATION_REPORT_PATH,
+        "root_cause_report_path": R6_ROOT_CAUSE_REPORT_PATH,
+        "r5_manifest_index_path": R6_R5_MANIFEST_INDEX_PATH,
+        "checkpoint_index_sha256": R6_CHECKPOINT_INDEX_SHA256,
+        "failure_segment_sha256": R6_FAILURE_SEGMENT_SHA256,
+        "live_log_sha256": R6_LIVE_LOG_SHA256,
+        "misclassification_report_sha256": R6_MISCLASSIFICATION_REPORT_SHA256,
+        "root_cause_report_sha256": R6_ROOT_CAUSE_REPORT_SHA256,
+        "r5_manifest_index_sha256": R6_R5_MANIFEST_INDEX_SHA256,
+    }
+    supplied = {
+        "checkpoint_index_path": checkpoint_index_path,
+        "failure_segment_path": failure_segment_path,
+        "live_log_path": live_log_path,
+        "misclassification_report_path": misclassification_report_path,
+        "root_cause_report_path": root_cause_report_path,
+        "r5_manifest_index_path": r5_manifest_index_path,
+        "checkpoint_index_sha256": checkpoint_index_sha256,
+        "failure_segment_sha256": failure_segment_sha256,
+        "live_log_sha256": live_log_sha256,
+        "misclassification_report_sha256": misclassification_report_sha256,
+        "root_cause_report_sha256": root_cause_report_sha256,
+        "r5_manifest_index_sha256": r5_manifest_index_sha256,
+    }
+    if supplied != expected:
+        raise _fail("r6_frozen_evidence_binding_mismatch")
+
+    root_path = Path(root).resolve()
+    checkpoint, checkpoint_rel, checkpoint_sha = _json_file(
+        root_path, checkpoint_index_path, checkpoint_index_sha256,
+        label="r6_checkpoint_index",
+    )
+    failure, failure_rel, failure_sha = _json_file(
+        root_path, failure_segment_path, failure_segment_sha256,
+        label="r6_failure_segment",
+    )
+    report, report_rel, report_sha = _json_file(
+        root_path, misclassification_report_path, misclassification_report_sha256,
+        label="r6_misclassification_report",
+    )
+    manifest, manifest_rel, manifest_sha = _json_file(
+        root_path, r5_manifest_index_path, r5_manifest_index_sha256,
+        label="r6_r5_manifest_index",
+    )
+    _, live_rel, live_sha = _bound_file(
+        root_path, live_log_path, live_log_sha256, label="r6_live_log"
+    )
+    _, root_cause_rel, root_cause_sha = _bound_file(
+        root_path, root_cause_report_path, root_cause_report_sha256,
+        label="r6_root_cause_report",
+    )
+    segments = checkpoint.get("segments")
+    if not isinstance(segments, list) or len(segments) != 20:
+        raise _fail("r6_checkpoint_segment_count_mismatch")
+    failures = [
+        item for item in segments
+        if isinstance(item, Mapping) and item.get("segment_kind") == "candidate_failure"
+    ]
+    sources = [
+        item for item in segments
+        if isinstance(item, Mapping) and item.get("segment_kind") == "source_sequence"
+    ]
+    indexed_failure = failures[0] if len(failures) == 1 else {}
+    if not (
+        len(sources) == 6
+        and indexed_failure.get("artifact_sha256") == failure_sha
+        and Path(str(indexed_failure.get("artifact_path") or "")).name
+        == Path(failure_rel).name
+        and checkpoint.get("stage_attempt_id") == R6_INVALIDATED_ATTEMPT_ID
+        and checkpoint.get("candidate_id") == "Q1"
+        and checkpoint.get("phase") == "H0-B"
+        and checkpoint.get("status") == "candidate_failed"
+        and checkpoint.get("failure_code") == "candidate_qualification_failure"
+        and checkpoint.get("candidate_selection_may_continue") is True
+    ):
+        raise _fail("r6_checkpoint_terminal_mismatch")
+
+    attempt = report.get("attempt")
+    observed = report.get("observed_runtime")
+    recorded = report.get("recorded_terminal")
+    classification = report.get("classification")
+    durable = report.get("durable_evidence")
+    fence = report.get("recovery_fence")
+    if not all(isinstance(item, Mapping) for item in (
+        attempt, observed, recorded, classification, durable, fence
+    )):
+        raise _fail("r6_misclassification_report_shape_mismatch")
+    count_contract = {
+        "construction_logical_trial_count": 35,
+        "construction_http_attempt_count": 35,
+        "completed_attempt_record_count": 33,
+        "construction_incomplete_attempt_count": 2,
+        "construction_http_200_count": 26,
+        "construction_json_parse_success_count": 23,
+        "construction_pydantic_validation_success_count": 23,
+        "construction_semantic_utility_success_count": 23,
+        "construction_vllm_unreachable_count": 7,
+        "wire_request_observation_failure_count": 3,
+        "retry_count": 0,
+        "embedding_workload_request_count": 44,
+        "source_checkpoint_count": 6,
+        "fresh_graph_count": 1,
+        "closed_graph_count": 1,
+        "cross_encoder_rank_call_count": 0,
+        "terminal_segment_count": 20,
+    }
+    if any(observed.get(key) != value for key, value in count_contract.items()):
+        raise _fail("r6_runtime_count_contract_mismatch")
+    if not (
+        attempt.get("candidate_id") == "Q1"
+        and attempt.get("phase") == "H0-B"
+        and attempt.get("stage_attempt_id") == R6_INVALIDATED_ATTEMPT_ID
+        and recorded.get("status") == "candidate_failed"
+        and recorded.get("failure_code") == "candidate_qualification_failure"
+        and recorded.get("candidate_selection_may_continue") is True
+        and recorded.get("candidate_advance_allowed") is False
+        and classification.get("result") == (
+            "infrastructure_interruption_misclassified_as_candidate_qualification_failure"
+        )
+        and classification.get("infrastructure_interruption_supported") is True
+        and classification.get("candidate_model_failure_supported") is False
+        and classification.get("candidate_selection_continuation_allowed") is False
+        and fence.get("repeat_live_probe_allowed") is False
+        and fence.get("resume_attempt_allowed") is False
+        and fence.get("old_and_new_trial_counts_mergeable") is False
+        and durable.get("checkpoint_index_sha256") == checkpoint_sha
+        and durable.get("failure_segment_sha256") == failure_sha
+        and durable.get("live_log_sha256") == live_sha
+        and durable.get("r5_manifest_index_sha256") == manifest_sha
+        and manifest.get("artifact_set_id") == R5_ARTIFACT_SET_ID
+        and manifest.get("execution_harness_revision") == R5_HARNESS_REVISION
+        and report_rel == R6_MISCLASSIFICATION_REPORT_PATH
+        and root_cause_rel == R6_ROOT_CAUSE_REPORT_PATH
+        and root_cause_sha == R6_ROOT_CAUSE_REPORT_SHA256
+    ):
+        raise _fail("r6_scientific_disposition_mismatch")
+    return {
+        "schema_version": "membind.h0.r5-consumed-grant-infrastructure-interruption.v1",
+        "protocol_version": PROTOCOL_VERSION,
+        "candidate_id": "Q1",
+        "phase": "H0-B",
+        "stage_attempt_id": R6_INVALIDATED_ATTEMPT_ID,
+        "recorded_status": "candidate_failed",
+        "recorded_failure_code": "candidate_qualification_failure",
+        "recorded_terminal_classification_reliable": False,
+        "scientific_status": "infrastructure_interrupted",
+        "scientific_failure_class": "infrastructure_interruption",
+        "stop_reason": "vllm_unreachable",
+        "candidate_model_failure_supported": False,
+        "infrastructure_interruption_supported": True,
+        "classification_uses_model_response_content": False,
+        "candidate_selection_may_continue": False,
+        "requires_whole_stage_rerun": True,
+        "logical_trial_count": 35,
+        "http_attempt_count": 35,
+        "completed_attempt_count": 33,
+        "incomplete_concurrent_attempt_count": 2,
+        "http_200_count": 26,
+        "json_parse_success_count": 23,
+        "pydantic_validation_success_count": 23,
+        "semantic_utility_success_count": 23,
+        "wire_request_observation_failure_count": 3,
+        "vllm_unreachable_count": 7,
+        "retry_count": 0,
+        "embedding_workload_request_count": 44,
+        "source_checkpoint_count": 6,
+        "fresh_graph_count": 1,
+        "closed_graph_count": 1,
+        "cleanup_failure_count": 0,
+        "cross_encoder_rank_call_count": 0,
+        "partial_qualification_reusable": False,
+        "old_and_new_trial_counts_mergeable": False,
+        "resume_interrupted_attempt_allowed": False,
+        "source_checkpoints_reusable": False,
+        "checkpoint_namespace_reusable": False,
+        "replacement_attempt_id": R6_REPLACEMENT_ATTEMPT_ID,
+        "checkpoint_index_path": checkpoint_rel,
+        "checkpoint_index_sha256": checkpoint_sha,
+        "failure_segment_path": failure_rel,
+        "failure_segment_sha256": failure_sha,
+        "live_log_path": live_rel,
+        "live_log_sha256": live_sha,
+        "misclassification_report_path": report_rel,
+        "misclassification_report_sha256": report_sha,
+        "root_cause_report_path": root_cause_rel,
+        "root_cause_report_sha256": root_cause_sha,
+        "r5_manifest_index_path": manifest_rel,
+        "r5_manifest_index_sha256": manifest_sha,
+        "secrets_persisted": False,
+        "raw_prompts_persisted": False,
+        "raw_responses_persisted": False,
+    }
+
+
+def build_h0_b_r6_recovery_revoked_state(
+    source_state: Mapping[str, Any],
+    *,
+    classification: Mapping[str, Any],
+    root: str | Path | None = None,
+) -> dict[str, Any]:
+    """Close the consumed R5/003 grant before any R6 evidence is bound."""
+
+    del root
+    source = deepcopy(dict(_mapping(source_state, "r6_recovery_source")))
+    _safe_value(source, location="r6_recovery_source")
+    authorization = _mapping(
+        source.get("live_h0_authorization"), "r6_consumed_live_authorization"
+    )
+    required = (
+        source.get("protocol_version") == PROTOCOL_VERSION
+        and source.get("current_stage") == "H0"
+        and source.get("status") == "h0_q1_b_live_only"
+        and source.get("current_action_scope") == "h0_q1_b_live_only"
+        and source.get("live_h0_candidate_authorized") is True
+        and source.get("authorized_live_actions") == ["h0_candidate"]
+        and source.get("authorized_h0_candidate_id") == "Q1"
+        and authorization.get("candidate_id") == "Q1"
+        and authorization.get("phase") == "H0-B"
+        and authorization.get("authorized_stage_attempt_id")
+        == R6_INVALIDATED_ATTEMPT_ID
+        and authorization.get("resolved_manifest_index_path") == R5_INDEX_PATH
+        and authorization.get("resolved_manifest_index_sha256")
+        == R6_R5_MANIFEST_INDEX_SHA256
+    )
+    if not required:
+        raise _fail("r6_source_is_not_consumed_replacement_003")
+    if not isinstance(classification, Mapping):
+        raise _fail("r6_classification_not_object")
+    classification = deepcopy(dict(classification))
+    required_classification = {
+        "stage_attempt_id": R6_INVALIDATED_ATTEMPT_ID,
+        "scientific_status": "infrastructure_interrupted",
+        "scientific_failure_class": "infrastructure_interruption",
+        "stop_reason": "vllm_unreachable",
+        "candidate_selection_may_continue": False,
+        "requires_whole_stage_rerun": True,
+        "source_checkpoints_reusable": False,
+        "checkpoint_namespace_reusable": False,
+    }
+    if any(classification.get(key) != value for key, value in required_classification.items()):
+        raise _fail("r6_classification_not_recovery_safe")
+    progress = deepcopy(dict(_mapping(source.get("stage_progress"), "stage_progress")))
+    progress.update(
+        {
+            "h0_live_gate": "forbidden",
+            "h0_candidate_progression": "h0_b_r6_recovery_required_not_authorized",
+            "h0_offline_manifest_binding": "v1_3_harness_r6_pending",
+        }
+    )
+    state = deepcopy(source)
+    state.update(
+        {
+            "status": "h0_b_r6_recovery_required_live_revoked",
+            "current_action_scope": "h0_b_r6_recovery_offline_only",
+            "current_blocker": "infrastructure_interruption",
+            "stage_progress": progress,
+            "live_h0_candidate_authorized": False,
+            "authorized_live_actions": [],
+            "authorized_h0_candidate_id": None,
+            "next_allowed_action": "prepare_h0_b_r6_recovery",
+            "h0_b_r6_recovery_context": {
+                "schema_version": "membind.h0.r6-recovery-context.v1",
+                "protocol_version": PROTOCOL_VERSION,
+                "candidate_id": "Q1",
+                "phase": "H0-B",
+                "invalidated_stage_attempt_id": R6_INVALIDATED_ATTEMPT_ID,
+                "invalidated_checkpoint_index_sha256": R6_CHECKPOINT_INDEX_SHA256,
+                "prior_manifest_index_sha256": R6_R5_MANIFEST_INDEX_SHA256,
+                "prior_r5_live_authorization": deepcopy(dict(authorization)),
+                "classification": classification,
+                "replacement_attempt_id": R6_REPLACEMENT_ATTEMPT_ID,
+                "consumed_grant_closed": True,
+                "source_checkpoints_reusable": False,
+                "checkpoint_namespace_reusable": False,
+                "live_authorized": False,
+                "secrets_persisted": False,
+            },
+        }
+    )
+    state.pop("live_h0_authorization", None)
+    return state
 
 
 def _validate_bindings(
@@ -988,6 +1342,125 @@ def _validate_r5_verification_shape(value: Any) -> dict[str, Any]:
     if not exact:
         raise _fail("r5_manifest_verification_mismatch")
     return verification
+
+
+def validate_h0_b_r6_manifest_verification(value: Any) -> dict[str, Any]:
+    """Accept only the source-bound R6/revision-6 offline verification."""
+
+    verification = dict(_mapping(value, "r6_manifest_verification"))
+    exact = (
+        set(verification) == _VERIFICATION_FIELDS
+        and verification.get("schema_version")
+        == "membind.h0.offline-artifact-verification.v3"
+        and verification.get("protocol_version") == PROTOCOL_VERSION
+        and verification.get("artifact_set_id") == R6_ARTIFACT_SET_ID
+        and verification.get("execution_harness_revision") == R6_HARNESS_REVISION
+        and verification.get("status") == "verified_offline_not_live_authorized"
+        and verification.get("index_path") == R6_INDEX_PATH
+        and verification.get("generated_json_file_count") == 11
+        and verification.get("binding_count") == 10
+        and verification.get("resolved_wrapper_count") == 4
+        and verification.get("source_spec_count") == 4
+        and verification.get("execution_source_count") == 32
+        and verification.get("secret_scan_passed") is True
+        and verification.get("live_eligible") is False
+    )
+    _sha(verification.get("index_sha256"), "r6_manifest_index")
+    if not exact:
+        raise _fail("r6_manifest_verification_mismatch")
+    return verification
+
+
+def validate_h0_b_r6_live_authorization(
+    value: Any, *, stage_attempt_id: str
+) -> dict[str, Any]:
+    """Fail closed unless the live grant is the exact R6 replacement-004 grant."""
+
+    authorization = dict(_mapping(value, "r6_live_authorization"))
+    expected_fields = {
+        "candidate_id",
+        "phase",
+        "authorized_stage_attempt_id",
+        "resolved_manifest_index_path",
+        "resolved_manifest_index_sha256",
+        "repair_admission",
+        "infrastructure_rerun_admission",
+        "post_workload_repair_admission",
+        "r6_recovery_admission",
+    }
+    allowed_fields = expected_fields | {
+        "resolved_candidate_manifest_path",
+        "resolved_candidate_manifest_sha256",
+        "resolved_shared_base_manifest_path",
+        "resolved_shared_base_manifest_sha256",
+        "prior_phase_completion",
+        "historically_misclassified_infrastructure_attempt_count",
+    }
+    if not expected_fields.issubset(authorization) or not set(authorization).issubset(allowed_fields):
+        raise _fail("r6_live_authorization_fields_mismatch")
+    verification = {
+        "schema_version": "membind.h0.offline-artifact-verification.v3",
+        "protocol_version": PROTOCOL_VERSION,
+        "artifact_set_id": R6_ARTIFACT_SET_ID,
+        "execution_harness_revision": R6_HARNESS_REVISION,
+        "status": "verified_offline_not_live_authorized",
+        "index_path": R6_INDEX_PATH,
+        "index_sha256": authorization.get("resolved_manifest_index_sha256"),
+        "generated_json_file_count": 11,
+        "binding_count": 10,
+        "resolved_wrapper_count": 4,
+        "source_spec_count": 4,
+        "execution_source_count": 32,
+        "secret_scan_passed": True,
+        "live_eligible": False,
+    }
+    try:
+        validate_h0_b_r6_manifest_verification(verification)
+    except H0HarnessRecoveryError:
+        raise _fail("r6_live_manifest_binding_invalid") from None
+    admission = authorization.get("r6_recovery_admission")
+    if not isinstance(admission, Mapping):
+        raise _fail("r6_recovery_admission_missing")
+    required_admission = {
+        "schema_version": "membind.h0.r6-recovery-admission.v1",
+        "protocol_version": PROTOCOL_VERSION,
+        "candidate_id": "Q1",
+        "phase": "H0-B",
+        "invalidated_stage_attempt_id": R6_INVALIDATED_ATTEMPT_ID,
+        "invalidated_checkpoint_index_sha256": R6_CHECKPOINT_INDEX_SHA256,
+        "failure_segment_sha256": R6_FAILURE_SEGMENT_SHA256,
+        "live_log_sha256": R6_LIVE_LOG_SHA256,
+        "misclassification_report_sha256": R6_MISCLASSIFICATION_REPORT_SHA256,
+        "root_cause_report_sha256": R6_ROOT_CAUSE_REPORT_SHA256,
+        "prior_manifest_index_sha256": R6_R5_MANIFEST_INDEX_SHA256,
+        "repaired_manifest_index_sha256": authorization.get(
+            "resolved_manifest_index_sha256"
+        ),
+        "scientific_failure_class": "infrastructure_interruption",
+        "interrupted_stop_reason": "vllm_unreachable",
+        "replacement_attempt_id": R6_REPLACEMENT_ATTEMPT_ID,
+        "one_shot_whole_stage_replacement": True,
+        "resume_interrupted_attempt_allowed": False,
+        "old_attempt_qualification_reusable": False,
+        "old_and_new_trial_counts_mergeable": False,
+        "source_checkpoints_reusable": False,
+        "fresh_checkpoint_namespace_required": True,
+        "scientific_configuration_unchanged": True,
+        "live_authorized_by_this_admission": False,
+        "secrets_persisted": False,
+    }
+    if dict(admission) != required_admission:
+        raise _fail("r6_recovery_admission_mismatch")
+    if (
+        authorization.get("candidate_id") != "Q1"
+        or authorization.get("phase") != "H0-B"
+        or authorization.get("authorized_stage_attempt_id") != R6_REPLACEMENT_ATTEMPT_ID
+        or stage_attempt_id != R6_REPLACEMENT_ATTEMPT_ID
+        or authorization.get("resolved_manifest_index_path") != R6_INDEX_PATH
+    ):
+        raise _fail("r6_live_authorization_scope_mismatch")
+    _safe_value(authorization, location="r6_live_authorization")
+    return authorization
 
 
 def _default_r5_manifest_validator(
@@ -2900,4 +3373,285 @@ def transition_h0_b_post_workload_harness_replacement_live(
         label="post_workload_harness_replacement_live",
         state_validator=lambda _state: None,
         preview_validator=preview_validator,
+    )
+
+
+def build_h0_b_r6_recovery_bound_state(
+    source_state: Mapping[str, Any],
+    *,
+    root: str | Path,
+    manifest_verification: Mapping[str, Any],
+    tdd_evidence: Mapping[str, Any],
+    r6_recovery_admission: Mapping[str, Any],
+    artifact_bindings: Mapping[str, Any],
+    tdd_validator: Callable[..., Any] | None = None,
+) -> dict[str, Any]:
+    """Bind R6 artifacts and recovery evidence while keeping live closed."""
+
+    source = _validate_transition_state(source_state, label="r6_bound_source")
+    context = _mapping(source.get("h0_b_r6_recovery_context"), "r6_context")
+    if not (
+        source.get("status") == "h0_b_r6_recovery_required_live_revoked"
+        and source.get("current_action_scope") == "h0_b_r6_recovery_offline_only"
+        and source.get("live_h0_candidate_authorized") is False
+        and source.get("authorized_live_actions") == []
+        and source.get("authorized_h0_candidate_id") is None
+        and "live_h0_authorization" not in source
+        and context.get("consumed_grant_closed") is True
+        and context.get("replacement_attempt_id") == R6_REPLACEMENT_ATTEMPT_ID
+    ):
+        raise _fail("r6_bound_source_contract_mismatch")
+    verification = validate_h0_b_r6_manifest_verification(manifest_verification)
+    try:
+        bindings = _validate_bindings(
+            artifact_bindings,
+            artifact_set_id=R6_ARTIFACT_SET_ID,
+            require_r3_index=False,
+        )
+    except Exception as exc:
+        if isinstance(exc, H0HarnessRecoveryError):
+            raise
+        raise _fail("r6_bindings_invalid") from exc
+    if bindings.get("resolved_manifest_index_path") != R6_INDEX_PATH:
+        raise _fail("r6_bindings_index_path_mismatch")
+    if bindings.get("resolved_manifest_index_sha256") != verification.get("index_sha256"):
+        raise _fail("r6_bindings_index_hash_mismatch")
+    if tdd_validator is None:
+        tdd_validator = _default_tdd_validator
+    try:
+        tdd = tdd_validator(Path(root).resolve(), _mapping(tdd_evidence, "r6_tdd_evidence"))
+    except H0HarnessRecoveryError:
+        raise
+    except Exception as exc:
+        raise _fail("r6_tdd_evidence_invalid") from exc
+    from h0_repair_admission import build_h0_b_r6_recovery_admission
+
+    expected_admission = build_h0_b_r6_recovery_admission(
+        classification=_mapping(context.get("classification"), "r6_classification"),
+        manifest_verification=verification,
+        replacement_attempt_id=R6_REPLACEMENT_ATTEMPT_ID,
+    )
+    if dict(r6_recovery_admission) != expected_admission:
+        raise _fail("r6_admission_changed_before_bind")
+    state = deepcopy(source)
+    progress = deepcopy(dict(_mapping(state.get("stage_progress"), "stage_progress")))
+    progress.update(
+        {
+            "h0_live_gate": "forbidden",
+            "h0_candidate_progression": "h0_b_r6_verified_not_authorized",
+            "h0_offline_manifest_binding": "v1_3_harness_r6_verified",
+        }
+    )
+    state.update(
+        {
+            "status": "h0_b_r6_recovery_verified_not_live_authorized",
+            "current_action_scope": "h0_b_r6_recovery_verified_only",
+            "current_blocker": "replacement_h0_b_r6_not_yet_authorized",
+            "stage_progress": progress,
+            "live_h0_candidate_authorized": False,
+            "authorized_live_actions": [],
+            "authorized_h0_candidate_id": None,
+            "next_allowed_action": "explicit_q1_h0_b_r6_replacement_transition",
+            "h0_b_r6_recovery_live_prerequisites": {
+                "schema_version": "membind.h0.r6-recovery-live-prerequisites.v1",
+                "protocol_version": PROTOCOL_VERSION,
+                "status": "verified_not_live_authorized",
+                "candidate_id": "Q1",
+                "phase": "H0-B",
+                "artifact_bindings": bindings,
+                "manifest_verification": verification,
+                "tdd_evidence": tdd,
+                "r6_recovery_admission": deepcopy(dict(r6_recovery_admission)),
+                "historically_misclassified_infrastructure_attempt_count": 1,
+                "live_transition_performed": False,
+                "secrets_persisted": False,
+            },
+        }
+    )
+    state.pop("live_h0_authorization", None)
+    return state
+
+
+def build_h0_b_r6_recovery_live_state(
+    source_state: Mapping[str, Any],
+    *,
+    root: str | Path | None = None,
+) -> dict[str, Any]:
+    """Consume the R6 grant once and authorize only replacement-004."""
+
+    del root
+    source = _validate_transition_state(source_state, label="r6_live_source")
+    prerequisites = _mapping(
+        source.get("h0_b_r6_recovery_live_prerequisites"), "r6_prerequisites"
+    )
+    if not (
+        source.get("status") == "h0_b_r6_recovery_verified_not_live_authorized"
+        and source.get("current_action_scope") == "h0_b_r6_recovery_verified_only"
+        and source.get("live_h0_candidate_authorized") is False
+        and source.get("authorized_live_actions") == []
+        and source.get("authorized_h0_candidate_id") is None
+        and "live_h0_authorization" not in source
+        and prerequisites.get("live_transition_performed") is False
+    ):
+        raise _fail("r6_live_source_contract_mismatch")
+    verification = validate_h0_b_r6_manifest_verification(
+        prerequisites.get("manifest_verification")
+    )
+    bindings = _validate_bindings(
+        prerequisites.get("artifact_bindings"),
+        artifact_set_id=R6_ARTIFACT_SET_ID,
+        require_r3_index=False,
+    )
+    if (
+        bindings.get("resolved_manifest_index_path") != R6_INDEX_PATH
+        or bindings.get("resolved_manifest_index_sha256") != verification.get("index_sha256")
+    ):
+        raise _fail("r6_live_binding_mismatch")
+    from h0_repair_admission import build_h0_b_r6_recovery_admission
+
+    admission = build_h0_b_r6_recovery_admission(
+        classification=_mapping(
+            _mapping(source.get("h0_b_r6_recovery_context"), "r6_context").get(
+                "classification"
+            ),
+            "r6_classification",
+        ),
+        manifest_verification=verification,
+        replacement_attempt_id=R6_REPLACEMENT_ATTEMPT_ID,
+    )
+    persisted = _mapping(prerequisites.get("r6_recovery_admission"), "r6_admission")
+    if dict(persisted) != admission:
+        raise _fail("r6_persisted_admission_mismatch")
+    progress = deepcopy(dict(_mapping(source.get("stage_progress"), "stage_progress")))
+    progress.update(
+        {
+            "h0_live_gate": "h0_q1_b_live_only",
+            "h0_candidate_progression": "h0_b_r6_replacement_authorized_once",
+            "h0_offline_manifest_binding": "v1_3_harness_r6_verified",
+        }
+    )
+    context = _mapping(source.get("h0_b_r6_recovery_context"), "r6_context")
+    prior = _mapping(context.get("prior_r5_live_authorization"), "prior_r5_authorization")
+    repair_admission = _mapping(prior.get("repair_admission"), "prior_r5_repair_admission")
+    infrastructure_rerun_admission = _mapping(
+        prior.get("infrastructure_rerun_admission"),
+        "prior_r5_infrastructure_rerun_admission",
+    )
+    post_workload_repair_admission = _mapping(
+        prior.get("post_workload_repair_admission"),
+        "prior_r5_post_workload_repair_admission",
+    )
+    state = deepcopy(source)
+    state.update(
+        {
+            "status": "h0_q1_b_live_only",
+            "current_action_scope": "h0_q1_b_live_only",
+            "current_blocker": None,
+            "stage_progress": progress,
+            "live_h0_candidate_authorized": True,
+            "authorized_live_actions": ["h0_candidate"],
+            "authorized_h0_candidate_id": "Q1",
+            "next_allowed_action": "run_q1_h0-b-r6-replacement-004",
+            "live_h0_authorization": {
+                "candidate_id": "Q1",
+                "phase": "H0-B",
+                **bindings,
+                "authorized_stage_attempt_id": R6_REPLACEMENT_ATTEMPT_ID,
+                "prior_phase_completion": deepcopy(prior.get("prior_phase_completion")),
+                "repair_admission": deepcopy(dict(repair_admission)),
+                "infrastructure_rerun_admission": deepcopy(
+                    dict(infrastructure_rerun_admission)
+                ),
+                "post_workload_repair_admission": deepcopy(
+                    dict(post_workload_repair_admission)
+                ),
+                "r6_recovery_admission": admission,
+                "historically_misclassified_infrastructure_attempt_count": 1,
+            },
+        }
+    )
+    state["h0_b_r6_recovery_live_prerequisites"] = {
+        **deepcopy(dict(prerequisites)),
+        "artifact_bindings": bindings,
+        "manifest_verification": verification,
+        "r6_recovery_admission": admission,
+        "live_transition_performed": True,
+    }
+    return state
+
+
+def transition_h0_b_r6_recovery_revoke(
+    state_path: str | Path,
+    *,
+    root: str | Path,
+    classification: Mapping[str, Any],
+    dry_run: bool = True,
+) -> dict[str, Any]:
+    """Atomically close the consumed R5 grant after independent R6 classification."""
+
+    return _transition_h0_b_recovery_state(
+        state_path,
+        root=root,
+        dry_run=dry_run,
+        state_builder=build_h0_b_r6_recovery_revoked_state,
+        builder_kwargs={"classification": classification},
+        label="r6_recovery_revoke",
+        state_validator=lambda state: _validate_live_forbidden(
+            state, label="r6_recovery_revoke"
+        ),
+    )
+
+
+def transition_h0_b_r6_recovery_bound(
+    state_path: str | Path,
+    *,
+    root: str | Path,
+    manifest_verification: Mapping[str, Any],
+    tdd_evidence: Mapping[str, Any],
+    r6_recovery_admission: Mapping[str, Any],
+    artifact_bindings: Mapping[str, Any],
+    dry_run: bool = True,
+    tdd_validator: Callable[..., Any] | None = None,
+) -> dict[str, Any]:
+    """Atomically bind R6 artifacts while the live gate remains closed."""
+
+    return _transition_h0_b_recovery_state(
+        state_path,
+        root=root,
+        dry_run=dry_run,
+        state_builder=build_h0_b_r6_recovery_bound_state,
+        builder_kwargs={
+            "manifest_verification": manifest_verification,
+            "tdd_evidence": tdd_evidence,
+            "r6_recovery_admission": r6_recovery_admission,
+            "artifact_bindings": artifact_bindings,
+            "tdd_validator": tdd_validator,
+        },
+        label="r6_recovery_bound",
+        state_validator=lambda state: _validate_live_forbidden(
+            state, label="r6_recovery_bound"
+        ),
+    )
+
+
+def transition_h0_b_r6_recovery_live(
+    state_path: str | Path,
+    *,
+    root: str | Path,
+    dry_run: bool = True,
+) -> dict[str, Any]:
+    """Atomically consume the R6 grant for replacement-004 exactly once."""
+
+    return _transition_h0_b_recovery_state(
+        state_path,
+        root=root,
+        dry_run=dry_run,
+        state_builder=build_h0_b_r6_recovery_live_state,
+        builder_kwargs={},
+        label="r6_recovery_live",
+        state_validator=lambda _state: None,
+        preview_validator=lambda state, **_context: validate_h0_b_r6_live_authorization(
+            state.get("live_h0_authorization"),
+            stage_attempt_id=R6_REPLACEMENT_ATTEMPT_ID,
+        ),
     )

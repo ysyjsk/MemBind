@@ -36,12 +36,18 @@ from h0_harness_recovery import (
     transition_h0_b_post_workload_harness_replacement_live,
     transition_h0_b_post_workload_harness_revoke,
     transition_h0_b_replacement_live,
+    classify_h0_b_r5_infrastructure_misclassification,
+    transition_h0_b_r6_recovery_bound,
+    transition_h0_b_r6_recovery_live,
+    transition_h0_b_r6_recovery_revoke,
 )
 from h0_repair_admission import (
     H0RepairAdmissionError,
     write_h0_b_harness_repair_decision,
     write_h0_b_infrastructure_rerun_decision,
     write_h0_b_post_workload_harness_repair_decision,
+    write_h0_b_r6_recovery_decision,
+    verify_h0_b_r6_recovery_decision,
     write_h0_repair_decision,
 )
 from h0_phase_state import (
@@ -58,6 +64,7 @@ from h0_runtime import (
     H0QualificationError,
     H0SemanticError,
     H0StateGateError,
+    sha256_file,
 )
 from h0_state_transition import (
     H0StateTransitionError,
@@ -70,6 +77,77 @@ from h0_state_transition import (
 ROOT = Path(__file__).resolve().parents[1]
 DEFAULT_STATE = Path("CURRENT_STATE.json")
 DEFAULT_RUN_ARTIFACTS = Path("artifacts/h0_runs")
+
+
+def _r6_classification(root: Path) -> dict[str, Any]:
+    """Load only the hash-bound, sanitized R5/003 misclassification evidence."""
+
+    from h0_harness_recovery import (
+        R6_CHECKPOINT_INDEX_PATH,
+        R6_CHECKPOINT_INDEX_SHA256,
+        R6_FAILURE_SEGMENT_PATH,
+        R6_FAILURE_SEGMENT_SHA256,
+        R6_LIVE_LOG_PATH,
+        R6_LIVE_LOG_SHA256,
+        R6_MISCLASSIFICATION_REPORT_PATH,
+        R6_MISCLASSIFICATION_REPORT_SHA256,
+        R6_ROOT_CAUSE_REPORT_PATH,
+        R6_ROOT_CAUSE_REPORT_SHA256,
+        R6_R5_MANIFEST_INDEX_PATH,
+        R6_R5_MANIFEST_INDEX_SHA256,
+        R6_INVALIDATED_ATTEMPT_ID,
+    )
+
+    return classify_h0_b_r5_infrastructure_misclassification(
+        root=root,
+        stage_attempt_id=R6_INVALIDATED_ATTEMPT_ID,
+        checkpoint_index_path=R6_CHECKPOINT_INDEX_PATH,
+        checkpoint_index_sha256=R6_CHECKPOINT_INDEX_SHA256,
+        failure_segment_path=R6_FAILURE_SEGMENT_PATH,
+        failure_segment_sha256=R6_FAILURE_SEGMENT_SHA256,
+        live_log_path=R6_LIVE_LOG_PATH,
+        live_log_sha256=R6_LIVE_LOG_SHA256,
+        misclassification_report_path=R6_MISCLASSIFICATION_REPORT_PATH,
+        misclassification_report_sha256=R6_MISCLASSIFICATION_REPORT_SHA256,
+        root_cause_report_path=R6_ROOT_CAUSE_REPORT_PATH,
+        root_cause_report_sha256=R6_ROOT_CAUSE_REPORT_SHA256,
+        r5_manifest_index_path=R6_R5_MANIFEST_INDEX_PATH,
+        r5_manifest_index_sha256=R6_R5_MANIFEST_INDEX_SHA256,
+    )
+
+
+def _r6_artifact_bindings(
+    root: Path, verification: Mapping[str, Any]
+) -> dict[str, str]:
+    """Project the verified R6 index into the three runtime bindings."""
+
+    relative = verification.get("index_path")
+    digest = verification.get("index_sha256")
+    if not isinstance(relative, str) or not isinstance(digest, str):
+        raise H0ControlInputError("r6_verification_binding_invalid")
+    index_path = _resolve_under_root(root, relative)
+    if not index_path.is_file() or sha256_file(index_path) != digest:
+        raise H0ControlInputError("r6_verification_binding_invalid")
+    try:
+        index = json.loads(index_path.read_text(encoding="ascii"))
+    except (OSError, UnicodeError, json.JSONDecodeError):
+        raise H0ControlInputError("r6_verification_binding_invalid") from None
+    resolved = index.get("resolved_manifests") if isinstance(index, Mapping) else None
+    candidate = resolved.get("Q1") if isinstance(resolved, Mapping) else None
+    shared = resolved.get("shared_base") if isinstance(resolved, Mapping) else None
+    if not isinstance(candidate, Mapping) or not isinstance(shared, Mapping):
+        raise H0ControlInputError("r6_verification_binding_invalid")
+    bindings = {
+        "resolved_manifest_index_path": relative,
+        "resolved_manifest_index_sha256": digest,
+        "resolved_candidate_manifest_path": candidate.get("path"),
+        "resolved_candidate_manifest_sha256": candidate.get("sha256"),
+        "resolved_shared_base_manifest_path": shared.get("path"),
+        "resolved_shared_base_manifest_sha256": shared.get("sha256"),
+    }
+    if any(not isinstance(value, str) or not value for value in bindings.values()):
+        raise H0ControlInputError("r6_verification_binding_invalid")
+    return bindings
 
 
 class H0ArgumentError(RuntimeError):
@@ -164,6 +242,8 @@ def _build_parser() -> argparse.ArgumentParser:
         "--replacement-attempt-id", required=True
     )
 
+    commands.add_parser("prepare-h0-b-r6-recovery")
+
     bind_repair = commands.add_parser("bind-repair")
     bind_repair.add_argument("--state", type=Path, default=DEFAULT_STATE)
     bind_repair.add_argument("--tdd-evidence", type=Path, required=True)
@@ -223,6 +303,19 @@ def _build_parser() -> argparse.ArgumentParser:
         "--state", type=Path, default=DEFAULT_STATE
     )
     authorize_h0_b_post_workload.add_argument("--commit", action="store_true")
+
+    bind_h0_b_r6 = commands.add_parser("bind-h0-b-r6-recovery")
+    bind_h0_b_r6.add_argument("--state", type=Path, default=DEFAULT_STATE)
+    bind_h0_b_r6.add_argument("--tdd-evidence", type=Path, required=True)
+    bind_h0_b_r6.add_argument("--decision", type=Path, required=True)
+    bind_h0_b_r6.add_argument("--decision-sha256", required=True)
+    bind_h0_b_r6.add_argument("--commit", action="store_true")
+
+    authorize_h0_b_r6 = commands.add_parser(
+        "authorize-q1-b-r6-replacement"
+    )
+    authorize_h0_b_r6.add_argument("--state", type=Path, default=DEFAULT_STATE)
+    authorize_h0_b_r6.add_argument("--commit", action="store_true")
 
     advance = commands.add_parser("advance-q1")
     advance.add_argument("--state", type=Path, default=DEFAULT_STATE)
@@ -286,6 +379,10 @@ def _build_parser() -> argparse.ArgumentParser:
         )
     revoke_h0_b_post_workload.add_argument("--commit", action="store_true")
 
+    revoke_h0_b_r6 = commands.add_parser("revoke-h0-b-r6-recovery")
+    revoke_h0_b_r6.add_argument("--state", type=Path, default=DEFAULT_STATE)
+    revoke_h0_b_r6.add_argument("--commit", action="store_true")
+
     run = commands.add_parser("run-q1-a")
     run.add_argument("--state", type=Path, default=DEFAULT_STATE)
     run.add_argument("--artifacts", type=Path, default=DEFAULT_RUN_ARTIFACTS)
@@ -347,7 +444,33 @@ def _run_command(args: argparse.Namespace) -> None:
         _safe_success(args.command, result, **result)
         return
 
+    if args.command == "prepare-h0-b-r6-recovery":
+        verification = verify_h0_offline_artifacts(root)
+        result = write_h0_b_r6_recovery_decision(
+            root=root,
+            classification=_r6_classification(root),
+            manifest_verification=verification,
+        )
+        _safe_success(args.command, result, **result)
+        return
+
     state_path = _resolve_under_root(root, args.state)
+    if args.command == "revoke-h0-b-r6-recovery":
+        result = transition_h0_b_r6_recovery_revoke(
+            state_path,
+            root=root,
+            classification=_r6_classification(root),
+            dry_run=not args.commit,
+        )
+        _safe_success(
+            args.command,
+            result,
+            committed=bool(args.commit),
+            reason="infrastructure_interruption_misclassified_in_r5",
+            candidate_rerun_authorized=False,
+            candidate_advance_authorized=False,
+        )
+        return
     if args.command == "revoke-h0-b-post-workload-harness":
         paths = {
             name: _resolve_under_root(root, getattr(args, name))
@@ -497,6 +620,41 @@ def _run_command(args: argparse.Namespace) -> None:
 
     if args.command == "authorize-q1-b-post-workload-harness-replacement":
         result = transition_h0_b_post_workload_harness_replacement_live(
+            state_path,
+            root=root,
+            dry_run=not args.commit,
+        )
+        _safe_success(args.command, result, committed=bool(args.commit))
+        return
+
+    if args.command == "bind-h0-b-r6-recovery":
+        evidence_path = _resolve_under_root(root, args.tdd_evidence)
+        evidence = _read_tdd_evidence(evidence_path)
+        decision_path = _resolve_under_root(root, args.decision)
+        verification = verify_h0_offline_artifacts(root)
+        classification = _r6_classification(root)
+        r6_admission = verify_h0_b_r6_recovery_decision(
+            root=root,
+            decision_path=decision_path.relative_to(root).as_posix(),
+            decision_sha256=args.decision_sha256,
+            classification=classification,
+            manifest_verification=verification,
+        )
+        bindings = _r6_artifact_bindings(root, verification)
+        result = transition_h0_b_r6_recovery_bound(
+            state_path,
+            root=root,
+            manifest_verification=verification,
+            tdd_evidence=evidence,
+            r6_recovery_admission=r6_admission,
+            artifact_bindings=bindings,
+            dry_run=not args.commit,
+        )
+        _safe_success(args.command, result, committed=bool(args.commit))
+        return
+
+    if args.command == "authorize-q1-b-r6-replacement":
+        result = transition_h0_b_r6_recovery_live(
             state_path,
             root=root,
             dry_run=not args.commit,

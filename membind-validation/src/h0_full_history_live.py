@@ -59,6 +59,13 @@ H0_B_INFRASTRUCTURE_RERUN_ATTEMPT_ID = (
 H0_B_POST_WORKLOAD_REPLACEMENT_ATTEMPT_ID = (
     "h0-q1-b-20260810-replacement-003"
 )
+H0_B_R6_REPLACEMENT_ATTEMPT_ID = (
+    "h0-q1-b-20260810-replacement-004"
+)
+H0_B_R6_INDEX_PATH = (
+    "artifacts/h0_manifest_sets/v1_3_harness_r6/"
+    "resolved_manifest_index_v1_3_harness_r6.json"
+)
 H0_B_INVALIDATED_ATTEMPT_ID = "h0-q1-b-20260809-attempt-001"
 H0_B_REPAIR_DECISION_PATH = (
     "artifacts/h0_protocol_repair/decisions/"
@@ -141,6 +148,32 @@ _H0_B_POST_WORKLOAD_REPAIR_FIELDS = {
     "resume_failed_attempt_allowed",
     "prior_manifest_index_sha256",
     "repaired_manifest_index_sha256",
+    "secrets_persisted",
+}
+_H0_B_R6_RECOVERY_FIELDS = {
+    "schema_version",
+    "protocol_version",
+    "candidate_id",
+    "phase",
+    "invalidated_stage_attempt_id",
+    "invalidated_checkpoint_index_sha256",
+    "failure_segment_sha256",
+    "live_log_sha256",
+    "misclassification_report_sha256",
+    "root_cause_report_sha256",
+    "prior_manifest_index_sha256",
+    "repaired_manifest_index_sha256",
+    "scientific_failure_class",
+    "interrupted_stop_reason",
+    "replacement_attempt_id",
+    "one_shot_whole_stage_replacement",
+    "resume_interrupted_attempt_allowed",
+    "old_attempt_qualification_reusable",
+    "old_and_new_trial_counts_mergeable",
+    "source_checkpoints_reusable",
+    "fresh_checkpoint_namespace_required",
+    "scientific_configuration_unchanged",
+    "live_authorized_by_this_admission",
     "secrets_persisted",
 }
 
@@ -425,6 +458,106 @@ def _extract_h0_b_post_workload_repair_admission(
     return raw
 
 
+def _extract_h0_b_r6_recovery_admission(
+    authorization: Mapping[str, Any],
+    *,
+    stage_attempt_id: str,
+) -> Mapping[str, Any] | None:
+    """Validate the three frozen R5 layers and the exact R6 fourth layer."""
+
+    raw = authorization.get("r6_recovery_admission")
+    if stage_attempt_id != H0_B_R6_REPLACEMENT_ATTEMPT_ID:
+        if raw is not None:
+            raise H0StateGateError("unexpected H0-B R6 recovery admission")
+        return None
+    admission = dict(raw) if isinstance(raw, Mapping) else {}
+    exact = (
+        authorization.get("candidate_id") == "Q1"
+        and authorization.get("phase") == "H0-B"
+        and authorization.get("authorized_stage_attempt_id")
+        == H0_B_R6_REPLACEMENT_ATTEMPT_ID
+        and authorization.get("resolved_manifest_index_path") == H0_B_R6_INDEX_PATH
+        and _SHA256_RE.fullmatch(
+            str(authorization.get("resolved_manifest_index_sha256") or "")
+        )
+        is not None
+        and set(admission) == _H0_B_R6_RECOVERY_FIELDS
+        and admission.get("schema_version")
+        == "membind.h0.r6-recovery-admission.v1"
+        and admission.get("protocol_version") == "current-validation-v1.3"
+        and admission.get("candidate_id") == "Q1"
+        and admission.get("phase") == "H0-B"
+        and admission.get("invalidated_stage_attempt_id")
+        == H0_B_POST_WORKLOAD_REPLACEMENT_ATTEMPT_ID
+        and admission.get("invalidated_checkpoint_index_sha256")
+        == "0b813ee7c9f4940e6981398520bf823ced3544ff540f66e03a8181ead5622a76"
+        and admission.get("failure_segment_sha256")
+        == "d1fad184dec05c3e32907c142382d9d1dd3b5655f2042205b201da3b21d2b732"
+        and admission.get("live_log_sha256")
+        == "adf687a3a73f8acf100b5be561b2b471878b4e7fe696bf2c3200878501fea24e"
+        and admission.get("misclassification_report_sha256")
+        == "218b062834ed66e4bbdf6b65ecb405c5c17ce7c3889360534f2bec484c43a6ac"
+        and admission.get("root_cause_report_sha256")
+        == "153d480e4af93a38a5305bcf2b35d4e19a99d9c59860c20455e27e9a3e44430b"
+        and admission.get("prior_manifest_index_sha256")
+        == "3f41f7520255a1ab64e9ee34efebaccbb05a1d580b7a390057ced0f02b3d13dd"
+        and admission.get("repaired_manifest_index_sha256")
+        == authorization.get("resolved_manifest_index_sha256")
+        and admission.get("scientific_failure_class")
+        == "infrastructure_interruption"
+        and admission.get("interrupted_stop_reason") == "vllm_unreachable"
+        and admission.get("replacement_attempt_id")
+        == H0_B_R6_REPLACEMENT_ATTEMPT_ID
+        and admission.get("one_shot_whole_stage_replacement") is True
+        and admission.get("resume_interrupted_attempt_allowed") is False
+        and admission.get("old_attempt_qualification_reusable") is False
+        and admission.get("old_and_new_trial_counts_mergeable") is False
+        and admission.get("source_checkpoints_reusable") is False
+        and admission.get("fresh_checkpoint_namespace_required") is True
+        and admission.get("scientific_configuration_unchanged") is True
+        and admission.get("live_authorized_by_this_admission") is False
+        and admission.get("secrets_persisted") is False
+        and all(
+            _SHA256_RE.fullmatch(str(admission.get(field) or "")) is not None
+            for field in _H0_B_R6_RECOVERY_FIELDS
+            if field.endswith("sha256")
+        )
+    )
+    if not exact:
+        raise H0StateGateError("H0-B R6 recovery admission denied")
+
+    # Revalidate the inherited R5 chain using the frozen R5 execution identity.
+    projected = deepcopy(dict(authorization))
+    projected["authorized_stage_attempt_id"] = (
+        H0_B_POST_WORKLOAD_REPLACEMENT_ATTEMPT_ID
+    )
+    projected["resolved_manifest_index_path"] = (
+        "artifacts/h0_manifest_sets/v1_3_harness_r5/"
+        "resolved_manifest_index_v1_3_harness_r5.json"
+    )
+    projected["resolved_manifest_index_sha256"] = (
+        "3f41f7520255a1ab64e9ee34efebaccbb05a1d580b7a390057ced0f02b3d13dd"
+    )
+    repair = _extract_h0_b_harness_repair_admission(
+        projected,
+        stage_attempt_id=H0_B_POST_WORKLOAD_REPLACEMENT_ATTEMPT_ID,
+        candidate_id="Q1",
+        phase="H0-B",
+    )
+    infrastructure = _extract_h0_b_infrastructure_rerun_admission(
+        projected,
+        stage_attempt_id=H0_B_POST_WORKLOAD_REPLACEMENT_ATTEMPT_ID,
+        repair_admission=repair or {},
+    )
+    _extract_h0_b_post_workload_repair_admission(
+        projected,
+        stage_attempt_id=H0_B_POST_WORKLOAD_REPLACEMENT_ATTEMPT_ID,
+        repair_admission=repair or {},
+        infrastructure_rerun_admission=infrastructure,
+    )
+    return raw
+
+
 def _validate_definition(definition: Any, *, candidate_id: str, phase: str) -> None:
     identity = getattr(definition, "identity", None)
     candidate = getattr(definition, "candidate", None)
@@ -513,6 +646,77 @@ def _infrastructure_reason(error: H0InfrastructureError) -> str:
     return prefix
 
 
+_INFRASTRUCTURE_REASON_CODES = {
+    "vllm_unreachable",
+    "embedding_unreachable",
+    "neo4j_unreachable",
+}
+
+
+def _empty_attempt_ledger(stage_attempt_id: str) -> dict[str, Any]:
+    return {
+        "schema_version": "membind.h0.attempt-ledger.v1",
+        "stage_attempt_id": stage_attempt_id,
+        "logical_trials": [],
+        "http_attempts": [],
+        "secrets_persisted": False,
+        "raw_prompts_persisted": False,
+        "raw_responses_persisted": False,
+    }
+
+
+def _safe_attempt_ledger(
+    ledger: H0AttemptLedger | None,
+    *,
+    stage_attempt_id: str,
+) -> dict[str, Any]:
+    return ledger.safe_artifact() if ledger is not None else _empty_attempt_ledger(stage_attempt_id)
+
+
+def _ledger_infrastructure_reason(ledger_artifact: Mapping[str, Any]) -> str | None:
+    attempts = ledger_artifact.get("http_attempts")
+    if not isinstance(attempts, list):
+        return None
+    for attempt in attempts:
+        if not isinstance(attempt, Mapping):
+            continue
+        failure_class = attempt.get("failure_class")
+        if failure_class in _INFRASTRUCTURE_REASON_CODES:
+            return str(failure_class)
+    return None
+
+
+def _safe_runtime_evidence(history_factory: Any | None) -> dict[str, Any]:
+    if history_factory is None:
+        return {"fresh_graph_count": 0, "histories": []}
+    return history_factory.safe_runtime_evidence()
+
+
+def _record_infrastructure_interruption(
+    *,
+    store: H0CheckpointStore,
+    reason: str,
+    ledger_artifact: Mapping[str, Any],
+    history_factory: Any | None,
+    definition: Any,
+    failure_stage: str,
+) -> None:
+    store.record_segment(
+        "infrastructure_failure",
+        reason.replace("_", "-"),
+        {
+            "failure_code": reason,
+            "attempt_ledger": deepcopy(dict(ledger_artifact)),
+            "runtime_evidence": _safe_runtime_evidence(history_factory),
+            "runtime_definition_sha256": definition.definition_sha256,
+            "failure_stage": failure_stage,
+            "candidate_advance_allowed": False,
+            "partial_qualification_reusable": False,
+        },
+    )
+    store.mark_infrastructure_interruption(reason)
+
+
 def _failure_code(error: BaseException) -> str:
     if isinstance(error, H0StateGateError):
         return "authorization_revoked"
@@ -564,23 +768,37 @@ async def execute_h0_full_history_live(
     if not isinstance(authorization, Mapping):
         raise H0ManifestError("H0 authorization did not return manifest bindings")
     authorization = deepcopy(dict(authorization))
-    repair_admission = _extract_h0_b_harness_repair_admission(
-        authorization,
-        stage_attempt_id=stage_attempt_id,
-        candidate_id=candidate_id,
-        phase=phase,
-    )
-    infrastructure_rerun_admission = _extract_h0_b_infrastructure_rerun_admission(
-        authorization,
-        stage_attempt_id=stage_attempt_id,
-        repair_admission=repair_admission or {},
-    )
-    post_workload_repair_admission = _extract_h0_b_post_workload_repair_admission(
-        authorization,
-        stage_attempt_id=stage_attempt_id,
-        repair_admission=repair_admission or {},
-        infrastructure_rerun_admission=infrastructure_rerun_admission,
-    )
+    if stage_attempt_id == H0_B_R6_REPLACEMENT_ATTEMPT_ID:
+        r6_recovery_admission = _extract_h0_b_r6_recovery_admission(
+            authorization,
+            stage_attempt_id=stage_attempt_id,
+        )
+        repair_admission = authorization.get("repair_admission")
+        infrastructure_rerun_admission = authorization.get(
+            "infrastructure_rerun_admission"
+        )
+        post_workload_repair_admission = authorization.get(
+            "post_workload_repair_admission"
+        )
+    else:
+        repair_admission = _extract_h0_b_harness_repair_admission(
+            authorization,
+            stage_attempt_id=stage_attempt_id,
+            candidate_id=candidate_id,
+            phase=phase,
+        )
+        infrastructure_rerun_admission = _extract_h0_b_infrastructure_rerun_admission(
+            authorization,
+            stage_attempt_id=stage_attempt_id,
+            repair_admission=repair_admission or {},
+        )
+        post_workload_repair_admission = _extract_h0_b_post_workload_repair_admission(
+            authorization,
+            stage_attempt_id=stage_attempt_id,
+            repair_admission=repair_admission or {},
+            infrastructure_rerun_admission=infrastructure_rerun_admission,
+        )
+        r6_recovery_admission = None
     definition = runtime_definition_loader(authorization, root=root_path)
     _validate_definition(definition, candidate_id=candidate_id, phase=phase)
     prior_completion = prior_completion_validator(
@@ -602,6 +820,7 @@ async def execute_h0_full_history_live(
         repair_admission=repair_admission,
         infrastructure_rerun_admission=infrastructure_rerun_admission,
         post_workload_repair_admission=post_workload_repair_admission,
+        r6_recovery_admission=r6_recovery_admission,
     )
     store.record_segment(
         "prior_phase_completion",
@@ -830,52 +1049,40 @@ async def execute_h0_full_history_live(
     except H0InfrastructureError as exc:
         if store.index.get("status") == "running":
             reason = _infrastructure_reason(exc)
-            store.record_segment(
-                "infrastructure_failure",
-                reason.replace("_", "-"),
-                {
-                    "failure_code": reason,
-                    "attempt_ledger": ledger.safe_artifact() if ledger else {
-                        "schema_version": "membind.h0.attempt-ledger.v1",
-                        "stage_attempt_id": stage_attempt_id,
-                        "logical_trials": [],
-                        "http_attempts": [],
-                        "secrets_persisted": False,
-                        "raw_prompts_persisted": False,
-                        "raw_responses_persisted": False,
-                    },
-                    "runtime_evidence": (
-                        history_factory.safe_runtime_evidence()
-                        if history_factory is not None
-                        else {"fresh_graph_count": 0, "histories": []}
-                    ),
-                    "runtime_definition_sha256": definition.definition_sha256,
-                    "failure_stage": failure_stage,
-                    "candidate_advance_allowed": False,
-                    "partial_qualification_reusable": False,
-                },
+            _record_infrastructure_interruption(
+                store=store,
+                reason=reason,
+                ledger_artifact=_safe_attempt_ledger(
+                    ledger, stage_attempt_id=stage_attempt_id
+                ),
+                history_factory=history_factory,
+                definition=definition,
+                failure_stage=failure_stage,
             )
-            store.mark_infrastructure_interruption(reason)
         raise
     except Exception as exc:
         if store.index.get("status") == "running":
+            ledger_artifact = _safe_attempt_ledger(
+                ledger, stage_attempt_id=stage_attempt_id
+            )
+            infrastructure_reason = _ledger_infrastructure_reason(ledger_artifact)
+            if infrastructure_reason is not None:
+                _record_infrastructure_interruption(
+                    store=store,
+                    reason=infrastructure_reason,
+                    ledger_artifact=ledger_artifact,
+                    history_factory=history_factory,
+                    definition=definition,
+                    failure_stage=failure_stage,
+                )
+                raise H0InfrastructureError(
+                    f"{infrastructure_reason}: stop_and_report"
+                ) from exc
             code = _failure_code(exc)
             failure = {
                 "failure_code": code,
-                "attempt_ledger": ledger.safe_artifact() if ledger else {
-                    "schema_version": "membind.h0.attempt-ledger.v1",
-                    "stage_attempt_id": stage_attempt_id,
-                    "logical_trials": [],
-                    "http_attempts": [],
-                    "secrets_persisted": False,
-                    "raw_prompts_persisted": False,
-                    "raw_responses_persisted": False,
-                },
-                "runtime_evidence": (
-                    history_factory.safe_runtime_evidence()
-                    if history_factory is not None
-                    else {"fresh_graph_count": 0, "histories": []}
-                ),
+                "attempt_ledger": ledger_artifact,
+                "runtime_evidence": _safe_runtime_evidence(history_factory),
                 "runtime_definition_sha256": definition.definition_sha256,
                 "failure_stage": failure_stage,
                 "candidate_advance_allowed": False,

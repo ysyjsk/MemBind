@@ -77,6 +77,7 @@ class H0EmbeddingAdapterTests(IsolatedAsyncioTestCase):
         )
         try:
             self.assertEqual(adapter._client.max_retries, 0)
+            self.assertEqual(adapter._client._platform, "Linux")
             self.assertFalse(adapter._http_client._trust_env)
             self.assertFalse(adapter._http_client.follow_redirects)
             self.assertEqual(str(adapter._client.base_url), "http://embedding.invalid/v1/")

@@ -100,9 +100,9 @@ class H0RuntimeDefinitionTests(TestCase):
             self.assertEqual(definition.identity["served_model_id"], "qwen3-32b-fp8")
             self.assertEqual(definition.identity["context_limit"], 40960)
             self.assertEqual(
-                definition.identity["artifact_set_id"], "v1_3_harness_r5"
+                definition.identity["artifact_set_id"], "v1_3_harness_r6"
             )
-            self.assertEqual(definition.identity["execution_harness_revision"], 5)
+            self.assertEqual(definition.identity["execution_harness_revision"], 6)
             self.assertEqual(definition.candidate.candidate_id, "Q1")
             self.assertEqual(definition.candidate.structured_output_mode, "json_schema")
             self.assertEqual(definition.candidate.temperature, 0.0)

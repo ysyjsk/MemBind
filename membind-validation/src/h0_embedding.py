@@ -158,6 +158,9 @@ class H0EmbeddingAdapter(EmbedderClient):
             max_retries=0,
             http_client=self._http_client,
         )
+        # The bound deployment is Linux. Avoid the SDK's unrelated blocking
+        # platform probe before the first embedding HTTP request.
+        self._client._platform = "Linux"  # type: ignore[attr-defined]
         self._model = bound_model
         self._vllm_version = bound_vllm_version
         self._origin = bound_base_url.removesuffix("v1/").rstrip("/")

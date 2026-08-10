@@ -212,17 +212,17 @@ class H0BInfrastructureRerunProtocolTests(TestCase):
             Mock(return_value=deepcopy(self.infra)),
         )
 
-    def test_current_execution_identity_is_r5_and_r4_index_is_immutable_history(self):
-        self.assertEqual(h0_artifacts.H0_ARTIFACT_SET_ID, "v1_3_harness_r5")
-        self.assertEqual(h0_artifacts.H0_EXECUTION_HARNESS_REVISION, 5)
-        self.assertEqual(h0_live_preflight._ARTIFACT_SET_ID, "v1_3_harness_r5")
-        self.assertEqual(h0_live_preflight._EXECUTION_HARNESS_REVISION, 5)
+    def test_current_execution_identity_is_r6_and_r5_index_is_immutable_history(self):
+        self.assertEqual(h0_artifacts.H0_ARTIFACT_SET_ID, "v1_3_harness_r6")
+        self.assertEqual(h0_artifacts.H0_EXECUTION_HARNESS_REVISION, 6)
+        self.assertEqual(h0_live_preflight._ARTIFACT_SET_ID, "v1_3_harness_r6")
+        self.assertEqual(h0_live_preflight._EXECUTION_HARNESS_REVISION, 6)
         self.assertEqual(
             __import__("hashlib").sha256(
-                (ROOT / "artifacts/h0_manifest_sets/v1_3_harness_r4/"
-                 "resolved_manifest_index_v1_3_harness_r4.json").read_bytes()
+                (ROOT / "artifacts/h0_manifest_sets/v1_3_harness_r5/"
+                 "resolved_manifest_index_v1_3_harness_r5.json").read_bytes()
             ).hexdigest(),
-            "a08b3f704c9680476990f24edc239d4af50ced39edcf9aae0d529b5ed14332d7",
+            "3f41f7520255a1ab64e9ee34efebaccbb05a1d580b7a390057ced0f02b3d13dd",
         )
 
     def test_closed_state_binds_r4_offline_then_authorizes_only_exact_002(self):

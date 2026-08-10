@@ -48,11 +48,11 @@ from h0_runtime import (
 
 SCHEMA_VERSION = "membind.h0.offline-artifacts.v2"
 VERIFICATION_SCHEMA_VERSION = "membind.h0.offline-artifact-verification.v3"
-H0_ARTIFACT_SET_ID = "v1_3_harness_r5"
-H0_EXECUTION_HARNESS_REVISION = 5
+H0_ARTIFACT_SET_ID = "v1_3_harness_r6"
+H0_EXECUTION_HARNESS_REVISION = 6
 H0_ARTIFACT_SET_REL = f"artifacts/h0_manifest_sets/{H0_ARTIFACT_SET_ID}"
 H0_RESOLVED_MANIFEST_INDEX_REL = (
-    f"{H0_ARTIFACT_SET_REL}/resolved_manifest_index_v1_3_harness_r5.json"
+    f"{H0_ARTIFACT_SET_REL}/resolved_manifest_index_v1_3_harness_r6.json"
 )
 SPLIT_REL = "artifacts/dataset/frozen_split_v1_3.json"
 RUNTIME_EVIDENCE_REL = "artifacts/environment/v3_construction_runtime_evidence_20260809.json"
@@ -614,10 +614,10 @@ def verify_h0_offline_artifacts(root: str | Path) -> dict[str, Any]:
     index_path = _local_path_without_symlinks(
         root,
         H0_RESOLVED_MANIFEST_INDEX_REL,
-        label="resolved_manifest_index_v1_3_harness_r5",
+        label="resolved_manifest_index_v1_3_harness_r6",
     )
     index = _read_generated_object(
-        index_path, label="resolved_manifest_index_v1_3_harness_r5"
+        index_path, label="resolved_manifest_index_v1_3_harness_r6"
     )
     required_index = {
         "schema_version": SCHEMA_VERSION,
@@ -901,7 +901,7 @@ def write_h0_offline_artifacts(root: str | Path) -> dict[str, Any]:
     }
     index_path = root / H0_RESOLVED_MANIFEST_INDEX_REL
     index_sha = _write_canonical(
-        root, index_path, index, label="resolved_manifest_index_v1_3_harness_r5"
+        root, index_path, index, label="resolved_manifest_index_v1_3_harness_r6"
     )
     return {
         "index": index,

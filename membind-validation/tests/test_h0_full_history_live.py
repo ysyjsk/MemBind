@@ -23,9 +23,11 @@ H0_B_REPLACEMENT_ATTEMPT_ID = "h0-q1-b-20260809-replacement-001"
 
 from h0_full_history_live import execute_h0_full_history_live  # noqa: E402
 from h0_runtime import (  # noqa: E402
+    H0AttemptLedger,
     H0CheckpointStore,
     H0InfrastructureError,
     H0ManifestError,
+    H0QualificationError,
     H0StateGateError,
     canonical_json_sha256,
 )
@@ -617,6 +619,124 @@ class H0FullHistoryLiveTests(IsolatedAsyncioTestCase):
                 },
             )
             self.assertNotIn("offline graph constructor detail", str(failure_payload))
+
+    async def test_vllm_ledger_failure_takes_precedence_over_top_level_candidate_failure(self):
+        authorization = _replacement_authorization()
+        captured: dict[str, H0AttemptLedger] = {}
+
+        async def readiness(**kwargs):
+            kwargs["progress_sink"](
+                {
+                    "schema_version": "membind.h0.stage-readiness-event.v1",
+                    "check": "authorization_recheck",
+                    "component": "authorization",
+                    "qualified": True,
+                    "secrets_persisted": False,
+                }
+            )
+            return {
+                "schema_version": "membind.h0.stage-readiness.v1",
+                "status": "ready",
+                "construction_readiness_count": 1,
+                "embedding_readiness_count": 1,
+                "neo4j_readiness_count": 1,
+                "authorization_recheck_count": 1,
+                "generation_requests": 0,
+                "embedding_request_count": 0,
+                "per_history_warmup_count": 0,
+                "secrets_persisted": False,
+            }
+
+        def build_factory(**kwargs):
+            captured["ledger"] = kwargs["ledger"]
+            return _HistoryFactory([])
+
+        async def phase_runner(**_kwargs):
+            ledger = captured["ledger"]
+            logical_id = ledger.start_trial(
+                "Q1",
+                "07741c45:006:dedupe_edges.resolve_edge",
+                0,
+            )
+            attempt_id = ledger.start_attempt(
+                logical_id,
+                {
+                    "requested_request_payload_sha256": "1" * 64,
+                    "prompt_tokens": 100,
+                    "model": "qwen3-32b-fp8",
+                    "temperature": 0.7,
+                    "top_p": 0.95,
+                    "top_k": 20,
+                    "min_p": 0,
+                    "max_tokens": 16384,
+                    "server_request_seed": 42,
+                },
+            )
+            ledger.finish_attempt(
+                attempt_id,
+                http_status=None,
+                finish_reason=None,
+                response_text="",
+                response_prompt_tokens=None,
+                json_parse_success=False,
+                pydantic_validation_success=False,
+                semantic_utility_success=False,
+                failure_class="vllm_unreachable",
+            )
+            raise H0QualificationError("wire_request_observation_failure")
+
+        with tempfile.TemporaryDirectory() as tmp:
+            root = Path(tmp).resolve()
+            with self.assertRaisesRegex(H0InfrastructureError, "vllm_unreachable"):
+                await execute_h0_full_history_live(
+                    root=root,
+                    state_path=root / "state.json",
+                    artifacts_root=root / "runs",
+                    stage_attempt_id=H0_B_REPLACEMENT_ATTEMPT_ID,
+                    candidate_id="Q1",
+                    phase="H0-B",
+                    authorization_checker=Mock(return_value=authorization),
+                    runtime_definition_loader=Mock(return_value=_definition()),
+                    prior_completion_validator=Mock(
+                        return_value={
+                            "qualified": True,
+                            "phase": "H0-A",
+                            "terminal_result_sha256": "7" * 64,
+                        }
+                    ),
+                    credential_loader=Mock(return_value=_credentials()),
+                    readiness_runner=readiness,
+                    corpus_loader=Mock(
+                        return_value=SimpleNamespace(question_ids=("07741c45",))
+                    ),
+                    history_factory_builder=build_factory,
+                    full_history_runner=AsyncMock(
+                        side_effect=AssertionError("history runner should not run")
+                    ),
+                    phase_runner=phase_runner,
+                    progress_sink=lambda _event: None,
+                )
+
+            reopened = H0CheckpointStore.open_existing(
+                root / "runs", H0_B_REPLACEMENT_ATTEMPT_ID
+            )
+            self.assertEqual(reopened.index["status"], "infrastructure_interrupted")
+            self.assertEqual(reopened.index["stop_reason"], "vllm_unreachable")
+            self.assertFalse(reopened.index["candidate_selection_may_continue"])
+            self.assertTrue(reopened.index["requires_whole_stage_rerun"])
+            failure_entry = reopened.index["segments"][-1]
+            failure_artifact = json.loads(
+                (root / "runs" / failure_entry["artifact_path"]).read_text(
+                    encoding="ascii"
+                )
+            )
+            failure_payload = failure_artifact["payload"]
+            self.assertEqual(failure_entry["segment_kind"], "infrastructure_failure")
+            self.assertEqual(failure_payload["failure_code"], "vllm_unreachable")
+            self.assertEqual(
+                failure_payload["attempt_ledger"]["http_attempts"][0]["failure_class"],
+                "vllm_unreachable",
+            )
 
     async def test_embedding_or_neo4j_infrastructure_failure_is_durable_and_stops(self):
         for component in ("embedding", "neo4j"):

@@ -1,4 +1,4 @@
-"""Offline RED contracts for the source-bound Protocol v1.3 R5 artifact set.
+"""Offline RED contracts for the source-bound Protocol v1.3 R6 artifact set.
 
 The tests stage only repository files and synthetic immutable sentinels.  They
 must not load credentials or contact construction, embedding, Neo4j, or SSH.
@@ -23,11 +23,11 @@ import h0_live_preflight  # noqa: E402
 from h0_runtime import sha256_file  # noqa: E402
 
 
-R5_ARTIFACT_SET_ID = "v1_3_harness_r5"
-R5_HARNESS_REVISION = 5
-R5_ARTIFACT_SET_REL = f"artifacts/h0_manifest_sets/{R5_ARTIFACT_SET_ID}"
-R5_INDEX_REL = (
-    f"{R5_ARTIFACT_SET_REL}/resolved_manifest_index_v1_3_harness_r5.json"
+R6_ARTIFACT_SET_ID = "v1_3_harness_r6"
+R6_HARNESS_REVISION = 6
+R6_ARTIFACT_SET_REL = f"artifacts/h0_manifest_sets/{R6_ARTIFACT_SET_ID}"
+R6_INDEX_REL = (
+    f"{R6_ARTIFACT_SET_REL}/resolved_manifest_index_v1_3_harness_r6.json"
 )
 FROZEN_INDEX_SHA256 = {
     "v1_3_harness_r2": (
@@ -39,10 +39,13 @@ FROZEN_INDEX_SHA256 = {
     "v1_3_harness_r4": (
         "a08b3f704c9680476990f24edc239d4af50ced39edcf9aae0d529b5ed14332d7"
     ),
+    "v1_3_harness_r5": (
+        "3f41f7520255a1ab64e9ee34efebaccbb05a1d580b7a390057ced0f02b3d13dd"
+    ),
 }
 
 
-class H0R5ArtifactIdentityRedTests(TestCase):
+class H0R6ArtifactIdentityRedTests(TestCase):
     def _stage_root(self, directory: str) -> Path:
         staged = Path(directory) / "membind-validation"
         shutil.copytree(ROOT / "configs/h0", staged / "configs/h0")
@@ -70,25 +73,25 @@ class H0R5ArtifactIdentityRedTests(TestCase):
             if path.is_file() and not path.is_symlink()
         }
 
-    def test_current_writer_and_preflight_identity_is_r5(self):
-        self.assertEqual(h0_artifacts.H0_ARTIFACT_SET_ID, R5_ARTIFACT_SET_ID)
+    def test_current_writer_and_preflight_identity_is_r6(self):
+        self.assertEqual(h0_artifacts.H0_ARTIFACT_SET_ID, R6_ARTIFACT_SET_ID)
         self.assertEqual(
             h0_artifacts.H0_EXECUTION_HARNESS_REVISION,
-            R5_HARNESS_REVISION,
+            R6_HARNESS_REVISION,
         )
-        self.assertEqual(h0_artifacts.H0_ARTIFACT_SET_REL, R5_ARTIFACT_SET_REL)
+        self.assertEqual(h0_artifacts.H0_ARTIFACT_SET_REL, R6_ARTIFACT_SET_REL)
         self.assertEqual(
             h0_artifacts.H0_RESOLVED_MANIFEST_INDEX_REL,
-            R5_INDEX_REL,
+            R6_INDEX_REL,
         )
-        self.assertEqual(h0_live_preflight._ARTIFACT_SET_ID, R5_ARTIFACT_SET_ID)
+        self.assertEqual(h0_live_preflight._ARTIFACT_SET_ID, R6_ARTIFACT_SET_ID)
         self.assertEqual(
             h0_live_preflight._EXECUTION_HARNESS_REVISION,
-            R5_HARNESS_REVISION,
+            R6_HARNESS_REVISION,
         )
-        self.assertEqual(h0_live_preflight._RESOLVED_INDEX_REL, R5_INDEX_REL)
+        self.assertEqual(h0_live_preflight._RESOLVED_INDEX_REL, R6_INDEX_REL)
 
-    def test_r5_execution_bundle_binds_every_current_mainline_h0_source(self):
+    def test_r6_execution_bundle_binds_every_current_mainline_h0_source(self):
         manifest = h0_artifacts.build_h0_execution_source_bundle_manifest(ROOT)
         bundled = {item["path"] for item in manifest["files"]}
         current_h0_sources = {
@@ -116,12 +119,12 @@ class H0R5ArtifactIdentityRedTests(TestCase):
             self.assertEqual(source["sha256"], sha256_file(ROOT / source["path"]))
         self.assertFalse(manifest["temporary_gpt_lane_included"])
         self.assertFalse(manifest["environment_file_included"])
-        self.assertEqual(manifest["artifact_set_id"], R5_ARTIFACT_SET_ID)
+        self.assertEqual(manifest["artifact_set_id"], R6_ARTIFACT_SET_ID)
         self.assertEqual(
-            manifest["execution_harness_revision"], R5_HARNESS_REVISION
+            manifest["execution_harness_revision"], R6_HARNESS_REVISION
         )
 
-    def test_r2_r3_r4_resolved_indexes_remain_byte_frozen(self):
+    def test_r2_r3_r4_r5_resolved_indexes_remain_byte_frozen(self):
         for artifact_set_id, expected_sha256 in FROZEN_INDEX_SHA256.items():
             revision = artifact_set_id.rsplit("r", 1)[1]
             relative = (
@@ -131,7 +134,7 @@ class H0R5ArtifactIdentityRedTests(TestCase):
             with self.subTest(artifact_set_id=artifact_set_id):
                 self.assertEqual(sha256_file(ROOT / relative), expected_sha256)
 
-    def test_r5_writer_never_targets_or_changes_r2_r3_r4_directories(self):
+    def test_r6_writer_never_targets_or_changes_r2_r3_r4_r5_directories(self):
         with tempfile.TemporaryDirectory() as tmp:
             staged = self._stage_root(tmp)
             old_roots = []
@@ -161,10 +164,10 @@ class H0R5ArtifactIdentityRedTests(TestCase):
             self.assertEqual(after, before)
             self.assertTrue(write_targets)
             self.assertTrue(
-                all(path.startswith(f"{R5_ARTIFACT_SET_REL}/") for path in write_targets)
+                all(path.startswith(f"{R6_ARTIFACT_SET_REL}/") for path in write_targets)
             )
-            self.assertEqual(written["index_path"], R5_INDEX_REL)
-            self.assertTrue((staged / R5_INDEX_REL).is_file())
+            self.assertEqual(written["index_path"], R6_INDEX_REL)
+            self.assertTrue((staged / R6_INDEX_REL).is_file())
 
 
 if __name__ == "__main__":

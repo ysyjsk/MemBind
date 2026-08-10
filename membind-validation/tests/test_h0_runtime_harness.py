@@ -6,6 +6,7 @@ remote host.  Live entry must fail closed before any dependency factory runs.
 
 from __future__ import annotations
 
+import asyncio
 import json
 import sys
 import tempfile
@@ -592,6 +593,198 @@ class H0ClientIntegrationTests(IsolatedAsyncioTestCase):
         self.assertNotIn("Safe", persisted)
         self.assertNotIn("SYSTEM_RAW_SENTINEL", persisted)
         self.assertNotIn("USER_RAW_SENTINEL", persisted)
+
+    async def test_concurrent_calls_attach_their_own_observed_wire_event(self):
+        release_first = asyncio.Event()
+        first_seen = asyncio.Event()
+
+        async def handler(request: httpx.Request) -> httpx.Response:
+            body = json.loads(request.content)
+            user_text = body["messages"][-1]["content"]
+            if "FIRST_CONCURRENT_RAW" in user_text:
+                first_seen.set()
+                await release_first.wait()
+            else:
+                await first_seen.wait()
+                release_first.set()
+            return httpx.Response(
+                200,
+                request=request,
+                json={
+                    "id": "offline",
+                    "object": "chat.completion",
+                    "created": 0,
+                    "model": "qwen3-32b-fp8",
+                    "usage": {
+                        "prompt_tokens": 100,
+                        "completion_tokens": 8,
+                        "total_tokens": 108,
+                    },
+                    "choices": [
+                        {
+                            "index": 0,
+                            "finish_reason": "stop",
+                            "message": {
+                                "role": "assistant",
+                                "content": json.dumps(
+                                    {
+                                        "extracted_entities": [
+                                            {"name": "Safe", "episode_indices": [0]}
+                                        ]
+                                    }
+                                ),
+                            },
+                        }
+                    ],
+                },
+            )
+
+        async def count_tokens(_model: str, _messages: list[dict[str, str]]) -> int:
+            return 100
+
+        observer = H0WireObserver()
+        openai_client = build_h0_openai_client(
+            api_key="offline-test-key",
+            base_url="http://offline.invalid/v1",
+            observer=observer,
+            transport=httpx.MockTransport(handler),
+        )
+        ledger = H0AttemptLedger(stage_attempt_id="offline-concurrent-wire")
+        client = H0QwenVLLMClient(
+            config=LLMConfig(
+                api_key="unused-by-injected-client",
+                model="qwen3-32b-fp8",
+                small_model="qwen3-32b-fp8",
+                base_url="http://offline.invalid/v1",
+                temperature=0.7,
+                max_tokens=16384,
+            ),
+            candidate=self._candidate("Q1"),
+            token_counter=count_tokens,
+            semantic_guardrail=H0SemanticUtilityTests()._guardrail(),
+            ledger=ledger,
+            client=openai_client,
+        )
+
+        async def one_call(text: str, prompt_name: str) -> dict[str, object]:
+            with episode_scope("offline-run", 0):
+                return await client.generate_response(
+                    [
+                        Message(role="system", content="SYSTEM_RAW_SENTINEL"),
+                        Message(role="user", content=text),
+                    ],
+                    response_model=ExtractedEntities,
+                    group_id="offline-run",
+                    prompt_name=prompt_name,
+                )
+
+        try:
+            first, second = await asyncio.gather(
+                one_call("FIRST_CONCURRENT_RAW", "extract_nodes.first"),
+                one_call("SECOND_CONCURRENT_RAW", "extract_nodes.second"),
+            )
+        finally:
+            await openai_client.close()
+
+        self.assertIn("extracted_entities", first)
+        self.assertIn("extracted_entities", second)
+        artifact = ledger.safe_artifact()
+        attempts = artifact["http_attempts"]
+        self.assertEqual(len(attempts), 2)
+        self.assertTrue(all(item["completed"] for item in attempts))
+        self.assertTrue(all(item["http_200"] for item in attempts))
+        self.assertTrue(all(item["json_parse_success"] for item in attempts))
+        self.assertTrue(all(item["pydantic_validation_success"] for item in attempts))
+        self.assertTrue(all(item["semantic_utility_success"] for item in attempts))
+        self.assertTrue(
+            all("observed_request_payload_sha256" in item for item in attempts)
+        )
+        self.assertEqual(
+            {tuple(item["message_content_sha256"]) for item in attempts},
+            {tuple(item["observed_message_content_sha256"]) for item in attempts},
+        )
+        self.assertRegex(
+            attempts[0]["observed_request_payload_sha256"], r"^[0-9a-f]{64}$"
+        )
+        self.assertRegex(
+            attempts[1]["observed_request_payload_sha256"], r"^[0-9a-f]{64}$"
+        )
+        self.assertNotIn("FIRST_CONCURRENT_RAW", json.dumps(artifact))
+        self.assertNotIn("SECOND_CONCURRENT_RAW", json.dumps(artifact))
+
+    async def test_cancelled_concurrent_call_finishes_attempt_record(self):
+        slow_started = asyncio.Event()
+        release_slow = asyncio.Event()
+
+        async def handler(request: httpx.Request) -> httpx.Response:
+            body = json.loads(request.content)
+            user_text = body["messages"][-1]["content"]
+            if "SLOW_CANCEL_RAW" in user_text:
+                slow_started.set()
+                await release_slow.wait()
+            await slow_started.wait()
+            raise httpx.ConnectError("offline sibling failure", request=request)
+
+        async def count_tokens(_model: str, _messages: list[dict[str, str]]) -> int:
+            return 100
+
+        observer = H0WireObserver()
+        openai_client = build_h0_openai_client(
+            api_key="offline-test-key",
+            base_url="http://offline.invalid/v1",
+            observer=observer,
+            transport=httpx.MockTransport(handler),
+        )
+        ledger = H0AttemptLedger(stage_attempt_id="offline-cancelled-sibling")
+        client = H0QwenVLLMClient(
+            config=LLMConfig(
+                api_key="unused-by-injected-client",
+                model="qwen3-32b-fp8",
+                small_model="qwen3-32b-fp8",
+                base_url="http://offline.invalid/v1",
+                temperature=0.7,
+                max_tokens=16384,
+            ),
+            candidate=self._candidate("Q1"),
+            token_counter=count_tokens,
+            semantic_guardrail=H0SemanticUtilityTests()._guardrail(),
+            ledger=ledger,
+            client=openai_client,
+        )
+
+        async def one_call(text: str, prompt_name: str) -> dict[str, object]:
+            with episode_scope("offline-run", 0):
+                return await client.generate_response(
+                    [
+                        Message(role="system", content="SYSTEM_RAW_SENTINEL"),
+                        Message(role="user", content=text),
+                    ],
+                    response_model=ExtractedEntities,
+                    group_id="offline-run",
+                    prompt_name=prompt_name,
+                )
+
+        slow_task = asyncio.create_task(
+            one_call("SLOW_CANCEL_RAW", "dedupe_edges.resolve_edge.slow")
+        )
+        try:
+            await slow_started.wait()
+            with self.assertRaisesRegex(H0InfrastructureError, "vllm_unreachable"):
+                await one_call("FAIL_INFRA_RAW", "dedupe_edges.resolve_edge.fail")
+            slow_task.cancel()
+            with self.assertRaises(asyncio.CancelledError):
+                await slow_task
+        finally:
+            release_slow.set()
+            await openai_client.close()
+
+        attempts = ledger.safe_artifact()["http_attempts"]
+        self.assertEqual(len(attempts), 2)
+        self.assertTrue(all(item["completed"] for item in attempts))
+        self.assertEqual(
+            {item["failure_class"] for item in attempts},
+            {"vllm_unreachable", "concurrent_attempt_cancelled"},
+        )
 
     async def test_vllm_connection_failure_stops_after_one_wire_attempt(self):
         wire_count = 0

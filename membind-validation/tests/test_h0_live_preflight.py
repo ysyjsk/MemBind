@@ -32,9 +32,9 @@ from h0_runtime import (  # noqa: E402
 from h0_runtime import H0InfrastructureError, H0ManifestError, H0StateGateError  # noqa: E402
 
 
-ARTIFACT_SET_ID = "v1_3_harness_r5"
+ARTIFACT_SET_ID = "v1_3_harness_r6"
 ARTIFACT_SET_REL = f"artifacts/h0_manifest_sets/{ARTIFACT_SET_ID}"
-INDEX_REL = f"{ARTIFACT_SET_REL}/resolved_manifest_index_v1_3_harness_r5.json"
+INDEX_REL = f"{ARTIFACT_SET_REL}/resolved_manifest_index_v1_3_harness_r6.json"
 
 
 class H0ReadinessPreflightTests(IsolatedAsyncioTestCase):
@@ -54,7 +54,7 @@ class H0ReadinessPreflightTests(IsolatedAsyncioTestCase):
         return {
             **self._authorization(),
             "artifact_set_id": ARTIFACT_SET_ID,
-            "execution_harness_revision": 5,
+            "execution_harness_revision": 6,
             "base_url": "http://offline.invalid/v1/",
             "served_model_id": "qwen3-32b-fp8",
             "vllm_version": "0.26.0",
@@ -297,7 +297,7 @@ class H0ResolvedIdentityLoaderTests(IsolatedAsyncioTestCase):
             self.assertEqual(identity["phase"], "H0-A")
             self.assertEqual(identity["context_limit"], 40960)
             self.assertEqual(identity["artifact_set_id"], ARTIFACT_SET_ID)
-            self.assertEqual(identity["execution_harness_revision"], 5)
+            self.assertEqual(identity["execution_harness_revision"], 6)
             self.assertEqual(identity["resolved_manifest_index_sha256"], index_sha)
 
             for field, bad_value in (
