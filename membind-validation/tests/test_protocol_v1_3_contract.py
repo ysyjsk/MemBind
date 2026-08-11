@@ -41,11 +41,11 @@ CURRENT_H0_BLOCKER_TEXT = "none"
 CURRENT_H0_ACTION_SCOPE = "h0_q1_b_live_only"
 CURRENT_H0_NEXT_ACTION = "run_q1_h0-b-post-workload-replacement"
 CURRENT_CHARACTERIZATION_STATUS = "native_characterization_offline_only"
-CURRENT_CHARACTERIZATION_BLOCKER = (
-    "c2_second_structured_output_failure_requires_protocol_decision"
-)
+CURRENT_CHARACTERIZATION_BLOCKER = "c2_json_object_validation_failure_stop_no_fallback"
 CURRENT_CHARACTERIZATION_SCOPE = "native_characterization_offline_only"
-CURRENT_CHARACTERIZATION_NEXT_ACTION = "assess_c2_json_object_protocol_deviation"
+CURRENT_CHARACTERIZATION_NEXT_ACTION = (
+    "report_c2_json_object_partial_diagnostic_and_await_decision"
+)
 INVALIDATED_H0_A_CHECKPOINT_SHA256 = (
     "127c81b39ccd705d7c67dc936e953992d5be97f4065fd56f3655db52d12ad309"
 )

@@ -163,6 +163,10 @@ class NativeCharacterizationU0Tests(TestCase):
         self.assertEqual(runtime.config.requested_max_tokens, 16384)
         self.assertEqual(runtime.config.context_limit, 40960)
         self.assertEqual(runtime.config.safety_margin_tokens, 32)
+        self.assertEqual(runtime.config.structured_output_mode, "json_schema")
+        self.assertEqual(
+            runtime.llm_client.kwargs["structured_output_mode"], "json_schema"
+        )
         graphiti_kwargs = runtime.graphiti.kwargs
         self.assertIs(graphiti_kwargs["llm_client"], runtime.llm_client)
         self.assertIs(graphiti_kwargs["embedder"], runtime.embedder)
@@ -173,6 +177,38 @@ class NativeCharacterizationU0Tests(TestCase):
         self.assertNotIn("fixture-construction-key", str(runtime.config.to_artifact()))
         self.assertNotIn("fixture-embedding-key", str(runtime.config.to_artifact()))
         self.assertNotIn("fixture-neo4j-password", str(runtime.config.to_artifact()))
+
+    def test_explicit_json_object_variant_is_bound_into_client_and_artifact(self):
+        events: list[str] = []
+        with patch.dict(os.environ, ENV, clear=True):
+            runtime = build_u0_graphiti_from_env(
+                authorization_checker=lambda _action: events.append("gate"),
+                env_loader=lambda: events.append("env"),
+                component_loader=_Recorder(events).components,
+                structured_output_mode="json_object",
+            )
+
+        self.assertEqual(runtime.config.structured_output_mode, "json_object")
+        self.assertEqual(
+            runtime.llm_client.kwargs["structured_output_mode"], "json_object"
+        )
+        self.assertEqual(
+            runtime.config.to_artifact()["construction"]["structured_output_mode"],
+            "json_object",
+        )
+
+    def test_invalid_structured_output_mode_fails_before_env_or_components(self):
+        events: list[str] = []
+        with self.assertRaisesRegex(
+            U0ConfigurationError, "structured_output_mode_invalid"
+        ):
+            build_u0_graphiti_from_env(
+                authorization_checker=lambda _action: events.append("gate"),
+                env_loader=lambda: events.append("env"),
+                component_loader=_Recorder(events).components,
+                structured_output_mode="automatic",
+            )
+        self.assertEqual(events, ["gate"])
 
     def test_non_sensitive_identity_drift_fails_before_component_import(self):
         events: list[str] = []

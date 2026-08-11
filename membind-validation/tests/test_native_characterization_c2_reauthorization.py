@@ -249,12 +249,13 @@ class NativeCharacterizationC2ReauthorizationTests(TestCase):
             {"native_characterization"},
         )
 
-    def test_cleanup_helper_contract_is_the_exact_consumed_schema(self) -> None:
+    def test_cleanup_helper_keeps_schema_and_target_with_latest_attribution(self) -> None:
         self.assertEqual(
             CLEANUP_SCHEMA_VERSION,
             "membind.native-characterization-c2-cleanup.v1",
         )
-        self.assertEqual(CLEANUP_FAILED_ATTEMPT_ID, FAILED_ATTEMPT_ID)
+        self.assertEqual(FAILED_ATTEMPT_ID, "c2-efb58c477f12adf6")
+        self.assertEqual(CLEANUP_FAILED_ATTEMPT_ID, "c2-723261287e32e182")
         self.assertEqual(CLEANUP_POLLUTED_GROUP_ID, POLLUTED_GROUP_ID)
         self.assertEqual(
             CLEANUP_PRIMITIVE,

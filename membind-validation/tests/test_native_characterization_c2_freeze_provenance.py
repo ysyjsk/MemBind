@@ -8,6 +8,7 @@ import sys
 import tempfile
 from pathlib import Path
 from unittest import TestCase
+from unittest.mock import patch
 
 
 ROOT = Path(__file__).resolve().parents[1]
@@ -45,6 +46,87 @@ def _set_manifest_freeze_path(validation: Path, relative: str) -> None:
 
 
 class NativeCharacterizationC2FreezeProvenanceTests(TestCase):
+    def test_runner_binds_json_object_freeze_mode_into_default_runtime(self) -> None:
+        with tempfile.TemporaryDirectory() as temporary:
+            validation = Path(temporary)
+            freeze = runner_fixtures._write_freeze(validation)
+            payload = json.loads(freeze.read_text(encoding="utf-8"))
+            payload["construction_compatibility_policy"] = {
+                "structured_output_mode": "json_object"
+            }
+            freeze.write_text(json.dumps(payload, sort_keys=True), encoding="utf-8")
+            captured: dict[str, object] = {}
+
+            def factory(**kwargs):
+                captured.update(kwargs)
+                return runner_fixtures._fake_runtime_factory()
+
+            with patch.object(c2, "build_u0_graphiti_from_env", side_effect=factory):
+                result = asyncio.run(
+                    c2.execute_c2(
+                        validation_root=validation,
+                        freeze_path="artifacts/native_characterization/freeze.json",
+                        run_id="c2-offline-json-object-freeze",
+                        authorization_checker=lambda _action: None,
+                        measurement_installer=(
+                            runner_fixtures._complete_measurement_installer
+                        ),
+                        graph_prefix_collector=(
+                            runner_fixtures._graph_prefix_collector
+                        ),
+                    )
+                )
+
+            manifest = json.loads(
+                (
+                    validation
+                    / "artifacts/native_characterization/runs"
+                    / result["run_id"]
+                    / "manifest.json"
+                ).read_text(encoding="ascii")
+            )
+            self.assertEqual(captured["structured_output_mode"], "json_object")
+            self.assertEqual(
+                manifest["provenance"]["structured_output_mode"], "json_object"
+            )
+
+    def test_runner_rejects_invalid_freeze_mode_before_runtime_or_writes(self) -> None:
+        with tempfile.TemporaryDirectory() as temporary:
+            validation = Path(temporary)
+            freeze = runner_fixtures._write_freeze(validation)
+            payload = json.loads(freeze.read_text(encoding="utf-8"))
+            payload["construction_compatibility_policy"] = {
+                "structured_output_mode": "automatic"
+            }
+            freeze.write_text(json.dumps(payload, sort_keys=True), encoding="utf-8")
+            runtime_calls = 0
+
+            def runtime_factory():
+                nonlocal runtime_calls
+                runtime_calls += 1
+                return runner_fixtures._fake_runtime_factory()
+
+            run_id = "c2-offline-invalid-freeze-mode"
+            with self.assertRaises(c2.NativeCharacterizationC2Error) as raised:
+                asyncio.run(
+                    c2.execute_c2(
+                        validation_root=validation,
+                        freeze_path="artifacts/native_characterization/freeze.json",
+                        run_id=run_id,
+                        authorization_checker=lambda _action: None,
+                        runtime_factory=runtime_factory,
+                    )
+                )
+            self.assertEqual(str(raised.exception), "structured_output_mode_invalid")
+            self.assertEqual(runtime_calls, 0)
+            self.assertFalse(
+                (
+                    validation
+                    / "artifacts/native_characterization/runs"
+                    / run_id
+                ).exists()
+            )
+
     def test_runner_resolves_safe_nested_freeze_against_validation_root(self) -> None:
         with tempfile.TemporaryDirectory() as temporary:
             validation = Path(temporary)
@@ -181,6 +263,21 @@ class NativeCharacterizationC2FreezeProvenanceTests(TestCase):
             with self.assertRaises(C2VerificationError) as raised:
                 verify_c2_run(validation, RUN_ID)
             self.assertEqual(raised.exception.code, "provenance_local_hash_mismatch")
+
+    def test_verifier_cross_checks_structured_output_mode_against_freeze(self) -> None:
+        with tempfile.TemporaryDirectory() as temporary:
+            validation = Path(temporary)
+            _build_valid_run(validation)
+            manifest = _read_manifest(validation)
+            manifest["provenance"]["structured_output_mode"] = "json_object"
+            _rewrite_manifest(validation, manifest)
+
+            with self.assertRaises(C2VerificationError) as raised:
+                verify_c2_run(validation, RUN_ID)
+            self.assertEqual(
+                raised.exception.code,
+                "structured_output_mode_cross_bind_mismatch",
+            )
 
     def test_verifier_rejects_unsafe_recorded_freeze_paths(self) -> None:
         cases = {

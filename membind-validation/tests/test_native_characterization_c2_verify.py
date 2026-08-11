@@ -132,7 +132,15 @@ def _build_valid_run(validation: Path) -> Path:
 
     freeze = validation / "artifacts/native_characterization/freeze.json"
     phase_map = validation / "artifacts/native_characterization/phase_map.json"
-    _write_json(freeze, {"schema_version": "freeze.fixture.v1"})
+    _write_json(
+        freeze,
+        {
+            "schema_version": "freeze.fixture.v1",
+            "construction_compatibility_policy": {
+                "structured_output_mode": "json_schema"
+            },
+        },
+    )
     _write_json(phase_map, {"schema_version": "phase-map.fixture.v1"})
     for field, relative in CODE_BINDINGS.items():
         path = validation / relative
@@ -230,6 +238,7 @@ def _build_valid_run(validation: Path) -> Path:
         ),
         "freeze_path": "artifacts/native_characterization/freeze.json",
         "freeze_sha256": _file_sha(freeze),
+        "structured_output_mode": "json_schema",
         "phase_map_sha256": _file_sha(phase_map),
         "frozen_input_hashes": {},
         "dataset_source_sha256": "3" * 64,

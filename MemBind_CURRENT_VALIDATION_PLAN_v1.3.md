@@ -5,10 +5,10 @@
 protocol_version=current-validation-v1.3
 current_stage=NATIVE_CHARACTERIZATION
 status=native_characterization_offline_only
-current_blocker=c2_second_structured_output_failure_requires_protocol_decision
+current_blocker=c2_json_object_validation_failure_stop_no_fallback
 current_action_scope=native_characterization_offline_only
-stage_progress.native_characterization=c0_c1_pass_c2_second_json_schema_failure_stopped
-instrumentation_contract_status=measurement_correctness_repair_pending
+stage_progress.native_characterization=c0_c1_pass_c2_json_object_validation_failure_after_7_completed
+instrumentation_contract_status=qualified_overhead_report_only
 c1_aa_classification=clean_pass
 c0_dry_run_passed=true
 c0_dry_run_live_request_performed=false
@@ -17,7 +17,7 @@ authorized_live_actions=[]
 live_h0_candidate_authorized=false
 service_admin_authorized=false
 native_characterization_live_authorized=false
-next_allowed_action=assess_c2_json_object_protocol_deviation
+next_allowed_action=report_c2_json_object_partial_diagnostic_and_await_decision
 ```
 <!-- NATIVE_CHARACTERIZATION_CURRENT_POINTER_END -->
 
@@ -25,11 +25,12 @@ next_allowed_action=assess_c2_json_object_protocol_deviation
 c2_minimal_recovery_contract=membind-validation/EXPERIMENT_PLAN.md#C2_MINIMAL_RECOVERY_POINTER
 ```
 
-Both failed C2 attempts are invalid and non-mergeable. The replacement stopped
-after the same ten-episode boundary with `JSONDecodeError`; its live grant is
-revoked. The execution plan is the single source for immutable failure evidence
-and the current offline decision boundary. No cleanup, rerun, or `json_object`
-variant is authorized from this summary.
+Both failed C2 attempts remain invalid and non-mergeable. The exact polluted
+block-0 namespace has now been verified empty, and the single `json_object`
+transport variant completed seven episodes before a Pydantic validation failure
+in edge resolution. That attempt is diagnostic only and all live authority is
+revoked. No H0, M1/M2, service-admin, retry, parser-fallback, or other live
+action is authorized.
 
 ```text
 HISTORICAL_SOLUTION_LANE_BELOW=true

@@ -117,6 +117,9 @@ def _clear_spy(events: list[tuple], *, fail: bool = False):
 
 
 class NativeCharacterizationC2CleanupTests(TestCase):
+    def test_cleanup_evidence_is_bound_to_latest_polluting_attempt(self) -> None:
+        self.assertEqual(FAILED_C2_ATTEMPT_ID, "c2-723261287e32e182")
+
     def test_exact_block_zero_cleanup_counts_before_and_after(self) -> None:
         with tempfile.TemporaryDirectory() as tmp:
             freeze = _write_freeze(Path(tmp))

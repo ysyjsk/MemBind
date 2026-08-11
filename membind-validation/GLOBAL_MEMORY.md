@@ -5,10 +5,10 @@
 protocol_version=current-validation-v1.3
 current_stage=NATIVE_CHARACTERIZATION
 status=native_characterization_offline_only
-current_blocker=c2_second_structured_output_failure_requires_protocol_decision
+current_blocker=c2_json_object_validation_failure_stop_no_fallback
 current_action_scope=native_characterization_offline_only
-stage_progress.native_characterization=c0_c1_pass_c2_second_json_schema_failure_stopped
-instrumentation_contract_status=measurement_correctness_repair_pending
+stage_progress.native_characterization=c0_c1_pass_c2_json_object_validation_failure_after_7_completed
+instrumentation_contract_status=qualified_overhead_report_only
 c1_aa_classification=clean_pass
 c0_dry_run_passed=true
 c0_dry_run_live_request_performed=false
@@ -17,19 +17,32 @@ authorized_live_actions=[]
 live_h0_candidate_authorized=false
 service_admin_authorized=false
 native_characterization_live_authorized=false
-next_allowed_action=assess_c2_json_object_protocol_deviation
+next_allowed_action=report_c2_json_object_partial_diagnostic_and_await_decision
 ```
 <!-- NATIVE_CHARACTERIZATION_CURRENT_POINTER_END -->
 
 ```text
 c2_minimal_recovery_contract=membind-validation/EXPERIMENT_PLAN.md#C2_MINIMAL_RECOVERY_POINTER
+lightweight_execution_decision=artifacts/diagnostics/native_characterization_lightweight_execution_decision_20260811.md
+latest_partial_diagnostic=artifacts/diagnostics/native_characterization_c2_json_object_partial_diagnostic_20260811.json
+latest_partial_report=artifacts/diagnostics/native_characterization_lightweight_decision_and_partial_result_report_20260811.md
 ```
 
-Both failed C2 attempts are invalid and non-mergeable. The replacement run
-`c2-723261287e32e182` stopped after the same ten completed episodes. Its live
-grant is revoked; cleanup, rerun, and `json_object` selection are not authorized.
-`EXPERIMENT_PLAN.md#C2_MINIMAL_RECOVERY_POINTER` owns the evidence hashes and
-offline decision boundary so this compact memory does not duplicate them.
+The lightweight execution decision makes instrumentation overhead a reported,
+non-blocking perturbation measure while retaining semantic parity and timing
+correctness as hard requirements. It freezes further qualification work and
+permits no live action by itself; the machine pointer above remains authoritative
+until the single necessary C2 transition is explicitly applied.
+
+Both failed C2 attempts remain invalid and non-mergeable. The replacement run
+`c2-723261287e32e182` stopped after the same ten completed episodes. Its exact
+polluted namespace has since been verified empty. The single derived
+`json_object` freeze completed seven fresh episodes and then failed Pydantic
+validation in edge resolution. The prefix is diagnostic only and the current
+pointer revokes all live work; `EXPERIMENT_PLAN.md#C2_MINIMAL_RECOVERY_POINTER`
+retains the historical failure hashes without authorizing another recovery.
+The failed fresh namespace currently contains 56 nodes and 67 relationships;
+it is polluted, non-reusable, and not authorized for another cleanup.
 
 ```text
 HISTORICAL_SOLUTION_LANE_BELOW=true

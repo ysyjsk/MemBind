@@ -19,7 +19,7 @@ from native_characterization_c2 import load_e1_e2_blocks
 
 
 SCHEMA_VERSION = "membind.native-characterization-c2-cleanup.v1"
-FAILED_C2_ATTEMPT_ID = "c2-efb58c477f12adf6"
+FAILED_C2_ATTEMPT_ID = "c2-723261287e32e182"
 POLLUTED_C2_GROUP_ID = "nc-e1e2-400b9b78c2c218df"
 CLEANUP_PRIMITIVE = "graphiti.clear_data(driver,group_ids=[target_group])"
 

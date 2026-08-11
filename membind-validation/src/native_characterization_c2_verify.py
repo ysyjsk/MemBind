@@ -305,6 +305,19 @@ def _verify_provenance(
     freeze_raw = _read_file(freeze_path, "provenance_local_file_missing")
     if _sha256_bytes(freeze_raw) != expected_freeze_sha:
         _fail("provenance_local_hash_mismatch")
+    freeze = _parse_json(freeze_raw, "provenance_freeze_invalid")
+    policy = freeze.get("construction_compatibility_policy")
+    if policy is None:
+        freeze_mode = "json_schema"
+    elif isinstance(policy, dict):
+        freeze_mode = policy.get("structured_output_mode")
+    else:
+        _fail("structured_output_mode_cross_bind_mismatch")
+    if (
+        freeze_mode not in {"json_schema", "json_object"}
+        or provenance.get("structured_output_mode") != freeze_mode
+    ):
+        _fail("structured_output_mode_cross_bind_mismatch")
     for field, relative in _PROVENANCE_BINDINGS.items():
         expected = provenance.get(field)
         if not _valid_sha256(expected):

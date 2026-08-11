@@ -196,6 +196,20 @@ def _load_json_object(path: str | Path, label: str) -> dict[str, Any]:
     return value
 
 
+def _freeze_structured_output_mode(freeze: Mapping[str, Any]) -> str:
+    policy = freeze.get("construction_compatibility_policy")
+    if policy is None:
+        # Historical offline fixtures predate this provenance field. Production
+        # freezes always carry the policy explicitly.
+        return "json_schema"
+    if not isinstance(policy, Mapping):
+        raise NativeCharacterizationC2Error("structured_output_mode_invalid")
+    mode = policy.get("structured_output_mode")
+    if mode not in {"json_schema", "json_object"}:
+        raise NativeCharacterizationC2Error("structured_output_mode_invalid")
+    return str(mode)
+
+
 def _resolve_safe_validation_relative_file(
     validation_root: Path,
     supplied: str | Path,
@@ -494,6 +508,7 @@ def _run_provenance(
         ),
         "freeze_path": freeze_path,
         "freeze_sha256": freeze_sha256,
+        "structured_output_mode": _freeze_structured_output_mode(freeze_payload),
         "phase_map_sha256": _sha256_file(phase_map) if phase_map.is_file() else None,
         "c2_runner_source_sha256": _sha256_file(Path(__file__)),
         "measurement_adapter_source_sha256": _sha256_file(
@@ -1422,6 +1437,7 @@ async def execute_c2(
     )
     freeze_sha256 = _sha256_file(freeze)
     freeze_payload = _load_json_object(freeze, "freeze")
+    structured_output_mode = _freeze_structured_output_mode(freeze_payload)
     blocks = load_e1_e2_blocks(freeze)
     if _RUN_ID_RE.fullmatch(run_id) is None and not run_id.startswith("c2-offline-"):
         raise NativeCharacterizationC2Error("run_id_invalid")
@@ -1434,6 +1450,7 @@ async def execute_c2(
             return build_u0_graphiti_from_env(
                 authorization_checker=authorization_checker,
                 live_action=LiveAction.NATIVE_CHARACTERIZATION_C2,
+                structured_output_mode=structured_output_mode,
             )
 
     runtime_episodes = (

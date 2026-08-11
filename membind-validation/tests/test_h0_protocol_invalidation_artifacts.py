@@ -47,7 +47,7 @@ class H0ProtocolInvalidationArtifactTests(TestCase):
         )
         self.assertEqual(
             state["current_blocker"],
-            "c2_second_structured_output_failure_requires_protocol_decision",
+            "c2_json_object_validation_failure_stop_no_fallback",
         )
         self.assertFalse(state["live_h0_candidate_authorized"])
         self.assertEqual(

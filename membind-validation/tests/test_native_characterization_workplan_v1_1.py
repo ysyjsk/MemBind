@@ -68,14 +68,11 @@ class NativeCharacterizationWorkplanV11ContractTests(TestCase):
             self.assertEqual(text.count(end), 1)
             current = text.split(start, 1)[1].split(end, 1)[0]
             self.assertIn(
-                (
-                    "current_blocker="
-                    "c2_second_structured_output_failure_requires_protocol_decision"
-                ),
+                "current_blocker=c2_json_object_validation_failure_stop_no_fallback",
                 current,
             )
             self.assertIn(
-                "next_allowed_action=assess_c2_json_object_protocol_deviation",
+                "next_allowed_action=report_c2_json_object_partial_diagnostic_and_await_decision",
                 current,
             )
             self.assertNotIn(

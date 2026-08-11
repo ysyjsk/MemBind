@@ -53,6 +53,7 @@ class U0Config:
     embedding_dimension: int
     neo4j_uri: str
     max_coroutines: int
+    structured_output_mode: str = "json_schema"
     requested_max_tokens: int = REQUESTED_MAX_TOKENS
     context_limit: int = CONTEXT_LIMIT
     safety_margin_tokens: int = CONTEXT_SAFETY_TOKENS
@@ -74,6 +75,7 @@ class U0Config:
                 "top_p": 1.0,
                 "seed": 20260806,
                 "enable_thinking": False,
+                "structured_output_mode": self.structured_output_mode,
             },
             "embedding": {
                 "base_url": self.embedding_base_url,
@@ -159,10 +161,13 @@ def build_u0_graphiti_from_env(
     live_action: LiveAction = LiveAction.NATIVE_CHARACTERIZATION_C0,
     env_loader: Callable[[], Any] | None = None,
     component_loader: Callable[[], U0Components] = _load_production_components,
+    structured_output_mode: str = "json_schema",
 ) -> U0Runtime:
     """Build U0 after the exact live gate, with no cache or stabilizer path."""
 
     authorization_checker(live_action)
+    if structured_output_mode not in {"json_schema", "json_object"}:
+        raise _fail("structured_output_mode_invalid")
     if env_loader is None:
         # Keep the legacy loader lazy: importing its module is harmless, but
         # reading `.env` before the live gate would violate the authority order.
@@ -215,6 +220,7 @@ def build_u0_graphiti_from_env(
             MAX_COROUTINES,
             "max_coroutines_mismatch",
         ),
+        structured_output_mode=structured_output_mode,
     )
 
     components = component_loader()
@@ -229,7 +235,7 @@ def build_u0_graphiti_from_env(
     llm_client = components.qwen_client_type(
         config=llm_config,
         max_tokens=config.requested_max_tokens,
-        structured_output_mode="json_schema",
+        structured_output_mode=config.structured_output_mode,
     )
     embedder_config = components.embedder_config_type(
         api_key=embedding_key,

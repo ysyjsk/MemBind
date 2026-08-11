@@ -5,10 +5,10 @@
 protocol_version=current-validation-v1.3
 current_stage=NATIVE_CHARACTERIZATION
 status=native_characterization_offline_only
-current_blocker=c2_second_structured_output_failure_requires_protocol_decision
+current_blocker=c2_json_object_validation_failure_stop_no_fallback
 current_action_scope=native_characterization_offline_only
-stage_progress.native_characterization=c0_c1_pass_c2_second_json_schema_failure_stopped
-instrumentation_contract_status=measurement_correctness_repair_pending
+stage_progress.native_characterization=c0_c1_pass_c2_json_object_validation_failure_after_7_completed
+instrumentation_contract_status=qualified_overhead_report_only
 c1_aa_classification=clean_pass
 c0_dry_run_passed=true
 c0_dry_run_live_request_performed=false
@@ -17,7 +17,7 @@ authorized_live_actions=[]
 live_h0_candidate_authorized=false
 service_admin_authorized=false
 native_characterization_live_authorized=false
-next_allowed_action=assess_c2_json_object_protocol_deviation
+next_allowed_action=report_c2_json_object_partial_diagnostic_and_await_decision
 ```
 <!-- NATIVE_CHARACTERIZATION_CURRENT_POINTER_END -->
 
@@ -125,15 +125,14 @@ current_live_grant_revoked=true
 ```
 <!-- C2_MINIMAL_RECOVERY_POINTER_END -->
 
-This remains a bounded measurement-correctness repair, not a new protocol or
-recovery subsystem. The first exact cleanup and C2-only reauthorization are
-historical completed actions. The replacement failed after the same ten
-completed episodes, so that grant is now consumed and revoked. Its sanitized
-report is immutable; neither attempt may contribute to C2 results. The current
-scope is offline only: repair the demonstrated telemetry defects with TDD and
-assess whether a `json_object` variant requires explicit re-freeze and C0
-requalification. Do not clean the replacement namespace, rerun C2, or switch
-the mode without a new explicit decision and authority transition.
+This remains bounded recovery history, not a new protocol or subsystem. Both
+failed attempts and their reports remain immutable and contribute no C2 result.
+The lightweight execution decision has since closed qualification work, the
+second polluted namespace has been precisely cleaned and verified empty, and a
+single derived `json_object` freeze was tried once. It completed seven episodes
+before a Pydantic validation failure in edge resolution. The current pointer
+revokes all live authority; no additional compatibility candidate, C0 rerun,
+retry, or fallback stack is allowed.
 
 ```text
 HISTORICAL_SOLUTION_LANE_BELOW=true

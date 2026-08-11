@@ -28,14 +28,12 @@ EXPECTED = {
     "protocol_version": "current-validation-v1.3",
     "current_stage": "NATIVE_CHARACTERIZATION",
     "status": "native_characterization_offline_only",
-    "current_blocker": (
-        "c2_second_structured_output_failure_requires_protocol_decision"
-    ),
+    "current_blocker": "c2_json_object_validation_failure_stop_no_fallback",
     "current_action_scope": "native_characterization_offline_only",
     "stage_progress.native_characterization": (
-        "c0_c1_pass_c2_second_json_schema_failure_stopped"
+        "c0_c1_pass_c2_json_object_validation_failure_after_7_completed"
     ),
-    "instrumentation_contract_status": "measurement_correctness_repair_pending",
+    "instrumentation_contract_status": "qualified_overhead_report_only",
     "c1_aa_classification": "clean_pass",
     "c0_dry_run_passed": "true",
     "c0_dry_run_live_request_performed": "false",
@@ -44,7 +42,7 @@ EXPECTED = {
     "live_h0_candidate_authorized": "false",
     "service_admin_authorized": "false",
     "native_characterization_live_authorized": "false",
-    "next_allowed_action": "assess_c2_json_object_protocol_deviation",
+    "next_allowed_action": "report_c2_json_object_partial_diagnostic_and_await_decision",
 }
 
 FAILED_C2_ATTEMPT = "c2-efb58c477f12adf6"
@@ -119,7 +117,7 @@ def _fields(block: str) -> dict[str, str]:
 
 
 class NativeCharacterizationCurrentPointerTests(TestCase):
-    def test_machine_state_stops_after_second_c2_structured_failure(self) -> None:
+    def test_machine_state_stops_after_json_object_validation_failure(self) -> None:
         state = json.loads((ROOT / "CURRENT_STATE.json").read_text(encoding="ascii"))
 
         self.assertEqual(state["current_stage"], EXPECTED["current_stage"])
@@ -191,7 +189,7 @@ class NativeCharacterizationCurrentPointerTests(TestCase):
                 blocks.append(block)
         self.assertEqual(len(set(blocks)), 1)
 
-    def test_current_pointer_is_offline_only_and_h0_is_explicit_history(self) -> None:
+    def test_current_pointer_is_offline_and_keeps_h0_as_history(self) -> None:
         for path in DOCUMENTS:
             with self.subTest(document=path.name):
                 text = path.read_text(encoding="utf-8")
@@ -201,7 +199,7 @@ class NativeCharacterizationCurrentPointerTests(TestCase):
                 self.assertNotIn("authorized_live_actions=h0_candidate", current)
                 self.assertIn("authorized_live_actions=[]", current)
                 self.assertIn(
-                    "next_allowed_action=assess_c2_json_object_protocol_deviation",
+                    "next_allowed_action=report_c2_json_object_partial_diagnostic_and_await_decision",
                     current,
                 )
                 self.assertIn("HISTORICAL_SOLUTION_LANE_BELOW=true", history)
