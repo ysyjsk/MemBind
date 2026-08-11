@@ -5,20 +5,63 @@
 protocol_version=current-validation-v1.3
 current_stage=NATIVE_CHARACTERIZATION
 status=native_characterization_offline_only
-current_blocker=none
+current_blocker=c2_polluted_namespace_cleanup_pending
 current_action_scope=native_characterization_offline_only
-stage_progress.native_characterization=c0_pass_c2_runner_tdd_pending
+stage_progress.native_characterization=c0_c1_pass_c2_failed_attempt_invalid_cleanup_tdd_pending
 instrumentation_contract_status=qualified
 c1_aa_classification=clean_pass
 c0_dry_run_passed=true
-c0_live_request_performed=false
+c0_dry_run_live_request_performed=false
+c0_live_passed=true
 authorized_live_actions=[]
 live_h0_candidate_authorized=false
 service_admin_authorized=false
 native_characterization_live_authorized=false
-next_allowed_action=implement_c2_runner_offline
+next_allowed_action=implement_scoped_c2_cleanup_offline
 ```
 <!-- NATIVE_CHARACTERIZATION_CURRENT_POINTER_END -->
+
+<!-- C2_MINIMAL_RECOVERY_POINTER_START -->
+```text
+c2_recovery_scope=single_frozen_group_only
+failed_attempt_id=c2-efb58c477f12adf6
+failed_attempt_error=json.decoder.JSONDecodeError
+failed_attempt_completed_episodes=10
+failed_attempt_valid=false
+failed_attempt_mergeable=false
+replacement_resume_allowed=false
+prior_c2_live_grant=consumed_by_failed_attempt
+polluted_group_id=nc-e1e2-400b9b78c2c218df
+parser_fix_status=focused_green
+parser_fix_log=artifacts/tdd/native_characterization_c2_json_extraction_green_20260811.log
+parser_fix_log_sha256=92cf5aa75a17512cdb9b164a12d5ca34431c95ee004cacd2d08cab23a8641f27
+cleanup_primitive=graphiti.clear_data(driver,group_ids=[target_group])
+cleanup_allowlist_source=artifacts/native_characterization/freeze.json
+cleanup_target_binding=target_group==polluted_group_id==freeze.screening.e1_e2.block_order[0].graph_namespace
+cleanup_rejects=none,empty,multiple,other_frozen,non_frozen
+cleanup_requires_explicit_operator_authorization=true
+post_cleanup_node_count_required=0
+post_cleanup_relationship_count_required=0
+post_cleanup_live_transition=reuse_existing_c2_only_gate
+replacement_start_source_sequence=0
+replacement_run_id_policy=fresh_c2_16hex
+structured_output_second_failure_action=stop_and_assess_json_object
+workplan_v1_1_modified=false
+freeze_modified=false
+new_recovery_framework_allowed=false
+full_offline_regression_after_parser_and_cleanup=pending
+```
+<!-- C2_MINIMAL_RECOVERY_POINTER_END -->
+
+This is a bounded measurement-correctness repair, not a new protocol or
+recovery subsystem. Implement the thin allowlisted cleanup helper with RED and
+minimal GREEN, run one focused suite and one full offline regression, then stop
+for explicit authorization before deleting the exact group above. After
+verified zero node and relationship counts, reuse the existing C2-only
+authorization transition, recheck the services, and start a fresh run ID from
+block 0 / episode 0. The helper must reject every target except the exact block-0
+binding above, including the other three frozen C2 groups. Never combine the
+failed attempt's ten episodes with replacement evidence.
 
 ```text
 HISTORICAL_SOLUTION_LANE_BELOW=true
@@ -42,10 +85,11 @@ current_action_scope: h0_q1_b_live_only
 > Frozen entry status: `WORKPLAN_FREEZE=true`；
 > `protocol_review_status=closed`；
 > `next_allowed_work=C1_instrumentation_implementation`。
-> C1 已完成 qualification，C0 dry-run 已通过且没有 live request；当前恢复点以
-> 文件顶部 machine-readable pointer 和 `CURRENT_STATE.json` 为准。
+> C1 与 C0 已通过；首次 C2 attempt 在 10 个 episode 后因 structured JSON
+> 解码失败并永久失效。当前恢复点以文件顶部 machine-readable pointer 和
+> `CURRENT_STATE.json` 为准，只允许离线实现 scoped cleanup guard。
 > 本文件是 frozen solution-validation lane 的执行镜像，不得启动 H0/M1/M2 或
-> replacement-004；C0 live grant 仍须在 operator 启动两项 vLLM 服务后单独授权。
+> replacement-004；当前也不授权 C2 live 或数据库清理。
 
 This preserves the concise historical execution overlay for
 `../MemBind_CURRENT_VALIDATION_PLAN_v1.3.md`. The Native characterization v1.1

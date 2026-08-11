@@ -45,7 +45,10 @@ class H0ProtocolInvalidationArtifactTests(TestCase):
         self.assertEqual(
             state["current_action_scope"], "native_characterization_offline_only"
         )
-        self.assertIsNone(state["current_blocker"])
+        self.assertEqual(
+            state["current_blocker"],
+            "c2_polluted_namespace_cleanup_pending",
+        )
         self.assertFalse(state["live_h0_candidate_authorized"])
         self.assertEqual(state["authorized_live_actions"], [])
         self.assertIsNone(state["authorized_h0_candidate_id"])

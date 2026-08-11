@@ -5,20 +5,29 @@
 protocol_version=current-validation-v1.3
 current_stage=NATIVE_CHARACTERIZATION
 status=native_characterization_offline_only
-current_blocker=none
+current_blocker=c2_polluted_namespace_cleanup_pending
 current_action_scope=native_characterization_offline_only
-stage_progress.native_characterization=c0_pass_c2_runner_tdd_pending
+stage_progress.native_characterization=c0_c1_pass_c2_failed_attempt_invalid_cleanup_tdd_pending
 instrumentation_contract_status=qualified
 c1_aa_classification=clean_pass
 c0_dry_run_passed=true
-c0_live_request_performed=false
+c0_dry_run_live_request_performed=false
+c0_live_passed=true
 authorized_live_actions=[]
 live_h0_candidate_authorized=false
 service_admin_authorized=false
 native_characterization_live_authorized=false
-next_allowed_action=implement_c2_runner_offline
+next_allowed_action=implement_scoped_c2_cleanup_offline
 ```
 <!-- NATIVE_CHARACTERIZATION_CURRENT_POINTER_END -->
+
+```text
+c2_minimal_recovery_contract=membind-validation/EXPERIMENT_PLAN.md#C2_MINIMAL_RECOVERY_POINTER
+```
+
+The failed C2 attempt is invalid and non-mergeable. The existing execution plan
+is the single source for the exact-group cleanup and replacement-run procedure;
+this summary deliberately does not duplicate that contract.
 
 ```text
 HISTORICAL_SOLUTION_LANE_BELOW=true
@@ -37,21 +46,21 @@ and starts with Native Graphiti construction characterization. The prior
 immutable historical plan. The old H0/M1/M2/
 MemBind solution lane is frozen exploratory prototype/history: do not resume H0,
 replacement-004, M2 formalization, or live solution validation from this pointer.
-The frozen entry markers are `WORKPLAN_FREEZE=true`,
-`protocol_review_status=closed`, and
-`next_allowed_work=C1_instrumentation_implementation`; execution has since
-qualified C1 and passed the C0 dry-run without issuing a live request. No further
-protocol review or experiment-surface expansion is authorized. The next action
-is operator service startup followed by a separate, tested C0-only live grant;
-the current state itself authorizes no live action.
+The frozen entry markers remain `WORKPLAN_FREEZE=true` and
+`protocol_review_status=closed`. Execution has since qualified C1, passed C0,
+and permanently invalidated the first C2 attempt after a structured-output
+failure at episode 10. No further protocol review or experiment-surface
+expansion is authorized. The next action is only the offline, allowlisted C2
+cleanup helper described above; the current state authorizes no live action.
 Historical checkpoints, hashes, failures, credential fences, remote
 forced-command limits, and `gpt55_temporary/**` exclusion remain unchanged.
 The persisted reset rationale and TDD status are in
 `artifacts/diagnostics/native_characterization_research_reset_20260810.md`.
 The v1.1 literature review and scope decisions are in
 `artifacts/diagnostics/native_characterization_plan_v1_1_review_20260810.md`.
-Current status is `instrumentation_contract_status=qualified`; C0 remains a
-dry-run only and produced no C0-C5 live or scientific result.
+Current status is `instrumentation_contract_status=qualified`; C0 live viability
+passed but is not a scientific result. C2 has no completed block and therefore
+has produced no valid characterization result yet.
 
 <!-- Maintainability: keep this pointer short; detailed characterization rules
 live only in the authoritative workplan to prevent document drift. -->

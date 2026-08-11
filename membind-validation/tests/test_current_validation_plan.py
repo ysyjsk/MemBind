@@ -8,14 +8,14 @@ from unittest import TestCase
 ROOT = Path(__file__).resolve().parents[1]
 REPO = ROOT.parent
 CURRENT_H0_STATUS = "h0_q1_b_live_only"
-CURRENT_H0_BLOCKER = None
-CURRENT_H0_BLOCKER_TEXT = "none"
 CURRENT_H0_ACTION_SCOPE = "h0_q1_b_live_only"
 CURRENT_H0_NEXT_ACTION = "run_q1_h0-b-post-workload-replacement"
 CURRENT_CHARACTERIZATION_STAGE = "NATIVE_CHARACTERIZATION"
 CURRENT_CHARACTERIZATION_STATUS = "native_characterization_offline_only"
+CURRENT_CHARACTERIZATION_BLOCKER = "c2_polluted_namespace_cleanup_pending"
+CURRENT_CHARACTERIZATION_BLOCKER_TEXT = CURRENT_CHARACTERIZATION_BLOCKER
 CURRENT_CHARACTERIZATION_SCOPE = "native_characterization_offline_only"
-CURRENT_CHARACTERIZATION_NEXT_ACTION = "implement_c2_runner_offline"
+CURRENT_CHARACTERIZATION_NEXT_ACTION = "implement_scoped_c2_cleanup_offline"
 HISTORICAL_V3_BLOCKER = "v3_smoke_002_m0_structured_output_failure"
 
 
@@ -109,7 +109,7 @@ class CurrentValidationPlanTests(TestCase):
             state["evidence"]["v3_blocker_full_regression_sha256"],
             "6be85ceb90f0436accaf75de967c60ba88784578714ab6d19aae73c3cac547b8",
         )
-        self.assertEqual(state["current_blocker"], CURRENT_H0_BLOCKER)
+        self.assertEqual(state["current_blocker"], CURRENT_CHARACTERIZATION_BLOCKER)
 
     def test_historical_v3_blocker_survives_characterization_transition(self):
         state = json.loads((ROOT / "CURRENT_STATE.json").read_text(encoding="utf-8"))
@@ -120,7 +120,7 @@ class CurrentValidationPlanTests(TestCase):
             state["historical_blocker"],
             HISTORICAL_V3_BLOCKER,
         )
-        self.assertEqual(state["current_blocker"], CURRENT_H0_BLOCKER)
+        self.assertEqual(state["current_blocker"], CURRENT_CHARACTERIZATION_BLOCKER)
         self.assertEqual(
             state["evidence"]["v3_actual_schema_probe_corrected"],
             "artifacts/environment/v3_actual_schema_compatibility_probe_20260809_004_reclassified.json",
@@ -475,7 +475,7 @@ class CurrentValidationPlanTests(TestCase):
             state["historical_blocker"],
             HISTORICAL_V3_BLOCKER,
         )
-        self.assertEqual(state["current_blocker"], CURRENT_H0_BLOCKER)
+        self.assertEqual(state["current_blocker"], CURRENT_CHARACTERIZATION_BLOCKER)
 
     def test_restored_service_observation_is_synchronized_across_plan_memory(self):
         current = (REPO / "MemBind_CURRENT_VALIDATION_PLAN_v1.2.md").read_text(
@@ -597,7 +597,8 @@ class CurrentValidationPlanTests(TestCase):
             f"status={CURRENT_CHARACTERIZATION_STATUS}", current[:2000]
         )
         self.assertIn(
-            f"current_blocker={CURRENT_H0_BLOCKER_TEXT}", current[:2000]
+            f"current_blocker={CURRENT_CHARACTERIZATION_BLOCKER_TEXT}",
+            current[:2000],
         )
         self.assertIn(
             f"current_action_scope={CURRENT_CHARACTERIZATION_SCOPE}",
@@ -679,7 +680,7 @@ class CurrentValidationPlanTests(TestCase):
             state["historical_blocker"],
             HISTORICAL_V3_BLOCKER,
         )
-        self.assertEqual(state["current_blocker"], CURRENT_H0_BLOCKER)
+        self.assertEqual(state["current_blocker"], CURRENT_CHARACTERIZATION_BLOCKER)
         self.assertEqual(
             diagnostic["v1_gate"]["status"],
             "pass_with_explicit_evidence_limits",

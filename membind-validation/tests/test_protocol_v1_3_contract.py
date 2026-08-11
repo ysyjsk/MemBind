@@ -41,8 +41,9 @@ CURRENT_H0_BLOCKER_TEXT = "none"
 CURRENT_H0_ACTION_SCOPE = "h0_q1_b_live_only"
 CURRENT_H0_NEXT_ACTION = "run_q1_h0-b-post-workload-replacement"
 CURRENT_CHARACTERIZATION_STATUS = "native_characterization_offline_only"
+CURRENT_CHARACTERIZATION_BLOCKER = "c2_polluted_namespace_cleanup_pending"
 CURRENT_CHARACTERIZATION_SCOPE = "native_characterization_offline_only"
-CURRENT_CHARACTERIZATION_NEXT_ACTION = "implement_c2_runner_offline"
+CURRENT_CHARACTERIZATION_NEXT_ACTION = "implement_scoped_c2_cleanup_offline"
 INVALIDATED_H0_A_CHECKPOINT_SHA256 = (
     "127c81b39ccd705d7c67dc936e953992d5be97f4065fd56f3655db52d12ad309"
 )
@@ -114,7 +115,9 @@ class ProtocolV13DocumentContractTests(TestCase):
         self.assertEqual(state["protocol_version"], "current-validation-v1.3")
         self.assertEqual(state["current_stage"], "NATIVE_CHARACTERIZATION")
         self.assertEqual(state["status"], CURRENT_CHARACTERIZATION_STATUS)
-        self.assertEqual(state["current_blocker"], CURRENT_H0_BLOCKER)
+        self.assertEqual(
+            state["current_blocker"], CURRENT_CHARACTERIZATION_BLOCKER
+        )
         self.assertEqual(
             state["current_action_scope"], CURRENT_CHARACTERIZATION_SCOPE
         )

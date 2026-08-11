@@ -5,20 +5,29 @@
 protocol_version=current-validation-v1.3
 current_stage=NATIVE_CHARACTERIZATION
 status=native_characterization_offline_only
-current_blocker=none
+current_blocker=c2_polluted_namespace_cleanup_pending
 current_action_scope=native_characterization_offline_only
-stage_progress.native_characterization=c0_pass_c2_runner_tdd_pending
+stage_progress.native_characterization=c0_c1_pass_c2_failed_attempt_invalid_cleanup_tdd_pending
 instrumentation_contract_status=qualified
 c1_aa_classification=clean_pass
 c0_dry_run_passed=true
-c0_live_request_performed=false
+c0_dry_run_live_request_performed=false
+c0_live_passed=true
 authorized_live_actions=[]
 live_h0_candidate_authorized=false
 service_admin_authorized=false
 native_characterization_live_authorized=false
-next_allowed_action=implement_c2_runner_offline
+next_allowed_action=implement_scoped_c2_cleanup_offline
 ```
 <!-- NATIVE_CHARACTERIZATION_CURRENT_POINTER_END -->
+
+```text
+c2_minimal_recovery_contract=membind-validation/EXPERIMENT_PLAN.md#C2_MINIMAL_RECOVERY_POINTER
+```
+
+The failed C2 attempt is invalid and non-mergeable. The existing execution plan
+is the single source for the exact-group cleanup and replacement-run procedure;
+this summary deliberately does not duplicate that contract.
 
 ```text
 HISTORICAL_SOLUTION_LANE_BELOW=true
@@ -33,8 +42,9 @@ HISTORICAL_SOLUTION_LANE_BELOW=true
 > Frozen entry status: `WORKPLAN_FREEZE=true`；
 > `protocol_review_status=closed`；
 > `next_allowed_work=C1_instrumentation_implementation`。
-> C1 instrumentation 已 qualified，C0 dry-run 已通过且没有 live request；当前
-> 唯一恢复点是等待 operator 启动两项 vLLM 服务，再经独立 TDD gate 授权 C0。
+> C1 instrumentation 与 C0 已通过；首次 C2 attempt 在 10 个 episode 后因
+> structured JSON 解码失败并永久失效。当前唯一恢复点是离线实现上面的单组
+> scoped cleanup guard；不得直接续跑或扩展 recovery framework。
 > 本文件是 frozen solution-validation lane 的历史 overlay，仅保存 H0/M1/M2
 > 历史契约。不得恢复 H0、replacement-004 或 M2 formal
 > work，除非 characterization verdict 后另行完成 TDD 状态转换和授权。

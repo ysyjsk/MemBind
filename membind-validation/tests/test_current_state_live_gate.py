@@ -115,15 +115,13 @@ class CurrentStateEvaluatorTests(TestCase):
                     ).allowed
                 )
 
-    def test_repository_current_state_authorizes_only_native_characterization_c2(self):
+    def test_repository_current_state_denies_live_while_c2_cleanup_is_pending(self):
         state = json.loads((ROOT / "CURRENT_STATE.json").read_text(encoding="ascii"))
         self.assertEqual(state["current_stage"], "NATIVE_CHARACTERIZATION")
         self.assertEqual(
-            state["current_action_scope"], "native_characterization_c2_live_only"
+            state["current_action_scope"], "native_characterization_offline_only"
         )
-        self.assertEqual(
-            state["authorized_live_actions"], ["native_characterization_c2"]
-        )
+        self.assertEqual(state["authorized_live_actions"], [])
         for action in LiveAction:
             with self.subTest(action=action.value):
                 decision = evaluate_live_action(
@@ -131,10 +129,7 @@ class CurrentStateEvaluatorTests(TestCase):
                     action,
                     candidate_id="Q1" if action is LiveAction.H0_CANDIDATE else None,
                 )
-                self.assertEqual(
-                    decision.allowed,
-                    action is LiveAction.NATIVE_CHARACTERIZATION_C2,
-                )
+                self.assertFalse(decision.allowed)
 
     def test_h0_candidate_requires_exact_stage_scope_action_and_candidate(self):
         allowed = _state(
