@@ -121,7 +121,7 @@ class LLMInstrumentationTests(TestCase):
 
 
 class QwenFailureCaptureTests(IsolatedAsyncioTestCase):
-    async def test_json_object_replaces_upstream_raw_schema_with_effective_schema(self):
+    async def test_json_object_retains_upstream_raw_schema_injection(self):
         class Edge(BaseModel):
             episode_indices: list[int]
 
@@ -139,6 +139,7 @@ class QwenFailureCaptureTests(IsolatedAsyncioTestCase):
                 )
             ],
         )
+        create = AsyncMock(return_value=response)
         client = QwenVLLMClient(
             config=LLMConfig(
                 api_key="test",
@@ -148,12 +149,11 @@ class QwenFailureCaptureTests(IsolatedAsyncioTestCase):
                 temperature=0.0,
                 max_tokens=2048,
             ),
+            client=SimpleNamespace(
+                chat=SimpleNamespace(completions=SimpleNamespace(create=create))
+            ),
             max_tokens=2048,
             structured_output_mode="json_object",
-        )
-        create = AsyncMock(return_value=response)
-        client.client = SimpleNamespace(
-            chat=SimpleNamespace(completions=SimpleNamespace(create=create))
         )
         messages = [
             SimpleNamespace(role="system", content="system instructions"),
@@ -169,19 +169,7 @@ class QwenFailureCaptureTests(IsolatedAsyncioTestCase):
         request = create.await_args.kwargs
         marker = "Respond with a JSON object in the following format:"
         upstream_schema_json = json.dumps(ResponseModel.model_json_schema())
-        effective_schema = constrain_single_episode_indices(
-            ResponseModel.model_json_schema()
-        )
-        effective_schema_json = json.dumps(
-            effective_schema,
-            ensure_ascii=True,
-            sort_keys=True,
-            separators=(",", ":"),
-        )
         user_content = request["messages"][-1]["content"]
-        episode_indices = effective_schema["$defs"]["Edge"]["properties"][
-            "episode_indices"
-        ]
 
         self.assertEqual(parsed, {"edges": [{"episode_indices": [0]}]})
         self.assertEqual(request["response_format"], {"type": "json_object"})
@@ -190,13 +178,7 @@ class QwenFailureCaptureTests(IsolatedAsyncioTestCase):
             ["system", "user"],
         )
         self.assertEqual(user_content.count(marker), 1)
-        self.assertIn(effective_schema_json, user_content)
-        self.assertNotIn(upstream_schema_json, user_content)
-        self.assertEqual(episode_indices["minItems"], 1)
-        self.assertEqual(episode_indices["maxItems"], 1)
-        self.assertEqual(
-            episode_indices["items"], {"type": "integer", "const": 0}
-        )
+        self.assertIn(upstream_schema_json, user_content)
 
     async def test_qwen_vllm_client_keeps_vllm_specific_chat_options(self):
         class ResponseModel(BaseModel):
@@ -211,6 +193,7 @@ class QwenFailureCaptureTests(IsolatedAsyncioTestCase):
                 )
             ],
         )
+        create = AsyncMock(return_value=response)
         client = QwenVLLMClient(
             config=LLMConfig(
                 api_key="test",
@@ -220,12 +203,11 @@ class QwenFailureCaptureTests(IsolatedAsyncioTestCase):
                 temperature=0.0,
                 max_tokens=2048,
             ),
+            client=SimpleNamespace(
+                chat=SimpleNamespace(completions=SimpleNamespace(create=create))
+            ),
             max_tokens=2048,
             structured_output_mode="json_schema",
-        )
-        create = AsyncMock(return_value=response)
-        client.client = SimpleNamespace(
-            chat=SimpleNamespace(completions=SimpleNamespace(create=create))
         )
 
         await client._generate_response(
@@ -241,7 +223,7 @@ class QwenFailureCaptureTests(IsolatedAsyncioTestCase):
             {"chat_template_kwargs": {"enable_thinking": False}},
         )
 
-    async def test_invalid_structured_responses_capture_each_budget_and_raw_body(self):
+    async def test_invalid_structured_response_uses_one_upstream_attempt(self):
         class ResponseModel(BaseModel):
             ok: bool
 
@@ -254,6 +236,7 @@ class QwenFailureCaptureTests(IsolatedAsyncioTestCase):
                 )
             ],
         )
+        create = AsyncMock(return_value=response)
         client = QwenVLLMClient(
             config=LLMConfig(
                 api_key="test",
@@ -263,12 +246,11 @@ class QwenFailureCaptureTests(IsolatedAsyncioTestCase):
                 temperature=0.0,
                 max_tokens=2048,
             ),
+            client=SimpleNamespace(
+                chat=SimpleNamespace(completions=SimpleNamespace(create=create))
+            ),
             max_tokens=2048,
             structured_output_mode="json_schema",
-        )
-        create = AsyncMock(return_value=response)
-        client.client = SimpleNamespace(
-            chat=SimpleNamespace(completions=SimpleNamespace(create=create))
         )
         messages = [SimpleNamespace(role="user", content="return json")]
 
@@ -279,21 +261,17 @@ class QwenFailureCaptureTests(IsolatedAsyncioTestCase):
                 max_tokens=16_384,
             )
 
-        self.assertEqual([event["max_tokens"] for event in client.failure_events], [2048, 8192])
-        self.assertEqual(client.failure_events[-1]["finish_reason"], "length")
-        self.assertEqual(client.failure_events[-1]["raw_response"], '{"ok": "unterminated')
-        for event in client.failure_events:
-            evidence = event["request_evidence"]
-            self.assertEqual(evidence["message_count"], 1)
-            self.assertEqual(evidence["message_roles"], ["user"])
-            self.assertEqual(evidence["response_format_type"], "json_schema")
-            self.assertEqual(evidence["json_schema_name"], "ResponseModel")
-            self.assertEqual(evidence["structured_output_backend_requested"], None)
+        self.assertEqual(len(create.await_args_list), 1)
+        self.assertEqual(create.await_args.kwargs["max_tokens"], 16_384)
+        self.assertEqual(client.failure_events, [])
         self.assertEqual(client.structured_request_count, 1)
-        self.assertEqual(client.structured_response_failure_count, 1)
+        self.assertEqual(client.structured_response_failure_count, 0)
+        record = client.consume_last_call_record()
+        self.assertEqual(record["raw_response"], '{"ok": "unterminated')
+        self.assertEqual(record["max_tokens"], 16_384)
         self.assertEqual(token_usage_dict(None), {})
 
-    async def test_noisy_structured_response_extracts_complete_json_object(self):
+    async def test_noisy_structured_response_is_rejected_by_upstream_parser(self):
         class ResponseModel(BaseModel):
             ok: bool
 
@@ -308,6 +286,7 @@ class QwenFailureCaptureTests(IsolatedAsyncioTestCase):
                 )
             ],
         )
+        create = AsyncMock(return_value=response)
         client = QwenVLLMClient(
             config=LLMConfig(
                 api_key="test",
@@ -317,25 +296,24 @@ class QwenFailureCaptureTests(IsolatedAsyncioTestCase):
                 temperature=0.0,
                 max_tokens=2048,
             ),
+            client=SimpleNamespace(
+                chat=SimpleNamespace(completions=SimpleNamespace(create=create))
+            ),
             max_tokens=2048,
             structured_output_mode="json_schema",
         )
-        create = AsyncMock(return_value=response)
-        client.client = SimpleNamespace(
-            chat=SimpleNamespace(completions=SimpleNamespace(create=create))
-        )
 
-        parsed = await client._generate_response(
-            [SimpleNamespace(role="user", content="return json")],
-            response_model=ResponseModel,
-            max_tokens=2048,
-        )
+        with self.assertRaises(json.JSONDecodeError):
+            await client._generate_response(
+                [SimpleNamespace(role="user", content="return json")],
+                response_model=ResponseModel,
+                max_tokens=2048,
+            )
 
-        self.assertEqual(parsed, {"ok": True})
         self.assertEqual(client.parse_failure_count, 0)
         self.assertEqual(client.structured_response_failure_count, 0)
 
-    async def test_context_overflow_retries_with_remaining_budget(self):
+    async def test_context_error_is_propagated_without_project_probe(self):
         class ResponseModel(BaseModel):
             ok: bool
 
@@ -343,87 +321,30 @@ class QwenFailureCaptureTests(IsolatedAsyncioTestCase):
             "maximum context length is 32768 tokens; requested 2048 output tokens; "
             "prompt contains at least 30721 input tokens"
         )
-        probe_response = SimpleNamespace(
-            usage=SimpleNamespace(prompt_tokens=31503, completion_tokens=1, total_tokens=31504),
-            choices=[SimpleNamespace(finish_reason="length", message=SimpleNamespace(content="{"))],
-        )
-        final_response = SimpleNamespace(
-            usage=SimpleNamespace(prompt_tokens=31503, completion_tokens=5, total_tokens=31508),
-            choices=[SimpleNamespace(finish_reason="stop", message=SimpleNamespace(content='{"ok":true}'))],
-        )
         client = QwenVLLMClient(
             config=LLMConfig(api_key="test", model="m", small_model="m", base_url="http://127.0.0.1:1/v1", temperature=0.0, max_tokens=2048),
+            client=SimpleNamespace(
+                chat=SimpleNamespace(
+                    completions=SimpleNamespace(create=AsyncMock(side_effect=error))
+                )
+            ),
             max_tokens=2048,
             structured_output_mode="json_schema",
         )
-        create = AsyncMock(side_effect=[error, probe_response, final_response])
-        client.client = SimpleNamespace(chat=SimpleNamespace(completions=SimpleNamespace(create=create)))
+        create = client.client.chat.completions._inner.create
 
-        parsed = await client._generate_response(
-            [SimpleNamespace(role="user", content="return json")],
-            response_model=ResponseModel,
-            max_tokens=16_384,
-        )
-
-        self.assertEqual(parsed, {"ok": True})
-        self.assertEqual(
-            [call.kwargs["max_tokens"] for call in create.await_args_list],
-            [2048, 1, 1233],
-        )
-        self.assertEqual(client.structured_request_count, 1)
-        self.assertEqual(client.structured_response_failure_count, 0)
-
-    async def test_unusable_context_probe_is_counted_and_persisted(self):
-        class ResponseModel(BaseModel):
-            ok: bool
-
-        error = RuntimeError(
-            "maximum context length is 32768 tokens; requested 2048 output tokens; "
-            "prompt contains at least 30721 input tokens"
-        )
-        probe_response = SimpleNamespace(
-            usage=SimpleNamespace(prompt_tokens=32750, completion_tokens=1, total_tokens=32751),
-            choices=[SimpleNamespace(finish_reason="length", message=SimpleNamespace(content="{"))],
-        )
-        client = QwenVLLMClient(
-            config=LLMConfig(api_key="test", model="m", small_model="m", base_url="http://127.0.0.1:1/v1", temperature=0.0, max_tokens=2048),
-            max_tokens=2048,
-            structured_output_mode="json_schema",
-        )
-        create = AsyncMock(side_effect=[error, probe_response])
-        client.client = SimpleNamespace(chat=SimpleNamespace(completions=SimpleNamespace(create=create)))
-
-        with self.assertRaisesRegex(
-            RuntimeError,
-            "prompt_tokens=32750.*context_limit=32768.*usable_completion_tokens=-14",
-        ):
+        with self.assertRaisesRegex(RuntimeError, "maximum context length is 32768"):
             await client._generate_response(
                 [SimpleNamespace(role="user", content="return json")],
                 response_model=ResponseModel,
                 max_tokens=16_384,
             )
 
-        self.assertEqual(
-            [call.kwargs["max_tokens"] for call in create.await_args_list],
-            [2048, 1],
-        )
-        self.assertEqual(client.call_count, 1)
-        self.assertEqual(
-            client.usage_totals,
-            {"prompt_tokens": 32750, "completion_tokens": 1, "total_tokens": 32751},
-        )
-        self.assertEqual(client.call_events[-1]["max_tokens"], 1)
-        failure = client.failure_events[-1]
-        self.assertEqual(failure["failure_type"], "context_budget_exhausted")
-        self.assertEqual(failure["context_limit"], 32768)
-        self.assertEqual(failure["prompt_tokens"], 32750)
-        self.assertEqual(failure["safety_tokens"], 32)
-        self.assertEqual(failure["usable_completion_tokens"], -14)
-        self.assertEqual(failure["minimum_context_for_primary_budget"], 34830)
-        self.assertEqual(failure["minimum_context_for_overflow_budget"], 40974)
-        self.assertEqual(failure["raw_response"], "{")
+        self.assertEqual(len(create.await_args_list), 1)
+        self.assertEqual(create.await_args.kwargs["max_tokens"], 16_384)
         self.assertEqual(client.structured_request_count, 1)
-        self.assertEqual(client.structured_response_failure_count, 1)
+        self.assertEqual(client.transport_error_count, 1)
+        self.assertEqual(client.structured_response_failure_count, 0)
 
     def test_prompt_cache_wrapper_uses_frozen_revision_and_decoding_config(self):
         inner = SimpleNamespace(config="config", model="model")
@@ -443,6 +364,7 @@ class QwenFailureCaptureTests(IsolatedAsyncioTestCase):
             parse_failure_count=1,
             structured_request_count=6,
             structured_response_failure_count=0,
+            transport_error_count=2,
             usage_totals={"prompt_tokens": 100, "completion_tokens": 20, "total_tokens": 120},
         )
         wrapper = SimpleNamespace(inner=inner, cache=SimpleNamespace(unexpected_prompt=True))
@@ -457,6 +379,7 @@ class QwenFailureCaptureTests(IsolatedAsyncioTestCase):
                 "structured_parse_failures": 1,
                 "structured_request_count": 6,
                 "structured_response_failures": 0,
+                "transport_error_count": 2,
                 "unexpected_prompt": True,
             },
         )

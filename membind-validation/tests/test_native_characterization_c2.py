@@ -337,6 +337,18 @@ class NativeCharacterizationC2Tests(TestCase):
             checkpoint = json.loads((run_root / "checkpoint.json").read_text())
             self.assertEqual(checkpoint["status"], "completed")
             self.assertEqual(checkpoint["completed_block_indices"], [0, 1, 2, 3])
+            manifest = json.loads((run_root / "manifest.json").read_text())
+            provenance = manifest["provenance"]
+            self.assertRegex(
+                provenance["u0_runtime_source_sha256"], r"^[0-9a-f]{64}$"
+            )
+            self.assertRegex(
+                provenance["qwen_transport_source_sha256"], r"^[0-9a-f]{64}$"
+            )
+            self.assertRegex(
+                provenance["pinned_graphiti_openai_generic_source_sha256"],
+                r"^[0-9a-f]{64}$",
+            )
             block_events = [
                 event
                 for event in checkpoint["checkpoint_history"]

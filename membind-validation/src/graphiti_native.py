@@ -16,10 +16,7 @@ from current_state_gate import LiveAction, require_live_action
 
 from dataset import Episode
 from instrumentation import apply_episode_metrics, current_episode_key, episode_scope
-from structured_output import (
-    constrain_single_episode_indices,
-    replace_json_object_schema_injection,
-)
+from structured_output import constrain_single_episode_indices
 from tracing import EpisodeTrace, JsonlTraceWriter, now_ns
 
 
@@ -326,12 +323,12 @@ def structured_retry_budgets(
     frozen_limit: int,
     overflow_limit: int = 8_192,
 ) -> tuple[int, ...]:
-    """Return the frozen request and one bounded overflow retry budget.
+    """Return budgets for the retained legacy compatibility path.
 
-    Graphiti 0.29.3 asks for 16,384 tokens for edge extraction. The protocol
-    request is clamped to 2,048, but a long structured edge list can be cut in
-    the middle of a JSON string. One retry at most 8,192 tokens allows that
-    response to finish while keeping the deviation explicit and bounded.
+    Native characterization U0 passes a 16,384-token primary budget directly
+    through pinned ``OpenAIGenericClient`` and does not call this helper.  Keep
+    this function only for historical probes whose primary budget may be below
+    the bounded 8,192-token overflow value.
     """
     primary = clamp_max_tokens(requested, frozen_limit)
     overflow = min(int(overflow_limit), 8_192)
@@ -340,24 +337,6 @@ def structured_retry_budgets(
     if overflow <= primary:
         return (primary,)
     return (primary, overflow)
-
-
-def parse_structured_json_object(response_text: str) -> Any:
-    """Parse strict JSON, with a bounded fallback for surrounding model noise."""
-    try:
-        return json.loads(response_text)
-    except json.JSONDecodeError as strict_error:
-        decoder = json.JSONDecoder()
-        for index, character in enumerate(response_text):
-            if character != "{":
-                continue
-            try:
-                candidate, _ = decoder.raw_decode(response_text, index)
-            except json.JSONDecodeError:
-                continue
-            if isinstance(candidate, dict):
-                return candidate
-        raise strict_error
 
 
 def context_window_from_error(error: BaseException) -> int | None:
@@ -382,6 +361,7 @@ def llm_metrics(llm_client: Any) -> dict[str, Any]:
         "structured_response_failures": int(
             getattr(inner, "structured_response_failure_count", 0)
         ),
+        "transport_error_count": int(getattr(inner, "transport_error_count", 0)),
         "unexpected_prompt": bool(getattr(cache, "unexpected_prompt", False)),
     }
 
@@ -474,7 +454,89 @@ def build_qwen_graphiti_from_env(
     return graphiti
 
 
+class _QwenCompletionsTransport:
+    """Add frozen Qwen wire fields while delegating the provider operation."""
+
+    def __init__(self, inner: Any, owner: Any, *, options_enabled: bool) -> None:
+        self._inner = inner
+        self._owner = owner
+        self._options_enabled = options_enabled
+
+    def __getattr__(self, name: str) -> Any:
+        return getattr(self._inner, name)
+
+    async def create(self, *args: Any, **kwargs: Any) -> Any:
+        request = dict(kwargs)
+        request["top_p"] = float(os.environ.get("CONSTRUCTION_TOP_P", "1.0"))
+        if self._options_enabled:
+            request["seed"] = int(os.environ.get("CONSTRUCTION_SEED", "20260806"))
+            extra_body = dict(request.get("extra_body") or {})
+            chat_template_kwargs = dict(extra_body.get("chat_template_kwargs") or {})
+            chat_template_kwargs["enable_thinking"] = False
+            extra_body["chat_template_kwargs"] = chat_template_kwargs
+            request["extra_body"] = extra_body
+
+        self._owner.structured_request_count += 1
+        try:
+            response = await self._inner.create(*args, **request)
+        except Exception:
+            self._owner.transport_error_count += 1
+            raise
+
+        self._owner.call_count += 1
+        usage = token_usage_dict(getattr(response, "usage", None))
+        choices = getattr(response, "choices", []) or []
+        choice = choices[0] if choices else None
+        finish_reason = getattr(choice, "finish_reason", None)
+        message = getattr(choice, "message", None)
+        content = getattr(message, "content", "") or ""
+        result = self._owner._strip_code_fences(content)
+        budget = int(request.get("max_tokens") or self._owner.max_tokens)
+        self._owner.call_events.append(
+            {
+                "episode_key": current_episode_key(),
+                "token_usage": usage,
+                "max_tokens": budget,
+                "finish_reason": finish_reason,
+            }
+        )
+        for key in self._owner.usage_totals:
+            self._owner.usage_totals[key] += int(usage.get(key, 0))
+        self._owner._last_call_record.set(
+            {"raw_response": result, "token_usage": usage, "max_tokens": budget}
+        )
+        return response
+
+
+class _QwenChatTransport:
+    def __init__(self, inner: Any, owner: Any, *, options_enabled: bool) -> None:
+        self._inner = inner
+        self.completions = _QwenCompletionsTransport(
+            inner.completions,
+            owner,
+            options_enabled=options_enabled,
+        )
+
+    def __getattr__(self, name: str) -> Any:
+        return getattr(self._inner, name)
+
+
+class _QwenOpenAITransport:
+    def __init__(self, inner: Any, owner: Any, *, options_enabled: bool) -> None:
+        self._inner = inner
+        self.chat = _QwenChatTransport(
+            inner.chat,
+            owner,
+            options_enabled=options_enabled,
+        )
+
+    def __getattr__(self, name: str) -> Any:
+        return getattr(self._inner, name)
+
+
 class QwenVLLMClient:
+    """Build a pinned Graphiti generic client with two narrow Qwen adaptations."""
+
     def __new__(cls, *args: Any, **kwargs: Any) -> Any:
         from graphiti_core.llm_client.openai_generic_client import OpenAIGenericClient
 
@@ -488,6 +550,7 @@ class QwenVLLMClient:
                 self.parse_failure_count = 0
                 self.structured_request_count = 0
                 self.structured_response_failure_count = 0
+                self.transport_error_count = 0
                 self.usage_totals = {
                     "prompt_tokens": 0,
                     "completion_tokens": 0,
@@ -498,178 +561,19 @@ class QwenVLLMClient:
                 self._last_call_record: contextvars.ContextVar[dict[str, Any] | None] = (
                     contextvars.ContextVar(f"qwen_last_call_{id(self)}", default=None)
                 )
+                self.client = _QwenOpenAITransport(
+                    self.client,
+                    self,
+                    options_enabled=self.vllm_options_enabled,
+                )
+
+            def _build_response_format(self, response_model: Any) -> dict[str, Any]:
+                upstream = super()._build_response_format(response_model)
+                return constrain_single_episode_indices(upstream)
 
             def consume_last_call_record(self) -> dict[str, Any] | None:
                 record = self._last_call_record.get()
                 self._last_call_record.set(None)
                 return record
-
-            async def _generate_response(self, messages, response_model=None, max_tokens=2048, model_size=None):
-                self.structured_request_count += 1
-                if (
-                    response_model is not None
-                    and self.structured_output_mode == "json_object"
-                ):
-                    replace_json_object_schema_injection(messages, response_model)
-                openai_messages = []
-                for m in messages:
-                    content = self._clean_input(m.content)
-                    if m.role in {"user", "system"}:
-                        openai_messages.append({"role": m.role, "content": content})
-                budgets = structured_retry_budgets(
-                    max_tokens,
-                    self.max_tokens,
-                    int(os.environ.get("CONSTRUCTION_OVERFLOW_MAX_TOKENS", "8192")),
-                )
-                response_format = constrain_single_episode_indices(
-                    self._build_response_format(response_model)
-                )
-                last_error: Exception | None = None
-                context_budget: int | None = None
-                context_limit: int | None = None
-                attempted_budgets: set[int] = set()
-                request_evidence_by_budget: dict[int, dict[str, Any]] = {}
-
-                async def create_response(budget: int) -> Any:
-                    request: dict[str, Any] = {
-                        "model": self.model,
-                        "messages": openai_messages,
-                        "temperature": self.temperature,
-                        "top_p": float(os.environ.get("CONSTRUCTION_TOP_P", "1.0")),
-                        "max_tokens": budget,
-                        "response_format": response_format,
-                    }
-                    if self.vllm_options_enabled:
-                        request["seed"] = int(os.environ.get("CONSTRUCTION_SEED", "20260806"))
-                        request["extra_body"] = {
-                            "chat_template_kwargs": {"enable_thinking": False}
-                        }
-                    request_evidence_by_budget[budget] = safe_structured_request_evidence(
-                        request
-                    )
-                    return await self.client.chat.completions.create(**request)
-
-                for configured_budget in budgets:
-                    budget = min(configured_budget, context_budget) if context_budget else configured_budget
-                    if budget in attempted_budgets:
-                        continue
-                    is_context_probe = False
-                    try:
-                        response = await create_response(budget)
-                    except Exception as exc:
-                        attempted_budgets.add(budget)
-                        context_limit = context_window_from_error(exc)
-                        if context_limit is None or 1 in attempted_budgets:
-                            self.structured_response_failure_count += 1
-                            raise
-                        budget = 1
-                        is_context_probe = True
-                        response = await create_response(budget)
-                    attempted_budgets.add(budget)
-                    self.call_count += 1
-                    usage = token_usage_dict(response.usage)
-                    finish_reason = getattr(response.choices[0], "finish_reason", None)
-                    result = self._strip_code_fences(response.choices[0].message.content or "")
-                    self.call_events.append(
-                        {
-                            "episode_key": current_episode_key(),
-                            "token_usage": usage,
-                            "max_tokens": budget,
-                            "finish_reason": finish_reason,
-                        }
-                    )
-                    for key in self.usage_totals:
-                        self.usage_totals[key] += int(usage.get(key, 0))
-                    if context_limit is not None and usage.get("prompt_tokens") is not None:
-                        safety = int(
-                            os.environ.get("CONSTRUCTION_CONTEXT_SAFETY_TOKENS", "32")
-                        )
-                        context_budget = (
-                            context_limit - int(usage["prompt_tokens"]) - max(0, safety)
-                        )
-                        if context_budget <= 0:
-                            failure = RuntimeError(
-                                "complete prompt leaves no usable construction response budget: "
-                                f"prompt_tokens={int(usage['prompt_tokens'])}, "
-                                f"context_limit={context_limit}, safety_tokens={max(0, safety)}, "
-                                f"usable_completion_tokens={context_budget}"
-                            )
-                            self.failure_events.append(
-                                {
-                                    "failure_type": "context_budget_exhausted",
-                                    "episode_key": current_episode_key(),
-                                    "request_evidence": request_evidence_by_budget[budget],
-                                    "max_tokens": budget,
-                                    "finish_reason": finish_reason,
-                                    "raw_response": result,
-                                    "raw_response_sha256": hashlib.sha256(
-                                        result.encode()
-                                    ).hexdigest(),
-                                    "raw_response_length": len(result),
-                                    "token_usage": usage,
-                                    "context_limit": context_limit,
-                                    "prompt_tokens": int(usage["prompt_tokens"]),
-                                    "safety_tokens": max(0, safety),
-                                    "usable_completion_tokens": context_budget,
-                                    "minimum_context_for_primary_budget": (
-                                        int(usage["prompt_tokens"])
-                                        + max(0, safety)
-                                        + budgets[0]
-                                    ),
-                                    "minimum_context_for_overflow_budget": (
-                                        int(usage["prompt_tokens"])
-                                        + max(0, safety)
-                                        + budgets[-1]
-                                    ),
-                                    "error": repr(failure),
-                                }
-                            )
-                            self.structured_response_failure_count += 1
-                            raise failure
-                    try:
-                        parsed = parse_structured_json_object(result)
-                        if response_model is not None:
-                            response_model(**parsed)
-                    except Exception as exc:
-                        if not is_context_probe:
-                            self.parse_failure_count += 1
-                        self.failure_events.append(
-                            {
-                                "failure_type": (
-                                    "context_probe" if is_context_probe else "structured_parse"
-                                ),
-                                "episode_key": current_episode_key(),
-                                "request_evidence": request_evidence_by_budget[budget],
-                                "max_tokens": budget,
-                                "finish_reason": finish_reason,
-                                "raw_response": result,
-                                "raw_response_sha256": hashlib.sha256(result.encode()).hexdigest(),
-                                "raw_response_length": len(result),
-                                "token_usage": usage,
-                                "error": repr(exc),
-                            }
-                        )
-                        last_error = exc
-                        if any(
-                            (
-                                min(next_budget, context_budget)
-                                if context_budget
-                                else next_budget
-                            )
-                            not in attempted_budgets
-                            for next_budget in budgets
-                        ):
-                            continue
-                        self.structured_response_failure_count += 1
-                        raise
-                    self._last_call_record.set(
-                        {"raw_response": result, "token_usage": usage, "max_tokens": budget}
-                    )
-                    return parsed
-                if last_error is not None:
-                    self.structured_response_failure_count += 1
-                    raise last_error
-                self.structured_response_failure_count += 1
-                raise RuntimeError("structured response generation produced no attempt")
 
         return Client(*args, **kwargs)

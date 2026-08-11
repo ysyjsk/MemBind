@@ -50,6 +50,11 @@ BREAKDOWN_SCHEMA_VERSION = "membind.native-characterization-e1-breakdown.v1"
 CHECKPOINT_SCHEMA_VERSION = "membind.native-characterization-c2-checkpoint.v1"
 _GRAPH_NAMESPACE_RE = re.compile(r"^nc-e1e2-[0-9a-f]{16}$")
 _RUN_ID_RE = re.compile(r"^c2-[0-9a-f]{16}$")
+_PINNED_GRAPHITI_OPENAI_GENERIC_SOURCE = (
+    Path(__file__).resolve().parents[1]
+    / ".venv/lib/python3.12/site-packages/graphiti_core/llm_client/"
+    "openai_generic_client.py"
+)
 _FORBIDDEN_FIELDS = {
     "api_key",
     "authorization",
@@ -511,6 +516,15 @@ def _run_provenance(
         "structured_output_mode": _freeze_structured_output_mode(freeze_payload),
         "phase_map_sha256": _sha256_file(phase_map) if phase_map.is_file() else None,
         "c2_runner_source_sha256": _sha256_file(Path(__file__)),
+        "u0_runtime_source_sha256": _sha256_file(
+            source_root / "native_characterization_runtime.py"
+        ),
+        "qwen_transport_source_sha256": _sha256_file(
+            source_root / "graphiti_native.py"
+        ),
+        "pinned_graphiti_openai_generic_source_sha256": _sha256_file(
+            _PINNED_GRAPHITI_OPENAI_GENERIC_SOURCE
+        ),
         "measurement_adapter_source_sha256": _sha256_file(
             source_root / "native_characterization_c2_measurement.py"
         ),

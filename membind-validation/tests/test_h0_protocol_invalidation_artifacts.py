@@ -41,14 +41,21 @@ class H0ProtocolInvalidationArtifactTests(TestCase):
         invalidation = state["h0_live_authorization_invalidation"]
 
         self.assertEqual(state["current_stage"], "NATIVE_CHARACTERIZATION")
-        self.assertEqual(state["status"], "native_characterization_offline_only")
+        self.assertEqual(state["status"], "native_characterization_cleanup_only")
         self.assertEqual(
-            state["current_action_scope"], "native_characterization_offline_only"
+            state["current_action_scope"], "native_characterization_c2_cleanup_only"
         )
         self.assertEqual(
             state["current_blocker"],
-            "c2_json_object_validation_failure_stop_no_fallback",
+            "c2_infrastructure_interruption_cleanup_pending",
         )
+        interruption = state["native_characterization_c2_interruption"]
+        self.assertEqual(interruption["run_id"], "c2-2fe3711c62933407")
+        self.assertEqual(interruption["error_code"], "openai.APIConnectionError")
+        self.assertFalse(interruption["attempt_valid"])
+        self.assertFalse(interruption["attempt_mergeable"])
+        self.assertFalse(interruption["resume_allowed"])
+        self.assertTrue(interruption["cleanup_authorized"])
         self.assertFalse(state["live_h0_candidate_authorized"])
         self.assertEqual(
             state["authorized_live_actions"], []

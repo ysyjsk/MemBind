@@ -36,6 +36,12 @@ _REQUIRED_ROOT_ARTIFACTS = frozenset(
 _PROVENANCE_BINDINGS = {
     "phase_map_sha256": "artifacts/native_characterization/phase_map.json",
     "c2_runner_source_sha256": "src/native_characterization_c2.py",
+    "u0_runtime_source_sha256": "src/native_characterization_runtime.py",
+    "qwen_transport_source_sha256": "src/graphiti_native.py",
+    "pinned_graphiti_openai_generic_source_sha256": (
+        ".venv/lib/python3.12/site-packages/graphiti_core/llm_client/"
+        "openai_generic_client.py"
+    ),
     "measurement_adapter_source_sha256": (
         "src/native_characterization_c2_measurement.py"
     ),

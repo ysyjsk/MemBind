@@ -19,22 +19,43 @@ from dataclasses import dataclass
 from pathlib import Path
 from typing import Any, Mapping
 
+from native_characterization_c2_cleanup import (
+    FAILED_C2_ATTEMPT_ID as CLEANUP_FAILED_C2_ATTEMPT_ID,
+    INTERRUPTED_C2_ATTEMPT_ID,
+    INTERRUPTION_SOURCE_FREEZE_RELATIVE_PATH,
+    PLANNED_EVIDENCE_RELATIVE_PATH,
+    POLLUTED_C2_GROUP_ID as CLEANUP_POLLUTED_C2_GROUP_ID,
+    SOURCE_FREEZE_RELATIVE_PATH,
+    SOURCE_FREEZE_SHA256,
+)
+
 
 PROTOCOL_VERSION = "current-validation-v1.3"
 STATE_RELATIVE_PATH = "membind-validation/CURRENT_STATE.json"
-FREEZE_RELATIVE_PATH = "artifacts/native_characterization/freeze.json"
-FAILED_C2_ATTEMPT_ID = "c2-efb58c477f12adf6"
-POLLUTED_C2_GROUP_ID = "nc-e1e2-400b9b78c2c218df"
+CLEANUP_FREEZE_RELATIVE_PATH = SOURCE_FREEZE_RELATIVE_PATH
+REFERENCE_FREEZE_RELATIVE_PATH = (
+    "artifacts/native_characterization/freeze_reference_aligned.json"
+)
+FAILED_C2_ATTEMPT_ID = CLEANUP_FAILED_C2_ATTEMPT_ID
+POLLUTED_C2_GROUP_ID = CLEANUP_POLLUTED_C2_GROUP_ID
 SOURCE_STAGE = "NATIVE_CHARACTERIZATION"
-SOURCE_STATUS = "native_characterization_offline_only"
-SOURCE_SCOPE = "native_characterization_offline_only"
-SOURCE_BLOCKER = "c2_polluted_namespace_cleanup_pending"
-SOURCE_NEXT_ACTION = "implement_scoped_c2_cleanup_offline"
-SOURCE_PROGRESS = "c0_c1_pass_c2_failed_attempt_invalid_cleanup_tdd_pending"
+SOURCE_STATUS = "native_characterization_cleanup_only"
+SOURCE_SCOPE = "native_characterization_c2_cleanup_only"
+SOURCE_BLOCKER = "c2_reference_aligned_cleanup_pending"
+SOURCE_NEXT_ACTION = "execute_scoped_c2_cleanup_reference_aligned_precondition"
+SOURCE_PROGRESS = "c0_c1_pass_reference_alignment_cleanup_only_pending"
+TARGET_STATUS = "native_characterization_c2_live_only"
 TARGET_SCOPE = "native_characterization_c2_live_only"
 TARGET_ACTION = "native_characterization_c2"
 TARGET_NEXT_ACTION = "run_native_characterization_c2"
-METADATA_KEY = "native_characterization_c2_reauthorization"
+TARGET_PROGRESS = "c0_c1_pass_reference_aligned_c2_authorized_from_episode_0"
+METADATA_KEY = "native_characterization_reference_c2_authorization"
+REFERENCE_ALIGNMENT_KEY = "native_characterization_reference_alignment"
+_REFERENCE_SOURCE_BINDINGS = {
+    "u0_runtime_source_sha256": "src/native_characterization_runtime.py",
+    "qwen_transport_source_sha256": "src/graphiti_native.py",
+}
+_C2_RUNNER_SOURCE_PATH = "src/native_characterization_c2.py"
 
 _SHA256_RE = re.compile(r"^[0-9a-f]{64}$")
 _REGRESSION_COUNT_RE = re.compile(r"^Ran ([1-9][0-9]*) tests? in ", re.MULTILINE)
@@ -68,6 +89,8 @@ class C2ReauthorizationBindings:
     final_full_regression_path: str
     final_full_regression_sha256: str
     final_full_regression_test_count: int
+    reference_freeze_sha256: str
+    c2_runner_source_sha256: str
 
 
 class NativeCharacterizationC2ReauthorizationError(RuntimeError):
@@ -162,6 +185,8 @@ def _validate_bindings(bindings: C2ReauthorizationBindings) -> None:
         "source_state_sha256",
         "cleanup_evidence_sha256",
         "final_full_regression_sha256",
+        "reference_freeze_sha256",
+        "c2_runner_source_sha256",
     ):
         _require_digest(getattr(bindings, name), name)
     if (
@@ -174,29 +199,96 @@ def _validate_bindings(bindings: C2ReauthorizationBindings) -> None:
 
 def _validate_source(state: Mapping[str, Any]) -> None:
     progress = state.get("stage_progress")
-    prior = state.get("native_characterization_c2_authorization")
-    exact = (
+    alignment = state.get(REFERENCE_ALIGNMENT_KEY)
+    cleanup = alignment.get("cleanup") if isinstance(alignment, Mapping) else None
+    fresh_c2 = alignment.get("fresh_c2") if isinstance(alignment, Mapping) else None
+    common = (
         state.get("protocol_version") == PROTOCOL_VERSION
         and state.get("current_stage") == SOURCE_STAGE
         and state.get("status") == SOURCE_STATUS
-        and state.get("current_blocker") == SOURCE_BLOCKER
         and state.get("current_action_scope") == SOURCE_SCOPE
         and state.get("authorized_live_actions") == []
-        and state.get("next_allowed_action") == SOURCE_NEXT_ACTION
+        and state.get("native_characterization_live_authorized") is False
         and state.get("live_h0_candidate_authorized") is False
         and state.get("authorized_h0_candidate_id") is None
         and state.get("service_admin_authorized") is False
         and state.get("v3_smoke_003_authorized") is False
         and isinstance(progress, Mapping)
+        and isinstance(alignment, Mapping)
+        and alignment.get("schema_version")
+        == "membind.native-characterization-reference-alignment.v1"
+        and alignment.get("reference_freeze_path")
+        == REFERENCE_FREEZE_RELATIVE_PATH
+        and isinstance(cleanup, Mapping)
+        and cleanup.get("operator_authorized") is True
+        and cleanup.get("execution_status") == "pending"
+        and cleanup.get("failed_attempt_valid") is False
+        and cleanup.get("failed_attempt_mergeable") is False
+        and cleanup.get("target_group_id") == POLLUTED_C2_GROUP_ID
+        and _SHA256_RE.fullmatch(str(cleanup.get("source_freeze_sha256")))
+        is not None
+        and cleanup.get("required_post_node_count") == 0
+        and cleanup.get("required_post_relationship_count") == 0
+        and isinstance(fresh_c2, Mapping)
+        and fresh_c2.get("semantic_attempts_remaining") == 1
+        and fresh_c2.get("run_id_pattern") == "c2-[0-9a-f]{16}"
+        and fresh_c2.get("start_source_sequence") == 0
+        and fresh_c2.get("resume_allowed") is False
+        and fresh_c2.get("prefix_merge_allowed") is False
+        and fresh_c2.get("structured_output_mode") == "json_schema"
+    )
+    historical = (
+        common
+        and state.get("current_blocker") == SOURCE_BLOCKER
+        and state.get("next_allowed_action") == SOURCE_NEXT_ACTION
         and progress.get("native_characterization") == SOURCE_PROGRESS
-        and isinstance(prior, Mapping)
-        and prior.get("schema_version")
-        == "membind.native-characterization-c2-authorization.v1"
-        and prior.get("live_authorized") is True
-        and prior.get("workplan_id") == "native-characterization-v1.1"
+        and alignment.get("status") == "offline_green_cleanup_pending"
+        and cleanup.get("failed_attempt_id") == FAILED_C2_ATTEMPT_ID
+        and cleanup.get("source_freeze_path") == CLEANUP_FREEZE_RELATIVE_PATH
+        and cleanup.get("planned_evidence_path") == PLANNED_EVIDENCE_RELATIVE_PATH
         and METADATA_KEY not in state
     )
-    if not exact:
+    interruption = state.get("native_characterization_c2_interruption")
+    prior_receipt = state.get(METADATA_KEY)
+    interrupted = (
+        common
+        and state.get("current_blocker")
+        == "c2_infrastructure_interruption_cleanup_pending"
+        and state.get("next_allowed_action")
+        == "execute_scoped_c2_cleanup_after_infrastructure_interruption"
+        and progress.get("native_characterization")
+        == "c0_c1_pass_reference_c2_infrastructure_interrupted_cleanup_pending"
+        and alignment.get("status")
+        == "c2_infrastructure_interrupted_cleanup_pending"
+        and cleanup.get("failed_attempt_id") == INTERRUPTED_C2_ATTEMPT_ID
+        and cleanup.get("replacement_resume_allowed") is False
+        and cleanup.get("source_freeze_path")
+        == INTERRUPTION_SOURCE_FREEZE_RELATIVE_PATH
+        and cleanup.get("planned_evidence_path")
+        == (
+            "artifacts/native_characterization/c2_cleanup/"
+            f"{INTERRUPTED_C2_ATTEMPT_ID}.json"
+        )
+        and fresh_c2.get("live_authorized") is False
+        and isinstance(prior_receipt, Mapping)
+        and prior_receipt.get("live_authorized") is False
+        and prior_receipt.get("replacement_resume_allowed") is False
+        and prior_receipt.get("replacement_start_source_sequence") == 0
+        and prior_receipt.get("semantic_attempts_authorized") == 1
+        and prior_receipt.get("consumed_by_run_id") == INTERRUPTED_C2_ATTEMPT_ID
+        and isinstance(interruption, Mapping)
+        and interruption.get("run_id") == INTERRUPTED_C2_ATTEMPT_ID
+        and interruption.get("error_code") == "openai.APIConnectionError"
+        and interruption.get("attempt_valid") is False
+        and interruption.get("attempt_mergeable") is False
+        and interruption.get("resume_allowed") is False
+        and interruption.get("prefix_merge_allowed") is False
+        and interruption.get("semantic_attempt_consumed") is False
+        and interruption.get("semantic_attempts_remaining") == 1
+        and interruption.get("cleanup_authorized") is True
+        and interruption.get("live_authorized") is False
+    )
+    if not historical and not interrupted:
         raise _fail("source_state_not_cleanup_pending")
 
 
@@ -206,24 +298,18 @@ def _nonnegative_count(value: Any, label: str) -> int:
     return value
 
 
-def _validate_freeze(
-    validation: Path,
-    cleanup: Mapping[str, Any],
-    state: Mapping[str, Any],
-) -> str:
-    freeze = _resolve_under(validation, FREEZE_RELATIVE_PATH, "freeze")
-    freeze_sha256 = _sha(freeze.read_bytes())
-    if cleanup.get("freeze_sha256") != freeze_sha256:
-        raise _fail("freeze_hash_mismatch")
-    prior = state["native_characterization_c2_authorization"]
-    assert isinstance(prior, Mapping)
-    if prior.get("freeze_sha256") != freeze_sha256:
-        raise _fail("prior_authorization_freeze_mismatch")
-    value = _read_json(freeze, "freeze")
-    block_order = value.get("screening", {}).get("e1_e2", {}).get("block_order")
+def _validate_freeze_block(
+    value: Mapping[str, Any], *, expected_mode: str, label: str
+) -> None:
+    policy = value.get("construction_compatibility_policy")
+    screening = value.get("screening")
+    e1_e2 = screening.get("e1_e2") if isinstance(screening, Mapping) else None
+    block_order = e1_e2.get("block_order") if isinstance(e1_e2, Mapping) else None
     exact = (
         value.get("schema_version")
         == "membind.native-characterization-freeze.v1"
+        and isinstance(policy, Mapping)
+        and policy.get("structured_output_mode") == expected_mode
         and isinstance(block_order, list)
         and len(block_order) == 4
         and isinstance(block_order[0], Mapping)
@@ -231,7 +317,89 @@ def _validate_freeze(
         and block_order[0].get("graph_namespace") == POLLUTED_C2_GROUP_ID
     )
     if not exact:
-        raise _fail("freeze_polluted_group_mismatch")
+        raise _fail(f"{label}_contract_mismatch")
+
+
+def _validate_cleanup_freeze(
+    validation: Path, state: Mapping[str, Any]
+) -> str:
+    alignment = state[REFERENCE_ALIGNMENT_KEY]
+    assert isinstance(alignment, Mapping)
+    cleanup = alignment["cleanup"]
+    assert isinstance(cleanup, Mapping)
+    freeze_relative = cleanup.get("source_freeze_path")
+    if freeze_relative == CLEANUP_FREEZE_RELATIVE_PATH:
+        expected_mode = "json_object"
+    elif freeze_relative == INTERRUPTION_SOURCE_FREEZE_RELATIVE_PATH:
+        expected_mode = "json_schema"
+    else:
+        raise _fail("cleanup_source_freeze_path_mismatch")
+    freeze = _resolve_under(validation, freeze_relative, "cleanup_freeze")
+    freeze_sha256 = _sha(freeze.read_bytes())
+    if cleanup.get("source_freeze_sha256") != freeze_sha256:
+        raise _fail("cleanup_source_freeze_hash_mismatch")
+    value = _read_json(freeze, "cleanup_freeze")
+    _validate_payload_hash(value, "cleanup_freeze")
+    _validate_freeze_block(value, expected_mode=expected_mode, label="cleanup_freeze")
+    return freeze_sha256
+
+
+def _validate_reference_freeze(
+    validation: Path,
+    state: Mapping[str, Any],
+    bindings: C2ReauthorizationBindings,
+) -> str:
+    alignment = state[REFERENCE_ALIGNMENT_KEY]
+    assert isinstance(alignment, Mapping)
+    freeze = _resolve_under(
+        validation, REFERENCE_FREEZE_RELATIVE_PATH, "reference_freeze"
+    )
+    freeze_sha256 = _sha(freeze.read_bytes())
+    if (
+        freeze_sha256 != bindings.reference_freeze_sha256
+        or alignment.get("reference_freeze_sha256") != freeze_sha256
+    ):
+        raise _fail("reference_freeze_hash_mismatch")
+    value = _read_json(freeze, "reference_freeze")
+    _validate_payload_hash(value, "reference_freeze")
+    _validate_freeze_block(
+        value, expected_mode="json_schema", label="reference_freeze"
+    )
+
+    policy = value.get("construction_compatibility_policy")
+    derivation = value.get("derivation")
+    exact_policy = (
+        isinstance(policy, Mapping)
+        and policy.get("classification")
+        == "reference_aligned_with_declared_project_deviations"
+        and policy.get("structured_output_backend_requested") is None
+        and policy.get("upstream_graphiti_behavior") is False
+        and policy.get("project_generate_response_override") is False
+        and policy.get("project_structured_parser") is False
+        and policy.get("project_context_probe") is False
+        and policy.get("project_retry_budget_matrix") is False
+        and policy.get("requested_max_tokens") == 16384
+        and isinstance(derivation, Mapping)
+        and derivation.get("parent_freeze_path")
+        == alignment.get("canonical_freeze_path")
+        and derivation.get("parent_freeze_sha256")
+        == alignment.get("canonical_freeze_sha256")
+        and derivation.get("reason")
+        == "restore_pinned_graphiti_openai_generic_provider_path"
+    )
+    if not exact_policy:
+        raise _fail("reference_freeze_policy_mismatch")
+
+    inputs = value.get("input_hashes")
+    if not isinstance(inputs, Mapping):
+        raise _fail("reference_freeze_source_bindings_missing")
+    for field, relative in _REFERENCE_SOURCE_BINDINGS.items():
+        source = _resolve_under(validation, relative, field)
+        if inputs.get(field) != _sha(source.read_bytes()):
+            raise _fail(f"{field}_mismatch")
+    runner = _resolve_under(validation, _C2_RUNNER_SOURCE_PATH, "c2_runner_source")
+    if _sha(runner.read_bytes()) != bindings.c2_runner_source_sha256:
+        raise _fail("c2_runner_source_hash_mismatch")
     return freeze_sha256
 
 
@@ -240,6 +408,14 @@ def _validate_cleanup(
     state: Mapping[str, Any],
     bindings: C2ReauthorizationBindings,
 ) -> tuple[dict[str, Any], str]:
+    alignment = state[REFERENCE_ALIGNMENT_KEY]
+    assert isinstance(alignment, Mapping)
+    cleanup_grant = alignment["cleanup"]
+    assert isinstance(cleanup_grant, Mapping)
+    if bindings.cleanup_evidence_path != cleanup_grant.get(
+        "planned_evidence_path"
+    ):
+        raise _fail("cleanup_evidence_path_mismatch")
     path = _resolve_under(
         validation, bindings.cleanup_evidence_path, "cleanup_evidence"
     )
@@ -256,16 +432,16 @@ def _validate_cleanup(
     cleanup_freeze_sha256 = _require_digest(
         value.get("freeze_sha256"), "cleanup_freeze_sha256"
     )
-    prior = state["native_characterization_c2_authorization"]
-    assert isinstance(prior, Mapping)
-    if cleanup_freeze_sha256 != prior.get("freeze_sha256"):
+    if cleanup_freeze_sha256 != cleanup_grant.get("source_freeze_sha256"):
         raise _fail("cleanup_freeze_mismatch")
     if value.get("cleanup_primitive") != (
         "graphiti.clear_data(driver,group_ids=[target_group])"
     ):
         raise _fail("cleanup_primitive_mismatch")
+    failed_attempt_id = cleanup_grant.get("failed_attempt_id")
     failed_exact = (
-        value.get("failed_attempt_id") == FAILED_C2_ATTEMPT_ID
+        failed_attempt_id in {FAILED_C2_ATTEMPT_ID, INTERRUPTED_C2_ATTEMPT_ID}
+        and value.get("failed_attempt_id") == failed_attempt_id
         and value.get("failed_attempt_valid") is False
         and value.get("failed_attempt_mergeable") is False
         and value.get("replacement_resume_allowed") is False
@@ -293,8 +469,8 @@ def _validate_cleanup(
     ):
         raise _fail("cleanup_preexisting_empty_mismatch")
 
-    freeze_sha256 = _validate_freeze(validation, value, state)
-    if value.get("freeze_sha256") != freeze_sha256:
+    freeze_sha256 = _validate_cleanup_freeze(validation, state)
+    if cleanup_freeze_sha256 != freeze_sha256:
         raise _fail("cleanup_freeze_mismatch")
     return value, payload_sha256
 
@@ -335,14 +511,31 @@ def _metadata(
     cleanup: Mapping[str, Any],
     cleanup_payload_sha256: str,
 ) -> dict[str, Any]:
+    failed_attempt_id = cleanup.get("failed_attempt_id")
+    cleanup_source_freeze_path = (
+        INTERRUPTION_SOURCE_FREEZE_RELATIVE_PATH
+        if failed_attempt_id == INTERRUPTED_C2_ATTEMPT_ID
+        else CLEANUP_FREEZE_RELATIVE_PATH
+    )
     return {
-        "schema_version": "membind.native-characterization-c2-reauthorization.v1",
+        "schema_version": (
+            "membind.native-characterization-reference-c2-authorization.v1"
+        ),
         "source_state_sha256": bindings.source_state_sha256,
-        "failed_attempt_id": FAILED_C2_ATTEMPT_ID,
+        "failed_attempt_id": failed_attempt_id,
         "failed_attempt_mergeable": False,
         "replacement_resume_allowed": False,
         "replacement_start_source_sequence": 0,
         "polluted_group_id": POLLUTED_C2_GROUP_ID,
+        "cleanup_source_freeze_path": cleanup_source_freeze_path,
+        "cleanup_source_freeze_sha256": cleanup.get("freeze_sha256"),
+        "reference_freeze_path": REFERENCE_FREEZE_RELATIVE_PATH,
+        "reference_freeze_sha256": bindings.reference_freeze_sha256,
+        "structured_output_mode": "json_schema",
+        "semantic_attempts_authorized": 1,
+        "run_id_pattern": "c2-[0-9a-f]{16}",
+        "c2_runner_source_path": _C2_RUNNER_SOURCE_PATH,
+        "c2_runner_source_sha256": bindings.c2_runner_source_sha256,
         "cleanup_evidence_path": bindings.cleanup_evidence_path,
         "cleanup_evidence_sha256": bindings.cleanup_evidence_sha256,
         "cleanup_evidence_payload_sha256": cleanup_payload_sha256,
@@ -371,15 +564,30 @@ def build_native_characterization_c2_reauthorized_state(
     if _sha(_canonical(source)) != bindings.source_state_sha256:
         raise _fail("source_state_drift")
     target = deepcopy(source)
+    target["status"] = TARGET_STATUS
     target["current_blocker"] = None
     target["current_action_scope"] = TARGET_SCOPE
     target["authorized_live_actions"] = [TARGET_ACTION]
+    target["native_characterization_live_authorized"] = True
     target["next_allowed_action"] = TARGET_NEXT_ACTION
     progress = deepcopy(dict(target["stage_progress"]))
-    progress["native_characterization"] = (
-        "c0_c1_pass_c2_replacement_authorized_from_episode_0"
-    )
+    progress["native_characterization"] = TARGET_PROGRESS
     target["stage_progress"] = progress
+    alignment = deepcopy(dict(target[REFERENCE_ALIGNMENT_KEY]))
+    alignment["status"] = "c2_live_authorized"
+    cleanup_state = deepcopy(dict(alignment["cleanup"]))
+    cleanup_state["operator_authorized"] = False
+    cleanup_state["execution_status"] = "verified_empty"
+    cleanup_state["evidence_path"] = bindings.cleanup_evidence_path
+    cleanup_state["evidence_sha256"] = bindings.cleanup_evidence_sha256
+    cleanup_state["evidence_payload_sha256"] = cleanup_payload_sha256
+    cleanup_state["pre_cleanup"] = deepcopy(cleanup.get("pre_cleanup"))
+    cleanup_state["post_cleanup"] = deepcopy(cleanup.get("post_cleanup"))
+    alignment["cleanup"] = cleanup_state
+    fresh_c2 = deepcopy(dict(alignment["fresh_c2"]))
+    fresh_c2["live_authorized"] = True
+    alignment["fresh_c2"] = fresh_c2
+    target[REFERENCE_ALIGNMENT_KEY] = alignment
     target[METADATA_KEY] = _metadata(
         bindings, cleanup, cleanup_payload_sha256
     )
@@ -490,6 +698,7 @@ def reauthorize_native_characterization_c2_live_only(
         if _sha(_canonical(source)) != bindings.source_state_sha256:
             raise _fail("source_state_drift")
         _validate_source(source)
+        _validate_reference_freeze(validation, source, bindings)
         cleanup, cleanup_payload_sha256 = _validate_cleanup(
             validation, source, bindings
         )
@@ -510,8 +719,12 @@ def reauthorize_native_characterization_c2_live_only(
 
 
 __all__ = [
+    "CLEANUP_FREEZE_RELATIVE_PATH",
     "C2ReauthorizationBindings",
+    "FAILED_C2_ATTEMPT_ID",
+    "METADATA_KEY",
     "NativeCharacterizationC2ReauthorizationError",
+    "REFERENCE_FREEZE_RELATIVE_PATH",
     "build_native_characterization_c2_reauthorized_state",
     "reauthorize_native_characterization_c2_live_only",
 ]

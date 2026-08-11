@@ -3,12 +3,14 @@
 from __future__ import annotations
 
 import asyncio
+import hashlib
 import json
 import sys
 import tempfile
 from pathlib import Path
 from types import SimpleNamespace
 from unittest import TestCase
+from unittest.mock import patch
 
 
 ROOT = Path(__file__).resolve().parents[1]
@@ -16,10 +18,12 @@ sys.path.insert(0, str(ROOT / "src"))
 
 from native_characterization_c2_cleanup import (  # noqa: E402
     FAILED_C2_ATTEMPT_ID,
+    INTERRUPTED_C2_ATTEMPT_ID,
     POLLUTED_C2_GROUP_ID,
     ScopedC2CleanupError,
     cleanup_scoped_c2_namespace,
 )
+import native_characterization_c2_cleanup as cleanup_module  # noqa: E402
 
 
 OTHER_FROZEN_GROUPS = (
@@ -66,6 +70,46 @@ def _write_freeze(root: Path, *, block_zero: str = POLLUTED_C2_GROUP_ID) -> Path
     path = root / "freeze.json"
     path.write_text(json.dumps(freeze, sort_keys=True), encoding="ascii")
     return path
+
+
+def _write_cleanup_only_state(root: Path, freeze: Path) -> Path:
+    freeze_sha256 = hashlib.sha256(freeze.read_bytes()).hexdigest()
+    state = {
+        "protocol_version": "current-validation-v1.3",
+        "current_stage": "NATIVE_CHARACTERIZATION",
+        "status": "native_characterization_cleanup_only",
+        "current_blocker": "c2_reference_aligned_cleanup_pending",
+        "current_action_scope": "native_characterization_c2_cleanup_only",
+        "authorized_live_actions": [],
+        "native_characterization_live_authorized": False,
+        "live_h0_candidate_authorized": False,
+        "service_admin_authorized": False,
+        "next_allowed_action": (
+            "execute_scoped_c2_cleanup_reference_aligned_precondition"
+        ),
+        "native_characterization_reference_alignment": {
+            "status": "offline_green_cleanup_pending",
+            "cleanup": {
+                "operator_authorized": True,
+                "execution_status": "pending",
+                "failed_attempt_id": FAILED_C2_ATTEMPT_ID,
+                "target_group_id": POLLUTED_C2_GROUP_ID,
+                "source_freeze_path": (
+                    "artifacts/native_characterization/freeze_json_object.json"
+                ),
+                "source_freeze_sha256": freeze_sha256,
+                "planned_evidence_path": (
+                    f"artifacts/native_characterization/c2_cleanup/"
+                    f"{FAILED_C2_ATTEMPT_ID}.json"
+                ),
+                "required_post_node_count": 0,
+                "required_post_relationship_count": 0,
+            },
+        },
+    }
+    state_path = root / "CURRENT_STATE.json"
+    state_path.write_text(json.dumps(state, sort_keys=True), encoding="ascii")
+    return state_path
 
 
 class _FakeDriver:
@@ -117,8 +161,119 @@ def _clear_spy(events: list[tuple], *, fail: bool = False):
 
 
 class NativeCharacterizationC2CleanupTests(TestCase):
+    def test_repository_cleanup_pointer_drives_only_the_scoped_fake_cleanup(
+        self,
+    ) -> None:
+        """The production entrypoint must accept the synchronized current pointer."""
+
+        events: list[tuple] = []
+        driver = _FakeDriver(
+            [("node", 34), ("relationship", 61), ("node", 0), ("relationship", 0)],
+            events,
+        )
+
+        evidence = asyncio.run(
+            cleanup_module.cleanup_reference_aligned_c2_precondition(
+                driver=driver,
+                current_state_path=ROOT / "CURRENT_STATE.json",
+                clear_data_impl=_clear_spy(events),
+            )
+        )
+
+        self.assertEqual(evidence["failed_attempt_id"], INTERRUPTED_C2_ATTEMPT_ID)
+        self.assertEqual(evidence["target_group_id"], POLLUTED_C2_GROUP_ID)
+        self.assertEqual(
+            evidence["pre_cleanup"],
+            {"node_count": 34, "relationship_count": 61},
+        )
+        self.assertEqual(
+            evidence["post_cleanup"],
+            {"node_count": 0, "relationship_count": 0},
+        )
+        self.assertEqual(
+            [event[0] for event in events],
+            ["count", "count", "clear", "count", "count"],
+        )
+
+    def test_production_entrypoint_binds_cleanup_only_state_and_exact_source_freeze(
+        self,
+    ) -> None:
+        with tempfile.TemporaryDirectory() as tmp:
+            root = Path(tmp)
+            generated = _write_freeze(root)
+            freeze = root / "artifacts/native_characterization/freeze_json_object.json"
+            freeze.parent.mkdir(parents=True)
+            generated.replace(freeze)
+            state_path = _write_cleanup_only_state(root, freeze)
+            freeze_sha256 = hashlib.sha256(freeze.read_bytes()).hexdigest()
+            events: list[tuple] = []
+            driver = _FakeDriver(
+                [("node", 7), ("relationship", 11), ("node", 0), ("relationship", 0)],
+                events,
+            )
+            production_entrypoint = getattr(
+                cleanup_module, "cleanup_reference_aligned_c2_precondition"
+            )
+            with patch.object(
+                cleanup_module, "SOURCE_FREEZE_SHA256", freeze_sha256
+            ):
+                evidence = asyncio.run(
+                    production_entrypoint(
+                        driver=driver,
+                        current_state_path=state_path,
+                        clear_data_impl=_clear_spy(events),
+                    )
+                )
+
+        self.assertEqual(evidence["freeze_sha256"], freeze_sha256)
+        self.assertEqual(evidence["failed_attempt_id"], FAILED_C2_ATTEMPT_ID)
+        self.assertEqual(evidence["target_group_id"], POLLUTED_C2_GROUP_ID)
+        self.assertEqual(evidence["post_cleanup"], {"node_count": 0, "relationship_count": 0})
+
+    def test_production_entrypoint_rejects_state_or_source_identity_drift_before_io(
+        self,
+    ) -> None:
+        production_entrypoint = getattr(
+            cleanup_module, "cleanup_reference_aligned_c2_precondition"
+        )
+        for mutation in ("scope", "authorization", "freeze_path", "freeze_hash"):
+            with self.subTest(mutation=mutation), tempfile.TemporaryDirectory() as tmp:
+                root = Path(tmp)
+                generated = _write_freeze(root)
+                freeze = root / "artifacts/native_characterization/freeze_json_object.json"
+                freeze.parent.mkdir(parents=True)
+                generated.replace(freeze)
+                state_path = _write_cleanup_only_state(root, freeze)
+                freeze_sha256 = hashlib.sha256(freeze.read_bytes()).hexdigest()
+                state = json.loads(state_path.read_text(encoding="ascii"))
+                cleanup = state["native_characterization_reference_alignment"]["cleanup"]
+                if mutation == "scope":
+                    state["current_action_scope"] = "native_characterization_offline_only"
+                elif mutation == "authorization":
+                    cleanup["operator_authorized"] = False
+                elif mutation == "freeze_path":
+                    cleanup["source_freeze_path"] = "artifacts/native_characterization/freeze.json"
+                else:
+                    cleanup["source_freeze_sha256"] = "0" * 64
+                state_path.write_text(json.dumps(state, sort_keys=True), encoding="ascii")
+                events: list[tuple] = []
+                with (
+                    patch.object(
+                        cleanup_module, "SOURCE_FREEZE_SHA256", freeze_sha256
+                    ),
+                    self.assertRaises(ScopedC2CleanupError),
+                ):
+                    asyncio.run(
+                        production_entrypoint(
+                            driver=_FakeDriver([], events),
+                            current_state_path=state_path,
+                            clear_data_impl=_clear_spy(events),
+                        )
+                    )
+                self.assertEqual(events, [])
+
     def test_cleanup_evidence_is_bound_to_latest_polluting_attempt(self) -> None:
-        self.assertEqual(FAILED_C2_ATTEMPT_ID, "c2-723261287e32e182")
+        self.assertEqual(FAILED_C2_ATTEMPT_ID, "c2-c5e5463facb3bce7")
 
     def test_exact_block_zero_cleanup_counts_before_and_after(self) -> None:
         with tempfile.TemporaryDirectory() as tmp:

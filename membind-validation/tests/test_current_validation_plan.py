@@ -11,13 +11,12 @@ CURRENT_H0_STATUS = "h0_q1_b_live_only"
 CURRENT_H0_ACTION_SCOPE = "h0_q1_b_live_only"
 CURRENT_H0_NEXT_ACTION = "run_q1_h0-b-post-workload-replacement"
 CURRENT_CHARACTERIZATION_STAGE = "NATIVE_CHARACTERIZATION"
-CURRENT_CHARACTERIZATION_STATUS = "native_characterization_offline_only"
-CURRENT_CHARACTERIZATION_BLOCKER = "c2_json_object_validation_failure_stop_no_fallback"
-CURRENT_CHARACTERIZATION_BLOCKER_TEXT = CURRENT_CHARACTERIZATION_BLOCKER
-CURRENT_CHARACTERIZATION_SCOPE = "native_characterization_offline_only"
-CURRENT_CHARACTERIZATION_NEXT_ACTION = (
-    "report_c2_json_object_partial_diagnostic_and_await_decision"
-)
+CURRENT_CHARACTERIZATION_STATUS = "native_characterization_c2_live_only"
+CURRENT_CHARACTERIZATION_BLOCKER = None
+CURRENT_CHARACTERIZATION_BLOCKER_TEXT = "none"
+CURRENT_CHARACTERIZATION_SCOPE = "native_characterization_c2_live_only"
+CURRENT_CHARACTERIZATION_NEXT_ACTION = "run_native_characterization_c2"
+CURRENT_INTERRUPTED_C2_RUN_ID = "c2-2fe3711c62933407"
 HISTORICAL_V3_BLOCKER = "v3_smoke_002_m0_structured_output_failure"
 
 
@@ -112,6 +111,13 @@ class CurrentValidationPlanTests(TestCase):
             "6be85ceb90f0436accaf75de967c60ba88784578714ab6d19aae73c3cac547b8",
         )
         self.assertEqual(state["current_blocker"], CURRENT_CHARACTERIZATION_BLOCKER)
+        interruption = state["native_characterization_c2_interruption"]
+        self.assertEqual(interruption["run_id"], CURRENT_INTERRUPTED_C2_RUN_ID)
+        self.assertEqual(interruption["error_code"], "openai.APIConnectionError")
+        self.assertFalse(interruption["attempt_valid"])
+        self.assertFalse(interruption["attempt_mergeable"])
+        self.assertFalse(interruption["resume_allowed"])
+        self.assertTrue(interruption["cleanup_authorized"])
 
     def test_historical_v3_blocker_survives_characterization_transition(self):
         state = json.loads((ROOT / "CURRENT_STATE.json").read_text(encoding="utf-8"))
@@ -606,6 +612,14 @@ class CurrentValidationPlanTests(TestCase):
             f"current_action_scope={CURRENT_CHARACTERIZATION_SCOPE}",
             current[:2000],
         )
+        self.assertIn(
+            f"interrupted_c2_attempt={CURRENT_INTERRUPTED_C2_RUN_ID}",
+            current[:2000],
+        )
+        self.assertIn(
+            "interruption_error_code=openai.APIConnectionError",
+            current[:2000],
+        )
         self.assertIn("current_stage=NATIVE_CHARACTERIZATION", execution[:2000])
         self.assertIn(
             f"status={CURRENT_CHARACTERIZATION_STATUS}", execution[:2000]
@@ -683,6 +697,10 @@ class CurrentValidationPlanTests(TestCase):
             HISTORICAL_V3_BLOCKER,
         )
         self.assertEqual(state["current_blocker"], CURRENT_CHARACTERIZATION_BLOCKER)
+        interruption = state["native_characterization_c2_interruption"]
+        self.assertEqual(interruption["run_id"], CURRENT_INTERRUPTED_C2_RUN_ID)
+        self.assertFalse(interruption["semantic_attempt_consumed"])
+        self.assertEqual(interruption["semantic_attempts_remaining"], 1)
         self.assertEqual(
             diagnostic["v1_gate"]["status"],
             "pass_with_explicit_evidence_limits",

@@ -4,20 +4,58 @@
 ```text
 protocol_version=current-validation-v1.3
 current_stage=NATIVE_CHARACTERIZATION
-status=native_characterization_offline_only
-current_blocker=c2_json_object_validation_failure_stop_no_fallback
-current_action_scope=native_characterization_offline_only
-stage_progress.native_characterization=c0_c1_pass_c2_json_object_validation_failure_after_7_completed
+status=native_characterization_c2_live_only
+current_blocker=none
+current_action_scope=native_characterization_c2_live_only
+stage_progress.native_characterization=c0_c1_pass_reference_aligned_c2_authorized_from_episode_0
 instrumentation_contract_status=qualified_overhead_report_only
 c1_aa_classification=clean_pass
 c0_dry_run_passed=true
 c0_dry_run_live_request_performed=false
 c0_live_passed=true
-authorized_live_actions=[]
+reference_alignment_decision=artifacts/diagnostics/native_characterization_reference_alignment_decision_20260811.md
+reference_alignment_decision_sha256=e367529c381fd93b957a6ba1a69c064217fa4d190e62fa1250d784b751bd8904
+reference_aligned_freeze=artifacts/native_characterization/freeze_reference_aligned.json
+reference_aligned_freeze_sha256=cea700f73f7dc942deeb49195e0a3ca235c35ec51a1c06fdab0edd94738330a7
+interrupted_c2_attempt=c2-2fe3711c62933407
+interruption_classification=infrastructure_interruption
+interruption_error_code=openai.APIConnectionError
+interruption_completed_episode_count=9
+interruption_failed_source_sequence=9
+interruption_attempt_valid=false
+interruption_attempt_mergeable=false
+interruption_resume_allowed=false
+interruption_semantic_attempt_consumed=false
+interruption_report=artifacts/diagnostics/native_characterization_c2-2fe3711c62933407_interruption.json
+interruption_report_sha256=be1922abfbe9887e633228000b371b92a342daba63f43d4f0408ddcf9bf7a986
+interruption_checkpoint=artifacts/native_characterization/runs/c2-2fe3711c62933407/checkpoint.json
+interruption_checkpoint_sha256=2010f6eecf82d1cab8706cd5136445c08175b3ddf9e1e1d11b8ec5f16a3735b8
+interruption_outer_log=artifacts/tdd/native_characterization_c2-2fe3711c62933407_live_20260811.log
+interruption_outer_log_sha256=3a453f968c6cb5b30a3ae198ac4ec79a569f8993d5a2b5e2e9ab5c32f6f646e1
+cleanup_target_attempt=c2-2fe3711c62933407
+cleanup_target_group=nc-e1e2-400b9b78c2c218df
+cleanup_source_freeze=artifacts/native_characterization/freeze_reference_aligned.json
+cleanup_source_freeze_sha256=cea700f73f7dc942deeb49195e0a3ca235c35ec51a1c06fdab0edd94738330a7
+cleanup_planned_evidence=artifacts/native_characterization/c2_cleanup/c2-2fe3711c62933407.json
+cleanup_execution_status=verified_empty
+cleanup_evidence=artifacts/native_characterization/c2_cleanup/c2-2fe3711c62933407.json
+cleanup_evidence_sha256=0db64d28dc5dda72bbf9bd8c0ea8a0b18673ffc7abafb694f0d90afaf06964d9
+cleanup_evidence_payload_sha256=f130e0eab36910bf86406b0e166e2a3ce02e8abc16ef17274ad7817142514d71
+cleanup_pre_node_count=34
+cleanup_pre_relationship_count=61
+cleanup_post_node_count=0
+cleanup_post_relationship_count=0
+final_full_regression=artifacts/tdd/native_characterization_c2_interruption_final_full_offline_regression_20260811.log
+final_full_regression_sha256=439cb3b8779b8514efd4a07ddd2b5b10f60706eb918a22e5f00b184175b6e25c
+final_full_regression_test_count=793
+fresh_c2_start_source_sequence=0
+fresh_c2_resume_allowed=false
+fresh_c2_attempts_remaining=1
+authorized_live_actions=[native_characterization_c2]
 live_h0_candidate_authorized=false
 service_admin_authorized=false
-native_characterization_live_authorized=false
-next_allowed_action=report_c2_json_object_partial_diagnostic_and_await_decision
+native_characterization_live_authorized=true
+next_allowed_action=run_native_characterization_c2
 ```
 <!-- NATIVE_CHARACTERIZATION_CURRENT_POINTER_END -->
 
@@ -31,8 +69,8 @@ latest_partial_report=artifacts/diagnostics/native_characterization_lightweight_
 The lightweight execution decision makes instrumentation overhead a reported,
 non-blocking perturbation measure while retaining semantic parity and timing
 correctness as hard requirements. It freezes further qualification work and
-permits no live action by itself; the machine pointer above remains authoritative
-until the single necessary C2 transition is explicitly applied.
+permits no C2 live action by itself. The machine pointer above now authorizes
+only the exact scoped cleanup needed before the single C2 transition.
 
 Both failed C2 attempts remain invalid and non-mergeable. The replacement run
 `c2-723261287e32e182` stopped after the same ten completed episodes. Its exact
@@ -42,7 +80,9 @@ validation in edge resolution. The prefix is diagnostic only and the current
 pointer revokes all live work; `EXPERIMENT_PLAN.md#C2_MINIMAL_RECOVERY_POINTER`
 retains the historical failure hashes without authorizing another recovery.
 The failed fresh namespace currently contains 56 nodes and 67 relationships;
-it is polluted, non-reusable, and not authorized for another cleanup.
+it is polluted and non-reusable. Exact cleanup of that one namespace is now the
+only authorized database mutation; fresh pre-counts and exact 0/0 post-counts
+must be persisted before C2 live authority can be granted.
 
 ```text
 HISTORICAL_SOLUTION_LANE_BELOW=true

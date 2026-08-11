@@ -27,22 +27,101 @@ END = "<!-- NATIVE_CHARACTERIZATION_CURRENT_POINTER_END -->"
 EXPECTED = {
     "protocol_version": "current-validation-v1.3",
     "current_stage": "NATIVE_CHARACTERIZATION",
-    "status": "native_characterization_offline_only",
-    "current_blocker": "c2_json_object_validation_failure_stop_no_fallback",
-    "current_action_scope": "native_characterization_offline_only",
+    "status": "native_characterization_c2_live_only",
+    "current_blocker": "none",
+    "current_action_scope": "native_characterization_c2_live_only",
     "stage_progress.native_characterization": (
-        "c0_c1_pass_c2_json_object_validation_failure_after_7_completed"
+        "c0_c1_pass_reference_aligned_c2_authorized_from_episode_0"
     ),
     "instrumentation_contract_status": "qualified_overhead_report_only",
     "c1_aa_classification": "clean_pass",
     "c0_dry_run_passed": "true",
     "c0_dry_run_live_request_performed": "false",
     "c0_live_passed": "true",
-    "authorized_live_actions": "[]",
+    "reference_alignment_decision": (
+        "artifacts/diagnostics/"
+        "native_characterization_reference_alignment_decision_20260811.md"
+    ),
+    "reference_alignment_decision_sha256": (
+        "e367529c381fd93b957a6ba1a69c064217fa4d190e62fa1250d784b751bd8904"
+    ),
+    "reference_aligned_freeze": (
+        "artifacts/native_characterization/freeze_reference_aligned.json"
+    ),
+    "reference_aligned_freeze_sha256": (
+        "cea700f73f7dc942deeb49195e0a3ca235c35ec51a1c06fdab0edd94738330a7"
+    ),
+    "interrupted_c2_attempt": "c2-2fe3711c62933407",
+    "interruption_classification": "infrastructure_interruption",
+    "interruption_error_code": "openai.APIConnectionError",
+    "interruption_completed_episode_count": "9",
+    "interruption_failed_source_sequence": "9",
+    "interruption_attempt_valid": "false",
+    "interruption_attempt_mergeable": "false",
+    "interruption_resume_allowed": "false",
+    "interruption_semantic_attempt_consumed": "false",
+    "interruption_report": (
+        "artifacts/diagnostics/"
+        "native_characterization_c2-2fe3711c62933407_interruption.json"
+    ),
+    "interruption_report_sha256": (
+        "be1922abfbe9887e633228000b371b92a342daba63f43d4f0408ddcf9bf7a986"
+    ),
+    "interruption_checkpoint": (
+        "artifacts/native_characterization/runs/"
+        "c2-2fe3711c62933407/checkpoint.json"
+    ),
+    "interruption_checkpoint_sha256": (
+        "2010f6eecf82d1cab8706cd5136445c08175b3ddf9e1e1d11b8ec5f16a3735b8"
+    ),
+    "interruption_outer_log": (
+        "artifacts/tdd/"
+        "native_characterization_c2-2fe3711c62933407_live_20260811.log"
+    ),
+    "interruption_outer_log_sha256": (
+        "3a453f968c6cb5b30a3ae198ac4ec79a569f8993d5a2b5e2e9ab5c32f6f646e1"
+    ),
+    "cleanup_target_attempt": "c2-2fe3711c62933407",
+    "cleanup_target_group": "nc-e1e2-400b9b78c2c218df",
+    "cleanup_source_freeze": (
+        "artifacts/native_characterization/freeze_reference_aligned.json"
+    ),
+    "cleanup_source_freeze_sha256": (
+        "cea700f73f7dc942deeb49195e0a3ca235c35ec51a1c06fdab0edd94738330a7"
+    ),
+    "cleanup_planned_evidence": (
+        "artifacts/native_characterization/c2_cleanup/c2-2fe3711c62933407.json"
+    ),
+    "cleanup_execution_status": "verified_empty",
+    "cleanup_evidence": (
+        "artifacts/native_characterization/c2_cleanup/c2-2fe3711c62933407.json"
+    ),
+    "cleanup_evidence_sha256": (
+        "0db64d28dc5dda72bbf9bd8c0ea8a0b18673ffc7abafb694f0d90afaf06964d9"
+    ),
+    "cleanup_evidence_payload_sha256": (
+        "f130e0eab36910bf86406b0e166e2a3ce02e8abc16ef17274ad7817142514d71"
+    ),
+    "cleanup_pre_node_count": "34",
+    "cleanup_pre_relationship_count": "61",
+    "cleanup_post_node_count": "0",
+    "cleanup_post_relationship_count": "0",
+    "final_full_regression": (
+        "artifacts/tdd/"
+        "native_characterization_c2_interruption_final_full_offline_regression_20260811.log"
+    ),
+    "final_full_regression_sha256": (
+        "439cb3b8779b8514efd4a07ddd2b5b10f60706eb918a22e5f00b184175b6e25c"
+    ),
+    "final_full_regression_test_count": "793",
+    "fresh_c2_start_source_sequence": "0",
+    "fresh_c2_resume_allowed": "false",
+    "fresh_c2_attempts_remaining": "1",
+    "authorized_live_actions": "[native_characterization_c2]",
     "live_h0_candidate_authorized": "false",
     "service_admin_authorized": "false",
-    "native_characterization_live_authorized": "false",
-    "next_allowed_action": "report_c2_json_object_partial_diagnostic_and_await_decision",
+    "native_characterization_live_authorized": "true",
+    "next_allowed_action": "run_native_characterization_c2",
 }
 
 FAILED_C2_ATTEMPT = "c2-efb58c477f12adf6"
@@ -117,12 +196,12 @@ def _fields(block: str) -> dict[str, str]:
 
 
 class NativeCharacterizationCurrentPointerTests(TestCase):
-    def test_machine_state_stops_after_json_object_validation_failure(self) -> None:
+    def test_machine_state_authorizes_only_fresh_c2_from_episode_zero(self) -> None:
         state = json.loads((ROOT / "CURRENT_STATE.json").read_text(encoding="ascii"))
 
         self.assertEqual(state["current_stage"], EXPECTED["current_stage"])
         self.assertEqual(state["status"], EXPECTED["status"])
-        self.assertEqual(state["current_blocker"], EXPECTED["current_blocker"])
+        self.assertIsNone(state["current_blocker"])
         self.assertEqual(
             state["current_action_scope"], EXPECTED["current_action_scope"]
         )
@@ -131,13 +210,67 @@ class NativeCharacterizationCurrentPointerTests(TestCase):
             EXPECTED["stage_progress.native_characterization"],
         )
         self.assertEqual(
-            state["authorized_live_actions"], []
+            state["authorized_live_actions"], ["native_characterization_c2"]
         )
+        self.assertTrue(state["native_characterization_live_authorized"])
         self.assertFalse(state["live_h0_candidate_authorized"])
         self.assertFalse(state["service_admin_authorized"])
         self.assertEqual(
             state["next_allowed_action"], EXPECTED["next_allowed_action"]
         )
+        alignment = state["native_characterization_reference_alignment"]
+        self.assertEqual(
+            alignment["status"], "c2_live_authorized"
+        )
+        self.assertEqual(
+            alignment["decision_path"], EXPECTED["reference_alignment_decision"]
+        )
+        self.assertEqual(
+            alignment["reference_freeze_path"], EXPECTED["reference_aligned_freeze"]
+        )
+        self.assertEqual(
+            alignment["reference_freeze_sha256"],
+            EXPECTED["reference_aligned_freeze_sha256"],
+        )
+        self.assertEqual(alignment["cleanup"]["failed_attempt_id"], "c2-2fe3711c62933407")
+        self.assertEqual(alignment["cleanup"]["target_group_id"], POLLUTED_C2_GROUP)
+        self.assertEqual(
+            alignment["cleanup"]["execution_status"], "verified_empty"
+        )
+        self.assertFalse(alignment["cleanup"]["operator_authorized"])
+        self.assertEqual(
+            alignment["cleanup"]["source_freeze_path"],
+            EXPECTED["cleanup_source_freeze"],
+        )
+        self.assertEqual(
+            alignment["cleanup"]["source_freeze_sha256"],
+            EXPECTED["cleanup_source_freeze_sha256"],
+        )
+        self.assertEqual(
+            alignment["cleanup"]["planned_evidence_path"],
+            EXPECTED["cleanup_planned_evidence"],
+        )
+        self.assertEqual(alignment["fresh_c2"]["semantic_attempts_remaining"], 1)
+        self.assertEqual(alignment["fresh_c2"]["start_source_sequence"], 0)
+        self.assertFalse(alignment["fresh_c2"]["resume_allowed"])
+        self.assertTrue(alignment["fresh_c2"]["live_authorized"])
+        receipt = state["native_characterization_reference_c2_authorization"]
+        self.assertTrue(receipt["live_authorized"])
+        self.assertEqual(receipt["failed_attempt_id"], "c2-2fe3711c62933407")
+        self.assertEqual(receipt["final_full_regression_test_count"], 793)
+        self.assertEqual(receipt["replacement_start_source_sequence"], 0)
+        self.assertFalse(receipt["replacement_resume_allowed"])
+        interruption = state["native_characterization_c2_interruption"]
+        self.assertEqual(interruption["run_id"], "c2-2fe3711c62933407")
+        self.assertEqual(interruption["error_code"], "openai.APIConnectionError")
+        self.assertEqual(interruption["completed_episode_count"], 9)
+        self.assertEqual(interruption["failed_source_sequence"], 9)
+        self.assertFalse(interruption["attempt_valid"])
+        self.assertFalse(interruption["attempt_mergeable"])
+        self.assertFalse(interruption["resume_allowed"])
+        self.assertFalse(interruption["semantic_attempt_consumed"])
+        self.assertEqual(interruption["semantic_attempts_remaining"], 1)
+        self.assertTrue(interruption["cleanup_authorized"])
         failure = state["native_characterization_c2_second_failure"]
         self.assertEqual(failure["run_id"], "c2-723261287e32e182")
         self.assertEqual(failure["completed_episode_count"], 10)
@@ -189,7 +322,7 @@ class NativeCharacterizationCurrentPointerTests(TestCase):
                 blocks.append(block)
         self.assertEqual(len(set(blocks)), 1)
 
-    def test_current_pointer_is_offline_and_keeps_h0_as_history(self) -> None:
+    def test_current_pointer_authorizes_only_c2_and_keeps_h0_as_history(self) -> None:
         for path in DOCUMENTS:
             with self.subTest(document=path.name):
                 text = path.read_text(encoding="utf-8")
@@ -197,10 +330,11 @@ class NativeCharacterizationCurrentPointerTests(TestCase):
                 history = text[text.index(END) + len(END) :]
                 self.assertNotIn("live_h0_candidate_authorized=true", current)
                 self.assertNotIn("authorized_live_actions=h0_candidate", current)
-                self.assertIn("authorized_live_actions=[]", current)
                 self.assertIn(
-                    "next_allowed_action=report_c2_json_object_partial_diagnostic_and_await_decision",
-                    current,
+                    "authorized_live_actions=[native_characterization_c2]", current
+                )
+                self.assertIn(
+                    "next_allowed_action=run_native_characterization_c2", current
                 )
                 self.assertIn("HISTORICAL_SOLUTION_LANE_BELOW=true", history)
                 self.assertIn("live_h0_candidate_authorized=true", history)

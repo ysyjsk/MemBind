@@ -20,6 +20,30 @@ import native_characterization_c2_second_failure as failure
 ROOT = Path(__file__).resolve().parents[1]
 REPO = ROOT.parent
 
+# This fixture represents the source contract at the historical JSONDecodeError
+# boundary.  Keep it local so later CURRENT_STATE transitions cannot invalidate
+# an otherwise immutable evidence-validation test.
+_HISTORICAL_SECOND_FAILURE_SOURCE: dict[str, object] = {
+    "authorized_live_actions": ["native_characterization_c2"],
+    "current_action_scope": "native_characterization_c2_live_only",
+    "current_blocker": None,
+    "current_stage": "NATIVE_CHARACTERIZATION",
+    "next_allowed_action": "run_native_characterization_c2",
+    "protocol_version": "current-validation-v1.3",
+    "service_admin_authorized": False,
+    "stage_progress": {
+        "full_unit_regression": "pass",
+        "native_characterization": (
+            "c0_c1_pass_c2_replacement_authorized_from_episode_0"
+        ),
+    },
+    "status": "native_characterization_offline_only",
+    "unrelated_historical_evidence": {"preserved": True},
+}
+_HISTORICAL_SECOND_FAILURE_SOURCE_SHA256 = (
+    "d3c78ca40acc481550b59ab0de347ddfb6632f706026149261a1178f163c486a"
+)
+
 
 def _canonical(value: object) -> bytes:
     return json.dumps(
@@ -28,29 +52,22 @@ def _canonical(value: object) -> bytes:
 
 
 def _historical_second_failure_source_state() -> dict[str, object]:
-    """Recover the exact state consumed by the second-failure transition."""
+    """Return an isolated copy of the immutable historical source fixture."""
 
-    state = json.loads((ROOT / "CURRENT_STATE.json").read_text("ascii"))
-    state.pop("native_characterization_c2_second_failure", None)
-    state["current_blocker"] = None
-    state["current_action_scope"] = "native_characterization_c2_live_only"
-    state["authorized_live_actions"] = ["native_characterization_c2"]
-    state["next_allowed_action"] = "run_native_characterization_c2"
-    stage_progress = dict(state["stage_progress"])
-    stage_progress["native_characterization"] = (
-        "c0_c1_pass_c2_replacement_authorized_from_episode_0"
-    )
-    state["stage_progress"] = stage_progress
-    if hashlib.sha256(_canonical(state)).hexdigest() != failure.SOURCE_STATE_SHA256:
+    source = deepcopy(_HISTORICAL_SECOND_FAILURE_SOURCE)
+    if (
+        hashlib.sha256(_canonical(source)).hexdigest()
+        != _HISTORICAL_SECOND_FAILURE_SOURCE_SHA256
+    ):
         raise AssertionError("historical C2 second-failure source fixture drifted")
-    return state
+    return source
 
 
 class NativeCharacterizationC2SecondFailureTests(TestCase):
     def setUp(self) -> None:
         self.source = _historical_second_failure_source_state()
         self.bindings = failure.C2SecondFailureBindings(
-            source_state_sha256=failure.SOURCE_STATE_SHA256,
+            source_state_sha256=_HISTORICAL_SECOND_FAILURE_SOURCE_SHA256,
             checkpoint_path=failure.CHECKPOINT_RELATIVE_PATH,
             checkpoint_sha256=failure.CHECKPOINT_SHA256,
             trace_path=failure.TRACE_RELATIVE_PATH,

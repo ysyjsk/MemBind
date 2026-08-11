@@ -68,13 +68,22 @@ class NativeCharacterizationWorkplanV11ContractTests(TestCase):
             self.assertEqual(text.count(end), 1)
             current = text.split(start, 1)[1].split(end, 1)[0]
             self.assertIn(
-                "current_blocker=c2_json_object_validation_failure_stop_no_fallback",
+                "current_blocker=c2_infrastructure_interruption_cleanup_pending",
                 current,
             )
             self.assertIn(
-                "next_allowed_action=report_c2_json_object_partial_diagnostic_and_await_decision",
+                "next_allowed_action=execute_scoped_c2_cleanup_after_infrastructure_interruption",
                 current,
             )
+            self.assertIn("interrupted_c2_attempt=c2-2fe3711c62933407", current)
+            self.assertIn(
+                "interruption_error_code=openai.APIConnectionError",
+                current,
+            )
+            self.assertIn("interruption_attempt_valid=false", current)
+            self.assertIn("interruption_attempt_mergeable=false", current)
+            self.assertIn("interruption_resume_allowed=false", current)
+            self.assertIn("cleanup_execution_status=pending", current)
             self.assertNotIn(
                 "next_allowed_work=C1_instrumentation_implementation",
                 current,
