@@ -40,6 +40,9 @@ CURRENT_H0_BLOCKER = None
 CURRENT_H0_BLOCKER_TEXT = "none"
 CURRENT_H0_ACTION_SCOPE = "h0_q1_b_live_only"
 CURRENT_H0_NEXT_ACTION = "run_q1_h0-b-post-workload-replacement"
+CURRENT_CHARACTERIZATION_STATUS = "native_characterization_offline_only"
+CURRENT_CHARACTERIZATION_SCOPE = "native_characterization_offline_only"
+CURRENT_CHARACTERIZATION_NEXT_ACTION = "implement_c2_runner_offline"
 INVALIDATED_H0_A_CHECKPOINT_SHA256 = (
     "127c81b39ccd705d7c67dc936e953992d5be97f4065fd56f3655db52d12ad309"
 )
@@ -105,19 +108,23 @@ class ProtocolV13DocumentContractTests(TestCase):
             ):
                 self.assertIn(token, document)
 
-    def test_state_authorizes_only_exact_r5_post_workload_replacement(self):
+    def test_state_retires_exact_r6_grant_for_native_characterization(self):
         state = self.state
         self.assertIn("protocol_version", state)
         self.assertEqual(state["protocol_version"], "current-validation-v1.3")
-        self.assertEqual(state["current_stage"], "H0")
-        self.assertEqual(state["status"], CURRENT_H0_STATUS)
+        self.assertEqual(state["current_stage"], "NATIVE_CHARACTERIZATION")
+        self.assertEqual(state["status"], CURRENT_CHARACTERIZATION_STATUS)
         self.assertEqual(state["current_blocker"], CURRENT_H0_BLOCKER)
-        self.assertEqual(state["current_action_scope"], CURRENT_H0_ACTION_SCOPE)
-        self.assertTrue(state["live_h0_candidate_authorized"])
-        self.assertEqual(state["authorized_h0_candidate_id"], "Q1")
-        self.assertEqual(state["authorized_live_actions"], ["h0_candidate"])
+        self.assertEqual(
+            state["current_action_scope"], CURRENT_CHARACTERIZATION_SCOPE
+        )
+        self.assertFalse(state["live_h0_candidate_authorized"])
+        self.assertIsNone(state["authorized_h0_candidate_id"])
+        self.assertEqual(state["authorized_live_actions"], [])
         self.assertFalse(state["v3_smoke_003_authorized"])
-        self.assertEqual(state["next_allowed_action"], CURRENT_H0_NEXT_ACTION)
+        self.assertEqual(
+            state["next_allowed_action"], CURRENT_CHARACTERIZATION_NEXT_ACTION
+        )
         failure = state["h0_b_post_workload_harness_failure"]
         self.assertEqual(
             failure["stage_attempt_id"],
@@ -126,16 +133,17 @@ class ProtocolV13DocumentContractTests(TestCase):
         self.assertEqual(failure["phase"], "H0-B")
         self.assertEqual(failure["status"], "candidate_failed")
         self.assertEqual(failure["failure_origin"], "local_execution_harness_interface_contract")
-        authorization = state["live_h0_authorization"]
+        self.assertNotIn("live_h0_authorization", state)
+        authorization = state["historical_h0_live_authorization"]
         self.assertEqual(authorization["candidate_id"], "Q1")
         self.assertEqual(authorization["phase"], "H0-B")
         self.assertEqual(
             authorization["authorized_stage_attempt_id"],
-            "h0-q1-b-20260810-replacement-003",
+            "h0-q1-b-20260810-replacement-004",
         )
         self.assertEqual(
             authorization["resolved_manifest_index_sha256"],
-            "3f41f7520255a1ab64e9ee34efebaccbb05a1d580b7a390057ced0f02b3d13dd",
+            "1982153dc85160cfdf8727be042e33e0c9c1eaee93835302f28a1d9cc535e349",
         )
         admission = authorization["post_workload_repair_admission"]
         self.assertFalse(admission["decision_result_blind"])
@@ -143,6 +151,12 @@ class ProtocolV13DocumentContractTests(TestCase):
         self.assertFalse(admission["old_attempt_qualification_reusable"])
         self.assertFalse(admission["old_and_new_trial_counts_mergeable"])
         self.assertFalse(admission["resume_failed_attempt_allowed"])
+        transition = state["native_characterization_transition"]
+        self.assertEqual(
+            transition["source_state_sha256"],
+            "fb57c0edb6388c2ae94c6ba338e1671c39fa08e218cfc96566ee4d315b2e231d",
+        )
+        self.assertFalse(transition["live_authorized"])
 
     def test_gate_order_repair_is_non_blind_one_shot_and_legacy_bound(self):
         plan = self._plan()

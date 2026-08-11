@@ -23,12 +23,54 @@ class GPT55TemporaryWorkplanTests(TestCase):
         self.assertIn("/data/predator/ly/Mem/cache/huggingface/hub", workplan)
         self.assertNotIn("CONSTRUCTION_LLM_PROVIDER=openai_chat", workplan)
 
-    def test_global_memory_indexes_temporary_files_and_artifacts(self):
+    def test_global_memory_preserves_temporary_lane_exclusion_fence(self):
         memory = (ROOT / "GLOBAL_MEMORY.md").read_text(encoding="utf-8")
 
-        self.assertIn("gpt55_temporary/WORKPLAN.md", memory)
-        self.assertIn("gpt55_temporary/scripts/labforge_gateway_probe.py", memory)
-        self.assertIn("gpt55_temporary/scripts/local_embedding_adapter.py", memory)
-        self.assertIn("gpt55_temporary/tests/test_labforge_gateway_probe.py", memory)
-        self.assertIn("v3_smoke_001", memory)
-        self.assertIn("mainline vLLM protocol remains frozen", memory)
+        self.assertIn("`gpt55_temporary/**` exclusion remain unchanged", memory)
+
+    def test_active_bounded_lane_documents_model_gate_and_black_box_latency(self):
+        workplan = (ROOT / "gpt55_temporary" / "WORKPLAN.md").read_text(
+            encoding="utf-8"
+        )
+        methodology = (
+            ROOT / "gpt55_temporary" / "API_LATENCY_METHODOLOGY.md"
+        ).read_text(encoding="utf-8")
+
+        for required in (
+            "gpt-5.4-mini",
+            "structured Chat preflight",
+            "preflight before dataset/GPU/Neo4j/Graphiti",
+            "does not advance V3/V4/V5/V6",
+        ):
+            self.assertIn(required, workplan)
+        for required in (
+            "client_observed_remote_api_wait",
+            "time-to-rejection",
+            "TTFT = unavailable",
+            "ITL/TPOT = unavailable",
+            "interval union",
+            "DistServe",
+            "Llumnix",
+            "Parrot",
+            "Clockwork",
+            "Clipper",
+            "vLLM",
+        ):
+            self.assertIn(required, methodology)
+        self.assertNotIn("403 inference latency", methodology)
+
+    def test_current_result_report_persists_the_gateway_blocker(self):
+        report = (
+            ROOT
+            / "gpt55_temporary"
+            / "artifacts"
+            / "diagnostics"
+            / "gpt54mini_bounded_001_report.md"
+        ).read_text(encoding="utf-8")
+
+        self.assertIn("HTTP 403", report)
+        self.assertIn("gpt-5.4-mini", report)
+        self.assertIn("RTX 3090 Ti", report)
+        self.assertIn("19/19", report)
+        self.assertIn("mainline state unchanged", report)
+        self.assertIn("No Graphiti episode was executed", report)

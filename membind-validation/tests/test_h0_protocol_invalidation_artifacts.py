@@ -36,31 +36,34 @@ def _read_json(relative: str) -> dict[str, object]:
 class H0ProtocolInvalidationArtifactTests(TestCase):
     """Protect the fail-closed disposition of the invalid H0-A attempt."""
 
-    def test_machine_state_preserves_invalidation_under_r5_live_authorization(self):
+    def test_machine_state_preserves_invalidation_after_native_transition(self):
         state = _read_json("CURRENT_STATE.json")
         invalidation = state["h0_live_authorization_invalidation"]
 
+        self.assertEqual(state["current_stage"], "NATIVE_CHARACTERIZATION")
+        self.assertEqual(state["status"], "native_characterization_offline_only")
         self.assertEqual(
-            state["status"],
-            "h0_q1_b_live_only",
+            state["current_action_scope"], "native_characterization_offline_only"
+        )
+        self.assertIsNone(state["current_blocker"])
+        self.assertFalse(state["live_h0_candidate_authorized"])
+        self.assertEqual(state["authorized_live_actions"], [])
+        self.assertIsNone(state["authorized_h0_candidate_id"])
+        self.assertEqual(
+            state["historical_h0_live_authorization"][
+                "authorized_stage_attempt_id"
+            ],
+            "h0-q1-b-20260810-replacement-004",
         )
         self.assertEqual(
-            state["current_action_scope"],
-            "h0_q1_b_live_only",
+            state["stage_progress"]["h0_live_gate"],
+            "forbidden_native_characterization",
         )
+        transition = state["native_characterization_transition"]
+        self.assertFalse(transition["live_authorized"])
         self.assertEqual(
-            state["current_blocker"],
-            None,
-        )
-        self.assertTrue(state["live_h0_candidate_authorized"])
-        self.assertEqual(state["authorized_live_actions"], ["h0_candidate"])
-        self.assertEqual(state["authorized_h0_candidate_id"], "Q1")
-        self.assertEqual(
-            state["live_h0_authorization"]["authorized_stage_attempt_id"],
-            "h0-q1-b-20260810-replacement-003",
-        )
-        self.assertEqual(
-            state["stage_progress"]["h0_live_gate"], "h0_q1_b_live_only"
+            transition["retired_stage_attempt_id"],
+            "h0-q1-b-20260810-replacement-004",
         )
         self.assertEqual(
             state["h0_b_post_workload_harness_failure"]["stage_attempt_id"],

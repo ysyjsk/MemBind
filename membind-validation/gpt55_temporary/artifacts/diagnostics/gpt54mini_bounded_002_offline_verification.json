@@ -1,0 +1,108 @@
+{
+  "artifact_id": "gpt54mini-bounded-002-offline-verification",
+  "created_at": "2026-08-11T02:24:22+08:00",
+  "diagnostic_only": true,
+  "live_graphiti_episode_executed": false,
+  "local_dependencies": {
+    "embedding": {
+      "artifact_sha256": "16fbbc6593cfd33be79d78d2d6e2a3f194220331ca34ce8a1e9eea39f1690216",
+      "device": "NVIDIA GeForce RTX 3090 Ti",
+      "dimension": 1024,
+      "model": "BAAI/bge-m3",
+      "normalization_observed": true,
+      "revision": "5617a9f61b028005a4858fdac845db406aefb181",
+      "status": "passed"
+    },
+    "neo4j": {
+      "actual_graphiti_driver_namespace_gate": "passed",
+      "connectivity_query": "passed",
+      "database": "neo4j",
+      "graph_mutation": false,
+      "loopback_only": true,
+      "version": "5.26.0"
+    }
+  },
+  "mainline_state": {
+    "current_state_sha256": "8deeadd7e0cf0b894ab7a97646cf1aa07fbf14796c9ac1f8cd1bbaacb4d36a48",
+    "freeze_sha256": "3bca97e1f531dbd23584dd02248a0cbed783f2153f3c756880826ea0c48e001c",
+    "state_advanced": false
+  },
+  "remote_gate": {
+    "attempts": [
+      {
+        "client_observed_time_to_rejection_ms": 508.060846,
+        "http_status": 403,
+        "transport": "environment_proxy_urllib"
+      },
+      {
+        "client_observed_time_to_rejection_ms": 1824.38798,
+        "http_status": 403,
+        "transport": "direct_urllib"
+      },
+      {
+        "client_observed_time_to_rejection_ms": 2165.943903,
+        "http_status": 403,
+        "transport": "direct_openai_sdk"
+      }
+    ],
+    "endpoint_kind": "chat_completions",
+    "final_blocked_checkpoint": {
+      "attempt_id": "gpt54mini-bounded-20260811-blocked-003",
+      "live_dependency_construction_started": false,
+      "sha256": "0bf046843df43af33a097a7147a864423b84df0fec809213c8e2cbd699ac3d4c"
+    },
+    "latency_semantics": "time_to_rejection_not_model_inference_latency",
+    "model": "gpt-5.4-mini",
+    "models_probe_http_status": 403,
+    "status": "blocked_external_gateway_authorization_or_route"
+  },
+  "schema_version": "membind.temporary-api-offline-verification.v1",
+  "security_scan": {
+    "active_provider_token_current_evidence_exact_matches": 0,
+    "active_provider_token_workspace_exact_matches": 0,
+    "current_evidence_files_scanned": 45,
+    "current_evidence_proxy_exact_matches": 0,
+    "current_json_files_parsed": 20,
+    "forbidden_raw_content_json_key_hits": 0,
+    "raw_episode_storage_enabled": false
+  },
+  "source_sha256": {
+    "bounded_runner.py": "2948c031ef9bad29ee76f635c7f5f0225c85da8b689164aeb0b0b8dbdff11d51",
+    "config_chat_judge.py": "ca04d7a830e312045a8cdb0ff95c6a732bd75b47d2c0494bf41a8943d19e5b8d",
+    "live_experiment.py": "eb0d205ec515703562f281d110d26a079a1e54858ec8c9c0829c3a04d90551d5",
+    "live_runtime.py": "ea812f364b3bbd5ba346a1bfe7ff0172abb7d387bc6fe09361c4a76c4f3bc219",
+    "production_runner.py": "de04b30c008228cd8ce8732eb62136e46614c07f11268bf336ee65db29d0f68c"
+  },
+  "tdd": {
+    "api_characterization": {
+      "passed": 42,
+      "total": 42
+    },
+    "historical_isolation_lane": {
+      "passed": 27,
+      "total": 27
+    },
+    "mainline_offline_regression": {
+      "elapsed_seconds": 72.671,
+      "passed": 688,
+      "total": 688
+    },
+    "simple_judge": {
+      "passed": 19,
+      "total": 19
+    },
+    "temporary_non_overlapping_total": {
+      "passed": 88,
+      "total": 88
+    }
+  },
+  "terminal_status": "blocked_preflight",
+  "verification": {
+    "compileall": "passed",
+    "git_diff_check": "passed",
+    "namespace_freshness_gate": "passed_offline_and_actual_driver_read_only",
+    "namespace_identity_binding": "attempt_id_plus_canonical_artifact_root",
+    "resource_handoff_tests": "passed",
+    "trace_root_boundary_tests": "passed"
+  }
+}

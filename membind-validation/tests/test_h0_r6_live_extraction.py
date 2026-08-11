@@ -2,6 +2,7 @@
 
 from __future__ import annotations
 
+import hashlib
 import json
 import sys
 from copy import deepcopy
@@ -16,6 +17,8 @@ import h0_full_history_live as live  # noqa: E402
 import h0_harness_recovery as recovery  # noqa: E402
 import h0_repair_admission as repair_admission  # noqa: E402
 from test_h0_r6_recovery import (  # noqa: E402
+    CHECKPOINT_INDEX_REL,
+    CHECKPOINT_INDEX_SHA256,
     R5_INDEX_REL,
     R5_INDEX_SHA256,
     R6_INDEX_REL,
@@ -26,9 +29,47 @@ from test_h0_r6_recovery import (  # noqa: E402
 )
 
 
+def _frozen_consumed_r5_state() -> dict[str, object]:
+    """Build the historical 003 grant from its immutable checkpoint index."""
+
+    checkpoint_path = ROOT / CHECKPOINT_INDEX_REL
+    encoded = checkpoint_path.read_bytes()
+    if hashlib.sha256(encoded).hexdigest() != CHECKPOINT_INDEX_SHA256:
+        raise AssertionError("frozen replacement-003 checkpoint identity drift")
+    checkpoint = json.loads(encoded)
+    authorization = {
+        "candidate_id": "Q1",
+        "phase": "H0-B",
+        "authorized_stage_attempt_id": "h0-q1-b-20260810-replacement-003",
+        "resolved_manifest_index_path": R5_INDEX_REL,
+        "resolved_manifest_index_sha256": R5_INDEX_SHA256,
+        "repair_admission": deepcopy(checkpoint["repair_admission"]),
+        "infrastructure_rerun_admission": deepcopy(
+            checkpoint["infrastructure_rerun_admission"]
+        ),
+        "post_workload_repair_admission": deepcopy(
+            checkpoint["post_workload_repair_admission"]
+        ),
+    }
+    return {
+        "protocol_version": "current-validation-v1.3",
+        "current_stage": "H0",
+        "status": "h0_q1_b_live_only",
+        "current_action_scope": "h0_q1_b_live_only",
+        "current_blocker": None,
+        "stage_progress": {"h0_live_gate": "h0_q1_b_live_only"},
+        "live_h0_candidate_authorized": True,
+        "authorized_live_actions": ["h0_candidate"],
+        "authorized_h0_candidate_id": "Q1",
+        "live_h0_authorization": authorization,
+    }
+
+
 class H0R6LiveExtractionTests(TestCase):
     def _authorization(self) -> dict[str, object]:
-        state = json.loads((ROOT / "CURRENT_STATE.json").read_text(encoding="ascii"))
+        # R6 extraction is a historical unit contract.  Its source fixture is
+        # the explicit consumed R5/003 grant, not mutable CURRENT_STATE.json.
+        state = _frozen_consumed_r5_state()
         authorization = deepcopy(state["live_h0_authorization"])
         authorization["authorized_stage_attempt_id"] = REPLACEMENT_ATTEMPT_ID
         authorization["resolved_manifest_index_path"] = R6_INDEX_REL
@@ -65,7 +106,7 @@ class H0R6LiveExtractionTests(TestCase):
                     extract(changed, stage_attempt_id=REPLACEMENT_ATTEMPT_ID)
 
     def test_r6_state_builder_preserves_the_frozen_r5_admission_chain(self):
-        source = json.loads((ROOT / "CURRENT_STATE.json").read_text(encoding="ascii"))
+        source = _frozen_consumed_r5_state()
         prior_authorization = deepcopy(source["live_h0_authorization"])
         revoked = recovery.build_h0_b_r6_recovery_revoked_state(
             source,

@@ -88,6 +88,49 @@ class CurrentStateEvaluatorTests(TestCase):
                 )
                 self.assertFalse(decision.allowed)
 
+    def test_native_characterization_c2_requires_exact_stage_scope_and_action(self):
+        allowed = _state(
+            current_stage="NATIVE_CHARACTERIZATION",
+            current_action_scope="native_characterization_c2_live_only",
+            authorized_live_actions=["native_characterization_c2"],
+        )
+        self.assertTrue(
+            evaluate_live_action(
+                allowed, LiveAction.NATIVE_CHARACTERIZATION_C2
+            ).allowed
+        )
+
+        variants = [
+            {"current_stage": "H0"},
+            {"current_action_scope": "native_characterization_c0_live_only"},
+            {"authorized_live_actions": ["native_characterization_c0"]},
+            {"authorized_live_actions": []},
+        ]
+        for override in variants:
+            with self.subTest(override=override):
+                self.assertFalse(
+                    evaluate_live_action(
+                        {**allowed, **override},
+                        LiveAction.NATIVE_CHARACTERIZATION_C2,
+                    ).allowed
+                )
+
+    def test_repository_current_state_denies_every_known_live_action(self):
+        state = json.loads((ROOT / "CURRENT_STATE.json").read_text(encoding="ascii"))
+        self.assertEqual(state["current_stage"], "NATIVE_CHARACTERIZATION")
+        self.assertEqual(
+            state["current_action_scope"], "native_characterization_offline_only"
+        )
+        self.assertEqual(state["authorized_live_actions"], [])
+        for action in LiveAction:
+            with self.subTest(action=action.value):
+                decision = evaluate_live_action(
+                    state,
+                    action,
+                    candidate_id="Q1" if action is LiveAction.H0_CANDIDATE else None,
+                )
+                self.assertFalse(decision.allowed)
+
     def test_h0_candidate_requires_exact_stage_scope_action_and_candidate(self):
         allowed = _state(
             current_action_scope="h0_q1_a_live_only",

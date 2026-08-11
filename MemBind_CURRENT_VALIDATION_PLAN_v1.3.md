@@ -1,18 +1,45 @@
 # MemBind 当前基础验证执行计划 v1.3
 
+<!-- NATIVE_CHARACTERIZATION_CURRENT_POINTER_START -->
+```text
+protocol_version=current-validation-v1.3
+current_stage=NATIVE_CHARACTERIZATION
+status=native_characterization_offline_only
+current_blocker=none
+current_action_scope=native_characterization_offline_only
+stage_progress.native_characterization=c0_pass_c2_runner_tdd_pending
+instrumentation_contract_status=qualified
+c1_aa_classification=clean_pass
+c0_dry_run_passed=true
+c0_live_request_performed=false
+authorized_live_actions=[]
+live_h0_candidate_authorized=false
+service_admin_authorized=false
+native_characterization_live_authorized=false
+next_allowed_action=implement_c2_runner_offline
+```
+<!-- NATIVE_CHARACTERIZATION_CURRENT_POINTER_END -->
+
+```text
+HISTORICAL_SOLUTION_LANE_BELOW=true
+```
+
 > **当前 research-priority override**：当前科研执行以
 > [`MemBind_NATIVE_GRAPHITI_CHARACTERIZATION_WORKPLAN_v1.1.md`](MemBind_NATIVE_GRAPHITI_CHARACTERIZATION_WORKPLAN_v1.1.md)
 > 为准。Machine-searchable status: `current research-priority override`；protocol ID:
 > `native-characterization-v1.1`。v1.0 的
 > [`MemBind_NATIVE_GRAPHITI_CHARACTERIZATION_WORKPLAN_v1.0.md`](MemBind_NATIVE_GRAPHITI_CHARACTERIZATION_WORKPLAN_v1.0.md)
 > 仅作不可变历史版本。
-> Freeze status: `WORKPLAN_FREEZE=true`；
+> Frozen entry status: `WORKPLAN_FREEZE=true`；
 > `protocol_review_status=closed`；
 > `next_allowed_work=C1_instrumentation_implementation`。
-> 本文件仍是 solution-validation lane 的唯一可执行 overlay，但该 lane
-> 已 frozen，仅保存 H0/M1/M2 历史契约。不得恢复 H0、replacement-004 或 M2 formal
+> C1 instrumentation 已 qualified，C0 dry-run 已通过且没有 live request；当前
+> 唯一恢复点是等待 operator 启动两项 vLLM 服务，再经独立 TDD gate 授权 C0。
+> 本文件是 frozen solution-validation lane 的历史 overlay，仅保存 H0/M1/M2
+> 历史契约。不得恢复 H0、replacement-004 或 M2 formal
 > work，除非 characterization verdict 后另行完成 TDD 状态转换和授权。
 
+> **历史 solution-lane snapshot（以下“当前”仅指冻结时点，不授予权限）**
 > **Protocol ID**: `current-validation-v1.3`  
 > **文档地位**: 本文件是当前唯一可执行 overlay；v1.2 保留为历史协议。  
 > **当前阶段**: `H0 - Host Stack Qualification`  
@@ -30,11 +57,12 @@ readiness 处因 `vllm_unreachable` 中断，仍未进入任何 workload。R4 �
 source-bound artifact、透明 decision、bind 和 exact live authorization 随后完成，
 但其 replacement-002 在 source 1 的本地 Graphiti embedding interface contract 处
 终止。002 已持久化 terminal checkpoint，其 live grant 已撤销；R5 artifact、透明非盲
-repair decision、离线 bind 和独立 live authorization 均已完成。当前只允许 exact
-`h0-q1-b-20260810-replacement-003` 从空 checkpoint namespace 完整重跑 H0-B。旧
+repair decision、离线 bind 和独立 live authorization 均已完成。当时的 grant 曾仅允许
+exact `h0-q1-b-20260810-replacement-003` 从空 checkpoint namespace 完整重跑 H0-B；
+该 grant 和后续 replacement-004 均已消费或撤销，现行 lane 不授权 H0 live。旧
 attempt 的调用、checkpoint、graph、history 与计数均不得作为候选性能证据、续跑或合并。
 
-### 当前 H0-B recovery 快照（2026-08-10）
+### 历史 H0-B recovery 快照（2026-08-10）
 
 <!-- Maintainability: keep this machine-searchable block byte-equivalent in the
 proposal, execution plan, and global memory; explanatory prose may differ. -->

@@ -1,5 +1,29 @@
 # MemBind Global Memory
 
+<!-- NATIVE_CHARACTERIZATION_CURRENT_POINTER_START -->
+```text
+protocol_version=current-validation-v1.3
+current_stage=NATIVE_CHARACTERIZATION
+status=native_characterization_offline_only
+current_blocker=none
+current_action_scope=native_characterization_offline_only
+stage_progress.native_characterization=c0_pass_c2_runner_tdd_pending
+instrumentation_contract_status=qualified
+c1_aa_classification=clean_pass
+c0_dry_run_passed=true
+c0_live_request_performed=false
+authorized_live_actions=[]
+live_h0_candidate_authorized=false
+service_admin_authorized=false
+native_characterization_live_authorized=false
+next_allowed_action=implement_c2_runner_offline
+```
+<!-- NATIVE_CHARACTERIZATION_CURRENT_POINTER_END -->
+
+```text
+HISTORICAL_SOLUTION_LANE_BELOW=true
+```
+
 This file is the compact memory for the validation mainline. It records the
 authoritative resume point and the boundaries that future agents must preserve.
 
@@ -13,32 +37,31 @@ and starts with Native Graphiti construction characterization. The prior
 immutable historical plan. The old H0/M1/M2/
 MemBind solution lane is frozen exploratory prototype/history: do not resume H0,
 replacement-004, M2 formalization, or live solution validation from this pointer.
-The final characterization markers are `WORKPLAN_FREEZE=true`,
+The frozen entry markers are `WORKPLAN_FREEZE=true`,
 `protocol_review_status=closed`, and
-`next_allowed_work=C1_instrumentation_implementation`; no further protocol
-review or experiment-surface expansion is authorized.
-Before any live characterization action, an offline TDD state transition must
-revoke the old solution-lane grant and issue a scoped characterization grant.
+`next_allowed_work=C1_instrumentation_implementation`; execution has since
+qualified C1 and passed the C0 dry-run without issuing a live request. No further
+protocol review or experiment-surface expansion is authorized. The next action
+is operator service startup followed by a separate, tested C0-only live grant;
+the current state itself authorizes no live action.
 Historical checkpoints, hashes, failures, credential fences, remote
 forced-command limits, and `gpt55_temporary/**` exclusion remain unchanged.
 The persisted reset rationale and TDD status are in
 `artifacts/diagnostics/native_characterization_research_reset_20260810.md`.
 The v1.1 literature review and scope decisions are in
 `artifacts/diagnostics/native_characterization_plan_v1_1_review_20260810.md`.
-Current status is `instrumentation_contract_status=specified_not_yet_qualified`;
-the plan revision produced no C0-C5 live or scientific result.
+Current status is `instrumentation_contract_status=qualified`; C0 remains a
+dry-run only and produced no C0-C5 live or scientific result.
 
 <!-- Maintainability: keep this pointer short; detailed characterization rules
 live only in the authoritative workplan to prevent document drift. -->
 
-## Mainline validation memory
+## Historical solution-lane validation memory
 
 - `CURRENT_STATE.json` is the machine-readable authority. Active protocol:
-  `current-validation-v1.3`; resume point `H0`; status `h0_q1_b_live_only`;
-  current blocker `none`; action scope `h0_q1_b_live_only`;
-  `live_h0_candidate_authorized=true`, `authorized_live_actions=[h0_candidate]`,
-  exact attempt `h0-q1-b-20260810-replacement-003`, and
-  `v3_smoke_003_retired=true`.
+  `current-validation-v1.3`; its exact current resume point is the pointer above.
+  The H0 grants and attempt records below are immutable historical evidence, not
+  executable authority. `v3_smoke_003_retired=true` remains historical state.
 - `EXPERIMENT_PLAN.md` is the execution-facing plan for the frozen vLLM/Qwen
   validation lane.
 - `../MemBind_CURRENT_VALIDATION_PLAN_v1.3.md` is the authoritative
@@ -61,8 +84,9 @@ live only in the authoritative workplan to prevent document drift. -->
   only: protocol qualification, candidate-selection eligibility, H0-B advance,
   and automatic rerun are all false. The immutable checkpoint index SHA256 is
   `127c81b39ccd705d7c67dc936e953992d5be97f4065fd56f3655db52d12ad309`.
-- The next work is the exact offline H0-B post-workload recovery sequence
-  recorded below. The valid H0-A replacement is preserved; the terminal r2,
+- At that historical point, the next work was the exact offline H0-B
+  post-workload recovery sequence recorded below. The valid H0-A replacement is
+  preserved; the terminal r2,
   interrupted r3, and terminal replacement-002 attempts are never resumed or
   merged. R5 has been generated offline but is not yet repair-bound or live-authorized.
 - Offline harness-r2 implementation is now complete through H0-A/B/C execution,
@@ -80,7 +104,7 @@ live only in the authoritative workplan to prevent document drift. -->
   Its verified deployment dtype is BF16; the old FP16 config placeholder is
   invalid.
 
-### H0-B recovery ledger
+### Historical H0-B recovery ledger
 
 ```text
 current_recovery_stage=h0_b_harness_recovery_r3_one_shot_replacement

@@ -1,7 +1,8 @@
-"""Contract for isolating the temporary GPT-5.5 diagnostic lane."""
+"""Contract for isolating the temporary GPT diagnostic lane from mainline."""
 
 from __future__ import annotations
 
+import ast
 import hashlib
 import json
 from pathlib import Path
@@ -76,6 +77,49 @@ class GPT55TemporaryLaneIsolationTests(TestCase):
         self.assertIsInstance(payload, dict)
         self.assertEqual(before, _sha256(current_state))
 
-    def test_mainline_source_has_no_temporary_lane_marker(self):
+    def test_mainline_source_neither_imports_nor_executes_temporary_lane(self):
+        execution_calls = {
+            "eval",
+            "exec",
+            "import_module",
+            "run_module",
+            "run_path",
+            "Popen",
+            "run",
+            "check_call",
+            "check_output",
+        }
+        violations: list[str] = []
         for source in (ROOT / "src").rglob("*.py"):
-            self.assertNotIn("gpt55_temporary", source.read_text(encoding="utf-8"))
+            tree = ast.parse(source.read_text(encoding="utf-8"), filename=str(source))
+            for node in ast.walk(tree):
+                if isinstance(node, ast.Import):
+                    names = [alias.name for alias in node.names]
+                    if any("gpt55_temporary" in name for name in names):
+                        violations.append(f"{source.relative_to(ROOT)}:{node.lineno}:import")
+                elif isinstance(node, ast.ImportFrom):
+                    if "gpt55_temporary" in str(node.module or ""):
+                        violations.append(f"{source.relative_to(ROOT)}:{node.lineno}:from-import")
+                elif isinstance(node, ast.Call):
+                    call_name = ""
+                    if isinstance(node.func, ast.Name):
+                        call_name = node.func.id
+                    elif isinstance(node.func, ast.Attribute):
+                        call_name = node.func.attr
+                    if call_name not in execution_calls:
+                        continue
+                    literal_arguments = [
+                        argument.value
+                        for argument in node.args
+                        if isinstance(argument, ast.Constant)
+                        and isinstance(argument.value, str)
+                    ]
+                    if any("gpt55_temporary" in value for value in literal_arguments):
+                        violations.append(f"{source.relative_to(ROOT)}:{node.lineno}:execute")
+
+        self.assertEqual(
+            [],
+            violations,
+            "mainline code may document the exclusion fence but must not import or "
+            "execute temporary-lane modules",
+        )

@@ -33,6 +33,8 @@ class LiveAction(str, Enum):
     NEO4J_INTEGRATION = "neo4j_integration"
     SERVICE_STATUS = "service_status"
     SERVICE_ADMIN = "service_admin"
+    NATIVE_CHARACTERIZATION_C0 = "native_characterization_c0"
+    NATIVE_CHARACTERIZATION_C2 = "native_characterization_c2"
 
 
 @dataclass(frozen=True)
@@ -76,6 +78,12 @@ _EXACT_STAGE_SCOPES: dict[LiveAction, set[tuple[str, str]]] = {
     },
     LiveAction.SERVICE_STATUS: {("H0", "service_status_live_only")},
     LiveAction.SERVICE_ADMIN: {("H0", "service_admin_live_only")},
+    LiveAction.NATIVE_CHARACTERIZATION_C0: {
+        ("NATIVE_CHARACTERIZATION", "native_characterization_c0_live_only")
+    },
+    LiveAction.NATIVE_CHARACTERIZATION_C2: {
+        ("NATIVE_CHARACTERIZATION", "native_characterization_c2_live_only")
+    },
 }
 
 

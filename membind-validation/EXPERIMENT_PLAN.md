@@ -1,7 +1,31 @@
 # MemBind Basic Validation: Current Validation v1.3 Execution Plan
 
-<!-- Historical solution-lane snapshot retained for legacy offline contracts;
-the v1.1 Native characterization pointer below controls current research order. -->
+<!-- NATIVE_CHARACTERIZATION_CURRENT_POINTER_START -->
+```text
+protocol_version=current-validation-v1.3
+current_stage=NATIVE_CHARACTERIZATION
+status=native_characterization_offline_only
+current_blocker=none
+current_action_scope=native_characterization_offline_only
+stage_progress.native_characterization=c0_pass_c2_runner_tdd_pending
+instrumentation_contract_status=qualified
+c1_aa_classification=clean_pass
+c0_dry_run_passed=true
+c0_live_request_performed=false
+authorized_live_actions=[]
+live_h0_candidate_authorized=false
+service_admin_authorized=false
+native_characterization_live_authorized=false
+next_allowed_action=implement_c2_runner_offline
+```
+<!-- NATIVE_CHARACTERIZATION_CURRENT_POINTER_END -->
+
+```text
+HISTORICAL_SOLUTION_LANE_BELOW=true
+```
+
+<!-- Historical solution-lane snapshot retained below for legacy offline
+contracts; it grants no current H0 or characterization live authority. -->
 ```text
 current_stage: H0
 status: h0_q1_b_live_only
@@ -15,16 +39,22 @@ current_action_scope: h0_q1_b_live_only
 > `current research-priority override`。旧版
 > [`MemBind_NATIVE_GRAPHITI_CHARACTERIZATION_WORKPLAN_v1.0.md`](../MemBind_NATIVE_GRAPHITI_CHARACTERIZATION_WORKPLAN_v1.0.md)
 > 保留为不可变历史版本。
-> Freeze status: `WORKPLAN_FREEZE=true`；
+> Frozen entry status: `WORKPLAN_FREEZE=true`；
 > `protocol_review_status=closed`；
 > `next_allowed_work=C1_instrumentation_implementation`。
+> C1 已完成 qualification，C0 dry-run 已通过且没有 live request；当前恢复点以
+> 文件顶部 machine-readable pointer 和 `CURRENT_STATE.json` 为准。
 > 本文件是 frozen solution-validation lane 的执行镜像，不得启动 H0/M1/M2 或
-> replacement-004；characterization live grant 必须先经离线 TDD 状态转换。
+> replacement-004；C0 live grant 仍须在 operator 启动两项 vLLM 服务后单独授权。
 
-This is the concise execution overlay for
-`../MemBind_CURRENT_VALIDATION_PLAN_v1.3.md`. The current plan controls task
-order. `../MemBind_basic_validation_experiment.md` remains the source for frozen
-models, data, methods, metrics, and decision thresholds.
+This preserves the concise historical execution overlay for
+`../MemBind_CURRENT_VALIDATION_PLAN_v1.3.md`. The Native characterization v1.1
+workplan and the current pointer above control task order.
+`../MemBind_basic_validation_experiment.md` remains the source for frozen models,
+data, methods, metrics, and decision thresholds.
+
+The following block is an immutable historical H0 snapshot, not the current
+execution pointer:
 
 ```text
 protocol_version: current-validation-v1.3
