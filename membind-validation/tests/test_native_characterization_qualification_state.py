@@ -29,18 +29,28 @@ def _qualified_state_bytes() -> bytes:
     """Recover the exact historical input state for the C1 qualification transition."""
 
     state = json.loads((ROOT / "CURRENT_STATE.json").read_text(encoding="ascii"))
+    # These are outputs of later Native-characterization transitions.  The C1
+    # fixture must represent the earlier transition source, not today's
+    # cleanup-pending execution state.
     for key in (
         "native_characterization_offline_qualification",
         "native_characterization_offline_evidence_finalization",
         "native_characterization_c0_authorization",
         "native_characterization_c0_completion",
+        "native_characterization_c2_authorization",
+        "native_characterization_c2_reauthorization",
+        "native_characterization_c2_second_failure",
     ):
         state.pop(key, None)
+    state["current_blocker"] = None
     state["next_allowed_action"] = "implement_c1_instrumentation_offline"
     stage_progress = dict(state["stage_progress"])
     stage_progress["native_characterization"] = "c1_instrumentation_tdd_pending"
     state["stage_progress"] = stage_progress
-    return _canonical(state)
+    encoded = _canonical(state)
+    if hashlib.sha256(encoded).hexdigest() != progress.BASE_STATE_SHA256:
+        raise AssertionError("historical C1 qualification source fixture drifted")
+    return encoded
 
 
 def _copy_evidence(target_repo: Path, target_validation: Path) -> None:

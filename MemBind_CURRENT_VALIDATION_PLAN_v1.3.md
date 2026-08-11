@@ -5,10 +5,10 @@
 protocol_version=current-validation-v1.3
 current_stage=NATIVE_CHARACTERIZATION
 status=native_characterization_offline_only
-current_blocker=c2_polluted_namespace_cleanup_pending
+current_blocker=c2_second_structured_output_failure_requires_protocol_decision
 current_action_scope=native_characterization_offline_only
-stage_progress.native_characterization=c0_c1_pass_c2_failed_attempt_invalid_cleanup_tdd_pending
-instrumentation_contract_status=qualified
+stage_progress.native_characterization=c0_c1_pass_c2_second_json_schema_failure_stopped
+instrumentation_contract_status=measurement_correctness_repair_pending
 c1_aa_classification=clean_pass
 c0_dry_run_passed=true
 c0_dry_run_live_request_performed=false
@@ -17,7 +17,7 @@ authorized_live_actions=[]
 live_h0_candidate_authorized=false
 service_admin_authorized=false
 native_characterization_live_authorized=false
-next_allowed_action=implement_scoped_c2_cleanup_offline
+next_allowed_action=assess_c2_json_object_protocol_deviation
 ```
 <!-- NATIVE_CHARACTERIZATION_CURRENT_POINTER_END -->
 
@@ -25,9 +25,11 @@ next_allowed_action=implement_scoped_c2_cleanup_offline
 c2_minimal_recovery_contract=membind-validation/EXPERIMENT_PLAN.md#C2_MINIMAL_RECOVERY_POINTER
 ```
 
-The failed C2 attempt is invalid and non-mergeable. The existing execution plan
-is the single source for the exact-group cleanup and replacement-run procedure;
-this summary deliberately does not duplicate that contract.
+Both failed C2 attempts are invalid and non-mergeable. The replacement stopped
+after the same ten-episode boundary with `JSONDecodeError`; its live grant is
+revoked. The execution plan is the single source for immutable failure evidence
+and the current offline decision boundary. No cleanup, rerun, or `json_object`
+variant is authorized from this summary.
 
 ```text
 HISTORICAL_SOLUTION_LANE_BELOW=true
@@ -42,9 +44,13 @@ HISTORICAL_SOLUTION_LANE_BELOW=true
 > Frozen entry status: `WORKPLAN_FREEZE=true`；
 > `protocol_review_status=closed`；
 > `next_allowed_work=C1_instrumentation_implementation`。
-> C1 instrumentation 与 C0 已通过；首次 C2 attempt 在 10 个 episode 后因
-> structured JSON 解码失败并永久失效。当前唯一恢复点是离线实现上面的单组
-> scoped cleanup guard；不得直接续跑或扩展 recovery framework。
+> C1 初始 qualification 与 C0 已通过；首次 C2 attempt 在 10 个 episode 后因
+> structured JSON 解码失败并永久失效。精确 block-0 namespace 清零后进行的
+> replacement `c2-723261287e32e182` 又在相同边界失败，且没有完整持久化失败
+> episode telemetry。该结果暴露了 measurement-correctness 缺陷；当前全部 live
+> grant 已撤销。下一步仅允许离线核对 `json_object` 是否需要显式 protocol
+> deviation，并按 RED/GREEN 修复既有 telemetry 契约；不得自行 cleanup、重跑或
+> 静默切换 structured-output mode。
 > 本文件是 frozen solution-validation lane 的历史 overlay，仅保存 H0/M1/M2
 > 历史契约。不得恢复 H0、replacement-004 或 M2 formal
 > work，除非 characterization verdict 后另行完成 TDD 状态转换和授权。

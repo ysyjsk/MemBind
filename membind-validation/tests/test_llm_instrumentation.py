@@ -121,6 +121,83 @@ class LLMInstrumentationTests(TestCase):
 
 
 class QwenFailureCaptureTests(IsolatedAsyncioTestCase):
+    async def test_json_object_replaces_upstream_raw_schema_with_effective_schema(self):
+        class Edge(BaseModel):
+            episode_indices: list[int]
+
+        class ResponseModel(BaseModel):
+            edges: list[Edge]
+
+        response = SimpleNamespace(
+            usage=SimpleNamespace(prompt_tokens=7, completion_tokens=3, total_tokens=10),
+            choices=[
+                SimpleNamespace(
+                    finish_reason="stop",
+                    message=SimpleNamespace(
+                        content='{"edges":[{"episode_indices":[0]}]}'
+                    ),
+                )
+            ],
+        )
+        client = QwenVLLMClient(
+            config=LLMConfig(
+                api_key="test",
+                model="qwen3-32b-fp8",
+                small_model="qwen3-32b-fp8",
+                base_url="http://127.0.0.1:1/v1",
+                temperature=0.0,
+                max_tokens=2048,
+            ),
+            max_tokens=2048,
+            structured_output_mode="json_object",
+        )
+        create = AsyncMock(return_value=response)
+        client.client = SimpleNamespace(
+            chat=SimpleNamespace(completions=SimpleNamespace(create=create))
+        )
+        messages = [
+            SimpleNamespace(role="system", content="system instructions"),
+            SimpleNamespace(role="user", content="return json"),
+        ]
+
+        parsed = await client.generate_response(
+            messages,
+            response_model=ResponseModel,
+            max_tokens=2048,
+        )
+
+        request = create.await_args.kwargs
+        marker = "Respond with a JSON object in the following format:"
+        upstream_schema_json = json.dumps(ResponseModel.model_json_schema())
+        effective_schema = constrain_single_episode_indices(
+            ResponseModel.model_json_schema()
+        )
+        effective_schema_json = json.dumps(
+            effective_schema,
+            ensure_ascii=True,
+            sort_keys=True,
+            separators=(",", ":"),
+        )
+        user_content = request["messages"][-1]["content"]
+        episode_indices = effective_schema["$defs"]["Edge"]["properties"][
+            "episode_indices"
+        ]
+
+        self.assertEqual(parsed, {"edges": [{"episode_indices": [0]}]})
+        self.assertEqual(request["response_format"], {"type": "json_object"})
+        self.assertEqual(
+            [message["role"] for message in request["messages"]],
+            ["system", "user"],
+        )
+        self.assertEqual(user_content.count(marker), 1)
+        self.assertIn(effective_schema_json, user_content)
+        self.assertNotIn(upstream_schema_json, user_content)
+        self.assertEqual(episode_indices["minItems"], 1)
+        self.assertEqual(episode_indices["maxItems"], 1)
+        self.assertEqual(
+            episode_indices["items"], {"type": "integer", "const": 0}
+        )
+
     async def test_qwen_vllm_client_keeps_vllm_specific_chat_options(self):
         class ResponseModel(BaseModel):
             ok: bool

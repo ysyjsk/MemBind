@@ -16,7 +16,10 @@ from current_state_gate import LiveAction, require_live_action
 
 from dataset import Episode
 from instrumentation import apply_episode_metrics, current_episode_key, episode_scope
-from structured_output import constrain_single_episode_indices
+from structured_output import (
+    constrain_single_episode_indices,
+    replace_json_object_schema_injection,
+)
 from tracing import EpisodeTrace, JsonlTraceWriter, now_ns
 
 
@@ -503,6 +506,11 @@ class QwenVLLMClient:
 
             async def _generate_response(self, messages, response_model=None, max_tokens=2048, model_size=None):
                 self.structured_request_count += 1
+                if (
+                    response_model is not None
+                    and self.structured_output_mode == "json_object"
+                ):
+                    replace_json_object_schema_injection(messages, response_model)
                 openai_messages = []
                 for m in messages:
                     content = self._clean_input(m.content)

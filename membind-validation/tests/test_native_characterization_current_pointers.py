@@ -28,12 +28,14 @@ EXPECTED = {
     "protocol_version": "current-validation-v1.3",
     "current_stage": "NATIVE_CHARACTERIZATION",
     "status": "native_characterization_offline_only",
-    "current_blocker": "c2_polluted_namespace_cleanup_pending",
+    "current_blocker": (
+        "c2_second_structured_output_failure_requires_protocol_decision"
+    ),
     "current_action_scope": "native_characterization_offline_only",
     "stage_progress.native_characterization": (
-        "c0_c1_pass_c2_failed_attempt_invalid_cleanup_tdd_pending"
+        "c0_c1_pass_c2_second_json_schema_failure_stopped"
     ),
-    "instrumentation_contract_status": "qualified",
+    "instrumentation_contract_status": "measurement_correctness_repair_pending",
     "c1_aa_classification": "clean_pass",
     "c0_dry_run_passed": "true",
     "c0_dry_run_live_request_performed": "false",
@@ -42,7 +44,7 @@ EXPECTED = {
     "live_h0_candidate_authorized": "false",
     "service_admin_authorized": "false",
     "native_characterization_live_authorized": "false",
-    "next_allowed_action": "implement_scoped_c2_cleanup_offline",
+    "next_allowed_action": "assess_c2_json_object_protocol_deviation",
 }
 
 FAILED_C2_ATTEMPT = "c2-efb58c477f12adf6"
@@ -61,8 +63,21 @@ RECOVERY_REQUIRED_TEXT = (
     ),
     "cleanup_rejects=none,empty,multiple,other_frozen,non_frozen",
     "cleanup_requires_explicit_operator_authorization=true",
+    "cleanup_helper_status=focused_green",
+    "cleanup_helper_source_sha256=8a356d514240b8b1ca983c602fcd3b37364b5a91dd985ba01f6ad650542cb1d4",
+    "cleanup_helper_test_sha256=37b92adc8f21be63a854fb0cce44ddcdfdac1265a3bc90257b3e2007462791a5",
+    "cleanup_helper_focused_log_sha256=4d0a1b81b78f9b4003831fd624162a9042212154ea37f09b29732cb02a889585",
+    "c2_reauthorization_status=c2_only_live_authorized",
+    "c2_reauthorization_source_sha256=730fc474e2bac106eb6f1734c4a7feb232f7b845f75fbda80443f4f89c484eb3",
+    "c2_reauthorization_test_sha256=8ef0383cab28c6df5e2b5705ddb1813dc259eb922fabd9ecb67a7748e33f6cda",
+    "c2_reauthorization_integrated_green_sha256=277a0945b258de079294c73c06621b390100a811a0b59558144610527afeb17c",
+    "c2_reauthorization_buffered_stdout_red_sha256=163179b486a9b3ed58c043fcd7fae5bdd4cd687cfba406a85d511aa420724597",
+    "c2_reauthorization_buffered_stdout_green_sha256=421ed1bdb40c2f6a16b3b1d929a626608d3213316e584ffac75b95b3c97ee7c5",
     "post_cleanup_node_count_required=0",
     "post_cleanup_relationship_count_required=0",
+    "cleanup_execution_status=verified_empty",
+    "cleanup_evidence_sha256=9e2738a037ce330f4c176633b2424a8065a30e544396a2f4cff5c70d17b7e83b",
+    "reauthorization_receipt_sha256=9ba9bef91bc5cbf2b445edb7f0e53ba9c2f38f270dd10046689c38617ed10f79",
     "replacement_start_source_sequence=0",
     "prior_c2_live_grant=consumed_by_failed_attempt",
     "post_cleanup_live_transition=reuse_existing_c2_only_gate",
@@ -70,6 +85,17 @@ RECOVERY_REQUIRED_TEXT = (
     "workplan_v1_1_modified=false",
     "freeze_modified=false",
     "new_recovery_framework_allowed=false",
+    "second_failed_attempt_id=c2-723261287e32e182",
+    "second_failed_attempt_completed_episodes=10",
+    "second_failed_attempt_valid=false",
+    "second_failed_attempt_mergeable=false",
+    "second_failed_attempt_resume_allowed=false",
+    "second_failed_attempt_cleanup_authorized=false",
+    "second_failed_attempt_json_object_authorized=false",
+    (
+        "second_failed_attempt_report_sha256="
+        "df9f369e68a5b131b2f70d05e4e2e58a95eb86602a3e8fe30d0ef6f3bf218cf7"
+    ),
 )
 
 
@@ -93,7 +119,7 @@ def _fields(block: str) -> dict[str, str]:
 
 
 class NativeCharacterizationCurrentPointerTests(TestCase):
-    def test_machine_state_is_offline_waiting_for_scoped_c2_cleanup(self) -> None:
+    def test_machine_state_stops_after_second_c2_structured_failure(self) -> None:
         state = json.loads((ROOT / "CURRENT_STATE.json").read_text(encoding="ascii"))
 
         self.assertEqual(state["current_stage"], EXPECTED["current_stage"])
@@ -106,12 +132,22 @@ class NativeCharacterizationCurrentPointerTests(TestCase):
             state["stage_progress"]["native_characterization"],
             EXPECTED["stage_progress.native_characterization"],
         )
-        self.assertEqual(state["authorized_live_actions"], [])
+        self.assertEqual(
+            state["authorized_live_actions"], []
+        )
         self.assertFalse(state["live_h0_candidate_authorized"])
         self.assertFalse(state["service_admin_authorized"])
         self.assertEqual(
             state["next_allowed_action"], EXPECTED["next_allowed_action"]
         )
+        failure = state["native_characterization_c2_second_failure"]
+        self.assertEqual(failure["run_id"], "c2-723261287e32e182")
+        self.assertEqual(failure["completed_episode_count"], 10)
+        self.assertFalse(failure["attempt_valid"])
+        self.assertFalse(failure["attempt_mergeable"])
+        self.assertFalse(failure["resume_allowed"])
+        self.assertFalse(failure["cleanup_authorized"])
+        self.assertFalse(failure["json_object_authorized"])
         qualification = state["native_characterization_offline_qualification"]
         self.assertEqual(
             qualification["instrumentation_contract_status"], "qualified"
@@ -155,7 +191,7 @@ class NativeCharacterizationCurrentPointerTests(TestCase):
                 blocks.append(block)
         self.assertEqual(len(set(blocks)), 1)
 
-    def test_current_pointer_is_fail_closed_and_h0_is_explicit_history(self) -> None:
+    def test_current_pointer_is_offline_only_and_h0_is_explicit_history(self) -> None:
         for path in DOCUMENTS:
             with self.subTest(document=path.name):
                 text = path.read_text(encoding="utf-8")
@@ -163,6 +199,11 @@ class NativeCharacterizationCurrentPointerTests(TestCase):
                 history = text[text.index(END) + len(END) :]
                 self.assertNotIn("live_h0_candidate_authorized=true", current)
                 self.assertNotIn("authorized_live_actions=h0_candidate", current)
+                self.assertIn("authorized_live_actions=[]", current)
+                self.assertIn(
+                    "next_allowed_action=assess_c2_json_object_protocol_deviation",
+                    current,
+                )
                 self.assertIn("HISTORICAL_SOLUTION_LANE_BELOW=true", history)
                 self.assertIn("live_h0_candidate_authorized=true", history)
 

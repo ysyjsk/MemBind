@@ -115,7 +115,7 @@ class CurrentStateEvaluatorTests(TestCase):
                     ).allowed
                 )
 
-    def test_repository_current_state_denies_live_while_c2_cleanup_is_pending(self):
+    def test_repository_current_state_denies_live_after_second_c2_failure(self):
         state = json.loads((ROOT / "CURRENT_STATE.json").read_text(encoding="ascii"))
         self.assertEqual(state["current_stage"], "NATIVE_CHARACTERIZATION")
         self.assertEqual(

@@ -44,6 +44,12 @@ class NativeCharacterizationWorkplanV11ContractTests(TestCase):
             "supersedes v1.0 for future characterization actions",
         ):
             self.assertIn(token, plan)
+        for frozen_entry_marker in (
+            "WORKPLAN_FREEZE=true",
+            "protocol_review_status=closed",
+            "next_allowed_work=C1_instrumentation_implementation",
+        ):
+            self.assertIn(frozen_entry_marker, plan)
 
         for document in (PROPOSAL, SOLUTION_PLAN, EXECUTION_PLAN, MEMORY):
             text = _read(document)
@@ -52,8 +58,30 @@ class NativeCharacterizationWorkplanV11ContractTests(TestCase):
             self.assertIn(V1_0.name, text)
             self.assertIn("WORKPLAN_FREEZE=true", text)
             self.assertIn("protocol_review_status=closed", text)
-            self.assertIn("next_allowed_work=C1_instrumentation_implementation", text)
             self.assertLess(text.index(WORKPLAN.name), text.index(V1_0.name))
+
+        for current_document in (SOLUTION_PLAN, EXECUTION_PLAN, MEMORY):
+            text = _read(current_document)
+            start = "<!-- NATIVE_CHARACTERIZATION_CURRENT_POINTER_START -->"
+            end = "<!-- NATIVE_CHARACTERIZATION_CURRENT_POINTER_END -->"
+            self.assertEqual(text.count(start), 1)
+            self.assertEqual(text.count(end), 1)
+            current = text.split(start, 1)[1].split(end, 1)[0]
+            self.assertIn(
+                (
+                    "current_blocker="
+                    "c2_second_structured_output_failure_requires_protocol_decision"
+                ),
+                current,
+            )
+            self.assertIn(
+                "next_allowed_action=assess_c2_json_object_protocol_deviation",
+                current,
+            )
+            self.assertNotIn(
+                "next_allowed_work=C1_instrumentation_implementation",
+                current,
+            )
 
     def test_c0_is_exactly_one_bounded_native_episode(self):
         plan = _normalized(self._workplan())

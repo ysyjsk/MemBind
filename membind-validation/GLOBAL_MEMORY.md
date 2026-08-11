@@ -5,10 +5,10 @@
 protocol_version=current-validation-v1.3
 current_stage=NATIVE_CHARACTERIZATION
 status=native_characterization_offline_only
-current_blocker=c2_polluted_namespace_cleanup_pending
+current_blocker=c2_second_structured_output_failure_requires_protocol_decision
 current_action_scope=native_characterization_offline_only
-stage_progress.native_characterization=c0_c1_pass_c2_failed_attempt_invalid_cleanup_tdd_pending
-instrumentation_contract_status=qualified
+stage_progress.native_characterization=c0_c1_pass_c2_second_json_schema_failure_stopped
+instrumentation_contract_status=measurement_correctness_repair_pending
 c1_aa_classification=clean_pass
 c0_dry_run_passed=true
 c0_dry_run_live_request_performed=false
@@ -17,7 +17,7 @@ authorized_live_actions=[]
 live_h0_candidate_authorized=false
 service_admin_authorized=false
 native_characterization_live_authorized=false
-next_allowed_action=implement_scoped_c2_cleanup_offline
+next_allowed_action=assess_c2_json_object_protocol_deviation
 ```
 <!-- NATIVE_CHARACTERIZATION_CURRENT_POINTER_END -->
 
@@ -25,9 +25,11 @@ next_allowed_action=implement_scoped_c2_cleanup_offline
 c2_minimal_recovery_contract=membind-validation/EXPERIMENT_PLAN.md#C2_MINIMAL_RECOVERY_POINTER
 ```
 
-The failed C2 attempt is invalid and non-mergeable. The existing execution plan
-is the single source for the exact-group cleanup and replacement-run procedure;
-this summary deliberately does not duplicate that contract.
+Both failed C2 attempts are invalid and non-mergeable. The replacement run
+`c2-723261287e32e182` stopped after the same ten completed episodes. Its live
+grant is revoked; cleanup, rerun, and `json_object` selection are not authorized.
+`EXPERIMENT_PLAN.md#C2_MINIMAL_RECOVERY_POINTER` owns the evidence hashes and
+offline decision boundary so this compact memory does not duplicate them.
 
 ```text
 HISTORICAL_SOLUTION_LANE_BELOW=true
@@ -47,20 +49,25 @@ immutable historical plan. The old H0/M1/M2/
 MemBind solution lane is frozen exploratory prototype/history: do not resume H0,
 replacement-004, M2 formalization, or live solution validation from this pointer.
 The frozen entry markers remain `WORKPLAN_FREEZE=true` and
-`protocol_review_status=closed`. Execution has since qualified C1, passed C0,
+`protocol_review_status=closed`. Execution initially qualified C1, passed C0,
 and permanently invalidated the first C2 attempt after a structured-output
-failure at episode 10. No further protocol review or experiment-surface
-expansion is authorized. The next action is only the offline, allowlisted C2
-cleanup helper described above; the current state authorizes no live action.
+failure at episode 10. Its exact namespace was cleared, but the fresh
+replacement failed at the same boundary and exposed that failed-episode and
+other frozen telemetry fields were not durably captured. No further protocol
+review or experiment-surface expansion is authorized. The current state revokes
+all live action and permits only the bounded offline measurement-correctness
+repair and explicit `json_object` deviation assessment.
 Historical checkpoints, hashes, failures, credential fences, remote
 forced-command limits, and `gpt55_temporary/**` exclusion remain unchanged.
 The persisted reset rationale and TDD status are in
 `artifacts/diagnostics/native_characterization_research_reset_20260810.md`.
 The v1.1 literature review and scope decisions are in
 `artifacts/diagnostics/native_characterization_plan_v1_1_review_20260810.md`.
-Current status is `instrumentation_contract_status=qualified`; C0 live viability
-passed but is not a scientific result. C2 has no completed block and therefore
-has produced no valid characterization result yet.
+Current status is
+`instrumentation_contract_status=measurement_correctness_repair_pending`; C0
+live viability passed but is not a scientific result. C2 has no completed block
+and therefore has produced no valid characterization result yet. The two
+ten-episode prefixes are failure diagnostics only and must never be merged.
 
 <!-- Maintainability: keep this pointer short; detailed characterization rules
 live only in the authoritative workplan to prevent document drift. -->

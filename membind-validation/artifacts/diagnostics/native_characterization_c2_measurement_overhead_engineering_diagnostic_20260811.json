@@ -1,0 +1,188 @@
+{
+  "artifact_class": "engineering_diagnostic_non_decisional",
+  "canonical_qualification": {
+    "file_sha256": "5fa07c075ef1d128bcfcdc76cd577108548f177d59d0e51f81dc7448c93ff50a",
+    "median_overhead_ratio": 0.058709718459730116,
+    "pair_overhead_ratios": [
+      0.2499328295291325,
+      -0.00433581336592255,
+      0.04849645139368211,
+      0.058709718459730116,
+      0.06685719158694405
+    ],
+    "qualification_status": "blocked_overhead",
+    "untouched_by_diagnostic": true
+  },
+  "environment_sample": {
+    "affinity_cpu_count": 24,
+    "affinity_cpu_max": 23,
+    "affinity_cpu_min": 0,
+    "load_average_1m": 52.0029296875,
+    "load_average_5m": 49.7890625,
+    "load_average_15m": 33.46923828125,
+    "logical_cpu_count": 32,
+    "scaling_governors": ["powersave"]
+  },
+  "balanced_three_mode_microbenchmark": {
+    "fresh_fixture_per_execution": true,
+    "installation_outside_timed_region": true,
+    "main_blocks": 18,
+    "main_repetitions_per_order": 3,
+    "modes": ["off", "base_only", "base_adapter"],
+    "network_attempt_count": 0,
+    "orders": "all_six_permutations",
+    "semantic_hash_counts": {
+      "event_sha256": 1,
+      "return_sha256": 1,
+      "state_sha256": 1
+    },
+    "warmup_cycles": 2,
+    "work_units": 20000,
+    "mode_distributions": {
+      "off": {
+        "cpu_ns": {"median": 105133947.0, "stdev": 5781548.404083296},
+        "span_count": 0,
+        "wall_ns": {"median": 105235125.5, "stdev": 6265444.218480069}
+      },
+      "base_only": {
+        "cpu_ns": {"median": 105552833.0, "stdev": 6548077.932852995},
+        "span_count": 17,
+        "wall_ns": {"median": 105554724.5, "stdev": 7086445.004655733}
+      },
+      "base_adapter": {
+        "cpu_ns": {"median": 105430753.0, "stdev": 5104252.10843226},
+        "span_count": 26,
+        "wall_ns": {"median": 105456694.0, "stdev": 5489848.787759493}
+      }
+    },
+    "paired_ratio_distributions": {
+      "base_over_off_wall": {
+        "maximum": 0.06676145507124896,
+        "mean": 0.01083582502509677,
+        "median": 0.008979724620148693,
+        "minimum": -0.032281149808670105,
+        "stdev": 0.02621697768890656
+      },
+      "combined_over_off_wall": {
+        "maximum": 0.03749869486373562,
+        "mean": 0.004586995798119376,
+        "median": 0.0037102493697195407,
+        "minimum": -0.032288566595534536,
+        "stdev": 0.020552047421430308
+      },
+      "adapter_over_base_wall": {
+        "maximum": 0.04028742268368043,
+        "mean": -0.005646154549141942,
+        "median": -0.002207993728511063,
+        "minimum": -0.08352102831742927,
+        "stdev": 0.029484258216379452
+      },
+      "base_over_off_cpu": {
+        "median": 0.00389644226365586,
+        "stdev": 0.02381928986485705
+      },
+      "combined_over_off_cpu": {
+        "median": 0.004084784046089699,
+        "stdev": 0.018989299214008947
+      },
+      "adapter_over_base_cpu": {
+        "median": -0.00507567512241604,
+        "stdev": 0.026939724017165958
+      }
+    },
+    "cold_first_cycle": {
+      "off_wall_ns": 106682163,
+      "base_only_wall_ns": 110889070,
+      "base_adapter_wall_ns": 110328178,
+      "base_over_off_ratio": 0.03943402422389955,
+      "combined_over_off_ratio": 0.03417642553797864
+    },
+    "position_wall_medians_ns": {
+      "off": {"position_0": 104807869.5, "position_1": 104236030.0, "position_2": 105692331.0},
+      "base_only": {"position_0": 107012004.5, "position_1": 106432500.0, "position_2": 103799490.0},
+      "base_adapter": {"position_0": 105276920.0, "position_1": 105275851.0, "position_2": 107689892.5}
+    }
+  },
+  "workload_scaling_screen": {
+    "interpretation": "six-block screens are under-resolved and non-decisional",
+    "work_units_2000": {
+      "base_over_off_wall_median": -0.0005210821728572461,
+      "combined_over_off_wall_median": 0.0166899696269213,
+      "adapter_over_base_wall_median": 0.01471650810123186
+    },
+    "work_units_50000": {
+      "base_over_off_wall_median": -0.018456104855063,
+      "combined_over_off_wall_median": 0.016273144876049094,
+      "adapter_over_base_wall_median": 0.01316188665530476
+    }
+  },
+  "isolated_span_microbenchmark": {
+    "alternating_repetitions": 9,
+    "iterations_per_repetition": 20000,
+    "median_cpu_ns_per_span": 6318.2818,
+    "median_wall_ns_per_span": 6318.32255,
+    "projected_17_base_span_wall_ns": 107411.48335,
+    "projected_9_adapter_span_wall_ns": 56864.90295
+  },
+  "fixed_wrapper_cost_microbenchmark": {
+    "aggregation_correction": "even-sample median is the mean of the two middle values; this corrected run supersedes an unpersisted upper-median draft",
+    "all_six_orders": true,
+    "cycles": 2,
+    "episodes_per_batch": 500,
+    "work_units": 0,
+    "median_wall_ns_per_episode": {
+      "off": 15740.403,
+      "base_only": 88004.099,
+      "base_adapter": 143316.549
+    },
+    "median_wall_delta_ns_per_episode": {
+      "base_minus_off": 72263.696,
+      "adapter_minus_base": 55312.45,
+      "combined_minus_off": 127576.146
+    },
+    "median_cpu_delta_ns_per_episode": {
+      "base_minus_off": 72259.018,
+      "adapter_minus_base": 55300.606,
+      "combined_minus_off": 127559.624
+    }
+  },
+  "structural_profile": {
+    "cprofile_is_perturbing_and_not_used_for_overhead_ratios": true,
+    "repetitions": 200,
+    "work_units": 0,
+    "off": {"record_count": 0, "total_calls": 31201, "total_profile_seconds": 0.017299655},
+    "base_only": {"record_count": 3400, "total_calls": 192049, "total_profile_seconds": 0.09036451},
+    "base_adapter": {"record_count": 5200, "total_calls": 344228, "total_profile_seconds": 0.147012855},
+    "adapter_increment_per_episode": {
+      "additional_profiled_calls_approx": 761,
+      "additional_spans": 9
+    }
+  },
+  "harness_audit": {
+    "correct_properties": [
+      "perf_counter_ns is monotonic",
+      "base and adapter installation is outside the timed add_episode region",
+      "trace-off and trace-on call the same deterministic fixture operation",
+      "alternating order reduces simple linear drift",
+      "semantic hashes and span counts fail closed"
+    ],
+    "resolution_risks": [
+      "one episode is timed per leg with no within-leg aggregation",
+      "no untimed warmup precedes the first canonical pair",
+      "wall time is recorded without a process CPU companion",
+      "CPU affinity, load, and frequency governor are neither controlled nor bound into the artifact",
+      "five paired ratios cannot distinguish roughly 0.13 ms fixed cost from multi-millisecond host variation",
+      "the first canonical pair has a 24.99 percent outlier and the remaining ratios still span negative to positive values"
+    ],
+    "boundary_bug_found": false,
+    "diagnostic_failure_note": "The first analysis script failed before producing data because src/statistics.py shadows the Python standard-library statistics module. The replacement script used explicit local statistics functions."
+  },
+  "engineering_conclusion": {
+    "adapter_hotspot_found": false,
+    "canonical_status_changed": false,
+    "canonical_status_remains": "blocked_overhead",
+    "fixed_combined_overhead_estimate_ns_per_episode": 127576.146,
+    "interpretation": "The scoped adapter adds measurable fixed wrapper work, but the observed fixed cost is much smaller than canonical pair-to-pair variation. The current 5.871 percent result is valid under the frozen method yet is not attributable to an adapter hotspot by these diagnostics."
+  },
+  "schema_version": "membind.engineering-diagnostic.c2-measurement-overhead.v1"
+}

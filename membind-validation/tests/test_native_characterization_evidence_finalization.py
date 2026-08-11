@@ -34,14 +34,25 @@ def _canonical(value: object) -> bytes:
     ).encode("ascii")
 
 
-def _source_state() -> dict[str, object]:
+def _historical_finalization_source_state() -> dict[str, object]:
+    """Recover the exact qualified state consumed by evidence finalization.
+
+    CURRENT_STATE has legitimately advanced through C0 and C2 since this
+    transition ran.  Remove those later outputs and restore the historical
+    no-blocker qualification point before checking the production source hash.
+    """
+
     state = json.loads((ROOT / "CURRENT_STATE.json").read_text(encoding="ascii"))
     for key in (
         "native_characterization_offline_evidence_finalization",
         "native_characterization_c0_authorization",
         "native_characterization_c0_completion",
+        "native_characterization_c2_authorization",
+        "native_characterization_c2_reauthorization",
+        "native_characterization_c2_second_failure",
     ):
         state.pop(key, None)
+    state["current_blocker"] = None
     state["next_allowed_action"] = qualification.TARGET_NEXT_ACTION
     stage_progress = dict(state["stage_progress"])
     stage_progress["native_characterization"] = qualification.TARGET_PROGRESS
@@ -55,7 +66,7 @@ def _copy_fixture(root: Path) -> tuple[Path, Path]:
     validation = root / "membind-validation"
     validation.mkdir()
     state_path = validation / "CURRENT_STATE.json"
-    state_path.write_bytes(_canonical(_source_state()))
+    state_path.write_bytes(_canonical(_historical_finalization_source_state()))
     shutil.copy2(
         REPO / qualification.WORKPLAN_PATH,
         root / qualification.WORKPLAN_PATH,
@@ -76,7 +87,7 @@ class NativeCharacterizationEvidenceFinalizationTests(TestCase):
             root = Path(tmp)
             _validation, state_path = _copy_fixture(root)
             before = state_path.read_bytes()
-            source = _source_state()
+            source = _historical_finalization_source_state()
 
             target = finalization.finalize_offline_evidence(
                 state_path,

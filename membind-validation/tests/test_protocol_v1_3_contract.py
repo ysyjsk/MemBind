@@ -41,9 +41,11 @@ CURRENT_H0_BLOCKER_TEXT = "none"
 CURRENT_H0_ACTION_SCOPE = "h0_q1_b_live_only"
 CURRENT_H0_NEXT_ACTION = "run_q1_h0-b-post-workload-replacement"
 CURRENT_CHARACTERIZATION_STATUS = "native_characterization_offline_only"
-CURRENT_CHARACTERIZATION_BLOCKER = "c2_polluted_namespace_cleanup_pending"
+CURRENT_CHARACTERIZATION_BLOCKER = (
+    "c2_second_structured_output_failure_requires_protocol_decision"
+)
 CURRENT_CHARACTERIZATION_SCOPE = "native_characterization_offline_only"
-CURRENT_CHARACTERIZATION_NEXT_ACTION = "implement_scoped_c2_cleanup_offline"
+CURRENT_CHARACTERIZATION_NEXT_ACTION = "assess_c2_json_object_protocol_deviation"
 INVALIDATED_H0_A_CHECKPOINT_SHA256 = (
     "127c81b39ccd705d7c67dc936e953992d5be97f4065fd56f3655db52d12ad309"
 )
@@ -123,7 +125,9 @@ class ProtocolV13DocumentContractTests(TestCase):
         )
         self.assertFalse(state["live_h0_candidate_authorized"])
         self.assertIsNone(state["authorized_h0_candidate_id"])
-        self.assertEqual(state["authorized_live_actions"], [])
+        self.assertEqual(
+            state["authorized_live_actions"], []
+        )
         self.assertFalse(state["v3_smoke_003_authorized"])
         self.assertEqual(
             state["next_allowed_action"], CURRENT_CHARACTERIZATION_NEXT_ACTION

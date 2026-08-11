@@ -47,10 +47,12 @@ class H0ProtocolInvalidationArtifactTests(TestCase):
         )
         self.assertEqual(
             state["current_blocker"],
-            "c2_polluted_namespace_cleanup_pending",
+            "c2_second_structured_output_failure_requires_protocol_decision",
         )
         self.assertFalse(state["live_h0_candidate_authorized"])
-        self.assertEqual(state["authorized_live_actions"], [])
+        self.assertEqual(
+            state["authorized_live_actions"], []
+        )
         self.assertIsNone(state["authorized_h0_candidate_id"])
         self.assertEqual(
             state["historical_h0_live_authorization"][
