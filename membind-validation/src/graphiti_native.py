@@ -339,6 +339,24 @@ def structured_retry_budgets(
     return (primary, overflow)
 
 
+def parse_structured_json_object(response_text: str) -> Any:
+    """Parse strict JSON, with a bounded fallback for surrounding model noise."""
+    try:
+        return json.loads(response_text)
+    except json.JSONDecodeError as strict_error:
+        decoder = json.JSONDecoder()
+        for index, character in enumerate(response_text):
+            if character != "{":
+                continue
+            try:
+                candidate, _ = decoder.raw_decode(response_text, index)
+            except json.JSONDecodeError:
+                continue
+            if isinstance(candidate, dict):
+                return candidate
+        raise strict_error
+
+
 def context_window_from_error(error: BaseException) -> int | None:
     """Extract the server context window from a standard vLLM context error."""
     match = _CONTEXT_ERROR_RE.search(str(error))
@@ -601,7 +619,7 @@ class QwenVLLMClient:
                             self.structured_response_failure_count += 1
                             raise failure
                     try:
-                        parsed = json.loads(result)
+                        parsed = parse_structured_json_object(result)
                         if response_model is not None:
                             response_model(**parsed)
                     except Exception as exc:

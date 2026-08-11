@@ -216,6 +216,48 @@ class QwenFailureCaptureTests(IsolatedAsyncioTestCase):
         self.assertEqual(client.structured_response_failure_count, 1)
         self.assertEqual(token_usage_dict(None), {})
 
+    async def test_noisy_structured_response_extracts_complete_json_object(self):
+        class ResponseModel(BaseModel):
+            ok: bool
+
+        response = SimpleNamespace(
+            usage=SimpleNamespace(prompt_tokens=11, completion_tokens=9, total_tokens=20),
+            choices=[
+                SimpleNamespace(
+                    finish_reason="stop",
+                    message=SimpleNamespace(
+                        content='prefix text {"ok": true} suffix text'
+                    ),
+                )
+            ],
+        )
+        client = QwenVLLMClient(
+            config=LLMConfig(
+                api_key="test",
+                model="test-model",
+                small_model="test-model",
+                base_url="http://127.0.0.1:1/v1",
+                temperature=0.0,
+                max_tokens=2048,
+            ),
+            max_tokens=2048,
+            structured_output_mode="json_schema",
+        )
+        create = AsyncMock(return_value=response)
+        client.client = SimpleNamespace(
+            chat=SimpleNamespace(completions=SimpleNamespace(create=create))
+        )
+
+        parsed = await client._generate_response(
+            [SimpleNamespace(role="user", content="return json")],
+            response_model=ResponseModel,
+            max_tokens=2048,
+        )
+
+        self.assertEqual(parsed, {"ok": True})
+        self.assertEqual(client.parse_failure_count, 0)
+        self.assertEqual(client.structured_response_failure_count, 0)
+
     async def test_context_overflow_retries_with_remaining_budget(self):
         class ResponseModel(BaseModel):
             ok: bool

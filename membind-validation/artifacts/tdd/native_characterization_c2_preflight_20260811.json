@@ -1,0 +1,54 @@
+{
+  "checked_at": "2026-08-11T07:22:21.076634+00:00",
+  "checks": {
+    "construction_vllm": {
+      "models": {
+        "expected_model_present": true,
+        "latency_ms": 90.722,
+        "model_ids": [
+          "qwen3-32b-fp8"
+        ],
+        "ok": true,
+        "status": 200
+      },
+      "version": {
+        "latency_ms": 113.444,
+        "ok": true,
+        "payload": {
+          "version": "0.26.0"
+        },
+        "status": 200
+      }
+    },
+    "embedding_vllm": {
+      "models": {
+        "expected_model_present": true,
+        "latency_ms": 101.259,
+        "model_ids": [
+          "qwen3-embedding-0.6b"
+        ],
+        "ok": true,
+        "status": 200
+      },
+      "version": {
+        "latency_ms": 130.797,
+        "ok": true,
+        "payload": {
+          "version": "0.26.0"
+        },
+        "status": 200
+      }
+    },
+    "neo4j": {
+      "latency_ms": 35.216,
+      "ok": true,
+      "password_present": true,
+      "query": "RETURN 1 AS ok",
+      "uri": "bolt://localhost:7687",
+      "user_present": true
+    }
+  },
+  "overall_ok": true,
+  "schema_version": "membind.native-characterization-c2-preflight.v1",
+  "secrets_redacted": true
+}
