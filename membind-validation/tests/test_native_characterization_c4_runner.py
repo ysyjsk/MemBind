@@ -4,6 +4,7 @@ from __future__ import annotations
 
 import asyncio
 import hashlib
+import json
 import sys
 import tempfile
 import threading
@@ -195,11 +196,17 @@ class FakeRuntime:
         self.counts = counts
         self.fail_at = fail_at
         self.service_calls: list[int] = []
+        self.clear_calls = 0
         self.closed = False
 
     async def namespace_counts(self) -> runner.NamespaceCounts:
         self.calls.append(("preflight", self.block_index, self.namespace))
         return self.counts
+
+    async def clear_namespace(self) -> None:
+        self.clear_calls += 1
+        self.calls.append(("clear", self.block_index, self.namespace))
+        self.counts = runner.NamespaceCounts(0, 0)
 
     async def service(self, episode: c4.Episode, service_start_ns: int) -> None:
         self.service_calls.append(episode.source_sequence)
@@ -284,7 +291,7 @@ class NativeCharacterizationC4RunnerTests(IsolatedAsyncioTestCase):
         progress = kwargs.pop("progress_events")
         result = await runner.run_c4_live(**kwargs)
 
-        self.assertEqual(result["status"], "complete")
+        self.assertEqual(result["status"], "complete", result)
         self.assertEqual(result["run_id"], RUN_ID)
         self.assertEqual(result["completed_block_count"], 10)
         self.assertEqual(result["completed_episode_count"], 490)
@@ -531,6 +538,158 @@ class NativeCharacterizationC4RunnerTests(IsolatedAsyncioTestCase):
         self.assertEqual(store.stage_failures[0]["completed_episode_count"], 490)
         self.assertEqual(progress[-1]["event"], "terminal_failure")
         self.assertEqual(progress[-1]["failure_stage"], "verification")
+
+    async def test_resume_run_id_appends_to_same_run_and_skips_completed_prefix(self) -> None:
+        kwargs, store, runtimes, calls = self.fixture()
+        progress = kwargs.pop("progress_events")
+        with tempfile.TemporaryDirectory() as temporary:
+            runs_root = Path(temporary) / "runs"
+            prefix = FakeStore(calls)
+            kwargs["runs_root"] = runs_root
+            kwargs["resume_run_id"] = RUN_ID
+            kwargs["store_factory"] = lambda *args, **values: self.fail("fresh store must not be created")
+
+            def resume_store_factory(**values: object) -> FakeStore:
+                self.assertEqual(values["runs_root"], runs_root)
+                self.assertEqual(values["run_id"], RUN_ID)
+                calls.append(("resume-store", values["run_id"]))
+                return prefix
+
+            kwargs["resume_store_factory"] = resume_store_factory
+            kwargs["resume_prefix_loader"] = lambda **values: runner.C4ResumePrefix(
+                run_id=RUN_ID,
+                completed_block_indices=(0, 1, 2),
+                next_block_index=3,
+                completed_episode_count=147,
+            )
+
+            async def runtime_factory(block: runner.C4Block) -> FakeRuntime:
+                calls.append(("runtime", block.block_index, block.graph_namespace))
+                runtime = FakeRuntime(
+                    block.block_index,
+                    block.graph_namespace,
+                    calls,
+                    counts=(
+                        runner.NamespaceCounts(5, 7)
+                        if block.block_index == 3
+                        else runner.NamespaceCounts(0, 0)
+                    ),
+                )
+                runtimes.append(runtime)
+                return runtime
+
+            kwargs["runtime_factory"] = runtime_factory
+            result = await runner.run_c4_live(**kwargs)
+
+        self.assertEqual(result["status"], "complete")
+        self.assertEqual(result["run_id"], RUN_ID)
+        self.assertEqual(result["resumed"], True)
+        self.assertEqual(result["completed_block_count"], 10)
+        self.assertEqual(result["completed_episode_count"], 490)
+        self.assertEqual([runtime.block_index for runtime in runtimes], list(range(3, 10)))
+        self.assertEqual(runtimes[0].clear_calls, 1)
+        self.assertEqual([runtime.clear_calls for runtime in runtimes[1:]], [0] * 6)
+        self.assertLess(
+            calls.index(("clear", 3, "nc-e3-0000000000000003")),
+            calls.index(("preflight", 3, "nc-e3-0000000000000003")),
+        )
+        self.assertEqual(runtimes[0].service_calls, list(range(49)))
+        self.assertEqual([runtime.service_calls for runtime in runtimes[1:]], [list(range(49))] * 6)
+        self.assertEqual(len(prefix.publications), 7 * 49)
+        self.assertEqual(prefix.publications[0]["block_index"], 3)
+        self.assertEqual(prefix.publications[0]["source_sequence"], 0)
+        self.assertEqual(prefix.root_checkpoints[0]["progress"]["completed_block_indices"], [0, 1, 2])
+        self.assertEqual(prefix.root_checkpoints[0]["progress"]["completed_episode_count"], 147)
+        self.assertEqual(prefix.root_checkpoints[-1]["progress"]["completed_episode_count"], 490)
+        self.assertEqual(calls[1], ("resume-store", RUN_ID))
+        self.assertEqual(progress[0]["event"], "resume_prefix_verified")
+        self.assertEqual(progress[0]["completed_block_indices"], [0, 1, 2])
+        self.assertEqual(progress[1]["event"], "manifest_planned")
+
+    async def test_recover_terminal_failure_uses_recovery_loader_before_resume(self) -> None:
+        kwargs, _store, runtimes, calls = self.fixture()
+        progress = kwargs.pop("progress_events")
+        with tempfile.TemporaryDirectory() as temporary:
+            runs_root = Path(temporary) / "runs"
+            prefix = FakeStore(calls)
+            kwargs["runs_root"] = runs_root
+            kwargs["resume_run_id"] = RUN_ID
+            kwargs["recover_terminal_failure"] = True
+            kwargs["store_factory"] = lambda *args, **values: self.fail("fresh store must not be created")
+            kwargs["resume_prefix_loader"] = lambda **values: self.fail("running-prefix loader must not be used")
+            kwargs["resume_store_factory"] = lambda **values: prefix
+
+            def terminal_recovery_loader(**values: object) -> runner.C4ResumePrefix:
+                self.assertEqual(values["runs_root"], runs_root)
+                self.assertEqual(values["run_id"], RUN_ID)
+                calls.append(("terminal-recovery", values["run_id"]))
+                return runner.C4ResumePrefix(
+                    run_id=RUN_ID,
+                    completed_block_indices=(0, 1, 2),
+                    next_block_index=3,
+                    completed_episode_count=147,
+                )
+
+            kwargs["terminal_recovery_loader"] = terminal_recovery_loader
+            result = await runner.run_c4_live(**kwargs)
+
+        self.assertEqual(result["status"], "complete")
+        self.assertEqual(result["resumed"], True)
+        self.assertEqual(result["recovered_terminal_failure"], True)
+        self.assertEqual([runtime.block_index for runtime in runtimes], list(range(3, 10)))
+        self.assertEqual(calls[1], ("terminal-recovery", RUN_ID))
+        self.assertEqual(progress[0]["event"], "resume_prefix_verified")
+        self.assertEqual(progress[0]["recovered_terminal_failure"], True)
+
+    async def test_resume_run_id_rejects_failed_complete_or_mismatched_prefix_before_runtime(self) -> None:
+        for kind in ("failed", "complete", "schedule"):
+            with self.subTest(kind=kind), tempfile.TemporaryDirectory() as temporary:
+                kwargs, _store, runtimes, calls = self.fixture()
+                kwargs.pop("progress_events")
+                runs_root = Path(temporary) / "runs"
+                prefix = c4a.C4ArtifactStore.create(
+                    runs_root,
+                    RUN_ID,
+                    schedule(),
+                    provenance(),
+                    ["c4-runner", "--live"],
+                )
+                if kind == "failed":
+                    prefix.record_failure(
+                        block_index=0,
+                        source_sequence=0,
+                        error=RuntimeError("ignored"),
+                        completed_source_sequences=[],
+                        completed_block_indices=[],
+                        completed_episode_count=0,
+                    )
+                elif kind == "complete":
+                    prefix.write_root_checkpoint(
+                        status="completed",
+                        progress={
+                            "completed_block_indices": list(range(10)),
+                            "completed_episode_count": 490,
+                        },
+                    )
+                else:
+                    manifest_path = prefix.manifest_path
+                    manifest = json.loads(manifest_path.read_text("ascii"))
+                    manifest["schedule_payload_sha256"] = "f" * 64
+                    manifest = c4a.seal_payload(manifest)
+                    manifest_path.write_bytes(c4a.canonical_json_bytes(manifest) + b"\n")
+                    prefix.write_root_checkpoint(
+                        status="running",
+                        progress={
+                            "completed_block_indices": [0],
+                            "completed_episode_count": 49,
+                        },
+                    )
+                kwargs["runs_root"] = runs_root
+                kwargs["resume_run_id"] = RUN_ID
+                with self.assertRaises(runner.NativeCharacterizationC4RunnerError):
+                    await runner.run_c4_live(**kwargs)
+                self.assertEqual(runtimes, [])
+                self.assertEqual([item[0] for item in calls], ["gate"])
 
 
 if __name__ == "__main__":

@@ -26,6 +26,7 @@ import native_characterization_c4_runner as runner  # noqa: E402
 
 
 HISTORY_ID = "07741c45"
+RUN_ID = "c4-0123456789abcdef"
 SHA_A = "a" * 64
 SHA_B = "b" * 64
 
@@ -606,6 +607,57 @@ class NativeCharacterizationC4LiveTests(IsolatedAsyncioTestCase):
         self.assertEqual(
             set(captured["provenance_hashes"]), set(c4a.REQUIRED_PROVENANCE_HASHES)
         )
+        self.assertIsNone(captured["resume_run_id"])
+
+    async def test_resume_run_id_is_passed_only_to_runner(self) -> None:
+        fixture = Fixture(self)
+        events: list[tuple[object, ...]] = []
+        captured: dict[str, object] = {}
+
+        async def inspect(**kwargs: object) -> dict[str, object]:
+            captured.update(kwargs)
+            return {"status": "complete", "run_id": RUN_ID}
+
+        with fixture.constants():
+            await live.execute_c4_live(
+                validation_root=fixture.validation,
+                state_path=fixture.state_path,
+                resume_run_id=RUN_ID,
+                dependencies=fixture.dependencies(events, run_c4=inspect),
+            )
+
+        self.assertEqual(captured["resume_run_id"], RUN_ID)
+        self.assertEqual(
+            captured["creation_command"][-2:],
+            ["--resume-run-id", RUN_ID],
+        )
+        self.assertNotIn("runtime", [item[0] for item in events])
+
+    async def test_terminal_failure_recovery_flag_is_passed_only_to_runner(self) -> None:
+        fixture = Fixture(self)
+        events: list[tuple[object, ...]] = []
+        captured: dict[str, object] = {}
+
+        async def inspect(**kwargs: object) -> dict[str, object]:
+            captured.update(kwargs)
+            return {"status": "complete", "run_id": RUN_ID}
+
+        with fixture.constants():
+            await live.execute_c4_live(
+                validation_root=fixture.validation,
+                state_path=fixture.state_path,
+                resume_run_id=RUN_ID,
+                recover_terminal_failure=True,
+                dependencies=fixture.dependencies(events, run_c4=inspect),
+            )
+
+        self.assertEqual(captured["resume_run_id"], RUN_ID)
+        self.assertEqual(captured["recover_terminal_failure"], True)
+        self.assertEqual(
+            captured["creation_command"][-3:],
+            ["--resume-run-id", RUN_ID, "--recover-terminal-failure"],
+        )
+        self.assertNotIn("runtime", [item[0] for item in events])
 
     async def test_service_replaces_only_group_and_calls_graphiti_once(self) -> None:
         fixture = Fixture(self)
@@ -653,6 +705,40 @@ class NativeCharacterizationC4LiveTests(IsolatedAsyncioTestCase):
         self.assertEqual(
             graphiti.add_calls[0]["group_id"], "nc-e3-0000000000000000"
         )
+
+    async def test_resume_cleanup_hook_uses_exact_block_namespace(self) -> None:
+        fixture = Fixture(self)
+        events: list[tuple[object, ...]] = []
+        clear_calls: list[tuple[object, list[str]]] = []
+
+        async def inspect(**kwargs: object) -> dict[str, object]:
+            supplied = kwargs["schedule"]["block_schedules"][3]
+            block = runner.C4Block(
+                block_index=3,
+                method=supplied["method"],
+                normalized_offered_load=supplied["normalized_offered_load"],
+                graph_namespace=supplied["graph_namespace"],
+                interarrival_ns=supplied["interarrival_ns"],
+                absolute_arrival_offsets_ns=tuple(supplied["absolute_arrival_offsets_ns"]),
+            )
+            runtime = await kwargs["runtime_factory"](block)
+            await runtime.clear_namespace()
+            await runtime.close()
+            return {"status": "complete"}
+
+        async def clear_spy(driver: object, *, group_ids: list[str]) -> None:
+            clear_calls.append((driver, list(group_ids)))
+
+        with fixture.constants(), mock.patch.object(live, "clear_data", side_effect=clear_spy):
+            await live.execute_c4_live(
+                validation_root=fixture.validation,
+                state_path=fixture.state_path,
+                dependencies=fixture.dependencies(events, run_c4=inspect),
+            )
+
+        self.assertEqual(len(clear_calls), 1)
+        self.assertIs(clear_calls[0][0], fixture.graphitis[0].driver)
+        self.assertEqual(clear_calls[0][1], ["nc-e3-0000000000000003"])
 
     async def test_nonempty_namespace_and_service_failure_are_sanitized_and_closed(self) -> None:
         for kind in ("namespace", "service"):
@@ -785,7 +871,14 @@ class NativeCharacterizationC4LiveCliTests(TestCase):
         }
         self.assertEqual(
             option_strings,
-            {"-h", "--help", "--validation-root", "--state"},
+            {
+                "-h",
+                "--help",
+                "--validation-root",
+                "--state",
+                "--resume-run-id",
+                "--recover-terminal-failure",
+            },
         )
         for forbidden in (
             "--model",

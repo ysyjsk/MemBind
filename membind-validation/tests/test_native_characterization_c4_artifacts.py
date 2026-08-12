@@ -474,6 +474,200 @@ class NativeCharacterizationC4ArtifactTests(TestCase):
             ):
                 c4a.verify_c4_artifacts(store.run_root)
 
+    def test_prepare_resume_prefix_rolls_back_partial_block_to_full_block_boundary(self) -> None:
+        schedule = _schedule()
+        with tempfile.TemporaryDirectory() as temporary:
+            runs = Path(temporary) / "runs"
+            store = c4a.C4ArtifactStore.create(
+                runs, RUN_ID, schedule, _provenance(), ["runner"]
+            )
+            publication_sequences = {
+                **{block_index: list(range(49)) for block_index in range(3)},
+                3: list(range(9)),
+                **{block_index: [] for block_index in range(4, 10)},
+            }
+            publications = _append_success_events(
+                store, schedule, publication_sequences=publication_sequences
+            )
+            for block in schedule["block_schedules"][:3]:
+                block_index = block["block_index"]
+                for source_sequence in range(49):
+                    store.write_episode_checkpoint(
+                        block_index=block_index,
+                        source_sequence=source_sequence,
+                        status="completed",
+                        progress={
+                            "episode_id": f"{schedule['history_id']}:{source_sequence}",
+                            "graph_namespace": block["graph_namespace"],
+                            "method": block["method"],
+                            "publication_event_payload_sha256": publications[
+                                (block_index, source_sequence)
+                            ],
+                        },
+                    )
+                store.write_block_checkpoint(
+                    block_index=block_index,
+                    status="completed",
+                    progress={
+                        "graph_namespace": block["graph_namespace"],
+                        "history_id": schedule["history_id"],
+                        "method": block["method"],
+                        "normalized_offered_load": block["normalized_offered_load"],
+                        "completed_source_sequences": list(range(49)),
+                        "completed_episode_count": 49,
+                    },
+                )
+            block = schedule["block_schedules"][3]
+            for source_sequence in range(9):
+                store.write_episode_checkpoint(
+                    block_index=3,
+                    source_sequence=source_sequence,
+                    status="completed",
+                    progress={
+                        "episode_id": f"{schedule['history_id']}:{source_sequence}",
+                        "graph_namespace": block["graph_namespace"],
+                        "method": block["method"],
+                        "publication_event_payload_sha256": publications[
+                            (3, source_sequence)
+                        ],
+                    },
+                )
+            store.write_root_checkpoint(
+                status="running",
+                progress={
+                    "completed_block_indices": [0, 1, 2],
+                    "completed_block_count": 3,
+                    "completed_episode_count": 147,
+                },
+            )
+
+            before = c4a.verify_c4_artifacts(store.run_root)
+            prefix = c4a.prepare_c4_resume_prefix(
+                runs_root=runs,
+                run_id=RUN_ID,
+                schedule=schedule,
+                provenance_hashes=_provenance(),
+            )
+            after = c4a.verify_c4_artifacts(store.run_root)
+            reopened = c4a.C4ArtifactStore.open_existing_for_resume(runs, RUN_ID)
+
+        self.assertEqual(before["attempt_status"], "running")
+        self.assertEqual(before["event_counts"]["publication"], 156)
+        self.assertEqual(prefix["completed_block_indices"], [0, 1, 2])
+        self.assertEqual(prefix["next_block_index"], 3)
+        self.assertEqual(prefix["completed_episode_count"], 147)
+        self.assertEqual(prefix["discarded_event_count"], 9)
+        self.assertEqual(prefix["discarded_checkpoint_count"], 9)
+        self.assertEqual(after["attempt_status"], "running")
+        self.assertEqual(after["event_counts"]["publication"], 147)
+        self.assertEqual(after["checkpoint_count"], 151)
+        self.assertIn("resume_rollback_audit.json", after["hash_inventory"])
+        self.assertFalse((reopened.run_root / "blocks/003").exists())
+        self.assertEqual(reopened._next_event_sequence, 147)
+
+    def test_recover_terminal_failure_restores_running_full_block_resume_prefix(self) -> None:
+        schedule = _schedule()
+        with tempfile.TemporaryDirectory() as temporary:
+            runs = Path(temporary) / "runs"
+            store = c4a.C4ArtifactStore.create(
+                runs, RUN_ID, schedule, _provenance(), ["runner"]
+            )
+            publication_sequences = {
+                **{block_index: list(range(49)) for block_index in range(3)},
+                3: list(range(8)),
+                **{block_index: [] for block_index in range(4, 10)},
+            }
+            publications = _append_success_events(
+                store, schedule, publication_sequences=publication_sequences
+            )
+            for block in schedule["block_schedules"][:3]:
+                block_index = block["block_index"]
+                for source_sequence in range(49):
+                    store.write_episode_checkpoint(
+                        block_index=block_index,
+                        source_sequence=source_sequence,
+                        status="completed",
+                        progress={
+                            "episode_id": f"{schedule['history_id']}:{source_sequence}",
+                            "graph_namespace": block["graph_namespace"],
+                            "method": block["method"],
+                            "publication_event_payload_sha256": publications[
+                                (block_index, source_sequence)
+                            ],
+                        },
+                    )
+                store.write_block_checkpoint(
+                    block_index=block_index,
+                    status="completed",
+                    progress={
+                        "graph_namespace": block["graph_namespace"],
+                        "history_id": schedule["history_id"],
+                        "method": block["method"],
+                        "normalized_offered_load": block["normalized_offered_load"],
+                        "completed_source_sequences": list(range(49)),
+                        "completed_episode_count": 49,
+                    },
+                )
+            block = schedule["block_schedules"][3]
+            for source_sequence in range(8):
+                store.write_episode_checkpoint(
+                    block_index=3,
+                    source_sequence=source_sequence,
+                    status="completed",
+                    progress={
+                        "episode_id": f"{schedule['history_id']}:{source_sequence}",
+                        "graph_namespace": block["graph_namespace"],
+                        "method": block["method"],
+                        "publication_event_payload_sha256": publications[
+                            (3, source_sequence)
+                        ],
+                    },
+                )
+            store.record_failure(
+                block_index=3,
+                source_sequence=8,
+                error=RuntimeError("must not persist raw detail"),
+                completed_source_sequences=list(range(8)),
+                completed_block_indices=[0, 1, 2],
+                completed_episode_count=155,
+                token_envelope={
+                    "prompt_tokens": 25001,
+                    "output_tokens": None,
+                    "requested_max_tokens": 16384,
+                },
+            )
+
+            before = c4a.verify_c4_artifacts(store.run_root)
+            prefix = c4a.recover_c4_terminal_failure_to_resume_prefix(
+                runs_root=runs,
+                run_id=RUN_ID,
+                schedule=schedule,
+                provenance_hashes=_provenance(),
+            )
+            after = c4a.verify_c4_artifacts(store.run_root)
+            audit = json.loads(
+                (store.run_root / "resume_rollback_audit.json").read_text("ascii")
+            )
+            reopened = c4a.C4ArtifactStore.open_existing_for_resume(runs, RUN_ID)
+
+        self.assertEqual(before["attempt_status"], c4a.FAILURE_STATUS)
+        self.assertEqual(before["event_counts"], {"enqueue": 0, "publication": 155, "failure": 1})
+        self.assertEqual(prefix["completed_block_indices"], [0, 1, 2])
+        self.assertEqual(prefix["next_block_index"], 3)
+        self.assertEqual(prefix["completed_episode_count"], 147)
+        self.assertEqual(prefix["discarded_event_count"], 9)
+        self.assertEqual(prefix["discarded_checkpoint_count"], 10)
+        self.assertEqual(prefix["recovered_terminal_failure"], True)
+        self.assertEqual(after["attempt_status"], "running")
+        self.assertEqual(after["event_counts"], {"enqueue": 0, "publication": 147, "failure": 0})
+        self.assertEqual(after["checkpoint_count"], 151)
+        self.assertEqual(audit["status"], "terminal_failure_recovered_to_completed_block_prefix")
+        self.assertEqual(audit["failure_block_index"], 3)
+        self.assertEqual(audit["failure_source_sequence"], 8)
+        self.assertEqual(audit["terminal_completed_episode_count"], 155)
+        self.assertFalse((reopened.run_root / "blocks/003").exists())
+        self.assertEqual(reopened._next_event_sequence, 147)
+
     def test_episode_failure_requires_exact_fifo_prefix_and_global_equality(self) -> None:
         invalid_progress = (
             {

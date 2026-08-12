@@ -344,6 +344,33 @@ def _atomic_write_sealed_json(path: Path, value: Mapping[str, Any]) -> dict[str,
     return sealed
 
 
+def _atomic_replace_bytes(path: Path, value: bytes) -> None:
+    path.parent.mkdir(parents=True, exist_ok=True)
+    temporary: Path | None = None
+    try:
+        with tempfile.NamedTemporaryFile(
+            mode="wb",
+            dir=path.parent,
+            prefix=f".{path.name}.",
+            suffix=".tmp",
+            delete=False,
+        ) as handle:
+            temporary = Path(handle.name)
+            handle.write(value)
+            handle.flush()
+            os.fsync(handle.fileno())
+        os.replace(temporary, path)
+        temporary = None
+        descriptor = os.open(path.parent, os.O_RDONLY)
+        try:
+            os.fsync(descriptor)
+        finally:
+            os.close(descriptor)
+    finally:
+        if temporary is not None:
+            temporary.unlink(missing_ok=True)
+
+
 def _create_empty_fsynced(path: Path) -> None:
     try:
         with path.open("xb") as handle:
@@ -449,6 +476,26 @@ class C4ArtifactStore:
         store.write_root_checkpoint(
             status="planned",
             progress={"completed_block_indices": [], "completed_episode_count": 0},
+        )
+        return store
+
+    @classmethod
+    def open_existing_for_resume(
+        cls,
+        runs_root: str | Path,
+        run_id: str,
+    ) -> "C4ArtifactStore":
+        """Open one verified running attempt without rewriting its plan."""
+
+        if not isinstance(run_id, str) or _RUN_ID_RE.fullmatch(run_id) is None:
+            _fail("run_id_invalid")
+        run_root = Path(runs_root) / run_id
+        verification = verify_c4_artifacts(run_root)
+        if verification.get("attempt_status") != "running":
+            _fail("resume_prefix_not_running")
+        store = cls(_validated_run_root(run_root), run_id)
+        store._next_event_sequence = _validate_nonnegative_int(
+            verification.get("event_count"), "resume_event_count_invalid"
         )
         return store
 
@@ -1579,6 +1626,396 @@ def _verify_stage_failure_binding(
         _fail("failure_stage_checkpoint_contract_invalid")
 
 
+def _running_completed_blocks(root_checkpoint: Mapping[str, Any]) -> tuple[list[int], int]:
+    progress = root_checkpoint.get("progress")
+    if root_checkpoint.get("status") != "running" or not isinstance(progress, Mapping):
+        _fail("resume_checkpoint_invalid")
+    completed_blocks = progress.get("completed_block_indices")
+    completed_episode_count = progress.get("completed_episode_count")
+    if (
+        not isinstance(completed_blocks, list)
+        or not all(
+            isinstance(item, int) and not isinstance(item, bool)
+            for item in completed_blocks
+        )
+        or completed_blocks != list(range(len(completed_blocks)))
+        or len(completed_blocks) >= FROZEN_BLOCK_COUNT
+        or not isinstance(completed_episode_count, int)
+        or isinstance(completed_episode_count, bool)
+        or completed_episode_count != len(completed_blocks) * FROZEN_EPISODES_PER_BLOCK
+    ):
+        _fail("resume_checkpoint_invalid")
+    return completed_blocks, completed_episode_count
+
+
+def _resume_prefix_identities(
+    planned_blocks: Sequence[Mapping[str, Any]],
+    completed_block_count: int,
+) -> tuple[list[tuple[int, int]], list[tuple[int, int]]]:
+    publication_identities = [
+        (block_index, source_sequence)
+        for block_index in range(completed_block_count)
+        for source_sequence in range(FROZEN_EPISODES_PER_BLOCK)
+    ]
+    enqueue_identities = [
+        (block_index, source_sequence)
+        for block_index in range(completed_block_count)
+        if planned_blocks[block_index].get("method") == "Native-Async-Serial"
+        for source_sequence in range(FROZEN_EPISODES_PER_BLOCK)
+    ]
+    return publication_identities, enqueue_identities
+
+
+def _trim_events_to_resume_prefix(
+    root: Path,
+    run_id: str,
+    planned_blocks: Sequence[Mapping[str, Any]],
+    completed_block_count: int,
+) -> tuple[int, dict[str, Any]]:
+    events, _counts = _verify_events(root / "events.jsonl", run_id)
+    expected_publications, expected_enqueues = _resume_prefix_identities(
+        planned_blocks, completed_block_count
+    )
+    expected_publication_set = set(expected_publications)
+    expected_enqueue_set = set(expected_enqueues)
+    kept: list[dict[str, Any]] = []
+    discarded: list[dict[str, Any]] = []
+    for event in events:
+        event_type = event.get("event_type")
+        identity = (event.get("block_index"), event.get("source_sequence"))
+        if (
+            event_type == "publication"
+            and identity in expected_publication_set
+        ) or (event_type == "enqueue" and identity in expected_enqueue_set):
+            kept.append(event)
+        else:
+            discarded.append(event)
+    if [
+        (event.get("block_index"), event.get("source_sequence"))
+        for event in kept
+        if event.get("event_type") == "publication"
+    ] != expected_publications:
+        _fail("resume_event_prefix_invalid")
+    if [
+        (event.get("block_index"), event.get("source_sequence"))
+        for event in kept
+        if event.get("event_type") == "enqueue"
+    ] != expected_enqueues:
+        _fail("resume_event_prefix_invalid")
+    if [
+        event.get("event_sequence") for event in kept
+    ] != list(range(len(kept))):
+        _fail("resume_event_prefix_invalid")
+    audit = {
+        "retained_event_count": len(kept),
+        "discarded_event_count": len(discarded),
+        "discarded_event_payloads_sha256": _sha256(
+            canonical_json_bytes(
+                [event.get("payload_sha256") for event in discarded]
+            )
+        ),
+    }
+    if discarded:
+        encoded = b"".join(canonical_json_bytes(event) + b"\n" for event in kept)
+        _atomic_replace_bytes(root / "events.jsonl", encoded)
+    return len(discarded), audit
+
+
+def _trim_checkpoints_to_resume_prefix(
+    root: Path,
+    run_id: str,
+    completed_block_count: int,
+) -> tuple[int, dict[str, Any]]:
+    _count, checkpoints = _verify_checkpoints(root, run_id)
+    discarded: list[dict[str, Any]] = []
+    retained_episode_identities = {
+        (block_index, source_sequence)
+        for block_index in range(completed_block_count)
+        for source_sequence in range(FROZEN_EPISODES_PER_BLOCK)
+    }
+    retained_block_indices = set(range(completed_block_count))
+    for checkpoint in checkpoints:
+        level = checkpoint.get("checkpoint_level")
+        block_index = checkpoint.get("block_index")
+        source_sequence = checkpoint.get("source_sequence")
+        if level == "root":
+            continue
+        retain = (
+            level == "episode"
+            and (block_index, source_sequence) in retained_episode_identities
+        ) or (level == "block" and block_index in retained_block_indices)
+        if not retain:
+            discarded.append(checkpoint)
+
+    discarded_paths: list[str] = []
+    for block_index in range(completed_block_count, FROZEN_BLOCK_COUNT):
+        block_root = root / "blocks" / f"{block_index:03d}"
+        if not block_root.exists():
+            continue
+        for path in sorted(block_root.rglob("*"), key=lambda item: item.as_posix(), reverse=True):
+            if path.is_symlink():
+                _fail("artifact_symlink_invalid")
+            if path.is_file():
+                discarded_paths.append(path.relative_to(root).as_posix())
+                try:
+                    path.unlink()
+                except OSError:
+                    _fail("resume_checkpoint_trim_failed")
+        for path in sorted(
+            [item for item in block_root.rglob("*") if item.is_dir()],
+            key=lambda item: len(item.parts),
+            reverse=True,
+        ):
+            try:
+                path.rmdir()
+            except OSError:
+                pass
+        try:
+            block_root.rmdir()
+        except OSError:
+            pass
+    return len(discarded), {
+        "discarded_checkpoint_count": len(discarded),
+        "discarded_checkpoint_payloads_sha256": _sha256(
+            canonical_json_bytes(
+                [checkpoint.get("payload_sha256") for checkpoint in discarded]
+            )
+        ),
+        "discarded_checkpoint_paths": discarded_paths,
+    }
+
+
+def prepare_c4_resume_prefix(
+    *,
+    runs_root: str | Path,
+    run_id: str,
+    schedule: Mapping[str, Any],
+    provenance_hashes: Mapping[str, Any],
+) -> dict[str, Any]:
+    """Validate a running C4 attempt and roll back to its full-block prefix."""
+
+    if not isinstance(run_id, str) or _RUN_ID_RE.fullmatch(run_id) is None:
+        _fail("run_id_invalid")
+    root = Path(runs_root) / run_id
+    verification = verify_c4_artifacts(root)
+    if verification.get("attempt_status") != "running":
+        _fail("resume_prefix_not_running")
+    root = _validated_run_root(root)
+    supplied_schedule, _supplied_blocks = _validate_schedule(schedule)
+    supplied_provenance = _validate_provenance_hashes(provenance_hashes)
+    manifest = _read_sealed_json(root / "manifest.json", "manifest_seal_invalid")
+    persisted_schedule = _read_sealed_json(root / "schedule.json", "schedule_seal_invalid")
+    persisted_schedule, planned_blocks = _validate_schedule(persisted_schedule)
+    _events, _event_counts = _verify_events(root / "events.jsonl", run_id)
+    _checkpoint_count, checkpoints = _verify_checkpoints(root, run_id)
+    root_checkpoints = [
+        checkpoint for checkpoint in checkpoints if checkpoint.get("checkpoint_level") == "root"
+    ]
+    if len(root_checkpoints) != 1:
+        _fail("root_checkpoint_invalid")
+    completed_blocks, completed_episode_count = _running_completed_blocks(
+        root_checkpoints[0]
+    )
+    if (
+        manifest.get("run_id") != run_id
+        or manifest.get("schedule_payload_sha256")
+        != supplied_schedule.get("payload_sha256")
+        or persisted_schedule.get("payload_sha256")
+        != supplied_schedule.get("payload_sha256")
+        or manifest.get("provenance_hashes") != supplied_provenance
+        or manifest.get("planned_blocks") != planned_blocks
+    ):
+        _fail("resume_prefix_binding_invalid")
+
+    discarded_events, event_audit = _trim_events_to_resume_prefix(
+        root, run_id, planned_blocks, len(completed_blocks)
+    )
+    discarded_checkpoints, checkpoint_audit = _trim_checkpoints_to_resume_prefix(
+        root, run_id, len(completed_blocks)
+    )
+    if discarded_events or discarded_checkpoints:
+        _atomic_write_sealed_json(
+            root / "resume_rollback_audit.json",
+            {
+                "schema_version": "membind.native-characterization-c4-resume-rollback.v1",
+                "run_id": run_id,
+                "status": "rolled_back_to_completed_block_prefix",
+                "completed_block_indices": completed_blocks,
+                "completed_episode_count": completed_episode_count,
+                **event_audit,
+                **checkpoint_audit,
+            },
+        )
+    verification_after = verify_c4_artifacts(root)
+    if verification_after.get("attempt_status") != "running":
+        _fail("resume_prefix_post_trim_invalid")
+    return seal_payload(
+        {
+            "schema_version": "membind.native-characterization-c4-resume-prefix.v1",
+            "run_id": run_id,
+            "status": "running",
+            "completed_block_indices": completed_blocks,
+            "next_block_index": len(completed_blocks),
+            "completed_episode_count": completed_episode_count,
+            "discarded_event_count": discarded_events,
+            "discarded_checkpoint_count": discarded_checkpoints,
+            "verification_payload_sha256": verification_after["payload_sha256"],
+        }
+    )
+
+
+def _terminal_failure_completed_blocks(
+    root_checkpoint: Mapping[str, Any],
+    failure_event: Mapping[str, Any],
+) -> tuple[list[int], int, int, int]:
+    progress = root_checkpoint.get("progress")
+    block_index = failure_event.get("block_index")
+    source_sequence = failure_event.get("source_sequence")
+    if (
+        root_checkpoint.get("status") != FAILURE_STATUS
+        or failure_event.get("failure_scope") != "episode"
+        or not isinstance(progress, Mapping)
+        or not isinstance(block_index, int)
+        or isinstance(block_index, bool)
+        or not 0 <= block_index < FROZEN_BLOCK_COUNT
+        or not isinstance(source_sequence, int)
+        or isinstance(source_sequence, bool)
+        or not 0 <= source_sequence < FROZEN_EPISODES_PER_BLOCK
+    ):
+        _fail("terminal_recovery_failure_invalid")
+    completed_blocks = progress.get("completed_block_indices")
+    terminal_completed_episode_count = progress.get("completed_episode_count")
+    if (
+        not isinstance(completed_blocks, list)
+        or not all(
+            isinstance(item, int) and not isinstance(item, bool)
+            for item in completed_blocks
+        )
+        or completed_blocks != list(range(len(completed_blocks)))
+        or completed_blocks != list(range(block_index))
+        or not isinstance(terminal_completed_episode_count, int)
+        or isinstance(terminal_completed_episode_count, bool)
+        or terminal_completed_episode_count
+        != block_index * FROZEN_EPISODES_PER_BLOCK + source_sequence
+    ):
+        _fail("terminal_recovery_progress_invalid")
+    return (
+        completed_blocks,
+        len(completed_blocks) * FROZEN_EPISODES_PER_BLOCK,
+        block_index,
+        source_sequence,
+    )
+
+
+def recover_c4_terminal_failure_to_resume_prefix(
+    *,
+    runs_root: str | Path,
+    run_id: str,
+    schedule: Mapping[str, Any],
+    provenance_hashes: Mapping[str, Any],
+) -> dict[str, Any]:
+    """Convert an episode-level terminal failure back to a running prefix.
+
+    The mutation is explicit and auditable: failed/partial block evidence is
+    removed from mergeable streams, while hashes of the terminal failure and
+    discarded payloads are retained in resume_rollback_audit.json.
+    """
+
+    if not isinstance(run_id, str) or _RUN_ID_RE.fullmatch(run_id) is None:
+        _fail("run_id_invalid")
+    root = Path(runs_root) / run_id
+    verification = verify_c4_artifacts(root)
+    if verification.get("attempt_status") != FAILURE_STATUS:
+        _fail("terminal_recovery_prefix_not_failed")
+    root = _validated_run_root(root)
+    supplied_schedule, _supplied_blocks = _validate_schedule(schedule)
+    supplied_provenance = _validate_provenance_hashes(provenance_hashes)
+    manifest = _read_sealed_json(root / "manifest.json", "manifest_seal_invalid")
+    persisted_schedule = _read_sealed_json(root / "schedule.json", "schedule_seal_invalid")
+    persisted_schedule, planned_blocks = _validate_schedule(persisted_schedule)
+    events, _event_counts = _verify_events(root / "events.jsonl", run_id)
+    _checkpoint_count, checkpoints = _verify_checkpoints(root, run_id)
+    root_checkpoints = [
+        checkpoint for checkpoint in checkpoints if checkpoint.get("checkpoint_level") == "root"
+    ]
+    failure_events = [event for event in events if event.get("event_type") == "failure"]
+    if len(root_checkpoints) != 1 or len(failure_events) != 1:
+        _fail("terminal_recovery_failure_invalid")
+    failure_event = failure_events[0]
+    completed_blocks, completed_episode_count, failure_block, failure_source = (
+        _terminal_failure_completed_blocks(root_checkpoints[0], failure_event)
+    )
+    if (
+        manifest.get("run_id") != run_id
+        or manifest.get("schedule_payload_sha256")
+        != supplied_schedule.get("payload_sha256")
+        or persisted_schedule.get("payload_sha256")
+        != supplied_schedule.get("payload_sha256")
+        or manifest.get("provenance_hashes") != supplied_provenance
+        or manifest.get("planned_blocks") != planned_blocks
+    ):
+        _fail("terminal_recovery_binding_invalid")
+
+    discarded_events, event_audit = _trim_events_to_resume_prefix(
+        root, run_id, planned_blocks, len(completed_blocks)
+    )
+    discarded_checkpoints, checkpoint_audit = _trim_checkpoints_to_resume_prefix(
+        root, run_id, len(completed_blocks)
+    )
+    store = C4ArtifactStore(root, run_id)
+    store.write_root_checkpoint(
+        status="running",
+        progress={
+            "completed_block_indices": completed_blocks,
+            "completed_block_count": len(completed_blocks),
+            "completed_episode_count": completed_episode_count,
+            "resume_mode": "terminal_failure_completed_block_prefix",
+        },
+    )
+    audit = _atomic_write_sealed_json(
+        root / "resume_rollback_audit.json",
+        {
+            "schema_version": "membind.native-characterization-c4-resume-rollback.v1",
+            "run_id": run_id,
+            "status": "terminal_failure_recovered_to_completed_block_prefix",
+            "completed_block_indices": completed_blocks,
+            "completed_episode_count": completed_episode_count,
+            "terminal_attempt_status": FAILURE_STATUS,
+            "terminal_verification_payload_sha256": verification["payload_sha256"],
+            "terminal_event_count": verification["event_count"],
+            "terminal_checkpoint_count": verification["checkpoint_count"],
+            "terminal_completed_episode_count": failure_event.get(
+                "completed_episode_count"
+            ),
+            "failure_block_index": failure_block,
+            "failure_source_sequence": failure_source,
+            "failure_event_payload_sha256": failure_event["payload_sha256"],
+            "failure_error_class": failure_event.get("error_class"),
+            "failure_token_envelope": failure_event.get("token_envelope"),
+            **event_audit,
+            **checkpoint_audit,
+        },
+    )
+    verification_after = verify_c4_artifacts(root)
+    if verification_after.get("attempt_status") != "running":
+        _fail("terminal_recovery_post_trim_invalid")
+    return seal_payload(
+        {
+            "schema_version": "membind.native-characterization-c4-resume-prefix.v1",
+            "run_id": run_id,
+            "status": "running",
+            "completed_block_indices": completed_blocks,
+            "next_block_index": len(completed_blocks),
+            "completed_episode_count": completed_episode_count,
+            "discarded_event_count": discarded_events,
+            "discarded_checkpoint_count": discarded_checkpoints,
+            "recovered_terminal_failure": True,
+            "rollback_audit_payload_sha256": audit["payload_sha256"],
+            "verification_payload_sha256": verification_after["payload_sha256"],
+        }
+    )
+
+
 def verify_c4_artifacts(run_root: str | Path) -> dict[str, Any]:
     """Verify one current C4 prefix without mutating or blessing it as complete."""
 
@@ -1713,6 +2150,8 @@ __all__ = [
     "canonical_json_bytes",
     "nullable_token_envelope",
     "payload_sha256",
+    "prepare_c4_resume_prefix",
+    "recover_c4_terminal_failure_to_resume_prefix",
     "seal_payload",
     "verify_c4_artifacts",
 ]

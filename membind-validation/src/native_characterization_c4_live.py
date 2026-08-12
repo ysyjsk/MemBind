@@ -24,6 +24,7 @@ import dataset
 import native_characterization_c4 as c4
 import native_characterization_c4_artifacts as c4_artifacts
 import native_characterization_c4_runner as c4_runner
+from graphiti_core.utils.maintenance.graph_data_operations import clear_data
 from graphiti_native import graphiti_episode_kwargs
 from native_characterization_runtime import REQUESTED_MAX_TOKENS, build_u0_graphiti_from_env
 
@@ -491,6 +492,12 @@ class _GraphitiBlockRuntime:
     async def namespace_counts(self) -> c4_runner.NamespaceCounts:
         return await _namespace_counts(self.graphiti.driver, self.block.graph_namespace)
 
+    async def clear_namespace(self) -> None:
+        try:
+            await clear_data(self.graphiti.driver, group_ids=[self.block.graph_namespace])
+        except Exception:
+            raise _fail("graphiti_clear_namespace_failed") from None
+
     async def service(self, episode: c4.Episode, service_start_ns: int) -> None:
         payload = episode.payload
         if not isinstance(payload, dataset.Episode):
@@ -552,6 +559,8 @@ async def execute_c4_live(
     *,
     validation_root: str | Path = VALIDATION_ROOT,
     state_path: str | Path = DEFAULT_STATE_PATH,
+    resume_run_id: str | None = None,
+    recover_terminal_failure: bool = False,
     dependencies: C4LiveDependencies | None = None,
     progress_stream: Any | None = sys.stdout,
 ) -> dict[str, object]:
@@ -581,8 +590,12 @@ async def execute_c4_live(
             str(validation),
             "--state",
             str(state),
+            *(["--resume-run-id", resume_run_id] if resume_run_id is not None else []),
+            *(["--recover-terminal-failure"] if recover_terminal_failure else []),
         ],
         gate_checker=deps.gate_checker,
+        resume_run_id=resume_run_id,
+        recover_terminal_failure=recover_terminal_failure,
         progress_sink=_progress_sink(progress_stream),
         post_finalize_verifier=c4_artifacts.verify_c4_artifacts,
     )
@@ -592,6 +605,8 @@ def build_parser() -> argparse.ArgumentParser:
     parser = argparse.ArgumentParser(description="Run the authorized frozen C4/E3 replay")
     parser.add_argument("--validation-root", type=Path, default=VALIDATION_ROOT)
     parser.add_argument("--state", type=Path, default=DEFAULT_STATE_PATH)
+    parser.add_argument("--resume-run-id")
+    parser.add_argument("--recover-terminal-failure", action="store_true")
     return parser
 
 
@@ -602,6 +617,8 @@ def main(argv: Sequence[str] | None = None) -> int:
             execute_c4_live(
                 validation_root=args.validation_root,
                 state_path=args.state,
+                resume_run_id=args.resume_run_id,
+                recover_terminal_failure=args.recover_terminal_failure,
                 dependencies=C4LiveDependencies(),
                 progress_stream=sys.stdout,
             )

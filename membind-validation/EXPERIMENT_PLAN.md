@@ -109,6 +109,14 @@ c3_p_U=0.2291969234941911
 c3_S2=1.1294310624004833
 c3_S4=1.2075802604205235
 c3_S8=1.2508557542912377
+c4_resume_support_status=offline_tdd_green
+c4_resume_mode=completed_block_prefix_with_partial_block_rollback
+c4_resume_green_log=artifacts/tdd/native_characterization_c4_resume_tdd_green_20260812.log
+c4_resume_green_log_sha256=234200922f352c090885667526f696f600e79170972fb6047a7173288aef7012
+c4_terminal_failure_recovery_support_status=offline_tdd_green
+c4_terminal_failure_recovery_mode=audited_terminal_failure_to_completed_block_prefix_then_resume
+c4_terminal_failure_recovery_green_log=artifacts/tdd/native_characterization_c4_terminal_recovery_tdd_green_20260812.log
+c4_terminal_failure_recovery_green_log_sha256=f517542c708a334e04b461db0977fddf8dff8be4f306ed139cdd84515fedba12
 authorized_live_actions=[]
 live_h0_candidate_authorized=false
 service_admin_authorized=false
@@ -134,6 +142,38 @@ tmux attach -t membind-c4
 If a run is already attached to an SSH `pts/*` foreground TTY, do not close that
 SSH session unless the process has finished or has been intentionally restarted
 under `tmux`/`screen`/`nohup` from a durable checkpoint.
+
+C4 live resume is supported for a verified `running` attempt by reusing the
+same run id. Resume is intentionally at the completed-block boundary: any
+already-durable events/checkpoints from the unfinished block are rolled back to
+`resume_rollback_audit.json` hashes before the block restarts at
+`source_sequence=0`. This preserves the single-origin schedule invariant that
+C4 finalization verifies. The first resumed block's Graphiti namespace is also
+cleared with the existing scoped `clear_data(driver, group_ids=[namespace])`
+primitive before the empty-namespace preflight.
+
+Recommended tmux resume command:
+
+```bash
+tmux new -s membind-c4-resume
+cd /data/predator/ly/MemBind/membind-validation
+.venv/bin/python -m native_characterization_c4_live --resume-run-id c4-8e76fba0288047f9
+# detach with: Ctrl-b d
+tmux attach -t membind-c4-resume
+```
+
+If vLLM/DB interruption already recorded a terminal C4 failure, use the audited
+recovery flag once with the same resume command. It first records
+`resume_rollback_audit.json`, restores the run to the completed-block prefix,
+clears the first unfinished block namespace, and then resumes:
+
+```bash
+tmux new -s membind-c4-recover
+cd /data/predator/ly/MemBind/membind-validation
+.venv/bin/python -m native_characterization_c4_live --resume-run-id c4-8e76fba0288047f9 --recover-terminal-failure
+# detach with: Ctrl-b d
+tmux attach -t membind-c4-recover
+```
 
 <!-- C2_MINIMAL_RECOVERY_POINTER_START -->
 ```text

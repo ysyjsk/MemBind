@@ -55,6 +55,14 @@ class C4Block:
     absolute_arrival_offsets_ns: tuple[int, ...]
 
 
+@dataclass(frozen=True)
+class C4ResumePrefix:
+    run_id: str
+    completed_block_indices: tuple[int, ...]
+    next_block_index: int
+    completed_episode_count: int
+
+
 class C4BlockRuntime(Protocol):
     """One newly created U0 lifecycle bound to one graph namespace."""
 
@@ -63,6 +71,12 @@ class C4BlockRuntime(Protocol):
     async def service(self, episode: c4.Episode, service_start_ns: int) -> None: ...
 
     async def close(self) -> None: ...
+
+
+class C4ResumableBlockRuntime(C4BlockRuntime, Protocol):
+    """Optional cleanup boundary for the first rolled-back resume block."""
+
+    async def clear_namespace(self) -> None: ...
 
 
 class C4Store(Protocol):
@@ -86,6 +100,7 @@ class C4Store(Protocol):
 RuntimeFactory = Callable[[C4Block], Awaitable[C4BlockRuntime]]
 GateChecker = Callable[..., current_state_gate.GateDecision]
 StoreFactory = Callable[..., C4Store]
+ResumePrefixLoader = Callable[..., C4ResumePrefix]
 Replay = Callable[..., Awaitable[dict[str, object]]]
 ProgressSink = Callable[[Mapping[str, object]], None]
 PostFinalizeVerifier = Callable[[C4Store], Mapping[str, object]]
@@ -218,6 +233,71 @@ def _discard_progress(_event: Mapping[str, object]) -> None:
     return
 
 
+def _coerce_resume_prefix(value: object, expected_run_id: str) -> C4ResumePrefix:
+    if isinstance(value, C4ResumePrefix):
+        prefix = value
+    elif isinstance(value, Mapping):
+        completed = value.get("completed_block_indices")
+        prefix = C4ResumePrefix(
+            run_id=str(value.get("run_id")),
+            completed_block_indices=tuple(completed) if isinstance(completed, Sequence) and not isinstance(completed, (str, bytes)) else (),
+            next_block_index=int(value.get("next_block_index", -1)),
+            completed_episode_count=int(value.get("completed_episode_count", -1)),
+        )
+    else:
+        raise _fail("resume_prefix_invalid")
+    if (
+        prefix.run_id != expected_run_id
+        or _RUN_ID_RE.fullmatch(prefix.run_id) is None
+        or list(prefix.completed_block_indices)
+        != list(range(len(prefix.completed_block_indices)))
+        or prefix.next_block_index != len(prefix.completed_block_indices)
+        or not 0 <= prefix.next_block_index < FROZEN_BLOCK_COUNT
+        or prefix.completed_episode_count
+        != len(prefix.completed_block_indices) * FROZEN_EPISODE_COUNT
+    ):
+        raise _fail("resume_prefix_invalid")
+    return prefix
+
+
+def _load_resume_prefix(
+    *,
+    runs_root: str | Path,
+    run_id: str,
+    schedule: Mapping[str, Any],
+    provenance_hashes: Mapping[str, Any],
+) -> C4ResumePrefix:
+    try:
+        value = c4_artifacts.prepare_c4_resume_prefix(
+            runs_root=runs_root,
+            run_id=run_id,
+            schedule=schedule,
+            provenance_hashes=provenance_hashes,
+        )
+    except c4_artifacts.NativeCharacterizationC4ArtifactError as error:
+        raise _fail(str(error)) from None
+    return _coerce_resume_prefix(value, run_id)
+
+
+def _recover_terminal_failure_prefix(
+    *,
+    runs_root: str | Path,
+    run_id: str,
+    schedule: Mapping[str, Any],
+    provenance_hashes: Mapping[str, Any],
+) -> C4ResumePrefix:
+    try:
+        value = c4_artifacts.recover_c4_terminal_failure_to_resume_prefix(
+            runs_root=runs_root,
+            run_id=run_id,
+            schedule=schedule,
+            provenance_hashes=provenance_hashes,
+        )
+    except c4_artifacts.NativeCharacterizationC4ArtifactError as error:
+        raise _fail(str(error)) from None
+    return _coerce_resume_prefix(value, run_id)
+
+
 async def _emit_progress(
     progress_sink: ProgressSink, event: Mapping[str, object]
 ) -> None:
@@ -246,6 +326,7 @@ class _ArtifactDurableWriter:
         failure_context: _FailureContext,
         run_id: str,
         progress_sink: ProgressSink,
+        initial_completed_source_sequences: Sequence[int] = (),
     ) -> None:
         self.store = store
         self.block = block
@@ -258,7 +339,7 @@ class _ArtifactDurableWriter:
         self.failure_context = failure_context
         self.run_id = run_id
         self.progress_sink = progress_sink
-        self.completed_source_sequences: list[int] = []
+        self.completed_source_sequences = list(initial_completed_source_sequences)
         self.failure_recorded = False
 
     async def persist_enqueue(
@@ -406,6 +487,12 @@ async def _close_after_failure(runtime: C4BlockRuntime | None) -> None:
         return
 
 
+async def _clear_resume_namespace_if_supported(runtime: C4BlockRuntime) -> None:
+    cleanup = getattr(runtime, "clear_namespace", None)
+    if callable(cleanup):
+        await cleanup()
+
+
 async def run_c4_live(
     *,
     runs_root: str | Path,
@@ -419,6 +506,11 @@ async def run_c4_live(
     creation_command: Sequence[str],
     gate_checker: GateChecker = current_state_gate.require_live_action,
     store_factory: StoreFactory = c4_artifacts.C4ArtifactStore.create,
+    resume_store_factory: StoreFactory = c4_artifacts.C4ArtifactStore.open_existing_for_resume,
+    resume_prefix_loader: ResumePrefixLoader = _load_resume_prefix,
+    terminal_recovery_loader: ResumePrefixLoader = _recover_terminal_failure_prefix,
+    resume_run_id: str | None = None,
+    recover_terminal_failure: bool = False,
     run_id_factory: Callable[[], str] = new_c4_run_id,
     replay: Replay = c4_async.run_async_replay,
     progress_sink: ProgressSink = _discard_progress,
@@ -446,20 +538,72 @@ async def run_c4_live(
     ):
         raise _fail("c4_live_grant_not_exact")
 
-    run_id = run_id_factory()
-    if not isinstance(run_id, str) or _RUN_ID_RE.fullmatch(run_id) is None:
-        raise _fail("c4_run_id_invalid")
+    resume_prefix: C4ResumePrefix | None = None
+    recovered_terminal_failure = False
+    if recover_terminal_failure and resume_run_id is None:
+        raise _fail("terminal_recovery_requires_resume_run_id")
+    if resume_run_id is not None:
+        if not isinstance(resume_run_id, str) or _RUN_ID_RE.fullmatch(resume_run_id) is None:
+            raise _fail("c4_resume_run_id_invalid")
+        prefix_loader = (
+            terminal_recovery_loader
+            if recover_terminal_failure
+            else resume_prefix_loader
+        )
+        resume_prefix = _coerce_resume_prefix(
+            await asyncio.to_thread(
+                prefix_loader,
+                runs_root=runs_root,
+                run_id=resume_run_id,
+                schedule=schedule,
+                provenance_hashes=provenance_hashes,
+            ),
+            resume_run_id,
+        )
+        recovered_terminal_failure = recover_terminal_failure
+        run_id = resume_prefix.run_id
+        store = await asyncio.to_thread(
+            resume_store_factory,
+            runs_root=runs_root,
+            run_id=run_id,
+        )
+        await asyncio.to_thread(
+            store.write_root_checkpoint,
+            status="running",
+            progress={
+                "completed_block_indices": list(resume_prefix.completed_block_indices),
+                "completed_block_count": len(resume_prefix.completed_block_indices),
+                "completed_episode_count": resume_prefix.completed_episode_count,
+                "resume_mode": "completed_block_prefix",
+            },
+        )
+        await _emit_progress(
+            progress_sink,
+            {
+                "event": "resume_prefix_verified",
+                "run_id": run_id,
+                "completed_block_indices": list(resume_prefix.completed_block_indices),
+                "completed_block_count": len(resume_prefix.completed_block_indices),
+                "completed_episode_count": resume_prefix.completed_episode_count,
+                "next_block_index": resume_prefix.next_block_index,
+                "recovered_terminal_failure": recovered_terminal_failure,
+            },
+        )
+    else:
+        run_id = run_id_factory()
+        if not isinstance(run_id, str) or _RUN_ID_RE.fullmatch(run_id) is None:
+            raise _fail("c4_run_id_invalid")
 
-    # C4ArtifactStore.create persists the immutable planned manifest, schedule,
-    # empty event log, and planned root checkpoint before a runtime is opened.
-    store = await asyncio.to_thread(
-        store_factory,
-        runs_root=runs_root,
-        run_id=run_id,
-        schedule=schedule,
-        provenance_hashes=provenance_hashes,
-        creation_command=creation_command,
-    )
+        # C4ArtifactStore.create persists the immutable planned manifest, schedule,
+        # empty event log, and planned root checkpoint before a runtime is opened.
+        store = await asyncio.to_thread(
+            store_factory,
+            runs_root=runs_root,
+            run_id=run_id,
+            schedule=schedule,
+            provenance_hashes=provenance_hashes,
+            creation_command=creation_command,
+        )
     await _emit_progress(
         progress_sink,
         {
@@ -467,13 +611,28 @@ async def run_c4_live(
             "run_id": run_id,
             "planned_block_count": FROZEN_BLOCK_COUNT,
             "planned_episode_count": FROZEN_BLOCK_COUNT * FROZEN_EPISODE_COUNT,
+            "resumed": resume_prefix is not None,
+            "recovered_terminal_failure": recovered_terminal_failure,
         },
     )
 
-    completed_blocks: list[int] = []
-    block_summaries: list[dict[str, object]] = []
+    completed_blocks = (
+        list(resume_prefix.completed_block_indices)
+        if resume_prefix is not None
+        else []
+    )
+    block_summaries: list[dict[str, object]] = [
+        {
+            "block_index": block.block_index,
+            "method": block.method,
+            "normalized_offered_load": block.normalized_offered_load,
+            "graph_namespace": block.graph_namespace,
+            "history_id": FROZEN_HISTORY_ID,
+        }
+        for block in blocks[: len(completed_blocks)]
+    ]
     retained_runtimes: list[C4BlockRuntime] = []
-    for block in blocks:
+    for block in blocks[len(completed_blocks):]:
         runtime: C4BlockRuntime | None = None
         failure_context = _FailureContext()
         writer = _ArtifactDurableWriter(
@@ -505,6 +664,11 @@ async def run_c4_live(
             if any(runtime is previous for previous in retained_runtimes):
                 raise _fail("u0_lifecycle_reused")
             retained_runtimes.append(runtime)
+            if (
+                resume_prefix is not None
+                and block.block_index == resume_prefix.next_block_index
+            ):
+                await _clear_resume_namespace_if_supported(runtime)
             counts = await runtime.namespace_counts()
             if (
                 not isinstance(counts, NamespaceCounts)
@@ -777,11 +941,14 @@ async def run_c4_live(
             "run_id": run_id,
             "completed_block_count": FROZEN_BLOCK_COUNT,
             "completed_episode_count": FROZEN_BLOCK_COUNT * FROZEN_EPISODE_COUNT,
+            "recovered_terminal_failure": recovered_terminal_failure,
         },
     )
     return {
         "status": "complete",
         "run_id": run_id,
+        "resumed": resume_prefix is not None,
+        "recovered_terminal_failure": recovered_terminal_failure,
         "completed_block_count": len(completed_blocks),
         "completed_episode_count": FROZEN_BLOCK_COUNT * FROZEN_EPISODE_COUNT,
         "blocks": block_summaries,
@@ -791,6 +958,8 @@ async def run_c4_live(
 __all__ = [
     "C4Block",
     "C4BlockRuntime",
+    "C4ResumableBlockRuntime",
+    "C4ResumePrefix",
     "FROZEN_BLOCK_COUNT",
     "FROZEN_EPISODE_COUNT",
     "START_LEAD_NS",
