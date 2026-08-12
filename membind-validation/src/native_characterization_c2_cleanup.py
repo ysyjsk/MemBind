@@ -21,6 +21,7 @@ from native_characterization_c2 import load_e1_e2_blocks
 SCHEMA_VERSION = "membind.native-characterization-c2-cleanup.v1"
 FAILED_C2_ATTEMPT_ID = "c2-c5e5463facb3bce7"
 INTERRUPTED_C2_ATTEMPT_ID = "c2-2fe3711c62933407"
+SERVING_ENVELOPE_C2_ATTEMPT_ID = "c2-4cc7d0599bbbbdac"
 POLLUTED_C2_GROUP_ID = "nc-e1e2-400b9b78c2c218df"
 CLEANUP_PRIMITIVE = "graphiti.clear_data(driver,group_ids=[target_group])"
 SOURCE_FREEZE_RELATIVE_PATH = (
@@ -40,6 +41,10 @@ INTERRUPTION_SOURCE_FREEZE_SHA256 = (
 )
 INTERRUPTION_EVIDENCE_RELATIVE_PATH = (
     f"artifacts/native_characterization/c2_cleanup/{INTERRUPTED_C2_ATTEMPT_ID}.json"
+)
+SERVING_ENVELOPE_EVIDENCE_RELATIVE_PATH = (
+    "artifacts/native_characterization/c2_cleanup/"
+    f"{SERVING_ENVELOPE_C2_ATTEMPT_ID}.json"
 )
 _CLEANUP_STATUS = "native_characterization_cleanup_only"
 _CLEANUP_SCOPE = "native_characterization_c2_cleanup_only"
@@ -155,6 +160,48 @@ def _read_cleanup_grant(current_state_path: str | Path) -> tuple[Path, str, str]
         and cleanup.get("planned_evidence_path")
         == INTERRUPTION_EVIDENCE_RELATIVE_PATH
     )
+    failure = state.get("native_characterization_c2_serving_envelope_failure")
+    envelope = state.get("native_characterization_64k_serving_envelope")
+    prior_receipt = state.get("native_characterization_reference_c2_authorization")
+    fresh = alignment.get("fresh_c2") if isinstance(alignment, Mapping) else None
+    serving_envelope_failure = (
+        shared_state
+        and state.get("current_blocker")
+        == "c2_serving_envelope_failure_cleanup_pending"
+        and state.get("next_allowed_action")
+        == "execute_scoped_c2_cleanup_after_serving_envelope_failure"
+        and alignment.get("status")
+        == "c2_serving_envelope_failed_cleanup_pending"
+        and cleanup.get("failed_attempt_id") == SERVING_ENVELOPE_C2_ATTEMPT_ID
+        and cleanup.get("failed_attempt_valid") is False
+        and cleanup.get("failed_attempt_mergeable") is False
+        and cleanup.get("replacement_resume_allowed") is False
+        and cleanup.get("source_freeze_path")
+        == INTERRUPTION_SOURCE_FREEZE_RELATIVE_PATH
+        and cleanup.get("source_freeze_sha256")
+        == INTERRUPTION_SOURCE_FREEZE_SHA256
+        and cleanup.get("planned_evidence_path")
+        == SERVING_ENVELOPE_EVIDENCE_RELATIVE_PATH
+        and isinstance(fresh, Mapping)
+        and fresh.get("live_authorized") is False
+        and isinstance(prior_receipt, Mapping)
+        and prior_receipt.get("live_authorized") is False
+        and prior_receipt.get("consumed_by_run_id")
+        == SERVING_ENVELOPE_C2_ATTEMPT_ID
+        and isinstance(failure, Mapping)
+        and failure.get("run_id") == SERVING_ENVELOPE_C2_ATTEMPT_ID
+        and failure.get("error_code") == "openai.BadRequestError"
+        and failure.get("attempt_valid") is False
+        and failure.get("attempt_mergeable") is False
+        and failure.get("resume_allowed") is False
+        and failure.get("prefix_merge_allowed") is False
+        and failure.get("cleanup_authorized") is True
+        and failure.get("live_authorized") is False
+        and isinstance(envelope, Mapping)
+        and envelope.get("qualification_status") == "64K_ENVELOPE_PASS"
+        and envelope.get("max_model_len") == 65536
+        and envelope.get("requested_max_tokens") == 16384
+    )
     if historical:
         freeze_relative = SOURCE_FREEZE_RELATIVE_PATH
         freeze_sha256 = SOURCE_FREEZE_SHA256
@@ -163,6 +210,10 @@ def _read_cleanup_grant(current_state_path: str | Path) -> tuple[Path, str, str]
         freeze_relative = INTERRUPTION_SOURCE_FREEZE_RELATIVE_PATH
         freeze_sha256 = INTERRUPTION_SOURCE_FREEZE_SHA256
         attempt_id = INTERRUPTED_C2_ATTEMPT_ID
+    elif serving_envelope_failure:
+        freeze_relative = INTERRUPTION_SOURCE_FREEZE_RELATIVE_PATH
+        freeze_sha256 = INTERRUPTION_SOURCE_FREEZE_SHA256
+        attempt_id = SERVING_ENVELOPE_C2_ATTEMPT_ID
     else:
         raise ScopedC2CleanupError("cleanup_state_grant_mismatch")
 
@@ -279,6 +330,7 @@ async def cleanup_scoped_c2_namespace(
     if failed_attempt_id not in {
         FAILED_C2_ATTEMPT_ID,
         INTERRUPTED_C2_ATTEMPT_ID,
+        SERVING_ENVELOPE_C2_ATTEMPT_ID,
     }:
         raise ScopedC2CleanupError("failed_attempt_not_allowlisted")
     if not callable(clear_data_impl):

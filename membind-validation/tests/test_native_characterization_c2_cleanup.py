@@ -161,39 +161,21 @@ def _clear_spy(events: list[tuple], *, fail: bool = False):
 
 
 class NativeCharacterizationC2CleanupTests(TestCase):
-    def test_repository_cleanup_pointer_drives_only_the_scoped_fake_cleanup(
+    def test_repository_live_pointer_rejects_reusing_consumed_cleanup_grant(
         self,
     ) -> None:
-        """The production entrypoint must accept the synchronized current pointer."""
+        """Once C2 is reauthorized, cleanup must be impossible without a new grant."""
 
         events: list[tuple] = []
-        driver = _FakeDriver(
-            [("node", 34), ("relationship", 61), ("node", 0), ("relationship", 0)],
-            events,
-        )
-
-        evidence = asyncio.run(
-            cleanup_module.cleanup_reference_aligned_c2_precondition(
-                driver=driver,
-                current_state_path=ROOT / "CURRENT_STATE.json",
-                clear_data_impl=_clear_spy(events),
+        with self.assertRaisesRegex(ScopedC2CleanupError, "cleanup_state_grant_mismatch"):
+            asyncio.run(
+                cleanup_module.cleanup_reference_aligned_c2_precondition(
+                    driver=_FakeDriver([], events),
+                    current_state_path=ROOT / "CURRENT_STATE.json",
+                    clear_data_impl=_clear_spy(events),
+                )
             )
-        )
-
-        self.assertEqual(evidence["failed_attempt_id"], INTERRUPTED_C2_ATTEMPT_ID)
-        self.assertEqual(evidence["target_group_id"], POLLUTED_C2_GROUP_ID)
-        self.assertEqual(
-            evidence["pre_cleanup"],
-            {"node_count": 34, "relationship_count": 61},
-        )
-        self.assertEqual(
-            evidence["post_cleanup"],
-            {"node_count": 0, "relationship_count": 0},
-        )
-        self.assertEqual(
-            [event[0] for event in events],
-            ["count", "count", "clear", "count", "count"],
-        )
+        self.assertEqual(events, [])
 
     def test_production_entrypoint_binds_cleanup_only_state_and_exact_source_freeze(
         self,

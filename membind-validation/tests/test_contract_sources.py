@@ -161,10 +161,10 @@ class ContractSourceTests(TestCase):
         example_env = _parse_env_contract(ROOT / ".env.example")
 
         self.assertEqual(base["construction_expected_vllm_version"], "0.26.0")
-        self.assertEqual(base["construction_min_context_tokens"], "40960")
+        self.assertEqual(base["construction_min_context_tokens"], "65536")
         for env in (private_env, example_env):
             self.assertEqual(env["CONSTRUCTION_EXPECTED_VLLM_VERSION"], "0.26.0")
-            self.assertEqual(env["CONSTRUCTION_MIN_CONTEXT_TOKENS"], "40960")
+            self.assertEqual(env["CONSTRUCTION_MIN_CONTEXT_TOKENS"], "65536")
 
     def test_prompt_candidate_canonicalization_contract_is_synced(self):
         base = _parse_simple_yaml(ROOT / "configs" / "base.yaml")

@@ -22,7 +22,7 @@ EMBEDDING_MODEL = "qwen3-embedding-0.6b"
 EMBEDDING_DIMENSION = 1024
 NEO4J_URI = "bolt://localhost:7687"
 REQUESTED_MAX_TOKENS = 16_384
-CONTEXT_LIMIT = 40_960
+CONTEXT_LIMIT = 65_536
 CONTEXT_SAFETY_TOKENS = 32
 MAX_COROUTINES = 8
 
@@ -186,7 +186,7 @@ def build_u0_graphiti_from_env(
         ("CONSTRUCTION_OVERFLOW_MAX_TOKENS", "8192"),
         ("CONSTRUCTION_CONTEXT_SAFETY_TOKENS", "32"),
         ("CONSTRUCTION_EXPECTED_VLLM_VERSION", "0.26.0"),
-        ("CONSTRUCTION_MIN_CONTEXT_TOKENS", "40960"),
+        ("CONSTRUCTION_MIN_CONTEXT_TOKENS", "65536"),
     ):
         _exact(name, expected, "wire_policy_mismatch")
     config = U0Config(

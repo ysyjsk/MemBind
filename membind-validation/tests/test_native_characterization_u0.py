@@ -38,7 +38,7 @@ ENV = {
     "CONSTRUCTION_OVERFLOW_MAX_TOKENS": "8192",
     "CONSTRUCTION_CONTEXT_SAFETY_TOKENS": "32",
     "CONSTRUCTION_EXPECTED_VLLM_VERSION": "0.26.0",
-    "CONSTRUCTION_MIN_CONTEXT_TOKENS": "40960",
+    "CONSTRUCTION_MIN_CONTEXT_TOKENS": "65536",
 }
 
 
@@ -161,7 +161,7 @@ class NativeCharacterizationU0Tests(TestCase):
         self.assertFalse(runtime.config.embedding_cache)
         self.assertFalse(runtime.config.deterministic_candidate_ordering)
         self.assertEqual(runtime.config.requested_max_tokens, 16384)
-        self.assertEqual(runtime.config.context_limit, 40960)
+        self.assertEqual(runtime.config.context_limit, 65536)
         self.assertEqual(runtime.config.safety_margin_tokens, 32)
         self.assertEqual(runtime.config.structured_output_mode, "json_schema")
         self.assertEqual(

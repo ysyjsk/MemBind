@@ -27,11 +27,11 @@ END = "<!-- NATIVE_CHARACTERIZATION_CURRENT_POINTER_END -->"
 EXPECTED = {
     "protocol_version": "current-validation-v1.3",
     "current_stage": "NATIVE_CHARACTERIZATION",
-    "status": "native_characterization_c2_live_only",
+    "status": "native_characterization_c4_offline_only",
     "current_blocker": "none",
-    "current_action_scope": "native_characterization_c2_live_only",
+    "current_action_scope": "native_characterization_c4_offline_only",
     "stage_progress.native_characterization": (
-        "c0_c1_pass_reference_aligned_c2_authorized_from_episode_0"
+        "c2_c3_complete_c4_offline_tdd_pending"
     ),
     "instrumentation_contract_status": "qualified_overhead_report_only",
     "c1_aa_classification": "clean_pass",
@@ -46,10 +46,10 @@ EXPECTED = {
         "e367529c381fd93b957a6ba1a69c064217fa4d190e62fa1250d784b751bd8904"
     ),
     "reference_aligned_freeze": (
-        "artifacts/native_characterization/freeze_reference_aligned.json"
+        "artifacts/native_characterization/freeze_reference_aligned_64k.json"
     ),
     "reference_aligned_freeze_sha256": (
-        "cea700f73f7dc942deeb49195e0a3ca235c35ec51a1c06fdab0edd94738330a7"
+        "3b086ace7841bccc2479f2043f0767b4ab9ea3d4fd74459ce65ae5cccfb0b3b0"
     ),
     "interrupted_c2_attempt": "c2-2fe3711c62933407",
     "interruption_classification": "infrastructure_interruption",
@@ -81,7 +81,47 @@ EXPECTED = {
     "interruption_outer_log_sha256": (
         "3a453f968c6cb5b30a3ae198ac4ec79a569f8993d5a2b5e2e9ab5c32f6f646e1"
     ),
-    "cleanup_target_attempt": "c2-2fe3711c62933407",
+    "serving_envelope_failed_c2_attempt": "c2-4cc7d0599bbbbdac",
+    "serving_envelope_failure_error_code": "openai.BadRequestError",
+    "serving_envelope_failure_completed_episode_count": "10",
+    "serving_envelope_failure_completed_block_count": "0",
+    "serving_envelope_failure_failed_source_sequence": "10",
+    "serving_envelope_failure_attempt_valid": "false",
+    "serving_envelope_failure_attempt_mergeable": "false",
+    "serving_envelope_failure_resume_allowed": "false",
+    "serving_envelope_failure_prefix_merge_allowed": "false",
+    "serving_envelope_failure_report": (
+        "artifacts/diagnostics/"
+        "native_characterization_c2-4cc7d0599bbbbdac_serving_envelope_failure.json"
+    ),
+    "serving_envelope_failure_report_sha256": (
+        "c92ddb5b1c8b4fb20cb048816668a5d0e03516439524cd9a78f0906b2a14355f"
+    ),
+    "serving_envelope_failure_checkpoint": (
+        "artifacts/native_characterization/runs/"
+        "c2-4cc7d0599bbbbdac/checkpoint.json"
+    ),
+    "serving_envelope_failure_checkpoint_sha256": (
+        "4fc29a435790c55e17c8d4966203fc39784237100131475e82993dc2bf5df120"
+    ),
+    "serving_envelope_failure_outer_log": (
+        "artifacts/tdd/native_characterization_c2-4cc7d0599bbbbdac_live_20260811.log"
+    ),
+    "serving_envelope_failure_outer_log_sha256": (
+        "68544c5a79be0e30ca6a97da54baa7916aeb1c94913d2cd1ad00af202c8de81f"
+    ),
+    "serving_envelope_64k_status": "64K_ENVELOPE_PASS",
+    "serving_envelope_64k_evidence": (
+        "artifacts/environment/"
+        "native_characterization_64k_serving_envelope_20260812.json"
+    ),
+    "serving_envelope_64k_evidence_sha256": (
+        "724f9bbfdf49cbf0e07def5c5fae619dcbd7b322f8a513b5c5cb8217c524b341"
+    ),
+    "serving_envelope_64k_actual_prompt_tokens": "26024",
+    "serving_envelope_64k_requested_max_tokens": "16384",
+    "serving_envelope_64k_max_model_len": "65536",
+    "cleanup_target_attempt": "c2-4cc7d0599bbbbdac",
     "cleanup_target_group": "nc-e1e2-400b9b78c2c218df",
     "cleanup_source_freeze": (
         "artifacts/native_characterization/freeze_reference_aligned.json"
@@ -90,20 +130,20 @@ EXPECTED = {
         "cea700f73f7dc942deeb49195e0a3ca235c35ec51a1c06fdab0edd94738330a7"
     ),
     "cleanup_planned_evidence": (
-        "artifacts/native_characterization/c2_cleanup/c2-2fe3711c62933407.json"
+        "artifacts/native_characterization/c2_cleanup/c2-4cc7d0599bbbbdac.json"
     ),
     "cleanup_execution_status": "verified_empty",
     "cleanup_evidence": (
-        "artifacts/native_characterization/c2_cleanup/c2-2fe3711c62933407.json"
+        "artifacts/native_characterization/c2_cleanup/c2-4cc7d0599bbbbdac.json"
     ),
     "cleanup_evidence_sha256": (
-        "0db64d28dc5dda72bbf9bd8c0ea8a0b18673ffc7abafb694f0d90afaf06964d9"
+        "d52d65fc985753863b0437e3940085a7986f6902acba697f9175af7d391df08e"
     ),
     "cleanup_evidence_payload_sha256": (
-        "f130e0eab36910bf86406b0e166e2a3ce02e8abc16ef17274ad7817142514d71"
+        "c721cc0da76cc5544cff1dc0e4342d05a5b647d4e82b741cdca770a5de5004a6"
     ),
-    "cleanup_pre_node_count": "34",
-    "cleanup_pre_relationship_count": "61",
+    "cleanup_pre_node_count": "51",
+    "cleanup_pre_relationship_count": "89",
     "cleanup_post_node_count": "0",
     "cleanup_post_relationship_count": "0",
     "final_full_regression": (
@@ -114,14 +154,95 @@ EXPECTED = {
         "439cb3b8779b8514efd4a07ddd2b5b10f60706eb918a22e5f00b184175b6e25c"
     ),
     "final_full_regression_test_count": "793",
+    "recovery_focused_tests": (
+        "artifacts/tdd/"
+        "native_characterization_c2_64k_recovery_focused_green_20260812.log"
+    ),
+    "recovery_focused_tests_sha256": (
+        "c489f17752ddd5052627b0df07a49831b3d3eac62795f17defd6af869b006c4b"
+    ),
+    "recovery_focused_test_count": "50",
     "fresh_c2_start_source_sequence": "0",
     "fresh_c2_resume_allowed": "false",
-    "fresh_c2_attempts_remaining": "1",
-    "authorized_live_actions": "[native_characterization_c2]",
+    "fresh_c2_attempts_remaining": "0",
+    "completed_c2_run": "c2-17cdaabd562e9673",
+    "completed_c2_episode_count": "188",
+    "completed_c2_block_count": "4",
+    "completed_c2_manifest_sha256": (
+        "f03276ef88bfdc8062967db504514c83d941d37f929a8dbca5c37fab7aa69417"
+    ),
+    "completed_c2_checkpoint_sha256": (
+        "bee2e1a0e2130d6c9f3f579829680b64a3b732b814b7a09a2115f28042e42235"
+    ),
+    "completed_c2_e1_breakdown_sha256": (
+        "b06deae7a1387a6705adb5f897c92856fda6f55bebb1c277a39965bdeda952cb"
+    ),
+    "c2_verification": (
+        "artifacts/diagnostics/"
+        "native_characterization_c2-17cdaabd562e9673_verification.json"
+    ),
+    "c2_verification_sha256": (
+        "67e4a5a59b1b2c32427516b067f477975673ae9b366d21d32324bb45da531b01"
+    ),
+    "c2_verification_payload_sha256": (
+        "d2f7ba19ebd372b67dc1f90661c7cb72b83984524fbdf3d02cea29ed9b010eaf"
+    ),
+    "c2_completion_source_state_sha256": (
+        "90e2af7e89a644422d915a80de2ca9a98d684766a738adca260e345938f8e0ae"
+    ),
+    "c2_completion_focused_tests": (
+        "artifacts/tdd/"
+        "native_characterization_c2_completion_and_verifier_focused_green_20260812.log"
+    ),
+    "c2_completion_focused_tests_sha256": (
+        "519ad67f25f0c4973221640b0af5b9caa24a9661287e133fe567c053bfedf359"
+    ),
+    "c2_completion_focused_test_count": "13",
+    "completed_c3_run": "c2-17cdaabd562e9673",
+    "c3_dependency_map": "artifacts/native_characterization/dependency_map.json",
+    "c3_dependency_map_sha256": (
+        "7fde0235a4110bf83383b68df15827c518bbf448fbd1e4e1d780c8efe06af398"
+    ),
+    "c3_dependency_map_payload_sha256": (
+        "e5f53ed575030f2acb7024e7913808c524c71e2db88853632bbe935caa4904ac"
+    ),
+    "c3_e2_artifact": (
+        "artifacts/native_characterization/e2_dependency_opportunity.json"
+    ),
+    "c3_e2_sha256": (
+        "a80ca5a8e763c19eea9d2cde1dbe001425200d04c857384cb862cc65ccf1887f"
+    ),
+    "c3_e2_payload_sha256": (
+        "7adc924db06e33e319d973a9b6ceaf402866bda4ea38a8755d3781f2ca86449f"
+    ),
+    "c3_analyzer_source_sha256": (
+        "dc0956070081d4017068878350edfc768508d6cf40389c14d2fb7e5f81ee703c"
+    ),
+    "c3_completion_source_state_sha256": (
+        "f86e33d0434bb267599e2c562ea3f319910c50f4949ff8b420655bd585db6e59"
+    ),
+    "c3_completion_focused_tests": (
+        "artifacts/tdd/"
+        "native_characterization_c3_completion_focused_green_20260812.log"
+    ),
+    "c3_completion_focused_tests_sha256": (
+        "022178a7a892cbbf5a0970108bc01391560cbd613446333a5db19adb181b884c"
+    ),
+    "c3_completion_focused_test_count": "12",
+    "c3_episode_count": "188",
+    "c3_history_count": "4",
+    "c3_interval_count": "1504",
+    "c3_T_total_ns": "9081843769634",
+    "c3_p_L": "0.2291969234941911",
+    "c3_p_U": "0.2291969234941911",
+    "c3_S2": "1.1294310624004833",
+    "c3_S4": "1.2075802604205235",
+    "c3_S8": "1.2508557542912377",
+    "authorized_live_actions": "[]",
     "live_h0_candidate_authorized": "false",
     "service_admin_authorized": "false",
-    "native_characterization_live_authorized": "true",
-    "next_allowed_action": "run_native_characterization_c2",
+    "native_characterization_live_authorized": "false",
+    "next_allowed_action": "build_native_characterization_e3_harness_offline",
 }
 
 FAILED_C2_ATTEMPT = "c2-efb58c477f12adf6"
@@ -196,7 +317,7 @@ def _fields(block: str) -> dict[str, str]:
 
 
 class NativeCharacterizationCurrentPointerTests(TestCase):
-    def test_machine_state_authorizes_only_fresh_c2_from_episode_zero(self) -> None:
+    def test_machine_state_binds_completed_c2_c3_and_denies_live_work(self) -> None:
         state = json.loads((ROOT / "CURRENT_STATE.json").read_text(encoding="ascii"))
 
         self.assertEqual(state["current_stage"], EXPECTED["current_stage"])
@@ -209,10 +330,8 @@ class NativeCharacterizationCurrentPointerTests(TestCase):
             state["stage_progress"]["native_characterization"],
             EXPECTED["stage_progress.native_characterization"],
         )
-        self.assertEqual(
-            state["authorized_live_actions"], ["native_characterization_c2"]
-        )
-        self.assertTrue(state["native_characterization_live_authorized"])
+        self.assertEqual(state["authorized_live_actions"], [])
+        self.assertFalse(state["native_characterization_live_authorized"])
         self.assertFalse(state["live_h0_candidate_authorized"])
         self.assertFalse(state["service_admin_authorized"])
         self.assertEqual(
@@ -220,7 +339,7 @@ class NativeCharacterizationCurrentPointerTests(TestCase):
         )
         alignment = state["native_characterization_reference_alignment"]
         self.assertEqual(
-            alignment["status"], "c2_live_authorized"
+            alignment["status"], "c2_completed_verified_c3_offline"
         )
         self.assertEqual(
             alignment["decision_path"], EXPECTED["reference_alignment_decision"]
@@ -232,7 +351,7 @@ class NativeCharacterizationCurrentPointerTests(TestCase):
             alignment["reference_freeze_sha256"],
             EXPECTED["reference_aligned_freeze_sha256"],
         )
-        self.assertEqual(alignment["cleanup"]["failed_attempt_id"], "c2-2fe3711c62933407")
+        self.assertEqual(alignment["cleanup"]["failed_attempt_id"], "c2-4cc7d0599bbbbdac")
         self.assertEqual(alignment["cleanup"]["target_group_id"], POLLUTED_C2_GROUP)
         self.assertEqual(
             alignment["cleanup"]["execution_status"], "verified_empty"
@@ -250,14 +369,24 @@ class NativeCharacterizationCurrentPointerTests(TestCase):
             alignment["cleanup"]["planned_evidence_path"],
             EXPECTED["cleanup_planned_evidence"],
         )
-        self.assertEqual(alignment["fresh_c2"]["semantic_attempts_remaining"], 1)
+        self.assertEqual(alignment["fresh_c2"]["semantic_attempts_remaining"], 0)
         self.assertEqual(alignment["fresh_c2"]["start_source_sequence"], 0)
         self.assertFalse(alignment["fresh_c2"]["resume_allowed"])
-        self.assertTrue(alignment["fresh_c2"]["live_authorized"])
+        self.assertFalse(alignment["fresh_c2"]["live_authorized"])
+        self.assertEqual(
+            alignment["fresh_c2"]["completed_run_id"], "c2-17cdaabd562e9673"
+        )
         receipt = state["native_characterization_reference_c2_authorization"]
-        self.assertTrue(receipt["live_authorized"])
-        self.assertEqual(receipt["failed_attempt_id"], "c2-2fe3711c62933407")
+        self.assertFalse(receipt["live_authorized"])
+        self.assertTrue(receipt["grant_consumed"])
+        self.assertEqual(receipt["completed_run_id"], "c2-17cdaabd562e9673")
+        self.assertEqual(receipt["failed_attempt_id"], "c2-4cc7d0599bbbbdac")
         self.assertEqual(receipt["final_full_regression_test_count"], 793)
+        self.assertEqual(receipt["focused_test_count"], 50)
+        self.assertEqual(
+            receipt["execution_envelope_sha256"],
+            EXPECTED["serving_envelope_64k_evidence_sha256"],
+        )
         self.assertEqual(receipt["replacement_start_source_sequence"], 0)
         self.assertFalse(receipt["replacement_resume_allowed"])
         interruption = state["native_characterization_c2_interruption"]
@@ -271,6 +400,18 @@ class NativeCharacterizationCurrentPointerTests(TestCase):
         self.assertFalse(interruption["semantic_attempt_consumed"])
         self.assertEqual(interruption["semantic_attempts_remaining"], 1)
         self.assertTrue(interruption["cleanup_authorized"])
+        serving_failure = state["native_characterization_c2_serving_envelope_failure"]
+        self.assertEqual(serving_failure["run_id"], "c2-4cc7d0599bbbbdac")
+        self.assertEqual(serving_failure["error_code"], "openai.BadRequestError")
+        self.assertEqual(serving_failure["completed_episode_count"], 10)
+        self.assertEqual(serving_failure["completed_block_count"], 0)
+        self.assertFalse(serving_failure["attempt_valid"])
+        self.assertFalse(serving_failure["attempt_mergeable"])
+        self.assertFalse(serving_failure["resume_allowed"])
+        envelope = state["native_characterization_64k_serving_envelope"]
+        self.assertEqual(envelope["qualification_status"], "64K_ENVELOPE_PASS")
+        self.assertEqual(envelope["max_model_len"], 65536)
+        self.assertEqual(envelope["requested_max_tokens"], 16384)
         failure = state["native_characterization_c2_second_failure"]
         self.assertEqual(failure["run_id"], "c2-723261287e32e182")
         self.assertEqual(failure["completed_episode_count"], 10)
@@ -289,6 +430,21 @@ class NativeCharacterizationCurrentPointerTests(TestCase):
         completion = state["native_characterization_c0_completion"]
         self.assertEqual(completion["c0_status"], "pass")
         self.assertTrue(completion["grant_consumed"])
+        c2_completion = state["native_characterization_c2_completion"]
+        self.assertEqual(c2_completion["status"], "verified")
+        self.assertEqual(c2_completion["run_id"], "c2-17cdaabd562e9673")
+        self.assertEqual(c2_completion["episode_count"], 188)
+        self.assertEqual(c2_completion["block_count"], 4)
+        self.assertTrue(c2_completion["grant_consumed"])
+        self.assertFalse(c2_completion["live_authorized"])
+        c3_completion = state["native_characterization_c3_completion"]
+        self.assertEqual(c3_completion["status"], "complete")
+        self.assertEqual(c3_completion["run_id"], "c2-17cdaabd562e9673")
+        self.assertEqual(c3_completion["episode_count"], 188)
+        self.assertEqual(c3_completion["history_count"], 4)
+        self.assertEqual(c3_completion["interval_count"], 1504)
+        self.assertEqual(c3_completion["p_L"], c3_completion["p_U"])
+        self.assertFalse(c3_completion["live_authorized"])
 
     def test_current_documents_freeze_the_minimal_non_mergeable_c2_recovery(self) -> None:
         execution = EXECUTION_PLAN.read_text(encoding="utf-8")
@@ -322,7 +478,7 @@ class NativeCharacterizationCurrentPointerTests(TestCase):
                 blocks.append(block)
         self.assertEqual(len(set(blocks)), 1)
 
-    def test_current_pointer_authorizes_only_c2_and_keeps_h0_as_history(self) -> None:
+    def test_current_pointer_denies_live_work_and_keeps_h0_as_history(self) -> None:
         for path in DOCUMENTS:
             with self.subTest(document=path.name):
                 text = path.read_text(encoding="utf-8")
@@ -330,11 +486,10 @@ class NativeCharacterizationCurrentPointerTests(TestCase):
                 history = text[text.index(END) + len(END) :]
                 self.assertNotIn("live_h0_candidate_authorized=true", current)
                 self.assertNotIn("authorized_live_actions=h0_candidate", current)
+                self.assertIn("authorized_live_actions=[]", current)
                 self.assertIn(
-                    "authorized_live_actions=[native_characterization_c2]", current
-                )
-                self.assertIn(
-                    "next_allowed_action=run_native_characterization_c2", current
+                    "next_allowed_action=build_native_characterization_e3_harness_offline",
+                    current,
                 )
                 self.assertIn("HISTORICAL_SOLUTION_LANE_BELOW=true", history)
                 self.assertIn("live_h0_candidate_authorized=true", history)

@@ -22,6 +22,13 @@ from native_characterization_c2_cleanup import (  # noqa: E402
     INTERRUPTED_C2_ATTEMPT_ID,
     POLLUTED_C2_GROUP_ID as CLEANUP_POLLUTED_GROUP_ID,
     SCHEMA_VERSION as CLEANUP_SCHEMA_VERSION,
+    SERVING_ENVELOPE_C2_ATTEMPT_ID,
+)
+from native_characterization_c2_serving_envelope_recovery import (  # noqa: E402
+    ENVELOPE_EVIDENCE_RELATIVE_PATH,
+    NEW_REFERENCE_FREEZE_RELATIVE_PATH,
+    build_64k_envelope_evidence,
+    derive_64k_reference_freeze,
 )
 from native_characterization_c2_reauthorization import (  # noqa: E402
     C2ReauthorizationBindings,
@@ -143,6 +150,17 @@ class NativeCharacterizationC2ReauthorizationTests(TestCase):
                     "qwen_transport_source_sha256": _sha(
                         source_payloads["src/graphiti_native.py"]
                     ),
+                },
+                "runtime_identities": {
+                    "construction": {
+                        "served_model_id": "qwen3-32b-fp8",
+                        "vllm_version": "0.26.0",
+                        "max_model_len": 40960,
+                        "enable_thinking": False,
+                    },
+                    "embedding": {"served_model_id": "qwen3-embedding-0.6b"},
+                    "graphiti": {"version": "0.29.3"},
+                    "neo4j": {"version": "5.26.0"},
                 },
                 "screening": {"e1_e2": {"block_order": block_order}},
             }
@@ -363,6 +381,139 @@ class NativeCharacterizationC2ReauthorizationTests(TestCase):
             }
         )
         return repo, state_path, bindings, state
+
+    def _serving_envelope_fixture(
+        self,
+    ) -> tuple[Path, Path, C2ReauthorizationBindings, dict[str, object]]:
+        repo, state_path, bindings, state = self._interruption_fixture()
+        validation = repo / "membind-validation"
+        parent_path = validation / REFERENCE_FREEZE
+        parent = json.loads(parent_path.read_text(encoding="ascii"))
+        parent_sha = _sha(parent_path.read_bytes())
+
+        envelope = build_64k_envelope_evidence()
+        envelope_path = validation / ENVELOPE_EVIDENCE_RELATIVE_PATH
+        envelope_path.parent.mkdir(parents=True, exist_ok=True)
+        envelope_path.write_bytes(_canonical(envelope) + b"\n")
+        envelope_sha = _sha(envelope_path.read_bytes())
+        runtime_sha = _sha((validation / "src/native_characterization_runtime.py").read_bytes())
+        reference_64k = derive_64k_reference_freeze(
+            parent,
+            parent_freeze_sha256=parent_sha,
+            envelope_evidence_sha256=envelope_sha,
+            u0_runtime_source_sha256=runtime_sha,
+        )
+        reference_64k_path = validation / NEW_REFERENCE_FREEZE_RELATIVE_PATH
+        reference_64k_path.write_bytes(_canonical(reference_64k) + b"\n")
+
+        old_cleanup = validation / bindings.cleanup_evidence_path
+        cleanup = json.loads(old_cleanup.read_text(encoding="ascii"))
+        cleanup.pop("payload_sha256")
+        cleanup.update(
+            {
+                "failed_attempt_id": SERVING_ENVELOPE_C2_ATTEMPT_ID,
+                "freeze_sha256": parent_sha,
+                "pre_cleanup": {"node_count": 51, "relationship_count": 89},
+            }
+        )
+        cleanup = _with_payload_hash(cleanup)
+        cleanup_path = validation / (
+            "artifacts/native_characterization/c2_cleanup/"
+            f"{SERVING_ENVELOPE_C2_ATTEMPT_ID}.json"
+        )
+        cleanup_path.write_bytes(_canonical(cleanup) + b"\n")
+
+        state["current_blocker"] = "c2_serving_envelope_failure_cleanup_pending"
+        state["next_allowed_action"] = (
+            "execute_scoped_c2_cleanup_after_serving_envelope_failure"
+        )
+        state["stage_progress"]["native_characterization"] = (
+            "c0_c1_pass_reference_c2_serving_envelope_failed_cleanup_pending"
+        )
+        alignment = state["native_characterization_reference_alignment"]
+        alignment["status"] = "c2_serving_envelope_failed_cleanup_pending"
+        alignment["cleanup"].update(
+            {
+                "failed_attempt_id": SERVING_ENVELOPE_C2_ATTEMPT_ID,
+                "replacement_resume_allowed": False,
+                "source_freeze_path": REFERENCE_FREEZE,
+                "source_freeze_sha256": parent_sha,
+                "planned_evidence_path": str(cleanup_path.relative_to(validation)),
+            }
+        )
+        alignment["fresh_c2"]["live_authorized"] = False
+        state[REFERENCE_AUTHORIZATION_KEY]["consumed_by_run_id"] = (
+            SERVING_ENVELOPE_C2_ATTEMPT_ID
+        )
+        state["native_characterization_c2_serving_envelope_failure"] = {
+            "run_id": SERVING_ENVELOPE_C2_ATTEMPT_ID,
+            "error_code": "openai.BadRequestError",
+            "attempt_valid": False,
+            "attempt_mergeable": False,
+            "resume_allowed": False,
+            "prefix_merge_allowed": False,
+            "semantic_attempt_consumed": False,
+            "semantic_attempts_remaining": 1,
+            "cleanup_authorized": True,
+            "live_authorized": False,
+        }
+        state["native_characterization_64k_serving_envelope"] = {
+            "qualification_status": "64K_ENVELOPE_PASS",
+            "evidence_path": ENVELOPE_EVIDENCE_RELATIVE_PATH,
+            "evidence_sha256": envelope_sha,
+            "max_model_len": 65536,
+            "requested_max_tokens": 16384,
+        }
+        state_path.write_bytes(_canonical(state))
+
+        focused = validation / "artifacts/tdd/c2_64k_recovery_focused.log"
+        focused.write_text(
+            "Ran 37 tests in 0.016s\n\nOK\nexit_code: 0\n", encoding="ascii"
+        )
+        bindings = C2ReauthorizationBindings(
+            **{
+                **bindings.__dict__,
+                "source_state_sha256": _sha(_canonical(state)),
+                "cleanup_evidence_path": str(cleanup_path.relative_to(validation)),
+                "cleanup_evidence_sha256": _sha(cleanup_path.read_bytes()),
+                "reference_freeze_path": NEW_REFERENCE_FREEZE_RELATIVE_PATH,
+                "reference_freeze_sha256": _sha(reference_64k_path.read_bytes()),
+                "execution_envelope_path": ENVELOPE_EVIDENCE_RELATIVE_PATH,
+                "execution_envelope_sha256": envelope_sha,
+                "focused_test_log_path": str(focused.relative_to(validation)),
+                "focused_test_log_sha256": _sha(focused.read_bytes()),
+                "focused_test_count": 37,
+            }
+        )
+        return repo, state_path, bindings, state
+
+    def test_64k_serving_recovery_reauthorizes_only_fresh_c2_from_episode_zero(self) -> None:
+        repo, state_path, bindings, _ = self._serving_envelope_fixture()
+
+        target = reauthorize_native_characterization_c2_live_only(
+            state_path,
+            repo_root=repo,
+            bindings=bindings,
+            dry_run=True,
+        )
+
+        self.assertEqual(target["authorized_live_actions"], ["native_characterization_c2"])
+        self.assertTrue(target["native_characterization_live_authorized"])
+        self.assertFalse(target["service_admin_authorized"])
+        alignment = target["native_characterization_reference_alignment"]
+        self.assertEqual(
+            alignment["reference_freeze_path"], NEW_REFERENCE_FREEZE_RELATIVE_PATH
+        )
+        self.assertEqual(
+            alignment["reference_freeze_sha256"], bindings.reference_freeze_sha256
+        )
+        self.assertEqual(alignment["fresh_c2"]["start_source_sequence"], 0)
+        self.assertFalse(alignment["fresh_c2"]["resume_allowed"])
+        self.assertFalse(alignment["fresh_c2"]["prefix_merge_allowed"])
+        receipt = target[REFERENCE_AUTHORIZATION_KEY]
+        self.assertEqual(receipt["failed_attempt_id"], SERVING_ENVELOPE_C2_ATTEMPT_ID)
+        self.assertEqual(receipt["execution_envelope_sha256"], bindings.execution_envelope_sha256)
+        self.assertEqual(receipt["focused_test_count"], 37)
 
     def test_interruption_cleanup_reauthorizes_c2_without_consuming_semantic_attempt(self) -> None:
         repo, state_path, bindings, _ = self._interruption_fixture()

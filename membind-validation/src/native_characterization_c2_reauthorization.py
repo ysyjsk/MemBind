@@ -27,6 +27,14 @@ from native_characterization_c2_cleanup import (
     POLLUTED_C2_GROUP_ID as CLEANUP_POLLUTED_C2_GROUP_ID,
     SOURCE_FREEZE_RELATIVE_PATH,
     SOURCE_FREEZE_SHA256,
+    SERVING_ENVELOPE_C2_ATTEMPT_ID,
+)
+from native_characterization_c2_serving_envelope_recovery import (
+    ENVELOPE_EVIDENCE_RELATIVE_PATH,
+    FAILURE_METADATA_KEY as SERVING_FAILURE_METADATA_KEY,
+    NEW_REFERENCE_FREEZE_RELATIVE_PATH,
+    derive_64k_reference_freeze,
+    validate_64k_envelope_evidence,
 )
 
 
@@ -91,6 +99,12 @@ class C2ReauthorizationBindings:
     final_full_regression_test_count: int
     reference_freeze_sha256: str
     c2_runner_source_sha256: str
+    reference_freeze_path: str = REFERENCE_FREEZE_RELATIVE_PATH
+    execution_envelope_path: str | None = None
+    execution_envelope_sha256: str | None = None
+    focused_test_log_path: str | None = None
+    focused_test_log_sha256: str | None = None
+    focused_test_count: int | None = None
 
 
 class NativeCharacterizationC2ReauthorizationError(RuntimeError):
@@ -195,6 +209,29 @@ def _validate_bindings(bindings: C2ReauthorizationBindings) -> None:
         or bindings.final_full_regression_test_count <= 0
     ):
         raise _fail("final_full_regression_test_count_invalid")
+    recovery_fields = (
+        bindings.execution_envelope_path,
+        bindings.execution_envelope_sha256,
+        bindings.focused_test_log_path,
+        bindings.focused_test_log_sha256,
+        bindings.focused_test_count,
+    )
+    if bindings.reference_freeze_path == REFERENCE_FREEZE_RELATIVE_PATH:
+        if any(value is not None for value in recovery_fields):
+            raise _fail("unexpected_64k_recovery_bindings")
+    elif bindings.reference_freeze_path == NEW_REFERENCE_FREEZE_RELATIVE_PATH:
+        if any(value is None for value in recovery_fields):
+            raise _fail("64k_recovery_bindings_missing")
+        _require_digest(bindings.execution_envelope_sha256, "execution_envelope_sha256")
+        _require_digest(bindings.focused_test_log_sha256, "focused_test_log_sha256")
+        if (
+            not isinstance(bindings.focused_test_count, int)
+            or isinstance(bindings.focused_test_count, bool)
+            or bindings.focused_test_count <= 0
+        ):
+            raise _fail("focused_test_count_invalid")
+    else:
+        raise _fail("reference_freeze_path_invalid")
 
 
 def _validate_source(state: Mapping[str, Any]) -> None:
@@ -288,7 +325,52 @@ def _validate_source(state: Mapping[str, Any]) -> None:
         and interruption.get("cleanup_authorized") is True
         and interruption.get("live_authorized") is False
     )
-    if not historical and not interrupted:
+    serving_failure = state.get(SERVING_FAILURE_METADATA_KEY)
+    envelope = state.get("native_characterization_64k_serving_envelope")
+    serving_envelope = (
+        common
+        and state.get("current_blocker")
+        == "c2_serving_envelope_failure_cleanup_pending"
+        and state.get("next_allowed_action")
+        == "execute_scoped_c2_cleanup_after_serving_envelope_failure"
+        and progress.get("native_characterization")
+        == "c0_c1_pass_reference_c2_serving_envelope_failed_cleanup_pending"
+        and alignment.get("status")
+        == "c2_serving_envelope_failed_cleanup_pending"
+        and cleanup.get("failed_attempt_id") == SERVING_ENVELOPE_C2_ATTEMPT_ID
+        and cleanup.get("replacement_resume_allowed") is False
+        and cleanup.get("source_freeze_path")
+        == INTERRUPTION_SOURCE_FREEZE_RELATIVE_PATH
+        and cleanup.get("planned_evidence_path")
+        == (
+            "artifacts/native_characterization/c2_cleanup/"
+            f"{SERVING_ENVELOPE_C2_ATTEMPT_ID}.json"
+        )
+        and fresh_c2.get("live_authorized") is False
+        and isinstance(prior_receipt, Mapping)
+        and prior_receipt.get("live_authorized") is False
+        and prior_receipt.get("replacement_resume_allowed") is False
+        and prior_receipt.get("replacement_start_source_sequence") == 0
+        and prior_receipt.get("semantic_attempts_authorized") == 1
+        and prior_receipt.get("consumed_by_run_id")
+        == SERVING_ENVELOPE_C2_ATTEMPT_ID
+        and isinstance(serving_failure, Mapping)
+        and serving_failure.get("run_id") == SERVING_ENVELOPE_C2_ATTEMPT_ID
+        and serving_failure.get("error_code") == "openai.BadRequestError"
+        and serving_failure.get("attempt_valid") is False
+        and serving_failure.get("attempt_mergeable") is False
+        and serving_failure.get("resume_allowed") is False
+        and serving_failure.get("prefix_merge_allowed") is False
+        and serving_failure.get("semantic_attempt_consumed") is False
+        and serving_failure.get("semantic_attempts_remaining") == 1
+        and serving_failure.get("cleanup_authorized") is True
+        and serving_failure.get("live_authorized") is False
+        and isinstance(envelope, Mapping)
+        and envelope.get("qualification_status") == "64K_ENVELOPE_PASS"
+        and envelope.get("max_model_len") == 65536
+        and envelope.get("requested_max_tokens") == 16384
+    )
+    if not historical and not interrupted and not serving_envelope:
         raise _fail("source_state_not_cleanup_pending")
 
 
@@ -352,13 +434,10 @@ def _validate_reference_freeze(
     alignment = state[REFERENCE_ALIGNMENT_KEY]
     assert isinstance(alignment, Mapping)
     freeze = _resolve_under(
-        validation, REFERENCE_FREEZE_RELATIVE_PATH, "reference_freeze"
+        validation, bindings.reference_freeze_path, "reference_freeze"
     )
     freeze_sha256 = _sha(freeze.read_bytes())
-    if (
-        freeze_sha256 != bindings.reference_freeze_sha256
-        or alignment.get("reference_freeze_sha256") != freeze_sha256
-    ):
+    if freeze_sha256 != bindings.reference_freeze_sha256:
         raise _fail("reference_freeze_hash_mismatch")
     value = _read_json(freeze, "reference_freeze")
     _validate_payload_hash(value, "reference_freeze")
@@ -368,7 +447,7 @@ def _validate_reference_freeze(
 
     policy = value.get("construction_compatibility_policy")
     derivation = value.get("derivation")
-    exact_policy = (
+    common_policy = (
         isinstance(policy, Mapping)
         and policy.get("classification")
         == "reference_aligned_with_declared_project_deviations"
@@ -379,6 +458,10 @@ def _validate_reference_freeze(
         and policy.get("project_context_probe") is False
         and policy.get("project_retry_budget_matrix") is False
         and policy.get("requested_max_tokens") == 16384
+    )
+    historical_derivation = (
+        bindings.reference_freeze_path == REFERENCE_FREEZE_RELATIVE_PATH
+        and alignment.get("reference_freeze_sha256") == freeze_sha256
         and isinstance(derivation, Mapping)
         and derivation.get("parent_freeze_path")
         == alignment.get("canonical_freeze_path")
@@ -387,7 +470,10 @@ def _validate_reference_freeze(
         and derivation.get("reason")
         == "restore_pinned_graphiti_openai_generic_provider_path"
     )
-    if not exact_policy:
+    if not common_policy or (
+        bindings.reference_freeze_path == REFERENCE_FREEZE_RELATIVE_PATH
+        and not historical_derivation
+    ):
         raise _fail("reference_freeze_policy_mismatch")
 
     inputs = value.get("input_hashes")
@@ -397,6 +483,28 @@ def _validate_reference_freeze(
         source = _resolve_under(validation, relative, field)
         if inputs.get(field) != _sha(source.read_bytes()):
             raise _fail(f"{field}_mismatch")
+    if bindings.reference_freeze_path == NEW_REFERENCE_FREEZE_RELATIVE_PATH:
+        assert bindings.execution_envelope_path is not None
+        assert bindings.execution_envelope_sha256 is not None
+        parent = _resolve_under(
+            validation, REFERENCE_FREEZE_RELATIVE_PATH, "parent_reference_freeze"
+        )
+        parent_sha256 = _sha(parent.read_bytes())
+        cleanup = alignment.get("cleanup")
+        if (
+            alignment.get("reference_freeze_sha256") != parent_sha256
+            or not isinstance(cleanup, Mapping)
+            or cleanup.get("source_freeze_sha256") != parent_sha256
+        ):
+            raise _fail("parent_reference_freeze_hash_mismatch")
+        expected = derive_64k_reference_freeze(
+            _read_json(parent, "parent_reference_freeze"),
+            parent_freeze_sha256=parent_sha256,
+            envelope_evidence_sha256=bindings.execution_envelope_sha256,
+            u0_runtime_source_sha256=str(inputs["u0_runtime_source_sha256"]),
+        )
+        if value != expected:
+            raise _fail("reference_freeze_64k_derivation_mismatch")
     runner = _resolve_under(validation, _C2_RUNNER_SOURCE_PATH, "c2_runner_source")
     if _sha(runner.read_bytes()) != bindings.c2_runner_source_sha256:
         raise _fail("c2_runner_source_hash_mismatch")
@@ -440,7 +548,12 @@ def _validate_cleanup(
         raise _fail("cleanup_primitive_mismatch")
     failed_attempt_id = cleanup_grant.get("failed_attempt_id")
     failed_exact = (
-        failed_attempt_id in {FAILED_C2_ATTEMPT_ID, INTERRUPTED_C2_ATTEMPT_ID}
+        failed_attempt_id
+        in {
+            FAILED_C2_ATTEMPT_ID,
+            INTERRUPTED_C2_ATTEMPT_ID,
+            SERVING_ENVELOPE_C2_ATTEMPT_ID,
+        }
         and value.get("failed_attempt_id") == failed_attempt_id
         and value.get("failed_attempt_valid") is False
         and value.get("failed_attempt_mergeable") is False
@@ -506,6 +619,61 @@ def _validate_regression(
         raise _fail("final_full_regression_test_count_mismatch")
 
 
+def _validate_focused_test_log(
+    validation: Path, bindings: C2ReauthorizationBindings
+) -> None:
+    if bindings.reference_freeze_path != NEW_REFERENCE_FREEZE_RELATIVE_PATH:
+        return
+    assert bindings.focused_test_log_path is not None
+    assert bindings.focused_test_log_sha256 is not None
+    assert bindings.focused_test_count is not None
+    path = _resolve_under(validation, bindings.focused_test_log_path, "focused_test_log")
+    if _sha(path.read_bytes()) != bindings.focused_test_log_sha256:
+        raise _fail("focused_test_log_hash_mismatch")
+    try:
+        text = path.read_text(encoding="ascii")
+    except (OSError, UnicodeError):
+        raise _fail("focused_test_log_unreadable") from None
+    matches = _REGRESSION_COUNT_RE.findall(text)
+    lines = [line.strip() for line in text.splitlines() if line.strip()]
+    if (
+        matches != [str(bindings.focused_test_count)]
+        or sum(_REGRESSION_OK_RE.fullmatch(line) is not None for line in lines) != 1
+        or lines[-1] != "exit_code: 0"
+        or any(line.startswith(("FAILED", "ERROR")) for line in lines)
+    ):
+        raise _fail("focused_test_log_not_green")
+
+
+def _validate_execution_envelope(
+    validation: Path,
+    state: Mapping[str, Any],
+    bindings: C2ReauthorizationBindings,
+) -> None:
+    if bindings.reference_freeze_path != NEW_REFERENCE_FREEZE_RELATIVE_PATH:
+        return
+    assert bindings.execution_envelope_path is not None
+    assert bindings.execution_envelope_sha256 is not None
+    metadata = state.get("native_characterization_64k_serving_envelope")
+    exact = (
+        bindings.execution_envelope_path == ENVELOPE_EVIDENCE_RELATIVE_PATH
+        and isinstance(metadata, Mapping)
+        and metadata.get("qualification_status") == "64K_ENVELOPE_PASS"
+        and metadata.get("evidence_path") == bindings.execution_envelope_path
+        and metadata.get("evidence_sha256") == bindings.execution_envelope_sha256
+        and metadata.get("max_model_len") == 65536
+        and metadata.get("requested_max_tokens") == 16384
+    )
+    if not exact:
+        raise _fail("execution_envelope_state_binding_mismatch")
+    path = _resolve_under(
+        validation, bindings.execution_envelope_path, "execution_envelope"
+    )
+    if _sha(path.read_bytes()) != bindings.execution_envelope_sha256:
+        raise _fail("execution_envelope_hash_mismatch")
+    validate_64k_envelope_evidence(_read_json(path, "execution_envelope"))
+
+
 def _metadata(
     bindings: C2ReauthorizationBindings,
     cleanup: Mapping[str, Any],
@@ -514,10 +682,11 @@ def _metadata(
     failed_attempt_id = cleanup.get("failed_attempt_id")
     cleanup_source_freeze_path = (
         INTERRUPTION_SOURCE_FREEZE_RELATIVE_PATH
-        if failed_attempt_id == INTERRUPTED_C2_ATTEMPT_ID
+        if failed_attempt_id
+        in {INTERRUPTED_C2_ATTEMPT_ID, SERVING_ENVELOPE_C2_ATTEMPT_ID}
         else CLEANUP_FREEZE_RELATIVE_PATH
     )
-    return {
+    metadata = {
         "schema_version": (
             "membind.native-characterization-reference-c2-authorization.v1"
         ),
@@ -529,7 +698,7 @@ def _metadata(
         "polluted_group_id": POLLUTED_C2_GROUP_ID,
         "cleanup_source_freeze_path": cleanup_source_freeze_path,
         "cleanup_source_freeze_sha256": cleanup.get("freeze_sha256"),
-        "reference_freeze_path": REFERENCE_FREEZE_RELATIVE_PATH,
+        "reference_freeze_path": bindings.reference_freeze_path,
         "reference_freeze_sha256": bindings.reference_freeze_sha256,
         "structured_output_mode": "json_schema",
         "semantic_attempts_authorized": 1,
@@ -547,6 +716,17 @@ def _metadata(
         ),
         "live_authorized": True,
     }
+    if bindings.reference_freeze_path == NEW_REFERENCE_FREEZE_RELATIVE_PATH:
+        metadata.update(
+            {
+                "execution_envelope_path": bindings.execution_envelope_path,
+                "execution_envelope_sha256": bindings.execution_envelope_sha256,
+                "focused_test_log_path": bindings.focused_test_log_path,
+                "focused_test_log_sha256": bindings.focused_test_log_sha256,
+                "focused_test_count": bindings.focused_test_count,
+            }
+        )
+    return metadata
 
 
 def build_native_characterization_c2_reauthorized_state(
@@ -575,6 +755,8 @@ def build_native_characterization_c2_reauthorized_state(
     target["stage_progress"] = progress
     alignment = deepcopy(dict(target[REFERENCE_ALIGNMENT_KEY]))
     alignment["status"] = "c2_live_authorized"
+    alignment["reference_freeze_path"] = bindings.reference_freeze_path
+    alignment["reference_freeze_sha256"] = bindings.reference_freeze_sha256
     cleanup_state = deepcopy(dict(alignment["cleanup"]))
     cleanup_state["operator_authorized"] = False
     cleanup_state["execution_status"] = "verified_empty"
@@ -699,10 +881,12 @@ def reauthorize_native_characterization_c2_live_only(
             raise _fail("source_state_drift")
         _validate_source(source)
         _validate_reference_freeze(validation, source, bindings)
+        _validate_execution_envelope(validation, source, bindings)
         cleanup, cleanup_payload_sha256 = _validate_cleanup(
             validation, source, bindings
         )
         _validate_regression(validation, bindings)
+        _validate_focused_test_log(validation, bindings)
         return build_native_characterization_c2_reauthorized_state(
             source,
             bindings=bindings,

@@ -20,7 +20,7 @@ MANIFEST_SCHEMA = "membind.native-characterization-c2-result.v1"
 CHECKPOINT_SCHEMA = "membind.native-characterization-c2-checkpoint.v1"
 BREAKDOWN_SCHEMA = "membind.native-characterization-e1-breakdown.v1"
 BLOCK_SUMMARY_SCHEMA = "membind.native-characterization-c2-block-summary.v1"
-TRACE_SCHEMA = "membind.native-characterization.trace.v1"
+TRACE_SCHEMA = "membind.native_characterization.trace.v1"
 VERIFICATION_SCHEMA = "membind.native-characterization-c2-verification.v1"
 
 _RUN_ID_RE = re.compile(r"^c2-[0-9a-f]{16}$")

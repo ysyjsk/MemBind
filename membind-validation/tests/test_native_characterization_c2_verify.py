@@ -207,7 +207,7 @@ def _build_valid_run(validation: Path) -> Path:
     _write_jsonl(
         block / "trace.jsonl",
         {
-            "schema_version": "membind.native-characterization.trace.v1",
+            "schema_version": "membind.native_characterization.trace.v1",
             "run_id": RUN_ID,
             "episode_id": "history:0",
             "source_sequence": 0,
