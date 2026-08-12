@@ -34,6 +34,23 @@ _RUN_ID_RE = re.compile(r"^c2-[0-9a-f]{16}$")
 _SHA256_RE = re.compile(r"^[0-9a-f]{64}$")
 _LOADS = [0.5, 0.8, 1.0, 1.2, 1.5]
 _METHODS = ["Native-Sync"] * 5 + ["Native-Async-Serial"] * 5
+_LIVE_TCB_PATHS = {
+    "c4_core_source": "src/native_characterization_c4.py",
+    "c4_core_test": "tests/test_native_characterization_c4.py",
+    "c4_schedule_source": "src/native_characterization_c4_schedule.py",
+    "c4_schedule_test": "tests/test_native_characterization_c4_schedule.py",
+    "c4_async_source": "src/native_characterization_c4_async.py",
+    "c4_async_test": "tests/test_native_characterization_c4_async.py",
+    "c4_artifacts_source": "src/native_characterization_c4_artifacts.py",
+    "c4_artifacts_test": "tests/test_native_characterization_c4_artifacts.py",
+    "c4_runner_source": "src/native_characterization_c4_runner.py",
+    "c4_runner_test": "tests/test_native_characterization_c4_runner.py",
+    "c4_live_source": "src/native_characterization_c4_live.py",
+    "c4_live_test": "tests/test_native_characterization_c4_live.py",
+    "c4_authorization_source": "src/native_characterization_c4_authorization.py",
+    "c4_authorization_test": "tests/test_native_characterization_c4_authorization.py",
+    "c4_focused_green_log": "artifacts/tdd/native_characterization_c4_live_gate_focused_green_20260812.log",
+}
 _FORBIDDEN_KEYS = {
     "api_key",
     "authorization_header",
@@ -71,6 +88,8 @@ class C4AuthorizationBindings:
     c4_green_log_sha256: str
     c4_focused_test_count: int
     operator_authorized: bool
+    live_tcb_paths: Mapping[str, str]
+    live_tcb_sha256: Mapping[str, str]
 
 
 class NativeCharacterizationC4AuthorizationError(RuntimeError):
@@ -199,6 +218,13 @@ def _validate_bindings(bindings: C4AuthorizationBindings) -> None:
         "c4_green_log_sha256",
     ):
         _require_sha(getattr(bindings, label), label)
+    if dict(bindings.live_tcb_paths) != _LIVE_TCB_PATHS:
+        raise _fail("live_tcb_paths_invalid")
+    if set(bindings.live_tcb_sha256) != set(_LIVE_TCB_PATHS):
+        raise _fail("live_tcb_hashes_invalid")
+    for label, relative in _LIVE_TCB_PATHS.items():
+        _safe_relative(bindings.live_tcb_paths[label], f"{label}_path")
+        _require_sha(bindings.live_tcb_sha256[label], f"{label}_sha256")
     if bindings.freeze_relative_path != FREEZE_PATH:
         raise _fail("freeze_path_invalid")
     for label in (
@@ -521,6 +547,10 @@ def _validate_c4_code(
         raise _fail("c4_green_log_hash_mismatch")
     if "OK" not in text or "FAILED" in text or "ERROR" in text:
         raise _fail("c4_green_log_not_green")
+    for label, relative in _LIVE_TCB_PATHS.items():
+        path = _resolve_existing(validation, relative, f"live_tcb_{label}")
+        if _sha(path.read_bytes()) != bindings.live_tcb_sha256[label]:
+            raise _fail("live_tcb_hash_mismatch")
 
 
 def _metadata(
@@ -544,6 +574,8 @@ def _metadata(
         "c4_green_log_path": bindings.c4_green_log_relative_path,
         "c4_green_log_sha256": bindings.c4_green_log_sha256,
         "c4_focused_test_count": bindings.c4_focused_test_count,
+        "live_tcb_paths": deepcopy(dict(bindings.live_tcb_paths)),
+        "live_tcb_sha256": deepcopy(dict(bindings.live_tcb_sha256)),
         "c2_evidence": deepcopy(dict(c2_evidence)),
         "c3_evidence": deepcopy(dict(c3_evidence)),
         "operator_authorization_input": True,
@@ -560,6 +592,7 @@ def _build_target(
     target = deepcopy(dict(source))
     target.update(
         {
+            "status": TARGET_SCOPE,
             "current_action_scope": TARGET_SCOPE,
             "next_allowed_action": TARGET_NEXT_ACTION,
             "authorized_live_actions": [TARGET_ACTION],
@@ -592,7 +625,7 @@ def _validate_target(
     exact = (
         target.get("protocol_version") == PROTOCOL_VERSION
         and target.get("current_stage") == "NATIVE_CHARACTERIZATION"
-        and target.get("status") == SOURCE_SCOPE
+        and target.get("status") == TARGET_SCOPE
         and target.get("current_action_scope") == TARGET_SCOPE
         and target.get("current_blocker") is None
         and target.get("next_allowed_action") == TARGET_NEXT_ACTION

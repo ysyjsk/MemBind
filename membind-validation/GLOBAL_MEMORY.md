@@ -117,6 +117,24 @@ next_allowed_action=build_native_characterization_e3_harness_offline
 ```
 <!-- NATIVE_CHARACTERIZATION_CURRENT_POINTER_END -->
 
+## Long-running execution hygiene memory
+
+For any long-running live experiment, benchmark, or model/Graphiti run, start the
+command inside `tmux` first so SSH disconnection cannot kill or perturb the
+foreground process. Recommended pattern:
+
+```bash
+tmux new -s membind-c4
+cd /data/predator/ly/MemBind/membind-validation
+.venv/bin/python -m native_characterization_c4_live
+# detach with: Ctrl-b d
+tmux attach -t membind-c4
+```
+
+If a run is already attached to an SSH `pts/*` foreground TTY, do not close that
+SSH session unless the process has finished or has been intentionally restarted
+under `tmux`/`screen`/`nohup` from a durable checkpoint.
+
 ```text
 c2_minimal_recovery_contract=membind-validation/EXPERIMENT_PLAN.md#C2_MINIMAL_RECOVERY_POINTER
 lightweight_execution_decision=artifacts/diagnostics/native_characterization_lightweight_execution_decision_20260811.md

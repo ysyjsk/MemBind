@@ -290,7 +290,7 @@ class Fixture:
         self.state: dict[str, object] = {
             "protocol_version": "current-validation-v1.3",
             "current_stage": "NATIVE_CHARACTERIZATION",
-            "status": "native_characterization_c4_offline_only",
+            "status": "native_characterization_c4_live_only",
             "current_action_scope": "native_characterization_c4_live_only",
             "current_blocker": None,
             "next_allowed_action": "run_native_characterization_c4",
@@ -463,6 +463,7 @@ class NativeCharacterizationC4LiveTests(IsolatedAsyncioTestCase):
     async def test_missing_or_wrong_authorization_metadata_fails_closed(self) -> None:
         for mutation in (
             lambda state: state.pop("native_characterization_c4_authorization"),
+            lambda state: state.update({"status": "native_characterization_c4_offline_only"}),
             lambda state: state["native_characterization_c4_authorization"].update(
                 {"live_authorized": False}
             ),

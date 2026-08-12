@@ -189,6 +189,29 @@ class NativeCharacterizationC4AuthorizationTests(TestCase):
         c4_log = validation / "artifacts/tdd/c4_green.log"
         c4_log.write_text("Ran 8 tests\nOK\n", encoding="ascii")
 
+        live_tcb_paths = {
+            "c4_core_source": "src/native_characterization_c4.py",
+            "c4_core_test": "tests/test_native_characterization_c4.py",
+            "c4_schedule_source": "src/native_characterization_c4_schedule.py",
+            "c4_schedule_test": "tests/test_native_characterization_c4_schedule.py",
+            "c4_async_source": "src/native_characterization_c4_async.py",
+            "c4_async_test": "tests/test_native_characterization_c4_async.py",
+            "c4_artifacts_source": "src/native_characterization_c4_artifacts.py",
+            "c4_artifacts_test": "tests/test_native_characterization_c4_artifacts.py",
+            "c4_runner_source": "src/native_characterization_c4_runner.py",
+            "c4_runner_test": "tests/test_native_characterization_c4_runner.py",
+            "c4_live_source": "src/native_characterization_c4_live.py",
+            "c4_live_test": "tests/test_native_characterization_c4_live.py",
+            "c4_authorization_source": "src/native_characterization_c4_authorization.py",
+            "c4_authorization_test": "tests/test_native_characterization_c4_authorization.py",
+            "c4_focused_green_log": "artifacts/tdd/native_characterization_c4_live_gate_focused_green_20260812.log",
+        }
+        for relative in live_tcb_paths.values():
+            path = validation / relative
+            path.parent.mkdir(parents=True, exist_ok=True)
+            if not path.exists():
+                path.write_text("OK\n", encoding="ascii")
+
         c2_completion = {
             "schema_version": "membind.native-characterization-c2-completion.v1",
             "status": "verified",
@@ -260,6 +283,11 @@ class NativeCharacterizationC4AuthorizationTests(TestCase):
             "c4_green_log_sha256": _sha(c4_log.read_bytes()),
             "c4_focused_test_count": 8,
             "operator_authorized": True,
+            "live_tcb_paths": live_tcb_paths,
+            "live_tcb_sha256": {
+                key: _sha((validation / relative).read_bytes())
+                for key, relative in live_tcb_paths.items()
+            },
         }
         return root, state_path, bindings, state
 
@@ -291,7 +319,7 @@ class NativeCharacterizationC4AuthorizationTests(TestCase):
             dry_run=True,
         )
 
-        self.assertEqual(target["status"], "native_characterization_c4_offline_only")
+        self.assertEqual(target["status"], "native_characterization_c4_live_only")
         self.assertEqual(target["current_action_scope"], "native_characterization_c4_live_only")
         self.assertEqual(target["next_allowed_action"], "run_native_characterization_c4")
         self.assertEqual(target["authorized_live_actions"], ["native_characterization_c4"])
@@ -318,6 +346,59 @@ class NativeCharacterizationC4AuthorizationTests(TestCase):
         self.assertEqual(
             set(target) - set(source), {"native_characterization_c4_authorization"}
         )
+        self.assertEqual(state_path.read_bytes(), before)
+
+    def test_live_tcb_bindings_are_required_and_bound_in_metadata(self) -> None:
+        root, state_path, values, _ = self._fixture()
+        tcb = {
+            "c4_core_source": "src/native_characterization_c4.py",
+            "c4_core_test": "tests/test_native_characterization_c4.py",
+            "c4_schedule_source": "src/native_characterization_c4_schedule.py",
+            "c4_schedule_test": "tests/test_native_characterization_c4_schedule.py",
+            "c4_async_source": "src/native_characterization_c4_async.py",
+            "c4_async_test": "tests/test_native_characterization_c4_async.py",
+            "c4_artifacts_source": "src/native_characterization_c4_artifacts.py",
+            "c4_artifacts_test": "tests/test_native_characterization_c4_artifacts.py",
+            "c4_runner_source": "src/native_characterization_c4_runner.py",
+            "c4_runner_test": "tests/test_native_characterization_c4_runner.py",
+            "c4_live_source": "src/native_characterization_c4_live.py",
+            "c4_live_test": "tests/test_native_characterization_c4_live.py",
+            "c4_authorization_source": "src/native_characterization_c4_authorization.py",
+            "c4_authorization_test": "tests/test_native_characterization_c4_authorization.py",
+            "c4_focused_green_log": "artifacts/tdd/native_characterization_c4_live_gate_focused_green_20260812.log",
+        }
+        values.update(
+            live_tcb_paths=tcb,
+            live_tcb_sha256={
+                key: _sha((root / "membind-validation" / relative).read_bytes())
+                for key, relative in tcb.items()
+            },
+        )
+        target = authorize_native_characterization_c4_live_only(
+            state_path,
+            repo_root=root,
+            bindings=self._bindings(values),
+            dry_run=True,
+        )
+        metadata = target["native_characterization_c4_authorization"]
+        self.assertEqual(metadata["live_tcb_paths"], tcb)
+        self.assertEqual(metadata["live_tcb_sha256"], values["live_tcb_sha256"])
+
+    def test_live_tcb_drift_fails_closed_without_write(self) -> None:
+        root, state_path, values, _ = self._fixture()
+        tcb = dict(values["live_tcb_paths"])
+        path = root / "membind-validation" / tcb["c4_runner_source"]
+        before = state_path.read_bytes()
+        path.write_text("drifted\n", encoding="ascii")
+        with self.assertRaisesRegex(
+            NativeCharacterizationC4AuthorizationError, "live_tcb_hash_mismatch"
+        ):
+            authorize_native_characterization_c4_live_only(
+                state_path,
+                repo_root=root,
+                bindings=self._bindings(values),
+                dry_run=False,
+            )
         self.assertEqual(state_path.read_bytes(), before)
 
     def test_exact_source_shape_and_deny_all_are_required(self) -> None:
