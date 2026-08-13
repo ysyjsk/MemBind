@@ -597,7 +597,11 @@ async def execute_c4_live(
         resume_run_id=resume_run_id,
         recover_terminal_failure=recover_terminal_failure,
         progress_sink=_progress_sink(progress_stream),
-        post_finalize_verifier=c4_artifacts.verify_c4_artifacts,
+        # The runner owns an artifact store, while the verifier's public
+        # contract deliberately accepts only the immutable run directory.
+        post_finalize_verifier=lambda store: c4_artifacts.verify_c4_artifacts(
+            store.run_root
+        ),
     )
 
 

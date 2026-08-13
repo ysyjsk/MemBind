@@ -508,8 +508,10 @@ def interpret_c5_screening(block_results: Sequence[Mapping[str, Any]]) -> str:
             _fail("block_invariants_missing")
         if int(invariants.get("direct_invariant_violation_count", 0)) > 0:
             return DIRECT_INVARIANT_VIOLATION_OBSERVED
+        # Transport/model/database availability is an infrastructure STOP,
+        # not scientific evidence that naive parallelism violated semantics.
         if int(block.get("service_error_count", 0)) > 0:
-            return DIRECT_INVARIANT_VIOLATION_OBSERVED
+            _fail("infrastructure_failure_not_scientific_result")
         if int(invariants.get("confounded_evidence_count", 0)) > 0:
             saw_confounded = True
     if saw_confounded:
@@ -673,7 +675,7 @@ def analyze_c5_block(
         if record.get("temporal_invariant_ok") is False:
             temporal_violations += 1
     if service_errors:
-        direct_evidence.append(f"service error count={service_errors}")
+        _fail("infrastructure_failure_not_scientific_result")
     if transaction_errors:
         direct_evidence.append(f"transaction error count={transaction_errors}")
     if temporal_violations:
@@ -879,6 +881,8 @@ class C5ArtifactStore:
 
     def write_e4_result(self) -> dict[str, Any]:
         checkpoints = self._read_block_checkpoints()
+        if any(item.get("status") != "completed" for item in checkpoints):
+            _fail("block_checkpoint_not_completed")
         interpretations = [item["interpretation"] for item in checkpoints]
         counts = {
             interpretation: interpretations.count(interpretation)

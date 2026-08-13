@@ -2,6 +2,7 @@
 
 from __future__ import annotations
 
+import json
 import sys
 import tempfile
 from pathlib import Path
@@ -261,6 +262,120 @@ class NativeCharacterizationC5Tests(TestCase):
                 c5.NO_NAIVE_PARALLEL_INSUFFICIENCY_OBSERVED,
             )
             self.assertEqual(c5.verify_c5_artifacts(store.run_dir)["attempt_status"], "complete")
+
+    def test_failed_block_checkpoint_can_never_be_finalized_as_complete(self) -> None:
+        schedule = c5.build_c5_schedule(
+            run_id="c5-0123456789abcdef",
+            history_id="07741c45",
+            episode_source_hashes=["a" * 64],
+            interarrival_ns=0,
+        )
+        with tempfile.TemporaryDirectory() as temporary:
+            store = c5.C5ArtifactStore.create(
+                Path(temporary) / "runs",
+                "c5-0123456789abcdef",
+                schedule,
+                provenance_hashes={"freeze_sha256": "1" * 64},
+                command_argv=["native-characterization-c5", "--dry-run"],
+            )
+            result = c5.analyze_c5_block(
+                concurrency=1,
+                expected_episode_ids=["07741c45:0"],
+                publication_records=[
+                    {
+                        "event_sequence": 0,
+                        "source_sequence": 0,
+                        "arrival_timestamp_ns": 0,
+                        "service_start_timestamp_ns": 0,
+                        "publish_timestamp_ns": 1,
+                    }
+                ],
+                canonical_graph_parity={"status": "pass"},
+                retrieval_parity={"status": "pass"},
+                execution_path_evidence={"treatment_is_concurrency_only": True},
+            )
+            for block_index in range(4):
+                store.write_block_checkpoint(
+                    block_index=block_index,
+                    status="failed" if block_index == 2 else "completed",
+                    result=result,
+                )
+
+            with self.assertRaisesRegex(
+                c5.NativeCharacterizationC5Error,
+                "block_checkpoint_not_completed",
+            ):
+                store.write_e4_result()
+            self.assertFalse(store.result_path.exists())
+
+    def test_verifier_rejects_result_whose_checkpoint_hash_closure_drifted(self) -> None:
+        schedule = c5.build_c5_schedule(
+            run_id="c5-0123456789abcdef",
+            history_id="07741c45",
+            episode_source_hashes=["a" * 64],
+            interarrival_ns=0,
+        )
+        with tempfile.TemporaryDirectory() as temporary:
+            store = c5.C5ArtifactStore.create(
+                Path(temporary) / "runs",
+                "c5-0123456789abcdef",
+                schedule,
+                provenance_hashes={"freeze_sha256": "1" * 64},
+                command_argv=["native-characterization-c5", "--dry-run"],
+            )
+            for block_index, concurrency in enumerate(c5.CONCURRENCY_GRID):
+                result = c5.analyze_c5_block(
+                    concurrency=concurrency,
+                    expected_episode_ids=["07741c45:0"],
+                    publication_records=[
+                        {
+                            "event_sequence": 0,
+                            "source_sequence": 0,
+                            "arrival_timestamp_ns": 0,
+                            "service_start_timestamp_ns": 0,
+                            "publish_timestamp_ns": 1,
+                        }
+                    ],
+                    canonical_graph_parity={"status": "pass"},
+                    retrieval_parity={"status": "pass"},
+                    execution_path_evidence={"treatment_is_concurrency_only": True},
+                )
+                store.write_block_checkpoint(
+                    block_index=block_index,
+                    status="completed",
+                    result=result,
+                )
+            store.write_e4_result()
+            checkpoint_path = store.run_dir / "blocks/003/checkpoint.json"
+            checkpoint = json.loads(checkpoint_path.read_text("ascii"))
+            checkpoint["result"]["bounded_claim"] = "drift"
+            checkpoint_path.write_text(
+                json.dumps(checkpoint, ensure_ascii=True, sort_keys=True, separators=(",", ":")) + "\n",
+                encoding="ascii",
+            )
+
+            verification = c5.verify_c5_artifacts(store.run_dir)
+            self.assertEqual(
+                verification["attempt_status"],
+                "incomplete_invalid_non_mergeable",
+            )
+
+    def test_infrastructure_error_is_never_a_scientific_interpretation(self) -> None:
+        with self.assertRaisesRegex(
+            c5.NativeCharacterizationC5Error,
+            "infrastructure_failure_not_scientific_result",
+        ):
+            c5.interpret_c5_screening(
+                [
+                    {
+                        "invariants": {
+                            "direct_invariant_violation_count": 0,
+                            "confounded_evidence_count": 0,
+                        },
+                        "service_error_count": 1,
+                    }
+                ]
+            )
 
 
 if __name__ == "__main__":

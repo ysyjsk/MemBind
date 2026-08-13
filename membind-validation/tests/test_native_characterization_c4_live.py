@@ -659,6 +659,38 @@ class NativeCharacterizationC4LiveTests(IsolatedAsyncioTestCase):
         )
         self.assertNotIn("runtime", [item[0] for item in events])
 
+    async def test_post_finalize_verifier_receives_artifact_run_root(self) -> None:
+        """The verifier accepts a path, while the runner owns a store object."""
+
+        fixture = Fixture(self)
+        events: list[tuple[object, ...]] = []
+        captured: dict[str, object] = {}
+        sentinel_root = fixture.validation / "artifacts/native_characterization/runs" / RUN_ID
+        store = SimpleNamespace(run_root=sentinel_root)
+        verifier_calls: list[object] = []
+
+        def verifier(run_root: object) -> dict[str, object]:
+            verifier_calls.append(run_root)
+            return {"status": "verified", "attempt_status": "complete"}
+
+        async def inspect(**kwargs: object) -> dict[str, object]:
+            captured.update(kwargs)
+            observed = kwargs["post_finalize_verifier"](store)
+            self.assertEqual(observed["attempt_status"], "complete")
+            return {"status": "complete", "run_id": RUN_ID}
+
+        with fixture.constants(), mock.patch.object(
+            live.c4_artifacts, "verify_c4_artifacts", side_effect=verifier
+        ):
+            await live.execute_c4_live(
+                validation_root=fixture.validation,
+                state_path=fixture.state_path,
+                dependencies=fixture.dependencies(events, run_c4=inspect),
+            )
+
+        self.assertEqual(verifier_calls, [sentinel_root])
+        self.assertNotIn("runtime", [item[0] for item in events])
+
     async def test_service_replaces_only_group_and_calls_graphiti_once(self) -> None:
         fixture = Fixture(self)
         events: list[tuple[object, ...]] = []
