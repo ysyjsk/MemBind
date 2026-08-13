@@ -118,7 +118,21 @@ class C5EvidenceAnswerabilityEvaluator:
 def qa_view_for_live_core(result: Mapping[str, object]) -> dict[str, object]:
     """Project an evaluator result onto the live core's no-raw-output schema."""
 
-    return {
-        "status": result.get("status"),
-        "correct": result.get("correct"),
-    }
+    allowed = (
+        "qa_surface",
+        "question_id_sha256",
+        "retrieval_payload_sha256",
+        "retrieved_facts_sha256",
+        "retrieved_fact_count",
+        "prompt_sha256",
+        "judge_model",
+        "judge_config_sha256",
+        "reader_generation_performed",
+        "headline_interpretation_effect",
+        "status",
+        "correct",
+        "accuracy",
+        "retry_count",
+        "error_class",
+    )
+    return {key: result.get(key) for key in allowed}

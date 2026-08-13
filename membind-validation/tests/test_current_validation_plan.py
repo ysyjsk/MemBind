@@ -11,13 +11,35 @@ CURRENT_H0_STATUS = "h0_q1_b_live_only"
 CURRENT_H0_ACTION_SCOPE = "h0_q1_b_live_only"
 CURRENT_H0_NEXT_ACTION = "run_q1_h0-b-post-workload-replacement"
 CURRENT_CHARACTERIZATION_STAGE = "NATIVE_CHARACTERIZATION"
-CURRENT_CHARACTERIZATION_STATUS = "native_characterization_c2_live_only"
-CURRENT_CHARACTERIZATION_BLOCKER = None
-CURRENT_CHARACTERIZATION_BLOCKER_TEXT = "none"
-CURRENT_CHARACTERIZATION_SCOPE = "native_characterization_c2_live_only"
-CURRENT_CHARACTERIZATION_NEXT_ACTION = "run_native_characterization_c2"
 CURRENT_INTERRUPTED_C2_RUN_ID = "c2-2fe3711c62933407"
 HISTORICAL_V3_BLOCKER = "v3_smoke_002_m0_structured_output_failure"
+
+
+def _assert_current_characterization_state(test: TestCase, state: dict) -> None:
+    actions = state["authorized_live_actions"]
+    test.assertLessEqual(len(actions), 1)
+    if actions:
+        action = actions[0]
+        test.assertTrue(action.startswith("native_characterization_"))
+        test.assertEqual(state["status"], f"{action}_live_only")
+        test.assertEqual(state["current_action_scope"], f"{action}_live_only")
+        test.assertEqual(state["next_allowed_action"], f"run_{action}")
+    else:
+        test.assertFalse(str(state["status"]).endswith("_live_only"))
+
+
+def _current_pointer_fields(path: Path) -> dict[str, str]:
+    text = path.read_text(encoding="utf-8")
+    start = "<!-- NATIVE_CHARACTERIZATION_CURRENT_POINTER_START -->"
+    end = "<!-- NATIVE_CHARACTERIZATION_CURRENT_POINTER_END -->"
+    block = text.split(start, 1)[1].split(end, 1)[0]
+    fields = {}
+    for raw in block.splitlines():
+        line = raw.strip()
+        if line and not line.startswith("```") and "=" in line:
+            key, value = line.split("=", 1)
+            fields[key] = value
+    return fields
 
 
 class CurrentValidationPlanTests(TestCase):
@@ -110,7 +132,7 @@ class CurrentValidationPlanTests(TestCase):
             state["evidence"]["v3_blocker_full_regression_sha256"],
             "6be85ceb90f0436accaf75de967c60ba88784578714ab6d19aae73c3cac547b8",
         )
-        self.assertEqual(state["current_blocker"], CURRENT_CHARACTERIZATION_BLOCKER)
+        _assert_current_characterization_state(self, state)
         interruption = state["native_characterization_c2_interruption"]
         self.assertEqual(interruption["run_id"], CURRENT_INTERRUPTED_C2_RUN_ID)
         self.assertEqual(interruption["error_code"], "openai.APIConnectionError")
@@ -123,12 +145,11 @@ class CurrentValidationPlanTests(TestCase):
         state = json.loads((ROOT / "CURRENT_STATE.json").read_text(encoding="utf-8"))
 
         self.assertEqual(state["current_stage"], CURRENT_CHARACTERIZATION_STAGE)
-        self.assertEqual(state["status"], CURRENT_CHARACTERIZATION_STATUS)
+        _assert_current_characterization_state(self, state)
         self.assertEqual(
             state["historical_blocker"],
             HISTORICAL_V3_BLOCKER,
         )
-        self.assertEqual(state["current_blocker"], CURRENT_CHARACTERIZATION_BLOCKER)
         self.assertEqual(
             state["evidence"]["v3_actual_schema_probe_corrected"],
             "artifacts/environment/v3_actual_schema_compatibility_probe_20260809_004_reclassified.json",
@@ -141,9 +162,6 @@ class CurrentValidationPlanTests(TestCase):
             "v3_construction_runtime_identity_drift_after_smoke_002"
         ]
         self.assertIn("public generate_response wrapper", invalid["reason"])
-        self.assertEqual(
-            state["next_allowed_action"], CURRENT_CHARACTERIZATION_NEXT_ACTION
-        )
         self.assertTrue(state["v3_smoke_003_retired"])
         self.assertFalse(state["live_h0_candidate_authorized"])
         self.assertIn("historical_h0_live_authorization", state)
@@ -206,12 +224,7 @@ class CurrentValidationPlanTests(TestCase):
         execution = (ROOT / "EXPERIMENT_PLAN.md").read_text(encoding="utf-8")
         memory = (ROOT / "GLOBAL_MEMORY.md").read_text(encoding="utf-8")
 
-        self.assertEqual(
-            state["current_action_scope"], CURRENT_CHARACTERIZATION_SCOPE
-        )
-        self.assertEqual(
-            state["next_allowed_action"], CURRENT_CHARACTERIZATION_NEXT_ACTION
-        )
+        _assert_current_characterization_state(self, state)
         for text in (current, execution, memory):
             self.assertIn(CURRENT_H0_ACTION_SCOPE, text)
             self.assertIn("live_h0_candidate_authorized=true", text)
@@ -358,9 +371,7 @@ class CurrentValidationPlanTests(TestCase):
             )
             self.assertEqual(evidence[count_key], expected_count)
 
-        self.assertEqual(
-            state["current_action_scope"], CURRENT_CHARACTERIZATION_SCOPE
-        )
+        _assert_current_characterization_state(self, state)
         self.assertEqual(
             state["stage_progress"]["v3_fresh_runtime_compatibility_probe"],
             "fail_exact_historical_truncation_reproduced",
@@ -368,9 +379,6 @@ class CurrentValidationPlanTests(TestCase):
         self.assertFalse(state["v3_smoke_003_authorized"])
         self.assertTrue(state["v3_smoke_003_retired"])
         self.assertFalse(state["live_h0_candidate_authorized"])
-        self.assertEqual(
-            state["next_allowed_action"], CURRENT_CHARACTERIZATION_NEXT_ACTION
-        )
         historical = (REPO / "MemBind_CURRENT_VALIDATION_PLAN_v1.2.md").read_text(
             encoding="utf-8"
         )
@@ -483,7 +491,7 @@ class CurrentValidationPlanTests(TestCase):
             state["historical_blocker"],
             HISTORICAL_V3_BLOCKER,
         )
-        self.assertEqual(state["current_blocker"], CURRENT_CHARACTERIZATION_BLOCKER)
+        _assert_current_characterization_state(self, state)
 
     def test_restored_service_observation_is_synchronized_across_plan_memory(self):
         current = (REPO / "MemBind_CURRENT_VALIDATION_PLAN_v1.2.md").read_text(
@@ -574,19 +582,13 @@ class CurrentValidationPlanTests(TestCase):
             state["remote_access_status"],
             "pass_forced_command_read_only",
         )
-        self.assertEqual(state["status"], CURRENT_CHARACTERIZATION_STATUS)
-        self.assertEqual(
-            state["current_action_scope"], CURRENT_CHARACTERIZATION_SCOPE
-        )
+        _assert_current_characterization_state(self, state)
         self.assertEqual(
             state["historical_blocker"],
             HISTORICAL_V3_BLOCKER,
         )
         self.assertTrue(state["v3_smoke_003_retired"])
         self.assertFalse(state["live_h0_candidate_authorized"])
-        self.assertEqual(
-            state["next_allowed_action"], CURRENT_CHARACTERIZATION_NEXT_ACTION
-        )
 
     def test_current_headers_match_characterization_while_h0_remains_history(self):
         state = json.loads((ROOT / "CURRENT_STATE.json").read_text(encoding="utf-8"))
@@ -599,19 +601,21 @@ class CurrentValidationPlanTests(TestCase):
         execution = (ROOT / "EXPERIMENT_PLAN.md").read_text(encoding="utf-8")
 
         self.assertEqual(state["current_stage"], CURRENT_CHARACTERIZATION_STAGE)
-        self.assertEqual(state["status"], CURRENT_CHARACTERIZATION_STATUS)
+        actions = state["authorized_live_actions"]
+        self.assertLessEqual(len(actions), 1)
+        if actions:
+            action = actions[0]
+            self.assertTrue(action.startswith("native_characterization_"))
+            self.assertEqual(state["status"], f"{action}_live_only")
+            self.assertEqual(state["current_action_scope"], f"{action}_live_only")
+            self.assertEqual(state["next_allowed_action"], f"run_{action}")
+        plan_pointer = _current_pointer_fields(
+            REPO / "MemBind_CURRENT_VALIDATION_PLAN_v1.3.md"
+        )
+        execution_pointer = _current_pointer_fields(ROOT / "EXPERIMENT_PLAN.md")
+        self.assertEqual(plan_pointer, execution_pointer)
         self.assertIn("current_stage=NATIVE_CHARACTERIZATION", current[:2000])
-        self.assertIn(
-            f"status={CURRENT_CHARACTERIZATION_STATUS}", current[:2000]
-        )
-        self.assertIn(
-            f"current_blocker={CURRENT_CHARACTERIZATION_BLOCKER_TEXT}",
-            current[:2000],
-        )
-        self.assertIn(
-            f"current_action_scope={CURRENT_CHARACTERIZATION_SCOPE}",
-            current[:2000],
-        )
+        self.assertEqual(plan_pointer["current_stage"], "NATIVE_CHARACTERIZATION")
         self.assertIn(
             f"interrupted_c2_attempt={CURRENT_INTERRUPTED_C2_RUN_ID}",
             current[:2000],
@@ -621,13 +625,6 @@ class CurrentValidationPlanTests(TestCase):
             current[:2000],
         )
         self.assertIn("current_stage=NATIVE_CHARACTERIZATION", execution[:2000])
-        self.assertIn(
-            f"status={CURRENT_CHARACTERIZATION_STATUS}", execution[:2000]
-        )
-        self.assertIn(
-            f"current_action_scope={CURRENT_CHARACTERIZATION_SCOPE}",
-            execution[:2000],
-        )
         self.assertIn("HISTORICAL_SOLUTION_LANE_BELOW=true", current)
         self.assertIn("HISTORICAL_SOLUTION_LANE_BELOW=true", execution)
         self.assertIn("当前阶段**: `H0 - Host Stack Qualification`", current)
@@ -691,12 +688,11 @@ class CurrentValidationPlanTests(TestCase):
 
         self.assertEqual(state["protocol_version"], "current-validation-v1.3")
         self.assertEqual(state["current_stage"], CURRENT_CHARACTERIZATION_STAGE)
-        self.assertEqual(state["status"], CURRENT_CHARACTERIZATION_STATUS)
+        _assert_current_characterization_state(self, state)
         self.assertEqual(
             state["historical_blocker"],
             HISTORICAL_V3_BLOCKER,
         )
-        self.assertEqual(state["current_blocker"], CURRENT_CHARACTERIZATION_BLOCKER)
         interruption = state["native_characterization_c2_interruption"]
         self.assertEqual(interruption["run_id"], CURRENT_INTERRUPTED_C2_RUN_ID)
         self.assertFalse(interruption["semantic_attempt_consumed"])
@@ -738,9 +734,6 @@ class CurrentValidationPlanTests(TestCase):
         self.assertEqual(
             state["evidence"]["v2_oracle_integration_verification_sha256"],
             "ef9c20578a9ab418630e650cca76d2b7c3c75601f56fa440eb698b947f1a12aa",
-        )
-        self.assertEqual(
-            state["next_allowed_action"], CURRENT_CHARACTERIZATION_NEXT_ACTION
         )
         self.assertFalse(state["live_h0_candidate_authorized"])
         self.assertTrue(state["v3_smoke_003_retired"])

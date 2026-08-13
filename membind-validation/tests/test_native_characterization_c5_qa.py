@@ -50,6 +50,16 @@ class C5SupplementalQATests(IsolatedAsyncioTestCase):
         self.assertNotIn("raw_output", result)
         self.assertNotIn("OpenAI", repr(result))
 
+        projected = qa.qa_view_for_live_core(result)
+        self.assertEqual(projected["qa_surface"], "retrieved_evidence_answerability")
+        self.assertEqual(projected["judge_model"], "qwen3-32b-fp8")
+        self.assertEqual(projected["judge_config_sha256"], "a" * 64)
+        self.assertEqual(projected["retrieval_payload_sha256"], "b" * 64)
+        self.assertFalse(projected["reader_generation_performed"])
+        self.assertEqual(projected["accuracy"], 1.0)
+        self.assertNotIn("raw_output", projected)
+        self.assertNotIn("reference_answer", projected)
+
     async def test_invalid_or_service_error_is_not_counted_as_incorrect(self) -> None:
         invalid = qa.C5EvidenceAnswerabilityEvaluator(FakeBackend("maybe"))
         invalid_result = await invalid.evaluate(

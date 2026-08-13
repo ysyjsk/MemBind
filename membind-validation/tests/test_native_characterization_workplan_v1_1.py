@@ -67,14 +67,8 @@ class NativeCharacterizationWorkplanV11ContractTests(TestCase):
             self.assertEqual(text.count(start), 1)
             self.assertEqual(text.count(end), 1)
             current = text.split(start, 1)[1].split(end, 1)[0]
-            self.assertIn(
-                "current_blocker=c2_infrastructure_interruption_cleanup_pending",
-                current,
-            )
-            self.assertIn(
-                "next_allowed_action=execute_scoped_c2_cleanup_after_infrastructure_interruption",
-                current,
-            )
+            self.assertIn("current_stage=NATIVE_CHARACTERIZATION", current)
+            self.assertIn("protocol_version=current-validation-v1.3", current)
             self.assertIn("interrupted_c2_attempt=c2-2fe3711c62933407", current)
             self.assertIn(
                 "interruption_error_code=openai.APIConnectionError",
@@ -83,7 +77,7 @@ class NativeCharacterizationWorkplanV11ContractTests(TestCase):
             self.assertIn("interruption_attempt_valid=false", current)
             self.assertIn("interruption_attempt_mergeable=false", current)
             self.assertIn("interruption_resume_allowed=false", current)
-            self.assertIn("cleanup_execution_status=pending", current)
+            self.assertIn("cleanup_execution_status=verified_empty", current)
             self.assertNotIn(
                 "next_allowed_work=C1_instrumentation_implementation",
                 current,

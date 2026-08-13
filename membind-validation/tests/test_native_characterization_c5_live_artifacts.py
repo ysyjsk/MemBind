@@ -49,7 +49,7 @@ def block_result(block_index: int) -> dict[str, object]:
         {
             "event_sequence": source * 2 + 1,
             "source_sequence": source,
-            "arrival_timestamp_ns": source * 10,
+            "arrival_timestamp_ns": 0,
             "service_start_timestamp_ns": source * 10 + 1,
             "publish_timestamp_ns": source * 10 + 2,
             "caller_return_timestamp_ns": source * 10 + 2,
@@ -112,7 +112,7 @@ async def write_episode(store: artifacts.C5LiveArtifactStore, block_index: int, 
             "graph_namespace": NAMESPACES[block_index],
             "source_sequence": source,
             "episode_source_sha256": HASHES[source],
-            "arrival_timestamp_ns": source * 10,
+            "arrival_timestamp_ns": 0,
             "worker_id": source % concurrency,
         }
     )
@@ -124,7 +124,7 @@ async def write_episode(store: artifacts.C5LiveArtifactStore, block_index: int, 
             "graph_namespace": NAMESPACES[block_index],
             "source_sequence": source,
             "episode_source_sha256": HASHES[source],
-            "arrival_timestamp_ns": source * 10,
+            "arrival_timestamp_ns": 0,
             "service_start_timestamp_ns": source * 10 + 1,
             "publish_timestamp_ns": source * 10 + 2,
             "caller_return_timestamp_ns": source * 10 + 2,
@@ -307,8 +307,265 @@ class C5LiveArtifactStoreTests(IsolatedAsyncioTestCase):
             self.assertEqual(verification["attempt_status"], artifacts.INCOMPLETE_NON_MERGEABLE)
             self.assertEqual(verification["failure_event_count"], 1)
 
+    async def test_direct_invariant_failure_emits_mergeable_scientific_observation(self) -> None:
+        with tempfile.TemporaryDirectory() as temporary:
+            store = create_store(Path(temporary))
+            failure = await store.append_failure_event(
+                {
+                    "event_type": "failure",
+                    "block_index": 0,
+                    "concurrency": 1,
+                    "graph_namespace": NAMESPACES[0],
+                    "source_sequence": 0,
+                    "failure_timestamp_ns": 1,
+                    "error_class": "neo4j.exceptions.ConstraintError",
+                    "failure_stage": "add_episode",
+                    "failure_kind": "direct_invariant_failure",
+                    "scientific_interpretation": c5.DIRECT_INVARIANT_VIOLATION_OBSERVED,
+                }
+            )
+            await store.write_root_checkpoint(
+                status=artifacts.INCOMPLETE_NON_MERGEABLE,
+                completed_block_indices=[],
+                partial_block_index=0,
+            )
+            observation = await store.finalize_direct_observation(
+                failure_event=failure,
+                completed_block_indices=[],
+            )
+            verification = artifacts.verify_c5_live_artifacts(store.run_dir)
+
+        self.assertEqual(
+            observation["overall_interpretation"],
+            c5.DIRECT_INVARIANT_VIOLATION_OBSERVED,
+        )
+        self.assertEqual(
+            verification["attempt_status"], artifacts.DIRECT_OBSERVATION_STATUS
+        )
+        self.assertTrue(verification["mergeable"])
+        self.assertEqual(
+            verification["overall_interpretation"],
+            c5.DIRECT_INVARIANT_VIOLATION_OBSERVED,
+        )
+        self.assertEqual(verification["failure_event_count"], 1)
+
+    async def test_direct_observation_is_scientific_terminal_not_resumable(self) -> None:
+        with tempfile.TemporaryDirectory() as temporary:
+            store = create_store(Path(temporary))
+            failure = await store.append_failure_event(
+                {
+                    "event_type": "failure",
+                    "block_index": 0,
+                    "concurrency": 1,
+                    "graph_namespace": NAMESPACES[0],
+                    "source_sequence": 0,
+                    "failure_timestamp_ns": 1,
+                    "error_class": "neo4j.exceptions.TransactionFailure",
+                    "failure_stage": "add_episode",
+                    "failure_kind": "direct_invariant_failure",
+                    "scientific_interpretation": c5.DIRECT_INVARIANT_VIOLATION_OBSERVED,
+                }
+            )
+            await store.write_root_checkpoint(
+                status=artifacts.INCOMPLETE_NON_MERGEABLE,
+                completed_block_indices=[],
+                partial_block_index=0,
+            )
+            await store.finalize_direct_observation(
+                failure_event=failure,
+                completed_block_indices=[],
+            )
+
+            with self.assertRaisesRegex(
+                artifacts.C5LiveArtifactError, "completed_run_not_resumable"
+            ):
+                artifacts.C5LiveArtifactStore.open_existing(store.run_dir)
+            with self.assertRaisesRegex(
+                artifacts.C5LiveArtifactError, "direct_observation_not_resumable"
+            ):
+                artifacts.recover_c5_terminal_failure_to_resume_prefix(
+                    run_dir=store.run_dir,
+                    schedule=schedule(),
+                    provenance_hashes={
+                        "freeze_sha256": "a" * 64,
+                        "c4_result_sha256": "b" * 64,
+                    },
+                )
+            with self.assertRaisesRegex(
+                artifacts.C5LiveArtifactError, "direct_observation_not_resumable"
+            ):
+                artifacts.prepare_c5_running_resume_prefix(
+                    run_dir=store.run_dir,
+                    schedule=schedule(),
+                    provenance_hashes={
+                        "freeze_sha256": "a" * 64,
+                        "c4_result_sha256": "b" * 64,
+                    },
+                )
+
+    async def test_infrastructure_failure_cannot_emit_direct_observation(self) -> None:
+        with tempfile.TemporaryDirectory() as temporary:
+            store = create_store(Path(temporary))
+            failure = await store.append_failure_event(
+                {
+                    "event_type": "failure",
+                    "block_index": 0,
+                    "concurrency": 1,
+                    "graph_namespace": NAMESPACES[0],
+                    "source_sequence": 0,
+                    "failure_timestamp_ns": 1,
+                    "error_class": "builtins.ConnectionError",
+                    "failure_stage": "add_episode",
+                    "failure_kind": "infrastructure_failure",
+                    "scientific_interpretation": None,
+                }
+            )
+            await store.write_root_checkpoint(
+                status=artifacts.INCOMPLETE_NON_MERGEABLE,
+                completed_block_indices=[],
+                partial_block_index=0,
+            )
+            with self.assertRaisesRegex(
+                artifacts.C5LiveArtifactError, "direct_observation_binding_invalid"
+            ):
+                await store.finalize_direct_observation(
+                    failure_event=failure,
+                    completed_block_indices=[],
+                )
+            verification = artifacts.verify_c5_live_artifacts(store.run_dir)
+
+        self.assertEqual(
+            verification["attempt_status"], artifacts.INCOMPLETE_NON_MERGEABLE
+        )
+        self.assertFalse(verification["mergeable"])
+
 
 class C5LiveReadOnlyVerifierTests(TestCase):
+    @staticmethod
+    def _write_sealed(path: Path, value: dict[str, object]) -> dict[str, object]:
+        sealed = artifacts.seal_payload(value)
+        path.write_bytes(artifacts.canonical_json_bytes(sealed) + b"\n")
+        return sealed
+
+    def test_completed_run_rejects_an_unreferenced_event(self) -> None:
+        async def build(root: Path) -> artifacts.C5LiveArtifactStore:
+            store = create_store(root)
+            results = []
+            for block_index in range(4):
+                await complete_block(store, block_index)
+                results.append(block_result(block_index))
+                await store.write_root_checkpoint(
+                    status="running",
+                    completed_block_indices=list(range(block_index + 1)),
+                    partial_block_index=None,
+                )
+            await store.finalize_success(results)
+            await store.append_intent_event(
+                {
+                    "event_type": "intent",
+                    "block_index": 3,
+                    "concurrency": 8,
+                    "graph_namespace": NAMESPACES[3],
+                    "source_sequence": 0,
+                    "episode_source_sha256": HASHES[0],
+                    "arrival_timestamp_ns": 0,
+                    "worker_id": 0,
+                }
+            )
+            return store
+
+        with tempfile.TemporaryDirectory() as temporary:
+            store = asyncio.run(build(Path(temporary)))
+            verification = artifacts.verify_c5_live_artifacts(store.run_dir)
+        self.assertEqual(
+            verification["attempt_status"], artifacts.INCOMPLETE_NON_MERGEABLE
+        )
+
+    def test_resealed_forged_block_metrics_are_rejected(self) -> None:
+        async def build(root: Path) -> artifacts.C5LiveArtifactStore:
+            store = create_store(root)
+            results = []
+            for block_index in range(4):
+                await complete_block(store, block_index)
+                results.append(block_result(block_index))
+                await store.write_root_checkpoint(
+                    status="running",
+                    completed_block_indices=list(range(block_index + 1)),
+                    partial_block_index=None,
+                )
+            checkpoint_path = store.run_dir / "blocks/002/checkpoint.json"
+            checkpoint = json.loads(checkpoint_path.read_text("ascii"))
+            forged = deepcopy(checkpoint["block_result"])
+            forged["metrics"]["makespan_ns"] += 123456
+            forged = artifacts.seal_payload(forged)
+            checkpoint["block_result"] = forged
+            checkpoint["block_result_payload_sha256"] = forged["payload_sha256"]
+            self._write_sealed(checkpoint_path, checkpoint)
+            results[2] = forged
+            with self.assertRaisesRegex(
+                artifacts.C5LiveArtifactError, "block_result_event_recompute_mismatch"
+            ):
+                await store.finalize_success(results)
+            return store
+
+        with tempfile.TemporaryDirectory() as temporary:
+            asyncio.run(build(Path(temporary)))
+
+    def test_resume_is_bound_to_directory_run_schedule_and_provenance(self) -> None:
+        async def build(root: Path) -> artifacts.C5LiveArtifactStore:
+            store = create_store(root)
+            await complete_block(store, 0)
+            await store.write_root_checkpoint(
+                status="running",
+                completed_block_indices=[0],
+                partial_block_index=1,
+            )
+            return store
+
+        provenance = {
+            "freeze_sha256": "a" * 64,
+            "c4_result_sha256": "b" * 64,
+        }
+        with tempfile.TemporaryDirectory() as temporary:
+            store = asyncio.run(build(Path(temporary)))
+            with self.assertRaisesRegex(
+                artifacts.C5LiveArtifactError, "resume_binding_invalid"
+            ):
+                artifacts.inspect_c5_resume_prefix(
+                    store.run_dir,
+                    expected_run_id="c5-fedcba9876543210",
+                    expected_schedule=schedule(),
+                    expected_provenance_hashes=provenance,
+                )
+            changed = schedule()
+            changed["episode_ids"][0] = f"{HISTORY_ID}:changed"
+            changed["payload_sha256"] = c5.payload_sha256(changed)
+            with self.assertRaisesRegex(
+                artifacts.C5LiveArtifactError, "resume_binding_invalid"
+            ):
+                artifacts.inspect_c5_resume_prefix(
+                    store.run_dir,
+                    expected_run_id=RUN_ID,
+                    expected_schedule=changed,
+                    expected_provenance_hashes=provenance,
+                )
+            with self.assertRaisesRegex(
+                artifacts.C5LiveArtifactError, "resume_binding_invalid"
+            ):
+                artifacts.inspect_c5_resume_prefix(
+                    store.run_dir,
+                    expected_run_id=RUN_ID,
+                    expected_schedule=schedule(),
+                    expected_provenance_hashes={**provenance, "freeze_sha256": "f" * 64},
+                )
+
+            renamed = store.run_dir.parent / "c5-fedcba9876543210"
+            store.run_dir.rename(renamed)
+            with self.assertRaisesRegex(
+                artifacts.C5LiveArtifactError, "run_directory_identity_invalid"
+            ):
+                artifacts.inspect_c5_resume_prefix(renamed)
+
     def test_verifier_is_read_only_and_rejects_schedule_or_checkpoint_tampering(self) -> None:
         async def build(root: Path) -> artifacts.C5LiveArtifactStore:
             store = create_store(root)

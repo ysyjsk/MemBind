@@ -17,6 +17,7 @@ sys.path.insert(0, str(ROOT / "src"))
 import dataset  # noqa: E402
 import native_characterization_c5 as c5  # noqa: E402
 import native_characterization_c5_live_core as live  # noqa: E402
+from neo4j.exceptions import ConstraintError, ServiceUnavailable, TransactionError  # noqa: E402
 
 
 RUN_ID = "c5-0123456789abcdef"
@@ -107,6 +108,7 @@ class FakeStore:
         self.episode_checkpoints: list[dict[str, object]] = []
         self.block_checkpoints: list[dict[str, object]] = []
         self.root_checkpoints: list[dict[str, object]] = []
+        self.direct_observations: list[dict[str, object]] = []
         self.finalized: list[list[dict[str, object]]] = []
 
     async def append_intent_event(self, value: dict[str, object]) -> dict[str, object]:
@@ -142,6 +144,17 @@ class FakeStore:
     async def finalize_success(self, block_results: list[dict[str, object]]) -> None:
         self.finalized.append(deepcopy(block_results))
         self.calls.append(("finalize",))
+
+    async def finalize_direct_observation(self, **value: object) -> dict[str, object]:
+        observation = {
+            "status": "direct_invariant_observed",
+            "overall_interpretation": c5.DIRECT_INVARIANT_VIOLATION_OBSERVED,
+            "failure_event_payload_sha256": value["failure_event"]["payload_sha256"],
+            "completed_block_indices": list(value["completed_block_indices"]),
+        }
+        self.direct_observations.append(deepcopy(observation))
+        self.calls.append(("direct-observation",))
+        return observation
 
     def _event(self, value: dict[str, object], prefix: str) -> dict[str, object]:
         event = {
@@ -246,18 +259,135 @@ class FrozenScheduleTests(TestCase):
         self.assertEqual(direct.failure_kind, live.DIRECT_INVARIANT_FAILURE)
         self.assertEqual(direct.scientific_interpretation, c5.DIRECT_INVARIANT_VIOLATION_OBSERVED)
 
+    def test_only_neo4j_constraint_errors_are_mapped_to_direct_transaction_evidence(self) -> None:
+        constraint = live.classify_live_failure(ConstraintError("private conflict"))
+        transaction = live.classify_live_failure(TransactionError("private driver state"))
+        disconnected = live.classify_live_failure(ServiceUnavailable("private host"))
+
+        self.assertEqual(constraint.failure_kind, live.DIRECT_INVARIANT_FAILURE)
+        self.assertEqual(
+            constraint.scientific_interpretation,
+            c5.DIRECT_INVARIANT_VIOLATION_OBSERVED,
+        )
+        self.assertEqual(transaction.failure_kind, live.INFRASTRUCTURE_FAILURE)
+        self.assertIsNone(transaction.scientific_interpretation)
+        self.assertEqual(disconnected.failure_kind, live.INFRASTRUCTURE_FAILURE)
+        self.assertIsNone(disconnected.scientific_interpretation)
+
     def test_qa_view_is_supplemental_and_contains_no_raw_output(self) -> None:
         view = live.build_supplemental_qa_view(
-            {"status": "SUCCESS", "correct": False, "raw_output": "private answer"}
+            {
+                "qa_surface": "retrieved_evidence_answerability",
+                "status": "SUCCESS",
+                "correct": False,
+                "accuracy": 0.0,
+                "judge_model": "qwen3-32b-fp8",
+                "judge_config_sha256": "a" * 64,
+                "retrieval_payload_sha256": "b" * 64,
+                "reader_generation_performed": False,
+                "headline_interpretation_effect": "none",
+                "raw_output": "private answer",
+            }
         )
 
         self.assertEqual(view["status"], "SUCCESS")
         self.assertEqual(view["accuracy"], 0.0)
         self.assertEqual(view["headline_interpretation_effect"], "none")
+        self.assertEqual(view["qa_surface"], "retrieved_evidence_answerability")
+        self.assertEqual(view["judge_config_sha256"], "a" * 64)
+        self.assertEqual(view["retrieval_payload_sha256"], "b" * 64)
+        self.assertFalse(view["reader_generation_performed"])
         self.assertNotIn("private answer", repr(view))
 
 
 class C5LiveCoreTests(IsolatedAsyncioTestCase):
+    async def test_runtime_init_and_namespace_failures_are_durable_stops(self) -> None:
+        for failure_stage in ("runtime_init", "namespace_check"):
+            with self.subTest(failure_stage=failure_stage):
+                store = FakeStore()
+
+                class NamespaceFailureRuntime(FakeRuntime):
+                    async def namespace_counts(self) -> live.NamespaceCounts:
+                        raise ConnectionError("private neo4j endpoint")
+
+                async def runtime_factory(block: live.C5Block) -> FakeRuntime:
+                    if failure_stage == "runtime_init":
+                        raise ConnectionError("private runtime endpoint")
+                    return NamespaceFailureRuntime(block, store)
+
+                result = await live.run_c5_live_core(
+                    schedule=frozen_schedule(),
+                    episodes=episodes(),
+                    episode_source_hashes=source_hashes(),
+                    runtime_factory=runtime_factory,
+                    store=store,
+                    now_ns=live.MonotonicCounter(),
+                )
+
+                self.assertEqual(result["status"], live.INCOMPLETE_NON_MERGEABLE)
+                self.assertEqual(result["failure_stage"], failure_stage)
+                self.assertEqual(len(store.failures), 1)
+                self.assertEqual(store.failures[0]["failure_stage"], failure_stage)
+                self.assertEqual(
+                    store.root_checkpoints[-1]["status"],
+                    live.INCOMPLETE_NON_MERGEABLE,
+                )
+
+    async def test_post_ingestion_failures_are_durable_recoverable_stops(self) -> None:
+        for failure_stage in ("export", "retrieval", "judge", "close"):
+            with self.subTest(failure_stage=failure_stage):
+                store = FakeStore()
+
+                class FailingRuntime(FakeRuntime):
+                    async def export_canonical_graph(self) -> dict[str, object]:
+                        if failure_stage == "export":
+                            raise ConnectionError("private export endpoint")
+                        return await super().export_canonical_graph()
+
+                    async def evaluate_retrieval(
+                        self, reference_episode_ids: list[str] | None
+                    ) -> dict[str, object]:
+                        if failure_stage == "retrieval":
+                            raise ConnectionError("private embedding endpoint")
+                        return await super().evaluate_retrieval(reference_episode_ids)
+
+                    async def close(self) -> None:
+                        self.closed = True
+                        if failure_stage == "close":
+                            raise ConnectionError("private close endpoint")
+
+                async def runtime_factory(block: live.C5Block) -> FailingRuntime:
+                    return FailingRuntime(block, store)
+
+                async def evaluator(
+                    _runtime: FakeRuntime, _block: live.C5Block
+                ) -> dict[str, object]:
+                    if failure_stage == "judge":
+                        raise ConnectionError("private judge endpoint")
+                    return {"status": "SUCCESS", "correct": True}
+
+                result = await live.run_c5_live_core(
+                    schedule=frozen_schedule(),
+                    episodes=episodes(),
+                    episode_source_hashes=source_hashes(),
+                    runtime_factory=runtime_factory,
+                    store=store,
+                    now_ns=live.MonotonicCounter(),
+                    qa_evaluator=evaluator,
+                )
+
+                self.assertEqual(result["status"], live.INCOMPLETE_NON_MERGEABLE)
+                self.assertEqual(result["failed_block_index"], 0)
+                self.assertEqual(result["failure_stage"], failure_stage)
+                self.assertEqual(len(store.failures), 1)
+                self.assertEqual(store.failures[0]["failure_stage"], failure_stage)
+                self.assertEqual(store.failures[0]["failure_kind"], live.INFRASTRUCTURE_FAILURE)
+                self.assertNotIn("private", repr(store.failures))
+                self.assertEqual(
+                    store.root_checkpoints[-1]["status"],
+                    live.INCOMPLETE_NON_MERGEABLE,
+                )
+
     async def test_true_async_grid_is_work_conserving_and_each_intent_precedes_add(self) -> None:
         store = FakeStore()
         runtimes: list[FakeRuntime] = []
@@ -286,6 +416,26 @@ class C5LiveCoreTests(IsolatedAsyncioTestCase):
         self.assertEqual(len(store.block_checkpoints), 4)
         self.assertEqual(len(store.root_checkpoints), 4)
         for block_index in range(4):
+            block_intents = [
+                event for event in store.intents if event["block_index"] == block_index
+            ]
+            block_publications = [
+                event
+                for event in store.publications
+                if event["block_index"] == block_index
+            ]
+            self.assertEqual(
+                len({event["arrival_timestamp_ns"] for event in block_intents}), 1
+            )
+            self.assertEqual(
+                {event["arrival_timestamp_ns"] for event in block_publications},
+                {block_intents[0]["arrival_timestamp_ns"]},
+            )
+            if block_index == 0:
+                self.assertGreater(
+                    block_publications[-1]["service_start_timestamp_ns"],
+                    block_publications[-1]["arrival_timestamp_ns"],
+                )
             for source in range(49):
                 intent = store.calls.index(("intent", block_index, source))
                 add = store.calls.index(("add-start", block_index, source))
@@ -321,6 +471,47 @@ class C5LiveCoreTests(IsolatedAsyncioTestCase):
         self.assertNotIn("secret infrastructure response", repr(store.failures))
         self.assertEqual(store.block_checkpoints, [])
         self.assertEqual(store.root_checkpoints[-1]["status"], live.INCOMPLETE_NON_MERGEABLE)
+        self.assertEqual(store.direct_observations, [])
+
+    async def test_direct_transaction_failure_writes_scientific_terminal_observation(self) -> None:
+        store = FakeStore()
+
+        class ConstraintRuntime(FakeRuntime):
+            async def add_episode(self, episode: c5.Episode) -> dict[str, object]:
+                self.store.calls.append(
+                    ("add-start", self.block.block_index, episode.source_sequence)
+                )
+                raise ConstraintError("private constraint detail")
+
+        async def runtime_factory(block: live.C5Block) -> ConstraintRuntime:
+            return ConstraintRuntime(block, store)
+
+        result = await live.run_c5_live_core(
+            schedule=frozen_schedule(),
+            episodes=episodes(),
+            episode_source_hashes=source_hashes(),
+            runtime_factory=runtime_factory,
+            store=store,
+            now_ns=live.MonotonicCounter(),
+        )
+
+        self.assertEqual(result["status"], "direct_invariant_observed")
+        self.assertEqual(result["failure_kind"], live.DIRECT_INVARIANT_FAILURE)
+        self.assertEqual(
+            result["scientific_interpretation"],
+            c5.DIRECT_INVARIANT_VIOLATION_OBSERVED,
+        )
+        self.assertEqual(len(store.failures), 1)
+        self.assertEqual(len(store.direct_observations), 1)
+        self.assertEqual(
+            store.direct_observations[0]["overall_interpretation"],
+            c5.DIRECT_INVARIANT_VIOLATION_OBSERVED,
+        )
+        self.assertLess(
+            store.calls.index(("root-checkpoint", ())),
+            store.calls.index(("direct-observation",)),
+        )
+        self.assertNotIn("private constraint", repr(store.direct_observations))
 
     async def test_resume_keeps_completed_blocks_and_restarts_partial_block_from_zero(self) -> None:
         store = FakeStore()
@@ -453,9 +644,18 @@ class C5LiveCoreTests(IsolatedAsyncioTestCase):
         blocks = result["block_results"]
 
         self.assertEqual(blocks[0]["canonical_graph_parity"]["status"], "pass")
+        self.assertFalse(
+            blocks[0]["execution_path_evidence"]["live_graph_outputs_replay_fixed"]
+        )
         self.assertEqual(blocks[1]["interpretation"], c5.NO_NAIVE_PARALLEL_INSUFFICIENCY_OBSERVED)
         self.assertEqual(blocks[2]["canonical_graph_parity"]["status"], "mismatch")
         self.assertEqual(blocks[2]["interpretation"], c5.OUTCOME_INSTABILITY_OR_CONFOUNDED)
+        self.assertTrue(
+            any(
+                "unfixed model outputs" in item
+                for item in blocks[2]["confounded_evidence"]
+            )
+        )
         self.assertEqual(blocks[3]["retrieval_parity"]["status"], "mismatch")
         self.assertEqual(blocks[3]["interpretation"], c5.OUTCOME_INSTABILITY_OR_CONFOUNDED)
         self.assertTrue(all(item["supplemental_qa"]["accuracy"] == 0.0 for item in blocks))

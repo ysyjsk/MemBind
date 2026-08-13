@@ -169,13 +169,22 @@ class CurrentStateEvaluatorTests(TestCase):
                     ).allowed
                 )
 
-    def test_repository_state_remains_c4_offline_and_denies_all_live_actions(self):
+    def test_repository_state_grants_only_its_single_exact_characterization_action(self):
         state = json.loads((ROOT / "CURRENT_STATE.json").read_text(encoding="ascii"))
         self.assertEqual(state["current_stage"], "NATIVE_CHARACTERIZATION")
+        declared = state["authorized_live_actions"]
+        self.assertIsInstance(declared, list)
+        self.assertEqual(len(declared), 1)
+        action_by_value = {action.value: action for action in LiveAction}
+        self.assertIn(declared[0], action_by_value)
+        selected = action_by_value[declared[0]]
         self.assertEqual(
-            state["current_action_scope"], "native_characterization_c4_offline_only"
+            state["current_action_scope"], f"{selected.value}_live_only"
         )
-        self.assertEqual(state["authorized_live_actions"], [])
+        self.assertEqual(state["status"], f"{selected.value}_live_only")
+        self.assertEqual(state["next_allowed_action"], f"run_{selected.value}")
+        self.assertTrue(state["native_characterization_live_authorized"])
+        self.assertFalse(state["service_admin_authorized"])
         for action in LiveAction:
             with self.subTest(action=action.value):
                 decision = evaluate_live_action(
@@ -183,7 +192,7 @@ class CurrentStateEvaluatorTests(TestCase):
                     action,
                     candidate_id="Q1" if action is LiveAction.H0_CANDIDATE else None,
                 )
-                self.assertFalse(decision.allowed)
+                self.assertEqual(decision.allowed, action is selected)
 
     def test_h0_candidate_requires_exact_stage_scope_action_and_candidate(self):
         allowed = _state(

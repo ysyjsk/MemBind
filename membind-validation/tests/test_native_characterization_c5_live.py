@@ -7,6 +7,7 @@ construct a live run or delegate to the already-tested C5 live core.
 
 from __future__ import annotations
 
+import asyncio
 import hashlib
 import io
 import json
@@ -31,6 +32,38 @@ HISTORY_ID = "07741c45"
 RUN_ID = "c5-0123456789abcdef"
 RESUME_RUN_ID = "c5-fedcba9876543210"
 SHA_A = "a" * 64
+C4_RUN_ID = "c4-8e76fba0288047f9"
+JUDGE_RUN_ID = "jq-b00a9689796c1e67"
+C4_BOUNDED_USE = (
+    "c4_summary_sufficient_for_c5_progression_without_reclassifying_"
+    "c4_attempt_mergeable"
+)
+TCB_PATHS = {
+    "c5_core_source": "src/native_characterization_c5.py",
+    "c5_authorization_source": "src/native_characterization_c5_authorization.py",
+    "c5_live_source": "src/native_characterization_c5_live.py",
+    "c5_live_artifacts_source": "src/native_characterization_c5_live_artifacts.py",
+    "c5_live_core_source": "src/native_characterization_c5_live_core.py",
+    "c5_qa_source": "src/native_characterization_c5_qa.py",
+    "c5_core_tests": "tests/test_native_characterization_c5.py",
+    "c5_authorization_tests": "tests/test_native_characterization_c5_authorization.py",
+    "c5_live_tests": "tests/test_native_characterization_c5_live.py",
+    "c5_live_artifacts_tests": "tests/test_native_characterization_c5_live_artifacts.py",
+    "c5_live_core_tests": "tests/test_native_characterization_c5_live_core.py",
+    "c5_live_integration_tests": "tests/test_native_characterization_c5_live_integration.py",
+    "c5_qa_tests": "tests/test_native_characterization_c5_qa.py",
+}
+GREEN_RECEIPT_PATHS = {
+    "c5_focused_regression": "artifacts/tdd/native_characterization_c5_focused_green_20260813.log",
+    "c5_stale_state_regression": (
+        "artifacts/tdd/native_characterization_c5_stale_state_fixture_"
+        "focused_green_20260813.log"
+    ),
+    "c5_full_offline_regression": (
+        "artifacts/tdd/native_characterization_c5_full_offline_regression_"
+        "20260813.log"
+    ),
+}
 NAMESPACES = (
     "nc-e4-1434fcb947df5c3d",
     "nc-e4-b352061ffa0d4b21",
@@ -48,6 +81,18 @@ def _write_json(path: Path, value: object) -> None:
     path.write_text(
         json.dumps(value, ensure_ascii=True, sort_keys=True, separators=(",", ":"))
         + "\n",
+        encoding="ascii",
+    )
+
+
+def _write_events(path: Path, values: list[dict[str, object]]) -> None:
+    path.parent.mkdir(parents=True, exist_ok=True)
+    path.write_text(
+        "".join(
+            json.dumps(value, ensure_ascii=True, sort_keys=True, separators=(",", ":"))
+            + "\n"
+            for value in values
+        ),
         encoding="ascii",
     )
 
@@ -85,6 +130,19 @@ class FlushStream(io.StringIO):
         super().flush()
 
 
+class ClosableQA:
+    def __init__(self) -> None:
+        self.closed = False
+
+    async def __call__(
+        self, _runtime: object, _block: core.C5Block
+    ) -> dict[str, object]:
+        return {"status": "SUCCESS", "correct": True}
+
+    async def aclose(self) -> None:
+        self.closed = True
+
+
 class Fixture:
     def __init__(self, owner: IsolatedAsyncioTestCase) -> None:
         temporary = tempfile.TemporaryDirectory()
@@ -99,14 +157,29 @@ class Fixture:
             / "artifacts/native_characterization/freeze_reference_aligned_64k.json"
         )
         self.c4_path = self.runs_root / "c4-8e76fba0288047f9/e3_sync_async.json"
+        self.c4_checkpoint_path = self.c4_path.parent / "checkpoint.json"
+        self.c4_events_path = self.c4_path.parent / "events.jsonl"
         self.judge_summary_path = (
             self.validation
             / "artifacts/judge_qualification/runs/jq-b00a9689796c1e67/qualification_summary.json"
         )
         self.judge_runtime_path = self.judge_summary_path.parent / "runtime_identity.json"
+        self.judge_manifest_path = self.judge_summary_path.parent / "manifest.json"
+        self.judge_freeze_path = self.judge_summary_path.parent / "fixture_freeze.json"
+        self.judge_checkpoint_path = self.judge_summary_path.parent / "checkpoint.json"
+        self.judge_events_path = self.judge_summary_path.parent / "events.jsonl"
         self.raw_path = self.repo / "raw/longmemeval_s_cleaned.json"
         _write_json(self.raw_path, [_raw_record()])
         self.episodes = dataset.build_episodes(_raw_record())
+
+        for name, relative in TCB_PATHS.items():
+            target = self.validation / relative
+            target.parent.mkdir(parents=True, exist_ok=True)
+            target.write_text(f"frozen {name}\n", encoding="ascii")
+        for name, relative in GREEN_RECEIPT_PATHS.items():
+            target = self.validation / relative
+            target.parent.mkdir(parents=True, exist_ok=True)
+            target.write_text(f"Ran {80 if name != 'c5_full_offline_regression' else 814} tests in 1.0s\n\nOK\n", encoding="ascii")
 
         frozen_episodes = [
             {
@@ -185,9 +258,66 @@ class Fixture:
                 "run_id": "c4-8e76fba0288047f9",
                 "block_count": 10,
                 "episode_count": 490,
+                "mergeable": False,
             }
         )
         _write_json(self.c4_path, self.c4)
+        self.c4_checkpoint: dict[str, object] = _seal(
+            {
+                "schema_version": "membind.native-characterization-c4-checkpoint.v1",
+                "run_id": C4_RUN_ID,
+                "stage": "C4/E3",
+                "checkpoint_level": "root",
+                "status": "incomplete_invalid_non_mergeable",
+                "progress": {
+                    "completed_block_indices": list(range(10)),
+                    "completed_episode_count": 490,
+                    "failure_stage": "verification",
+                },
+                "failure": {
+                    "error_class": "builtins.TypeError",
+                    "token_envelope": {
+                        "output_tokens": None,
+                        "prompt_tokens": None,
+                        "requested_max_tokens": None,
+                    },
+                },
+            }
+        )
+        _write_json(self.c4_checkpoint_path, self.c4_checkpoint)
+        self.c4_events = []
+        for sequence in range(735):
+            self.c4_events.append(
+                _seal(
+                    {
+                        "schema_version": "membind.native-characterization-c4-event.v1",
+                        "run_id": C4_RUN_ID,
+                        "event_sequence": sequence,
+                        "event_type": (
+                            "enqueue" if sequence < 245 else "publication"
+                        ),
+                    }
+                )
+            )
+        self.c4_events.append(
+            _seal(
+                {
+                    "schema_version": "membind.native-characterization-c4-event.v1",
+                    "run_id": C4_RUN_ID,
+                    "event_sequence": 735,
+                    "event_type": "failure",
+                    "block_index": None,
+                    "source_sequence": None,
+                    "failure_scope": "stage",
+                    "failure_stage": "verification",
+                    "status": "incomplete_invalid_non_mergeable",
+                    "error_class": "builtins.TypeError",
+                    "completed_block_count": 10,
+                    "completed_episode_count": 490,
+                }
+            )
+        )
+        _write_events(self.c4_events_path, self.c4_events)
 
         self.judge_runtime: dict[str, object] = _seal(
             {
@@ -212,10 +342,77 @@ class Fixture:
             }
         )
         _write_json(self.judge_runtime_path, self.judge_runtime)
+        self.judge_freeze: dict[str, object] = _seal(
+            {
+                "schema_version": "membind.judge-qualification-freeze.v1",
+                "protocol_id": "judge-qualification-v1.0",
+                "scientific_surface": "JUDGE_QUALIFICATION_ONLY",
+                "items": [{"item_index": index} for index in range(14)],
+                "strict_pass_gate": {"planned_item_count": 14},
+            }
+        )
+        _write_json(self.judge_freeze_path, self.judge_freeze)
+        self.judge_manifest: dict[str, object] = _seal(
+            {
+                "schema_version": "membind.judge-qualification-run.v1",
+                "protocol_id": "judge-qualification-v1.0",
+                "scientific_surface": "JUDGE_QUALIFICATION_ONLY",
+                "run_id": JUDGE_RUN_ID,
+                "freeze_file_sha256": _sha(self.judge_freeze_path),
+                "freeze_payload_sha256": self.judge_freeze["payload_sha256"],
+                "runtime_identity_file_sha256": _sha(self.judge_runtime_path),
+                "runtime_identity_payload_sha256": self.judge_runtime[
+                    "payload_sha256"
+                ],
+            }
+        )
+        _write_json(self.judge_manifest_path, self.judge_manifest)
+        previous: str | None = None
+        self.judge_events: list[dict[str, object]] = []
+        for sequence in range(28):
+            event = _seal(
+                {
+                    "schema_version": "membind.judge-qualification-event.v1",
+                    "run_id": JUDGE_RUN_ID,
+                    "event_sequence": sequence,
+                    "previous_event_sha256": previous,
+                    "event_type": (
+                        "dispatch_intent_durable"
+                        if sequence % 2 == 0
+                        else "terminal_success"
+                    ),
+                    "item_index": sequence // 2,
+                }
+            )
+            self.judge_events.append(event)
+            previous = str(event["payload_sha256"])
+        _write_events(self.judge_events_path, self.judge_events)
+        self.judge_checkpoint: dict[str, object] = _seal(
+            {
+                "schema_version": "membind.judge-qualification-checkpoint.v1",
+                "run_id": JUDGE_RUN_ID,
+                "status": "complete",
+                "phase": "finalized",
+                "failure_class": None,
+                "failed_item_id": None,
+                "terminal_item_count": 14,
+                "next_item_index": 14,
+                "event_count": 28,
+                "last_event_payload_sha256": self.judge_events[-1][
+                    "payload_sha256"
+                ],
+                "freeze_payload_sha256": self.judge_freeze["payload_sha256"],
+                "runtime_identity_payload_sha256": self.judge_runtime[
+                    "payload_sha256"
+                ],
+            }
+        )
+        _write_json(self.judge_checkpoint_path, self.judge_checkpoint)
         self.judge_summary: dict[str, object] = _seal(
             {
                 "schema_version": "membind.judge-qualification-summary.v1",
                 "protocol_id": "judge-qualification-v1.0",
+                "scientific_surface": "JUDGE_QUALIFICATION_ONLY",
                 "run_id": "jq-b00a9689796c1e67",
                 "attempt_status": "complete",
                 "qualification_status": "PASS",
@@ -238,6 +435,7 @@ class Fixture:
                 "runtime_identity_payload_sha256": self.judge_runtime[
                     "payload_sha256"
                 ],
+                "freeze_payload_sha256": self.judge_freeze["payload_sha256"],
             }
         )
         _write_json(self.judge_summary_path, self.judge_summary)
@@ -257,6 +455,35 @@ class Fixture:
             "c4_summary_path": self.c4_path.relative_to(self.validation).as_posix(),
             "c4_summary_sha256": _sha(self.c4_path),
             "c4_summary_payload_sha256": self.c4["payload_sha256"],
+            "c4_disposition": {
+                "run_id": C4_RUN_ID,
+                "summary_path": self.c4_path.relative_to(self.validation).as_posix(),
+                "summary_sha256": _sha(self.c4_path),
+                "summary_payload_sha256": self.c4["payload_sha256"],
+                "summary_status": "complete",
+                "summary_mergeable": False,
+                "checkpoint_path": self.c4_checkpoint_path.relative_to(
+                    self.validation
+                ).as_posix(),
+                "checkpoint_sha256": _sha(self.c4_checkpoint_path),
+                "checkpoint_payload_sha256": self.c4_checkpoint["payload_sha256"],
+                "events_path": self.c4_events_path.relative_to(
+                    self.validation
+                ).as_posix(),
+                "events_sha256": _sha(self.c4_events_path),
+                "event_count": 736,
+                "failure_event_count": 1,
+                "last_failure_event_sequence": 735,
+                "last_failure_event_payload_sha256": self.c4_events[-1][
+                    "payload_sha256"
+                ],
+                "retained_failure": {
+                    "attempt_status": "incomplete_invalid_non_mergeable",
+                    "failure_stage": "verification",
+                    "error_class": "builtins.TypeError",
+                },
+                "bounded_use": C4_BOUNDED_USE,
+            },
             "judge_qualification_summary_path": self.judge_summary_path.relative_to(
                 self.validation
             ).as_posix(),
@@ -271,6 +498,66 @@ class Fixture:
             "judge_runtime_identity_payload_sha256": self.judge_runtime[
                 "payload_sha256"
             ],
+            "judge_closure": {
+                "manifest_path": self.judge_manifest_path.relative_to(
+                    self.validation
+                ).as_posix(),
+                "manifest_sha256": _sha(self.judge_manifest_path),
+                "manifest_payload_sha256": self.judge_manifest["payload_sha256"],
+                "fixture_freeze_path": self.judge_freeze_path.relative_to(
+                    self.validation
+                ).as_posix(),
+                "fixture_freeze_sha256": _sha(self.judge_freeze_path),
+                "fixture_freeze_payload_sha256": self.judge_freeze[
+                    "payload_sha256"
+                ],
+                "checkpoint_path": self.judge_checkpoint_path.relative_to(
+                    self.validation
+                ).as_posix(),
+                "checkpoint_sha256": _sha(self.judge_checkpoint_path),
+                "checkpoint_payload_sha256": self.judge_checkpoint[
+                    "payload_sha256"
+                ],
+                "events_path": self.judge_events_path.relative_to(
+                    self.validation
+                ).as_posix(),
+                "events_sha256": _sha(self.judge_events_path),
+                "event_count": 28,
+                "last_event_payload_sha256": self.judge_events[-1][
+                    "payload_sha256"
+                ],
+            },
+            "c5_live_tcb_paths": dict(TCB_PATHS),
+            "c5_live_tcb_sha256": {
+                name: _sha(self.validation / relative)
+                for name, relative in TCB_PATHS.items()
+            },
+            "c5_focused_regression": {
+                "status": "green",
+                "test_count": 80,
+                "path": GREEN_RECEIPT_PATHS["c5_focused_regression"],
+                "sha256": _sha(
+                    self.validation / GREEN_RECEIPT_PATHS["c5_focused_regression"]
+                ),
+            },
+            "c5_full_offline_regression": {
+                "status": "green",
+                "test_count": 814,
+                "path": GREEN_RECEIPT_PATHS["c5_full_offline_regression"],
+                "sha256": _sha(
+                    self.validation
+                    / GREEN_RECEIPT_PATHS["c5_full_offline_regression"]
+                ),
+            },
+            "c5_stale_state_regression": {
+                "status": "green",
+                "test_count": 80,
+                "path": GREEN_RECEIPT_PATHS["c5_stale_state_regression"],
+                "sha256": _sha(
+                    self.validation
+                    / GREEN_RECEIPT_PATHS["c5_stale_state_regression"]
+                ),
+            },
             "live_authorized": True,
         }
         self.state: dict[str, object] = {
@@ -285,6 +572,10 @@ class Fixture:
             "live_h0_candidate_authorized": False,
             "authorized_h0_candidate_id": None,
             "service_admin_authorized": False,
+            "v3_smoke_003_authorized": False,
+            "stage_progress": {
+                "native_characterization": live.TARGET_PROGRESS,
+            },
             "native_characterization_c5_authorization": self.authorization,
         }
         self.write_state()
@@ -409,6 +700,283 @@ class Fixture:
 class NativeCharacterizationC5LiveTests(IsolatedAsyncioTestCase):
     maxDiff = None
 
+    async def test_fresh_controller_lease_precedes_preflight_and_store_mutation(self) -> None:
+        fixture = Fixture(self)
+        first_events: list[tuple[object, ...]] = []
+        second_events: list[tuple[object, ...]] = []
+        runner_started = asyncio.Event()
+        release_runner = asyncio.Event()
+        runner_calls = 0
+
+        async def blocking_first_runner(**_kwargs: object) -> dict[str, object]:
+            nonlocal runner_calls
+            runner_calls += 1
+            if runner_calls == 1:
+                runner_started.set()
+                await release_runner.wait()
+            return {
+                "status": "complete",
+                "completed_block_indices": [0, 1, 2, 3],
+            }
+
+        first = asyncio.create_task(
+            live.execute_c5_live(
+                validation_root=fixture.validation,
+                state_path=fixture.state_path,
+                run_id=RUN_ID,
+                dependencies=fixture.dependencies(
+                    first_events, run_c5=blocking_first_runner
+                ),
+                progress_stream=None,
+            )
+        )
+        with fixture.constants():
+            await runner_started.wait()
+            with self.assertRaisesRegex(
+                live.C5LiveAdapterError, "c5_run_lease_locked"
+            ):
+                await live.execute_c5_live(
+                    validation_root=fixture.validation,
+                    state_path=fixture.state_path,
+                    run_id=RUN_ID,
+                    dependencies=fixture.dependencies(
+                        second_events, run_c5=blocking_first_runner
+                    ),
+                    progress_stream=None,
+                )
+            self.assertEqual([event[0] for event in second_events], ["gate"])
+            self.assertEqual(runner_calls, 1)
+            release_runner.set()
+            await first
+
+            lease = live._C5RunLease.acquire(fixture.runs_root, RUN_ID)
+            lease.close()
+
+    async def test_resume_controller_lease_precedes_recovery_mutation(self) -> None:
+        fixture = Fixture(self)
+        first_events: list[tuple[object, ...]] = []
+        second_events: list[tuple[object, ...]] = []
+        runner_started = asyncio.Event()
+        release_runner = asyncio.Event()
+        runner_calls = 0
+        recovery_calls = 0
+
+        async def blocking_first_runner(**_kwargs: object) -> dict[str, object]:
+            nonlocal runner_calls
+            runner_calls += 1
+            if runner_calls == 1:
+                runner_started.set()
+                await release_runner.wait()
+            return {
+                "status": "complete",
+                "completed_block_indices": [0, 1, 2, 3],
+            }
+
+        def prepare(**_kwargs: object) -> dict[str, object]:
+            nonlocal recovery_calls
+            recovery_calls += 1
+            return {"status": "running"}
+
+        inspection = live.artifacts.C5ResumeInspection(
+            completed_block_indices=(),
+            partial_block_index=0,
+        )
+        store = object()
+        patches = (
+            mock.patch.object(
+                live.artifacts,
+                "verify_c5_live_artifacts",
+                return_value={
+                    "attempt_status": live.artifacts.INCOMPLETE_NON_MERGEABLE,
+                    "failure_event_count": 0,
+                },
+            ),
+            mock.patch.object(
+                live.artifacts,
+                "prepare_c5_running_resume_prefix",
+                side_effect=prepare,
+            ),
+            mock.patch.object(
+                live.artifacts,
+                "inspect_c5_resume_prefix",
+                return_value=inspection,
+            ),
+            mock.patch.object(
+                live.artifacts.C5LiveArtifactStore,
+                "open_existing",
+                return_value=store,
+            ),
+        )
+        with fixture.constants(), patches[0], patches[1], patches[2], patches[3]:
+            first = asyncio.create_task(
+                live.execute_c5_live(
+                    validation_root=fixture.validation,
+                    state_path=fixture.state_path,
+                    resume_run_id=RESUME_RUN_ID,
+                    dependencies=fixture.dependencies(
+                        first_events, run_c5=blocking_first_runner
+                    ),
+                    progress_stream=None,
+                )
+            )
+            await runner_started.wait()
+            self.assertEqual(recovery_calls, 1)
+            with self.assertRaisesRegex(
+                live.C5LiveAdapterError, "c5_run_lease_locked"
+            ):
+                await live.execute_c5_live(
+                    validation_root=fixture.validation,
+                    state_path=fixture.state_path,
+                    resume_run_id=RESUME_RUN_ID,
+                    dependencies=fixture.dependencies(
+                        second_events, run_c5=blocking_first_runner
+                    ),
+                    progress_stream=None,
+                )
+            self.assertEqual([event[0] for event in second_events], ["gate"])
+            self.assertEqual(recovery_calls, 1)
+            self.assertEqual(runner_calls, 1)
+            release_runner.set()
+            await first
+
+            lease = live._C5RunLease.acquire(fixture.runs_root, RESUME_RUN_ID)
+            lease.close()
+
+    async def test_controller_lease_is_held_until_qa_close_completes(self) -> None:
+        fixture = Fixture(self)
+        events: list[tuple[object, ...]] = []
+        close_started = asyncio.Event()
+        release_close = asyncio.Event()
+
+        class BlockingCloseQA(ClosableQA):
+            async def aclose(self) -> None:
+                close_started.set()
+                await release_close.wait()
+                await super().aclose()
+
+        class LockCheckingStore:
+            def __init__(self) -> None:
+                self.close_observed_locked = False
+
+            def close(self) -> None:
+                try:
+                    competing = live._C5RunLease.acquire(
+                        fixture.runs_root, RUN_ID
+                    )
+                except live.C5LiveAdapterError as error:
+                    self.close_observed_locked = (
+                        error.code == "c5_run_lease_locked"
+                    )
+                else:
+                    competing.close()
+
+        qa = BlockingCloseQA()
+        store = LockCheckingStore()
+        dependencies = fixture.dependencies(events, qa_evaluator=qa)
+        dependencies = replace(
+            dependencies, store_factory=lambda **_kwargs: store
+        )
+        with fixture.constants():
+            controller = asyncio.create_task(
+                live.execute_c5_live(
+                    validation_root=fixture.validation,
+                    state_path=fixture.state_path,
+                    run_id=RUN_ID,
+                    dependencies=dependencies,
+                    progress_stream=None,
+                )
+            )
+            await close_started.wait()
+            with self.assertRaisesRegex(
+                live.C5LiveAdapterError, "c5_run_lease_locked"
+            ):
+                live._C5RunLease.acquire(fixture.runs_root, RUN_ID)
+            release_close.set()
+            await controller
+
+        self.assertTrue(qa.closed)
+        self.assertTrue(store.close_observed_locked)
+        lease = live._C5RunLease.acquire(fixture.runs_root, RUN_ID)
+        lease.close()
+
+    async def test_process_exit_releases_controller_lease(self) -> None:
+        fixture = Fixture(self)
+        script = """
+import sys
+from pathlib import Path
+sys.path.insert(0, sys.argv[1])
+from native_characterization_c5_live import _C5RunLease
+lease = _C5RunLease.acquire(Path(sys.argv[2]), sys.argv[3])
+print('locked', flush=True)
+sys.stdin.buffer.read(1)
+"""
+        process = await asyncio.create_subprocess_exec(
+            sys.executable,
+            "-c",
+            script,
+            str(ROOT / "src"),
+            str(fixture.runs_root),
+            RUN_ID,
+            stdin=asyncio.subprocess.PIPE,
+            stdout=asyncio.subprocess.PIPE,
+            stderr=asyncio.subprocess.PIPE,
+        )
+        self.assertIsNotNone(process.stdout)
+        self.assertEqual(await process.stdout.readline(), b"locked\n")
+        with self.assertRaisesRegex(
+            live.C5LiveAdapterError, "c5_run_lease_locked"
+        ):
+            live._C5RunLease.acquire(fixture.runs_root, RUN_ID)
+        self.assertIsNotNone(process.stdin)
+        process.stdin.write(b"x")
+        await process.stdin.drain()
+        self.assertEqual(await process.wait(), 0)
+
+        lease = live._C5RunLease.acquire(fixture.runs_root, RUN_ID)
+        lease.close()
+
+    async def test_qa_close_failure_still_closes_store_before_lease_release(self) -> None:
+        fixture = Fixture(self)
+        events: list[tuple[object, ...]] = []
+
+        class FailingCloseQA(ClosableQA):
+            async def aclose(self) -> None:
+                raise RuntimeError("sanitized close failure")
+
+        class LockCheckingStore:
+            def __init__(self) -> None:
+                self.closed_while_locked = False
+
+            def close(self) -> None:
+                try:
+                    competing = live._C5RunLease.acquire(
+                        fixture.runs_root, RUN_ID
+                    )
+                except live.C5LiveAdapterError as error:
+                    self.closed_while_locked = error.code == "c5_run_lease_locked"
+                else:
+                    competing.close()
+
+        store = LockCheckingStore()
+        dependencies = fixture.dependencies(events, qa_evaluator=FailingCloseQA())
+        dependencies = replace(
+            dependencies, store_factory=lambda **_kwargs: store
+        )
+        with fixture.constants(), self.assertRaisesRegex(
+            RuntimeError, "sanitized close failure"
+        ):
+            await live.execute_c5_live(
+                validation_root=fixture.validation,
+                state_path=fixture.state_path,
+                run_id=RUN_ID,
+                dependencies=dependencies,
+                progress_stream=None,
+            )
+
+        self.assertTrue(store.closed_while_locked)
+        lease = live._C5RunLease.acquire(fixture.runs_root, RUN_ID)
+        lease.close()
+
     async def test_exact_c5_only_gate_is_first_and_denial_has_no_side_effects(self) -> None:
         fixture = Fixture(self)
         events: list[tuple[object, ...]] = []
@@ -504,6 +1072,177 @@ class NativeCharacterizationC5LiveTests(IsolatedAsyncioTestCase):
                 self.assertNotIn("store", [event[0] for event in events])
                 self.assertNotIn("runner", [event[0] for event in events])
 
+    async def test_exact_state_and_complete_receipt_are_required_before_preflight(self) -> None:
+        def current_blocker(fixture: Fixture) -> None:
+            fixture.state["current_blocker"] = "stale blocker"
+
+        def live_h0(fixture: Fixture) -> None:
+            fixture.state["live_h0_candidate_authorized"] = True
+
+        def h0_candidate(fixture: Fixture) -> None:
+            fixture.state["authorized_h0_candidate_id"] = "h0-stale"
+
+        def missing_c4_closure(fixture: Fixture) -> None:
+            fixture.authorization.pop("c4_disposition")
+
+        def missing_judge_closure(fixture: Fixture) -> None:
+            fixture.authorization.pop("judge_closure")
+
+        def missing_tcb(fixture: Fixture) -> None:
+            fixture.authorization.pop("c5_live_tcb_sha256")
+
+        def missing_focused_green(fixture: Fixture) -> None:
+            fixture.authorization.pop("c5_focused_regression")
+
+        def missing_full_green(fixture: Fixture) -> None:
+            fixture.authorization.pop("c5_full_offline_regression")
+
+        for mutation in (
+            current_blocker,
+            live_h0,
+            h0_candidate,
+            missing_c4_closure,
+            missing_judge_closure,
+            missing_tcb,
+            missing_focused_green,
+            missing_full_green,
+        ):
+            with self.subTest(mutation=mutation.__name__):
+                fixture = Fixture(self)
+                mutation(fixture)
+                fixture.write_state()
+                events: list[tuple[object, ...]] = []
+                with fixture.constants(), self.assertRaises(live.C5LiveAdapterError):
+                    await live.execute_c5_live(
+                        validation_root=fixture.validation,
+                        state_path=fixture.state_path,
+                        run_id=RUN_ID,
+                        dependencies=fixture.dependencies(events),
+                        progress_stream=None,
+                    )
+                self.assertEqual([event[0] for event in events], ["gate", "state"])
+
+    async def test_tcb_file_drift_fails_before_preflight(self) -> None:
+        fixture = Fixture(self)
+        target = fixture.validation / TCB_PATHS["c5_live_core_source"]
+        target.write_text("drifted after authorization\n", encoding="ascii")
+        events: list[tuple[object, ...]] = []
+
+        with fixture.constants(), self.assertRaisesRegex(
+            live.C5LiveAdapterError, "c5_live_tcb"
+        ):
+            await live.execute_c5_live(
+                validation_root=fixture.validation,
+                state_path=fixture.state_path,
+                run_id=RUN_ID,
+                dependencies=fixture.dependencies(events),
+                progress_stream=None,
+            )
+        self.assertNotIn("preflight", [event[0] for event in events])
+
+    async def test_c4_closure_seal_shape_and_final_failure_are_revalidated(self) -> None:
+        def checkpoint_shape(fixture: Fixture) -> None:
+            fixture.c4_checkpoint["status"] = "complete"
+            candidate = dict(fixture.c4_checkpoint)
+            candidate.pop("payload_sha256", None)
+            fixture.c4_checkpoint = _seal(candidate)
+            _write_json(fixture.c4_checkpoint_path, fixture.c4_checkpoint)
+            closure = fixture.authorization["c4_disposition"]
+            closure["checkpoint_sha256"] = _sha(fixture.c4_checkpoint_path)
+            closure["checkpoint_payload_sha256"] = fixture.c4_checkpoint[
+                "payload_sha256"
+            ]
+
+        def final_failure(fixture: Fixture) -> None:
+            fixture.c4_events[-1]["failure_stage"] = "finalization"
+            candidate = dict(fixture.c4_events[-1])
+            candidate.pop("payload_sha256", None)
+            fixture.c4_events[-1] = _seal(candidate)
+            _write_events(fixture.c4_events_path, fixture.c4_events)
+            closure = fixture.authorization["c4_disposition"]
+            closure["events_sha256"] = _sha(fixture.c4_events_path)
+            closure["last_failure_event_payload_sha256"] = fixture.c4_events[-1][
+                "payload_sha256"
+            ]
+
+        def truncated_events(fixture: Fixture) -> None:
+            fixture.c4_events.pop(20)
+            _write_events(fixture.c4_events_path, fixture.c4_events)
+            fixture.authorization["c4_disposition"]["events_sha256"] = _sha(
+                fixture.c4_events_path
+            )
+
+        for mutation in (checkpoint_shape, final_failure, truncated_events):
+            with self.subTest(mutation=mutation.__name__):
+                fixture = Fixture(self)
+                mutation(fixture)
+                fixture.write_state()
+                events: list[tuple[object, ...]] = []
+                with fixture.constants(), self.assertRaisesRegex(
+                    live.C5LiveAdapterError, "c4_closure"
+                ):
+                    await live.execute_c5_live(
+                        validation_root=fixture.validation,
+                        state_path=fixture.state_path,
+                        run_id=RUN_ID,
+                        dependencies=fixture.dependencies(events),
+                        progress_stream=None,
+                    )
+                self.assertNotIn("preflight", [event[0] for event in events])
+
+    async def test_judge_closure_shapes_and_full_event_chain_are_revalidated(self) -> None:
+        def manifest_binding(fixture: Fixture) -> None:
+            fixture.judge_manifest["freeze_payload_sha256"] = SHA_A
+            candidate = dict(fixture.judge_manifest)
+            candidate.pop("payload_sha256", None)
+            fixture.judge_manifest = _seal(candidate)
+            _write_json(fixture.judge_manifest_path, fixture.judge_manifest)
+            closure = fixture.authorization["judge_closure"]
+            closure["manifest_sha256"] = _sha(fixture.judge_manifest_path)
+            closure["manifest_payload_sha256"] = fixture.judge_manifest[
+                "payload_sha256"
+            ]
+
+        def checkpoint_shape(fixture: Fixture) -> None:
+            fixture.judge_checkpoint["terminal_item_count"] = 13
+            candidate = dict(fixture.judge_checkpoint)
+            candidate.pop("payload_sha256", None)
+            fixture.judge_checkpoint = _seal(candidate)
+            _write_json(fixture.judge_checkpoint_path, fixture.judge_checkpoint)
+            closure = fixture.authorization["judge_closure"]
+            closure["checkpoint_sha256"] = _sha(fixture.judge_checkpoint_path)
+            closure["checkpoint_payload_sha256"] = fixture.judge_checkpoint[
+                "payload_sha256"
+            ]
+
+        def event_chain(fixture: Fixture) -> None:
+            fixture.judge_events[12]["previous_event_sha256"] = SHA_A
+            candidate = dict(fixture.judge_events[12])
+            candidate.pop("payload_sha256", None)
+            fixture.judge_events[12] = _seal(candidate)
+            _write_events(fixture.judge_events_path, fixture.judge_events)
+            fixture.authorization["judge_closure"]["events_sha256"] = _sha(
+                fixture.judge_events_path
+            )
+
+        for mutation in (manifest_binding, checkpoint_shape, event_chain):
+            with self.subTest(mutation=mutation.__name__):
+                fixture = Fixture(self)
+                mutation(fixture)
+                fixture.write_state()
+                events: list[tuple[object, ...]] = []
+                with fixture.constants(), self.assertRaisesRegex(
+                    live.C5LiveAdapterError, "judge_closure"
+                ):
+                    await live.execute_c5_live(
+                        validation_root=fixture.validation,
+                        state_path=fixture.state_path,
+                        run_id=RUN_ID,
+                        dependencies=fixture.dependencies(events),
+                        progress_stream=None,
+                    )
+                self.assertNotIn("preflight", [event[0] for event in events])
+
     async def test_all_frozen_namespaces_are_preflighted_before_store_or_core(self) -> None:
         fixture = Fixture(self)
         events: list[tuple[object, ...]] = []
@@ -597,8 +1336,34 @@ class NativeCharacterizationC5LiveTests(IsolatedAsyncioTestCase):
                 "judge_qualification_summary_payload_sha256",
                 "judge_runtime_identity_sha256",
                 "judge_runtime_identity_payload_sha256",
+                "c4_checkpoint_sha256",
+                "c4_checkpoint_payload_sha256",
+                "c4_events_sha256",
+                "judge_manifest_sha256",
+                "judge_manifest_payload_sha256",
+                "judge_fixture_freeze_sha256",
+                "judge_fixture_freeze_payload_sha256",
+                "judge_checkpoint_sha256",
+                "judge_checkpoint_payload_sha256",
+                "judge_events_sha256",
             },
         )
+
+    async def test_controller_closes_owned_qa_transport_after_core_returns(self) -> None:
+        fixture = Fixture(self)
+        events: list[tuple[object, ...]] = []
+        qa = ClosableQA()
+
+        with fixture.constants():
+            await live.execute_c5_live(
+                validation_root=fixture.validation,
+                state_path=fixture.state_path,
+                run_id=RUN_ID,
+                dependencies=fixture.dependencies(events, qa_evaluator=qa),
+                progress_stream=None,
+            )
+
+        self.assertTrue(qa.closed)
 
     async def test_wrong_dataset_episode_hash_fails_before_preflight(self) -> None:
         fixture = Fixture(self)

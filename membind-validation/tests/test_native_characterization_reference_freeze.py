@@ -86,7 +86,9 @@ class NativeCharacterizationReferenceFreezeTests(TestCase):
         )
 
     def test_reference_freeze_binds_the_actual_provider_sources_and_contract(self) -> None:
-        path = ROOT / "artifacts/native_characterization/freeze_reference_aligned.json"
+        # The 64K derivative is the current execution freeze; its parent remains
+        # historical evidence for the pre-64K C2 attempt and must not be rewritten.
+        path = ROOT / "artifacts/native_characterization/freeze_reference_aligned_64k.json"
         freeze = json.loads(path.read_text(encoding="ascii"))
         inputs = freeze["input_hashes"]
 

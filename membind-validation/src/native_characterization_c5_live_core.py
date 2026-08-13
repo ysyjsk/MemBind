@@ -19,6 +19,7 @@ from typing import Any, Awaitable, Callable, Mapping, Protocol, Sequence
 
 import native_characterization_c5 as c5
 from graphiti_native import graphiti_episode_kwargs
+from neo4j.exceptions import ConstraintError
 
 
 FROZEN_HISTORY_ID = "07741c45"
@@ -236,7 +237,7 @@ def load_frozen_e4_schedule(
 def classify_live_failure(error: BaseException) -> LiveFailureClassification:
     """Keep transport/service failures out of the scientific headline."""
 
-    if isinstance(error, c5.TransactionFailure):
+    if isinstance(error, (c5.TransactionFailure, ConstraintError)):
         return LiveFailureClassification(
             DIRECT_INVARIANT_FAILURE,
             c5.DIRECT_INVARIANT_VIOLATION_OBSERVED,
@@ -245,15 +246,34 @@ def classify_live_failure(error: BaseException) -> LiveFailureClassification:
 
 
 def build_supplemental_qa_view(result: Mapping[str, object]) -> dict[str, object]:
-    """Reduce a QA result to non-sensitive accuracy/status evidence."""
+    """Project only the qualified Judge's non-sensitive evidence fields."""
 
     status = str(result.get("status", "UNKNOWN"))
     correct = result.get("correct")
-    return {
-        "status": status,
-        "accuracy": float(bool(correct)) if isinstance(correct, bool) else None,
-        "headline_interpretation_effect": "none",
-    }
+    allowed = (
+        "qa_surface",
+        "question_id_sha256",
+        "retrieval_payload_sha256",
+        "retrieved_facts_sha256",
+        "retrieved_fact_count",
+        "prompt_sha256",
+        "judge_model",
+        "judge_config_sha256",
+        "reader_generation_performed",
+        "retry_count",
+        "error_class",
+    )
+    view = {key: result[key] for key in allowed if key in result}
+    view.update(
+        {
+            "status": status,
+            "accuracy": (
+                float(bool(correct)) if isinstance(correct, bool) else None
+            ),
+            "headline_interpretation_effect": "none",
+        }
+    )
+    return view
 
 
 def _normalize_graph_namespace(value: object) -> object:
@@ -456,6 +476,65 @@ async def _write_root(
     )
 
 
+async def _durable_block_failure(
+    *,
+    store: Any,
+    block: C5Block,
+    completed: Sequence[int],
+    now_ns: Callable[[], int],
+    error: BaseException,
+    failure_stage: str,
+    source_sequence: int | None,
+) -> dict[str, object]:
+    """Persist one sanitized terminal failure and close the resumable prefix."""
+
+    classification = classify_live_failure(error)
+    failure_event = await store.append_failure_event(
+        {
+            "event_type": "failure",
+            "block_index": block.block_index,
+            "concurrency": block.concurrency,
+            "graph_namespace": block.graph_namespace,
+            "source_sequence": source_sequence,
+            "failure_timestamp_ns": now_ns(),
+            "error_class": _qualified_error_class(error),
+            "failure_stage": failure_stage,
+            "failure_kind": classification.failure_kind,
+            "scientific_interpretation": classification.scientific_interpretation,
+        }
+    )
+    await _write_root(
+        store,
+        status=INCOMPLETE_NON_MERGEABLE,
+        completed=completed,
+        partial_block_index=block.block_index,
+    )
+    observation: Mapping[str, object] | None = None
+    if classification.failure_kind == DIRECT_INVARIANT_FAILURE:
+        finalize_direct = getattr(store, "finalize_direct_observation", None)
+        if callable(finalize_direct):
+            observation = await _maybe_await(
+                finalize_direct(
+                    failure_event=failure_event,
+                    completed_block_indices=list(completed),
+                )
+            )
+    return {
+        "status": (
+            "direct_invariant_observed"
+            if classification.failure_kind == DIRECT_INVARIANT_FAILURE
+            else INCOMPLETE_NON_MERGEABLE
+        ),
+        "failure_kind": classification.failure_kind,
+        "scientific_interpretation": classification.scientific_interpretation,
+        "failure_stage": failure_stage,
+        "failed_block_index": block.block_index,
+        "failed_source_sequence": source_sequence,
+        "completed_block_indices": list(completed),
+        "direct_observation": deepcopy(dict(observation)) if observation else None,
+    }
+
+
 async def _run_episode_workers(
     *,
     runtime: BlockRuntime,
@@ -471,6 +550,9 @@ async def _run_episode_workers(
     publications: list[dict[str, object]] = []
     first_failure: tuple[BaseException, int] | None = None
     stop = asyncio.Event()
+    # Frozen interarrival=0 means the whole block is offered at once.  Worker
+    # availability controls service_start, never the scientific arrival time.
+    block_arrival_ns = now_ns()
 
     async def worker(worker_id: int) -> None:
         nonlocal first_failure
@@ -480,7 +562,7 @@ async def _run_episode_workers(
             except asyncio.QueueEmpty:
                 return
             source = episode.source_sequence
-            arrival = now_ns()
+            arrival = block_arrival_ns
             intent = await store.append_intent_event(
                 {
                     "event_type": "intent",
@@ -552,10 +634,24 @@ async def run_c5_live_core(
     runtime_factory: Callable[[C5Block], BlockRuntime | Awaitable[BlockRuntime]],
     store: Any,
     now_ns: Callable[[], int],
+    provenance_hashes: Mapping[str, str] | None = None,
     resume_prefix: C5ResumePrefix | None = None,
     qa_evaluator: Callable[[BlockRuntime, C5Block], Mapping[str, object] | Awaitable[Mapping[str, object]]] | None = None,
 ) -> dict[str, object]:
     """Execute the exact four-block C5 screening with block-boundary resume."""
+
+    if provenance_hashes is not None and (
+        not isinstance(provenance_hashes, Mapping)
+        or not provenance_hashes
+        or any(
+            not isinstance(key, str)
+            or not isinstance(value, str)
+            or len(value) != 64
+            or any(character not in "0123456789abcdef" for character in value)
+            for key, value in provenance_hashes.items()
+        )
+    ):
+        raise _fail("provenance_hashes_invalid")
 
     blocks = _validate_schedule_and_inputs(schedule, episodes, episode_source_hashes)
     hashes = list(episode_source_hashes)
@@ -585,20 +681,51 @@ async def run_c5_live_core(
     ]
 
     for block in blocks[len(completed) :]:
-        runtime = await _maybe_await(runtime_factory(block))
         try:
-            counts = await runtime.namespace_counts()
-            if not isinstance(counts, NamespaceCounts):
-                raise _fail("namespace_counts_invalid")
-            is_partial = prefix.partial_block_index == block.block_index
-            if is_partial:
-                if not counts.is_empty:
-                    await runtime.clear_namespace()
-                cleared = await runtime.namespace_counts()
-                if not isinstance(cleared, NamespaceCounts) or not cleared.is_empty:
-                    raise _fail("partial_namespace_clear_failed")
-            elif not counts.is_empty:
-                raise _fail("fresh_namespace_not_empty")
+            runtime = await _maybe_await(runtime_factory(block))
+        except BaseException as error:
+            if isinstance(error, asyncio.CancelledError):
+                raise
+            return await _durable_block_failure(
+                store=store,
+                block=block,
+                completed=completed,
+                now_ns=now_ns,
+                error=error,
+                failure_stage="runtime_init",
+                source_sequence=None,
+            )
+        terminal: dict[str, object] | None = None
+        try:
+            try:
+                counts = await runtime.namespace_counts()
+                if not isinstance(counts, NamespaceCounts):
+                    raise _fail("namespace_counts_invalid")
+                is_partial = prefix.partial_block_index == block.block_index
+                if is_partial:
+                    if not counts.is_empty:
+                        await runtime.clear_namespace()
+                    cleared = await runtime.namespace_counts()
+                    if (
+                        not isinstance(cleared, NamespaceCounts)
+                        or not cleared.is_empty
+                    ):
+                        raise _fail("partial_namespace_clear_failed")
+                elif not counts.is_empty:
+                    raise _fail("fresh_namespace_not_empty")
+            except BaseException as error:
+                if isinstance(error, asyncio.CancelledError):
+                    raise
+                terminal = await _durable_block_failure(
+                    store=store,
+                    block=block,
+                    completed=completed,
+                    now_ns=now_ns,
+                    error=error,
+                    failure_stage="namespace_check",
+                    source_sequence=None,
+                )
+                return terminal
 
             publications, error, failed_source = await _run_episode_workers(
                 runtime=runtime,
@@ -609,42 +736,54 @@ async def run_c5_live_core(
                 now_ns=now_ns,
             )
             if error is not None:
-                classification = classify_live_failure(error)
-                await store.append_failure_event(
-                    {
-                        "event_type": "failure",
-                        "block_index": block.block_index,
-                        "concurrency": block.concurrency,
-                        "graph_namespace": block.graph_namespace,
-                        "source_sequence": failed_source,
-                        "failure_timestamp_ns": now_ns(),
-                        "error_class": _qualified_error_class(error),
-                        "failure_kind": classification.failure_kind,
-                        "scientific_interpretation": classification.scientific_interpretation,
-                    }
-                )
-                await _write_root(
-                    store,
-                    status=INCOMPLETE_NON_MERGEABLE,
+                terminal = await _durable_block_failure(
+                    store=store,
+                    block=block,
                     completed=completed,
-                    partial_block_index=block.block_index,
+                    now_ns=now_ns,
+                    error=error,
+                    failure_stage="add_episode",
+                    source_sequence=failed_source,
                 )
-                return {
-                    "status": INCOMPLETE_NON_MERGEABLE,
-                    "failure_kind": classification.failure_kind,
-                    "scientific_interpretation": classification.scientific_interpretation,
-                    "failed_block_index": block.block_index,
-                    "failed_source_sequence": failed_source,
-                    "completed_block_indices": completed,
-                }
+                return terminal
 
-            canonical_graph = dict(await runtime.export_canonical_graph())
+            try:
+                canonical_graph = dict(await runtime.export_canonical_graph())
+            except BaseException as error:
+                if isinstance(error, asyncio.CancelledError):
+                    raise
+                terminal = await _durable_block_failure(
+                    store=store,
+                    block=block,
+                    completed=completed,
+                    now_ns=now_ns,
+                    error=error,
+                    failure_stage="export",
+                    source_sequence=None,
+                )
+                return terminal
             reference_ids = (
                 None
                 if serial_reference is None
                 else list(serial_reference.retrieved_episode_ids)
             )
-            retrieval_result = dict(await runtime.evaluate_retrieval(reference_ids))
+            try:
+                retrieval_result = dict(
+                    await runtime.evaluate_retrieval(reference_ids)
+                )
+            except BaseException as error:
+                if isinstance(error, asyncio.CancelledError):
+                    raise
+                terminal = await _durable_block_failure(
+                    store=store,
+                    block=block,
+                    completed=completed,
+                    now_ns=now_ns,
+                    error=error,
+                    failure_stage="retrieval",
+                    source_sequence=None,
+                )
+                return terminal
             if serial_reference is None:
                 serial_reference = build_serial_reference(
                     canonical_graph, retrieval_result
@@ -655,11 +794,28 @@ async def run_c5_live_core(
             retrieval_parity = _retrieval_parity(
                 serial_reference.retrieved_episode_ids, retrieval_result
             )
-            qa_view = build_supplemental_qa_view(
-                dict(await _maybe_await(qa_evaluator(runtime, block)))
-                if qa_evaluator is not None
-                else {"status": "NOT_RUN"}
-            )
+            try:
+                qa_result = (
+                    dict(await _maybe_await(qa_evaluator(runtime, block)))
+                    if qa_evaluator is not None
+                    else {"status": "NOT_RUN"}
+                )
+                if qa_result.get("status") == "SERVICE_ERROR":
+                    raise C5LiveCoreError("supplemental_qa_service_error")
+                qa_view = build_supplemental_qa_view(qa_result)
+            except BaseException as error:
+                if isinstance(error, asyncio.CancelledError):
+                    raise
+                terminal = await _durable_block_failure(
+                    store=store,
+                    block=block,
+                    completed=completed,
+                    now_ns=now_ns,
+                    error=error,
+                    failure_stage="judge",
+                    source_sequence=None,
+                )
+                return terminal
             result = c5.analyze_c5_block(
                 concurrency=block.concurrency,
                 expected_episode_ids=schedule["episode_ids"],
@@ -668,7 +824,8 @@ async def run_c5_live_core(
                 retrieval_parity=retrieval_parity,
                 execution_path_evidence={
                     "treatment_is_concurrency_only": True,
-                    "live_graph_outputs_fixed": True,
+                    "live_graph_outputs_fixed": False,
+                    "live_graph_outputs_replay_fixed": False,
                     "complete_add_episode_units": True,
                     "work_conserving_dispatch": True,
                 },
@@ -684,22 +841,38 @@ async def run_c5_live_core(
                 )
             result = c5.seal_payload(result)
             block_results.append(result)
-            await store.write_block_checkpoint(
-                status="completed",
-                block_index=block.block_index,
-                concurrency=block.concurrency,
-                graph_namespace=block.graph_namespace,
-                block_result=result,
-            )
-            completed.append(block.block_index)
-            await _write_root(
-                store,
-                status="running" if len(completed) < 4 else "complete",
-                completed=completed,
-                partial_block_index=None,
-            )
         finally:
-            await runtime.close()
+            try:
+                await runtime.close()
+            except BaseException as error:
+                if isinstance(error, asyncio.CancelledError):
+                    raise
+                if terminal is None:
+                    terminal = await _durable_block_failure(
+                        store=store,
+                        block=block,
+                        completed=completed,
+                        now_ns=now_ns,
+                        error=error,
+                        failure_stage="close",
+                        source_sequence=None,
+                    )
+        if terminal is not None:
+            return terminal
+        await store.write_block_checkpoint(
+            status="completed",
+            block_index=block.block_index,
+            concurrency=block.concurrency,
+            graph_namespace=block.graph_namespace,
+            block_result=result,
+        )
+        completed.append(block.block_index)
+        await _write_root(
+            store,
+            status="running" if len(completed) < 4 else "complete",
+            completed=completed,
+            partial_block_index=None,
+        )
 
     await store.finalize_success(block_results)
     return {

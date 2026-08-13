@@ -43,23 +43,18 @@ def _historical_finalization_source_state() -> dict[str, object]:
     """
 
     state = json.loads((ROOT / "CURRENT_STATE.json").read_text(encoding="ascii"))
-    for key in (
-        "native_characterization_offline_evidence_finalization",
-        "native_characterization_c0_authorization",
-        "native_characterization_c0_completion",
-        "native_characterization_c2_authorization",
-        "native_characterization_c2_reauthorization",
-        "native_characterization_c2_second_failure",
-        "native_characterization_reference_alignment",
-        "native_characterization_reference_c2_authorization",
-        "native_characterization_c2_interruption",
-    ):
-        state.pop(key, None)
+    retained = {
+        "native_characterization_transition",
+        "native_characterization_offline_qualification",
+    }
+    for key in tuple(state):
+        if key.startswith("native_characterization_") and key not in retained:
+            state.pop(key)
     state["status"] = "native_characterization_offline_only"
     state["current_action_scope"] = "native_characterization_offline_only"
     state["current_blocker"] = None
     state["next_allowed_action"] = qualification.TARGET_NEXT_ACTION
-    state.pop("native_characterization_live_authorized", None)
+    state["authorized_live_actions"] = []
     stage_progress = dict(state["stage_progress"])
     stage_progress["native_characterization"] = qualification.TARGET_PROGRESS
     state["stage_progress"] = stage_progress

@@ -708,8 +708,15 @@ def analyze_c5_block(
     confounded_evidence: list[str] = []
     if execution_path_evidence.get("treatment_is_concurrency_only") is not True:
         confounded_evidence.append("execution path is not isolated to concurrency")
-    if execution_path_evidence.get("live_graph_outputs_fixed") is False:
-        confounded_evidence.append("live graph outputs are not fixed")
+    graph_diverged = canonical_graph_parity.get("status") in {"mismatch", "fail"}
+    retrieval_diverged = retrieval_parity.get("status") in {"mismatch", "fail"}
+    if (
+        execution_path_evidence.get("live_graph_outputs_fixed") is False
+        and (graph_diverged or retrieval_diverged)
+    ):
+        confounded_evidence.append(
+            "unfixed model outputs confound the observed trajectory divergence"
+        )
     confounded_evidence.extend(_parity_confounds("canonical graph parity", canonical_graph_parity))
     confounded_evidence.extend(_parity_confounds("retrieval parity", retrieval_parity))
 

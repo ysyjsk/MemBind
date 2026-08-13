@@ -26,31 +26,24 @@ def _canonical(value) -> bytes:
 
 
 def _qualified_state_bytes() -> bytes:
-    """Recover the exact historical input state for the C1 qualification transition."""
+    """Build the pinned C1 source fixture without inheriting later stages."""
 
     state = json.loads((ROOT / "CURRENT_STATE.json").read_text(encoding="ascii"))
-    # These are outputs of later Native-characterization transitions.  The C1
-    # fixture must represent the earlier transition source, not today's
-    # cleanup-pending execution state.
-    for key in (
-        "native_characterization_offline_qualification",
-        "native_characterization_offline_evidence_finalization",
-        "native_characterization_c0_authorization",
-        "native_characterization_c0_completion",
-        "native_characterization_c2_authorization",
-        "native_characterization_c2_reauthorization",
-        "native_characterization_c2_second_failure",
-        "native_characterization_reference_alignment",
-        "native_characterization_reference_c2_authorization",
-        "native_characterization_c2_interruption",
-    ):
-        state.pop(key, None)
+    # Every field in this namespace except the initial transition is an output
+    # of C1 or a later stage.  Prefix projection prevents each newly completed
+    # stage from silently becoming part of this historical transition fixture.
+    for key in tuple(state):
+        if (
+            key.startswith("native_characterization_")
+            and key != "native_characterization_transition"
+        ):
+            state.pop(key)
     # Restore fields that were advanced after the historical C1 transition.
     state["status"] = "native_characterization_offline_only"
     state["current_action_scope"] = "native_characterization_offline_only"
     state["current_blocker"] = None
     state["next_allowed_action"] = "implement_c1_instrumentation_offline"
-    state.pop("native_characterization_live_authorized", None)
+    state["authorized_live_actions"] = []
     stage_progress = dict(state["stage_progress"])
     stage_progress["native_characterization"] = "c1_instrumentation_tdd_pending"
     state["stage_progress"] = stage_progress

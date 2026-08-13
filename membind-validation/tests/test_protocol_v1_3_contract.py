@@ -40,12 +40,6 @@ CURRENT_H0_BLOCKER = None
 CURRENT_H0_BLOCKER_TEXT = "none"
 CURRENT_H0_ACTION_SCOPE = "h0_q1_b_live_only"
 CURRENT_H0_NEXT_ACTION = "run_q1_h0-b-post-workload-replacement"
-CURRENT_CHARACTERIZATION_STATUS = "native_characterization_cleanup_only"
-CURRENT_CHARACTERIZATION_BLOCKER = "c2_infrastructure_interruption_cleanup_pending"
-CURRENT_CHARACTERIZATION_SCOPE = "native_characterization_c2_cleanup_only"
-CURRENT_CHARACTERIZATION_NEXT_ACTION = (
-    "execute_scoped_c2_cleanup_after_infrastructure_interruption"
-)
 CURRENT_INTERRUPTED_C2_RUN_ID = "c2-2fe3711c62933407"
 INVALIDATED_H0_A_CHECKPOINT_SHA256 = (
     "127c81b39ccd705d7c67dc936e953992d5be97f4065fd56f3655db52d12ad309"
@@ -117,22 +111,20 @@ class ProtocolV13DocumentContractTests(TestCase):
         self.assertIn("protocol_version", state)
         self.assertEqual(state["protocol_version"], "current-validation-v1.3")
         self.assertEqual(state["current_stage"], "NATIVE_CHARACTERIZATION")
-        self.assertEqual(state["status"], CURRENT_CHARACTERIZATION_STATUS)
-        self.assertEqual(
-            state["current_blocker"], CURRENT_CHARACTERIZATION_BLOCKER
-        )
-        self.assertEqual(
-            state["current_action_scope"], CURRENT_CHARACTERIZATION_SCOPE
-        )
+        actions = state["authorized_live_actions"]
+        self.assertLessEqual(len(actions), 1)
+        if actions:
+            action = actions[0]
+            self.assertTrue(action.startswith("native_characterization_"))
+            self.assertEqual(state["status"], f"{action}_live_only")
+            self.assertEqual(state["current_action_scope"], f"{action}_live_only")
+            self.assertEqual(state["next_allowed_action"], f"run_{action}")
+        else:
+            self.assertFalse(str(state["status"]).endswith("_live_only"))
         self.assertFalse(state["live_h0_candidate_authorized"])
         self.assertIsNone(state["authorized_h0_candidate_id"])
-        self.assertEqual(
-            state["authorized_live_actions"], []
-        )
+        self.assertNotIn("h0_candidate", actions)
         self.assertFalse(state["v3_smoke_003_authorized"])
-        self.assertEqual(
-            state["next_allowed_action"], CURRENT_CHARACTERIZATION_NEXT_ACTION
-        )
         interruption = state["native_characterization_c2_interruption"]
         self.assertEqual(interruption["run_id"], CURRENT_INTERRUPTED_C2_RUN_ID)
         self.assertEqual(interruption["error_code"], "openai.APIConnectionError")

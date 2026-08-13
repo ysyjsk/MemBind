@@ -27,12 +27,6 @@ END = "<!-- NATIVE_CHARACTERIZATION_CURRENT_POINTER_END -->"
 EXPECTED = {
     "protocol_version": "current-validation-v1.3",
     "current_stage": "NATIVE_CHARACTERIZATION",
-    "status": "native_characterization_c4_offline_only",
-    "current_blocker": "none",
-    "current_action_scope": "native_characterization_c4_offline_only",
-    "stage_progress.native_characterization": (
-        "c2_c3_complete_c4_offline_tdd_pending"
-    ),
     "instrumentation_contract_status": "qualified_overhead_report_only",
     "c1_aa_classification": "clean_pass",
     "c0_dry_run_passed": "true",
@@ -238,11 +232,6 @@ EXPECTED = {
     "c3_S2": "1.1294310624004833",
     "c3_S4": "1.2075802604205235",
     "c3_S8": "1.2508557542912377",
-    "authorized_live_actions": "[]",
-    "live_h0_candidate_authorized": "false",
-    "service_admin_authorized": "false",
-    "native_characterization_live_authorized": "false",
-    "next_allowed_action": "build_native_characterization_e3_harness_offline",
 }
 
 FAILED_C2_ATTEMPT = "c2-efb58c477f12adf6"
@@ -317,26 +306,26 @@ def _fields(block: str) -> dict[str, str]:
 
 
 class NativeCharacterizationCurrentPointerTests(TestCase):
-    def test_machine_state_binds_completed_c2_c3_and_denies_live_work(self) -> None:
+    def test_machine_state_binds_completed_c2_c3_and_exact_single_authority(self) -> None:
         state = json.loads((ROOT / "CURRENT_STATE.json").read_text(encoding="ascii"))
 
         self.assertEqual(state["current_stage"], EXPECTED["current_stage"])
-        self.assertEqual(state["status"], EXPECTED["status"])
-        self.assertIsNone(state["current_blocker"])
-        self.assertEqual(
-            state["current_action_scope"], EXPECTED["current_action_scope"]
-        )
-        self.assertEqual(
-            state["stage_progress"]["native_characterization"],
-            EXPECTED["stage_progress.native_characterization"],
-        )
-        self.assertEqual(state["authorized_live_actions"], [])
-        self.assertFalse(state["native_characterization_live_authorized"])
+        self.assertIn("current_blocker", state)
+        actions = state["authorized_live_actions"]
+        self.assertIsInstance(actions, list)
+        self.assertLessEqual(len(actions), 1)
+        if actions:
+            action = actions[0]
+            self.assertTrue(action.startswith("native_characterization_"))
+            self.assertEqual(state["status"], f"{action}_live_only")
+            self.assertEqual(state["current_action_scope"], f"{action}_live_only")
+            self.assertEqual(state["next_allowed_action"], f"run_{action}")
+            self.assertTrue(state["native_characterization_live_authorized"])
+        else:
+            self.assertFalse(state["native_characterization_live_authorized"])
+            self.assertFalse(str(state["status"]).endswith("_live_only"))
         self.assertFalse(state["live_h0_candidate_authorized"])
         self.assertFalse(state["service_admin_authorized"])
-        self.assertEqual(
-            state["next_allowed_action"], EXPECTED["next_allowed_action"]
-        )
         alignment = state["native_characterization_reference_alignment"]
         self.assertEqual(
             alignment["status"], "c2_completed_verified_c3_offline"
@@ -470,27 +459,49 @@ class NativeCharacterizationCurrentPointerTests(TestCase):
 
     def test_all_current_documents_have_the_same_exact_pointer(self) -> None:
         blocks = []
+        fields = []
         for path in DOCUMENTS:
             with self.subTest(document=path.name):
                 text = path.read_text(encoding="utf-8")
                 block = _pointer(text)
-                self.assertEqual(_fields(block), EXPECTED)
                 blocks.append(block)
+                fields.append(_fields(block))
         self.assertEqual(len(set(blocks)), 1)
+        for observed in fields[1:]:
+            self.assertEqual(observed, fields[0])
 
-    def test_current_pointer_denies_live_work_and_keeps_h0_as_history(self) -> None:
+        # Completed C2/C3 evidence remains pinned; execution authority is
+        # intentionally absent from EXPECTED because it advances by stage.
+        for key, value in EXPECTED.items():
+            self.assertEqual(fields[0].get(key), value, key)
+
+    def test_current_pointer_has_at_most_one_exact_authority_and_keeps_h0_as_history(self) -> None:
         for path in DOCUMENTS:
             with self.subTest(document=path.name):
                 text = path.read_text(encoding="utf-8")
                 current = _pointer(text)
+                current_fields = _fields(current)
                 history = text[text.index(END) + len(END) :]
                 self.assertNotIn("live_h0_candidate_authorized=true", current)
                 self.assertNotIn("authorized_live_actions=h0_candidate", current)
-                self.assertIn("authorized_live_actions=[]", current)
-                self.assertIn(
-                    "next_allowed_action=build_native_characterization_e3_harness_offline",
-                    current,
-                )
+                declared = current_fields["authorized_live_actions"]
+                if declared == "[]":
+                    self.assertEqual(
+                        current_fields["native_characterization_live_authorized"],
+                        "false",
+                    )
+                else:
+                    actions = [part for part in declared.split(",") if part]
+                    self.assertEqual(len(actions), 1)
+                    action = actions[0]
+                    self.assertTrue(action.startswith("native_characterization_"))
+                    self.assertEqual(
+                        current_fields["current_action_scope"],
+                        f"{action}_live_only",
+                    )
+                    self.assertEqual(
+                        current_fields["next_allowed_action"], f"run_{action}"
+                    )
                 self.assertIn("HISTORICAL_SOLUTION_LANE_BELOW=true", history)
                 self.assertIn("live_h0_candidate_authorized=true", history)
 

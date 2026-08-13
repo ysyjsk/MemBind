@@ -41,14 +41,16 @@ class H0ProtocolInvalidationArtifactTests(TestCase):
         invalidation = state["h0_live_authorization_invalidation"]
 
         self.assertEqual(state["current_stage"], "NATIVE_CHARACTERIZATION")
-        self.assertEqual(state["status"], "native_characterization_cleanup_only")
-        self.assertEqual(
-            state["current_action_scope"], "native_characterization_c2_cleanup_only"
-        )
-        self.assertEqual(
-            state["current_blocker"],
-            "c2_infrastructure_interruption_cleanup_pending",
-        )
+        actions = state["authorized_live_actions"]
+        self.assertLessEqual(len(actions), 1)
+        if actions:
+            action = actions[0]
+            self.assertTrue(action.startswith("native_characterization_"))
+            self.assertEqual(state["status"], f"{action}_live_only")
+            self.assertEqual(state["current_action_scope"], f"{action}_live_only")
+            self.assertEqual(state["next_allowed_action"], f"run_{action}")
+        else:
+            self.assertFalse(str(state["status"]).endswith("_live_only"))
         interruption = state["native_characterization_c2_interruption"]
         self.assertEqual(interruption["run_id"], "c2-2fe3711c62933407")
         self.assertEqual(interruption["error_code"], "openai.APIConnectionError")
@@ -57,9 +59,7 @@ class H0ProtocolInvalidationArtifactTests(TestCase):
         self.assertFalse(interruption["resume_allowed"])
         self.assertTrue(interruption["cleanup_authorized"])
         self.assertFalse(state["live_h0_candidate_authorized"])
-        self.assertEqual(
-            state["authorized_live_actions"], []
-        )
+        self.assertNotIn("h0_candidate", actions)
         self.assertIsNone(state["authorized_h0_candidate_id"])
         self.assertEqual(
             state["historical_h0_live_authorization"][
