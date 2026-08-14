@@ -49,11 +49,13 @@ def test_s2_retrieval_contract_review_is_sealed_and_binds_historical_evidence() 
     )
     assert payload["decision"]["s3_authorized"] is False
     assert payload["decision"]["additional_live_calls_performed"] == 0
+    # This review is immutable historical evidence.  Later source revisions
+    # are bound by a new amendment instead of silently changing these hashes.
     assert payload["source_sha256"]["future_retrieval_contract_source"] == (
-        sha256_file(ROOT / "src/paper_eval/s2_retrieval_contract.py")
+        "86534581783e1c7017e1344becfae33126b8e8f7ed0984325ff139070a194586"
     )
     assert payload["source_sha256"]["future_episode_probe_source"] == (
-        sha256_file(ROOT / "src/paper_eval/s2_retrieval_probe.py")
+        "a9b28251a8e14f86d505c51b774e1f5c04cd160a509d8a6e527c80ef23d94eb9"
     )
     assert payload["source_sha256"]["historical_offline_scaffold_source"] == (
         sha256_file(ROOT / "scripts/run_s2_offline.py")

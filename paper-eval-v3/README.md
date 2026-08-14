@@ -18,3 +18,10 @@ review in `S2_RETRIEVAL_SURFACE_ANALYSIS_20260814.md` establishes that the old
 Edge@10 result was not official LongMemEval session Recall@10. Future code now
 binds retrieval units explicitly, but S3 and any replacement live S2 run remain
 unauthorized.
+
+The versioned correction is frozen in
+`../MemBind_PAPER_EVALUATION_PROTOCOL_AMENDMENT_v3.1.md`; the official-paper and
+repository audit is `S2_LITERATURE_AND_CODE_DESIGN_AUDIT_20260814.md`. The
+amendment preserves all historical artifacts and permits no live call by
+itself. The next candidate action remains one explicitly authorized, read-only
+S2-R0 episode-surface probe after the complete offline gate is green.

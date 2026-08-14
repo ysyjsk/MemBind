@@ -28,6 +28,8 @@ class RetrievalSurfaceContract:
     top_k_unit: str
     metric_name: str
     official_longmemeval_session_metric: bool
+    official_longmemeval_retriever_implementation: bool
+    retriever_implementation_identity: str
     question_date_used_for_retrieval: bool
     retrieval_temporal_filter: str
     construction_quality_surface: bool
@@ -43,6 +45,10 @@ class RetrievalSurfaceContract:
             "official_longmemeval_session_metric": (
                 self.official_longmemeval_session_metric
             ),
+            "official_longmemeval_retriever_implementation": (
+                self.official_longmemeval_retriever_implementation
+            ),
+            "retriever_implementation_identity": self.retriever_implementation_identity,
             "question_date_used_for_retrieval": self.question_date_used_for_retrieval,
             "retrieval_temporal_filter": self.retrieval_temporal_filter,
             "construction_quality_surface": self.construction_quality_surface,
@@ -57,6 +63,8 @@ EDGE_SURFACE_CONTRACT = RetrievalSurfaceContract(
     top_k_unit="edge",
     metric_name="edge_attributed_source_session_coverage_at_10",
     official_longmemeval_session_metric=False,
+    official_longmemeval_retriever_implementation=False,
+    retriever_implementation_identity="graphiti-0.29.3-basic-edge-hybrid-rrf",
     question_date_used_for_retrieval=False,
     retrieval_temporal_filter="none",
     construction_quality_surface=True,
@@ -70,6 +78,8 @@ SESSION_SURFACE_CONTRACT = RetrievalSurfaceContract(
     top_k_unit="session",
     metric_name="longmemeval_session_recall_any_all_at_10",
     official_longmemeval_session_metric=True,
+    official_longmemeval_retriever_implementation=False,
+    retriever_implementation_identity="graphiti-0.29.3-episode-fulltext",
     question_date_used_for_retrieval=False,
     retrieval_temporal_filter="none",
     construction_quality_surface=False,
@@ -202,7 +212,8 @@ def _proportion(value: Any, *, field: str) -> float:
 def classify_surface_comparison(
     *,
     edge_attributed_source_session_coverage: float,
-    episode_session_recall: float,
+    episode_session_recall_any: float,
+    episode_session_recall_all: float,
 ) -> dict[str, Any]:
     """Interpret a diagnostic comparison without selecting a paper policy."""
 
@@ -210,22 +221,43 @@ def classify_surface_comparison(
         edge_attributed_source_session_coverage,
         field="edge coverage proportion",
     )
-    episode_recall = _proportion(
-        episode_session_recall,
-        field="episode recall proportion",
+    episode_recall_any = _proportion(
+        episode_session_recall_any,
+        field="episode Recall_any proportion",
     )
-    if edge_coverage == 0 and episode_recall > 0:
+    episode_recall_all = _proportion(
+        episode_session_recall_all,
+        field="episode Recall_all proportion",
+    )
+    if episode_recall_any not in {0.0, 1.0} or episode_recall_all not in {0.0, 1.0}:
+        raise RetrievalContractError("episode Recall_any/Recall_all must be binary")
+    if episode_recall_all > episode_recall_any:
+        raise RetrievalContractError("episode Recall_all cannot exceed Recall_any")
+
+    if edge_coverage == 0 and episode_recall_all > 0:
         classification = "EDGE_SURFACE_COVERAGE_GAP_CONFIRMED"
-        next_action = "FREEZE_ONE_EXPLICIT_RETRIEVAL_CONTRACT_BEFORE_S3"
-    elif edge_coverage == 0 and episode_recall == 0:
-        classification = "ALL_TESTED_SURFACES_NEAR_ZERO"
-        next_action = "CONSTRUCTION_OR_INDEX_AUDIT_BEFORE_POLICY_SELECTION"
+        next_action = "SEAL_RESULT_AND_STOP_FOR_OFFLINE_POLICY_FREEZE"
+    elif edge_coverage == 0 and episode_recall_any > 0:
+        classification = "PARTIAL_EPISODE_SURFACE_REACHABILITY"
+        next_action = "STOP_FOR_OFFLINE_DIAGNOSIS"
+    elif edge_coverage == 0:
+        return {
+            "classification": "EDGE_AND_EPISODE_SURFACES_NEAR_ZERO",
+            "whole_graph_quality_conclusion": "NOT_INFERRED",
+            "node_surface_status": "UNTESTED",
+            "multi_surface_status": "UNTESTED",
+            "retrieval_policy_selected": False,
+            "s3_authorized": False,
+            "next_action": "STOP_NODE_OR_MULTI_SURFACE_UNTESTED",
+        }
     else:
         classification = "EDGE_SURFACE_HAS_GOLD_COVERAGE"
         next_action = "REVIEW_REPRESENTATIVENESS_BEFORE_POLICY_SELECTION"
     return {
         "classification": classification,
         "whole_graph_quality_conclusion": "NOT_INFERRED",
+        "node_surface_status": "UNTESTED",
+        "multi_surface_status": "UNTESTED",
         "retrieval_policy_selected": False,
         "s3_authorized": False,
         "next_action": next_action,

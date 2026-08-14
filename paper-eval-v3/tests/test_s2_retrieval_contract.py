@@ -31,6 +31,13 @@ def test_native_edge_contract_is_explicitly_not_flat_session() -> None:
     assert SESSION_SURFACE_CONTRACT.result_unit == "EpisodicNode"
     assert SESSION_SURFACE_CONTRACT.top_k_unit == "session"
     assert SESSION_SURFACE_CONTRACT.official_longmemeval_session_metric is True
+    assert (
+        SESSION_SURFACE_CONTRACT.official_longmemeval_retriever_implementation
+        is False
+    )
+    assert SESSION_SURFACE_CONTRACT.retriever_implementation_identity == (
+        "graphiti-0.29.3-episode-fulltext"
+    )
     assert SESSION_SURFACE_CONTRACT.construction_quality_surface is False
 
 
@@ -115,15 +122,46 @@ def test_offline_s2_scaffold_cannot_reintroduce_session_metric_mislabel() -> Non
 def test_surface_comparison_confirms_edge_coverage_gap_without_selecting_policy() -> None:
     decision = classify_surface_comparison(
         edge_attributed_source_session_coverage=0.0,
-        episode_session_recall=1.0,
+        episode_session_recall_any=1.0,
+        episode_session_recall_all=1.0,
     )
     assert decision == {
         "classification": "EDGE_SURFACE_COVERAGE_GAP_CONFIRMED",
         "whole_graph_quality_conclusion": "NOT_INFERRED",
+        "node_surface_status": "UNTESTED",
+        "multi_surface_status": "UNTESTED",
         "retrieval_policy_selected": False,
         "s3_authorized": False,
-        "next_action": "FREEZE_ONE_EXPLICIT_RETRIEVAL_CONTRACT_BEFORE_S3",
+        "next_action": "SEAL_RESULT_AND_STOP_FOR_OFFLINE_POLICY_FREEZE",
     }
+
+
+def test_surface_comparison_stops_at_exact_tested_scope_on_double_miss() -> None:
+    decision = classify_surface_comparison(
+        edge_attributed_source_session_coverage=0.0,
+        episode_session_recall_any=0.0,
+        episode_session_recall_all=0.0,
+    )
+    assert decision == {
+        "classification": "EDGE_AND_EPISODE_SURFACES_NEAR_ZERO",
+        "whole_graph_quality_conclusion": "NOT_INFERRED",
+        "node_surface_status": "UNTESTED",
+        "multi_surface_status": "UNTESTED",
+        "retrieval_policy_selected": False,
+        "s3_authorized": False,
+        "next_action": "STOP_NODE_OR_MULTI_SURFACE_UNTESTED",
+    }
+
+
+def test_surface_comparison_distinguishes_partial_episode_reachability() -> None:
+    decision = classify_surface_comparison(
+        edge_attributed_source_session_coverage=0.0,
+        episode_session_recall_any=1.0,
+        episode_session_recall_all=0.0,
+    )
+    assert decision["classification"] == "PARTIAL_EPISODE_SURFACE_REACHABILITY"
+    assert decision["next_action"] == "STOP_FOR_OFFLINE_DIAGNOSIS"
+    assert decision["s3_authorized"] is False
 
 
 @pytest.mark.parametrize(
@@ -136,5 +174,15 @@ def test_surface_comparison_rejects_invalid_proportions(
     with pytest.raises(RetrievalContractError, match="proportion"):
         classify_surface_comparison(
             edge_attributed_source_session_coverage=edge_coverage,
-            episode_session_recall=episode_recall,
+            episode_session_recall_any=episode_recall,
+            episode_session_recall_all=0.0,
+        )
+
+
+def test_surface_comparison_rejects_all_without_any() -> None:
+    with pytest.raises(RetrievalContractError, match="Recall_all"):
+        classify_surface_comparison(
+            edge_attributed_source_session_coverage=0.0,
+            episode_session_recall_any=0.0,
+            episode_session_recall_all=1.0,
         )

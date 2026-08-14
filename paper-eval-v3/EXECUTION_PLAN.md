@@ -24,6 +24,22 @@ conditional `S2-R0` decision procedure are frozen in
 `S2_RETRIEVAL_SURFACE_ANALYSIS_20260814.md`; no `S2-R0` live call is authorized
 by this amendment itself.
 
+### v3.1 interpretation overlay
+
+`../MemBind_PAPER_EVALUATION_PROTOCOL_AMENDMENT_v3.1.md` is the controlling
+overlay for retrieval units and S2 recovery. It does not mutate the parent
+protocol (SHA256
+`4b81c89b33d407f04fc20862a81eab6badba16d0d61d98331cbe188d1bb4f41e`)
+or any completed artifact.
+
+The only candidate next live action is S2-R0: a read-only, episode-only
+Graphiti 0.29.3 full-text/RRF probe over the immutable S1 namespace. It may be
+authorized only after corpus ID/hash/mapping completeness, exact diagnosis
+scope, fresh-config, zero-model-call, and result-sealing tests all pass. S2-R0
+uses LongMemEval session-metric semantics but is not the official LongMemEval
+retriever implementation. S3 remains unauthorized until the probe is sealed
+and the evaluation policy is frozen offline.
+
 ## Ordered stages
 
 1. **S0**: read-only current-state and reuse audit; produce three finalized JSON artifacts.
