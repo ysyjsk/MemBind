@@ -1,0 +1,83 @@
+{
+  "git_commit": "62c114d4d33763ad194cf21ee882c453ad6f7ba7",
+  "payload": {
+    "live_actions_performed": 0,
+    "repo_root": "/data/predator/ly/MemBind",
+    "runtime_identities": {
+      "c2_identity_note": {
+        "c2_model_revision": "6e2312b85c2ae9a31f629f24493b79d8b02eab1a",
+        "current_model_revision": "aa55da1ecc13d006e8b8e4f54579b1ea8c3db2df",
+        "numeric_reuse": "HISTORICAL_ONLY_PENDING_S2_U0_EQUIVALENCE_DECISION"
+      },
+      "construction": {
+        "dtype": "bfloat16",
+        "enable_thinking": false,
+        "max_model_len": 65536,
+        "quantization": "fp8",
+        "repository_revision": "aa55da1ecc13d006e8b8e4f54579b1ea8c3db2df",
+        "requested_max_tokens": 16384,
+        "rope_parameters": {
+          "factor": 2.0,
+          "original_max_position_embeddings": 32768,
+          "rope_theta": 1000000,
+          "rope_type": "yarn"
+        },
+        "served_model_id": "qwen3-32b-fp8",
+        "structured_output_mode": "json_schema",
+        "vllm_version": "0.26.0"
+      },
+      "embedding": {
+        "deployment_fingerprint": "5f5a8400eeaa2f07d167d8b5b7e63d615945a8f54f506e02342840cd4e3fe626",
+        "dimension": 1024,
+        "dtype": "bfloat16",
+        "instruction_policy": "none",
+        "normalization": "l2",
+        "pooling": "last_token",
+        "served_model_id": "qwen3-embedding-0.6b"
+      },
+      "graphiti": {
+        "repository_commit": "021d3a57d511f21b10adaf7fa923bd5c1fce5e9d",
+        "version": "0.29.3"
+      },
+      "judge": {
+        "agreement": "14/14",
+        "cohens_kappa": 1.0,
+        "qualification": "PASS",
+        "synthetic_fixture": true
+      },
+      "neo4j": {
+        "deployment": "local_non_docker_community",
+        "live_readiness_checked_by_s0": false,
+        "uri": "bolt://localhost:7687",
+        "version": "5.26.0"
+      },
+      "reader": {
+        "status": "to_be_frozen_by_protocol_before_quality_execution"
+      }
+    },
+    "source_hashes": {
+      "c1_qualification": "3465a1e3b5a340debe53008111f4391376d7e28e76b7ec4941cbade2374ba328",
+      "c2_completed_checkpoint": "bee2e1a0e2130d6c9f3f579829680b64a3b732b814b7a09a2115f28042e42235",
+      "c2_completed_manifest": "f03276ef88bfdc8062967db504514c83d941d37f929a8dbca5c37fab7aa69417",
+      "c2_harness_source": "b5c98064052d33c9e4db10ba5f051a0097db43b3c696eddaaef25f1dbfa985d2",
+      "dataset": "d6f21ea9d60a0d56f34a05b609c79c88a451d2ae03597821ea3d5a9678c3a442",
+      "instrumentation_source": "9b386856fb32d2e80f465653374b630d5706a2e1b32fb5b938ede98220148bd7",
+      "judge_qualification_summary": "31a16da6d8a668517315ec22c5b375f9c494f34dbb5c62428be86c39dd028485",
+      "judge_runtime_identity": "65b1022da9cc761017cc8d5096165d4fdc8857070382164d81e90694b0509f02",
+      "legacy_split": "b40acce61defe0c809636dc9964cbfa8591fafde5e6330b81ed0e8214bcd71f7",
+      "longmemeval_adapter": "21beccbefcbb1fedcca984e82c72003e0ae3748b4ec6ce0fe544f7e44b048869",
+      "official_evaluator_vendor": "1fc8b73d7a2c84aa7dc24380980380116d1a00f582a1d9667e85cef90856ac61",
+      "phase_map": "afdfd18d17e285fe5b23d9ba8eed2cb893ddabb71723259947a3e7317bd72f31",
+      "protocol": "4b81c89b33d407f04fc20862a81eab6badba16d0d61d98331cbe188d1bb4f41e",
+      "u0_runtime_source": "4d6bad43289d7cbf9557aed05571601bdfa560855ed1403b0e4a72770ae57ca1",
+      "v1_3_split": "747946a8792422ea35e9d56b864efb1a137cb6eb8a8e16f97808fe86f938c091"
+    },
+    "stage": "S0",
+    "working_tree_dirty_is_recorded_not_failed": true,
+    "working_tree_status": "dirty"
+  },
+  "payload_sha256": "7eb7f9e8b97a5e44090360cb6f821259b5925833fa37fff47eb90b9dedec98fe",
+  "protocol_version": "paper-eval-v3",
+  "run_id": "s0-4b81c89b33d407f0",
+  "status": "finalized"
+}

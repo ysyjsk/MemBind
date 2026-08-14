@@ -1,0 +1,89 @@
+{
+  "git_commit": "62c114d4d33763ad194cf21ee882c453ad6f7ba7",
+  "payload": {
+    "execution_policy": {
+      "construction_calls": 0,
+      "judge_max_attempts": 1,
+      "namespace_cleanup_calls": 0,
+      "reader_max_attempts": 1,
+      "retrieval_method": "Graphiti.search",
+      "retrieval_top_k": 10
+    },
+    "execution_source_sha256": {
+      "graphiti.graphiti": "7c65051a62982d8b510ebdbf37bae4d07020e74520e1f6d9bf8a0ffb26beeccb",
+      "graphiti.openai_generic_client": "62d198e838030f4e309df2eeb0eb7cf1770e3bb32cbe34c8a9f3ee3dc0ca7705",
+      "legacy.dataset": "0dc97963f4e6143b555853d6061967b6e7606d36e0cba66acc70e27ba0a4d163",
+      "legacy.graphiti_native": "f25141000494a8899a40b87f2bf5fb5e5cb519ab2d480d72973aeaf9e0d9c8cc",
+      "legacy.judge_backend": "36d95e0a28d5b973967850e5e4eeb59a05a4bc2669c78149222fcaf36bc8862b",
+      "legacy.longmemeval_adapter": "21beccbefcbb1fedcca984e82c72003e0ae3748b4ec6ce0fe544f7e44b048869",
+      "legacy.longmemeval_vendor": "1fc8b73d7a2c84aa7dc24380980380116d1a00f582a1d9667e85cef90856ac61",
+      "legacy.native_characterization_runtime": "4d6bad43289d7cbf9557aed05571601bdfa560855ed1403b0e4a72770ae57ca1",
+      "paper_eval.s2_adapters": "3b1b28b9ab40904e0c8f4371fc525f31c1b573ed037c8252202338e0635cbf80",
+      "paper_eval.s2_controller": "b579c731eeb5da842f731812353620e9ea559fae05f9b9f83312dc39e62dd719",
+      "paper_eval.s2_durable": "1fabdeb18aa8402ff052e13fea96e4b46f2ceb5d89aadfca8e6454c8c4cf80a5",
+      "paper_eval.s2_live": "477bd67154aa196868a2f808da82b7671d2345a01c7991196f5136c80ead2a26",
+      "paper_eval.s2_reader": "73e2434198d06743cc9b856d43ab3f32b3ce710217b7bb9eaf3213e20a9f0ec2"
+    },
+    "identity_sha256": "4684a8021bef18c4b9f92ee9a81bd3a9ffeefd965103a09544ace8ec1cf73016",
+    "judge": {
+      "backend_public_config": {
+        "backend": "openai_compatible_chat_completions",
+        "effective_enable_thinking": false,
+        "endpoint_identity_sha256": "31970724e893444d34ba6eca9bfa2b2118122436fa843ec574b7607e60747d98",
+        "max_attempts": 1,
+        "max_tokens": 10,
+        "n": 1,
+        "retry_delays_seconds": [
+          0.0
+        ],
+        "sdk_hidden_retries": 0,
+        "served_model_name": "qwen3-32b-fp8",
+        "temperature": 0,
+        "thinking_control": "client_request",
+        "timeout_seconds": 30.0
+      },
+      "implementation": "qualified_legacy_longmemeval_adapter",
+      "judge_config_sha256": "97fc7c64f9ce991383e68269054254dcd36790dc493d9795418f58b763d27d6d",
+      "judge_model": "qwen3-32b-fp8",
+      "raw_prompt_persisted": false,
+      "raw_response_persisted": false
+    },
+    "qualification_sha256": "a2e15716a952d34a28287e74563b9b9ad4a8dc998e47becc7da631eace461e91",
+    "reader": {
+      "cot": false,
+      "history_format": "json",
+      "implementation": "longmemeval_official_facts_reader",
+      "max_tokens": 500,
+      "merge_key_expansion_into_value": "replace",
+      "messages": [
+        "user"
+      ],
+      "model": "qwen3-32b-fp8",
+      "n": 1,
+      "response_format": null,
+      "retriever_type": "flat-session",
+      "system_prompt": null,
+      "temperature": 0,
+      "upstream_commit": "9e0b455f4ef0e2ab8f2e582289761153549043fc",
+      "upstream_file_sha256": "4f1eb3c69d7ad40f04065b9c0bc86f6582441018fc6ff751d162d66c95baf672",
+      "upstream_git_blob": "8e9e0f25b804d3d0afbadc9619264b0c7a275dc0",
+      "upstream_repository": "xiaowu0162/LongMemEval",
+      "upstream_source_path": "src/generation/run_generation.py",
+      "useronly": false
+    },
+    "reader_transport": {
+      "endpoint_identity_sha256": "31970724e893444d34ba6eca9bfa2b2118122436fa843ec574b7607e60747d98",
+      "implementation": "openai_compatible_chat_completions",
+      "max_attempts": 1,
+      "sdk_hidden_retries": 0,
+      "served_model_name": "qwen3-32b-fp8",
+      "timeout_seconds": 180.0
+    },
+    "s0_current_state_sha256": "34ab2860af7f322eb1fe3a97ede764fa82c09051db2a8c8dfa0f0f94d206f404",
+    "schema_version": "membind.paper-eval-v3.s2-adapter-identity.v1"
+  },
+  "payload_sha256": "c2e937443f5a3fc56c7fefe94206849767df3995a50714a15dec433e73584410",
+  "protocol_version": "paper-eval-v3",
+  "run_id": "s2-live-20260814-001",
+  "status": "finalized"
+}

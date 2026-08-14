@@ -1,0 +1,115 @@
+{
+  "git_commit": "62c114d4d33763ad194cf21ee882c453ad6f7ba7",
+  "payload": {
+    "classification": "GOLD_EPISODES_HAVE_NO_ENTITYEDGE_PROVENANCE",
+    "corrections_implemented": [
+      "explicit_graphiti_edge_surface_contract",
+      "edge_top_k_unit_and_metric_renamed",
+      "official_session_recall_marked_not_computed",
+      "adapter_identity_v2_binds_retrieval_surface",
+      "diagnosis_finalizer_no_overwrite_guard",
+      "episode_bm25_probe_policy_implemented_without_live_entrypoint",
+      "graphiti_search_implementation_hashes_bound",
+      "historical_offline_scaffold_overwrite_guard",
+      "probe_config_fail_closed_to_episode_only_bm25_rrf",
+      "whole_graph_quality_inference_prohibited"
+    ],
+    "decision": {
+      "additional_live_calls_performed": 0,
+      "historical_run_disposition": "IMMUTABLE_TERMINAL_NON_MERGEABLE",
+      "next_live_stage_authorized": null,
+      "required_before_reauthorization": [
+        "offline_contract_and_provenance_gate",
+        "explicitly_authorized_read_only_retrieval_surface_diagnostic",
+        "separate_versioned_retrieval_policy_if_surface_changes"
+      ],
+      "s3_authorized": false
+    },
+    "evidence_summary": {
+      "edge_results": 10,
+      "gold_episode_entity_edge_counts": [
+        0,
+        0
+      ],
+      "gold_episode_match_count": 2,
+      "gold_episode_mentions": [
+        9,
+        1
+      ],
+      "gold_session_count": 2,
+      "namespace_episode_count": 49,
+      "namespace_fact_count": 183,
+      "retrieved_source_session_count": 6,
+      "service_error_count": 0
+    },
+    "historical_artifact_mutation_count": 0,
+    "historical_evidence_sha256": {
+      "adapter_identity": "3797aa87c66e2260fafaa4776863711801e67672e5182a3aa612b1e6b01962ec",
+      "checkpoint": "bd231978613503aabfe895702de3f21f3c24c5ddd166944b6f37375d08f1f61d",
+      "events": "9dfaeafedf497992302614230d7afed75bdfb2c578f42a3f2459cf598b3240a0",
+      "near_zero_diagnosis": "7eac1ed6fcf08739222a67bc1ead5365e89a6db92867a7c807e9518ba9a42440",
+      "reference_sanity": "0118ce9fbf288633df7405dad0570f1826665b61541b74cab813c3c3aba57f57"
+    },
+    "historical_run_id": "s2-live-20260814-001",
+    "methodology_sources": {
+      "graphiti": {
+        "advanced_search_surface": "SearchResults_edges_nodes_episodes_communities",
+        "basic_search_surface": "EntityEdge_only",
+        "repository_commit": "021d3a57d511f21b10adaf7fa923bd5c1fce5e9d",
+        "version": "0.29.3"
+      },
+      "longmemeval": {
+        "repository_commit": "9e0b455f4ef0e2ab8f2e582289761153549043fc",
+        "retrieval_unit": "session"
+      },
+      "papers": [
+        "LongMemEval_arXiv_2410.10813",
+        "Zep_Temporal_Knowledge_Graph_arXiv_2501.13956",
+        "vLLM_SOSP_2023_arXiv_2309.06180",
+        "DistServe_OSDI_2024_arXiv_2401.09670"
+      ]
+    },
+    "metric_interpretation": {
+      "historical_evidence_recall_at_10": "EDGE_ATTRIBUTED_SOURCE_SESSION_COVERAGE_AT_EDGE_10",
+      "official_session_recall_at_10": "NOT_COMPUTED",
+      "qa_accuracy": "DOWNSTREAM_OF_EDGE_SURFACE_MISS_NOT_READER_ISOLATION"
+    },
+    "observed_retrieval_contract": {
+      "metric_name": "edge_attributed_source_session_coverage_at_10",
+      "official_longmemeval_session_metric": false,
+      "question_date_used_for_retrieval": false,
+      "retrieval_temporal_filter": "none",
+      "retrieval_method": "Graphiti.search",
+      "retrieval_surface": "graphiti_basic_edge",
+      "retrieval_unit": "EntityEdge",
+      "search_recipe": "EDGE_HYBRID_SEARCH_RRF",
+      "top_k": 10,
+      "top_k_unit": "edge",
+      "construction_quality_surface": true
+    },
+    "schema_version": "membind.paper-eval-v3.s2-retrieval-contract-review.v1",
+    "source_sha256": {
+      "future_adapter_source": "6f7e18b323971ac94ad350e2076638680b900e9af0e3f86c8c5eabdddb8c850e",
+      "future_controller_source": "1be2aea96cc48dcdb6c8b0156d3b1ed3dd79ed9cf31abee2110e1449de36e484",
+      "future_diagnosis_source": "8f81e39348ca0a1f81ee9d8461427efead60c026e76db48bb0c3e70663bc3343",
+      "future_live_source": "cf262ec828bd4dbfe09edddfcd4fbd8a10a44aecdd0806999a7c85d621a893c2",
+      "future_reader_source": "d96a8adca1ee62e4906416a6d99a9003c8bc3ae53a32ea33c9376e9e30dd70e5",
+      "future_episode_probe_source": "a9b28251a8e14f86d505c51b774e1f5c04cd160a509d8a6e527c80ef23d94eb9",
+      "future_retrieval_contract_source": "86534581783e1c7017e1344becfae33126b8e8f7ed0984325ff139070a194586",
+      "graphiti_basic_api": "7c65051a62982d8b510ebdbf37bae4d07020e74520e1f6d9bf8a0ffb26beeccb",
+      "graphiti_search": "d0ebae212cd09e2cfc452174320f14cd463f1901ad0761f867162458a5797a58",
+      "graphiti_search_config": "43bbc500b16a814f88b0361b1a3cdc2e51f354807489eba73ca407a6c9352157",
+      "graphiti_search_recipes": "e06aae4698478499695d084064ec926270b30566284f0c65263e3879339abd94",
+      "graphiti_search_utils": "b55b39f1ec547d40e3c88042830020d8bc2c664bb0601f6996ec856cdcd40808",
+      "historical_offline_scaffold_source": "67e2f1e5db1254f439dfa6ae941e6a38c2d22f9c1845ed3654ec8c9a54ef3b12",
+      "parent_protocol": "4b81c89b33d407f04fc20862a81eab6badba16d0d61d98331cbe188d1bb4f41e"
+    },
+    "stage": "S2",
+    "status": "STOPPED_RETRIEVAL_CONTRACT_MISMATCH_IDENTIFIED",
+    "whole_graph_quality_conclusion": "NOT_INFERRED"
+  },
+  "payload_sha256": "4ad273a10f94a57167b972e74cb1ddea95c44182bcbf99c17932d1fec56a48cd",
+  "protocol_version": "paper-eval-v3-retrieval-contract-review-v1",
+  "run_id": "s2-contract-review-20260814-001",
+  "status": "finalized"
+}

@@ -1,0 +1,74 @@
+<?xml version="1.0" encoding="utf-8"?><testsuites name="pytest tests"><testsuite name="pytest" errors="0" failures="4" skipped="0" tests="21" time="0.184" timestamp="2026-08-14T13:08:06.476851+08:00" hostname="aces-System-Product-Name"><testcase classname="tests.test_s2_retrieval_contract" name="test_native_edge_contract_is_explicitly_not_flat_session" time="0.000" /><testcase classname="tests.test_s2_retrieval_contract" name="test_edge_coverage_deduplicates_sessions_without_promoting_it_to_session_recall" time="0.000" /><testcase classname="tests.test_s2_retrieval_contract" name="test_edge_coverage_rejects_invalid_ranked_rows" time="0.000" /><testcase classname="tests.test_s2_retrieval_contract" name="test_flat_session_identity_cannot_describe_entity_edge_results" time="0.000" /><testcase classname="tests.test_s2_retrieval_contract" name="test_edge_identity_requires_scope_and_metric_fields" time="0.000" /><testcase classname="tests.test_s2_retrieval_contract" name="test_zero_edge_observation_is_limited_to_provenance_claim" time="0.000" /><testcase classname="tests.test_s2_retrieval_contract" name="test_zero_edge_observation_fails_closed_on_partial_gold_coverage" time="0.000" /><testcase classname="tests.test_s2_reader" name="test_official_facts_prompt_matches_pinned_replace_direct_reader" time="0.000" /><testcase classname="tests.test_s2_reader" name="test_official_facts_prompt_fails_closed_on_empty_or_duplicate_rank" time="0.000" /><testcase classname="tests.test_s2_reader" name="test_reader_identity_declares_edge_fact_input_not_flat_session" time="0.000"><failure message="KeyError: 'input_representation'">def test_reader_identity_declares_edge_fact_input_not_flat_session() -&gt; None:
+        reader = OfficialFactsReader(
+            model="qwen3-32b-fp8",
+            transport=_CaptureTransport(),
+        )
+&gt;       assert reader.public_config["input_representation"] == "EntityEdge.fact"
+               ^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^
+E       KeyError: 'input_representation'
+
+tests/test_s2_reader.py:98: KeyError</failure></testcase><testcase classname="tests.test_s2_reader" name="test_reader_sends_exact_official_chat_contract_and_sanitizes_artifact" time="0.000" /><testcase classname="tests.test_s2_reader" name="test_reader_service_failure_is_sanitized_and_not_retried" time="0.000" /><testcase classname="tests.test_s2_live" name="test_s2_live_reuses_namespace_and_runs_one_retrieval_reader_judge_chain" time="0.001"><failure message="AttributeError: 'S2LiveQualification' object has no attribute 'edge_attributed_source_session_coverage_at_10'">@pytest.mark.asyncio
+    async def test_s2_live_reuses_namespace_and_runs_one_retrieval_reader_judge_chain() -&gt; None:
+        graph = _Graph()
+        graph.driver = _Driver()
+        reader = _Reader()
+        result = await run_s2_numeric_sanity(
+            inputs=_inputs(),
+            graph=graph,
+            episodes=[_Episode("q::episode::0000", "s1"), _Episode("q::episode::0001", "s2")],
+            reader=reader,
+            judge=_Judge(),
+        )
+    
+        assert graph.search_calls == [
+            ("Where does Ravi work now?", ["pev3-s1-namespace"], 10)
+        ]
+        assert [item.rank for item in reader.facts] == [1, 2]
+        assert [item.source_session_ids for item in reader.facts] == [("s2",), ("s1",)]
+&gt;       assert result.edge_attributed_source_session_coverage_at_10 == 1.0
+               ^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^
+E       AttributeError: 'S2LiveQualification' object has no attribute 'edge_attributed_source_session_coverage_at_10'
+
+tests/test_s2_live.py:138: AttributeError</failure></testcase><testcase classname="tests.test_s2_live" name="test_s2_live_closes_graph_and_stops_before_reader_when_no_facts" time="0.000" /><testcase classname="tests.test_s2_live" name="test_s2_live_final_artifact_is_sealed_and_contains_no_raw_content" time="0.001"><failure message="TypeError: S2LiveQualification.__init__() got an unexpected keyword argument 'edge_attributed_source_session_coverage_at_10'">tmp_path = PosixPath('/tmp/pytest-of-ly/pytest-40/test_s2_live_final_artifact_is0')
+
+    def test_s2_live_final_artifact_is_sealed_and_contains_no_raw_content(
+        tmp_path: Path,
+    ) -&gt; None:
+&gt;       result = S2LiveQualification(
+            edge_attributed_source_session_coverage_at_10=1.0,
+            qa_accuracy=1.0,
+            retrieval_result_count=2,
+            retrieved_session_ids=("s2", "s1"),
+            reader_status="SUCCESS",
+            reader_evidence={"prompt_sha256": "p" * 64, "output_sha256": "o" * 64},
+            judge_status="SUCCESS",
+            judge_evidence={"prompt_sha256": "j" * 64, "output_sha256": "k" * 64},
+        )
+E       TypeError: S2LiveQualification.__init__() got an unexpected keyword argument 'edge_attributed_source_session_coverage_at_10'
+
+tests/test_s2_live.py:171: TypeError</failure></testcase><testcase classname="tests.test_s2_diagnosis" name="test_s2_diagnosis_seals_root_cause_and_terminal_stage_ledger" time="0.025"><failure message="AssertionError: assert 'ANSWER_BEARI...SEARCH_CORPUS' == 'GOLD_EPISODE...GE_PROVENANCE'&#10;  &#10;  - GOLD_EPISODES_HAVE_NO_ENTITYEDGE_PROVENANCE&#10;  + ANSWER_BEARING_FACTS_ABSENT_FROM_EDGE_SEARCH_CORPUS">tmp_path = PosixPath('/tmp/pytest-of-ly/pytest-40/test_s2_diagnosis_seals_root_c0')
+
+    def test_s2_diagnosis_seals_root_cause_and_terminal_stage_ledger(tmp_path: Path) -&gt; None:
+        reference, checkpoint, metrics = _inputs(tmp_path)
+        diagnosis_path = tmp_path / "S2_NEAR_ZERO_ROOT_CAUSE.json"
+        ledger_path = tmp_path / "STAGE_STATUS.json"
+    
+        diagnosis, ledger = finalize_s2_near_zero_diagnosis(
+            diagnosis_path=diagnosis_path,
+            stage_status_path=ledger_path,
+            reference_path=reference,
+            checkpoint_path=checkpoint,
+            metrics=metrics,
+            git_commit="deadbeef",
+            run_id="s2-diagnosis-test",
+        )
+    
+&gt;       assert diagnosis["payload"]["classification"] == (
+            "GOLD_EPISODES_HAVE_NO_ENTITYEDGE_PROVENANCE"
+        )
+E       AssertionError: assert 'ANSWER_BEARI...SEARCH_CORPUS' == 'GOLD_EPISODE...GE_PROVENANCE'
+E         
+E         - GOLD_EPISODES_HAVE_NO_ENTITYEDGE_PROVENANCE
+E         + ANSWER_BEARING_FACTS_ABSENT_FROM_EDGE_SEARCH_CORPUS
+
+tests/test_s2_diagnosis.py:78: AssertionError</failure></testcase><testcase classname="tests.test_s2_diagnosis" name="test_s2_diagnosis_fails_closed_on_unsupported_evidence[reference_mutation0-metric_mutation0]" time="0.025" /><testcase classname="tests.test_s2_diagnosis" name="test_s2_diagnosis_fails_closed_on_unsupported_evidence[reference_mutation1-metric_mutation1]" time="0.025" /><testcase classname="tests.test_s2_diagnosis" name="test_s2_diagnosis_fails_closed_on_unsupported_evidence[reference_mutation2-metric_mutation2]" time="0.025" /><testcase classname="tests.test_s2_diagnosis" name="test_s2_diagnosis_fails_closed_on_unsupported_evidence[reference_mutation3-metric_mutation3]" time="0.025" /><testcase classname="tests.test_s2_diagnosis" name="test_s2_diagnosis_fails_closed_on_unsupported_evidence[reference_mutation4-metric_mutation4]" time="0.025" /></testsuite></testsuites>

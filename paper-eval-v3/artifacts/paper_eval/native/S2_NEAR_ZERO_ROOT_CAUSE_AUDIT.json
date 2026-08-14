@@ -1,0 +1,53 @@
+{
+  "stage": "S2",
+  "method": "U0",
+  "run_id": "s2-live-20260814-001",
+  "status": "STOPPED_NEAR_ZERO",
+  "decision": "NO_AUTOMATIC_RETRY_OR_SCOPE_EXPANSION",
+  "checkpoint_sha256": "bd231978613503aabfe895702de3f21f3c24c5ddd166944b6f37375d08f1f61d",
+  "events_sha256": "9dfaeafedf497992302614230d7afed75bdfb2c578f42a3f2459cf598b3240a0",
+  "reference_sanity_sha256": "0118ce9fbf288633df7405dad0570f1826665b61541b74cab813c3c3aba57f57",
+  "adapter_identity_sha256": "3797aa87c66e2260fafaa4776863711801e67672e5182a3aa612b1e6b01962ec",
+  "qualification_evidence_sha256": "a2e15716a952d34a28287e74563b9b9ad4a8dc998e47becc7da631eace461e91",
+  "execution_counts": {
+    "retrieval": 1,
+    "reader": 1,
+    "judge": 1,
+    "service_errors": 0
+  },
+  "pipeline_status": {
+    "retrieval": "completed",
+    "reader": "SUCCESS",
+    "judge": "SUCCESS",
+    "judge_parse_status": "NO"
+  },
+  "numeric_observation": {
+    "retrieval_result_count": 10,
+    "retrieved_session_count": 6,
+    "gold_session_count": 2,
+    "gold_retrieved_intersection_count": 0,
+    "evidence_recall_at_10": 0.0,
+    "qa_accuracy": 0.0,
+    "near_zero_stop_triggered": true
+  },
+  "offline_namespace_audit": {
+    "namespace": "pev3-s1-20260814-001",
+    "episodic_node_count": 49,
+    "entity_node_count": 245,
+    "relationship_count": 438,
+    "episode_mapping_coverage": "49/49",
+    "episode_source_sequence_contiguous": true,
+    "gold_session_source_sequence_count": 2,
+    "gold_session_source_sequence_hashes": [
+      "4d4501cc8199c941",
+      "edd919f524cf9ee8"
+    ]
+  },
+  "root_cause_classification": {
+    "service_transport_failure": "NOT_OBSERVED",
+    "qualification_or_namespace_coverage_failure": "NOT_OBSERVED",
+    "native_retrieval_or_graph_quality_anomaly": "SUPPORTED_BY_SCREENING",
+    "reader_or_judge_quality": "UNRESOLVED_AFTER_RETRIEVAL_MISS",
+    "required_next_action": "ROOT_CAUSE_REVIEW_BEFORE_ANY_S2_RERUN"
+  }
+}

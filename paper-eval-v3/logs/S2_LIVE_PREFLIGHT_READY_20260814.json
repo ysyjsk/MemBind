@@ -1,0 +1,22 @@
+{
+  "stage": "S2",
+  "candidate_run_id": "s2-live-20260814-001",
+  "status": "READY",
+  "construction": {
+    "http_status": 200,
+    "model": "qwen3-32b-fp8",
+    "max_model_len": 65536
+  },
+  "embedding": {
+    "http_status": 200,
+    "model": "qwen3-embedding-0.6b",
+    "max_model_len": 32768
+  },
+  "neo4j": {
+    "connectivity": true,
+    "return_one": true,
+    "deployment": "local_non_docker_community"
+  },
+  "live_run_created": false,
+  "decision": "AUTHORIZED_TO_START_ONE_S2_CHAIN"
+}
