@@ -33,8 +33,8 @@ class _Driver:
         self.calls: list[dict[str, object]] = []
         self._init_task = None
 
-    async def execute_query(self, query: str, **kwargs: object) -> object:
-        self.calls.append({"query": query, **kwargs})
+    async def execute_query(self, cypher_query_: str, **kwargs: object) -> object:
+        self.calls.append({"query": cypher_query_, **kwargs})
         records = [
             {
                 "uuid": value.uuid,
@@ -61,7 +61,7 @@ class _Graph:
         self.calls.append({"query": query, **kwargs})
         await self.driver.execute_query(
             "CALL db.index.fulltext.queryNodes('episode_content', $query)",
-            params={"query": query},
+            query=query,
             routing_="r",
         )
         by_uuid = {item.uuid: item for item in self.driver.observed}
@@ -384,6 +384,7 @@ async def test_episode_surface_probe_artifact_is_consistent_content_free_and_no_
         result=result,
         reference_sanity_sha256="a" * 64,
         authorization_sha256="b" * 64,
+        consumption_sha256="9" * 64,
         dataset_sha256="c" * 64,
         frozen_split_sha256="d" * 64,
         source_sha256={"probe": "e" * 64, "graphiti_search": "f" * 64},
@@ -402,6 +403,7 @@ async def test_episode_surface_probe_artifact_is_consistent_content_free_and_no_
     assert payload["judge_requests"] == 0
     assert payload["retrieved_session_ids"] == ["s2", "s1"]
     assert payload["gold_session_ids"] == ["s2"]
+    assert payload["consumption_sha256"] == "9" * 64
     assert payload["retrieval_unit"] == "EpisodicNode"
     assert payload["top_k_unit"] == "session"
     assert payload["session_recall_any_at_10"] == 1.0
@@ -422,6 +424,7 @@ async def test_episode_surface_probe_artifact_is_consistent_content_free_and_no_
             result=result,
             reference_sanity_sha256="a" * 64,
             authorization_sha256="b" * 64,
+            consumption_sha256="9" * 64,
             dataset_sha256="c" * 64,
             frozen_split_sha256="d" * 64,
             source_sha256={"probe": "e" * 64},
@@ -454,6 +457,7 @@ async def test_episode_surface_probe_finalizer_rejects_metric_drift(tmp_path: Pa
             result=inconsistent,
             reference_sanity_sha256="a" * 64,
             authorization_sha256="b" * 64,
+            consumption_sha256="9" * 64,
             dataset_sha256="c" * 64,
             frozen_split_sha256="d" * 64,
             source_sha256={"probe": "e" * 64},

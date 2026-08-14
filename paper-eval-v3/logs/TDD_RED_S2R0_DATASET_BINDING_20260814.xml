@@ -1,0 +1,24 @@
+<?xml version="1.0" encoding="utf-8"?><testsuites name="pytest tests"><testsuite name="pytest" errors="0" failures="1" skipped="0" tests="1" time="0.023" timestamp="2026-08-14T18:30:34.884251+08:00" hostname="aces-System-Product-Name"><testcase classname="tests.test_s2_r0_authorization" name="test_offline_qualification_rejects_dataset_binding_drift" time="0.001"><failure message="TypeError: finalize_s2r0_offline_qualification() got an unexpected keyword argument 'ordered_session_ids_sha256'">tmp_path = PosixPath('/tmp/pytest-of-ly/pytest-10/test_offline_qualification_rej0')
+
+    def test_offline_qualification_rejects_dataset_binding_drift(tmp_path: Path) -&gt; None:
+        bindings = _bindings(tmp_path)
+        with pytest.raises(ValueError, match="dataset binding drift"):
+&gt;           finalize_s2r0_offline_qualification(
+                tmp_path / "qualification.json",
+                binding_paths=bindings,
+                expected_parent_protocol_sha256=sha256_file(bindings["parent_protocol"]),
+                retrieval_config_identity=_config(),
+                dataset_sha256="a" * 64,
+                frozen_split_sha256=sha256_file(bindings["frozen_split"]),
+                frozen_corpus_identity_sha256="c" * 64,
+                ordered_session_ids_sha256="d" * 64,
+                gold_session_ids_sha256="e" * 64,
+                episode_names_sha256="f" * 64,
+                episode_content_hash_sequence_sha256="1" * 64,
+                gold_session_count=2,
+                git_commit="deadbeef",
+                run_id="s2r0-offline-test",
+            )
+E           TypeError: finalize_s2r0_offline_qualification() got an unexpected keyword argument 'ordered_session_ids_sha256'
+
+tests/test_s2_r0_authorization.py:200: TypeError</failure></testcase></testsuite></testsuites>

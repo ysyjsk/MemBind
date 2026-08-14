@@ -1,0 +1,388 @@
+<?xml version="1.0" encoding="utf-8"?><testsuites name="pytest tests"><testsuite name="pytest" errors="0" failures="13" skipped="0" tests="22" time="0.061" timestamp="2026-08-14T19:53:07.641048+08:00" hostname="aces-System-Product-Name"><testcase classname="tests.test_s2_completion_contract" name="test_rejects_drift_from_the_semantics_selected_episode_policy[policy_name-best-of-development-grid]" time="0.001"><failure message="Failed: DID NOT RAISE S2CompletionContractError">field = 'policy_name', value = 'best-of-development-grid'
+
+    @pytest.mark.parametrize(
+        ("field", "value"),
+        [
+            ("policy_name", "best-of-development-grid"),
+            ("policy_version", "latest"),
+            ("retrieval_surface", "graphiti_combined"),
+            ("retrieval_method", "custom_search"),
+            ("search_recipe", "COMBINED_HYBRID_SEARCH_RRF"),
+            ("reader_input_representation", "EntityEdge.fact"),
+            ("episode_to_session_mapping", "silent_dedup"),
+            ("edge_search_enabled", True),
+            ("node_search_enabled", True),
+            ("community_search_enabled", True),
+            ("query_embedding_used", True),
+            ("cross_encoder_used", True),
+            ("search_filters", "custom"),
+            ("group_scope", "all_namespaces"),
+            ("question_date_used_for_retrieval", True),
+            ("retrieval_temporal_filter", "before_question_date"),
+            ("custom_fusion_sort_or_dedup", True),
+        ],
+    )
+    def test_rejects_drift_from_the_semantics_selected_episode_policy(
+        field: str, value: object
+    ) -&gt; None:
+        inputs = _inputs()
+        policy = copy.deepcopy(inputs["retrieval_policy"])
+        policy[field] = value
+    
+&gt;       with pytest.raises(S2CompletionContractError, match="retrieval policy"):
+E       Failed: DID NOT RAISE S2CompletionContractError
+
+tests/test_s2_completion_contract.py:258: Failed</failure></testcase><testcase classname="tests.test_s2_completion_contract" name="test_rejects_drift_from_the_semantics_selected_episode_policy[policy_version-latest]" time="0.000"><failure message="Failed: DID NOT RAISE S2CompletionContractError">field = 'policy_version', value = 'latest'
+
+    @pytest.mark.parametrize(
+        ("field", "value"),
+        [
+            ("policy_name", "best-of-development-grid"),
+            ("policy_version", "latest"),
+            ("retrieval_surface", "graphiti_combined"),
+            ("retrieval_method", "custom_search"),
+            ("search_recipe", "COMBINED_HYBRID_SEARCH_RRF"),
+            ("reader_input_representation", "EntityEdge.fact"),
+            ("episode_to_session_mapping", "silent_dedup"),
+            ("edge_search_enabled", True),
+            ("node_search_enabled", True),
+            ("community_search_enabled", True),
+            ("query_embedding_used", True),
+            ("cross_encoder_used", True),
+            ("search_filters", "custom"),
+            ("group_scope", "all_namespaces"),
+            ("question_date_used_for_retrieval", True),
+            ("retrieval_temporal_filter", "before_question_date"),
+            ("custom_fusion_sort_or_dedup", True),
+        ],
+    )
+    def test_rejects_drift_from_the_semantics_selected_episode_policy(
+        field: str, value: object
+    ) -&gt; None:
+        inputs = _inputs()
+        policy = copy.deepcopy(inputs["retrieval_policy"])
+        policy[field] = value
+    
+&gt;       with pytest.raises(S2CompletionContractError, match="retrieval policy"):
+E       Failed: DID NOT RAISE S2CompletionContractError
+
+tests/test_s2_completion_contract.py:258: Failed</failure></testcase><testcase classname="tests.test_s2_completion_contract" name="test_rejects_drift_from_the_semantics_selected_episode_policy[retrieval_surface-graphiti_combined]" time="0.000"><failure message="Failed: DID NOT RAISE S2CompletionContractError">field = 'retrieval_surface', value = 'graphiti_combined'
+
+    @pytest.mark.parametrize(
+        ("field", "value"),
+        [
+            ("policy_name", "best-of-development-grid"),
+            ("policy_version", "latest"),
+            ("retrieval_surface", "graphiti_combined"),
+            ("retrieval_method", "custom_search"),
+            ("search_recipe", "COMBINED_HYBRID_SEARCH_RRF"),
+            ("reader_input_representation", "EntityEdge.fact"),
+            ("episode_to_session_mapping", "silent_dedup"),
+            ("edge_search_enabled", True),
+            ("node_search_enabled", True),
+            ("community_search_enabled", True),
+            ("query_embedding_used", True),
+            ("cross_encoder_used", True),
+            ("search_filters", "custom"),
+            ("group_scope", "all_namespaces"),
+            ("question_date_used_for_retrieval", True),
+            ("retrieval_temporal_filter", "before_question_date"),
+            ("custom_fusion_sort_or_dedup", True),
+        ],
+    )
+    def test_rejects_drift_from_the_semantics_selected_episode_policy(
+        field: str, value: object
+    ) -&gt; None:
+        inputs = _inputs()
+        policy = copy.deepcopy(inputs["retrieval_policy"])
+        policy[field] = value
+    
+&gt;       with pytest.raises(S2CompletionContractError, match="retrieval policy"):
+E       Failed: DID NOT RAISE S2CompletionContractError
+
+tests/test_s2_completion_contract.py:258: Failed</failure></testcase><testcase classname="tests.test_s2_completion_contract" name="test_rejects_drift_from_the_semantics_selected_episode_policy[retrieval_method-custom_search]" time="0.000"><failure message="Failed: DID NOT RAISE S2CompletionContractError">field = 'retrieval_method', value = 'custom_search'
+
+    @pytest.mark.parametrize(
+        ("field", "value"),
+        [
+            ("policy_name", "best-of-development-grid"),
+            ("policy_version", "latest"),
+            ("retrieval_surface", "graphiti_combined"),
+            ("retrieval_method", "custom_search"),
+            ("search_recipe", "COMBINED_HYBRID_SEARCH_RRF"),
+            ("reader_input_representation", "EntityEdge.fact"),
+            ("episode_to_session_mapping", "silent_dedup"),
+            ("edge_search_enabled", True),
+            ("node_search_enabled", True),
+            ("community_search_enabled", True),
+            ("query_embedding_used", True),
+            ("cross_encoder_used", True),
+            ("search_filters", "custom"),
+            ("group_scope", "all_namespaces"),
+            ("question_date_used_for_retrieval", True),
+            ("retrieval_temporal_filter", "before_question_date"),
+            ("custom_fusion_sort_or_dedup", True),
+        ],
+    )
+    def test_rejects_drift_from_the_semantics_selected_episode_policy(
+        field: str, value: object
+    ) -&gt; None:
+        inputs = _inputs()
+        policy = copy.deepcopy(inputs["retrieval_policy"])
+        policy[field] = value
+    
+&gt;       with pytest.raises(S2CompletionContractError, match="retrieval policy"):
+E       Failed: DID NOT RAISE S2CompletionContractError
+
+tests/test_s2_completion_contract.py:258: Failed</failure></testcase><testcase classname="tests.test_s2_completion_contract" name="test_rejects_drift_from_the_semantics_selected_episode_policy[search_recipe-COMBINED_HYBRID_SEARCH_RRF]" time="0.000"><failure message="Failed: DID NOT RAISE S2CompletionContractError">field = 'search_recipe', value = 'COMBINED_HYBRID_SEARCH_RRF'
+
+    @pytest.mark.parametrize(
+        ("field", "value"),
+        [
+            ("policy_name", "best-of-development-grid"),
+            ("policy_version", "latest"),
+            ("retrieval_surface", "graphiti_combined"),
+            ("retrieval_method", "custom_search"),
+            ("search_recipe", "COMBINED_HYBRID_SEARCH_RRF"),
+            ("reader_input_representation", "EntityEdge.fact"),
+            ("episode_to_session_mapping", "silent_dedup"),
+            ("edge_search_enabled", True),
+            ("node_search_enabled", True),
+            ("community_search_enabled", True),
+            ("query_embedding_used", True),
+            ("cross_encoder_used", True),
+            ("search_filters", "custom"),
+            ("group_scope", "all_namespaces"),
+            ("question_date_used_for_retrieval", True),
+            ("retrieval_temporal_filter", "before_question_date"),
+            ("custom_fusion_sort_or_dedup", True),
+        ],
+    )
+    def test_rejects_drift_from_the_semantics_selected_episode_policy(
+        field: str, value: object
+    ) -&gt; None:
+        inputs = _inputs()
+        policy = copy.deepcopy(inputs["retrieval_policy"])
+        policy[field] = value
+    
+&gt;       with pytest.raises(S2CompletionContractError, match="retrieval policy"):
+E       Failed: DID NOT RAISE S2CompletionContractError
+
+tests/test_s2_completion_contract.py:258: Failed</failure></testcase><testcase classname="tests.test_s2_completion_contract" name="test_rejects_drift_from_the_semantics_selected_episode_policy[reader_input_representation-EntityEdge.fact]" time="0.000"><failure message="AssertionError: Regex pattern did not match.&#10;  Expected regex: 'retrieval policy'&#10;  Actual message: 'Reader representation does not match the retrieval result'">field = 'reader_input_representation', value = 'EntityEdge.fact'
+
+    @pytest.mark.parametrize(
+        ("field", "value"),
+        [
+            ("policy_name", "best-of-development-grid"),
+            ("policy_version", "latest"),
+            ("retrieval_surface", "graphiti_combined"),
+            ("retrieval_method", "custom_search"),
+            ("search_recipe", "COMBINED_HYBRID_SEARCH_RRF"),
+            ("reader_input_representation", "EntityEdge.fact"),
+            ("episode_to_session_mapping", "silent_dedup"),
+            ("edge_search_enabled", True),
+            ("node_search_enabled", True),
+            ("community_search_enabled", True),
+            ("query_embedding_used", True),
+            ("cross_encoder_used", True),
+            ("search_filters", "custom"),
+            ("group_scope", "all_namespaces"),
+            ("question_date_used_for_retrieval", True),
+            ("retrieval_temporal_filter", "before_question_date"),
+            ("custom_fusion_sort_or_dedup", True),
+        ],
+    )
+    def test_rejects_drift_from_the_semantics_selected_episode_policy(
+        field: str, value: object
+    ) -&gt; None:
+        inputs = _inputs()
+        policy = copy.deepcopy(inputs["retrieval_policy"])
+        policy[field] = value
+    
+&gt;       with pytest.raises(S2CompletionContractError, match="retrieval policy"):
+E       AssertionError: Regex pattern did not match.
+E         Expected regex: 'retrieval policy'
+E         Actual message: 'Reader representation does not match the retrieval result'
+
+tests/test_s2_completion_contract.py:258: AssertionError</failure></testcase><testcase classname="tests.test_s2_completion_contract" name="test_rejects_drift_from_the_semantics_selected_episode_policy[episode_to_session_mapping-silent_dedup]" time="0.000" /><testcase classname="tests.test_s2_completion_contract" name="test_rejects_drift_from_the_semantics_selected_episode_policy[edge_search_enabled-True]" time="0.000" /><testcase classname="tests.test_s2_completion_contract" name="test_rejects_drift_from_the_semantics_selected_episode_policy[node_search_enabled-True]" time="0.000" /><testcase classname="tests.test_s2_completion_contract" name="test_rejects_drift_from_the_semantics_selected_episode_policy[community_search_enabled-True]" time="0.000" /><testcase classname="tests.test_s2_completion_contract" name="test_rejects_drift_from_the_semantics_selected_episode_policy[query_embedding_used-True]" time="0.000" /><testcase classname="tests.test_s2_completion_contract" name="test_rejects_drift_from_the_semantics_selected_episode_policy[cross_encoder_used-True]" time="0.000" /><testcase classname="tests.test_s2_completion_contract" name="test_rejects_drift_from_the_semantics_selected_episode_policy[search_filters-custom]" time="0.000" /><testcase classname="tests.test_s2_completion_contract" name="test_rejects_drift_from_the_semantics_selected_episode_policy[group_scope-all_namespaces]" time="0.000" /><testcase classname="tests.test_s2_completion_contract" name="test_rejects_drift_from_the_semantics_selected_episode_policy[question_date_used_for_retrieval-True]" time="0.000"><failure message="Failed: DID NOT RAISE S2CompletionContractError">field = 'question_date_used_for_retrieval', value = True
+
+    @pytest.mark.parametrize(
+        ("field", "value"),
+        [
+            ("policy_name", "best-of-development-grid"),
+            ("policy_version", "latest"),
+            ("retrieval_surface", "graphiti_combined"),
+            ("retrieval_method", "custom_search"),
+            ("search_recipe", "COMBINED_HYBRID_SEARCH_RRF"),
+            ("reader_input_representation", "EntityEdge.fact"),
+            ("episode_to_session_mapping", "silent_dedup"),
+            ("edge_search_enabled", True),
+            ("node_search_enabled", True),
+            ("community_search_enabled", True),
+            ("query_embedding_used", True),
+            ("cross_encoder_used", True),
+            ("search_filters", "custom"),
+            ("group_scope", "all_namespaces"),
+            ("question_date_used_for_retrieval", True),
+            ("retrieval_temporal_filter", "before_question_date"),
+            ("custom_fusion_sort_or_dedup", True),
+        ],
+    )
+    def test_rejects_drift_from_the_semantics_selected_episode_policy(
+        field: str, value: object
+    ) -&gt; None:
+        inputs = _inputs()
+        policy = copy.deepcopy(inputs["retrieval_policy"])
+        policy[field] = value
+    
+&gt;       with pytest.raises(S2CompletionContractError, match="retrieval policy"):
+E       Failed: DID NOT RAISE S2CompletionContractError
+
+tests/test_s2_completion_contract.py:258: Failed</failure></testcase><testcase classname="tests.test_s2_completion_contract" name="test_rejects_drift_from_the_semantics_selected_episode_policy[retrieval_temporal_filter-before_question_date]" time="0.000"><failure message="Failed: DID NOT RAISE S2CompletionContractError">field = 'retrieval_temporal_filter', value = 'before_question_date'
+
+    @pytest.mark.parametrize(
+        ("field", "value"),
+        [
+            ("policy_name", "best-of-development-grid"),
+            ("policy_version", "latest"),
+            ("retrieval_surface", "graphiti_combined"),
+            ("retrieval_method", "custom_search"),
+            ("search_recipe", "COMBINED_HYBRID_SEARCH_RRF"),
+            ("reader_input_representation", "EntityEdge.fact"),
+            ("episode_to_session_mapping", "silent_dedup"),
+            ("edge_search_enabled", True),
+            ("node_search_enabled", True),
+            ("community_search_enabled", True),
+            ("query_embedding_used", True),
+            ("cross_encoder_used", True),
+            ("search_filters", "custom"),
+            ("group_scope", "all_namespaces"),
+            ("question_date_used_for_retrieval", True),
+            ("retrieval_temporal_filter", "before_question_date"),
+            ("custom_fusion_sort_or_dedup", True),
+        ],
+    )
+    def test_rejects_drift_from_the_semantics_selected_episode_policy(
+        field: str, value: object
+    ) -&gt; None:
+        inputs = _inputs()
+        policy = copy.deepcopy(inputs["retrieval_policy"])
+        policy[field] = value
+    
+&gt;       with pytest.raises(S2CompletionContractError, match="retrieval policy"):
+E       Failed: DID NOT RAISE S2CompletionContractError
+
+tests/test_s2_completion_contract.py:258: Failed</failure></testcase><testcase classname="tests.test_s2_completion_contract" name="test_rejects_drift_from_the_semantics_selected_episode_policy[custom_fusion_sort_or_dedup-True]" time="0.000" /><testcase classname="tests.test_s2_completion_contract" name="test_rejects_outcome_fields_and_gold_label_leakage[retrieval_policy-candidate_surface_scores-value0]" time="0.001"><failure message="Failed: DID NOT RAISE S2CompletionContractError">component = 'retrieval_policy', field = 'candidate_surface_scores'
+value = {'episode': 1.0}
+
+    @pytest.mark.parametrize(
+        ("component", "field", "value"),
+        [
+            ("retrieval_policy", "candidate_surface_scores", {"episode": 1.0}),
+            ("retrieval_policy", "answer_session_ids", ["gold-leak"]),
+            ("reader_identity", "answer_session_ids", ["gold-leak"]),
+            ("reader_identity", "has_answer", True),
+            ("judge_identity", "development_accuracy", 1.0),
+        ],
+    )
+    def test_rejects_outcome_fields_and_gold_label_leakage(
+        component: str, field: str, value: object
+    ) -&gt; None:
+        inputs = _inputs()
+        identity = copy.deepcopy(inputs[component])
+        identity[field] = value
+    
+&gt;       with pytest.raises(S2CompletionContractError, match="forbidden field|fields"):
+E       Failed: DID NOT RAISE S2CompletionContractError
+
+tests/test_s2_completion_contract.py:279: Failed</failure></testcase><testcase classname="tests.test_s2_completion_contract" name="test_rejects_outcome_fields_and_gold_label_leakage[retrieval_policy-answer_session_ids-value1]" time="0.000"><failure message="Failed: DID NOT RAISE S2CompletionContractError">component = 'retrieval_policy', field = 'answer_session_ids'
+value = ['gold-leak']
+
+    @pytest.mark.parametrize(
+        ("component", "field", "value"),
+        [
+            ("retrieval_policy", "candidate_surface_scores", {"episode": 1.0}),
+            ("retrieval_policy", "answer_session_ids", ["gold-leak"]),
+            ("reader_identity", "answer_session_ids", ["gold-leak"]),
+            ("reader_identity", "has_answer", True),
+            ("judge_identity", "development_accuracy", 1.0),
+        ],
+    )
+    def test_rejects_outcome_fields_and_gold_label_leakage(
+        component: str, field: str, value: object
+    ) -&gt; None:
+        inputs = _inputs()
+        identity = copy.deepcopy(inputs[component])
+        identity[field] = value
+    
+&gt;       with pytest.raises(S2CompletionContractError, match="forbidden field|fields"):
+E       Failed: DID NOT RAISE S2CompletionContractError
+
+tests/test_s2_completion_contract.py:279: Failed</failure></testcase><testcase classname="tests.test_s2_completion_contract" name="test_rejects_outcome_fields_and_gold_label_leakage[reader_identity-answer_session_ids-value2]" time="0.000"><failure message="Failed: DID NOT RAISE S2CompletionContractError">component = 'reader_identity', field = 'answer_session_ids'
+value = ['gold-leak']
+
+    @pytest.mark.parametrize(
+        ("component", "field", "value"),
+        [
+            ("retrieval_policy", "candidate_surface_scores", {"episode": 1.0}),
+            ("retrieval_policy", "answer_session_ids", ["gold-leak"]),
+            ("reader_identity", "answer_session_ids", ["gold-leak"]),
+            ("reader_identity", "has_answer", True),
+            ("judge_identity", "development_accuracy", 1.0),
+        ],
+    )
+    def test_rejects_outcome_fields_and_gold_label_leakage(
+        component: str, field: str, value: object
+    ) -&gt; None:
+        inputs = _inputs()
+        identity = copy.deepcopy(inputs[component])
+        identity[field] = value
+    
+&gt;       with pytest.raises(S2CompletionContractError, match="forbidden field|fields"):
+E       Failed: DID NOT RAISE S2CompletionContractError
+
+tests/test_s2_completion_contract.py:279: Failed</failure></testcase><testcase classname="tests.test_s2_completion_contract" name="test_rejects_outcome_fields_and_gold_label_leakage[reader_identity-has_answer-True]" time="0.000"><failure message="Failed: DID NOT RAISE S2CompletionContractError">component = 'reader_identity', field = 'has_answer', value = True
+
+    @pytest.mark.parametrize(
+        ("component", "field", "value"),
+        [
+            ("retrieval_policy", "candidate_surface_scores", {"episode": 1.0}),
+            ("retrieval_policy", "answer_session_ids", ["gold-leak"]),
+            ("reader_identity", "answer_session_ids", ["gold-leak"]),
+            ("reader_identity", "has_answer", True),
+            ("judge_identity", "development_accuracy", 1.0),
+        ],
+    )
+    def test_rejects_outcome_fields_and_gold_label_leakage(
+        component: str, field: str, value: object
+    ) -&gt; None:
+        inputs = _inputs()
+        identity = copy.deepcopy(inputs[component])
+        identity[field] = value
+    
+&gt;       with pytest.raises(S2CompletionContractError, match="forbidden field|fields"):
+E       Failed: DID NOT RAISE S2CompletionContractError
+
+tests/test_s2_completion_contract.py:279: Failed</failure></testcase><testcase classname="tests.test_s2_completion_contract" name="test_rejects_outcome_fields_and_gold_label_leakage[judge_identity-development_accuracy-1.0]" time="0.000"><failure message="Failed: DID NOT RAISE S2CompletionContractError">component = 'judge_identity', field = 'development_accuracy', value = 1.0
+
+    @pytest.mark.parametrize(
+        ("component", "field", "value"),
+        [
+            ("retrieval_policy", "candidate_surface_scores", {"episode": 1.0}),
+            ("retrieval_policy", "answer_session_ids", ["gold-leak"]),
+            ("reader_identity", "answer_session_ids", ["gold-leak"]),
+            ("reader_identity", "has_answer", True),
+            ("judge_identity", "development_accuracy", 1.0),
+        ],
+    )
+    def test_rejects_outcome_fields_and_gold_label_leakage(
+        component: str, field: str, value: object
+    ) -&gt; None:
+        inputs = _inputs()
+        identity = copy.deepcopy(inputs[component])
+        identity[field] = value
+    
+&gt;       with pytest.raises(S2CompletionContractError, match="forbidden field|fields"):
+E       Failed: DID NOT RAISE S2CompletionContractError
+
+tests/test_s2_completion_contract.py:279: Failed</failure></testcase></testsuite></testsuites>

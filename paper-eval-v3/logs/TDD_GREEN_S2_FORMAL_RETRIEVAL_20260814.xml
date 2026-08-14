@@ -1,0 +1,13 @@
+<?xml version="1.0" encoding="utf-8"?><testsuites name="pytest tests"><testsuite name="pytest" errors="0" failures="1" skipped="0" tests="6" time="0.027" timestamp="2026-08-14T20:20:18.864644+08:00" hostname="aces-System-Product-Name"><testcase classname="tests.test_s2_formal_retrieval" name="test_formal_retrieval_has_no_gold_or_answer_parameter" time="0.000" /><testcase classname="tests.test_s2_formal_retrieval" name="test_formal_retrieval_runs_one_read_only_search_and_maps_exactly_ten_sessions" time="0.000" /><testcase classname="tests.test_s2_formal_retrieval" name="test_formal_retrieval_rejects_incomplete_or_foreign_result[short_result]" time="0.001" /><testcase classname="tests.test_s2_formal_retrieval" name="test_formal_retrieval_rejects_incomplete_or_foreign_result[foreign_uuid]" time="0.000" /><testcase classname="tests.test_s2_formal_retrieval" name="test_formal_retrieval_rejects_incomplete_or_foreign_result[wrong_group]" time="0.000" /><testcase classname="tests.test_s2_formal_retrieval" name="test_formal_retrieval_rejects_content_drift_before_search" time="0.000"><failure message="Failed: DID NOT RAISE ValueError">def test_formal_retrieval_rejects_content_drift_before_search() -&gt; None:
+        episodes = _episodes()
+        graph = _Graph(episodes)
+        graph.driver.episodes[0] = _Episode(
+            graph.driver.episodes[0].name,
+            graph.driver.episodes[0].session_id,
+            "changed-content",
+        )
+    
+&gt;       with pytest.raises(ValueError, match="content identity"):
+E       Failed: DID NOT RAISE ValueError
+
+tests/test_s2_formal_retrieval.py:173: Failed</failure></testcase></testsuite></testsuites>

@@ -1,0 +1,939 @@
+<?xml version="1.0" encoding="utf-8"?><testsuites name="pytest tests"><testsuite name="pytest" errors="0" failures="15" skipped="0" tests="15" time="0.095" timestamp="2026-08-14T20:06:15.551180+08:00" hostname="aces-System-Product-Name"><testcase classname="tests.test_s2_completion_chain" name="test_synthetic_retrieval_reader_judge_chain_counts_once_and_is_safe" time="0.000"><failure message="ValueError: S2 may only consume a completed S1 namespace">def test_synthetic_retrieval_reader_judge_chain_counts_once_and_is_safe() -&gt; None:
+        retrieval_calls: list[dict[str, str]] = []
+    
+        async def retrieve(*, question: str, namespace: str) -&gt; BoundedRetrievalOutcome:
+            retrieval_calls.append({"question": question, "namespace": namespace})
+            return _retrieval()
+    
+        transport = _Transport()
+        reader = OfficialSessionReader(model="qwen3-32b-fp8", transport=transport)
+        judge = _Judge()
+    
+        result = asyncio.run(
+            execute_bounded_completion_chain(
+&gt;               inputs=_inputs(),
+                       ^^^^^^^^^
+                dataset_record=_record(),
+                retrieve=retrieve,
+                reader=reader,
+                judge=judge,
+            )
+        )
+
+tests/test_s2_completion_chain.py:119: 
+_ _ _ _ _ _ _ _ _ _ _ _ _ _ _ _ _ _ _ _ _ _ _ _ _ _ _ _ _ _ _ _ _ _ _ _ _ _ _ _ 
+tests/test_s2_completion_chain.py:41: in _inputs
+    return S2LiveInputs(
+&lt;string&gt;:11: in __init__
+    ???
+_ _ _ _ _ _ _ _ _ _ _ _ _ _ _ _ _ _ _ _ _ _ _ _ _ _ _ _ _ _ _ _ _ _ _ _ _ _ _ _ 
+
+self = S2LiveInputs(run_id='s2-completion-test', history_id='history-dev', namespace='namespace-dev', question='What is curre...date='2024/03/01', question_type='knowledge-update', reference_answer='current-value', answer_session_ids=('s1', 's2'))
+
+    def __post_init__(self) -&gt; None:
+        for field in (
+            "run_id",
+            "history_id",
+            "namespace",
+            "question",
+            "question_date",
+            "question_type",
+            "reference_answer",
+        ):
+            value = getattr(self, field)
+            if not isinstance(value, str) or not value:
+                raise ValueError(f"{field} must be nonempty")
+        if not self.namespace.startswith("pev3-s1-"):
+&gt;           raise ValueError("S2 may only consume a completed S1 namespace")
+E           ValueError: S2 may only consume a completed S1 namespace
+
+src/paper_eval/s2_live.py:50: ValueError</failure></testcase><testcase classname="tests.test_s2_completion_chain" name="test_gold_labels_are_not_passed_to_retrieval_or_reader_context_selection" time="0.000"><failure message="ValueError: S2 may only consume a completed S1 namespace">def test_gold_labels_are_not_passed_to_retrieval_or_reader_context_selection() -&gt; None:
+        seen: dict[str, object] = {}
+    
+        async def retrieve(*, question: str, namespace: str) -&gt; BoundedRetrievalOutcome:
+            seen["retrieval_args"] = (question, namespace)
+            return _retrieval()
+    
+        class InspectReader(OfficialSessionReader):
+            async def answer(self, sessions, *, question_date: str, question: str):
+                seen["reader_session_ids"] = tuple(item.session_id for item in sessions)
+                seen["reader_text"] = repr(sessions)
+                return await super().answer(
+                    sessions, question_date=question_date, question=question
+                )
+    
+        asyncio.run(
+            execute_bounded_completion_chain(
+&gt;               inputs=_inputs(),
+                       ^^^^^^^^^
+                dataset_record=_record(),
+                retrieve=retrieve,
+                reader=InspectReader(model="qwen3-32b-fp8", transport=_Transport()),
+                judge=_Judge(),
+            )
+        )
+
+tests/test_s2_completion_chain.py:180: 
+_ _ _ _ _ _ _ _ _ _ _ _ _ _ _ _ _ _ _ _ _ _ _ _ _ _ _ _ _ _ _ _ _ _ _ _ _ _ _ _ 
+tests/test_s2_completion_chain.py:41: in _inputs
+    return S2LiveInputs(
+&lt;string&gt;:11: in __init__
+    ???
+_ _ _ _ _ _ _ _ _ _ _ _ _ _ _ _ _ _ _ _ _ _ _ _ _ _ _ _ _ _ _ _ _ _ _ _ _ _ _ _ 
+
+self = S2LiveInputs(run_id='s2-completion-test', history_id='history-dev', namespace='namespace-dev', question='What is curre...date='2024/03/01', question_type='knowledge-update', reference_answer='current-value', answer_session_ids=('s1', 's2'))
+
+    def __post_init__(self) -&gt; None:
+        for field in (
+            "run_id",
+            "history_id",
+            "namespace",
+            "question",
+            "question_date",
+            "question_type",
+            "reference_answer",
+        ):
+            value = getattr(self, field)
+            if not isinstance(value, str) or not value:
+                raise ValueError(f"{field} must be nonempty")
+        if not self.namespace.startswith("pev3-s1-"):
+&gt;           raise ValueError("S2 may only consume a completed S1 namespace")
+E           ValueError: S2 may only consume a completed S1 namespace
+
+src/paper_eval/s2_live.py:50: ValueError</failure></testcase><testcase classname="tests.test_s2_completion_chain" name="test_chain_rejects_retrieval_budget_violation_before_reader[graphiti_search_calls-2]" time="0.000"><failure message="ValueError: S2 may only consume a completed S1 namespace">field = 'graphiti_search_calls', value = 2
+
+    @pytest.mark.parametrize(
+        ("field", "value"),
+        [
+            ("graphiti_search_calls", 2),
+            ("neo4j_read_requests", 0),
+            ("construction_llm_requests", 1),
+            ("embedding_requests", 1),
+            ("cross_encoder_requests", 1),
+            ("database_mutation_attempts", 1),
+            ("database_mutations", 1),
+            ("cleanup_calls", 1),
+            ("retry_count", 1),
+        ],
+    )
+    def test_chain_rejects_retrieval_budget_violation_before_reader(
+        field: str, value: int
+    ) -&gt; None:
+        retrieval = _retrieval()
+        object.__setattr__(retrieval, field, value)
+        transport = _Transport()
+    
+        async def retrieve(**_kwargs) -&gt; BoundedRetrievalOutcome:
+            return retrieval
+    
+        with pytest.raises(CompletionChainError, match="retrieval budget"):
+            asyncio.run(
+                execute_bounded_completion_chain(
+&gt;                   inputs=_inputs(),
+                           ^^^^^^^^^
+                    dataset_record=_record(),
+                    retrieve=retrieve,
+                    reader=OfficialSessionReader(
+                        model="qwen3-32b-fp8", transport=transport
+                    ),
+                    judge=_Judge(),
+                )
+            )
+
+tests/test_s2_completion_chain.py:221: 
+_ _ _ _ _ _ _ _ _ _ _ _ _ _ _ _ _ _ _ _ _ _ _ _ _ _ _ _ _ _ _ _ _ _ _ _ _ _ _ _ 
+tests/test_s2_completion_chain.py:41: in _inputs
+    return S2LiveInputs(
+&lt;string&gt;:11: in __init__
+    ???
+_ _ _ _ _ _ _ _ _ _ _ _ _ _ _ _ _ _ _ _ _ _ _ _ _ _ _ _ _ _ _ _ _ _ _ _ _ _ _ _ 
+
+self = S2LiveInputs(run_id='s2-completion-test', history_id='history-dev', namespace='namespace-dev', question='What is curre...date='2024/03/01', question_type='knowledge-update', reference_answer='current-value', answer_session_ids=('s1', 's2'))
+
+    def __post_init__(self) -&gt; None:
+        for field in (
+            "run_id",
+            "history_id",
+            "namespace",
+            "question",
+            "question_date",
+            "question_type",
+            "reference_answer",
+        ):
+            value = getattr(self, field)
+            if not isinstance(value, str) or not value:
+                raise ValueError(f"{field} must be nonempty")
+        if not self.namespace.startswith("pev3-s1-"):
+&gt;           raise ValueError("S2 may only consume a completed S1 namespace")
+E           ValueError: S2 may only consume a completed S1 namespace
+
+src/paper_eval/s2_live.py:50: ValueError</failure></testcase><testcase classname="tests.test_s2_completion_chain" name="test_chain_rejects_retrieval_budget_violation_before_reader[neo4j_read_requests-0]" time="0.000"><failure message="ValueError: S2 may only consume a completed S1 namespace">field = 'neo4j_read_requests', value = 0
+
+    @pytest.mark.parametrize(
+        ("field", "value"),
+        [
+            ("graphiti_search_calls", 2),
+            ("neo4j_read_requests", 0),
+            ("construction_llm_requests", 1),
+            ("embedding_requests", 1),
+            ("cross_encoder_requests", 1),
+            ("database_mutation_attempts", 1),
+            ("database_mutations", 1),
+            ("cleanup_calls", 1),
+            ("retry_count", 1),
+        ],
+    )
+    def test_chain_rejects_retrieval_budget_violation_before_reader(
+        field: str, value: int
+    ) -&gt; None:
+        retrieval = _retrieval()
+        object.__setattr__(retrieval, field, value)
+        transport = _Transport()
+    
+        async def retrieve(**_kwargs) -&gt; BoundedRetrievalOutcome:
+            return retrieval
+    
+        with pytest.raises(CompletionChainError, match="retrieval budget"):
+            asyncio.run(
+                execute_bounded_completion_chain(
+&gt;                   inputs=_inputs(),
+                           ^^^^^^^^^
+                    dataset_record=_record(),
+                    retrieve=retrieve,
+                    reader=OfficialSessionReader(
+                        model="qwen3-32b-fp8", transport=transport
+                    ),
+                    judge=_Judge(),
+                )
+            )
+
+tests/test_s2_completion_chain.py:221: 
+_ _ _ _ _ _ _ _ _ _ _ _ _ _ _ _ _ _ _ _ _ _ _ _ _ _ _ _ _ _ _ _ _ _ _ _ _ _ _ _ 
+tests/test_s2_completion_chain.py:41: in _inputs
+    return S2LiveInputs(
+&lt;string&gt;:11: in __init__
+    ???
+_ _ _ _ _ _ _ _ _ _ _ _ _ _ _ _ _ _ _ _ _ _ _ _ _ _ _ _ _ _ _ _ _ _ _ _ _ _ _ _ 
+
+self = S2LiveInputs(run_id='s2-completion-test', history_id='history-dev', namespace='namespace-dev', question='What is curre...date='2024/03/01', question_type='knowledge-update', reference_answer='current-value', answer_session_ids=('s1', 's2'))
+
+    def __post_init__(self) -&gt; None:
+        for field in (
+            "run_id",
+            "history_id",
+            "namespace",
+            "question",
+            "question_date",
+            "question_type",
+            "reference_answer",
+        ):
+            value = getattr(self, field)
+            if not isinstance(value, str) or not value:
+                raise ValueError(f"{field} must be nonempty")
+        if not self.namespace.startswith("pev3-s1-"):
+&gt;           raise ValueError("S2 may only consume a completed S1 namespace")
+E           ValueError: S2 may only consume a completed S1 namespace
+
+src/paper_eval/s2_live.py:50: ValueError</failure></testcase><testcase classname="tests.test_s2_completion_chain" name="test_chain_rejects_retrieval_budget_violation_before_reader[construction_llm_requests-1]" time="0.000"><failure message="ValueError: S2 may only consume a completed S1 namespace">field = 'construction_llm_requests', value = 1
+
+    @pytest.mark.parametrize(
+        ("field", "value"),
+        [
+            ("graphiti_search_calls", 2),
+            ("neo4j_read_requests", 0),
+            ("construction_llm_requests", 1),
+            ("embedding_requests", 1),
+            ("cross_encoder_requests", 1),
+            ("database_mutation_attempts", 1),
+            ("database_mutations", 1),
+            ("cleanup_calls", 1),
+            ("retry_count", 1),
+        ],
+    )
+    def test_chain_rejects_retrieval_budget_violation_before_reader(
+        field: str, value: int
+    ) -&gt; None:
+        retrieval = _retrieval()
+        object.__setattr__(retrieval, field, value)
+        transport = _Transport()
+    
+        async def retrieve(**_kwargs) -&gt; BoundedRetrievalOutcome:
+            return retrieval
+    
+        with pytest.raises(CompletionChainError, match="retrieval budget"):
+            asyncio.run(
+                execute_bounded_completion_chain(
+&gt;                   inputs=_inputs(),
+                           ^^^^^^^^^
+                    dataset_record=_record(),
+                    retrieve=retrieve,
+                    reader=OfficialSessionReader(
+                        model="qwen3-32b-fp8", transport=transport
+                    ),
+                    judge=_Judge(),
+                )
+            )
+
+tests/test_s2_completion_chain.py:221: 
+_ _ _ _ _ _ _ _ _ _ _ _ _ _ _ _ _ _ _ _ _ _ _ _ _ _ _ _ _ _ _ _ _ _ _ _ _ _ _ _ 
+tests/test_s2_completion_chain.py:41: in _inputs
+    return S2LiveInputs(
+&lt;string&gt;:11: in __init__
+    ???
+_ _ _ _ _ _ _ _ _ _ _ _ _ _ _ _ _ _ _ _ _ _ _ _ _ _ _ _ _ _ _ _ _ _ _ _ _ _ _ _ 
+
+self = S2LiveInputs(run_id='s2-completion-test', history_id='history-dev', namespace='namespace-dev', question='What is curre...date='2024/03/01', question_type='knowledge-update', reference_answer='current-value', answer_session_ids=('s1', 's2'))
+
+    def __post_init__(self) -&gt; None:
+        for field in (
+            "run_id",
+            "history_id",
+            "namespace",
+            "question",
+            "question_date",
+            "question_type",
+            "reference_answer",
+        ):
+            value = getattr(self, field)
+            if not isinstance(value, str) or not value:
+                raise ValueError(f"{field} must be nonempty")
+        if not self.namespace.startswith("pev3-s1-"):
+&gt;           raise ValueError("S2 may only consume a completed S1 namespace")
+E           ValueError: S2 may only consume a completed S1 namespace
+
+src/paper_eval/s2_live.py:50: ValueError</failure></testcase><testcase classname="tests.test_s2_completion_chain" name="test_chain_rejects_retrieval_budget_violation_before_reader[embedding_requests-1]" time="0.000"><failure message="ValueError: S2 may only consume a completed S1 namespace">field = 'embedding_requests', value = 1
+
+    @pytest.mark.parametrize(
+        ("field", "value"),
+        [
+            ("graphiti_search_calls", 2),
+            ("neo4j_read_requests", 0),
+            ("construction_llm_requests", 1),
+            ("embedding_requests", 1),
+            ("cross_encoder_requests", 1),
+            ("database_mutation_attempts", 1),
+            ("database_mutations", 1),
+            ("cleanup_calls", 1),
+            ("retry_count", 1),
+        ],
+    )
+    def test_chain_rejects_retrieval_budget_violation_before_reader(
+        field: str, value: int
+    ) -&gt; None:
+        retrieval = _retrieval()
+        object.__setattr__(retrieval, field, value)
+        transport = _Transport()
+    
+        async def retrieve(**_kwargs) -&gt; BoundedRetrievalOutcome:
+            return retrieval
+    
+        with pytest.raises(CompletionChainError, match="retrieval budget"):
+            asyncio.run(
+                execute_bounded_completion_chain(
+&gt;                   inputs=_inputs(),
+                           ^^^^^^^^^
+                    dataset_record=_record(),
+                    retrieve=retrieve,
+                    reader=OfficialSessionReader(
+                        model="qwen3-32b-fp8", transport=transport
+                    ),
+                    judge=_Judge(),
+                )
+            )
+
+tests/test_s2_completion_chain.py:221: 
+_ _ _ _ _ _ _ _ _ _ _ _ _ _ _ _ _ _ _ _ _ _ _ _ _ _ _ _ _ _ _ _ _ _ _ _ _ _ _ _ 
+tests/test_s2_completion_chain.py:41: in _inputs
+    return S2LiveInputs(
+&lt;string&gt;:11: in __init__
+    ???
+_ _ _ _ _ _ _ _ _ _ _ _ _ _ _ _ _ _ _ _ _ _ _ _ _ _ _ _ _ _ _ _ _ _ _ _ _ _ _ _ 
+
+self = S2LiveInputs(run_id='s2-completion-test', history_id='history-dev', namespace='namespace-dev', question='What is curre...date='2024/03/01', question_type='knowledge-update', reference_answer='current-value', answer_session_ids=('s1', 's2'))
+
+    def __post_init__(self) -&gt; None:
+        for field in (
+            "run_id",
+            "history_id",
+            "namespace",
+            "question",
+            "question_date",
+            "question_type",
+            "reference_answer",
+        ):
+            value = getattr(self, field)
+            if not isinstance(value, str) or not value:
+                raise ValueError(f"{field} must be nonempty")
+        if not self.namespace.startswith("pev3-s1-"):
+&gt;           raise ValueError("S2 may only consume a completed S1 namespace")
+E           ValueError: S2 may only consume a completed S1 namespace
+
+src/paper_eval/s2_live.py:50: ValueError</failure></testcase><testcase classname="tests.test_s2_completion_chain" name="test_chain_rejects_retrieval_budget_violation_before_reader[cross_encoder_requests-1]" time="0.000"><failure message="ValueError: S2 may only consume a completed S1 namespace">field = 'cross_encoder_requests', value = 1
+
+    @pytest.mark.parametrize(
+        ("field", "value"),
+        [
+            ("graphiti_search_calls", 2),
+            ("neo4j_read_requests", 0),
+            ("construction_llm_requests", 1),
+            ("embedding_requests", 1),
+            ("cross_encoder_requests", 1),
+            ("database_mutation_attempts", 1),
+            ("database_mutations", 1),
+            ("cleanup_calls", 1),
+            ("retry_count", 1),
+        ],
+    )
+    def test_chain_rejects_retrieval_budget_violation_before_reader(
+        field: str, value: int
+    ) -&gt; None:
+        retrieval = _retrieval()
+        object.__setattr__(retrieval, field, value)
+        transport = _Transport()
+    
+        async def retrieve(**_kwargs) -&gt; BoundedRetrievalOutcome:
+            return retrieval
+    
+        with pytest.raises(CompletionChainError, match="retrieval budget"):
+            asyncio.run(
+                execute_bounded_completion_chain(
+&gt;                   inputs=_inputs(),
+                           ^^^^^^^^^
+                    dataset_record=_record(),
+                    retrieve=retrieve,
+                    reader=OfficialSessionReader(
+                        model="qwen3-32b-fp8", transport=transport
+                    ),
+                    judge=_Judge(),
+                )
+            )
+
+tests/test_s2_completion_chain.py:221: 
+_ _ _ _ _ _ _ _ _ _ _ _ _ _ _ _ _ _ _ _ _ _ _ _ _ _ _ _ _ _ _ _ _ _ _ _ _ _ _ _ 
+tests/test_s2_completion_chain.py:41: in _inputs
+    return S2LiveInputs(
+&lt;string&gt;:11: in __init__
+    ???
+_ _ _ _ _ _ _ _ _ _ _ _ _ _ _ _ _ _ _ _ _ _ _ _ _ _ _ _ _ _ _ _ _ _ _ _ _ _ _ _ 
+
+self = S2LiveInputs(run_id='s2-completion-test', history_id='history-dev', namespace='namespace-dev', question='What is curre...date='2024/03/01', question_type='knowledge-update', reference_answer='current-value', answer_session_ids=('s1', 's2'))
+
+    def __post_init__(self) -&gt; None:
+        for field in (
+            "run_id",
+            "history_id",
+            "namespace",
+            "question",
+            "question_date",
+            "question_type",
+            "reference_answer",
+        ):
+            value = getattr(self, field)
+            if not isinstance(value, str) or not value:
+                raise ValueError(f"{field} must be nonempty")
+        if not self.namespace.startswith("pev3-s1-"):
+&gt;           raise ValueError("S2 may only consume a completed S1 namespace")
+E           ValueError: S2 may only consume a completed S1 namespace
+
+src/paper_eval/s2_live.py:50: ValueError</failure></testcase><testcase classname="tests.test_s2_completion_chain" name="test_chain_rejects_retrieval_budget_violation_before_reader[database_mutation_attempts-1]" time="0.000"><failure message="ValueError: S2 may only consume a completed S1 namespace">field = 'database_mutation_attempts', value = 1
+
+    @pytest.mark.parametrize(
+        ("field", "value"),
+        [
+            ("graphiti_search_calls", 2),
+            ("neo4j_read_requests", 0),
+            ("construction_llm_requests", 1),
+            ("embedding_requests", 1),
+            ("cross_encoder_requests", 1),
+            ("database_mutation_attempts", 1),
+            ("database_mutations", 1),
+            ("cleanup_calls", 1),
+            ("retry_count", 1),
+        ],
+    )
+    def test_chain_rejects_retrieval_budget_violation_before_reader(
+        field: str, value: int
+    ) -&gt; None:
+        retrieval = _retrieval()
+        object.__setattr__(retrieval, field, value)
+        transport = _Transport()
+    
+        async def retrieve(**_kwargs) -&gt; BoundedRetrievalOutcome:
+            return retrieval
+    
+        with pytest.raises(CompletionChainError, match="retrieval budget"):
+            asyncio.run(
+                execute_bounded_completion_chain(
+&gt;                   inputs=_inputs(),
+                           ^^^^^^^^^
+                    dataset_record=_record(),
+                    retrieve=retrieve,
+                    reader=OfficialSessionReader(
+                        model="qwen3-32b-fp8", transport=transport
+                    ),
+                    judge=_Judge(),
+                )
+            )
+
+tests/test_s2_completion_chain.py:221: 
+_ _ _ _ _ _ _ _ _ _ _ _ _ _ _ _ _ _ _ _ _ _ _ _ _ _ _ _ _ _ _ _ _ _ _ _ _ _ _ _ 
+tests/test_s2_completion_chain.py:41: in _inputs
+    return S2LiveInputs(
+&lt;string&gt;:11: in __init__
+    ???
+_ _ _ _ _ _ _ _ _ _ _ _ _ _ _ _ _ _ _ _ _ _ _ _ _ _ _ _ _ _ _ _ _ _ _ _ _ _ _ _ 
+
+self = S2LiveInputs(run_id='s2-completion-test', history_id='history-dev', namespace='namespace-dev', question='What is curre...date='2024/03/01', question_type='knowledge-update', reference_answer='current-value', answer_session_ids=('s1', 's2'))
+
+    def __post_init__(self) -&gt; None:
+        for field in (
+            "run_id",
+            "history_id",
+            "namespace",
+            "question",
+            "question_date",
+            "question_type",
+            "reference_answer",
+        ):
+            value = getattr(self, field)
+            if not isinstance(value, str) or not value:
+                raise ValueError(f"{field} must be nonempty")
+        if not self.namespace.startswith("pev3-s1-"):
+&gt;           raise ValueError("S2 may only consume a completed S1 namespace")
+E           ValueError: S2 may only consume a completed S1 namespace
+
+src/paper_eval/s2_live.py:50: ValueError</failure></testcase><testcase classname="tests.test_s2_completion_chain" name="test_chain_rejects_retrieval_budget_violation_before_reader[database_mutations-1]" time="0.000"><failure message="ValueError: S2 may only consume a completed S1 namespace">field = 'database_mutations', value = 1
+
+    @pytest.mark.parametrize(
+        ("field", "value"),
+        [
+            ("graphiti_search_calls", 2),
+            ("neo4j_read_requests", 0),
+            ("construction_llm_requests", 1),
+            ("embedding_requests", 1),
+            ("cross_encoder_requests", 1),
+            ("database_mutation_attempts", 1),
+            ("database_mutations", 1),
+            ("cleanup_calls", 1),
+            ("retry_count", 1),
+        ],
+    )
+    def test_chain_rejects_retrieval_budget_violation_before_reader(
+        field: str, value: int
+    ) -&gt; None:
+        retrieval = _retrieval()
+        object.__setattr__(retrieval, field, value)
+        transport = _Transport()
+    
+        async def retrieve(**_kwargs) -&gt; BoundedRetrievalOutcome:
+            return retrieval
+    
+        with pytest.raises(CompletionChainError, match="retrieval budget"):
+            asyncio.run(
+                execute_bounded_completion_chain(
+&gt;                   inputs=_inputs(),
+                           ^^^^^^^^^
+                    dataset_record=_record(),
+                    retrieve=retrieve,
+                    reader=OfficialSessionReader(
+                        model="qwen3-32b-fp8", transport=transport
+                    ),
+                    judge=_Judge(),
+                )
+            )
+
+tests/test_s2_completion_chain.py:221: 
+_ _ _ _ _ _ _ _ _ _ _ _ _ _ _ _ _ _ _ _ _ _ _ _ _ _ _ _ _ _ _ _ _ _ _ _ _ _ _ _ 
+tests/test_s2_completion_chain.py:41: in _inputs
+    return S2LiveInputs(
+&lt;string&gt;:11: in __init__
+    ???
+_ _ _ _ _ _ _ _ _ _ _ _ _ _ _ _ _ _ _ _ _ _ _ _ _ _ _ _ _ _ _ _ _ _ _ _ _ _ _ _ 
+
+self = S2LiveInputs(run_id='s2-completion-test', history_id='history-dev', namespace='namespace-dev', question='What is curre...date='2024/03/01', question_type='knowledge-update', reference_answer='current-value', answer_session_ids=('s1', 's2'))
+
+    def __post_init__(self) -&gt; None:
+        for field in (
+            "run_id",
+            "history_id",
+            "namespace",
+            "question",
+            "question_date",
+            "question_type",
+            "reference_answer",
+        ):
+            value = getattr(self, field)
+            if not isinstance(value, str) or not value:
+                raise ValueError(f"{field} must be nonempty")
+        if not self.namespace.startswith("pev3-s1-"):
+&gt;           raise ValueError("S2 may only consume a completed S1 namespace")
+E           ValueError: S2 may only consume a completed S1 namespace
+
+src/paper_eval/s2_live.py:50: ValueError</failure></testcase><testcase classname="tests.test_s2_completion_chain" name="test_chain_rejects_retrieval_budget_violation_before_reader[cleanup_calls-1]" time="0.000"><failure message="ValueError: S2 may only consume a completed S1 namespace">field = 'cleanup_calls', value = 1
+
+    @pytest.mark.parametrize(
+        ("field", "value"),
+        [
+            ("graphiti_search_calls", 2),
+            ("neo4j_read_requests", 0),
+            ("construction_llm_requests", 1),
+            ("embedding_requests", 1),
+            ("cross_encoder_requests", 1),
+            ("database_mutation_attempts", 1),
+            ("database_mutations", 1),
+            ("cleanup_calls", 1),
+            ("retry_count", 1),
+        ],
+    )
+    def test_chain_rejects_retrieval_budget_violation_before_reader(
+        field: str, value: int
+    ) -&gt; None:
+        retrieval = _retrieval()
+        object.__setattr__(retrieval, field, value)
+        transport = _Transport()
+    
+        async def retrieve(**_kwargs) -&gt; BoundedRetrievalOutcome:
+            return retrieval
+    
+        with pytest.raises(CompletionChainError, match="retrieval budget"):
+            asyncio.run(
+                execute_bounded_completion_chain(
+&gt;                   inputs=_inputs(),
+                           ^^^^^^^^^
+                    dataset_record=_record(),
+                    retrieve=retrieve,
+                    reader=OfficialSessionReader(
+                        model="qwen3-32b-fp8", transport=transport
+                    ),
+                    judge=_Judge(),
+                )
+            )
+
+tests/test_s2_completion_chain.py:221: 
+_ _ _ _ _ _ _ _ _ _ _ _ _ _ _ _ _ _ _ _ _ _ _ _ _ _ _ _ _ _ _ _ _ _ _ _ _ _ _ _ 
+tests/test_s2_completion_chain.py:41: in _inputs
+    return S2LiveInputs(
+&lt;string&gt;:11: in __init__
+    ???
+_ _ _ _ _ _ _ _ _ _ _ _ _ _ _ _ _ _ _ _ _ _ _ _ _ _ _ _ _ _ _ _ _ _ _ _ _ _ _ _ 
+
+self = S2LiveInputs(run_id='s2-completion-test', history_id='history-dev', namespace='namespace-dev', question='What is curre...date='2024/03/01', question_type='knowledge-update', reference_answer='current-value', answer_session_ids=('s1', 's2'))
+
+    def __post_init__(self) -&gt; None:
+        for field in (
+            "run_id",
+            "history_id",
+            "namespace",
+            "question",
+            "question_date",
+            "question_type",
+            "reference_answer",
+        ):
+            value = getattr(self, field)
+            if not isinstance(value, str) or not value:
+                raise ValueError(f"{field} must be nonempty")
+        if not self.namespace.startswith("pev3-s1-"):
+&gt;           raise ValueError("S2 may only consume a completed S1 namespace")
+E           ValueError: S2 may only consume a completed S1 namespace
+
+src/paper_eval/s2_live.py:50: ValueError</failure></testcase><testcase classname="tests.test_s2_completion_chain" name="test_chain_rejects_retrieval_budget_violation_before_reader[retry_count-1]" time="0.000"><failure message="ValueError: S2 may only consume a completed S1 namespace">field = 'retry_count', value = 1
+
+    @pytest.mark.parametrize(
+        ("field", "value"),
+        [
+            ("graphiti_search_calls", 2),
+            ("neo4j_read_requests", 0),
+            ("construction_llm_requests", 1),
+            ("embedding_requests", 1),
+            ("cross_encoder_requests", 1),
+            ("database_mutation_attempts", 1),
+            ("database_mutations", 1),
+            ("cleanup_calls", 1),
+            ("retry_count", 1),
+        ],
+    )
+    def test_chain_rejects_retrieval_budget_violation_before_reader(
+        field: str, value: int
+    ) -&gt; None:
+        retrieval = _retrieval()
+        object.__setattr__(retrieval, field, value)
+        transport = _Transport()
+    
+        async def retrieve(**_kwargs) -&gt; BoundedRetrievalOutcome:
+            return retrieval
+    
+        with pytest.raises(CompletionChainError, match="retrieval budget"):
+            asyncio.run(
+                execute_bounded_completion_chain(
+&gt;                   inputs=_inputs(),
+                           ^^^^^^^^^
+                    dataset_record=_record(),
+                    retrieve=retrieve,
+                    reader=OfficialSessionReader(
+                        model="qwen3-32b-fp8", transport=transport
+                    ),
+                    judge=_Judge(),
+                )
+            )
+
+tests/test_s2_completion_chain.py:221: 
+_ _ _ _ _ _ _ _ _ _ _ _ _ _ _ _ _ _ _ _ _ _ _ _ _ _ _ _ _ _ _ _ _ _ _ _ _ _ _ _ 
+tests/test_s2_completion_chain.py:41: in _inputs
+    return S2LiveInputs(
+&lt;string&gt;:11: in __init__
+    ???
+_ _ _ _ _ _ _ _ _ _ _ _ _ _ _ _ _ _ _ _ _ _ _ _ _ _ _ _ _ _ _ _ _ _ _ _ _ _ _ _ 
+
+self = S2LiveInputs(run_id='s2-completion-test', history_id='history-dev', namespace='namespace-dev', question='What is curre...date='2024/03/01', question_type='knowledge-update', reference_answer='current-value', answer_session_ids=('s1', 's2'))
+
+    def __post_init__(self) -&gt; None:
+        for field in (
+            "run_id",
+            "history_id",
+            "namespace",
+            "question",
+            "question_date",
+            "question_type",
+            "reference_answer",
+        ):
+            value = getattr(self, field)
+            if not isinstance(value, str) or not value:
+                raise ValueError(f"{field} must be nonempty")
+        if not self.namespace.startswith("pev3-s1-"):
+&gt;           raise ValueError("S2 may only consume a completed S1 namespace")
+E           ValueError: S2 may only consume a completed S1 namespace
+
+src/paper_eval/s2_live.py:50: ValueError</failure></testcase><testcase classname="tests.test_s2_completion_chain" name="test_chain_rejects_invalid_judge_output_as_incomplete_not_qa_miss[INVALID_OUTPUT-INVALID-False]" time="0.000"><failure message="ValueError: S2 may only consume a completed S1 namespace">status = 'INVALID_OUTPUT', parse_status = 'INVALID', label = False
+
+    @pytest.mark.parametrize(
+        ("status", "parse_status", "label"),
+        [
+            ("INVALID_OUTPUT", "INVALID", False),
+            ("SUCCESS", "INVALID", False),
+            ("SUCCESS", "YES", None),
+        ],
+    )
+    def test_chain_rejects_invalid_judge_output_as_incomplete_not_qa_miss(
+        status: str, parse_status: str, label: object
+    ) -&gt; None:
+        class InvalidJudge(_Judge):
+            async def evaluate(self, *, hypothesis: str, inputs: S2LiveInputs) -&gt; dict:
+                value = await super().evaluate(hypothesis=hypothesis, inputs=inputs)
+                value.update(status=status, parse_status=parse_status, label=label)
+                return value
+    
+        async def retrieve(**_kwargs) -&gt; BoundedRetrievalOutcome:
+            return _retrieval()
+    
+        with pytest.raises(CompletionChainError, match="Judge output"):
+            asyncio.run(
+                execute_bounded_completion_chain(
+&gt;                   inputs=_inputs(),
+                           ^^^^^^^^^
+                    dataset_record=_record(),
+                    retrieve=retrieve,
+                    reader=OfficialSessionReader(
+                        model="qwen3-32b-fp8", transport=_Transport()
+                    ),
+                    judge=InvalidJudge(),
+                )
+            )
+
+tests/test_s2_completion_chain.py:256: 
+_ _ _ _ _ _ _ _ _ _ _ _ _ _ _ _ _ _ _ _ _ _ _ _ _ _ _ _ _ _ _ _ _ _ _ _ _ _ _ _ 
+tests/test_s2_completion_chain.py:41: in _inputs
+    return S2LiveInputs(
+&lt;string&gt;:11: in __init__
+    ???
+_ _ _ _ _ _ _ _ _ _ _ _ _ _ _ _ _ _ _ _ _ _ _ _ _ _ _ _ _ _ _ _ _ _ _ _ _ _ _ _ 
+
+self = S2LiveInputs(run_id='s2-completion-test', history_id='history-dev', namespace='namespace-dev', question='What is curre...date='2024/03/01', question_type='knowledge-update', reference_answer='current-value', answer_session_ids=('s1', 's2'))
+
+    def __post_init__(self) -&gt; None:
+        for field in (
+            "run_id",
+            "history_id",
+            "namespace",
+            "question",
+            "question_date",
+            "question_type",
+            "reference_answer",
+        ):
+            value = getattr(self, field)
+            if not isinstance(value, str) or not value:
+                raise ValueError(f"{field} must be nonempty")
+        if not self.namespace.startswith("pev3-s1-"):
+&gt;           raise ValueError("S2 may only consume a completed S1 namespace")
+E           ValueError: S2 may only consume a completed S1 namespace
+
+src/paper_eval/s2_live.py:50: ValueError</failure></testcase><testcase classname="tests.test_s2_completion_chain" name="test_chain_rejects_invalid_judge_output_as_incomplete_not_qa_miss[SUCCESS-INVALID-False]" time="0.000"><failure message="ValueError: S2 may only consume a completed S1 namespace">status = 'SUCCESS', parse_status = 'INVALID', label = False
+
+    @pytest.mark.parametrize(
+        ("status", "parse_status", "label"),
+        [
+            ("INVALID_OUTPUT", "INVALID", False),
+            ("SUCCESS", "INVALID", False),
+            ("SUCCESS", "YES", None),
+        ],
+    )
+    def test_chain_rejects_invalid_judge_output_as_incomplete_not_qa_miss(
+        status: str, parse_status: str, label: object
+    ) -&gt; None:
+        class InvalidJudge(_Judge):
+            async def evaluate(self, *, hypothesis: str, inputs: S2LiveInputs) -&gt; dict:
+                value = await super().evaluate(hypothesis=hypothesis, inputs=inputs)
+                value.update(status=status, parse_status=parse_status, label=label)
+                return value
+    
+        async def retrieve(**_kwargs) -&gt; BoundedRetrievalOutcome:
+            return _retrieval()
+    
+        with pytest.raises(CompletionChainError, match="Judge output"):
+            asyncio.run(
+                execute_bounded_completion_chain(
+&gt;                   inputs=_inputs(),
+                           ^^^^^^^^^
+                    dataset_record=_record(),
+                    retrieve=retrieve,
+                    reader=OfficialSessionReader(
+                        model="qwen3-32b-fp8", transport=_Transport()
+                    ),
+                    judge=InvalidJudge(),
+                )
+            )
+
+tests/test_s2_completion_chain.py:256: 
+_ _ _ _ _ _ _ _ _ _ _ _ _ _ _ _ _ _ _ _ _ _ _ _ _ _ _ _ _ _ _ _ _ _ _ _ _ _ _ _ 
+tests/test_s2_completion_chain.py:41: in _inputs
+    return S2LiveInputs(
+&lt;string&gt;:11: in __init__
+    ???
+_ _ _ _ _ _ _ _ _ _ _ _ _ _ _ _ _ _ _ _ _ _ _ _ _ _ _ _ _ _ _ _ _ _ _ _ _ _ _ _ 
+
+self = S2LiveInputs(run_id='s2-completion-test', history_id='history-dev', namespace='namespace-dev', question='What is curre...date='2024/03/01', question_type='knowledge-update', reference_answer='current-value', answer_session_ids=('s1', 's2'))
+
+    def __post_init__(self) -&gt; None:
+        for field in (
+            "run_id",
+            "history_id",
+            "namespace",
+            "question",
+            "question_date",
+            "question_type",
+            "reference_answer",
+        ):
+            value = getattr(self, field)
+            if not isinstance(value, str) or not value:
+                raise ValueError(f"{field} must be nonempty")
+        if not self.namespace.startswith("pev3-s1-"):
+&gt;           raise ValueError("S2 may only consume a completed S1 namespace")
+E           ValueError: S2 may only consume a completed S1 namespace
+
+src/paper_eval/s2_live.py:50: ValueError</failure></testcase><testcase classname="tests.test_s2_completion_chain" name="test_chain_rejects_invalid_judge_output_as_incomplete_not_qa_miss[SUCCESS-YES-None]" time="0.000"><failure message="ValueError: S2 may only consume a completed S1 namespace">status = 'SUCCESS', parse_status = 'YES', label = None
+
+    @pytest.mark.parametrize(
+        ("status", "parse_status", "label"),
+        [
+            ("INVALID_OUTPUT", "INVALID", False),
+            ("SUCCESS", "INVALID", False),
+            ("SUCCESS", "YES", None),
+        ],
+    )
+    def test_chain_rejects_invalid_judge_output_as_incomplete_not_qa_miss(
+        status: str, parse_status: str, label: object
+    ) -&gt; None:
+        class InvalidJudge(_Judge):
+            async def evaluate(self, *, hypothesis: str, inputs: S2LiveInputs) -&gt; dict:
+                value = await super().evaluate(hypothesis=hypothesis, inputs=inputs)
+                value.update(status=status, parse_status=parse_status, label=label)
+                return value
+    
+        async def retrieve(**_kwargs) -&gt; BoundedRetrievalOutcome:
+            return _retrieval()
+    
+        with pytest.raises(CompletionChainError, match="Judge output"):
+            asyncio.run(
+                execute_bounded_completion_chain(
+&gt;                   inputs=_inputs(),
+                           ^^^^^^^^^
+                    dataset_record=_record(),
+                    retrieve=retrieve,
+                    reader=OfficialSessionReader(
+                        model="qwen3-32b-fp8", transport=_Transport()
+                    ),
+                    judge=InvalidJudge(),
+                )
+            )
+
+tests/test_s2_completion_chain.py:256: 
+_ _ _ _ _ _ _ _ _ _ _ _ _ _ _ _ _ _ _ _ _ _ _ _ _ _ _ _ _ _ _ _ _ _ _ _ _ _ _ _ 
+tests/test_s2_completion_chain.py:41: in _inputs
+    return S2LiveInputs(
+&lt;string&gt;:11: in __init__
+    ???
+_ _ _ _ _ _ _ _ _ _ _ _ _ _ _ _ _ _ _ _ _ _ _ _ _ _ _ _ _ _ _ _ _ _ _ _ _ _ _ _ 
+
+self = S2LiveInputs(run_id='s2-completion-test', history_id='history-dev', namespace='namespace-dev', question='What is curre...date='2024/03/01', question_type='knowledge-update', reference_answer='current-value', answer_session_ids=('s1', 's2'))
+
+    def __post_init__(self) -&gt; None:
+        for field in (
+            "run_id",
+            "history_id",
+            "namespace",
+            "question",
+            "question_date",
+            "question_type",
+            "reference_answer",
+        ):
+            value = getattr(self, field)
+            if not isinstance(value, str) or not value:
+                raise ValueError(f"{field} must be nonempty")
+        if not self.namespace.startswith("pev3-s1-"):
+&gt;           raise ValueError("S2 may only consume a completed S1 namespace")
+E           ValueError: S2 may only consume a completed S1 namespace
+
+src/paper_eval/s2_live.py:50: ValueError</failure></testcase><testcase classname="tests.test_s2_completion_chain" name="test_valid_negative_judge_output_is_a_real_zero_qa_value" time="0.000"><failure message="ValueError: S2 may only consume a completed S1 namespace">def test_valid_negative_judge_output_is_a_real_zero_qa_value() -&gt; None:
+        async def retrieve(**_kwargs) -&gt; BoundedRetrievalOutcome:
+            return _retrieval()
+    
+        result = asyncio.run(
+            execute_bounded_completion_chain(
+&gt;               inputs=_inputs(),
+                       ^^^^^^^^^
+                dataset_record=_record(),
+                retrieve=retrieve,
+                reader=OfficialSessionReader(
+                    model="qwen3-32b-fp8", transport=_Transport()
+                ),
+                judge=_Judge(label=False, parse_status="NO"),
+            )
+        )
+
+tests/test_s2_completion_chain.py:273: 
+_ _ _ _ _ _ _ _ _ _ _ _ _ _ _ _ _ _ _ _ _ _ _ _ _ _ _ _ _ _ _ _ _ _ _ _ _ _ _ _ 
+tests/test_s2_completion_chain.py:41: in _inputs
+    return S2LiveInputs(
+&lt;string&gt;:11: in __init__
+    ???
+_ _ _ _ _ _ _ _ _ _ _ _ _ _ _ _ _ _ _ _ _ _ _ _ _ _ _ _ _ _ _ _ _ _ _ _ _ _ _ _ 
+
+self = S2LiveInputs(run_id='s2-completion-test', history_id='history-dev', namespace='namespace-dev', question='What is curre...date='2024/03/01', question_type='knowledge-update', reference_answer='current-value', answer_session_ids=('s1', 's2'))
+
+    def __post_init__(self) -&gt; None:
+        for field in (
+            "run_id",
+            "history_id",
+            "namespace",
+            "question",
+            "question_date",
+            "question_type",
+            "reference_answer",
+        ):
+            value = getattr(self, field)
+            if not isinstance(value, str) or not value:
+                raise ValueError(f"{field} must be nonempty")
+        if not self.namespace.startswith("pev3-s1-"):
+&gt;           raise ValueError("S2 may only consume a completed S1 namespace")
+E           ValueError: S2 may only consume a completed S1 namespace
+
+src/paper_eval/s2_live.py:50: ValueError</failure></testcase></testsuite></testsuites>

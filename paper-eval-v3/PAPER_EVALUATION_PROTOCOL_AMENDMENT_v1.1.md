@@ -29,11 +29,10 @@ The evaluation therefore keeps three surfaces distinct:
 2. `graphiti_episode_bm25_session_diagnostic`: one EpisodicNode per frozen
    LongMemEval session, ranked by upstream `Graphiti.search_()` with episode-only
    BM25 and RRF. It computes binary LongMemEval-style `Recall_any@10` and
-   `Recall_all@10`, but it is initially a diagnostic probe and does not select
-   the final paper retrieval policy.
+   `Recall_all@10`. This diagnostic probe does not select the final paper retrieval policy.
 3. Graph-sensitive correctness: canonical/semantic graph parity, provenance,
-   temporal and publication invariants, lost/duplicate updates, and direct
-   violations. Episode QA cannot substitute for this surface.
+   temporal and publication invariants, lost/duplicate updates, and direct violations.
+   Episode QA cannot substitute for this surface.
 
 The historical `s2-live-20260814-001` attempt is immutable, terminal, and
 non-mergeable. Its zero retrieval value is interpreted only on the basic edge
@@ -180,4 +179,3 @@ RED tests
 
 No cleanup, rebuild, Reader/Judge call, retrieval-policy search, S3 transition,
 or formal-method run is authorized by this amendment.
-

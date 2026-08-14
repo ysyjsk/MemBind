@@ -1,0 +1,16 @@
+<?xml version="1.0" encoding="utf-8"?><testsuites name="pytest tests"><testsuite name="pytest" errors="0" failures="1" skipped="0" tests="1" time="0.030" timestamp="2026-08-14T18:23:53.778936+08:00" hostname="aces-System-Product-Name"><testcase classname="tests.test_s2_r0_authorization" name="test_offline_qualification_rejects_graphiti_default_field_drift" time="0.010"><failure message="Failed: DID NOT RAISE ValueError">tmp_path = PosixPath('/tmp/pytest-of-ly/pytest-6/test_offline_qualification_rej0')
+
+    def test_offline_qualification_rejects_graphiti_default_field_drift(
+        tmp_path: Path,
+    ) -&gt; None:
+        bindings = _bindings(tmp_path)
+        config = _config()
+        config["episode_config"] = {
+            **config["episode_config"],
+            "sim_min_score": 0.5,
+        }
+        output = tmp_path / "qualification.json"
+&gt;       with pytest.raises(ValueError, match="retrieval config drift"):
+E       Failed: DID NOT RAISE ValueError
+
+tests/test_s2_r0_authorization.py:166: Failed</failure></testcase></testsuite></testsuites>

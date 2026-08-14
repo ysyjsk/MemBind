@@ -1,0 +1,57 @@
+<?xml version="1.0" encoding="utf-8"?><testsuites name="pytest tests"><testsuite name="pytest" errors="0" failures="1" skipped="0" tests="1" time="0.033" timestamp="2026-08-14T19:50:30.444009+08:00" hostname="aces-System-Product-Name"><testcase classname="tests.test_s3_freeze" name="test_gate_c_allows_future_pilot_and_final_roles_to_remain_unassigned" time="0.001"><failure message="ValueError: Gate C role registry is invalid">tmp_path = PosixPath('/tmp/pytest-of-ly/pytest-31/test_gate_c_allows_future_pilo0')
+
+    def test_gate_c_allows_future_pilot_and_final_roles_to_remain_unassigned(
+        tmp_path: Path,
+    ) -&gt; None:
+        fixture = _fixture(tmp_path)
+        fixture["roles"]["PILOT"] = []
+        fixture["roles"]["FINAL_PAPER_TEST"] = []
+        bindings = _binding_projection(fixture)
+        fixture["s2"]["payload"]["bindings_sha256"] = payload_sha256(bindings)
+        fixture["s2"]["payload"]["role_registry_sha256"] = payload_sha256(
+            fixture["roles"]
+        )
+        fixture["s2"]["payload_sha256"] = payload_sha256(fixture["s2"]["payload"])
+        fixture["authority"]["payload"]["s2_completion_payload_sha256"] = fixture[
+            "s2"
+        ]["payload_sha256"]
+        fixture["authority"]["payload"]["bindings_sha256"] = payload_sha256(bindings)
+        fixture["authority"]["payload"]["role_registry_sha256"] = payload_sha256(
+            fixture["roles"]
+        )
+        fixture["authority"]["payload_sha256"] = payload_sha256(
+            fixture["authority"]["payload"]
+        )
+    
+&gt;       artifact = _build(fixture)
+                   ^^^^^^^^^^^^^^^
+
+tests/test_s3_freeze.py:368: 
+_ _ _ _ _ _ _ _ _ _ _ _ _ _ _ _ _ _ _ _ _ _ _ _ _ _ _ _ _ _ _ _ _ _ _ _ _ _ _ _ 
+tests/test_s3_freeze.py:194: in _build
+    return build_native_baseline_freeze(
+src/paper_eval/s3_freeze.py:375: in build_native_baseline_freeze
+    bindings = _binding_projection(
+src/paper_eval/s3_freeze.py:266: in _binding_projection
+    roles = _role_registry(raw["role_registry"])
+            ^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^
+_ _ _ _ _ _ _ _ _ _ _ _ _ _ _ _ _ _ _ _ _ _ _ _ _ _ _ _ _ _ _ _ _ _ _ _ _ _ _ _ 
+
+value = {'DEVELOPMENT_EXPOSED': ['dev-a', 'dev-b'], 'PILOT': [], 'FINAL_PAPER_TEST': []}
+
+    def _role_registry(value: Mapping[str, Any]) -&gt; dict[str, list[str]]:
+        if not isinstance(value, Mapping) or set(value) != set(ROLE_NAMES):
+            raise ValueError("Gate C role registry is incomplete")
+        result: dict[str, list[str]] = {}
+        for role in ROLE_NAMES:
+            members = value[role]
+            if (
+                not isinstance(members, list)
+                or not members
+                or any(not isinstance(item, str) or not item for item in members)
+                or len(members) != len(set(members))
+            ):
+&gt;               raise ValueError("Gate C role registry is invalid")
+E               ValueError: Gate C role registry is invalid
+
+src/paper_eval/s3_freeze.py:209: ValueError</failure></testcase></testsuite></testsuites>

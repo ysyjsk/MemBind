@@ -1,0 +1,54 @@
+<?xml version="1.0" encoding="utf-8"?><testsuites name="pytest tests"><testsuite name="pytest" errors="0" failures="2" skipped="0" tests="3" time="0.067" timestamp="2026-08-14T18:26:58.203384+08:00" hostname="aces-System-Product-Name"><testcase classname="tests.test_s2_retrieval_probe" name="test_episode_surface_probe_artifact_is_consistent_content_free_and_no_overwrite" time="0.001"><failure message="TypeError: finalize_episode_surface_probe() got an unexpected keyword argument 'consumption_sha256'">tmp_path = PosixPath('/tmp/pytest-of-ly/pytest-8/test_episode_surface_probe_art0')
+
+    @pytest.mark.asyncio
+    async def test_episode_surface_probe_artifact_is_consistent_content_free_and_no_overwrite(
+        tmp_path: Path,
+    ) -&gt; None:
+        episodes = _episodes()
+        result = await run_episode_surface_probe(
+            graph=_Graph(_observed()),
+            query="Where does Ravi work now?",
+            namespace=NAMESPACE,
+            episodes=episodes,
+            expected_frozen_session_ids=("s1", "s2"),
+            expected_corpus_identity_sha256=corpus_identity_sha256(episodes),
+            answer_session_ids=("s2",),
+            edge_attributed_source_session_coverage=0.0,
+            search_config=_episode_bm25_config(),
+        )
+        output = tmp_path / "S2_R0_EPISODE_PROBE.json"
+&gt;       artifact = finalize_episode_surface_probe(
+            output,
+            run_id="s2r-test",
+            history_id="07741c45",
+            namespace=NAMESPACE,
+            result=result,
+            reference_sanity_sha256="a" * 64,
+            authorization_sha256="b" * 64,
+            consumption_sha256="9" * 64,
+            dataset_sha256="c" * 64,
+            frozen_split_sha256="d" * 64,
+            source_sha256={"probe": "e" * 64, "graphiti_search": "f" * 64},
+            git_commit="deadbeef",
+        )
+E       TypeError: finalize_episode_surface_probe() got an unexpected keyword argument 'consumption_sha256'
+
+tests/test_s2_retrieval_probe.py:379: TypeError</failure></testcase><testcase classname="tests.test_s2_r0_live" name="test_failure_artifact_is_sanitized_and_immutable" time="0.000"><failure message="TypeError: finalize_s2r0_failure() got an unexpected keyword argument 'consumption_sha256'">tmp_path = PosixPath('/tmp/pytest-of-ly/pytest-8/test_failure_artifact_is_sanit0')
+
+    def test_failure_artifact_is_sanitized_and_immutable(tmp_path: Path) -&gt; None:
+        output = tmp_path / "S2_R0_FAILURE.json"
+        counters = ProbeCounters(neo4j_read_requests=1, graphiti_search_calls=1)
+&gt;       artifact = finalize_s2r0_failure(
+            output,
+            run_id="s2r0-20260814-001",
+            history_id="07741c45",
+            namespace="pev3-s1-20260814-001",
+            error=RuntimeError("secret endpoint, query, and credential"),
+            counters=counters,
+            authorization_sha256="a" * 64,
+            consumption_sha256="b" * 64,
+            git_commit="deadbeef",
+        )
+E       TypeError: finalize_s2r0_failure() got an unexpected keyword argument 'consumption_sha256'
+
+tests/test_s2_r0_live.py:106: TypeError</failure></testcase><testcase classname="tests.test_s2_r0_authorization" name="test_two_consumers_cannot_claim_the_same_authorization" time="0.022" /></testsuite></testsuites>

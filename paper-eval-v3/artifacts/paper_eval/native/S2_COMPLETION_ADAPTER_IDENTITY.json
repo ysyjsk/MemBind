@@ -1,0 +1,81 @@
+{
+  "identity_sha256": "57ed691c688274a63d4c3ab2c2b91d341a8475cf26fb9d9d65c448f72d0a4b82",
+  "judge": {
+    "backend_public_config": {
+      "backend": "openai_compatible_chat_completions",
+      "effective_enable_thinking": false,
+      "endpoint_identity_sha256": "31970724e893444d34ba6eca9bfa2b2118122436fa843ec574b7607e60747d98",
+      "max_attempts": 1,
+      "max_tokens": 10,
+      "n": 1,
+      "retry_delays_seconds": [
+        0.0
+      ],
+      "sdk_hidden_retries": 0,
+      "served_model_name": "qwen3-32b-fp8",
+      "temperature": 0,
+      "thinking_control": "client_request",
+      "timeout_seconds": 30.0
+    },
+    "implementation": "qualified_legacy_longmemeval_adapter",
+    "judge_config_sha256": "97fc7c64f9ce991383e68269054254dcd36790dc493d9795418f58b763d27d6d",
+    "judge_model": "qwen3-32b-fp8",
+    "raw_prompt_persisted": false,
+    "raw_response_persisted": false
+  },
+  "judge_config_sha256": "bfdef9ccfc25938153473056962e4f91d3a7924e56b6a6f7672dcbdc6877acdd",
+  "judge_qualification_artifact_sha256": "31a16da6d8a668517315ec22c5b375f9c494f34dbb5c62428be86c39dd028485",
+  "reader": {
+    "con": false,
+    "cot": false,
+    "effective_enable_thinking": false,
+    "has_answer_label_removed": true,
+    "history_format": "json",
+    "implementation": "longmemeval_official_session_reader",
+    "input_representation": "longmemeval_flat_session_item",
+    "max_attempts": 1,
+    "max_tokens": 500,
+    "merge_key_expansion_into_value": "none",
+    "messages": [
+      "user"
+    ],
+    "model": "qwen3-32b-fp8",
+    "n": 1,
+    "official_flat_session_item_semantics": true,
+    "presentation_order": "chronological_after_top_k_rank_stable_ties",
+    "prompt_template_sha256": "e427ff913456e51a132ec865b1b5038d562bdc36890976943ad421cc9b365c9d",
+    "retriever_type": "flat-session",
+    "retry_delays_seconds": [],
+    "sdk_hidden_retries": 0,
+    "session_value_source": "frozen_dataset_haystack_sessions",
+    "system_prompt": null,
+    "temperature": 0,
+    "thinking_control": "client_request",
+    "thinking_parameter_sent": true,
+    "topk_context": 10,
+    "truncation_policy": "FAIL_CLOSED_IF_CONTEXT_EXCEEDED",
+    "upstream_commit": "9e0b455f4ef0e2ab8f2e582289761153549043fc",
+    "upstream_file_sha256": "4f1eb3c69d7ad40f04065b9c0bc86f6582441018fc6ff751d162d66c95baf672",
+    "upstream_repository": "xiaowu0162/LongMemEval",
+    "upstream_source_path": "src/generation/run_generation.py",
+    "useronly": false
+  },
+  "reader_config_sha256": "d84697f95fd6232c6c8f882cdae7a9eab54049e6e3cc4a69501e28ac9cd31bbc",
+  "reader_transport": {
+    "endpoint_identity_sha256": "31970724e893444d34ba6eca9bfa2b2118122436fa843ec574b7607e60747d98",
+    "implementation": "openai_compatible_chat_completions",
+    "max_attempts": 1,
+    "sdk_hidden_retries": 0,
+    "served_model_name": "qwen3-32b-fp8",
+    "timeout_seconds": 180.0
+  },
+  "reader_transport_config_sha256": "824b1bd95b79d090831be1f0632824ddf890c6ce3ee1f456702bc66b8b9cf244",
+  "retrieval_policy_contract_sha256": "4c3503201cf10551f8081c47e80acc544d54e5896b46d7d8ad17df4601caaada",
+  "schema_version": "membind.paper-eval-v3.s2-completion-adapter-identity.v1",
+  "source_sha256": {
+    "chain": "c4d244ae00a4695f0d9ae8de27d4efe5f478fa1d32d33f4c53f2e84470e2cd28",
+    "judge": "08b7c273a39649583e0e9b532da099d77a31d9705fdf9463155fdb25250a7345",
+    "reader": "42cd9614f70a0fa53a7be49ced5c9d011c6e94bf14087af7b7bad1fe55672c78",
+    "retrieval": "e4ed9f4cbe6274310cbd3d85efa4c3d472c27a8752b847f361cfc075d981c27e"
+  }
+}

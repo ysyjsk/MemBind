@@ -1,0 +1,40 @@
+<?xml version="1.0" encoding="utf-8"?><testsuites name="pytest tests"><testsuite name="pytest" errors="0" failures="1" skipped="0" tests="1" time="0.036" timestamp="2026-08-14T19:00:02.365804+08:00" hostname="aces-System-Product-Name"><testcase classname="tests.test_s2_retrieval_probe" name="test_episode_surface_probe_is_session_ranked_complete_and_read_only" time="0.001"><failure message="TypeError: _read_only_query_guard.&lt;locals&gt;.execute_read_only() got multiple values for argument 'query'">@pytest.mark.asyncio
+    async def test_episode_surface_probe_is_session_ranked_complete_and_read_only() -&gt; None:
+        graph = _Graph(_observed())
+        config = _episode_bm25_config()
+        episodes = _episodes()
+        counters = ProbeCounters()
+&gt;       result = await run_episode_surface_probe(
+            graph=graph,
+            query="Where does Ravi work now?",
+            namespace=NAMESPACE,
+            episodes=episodes,
+            expected_frozen_session_ids=("s1", "s2"),
+            expected_corpus_identity_sha256=corpus_identity_sha256(episodes),
+            answer_session_ids=("s2",),
+            edge_attributed_source_session_coverage=0.0,
+            top_k=10,
+            search_config=config,
+            counters=counters,
+        )
+
+tests/test_s2_retrieval_probe.py:120: 
+_ _ _ _ _ _ _ _ _ _ _ _ _ _ _ _ _ _ _ _ _ _ _ _ _ _ _ _ _ _ _ _ _ _ _ _ _ _ _ _ 
+src/paper_eval/s2_retrieval_probe.py:451: in run_episode_surface_probe
+    search_results = await graph.search_(
+_ _ _ _ _ _ _ _ _ _ _ _ _ _ _ _ _ _ _ _ _ _ _ _ _ _ _ _ _ _ _ _ _ _ _ _ _ _ _ _ 
+
+self = &lt;test_s2_retrieval_probe._Graph object at 0x7f667b4e5d30&gt;
+query = 'Where does Ravi work now?'
+kwargs = {'config': namespace(edge_config=None, node_config=None, episode_config=namespace(search_methods=[namespace(value='bm2...a=0.5, bfs_max_depth=3), community_config=None, limit=10, reranker_min_score=0), 'group_ids': ['pev3-s1-20260814-001']}
+
+    async def search_(self, query: str, **kwargs: object) -&gt; object:
+        self.calls.append({"query": query, **kwargs})
+&gt;       await self.driver.execute_query(
+            "CALL db.index.fulltext.queryNodes('episode_content', $query)",
+            query=query,
+            routing_="r",
+        )
+E       TypeError: _read_only_query_guard.&lt;locals&gt;.execute_read_only() got multiple values for argument 'query'
+
+tests/test_s2_retrieval_probe.py:62: TypeError</failure></testcase></testsuite></testsuites>

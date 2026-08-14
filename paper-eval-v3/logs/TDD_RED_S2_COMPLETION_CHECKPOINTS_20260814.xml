@@ -1,0 +1,24 @@
+<?xml version="1.0" encoding="utf-8"?><testsuites name="pytest tests"><testsuite name="pytest" errors="0" failures="1" skipped="0" tests="1" time="0.028" timestamp="2026-08-14T20:14:38.723437+08:00" hostname="aces-System-Product-Name"><testcase classname="tests.test_s2_completion_chain" name="test_chain_emits_safe_stage_checkpoints_before_advancing" time="0.000"><failure message="TypeError: execute_bounded_completion_chain() got an unexpected keyword argument 'on_checkpoint'">def test_chain_emits_safe_stage_checkpoints_before_advancing() -&gt; None:
+        checkpoints: list[tuple[str, dict[str, object]]] = []
+    
+        async def retrieve(**_kwargs) -&gt; BoundedRetrievalOutcome:
+            return _retrieval()
+    
+        def checkpoint(stage: str, evidence: dict[str, object]) -&gt; None:
+            checkpoints.append((stage, evidence))
+    
+        asyncio.run(
+&gt;           execute_bounded_completion_chain(
+                inputs=_inputs(),
+                dataset_record=_record(),
+                retrieve=retrieve,
+                reader=OfficialSessionReader(
+                    model="qwen3-32b-fp8", transport=_Transport()
+                ),
+                judge=_Judge(),
+                on_checkpoint=checkpoint,
+            )
+        )
+E       TypeError: execute_bounded_completion_chain() got an unexpected keyword argument 'on_checkpoint'
+
+tests/test_s2_completion_chain.py:304: TypeError</failure></testcase></testsuite></testsuites>

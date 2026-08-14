@@ -1,0 +1,47 @@
+<?xml version="1.0" encoding="utf-8"?><testsuites name="pytest tests"><testsuite name="pytest" errors="0" failures="1" skipped="0" tests="12" time="0.023" timestamp="2026-08-14T20:02:12.384300+08:00" hostname="aces-System-Product-Name"><testcase classname="tests.test_s2_session_reader" name="test_materializes_rank_first_then_chronological_with_stable_ties" time="0.000" /><testcase classname="tests.test_s2_session_reader" name="test_materialization_removes_labels_from_copy_without_mutating_dataset" time="0.000" /><testcase classname="tests.test_s2_session_reader" name="test_materialization_rejects_duplicate_foreign_or_short_ranked_sessions[ranked0]" time="0.000" /><testcase classname="tests.test_s2_session_reader" name="test_materialization_rejects_duplicate_foreign_or_short_ranked_sessions[ranked1]" time="0.000" /><testcase classname="tests.test_s2_session_reader" name="test_materialization_rejects_duplicate_foreign_or_short_ranked_sessions[ranked2]" time="0.000" /><testcase classname="tests.test_s2_session_reader" name="test_materialization_rejects_invalid_dataset_session_contract[parallel_length]" time="0.000" /><testcase classname="tests.test_s2_session_reader" name="test_materialization_rejects_invalid_dataset_session_contract[duplicate_corpus_id]" time="0.000" /><testcase classname="tests.test_s2_session_reader" name="test_materialization_rejects_invalid_dataset_session_contract[invalid_turn]" time="0.000" /><testcase classname="tests.test_s2_session_reader" name="test_materialization_rejects_invalid_dataset_session_contract[empty_date]" time="0.000" /><testcase classname="tests.test_s2_session_reader" name="test_prompt_matches_pinned_longmemeval_flat_session_json_semantics" time="0.000"><failure message="assert 'I will give ...wer?\nAnswer:' == 'I will give ...wer?\nAnswer:'&#10;  &#10;  Skipping 629 identical leading characters in diff, use -v to show&#10;    nswer&quot;}]&#10;  + &#10;    &#10;    Current Date: 2024/03/01 (Fri) 12:00&#10;    Question: Where is the current answer?&#10;    Answer:">def test_prompt_matches_pinned_longmemeval_flat_session_json_semantics() -&gt; None:
+        sessions = materialize_ranked_sessions(
+            record=_record(),
+            ranked_session_ids=("s3", "s1", "s2"),
+            top_k=3,
+        )
+    
+        prompt = render_official_session_prompt(
+            sessions,
+            question_date="2024/03/01 (Fri) 12:00",
+            question="Where is the current answer?",
+        )
+    
+&gt;       assert prompt == (
+            "I will give you several history chats between you and a user. "
+            "Please answer the question based on the relevant chat history.\n\n\n"
+            "History Chats:\n\n"
+            "\n### Session 1:\n"
+            "Session Date: 2024/01/01 (Mon) 09:00\n"
+            "Session Content:\n"
+            "\n[{\"role\": \"user\", \"content\": \"Old question\"}, "
+            "{\"role\": \"assistant\", \"content\": \"Old answer\"}]\n"
+            "\n### Session 2:\n"
+            "Session Date: 2024/02/02 (Fri) 10:00\n"
+            "Session Content:\n"
+            "\n[{\"role\": \"user\", \"content\": \"Tie question\"}, "
+            "{\"role\": \"assistant\", \"content\": \"Tie answer\"}]\n"
+            "\n### Session 3:\n"
+            "Session Date: 2024/02/02 (Fri) 10:00\n"
+            "Session Content:\n"
+            "\n[{\"role\": \"user\", \"content\": \"New question\"}, "
+            "{\"role\": \"assistant\", \"content\": \"New answer\"}]\n"
+            "\nCurrent Date: 2024/03/01 (Fri) 12:00\n"
+            "Question: Where is the current answer?\n"
+            "Answer:"
+        )
+E       assert 'I will give ...wer?\nAnswer:' == 'I will give ...wer?\nAnswer:'
+E         
+E         Skipping 629 identical leading characters in diff, use -v to show
+E           nswer"}]
+E         + 
+E           
+E           Current Date: 2024/03/01 (Fri) 12:00
+E           Question: Where is the current answer?
+E           Answer:
+
+tests/test_s2_session_reader.py:146: AssertionError</failure></testcase><testcase classname="tests.test_s2_session_reader" name="test_reader_sends_exact_single_attempt_no_thinking_request" time="0.000" /><testcase classname="tests.test_s2_session_reader" name="test_reader_failure_is_sanitized_and_not_retried" time="0.000" /></testsuite></testsuites>

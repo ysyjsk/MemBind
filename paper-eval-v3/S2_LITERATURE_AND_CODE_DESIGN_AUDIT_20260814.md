@@ -103,8 +103,7 @@ MemBind correctness contract.
   `a844d993f77f947f682a0a52ec2825f2950bc0b3`
 
 LiCoMemory reports QA accuracy, retrieval recall, query latency, retrieved
-tokens, and update-stage costs. Its official evaluator computes fractional
-evidence-session coverage: matched origin session IDs divided by all origin
+tokens, and update-stage costs. Its official evaluator computes fractional evidence-session coverage: matched origin session IDs divided by all origin
 IDs, averaged across items. That is not binary LongMemEval `Recall_all@10`.
 It is a valid precedent for separate quality/retrieval/efficiency reporting,
 not for renaming one metric as another.
@@ -117,8 +116,8 @@ not for renaming one metric as another.
   `6d279a5f5d40ee229e1995df15c182cb2062c71c`
 
 TiMem reports LLM-judge QA accuracy, recalled-memory tokens, recall P50/P95
-latency, and consolidation LLM calls. It does not report LongMemEval Session
-Recall@k. Its repository README also contains a mismatch between one expected
+latency, and consolidation LLM calls. It does not report LongMemEval Session Recall@k.
+Its repository README also contains a mismatch between one expected
 LongMemEval accuracy value and the paper, so paper claims and code identities
 must be bound separately rather than treated as an artifact-grade protocol for
 this project.
@@ -149,4 +148,3 @@ before search. Every result states that EntityNode, CommunityNode, and
 multi-surface retrieval remain untested. A successful Episode result does not
 authorize S3, choose the final retrieval policy, or replace the independent
 graph-correctness lane.
-

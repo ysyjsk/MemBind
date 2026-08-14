@@ -1,0 +1,22 @@
+<?xml version="1.0" encoding="utf-8"?><testsuites name="pytest tests"><testsuite name="pytest" errors="0" failures="1" skipped="0" tests="1" time="0.020" timestamp="2026-08-14T20:28:15.231936+08:00" hostname="aces-System-Product-Name"><testcase classname="tests.test_s2_completion_identity" name="test_builds_hash_bound_session_adapter_identity_without_secrets" time="0.001"><failure message="paper_eval.s2_completion_identity.CompletionIdentityError: completion identity contains secret or raw data">def test_builds_hash_bound_session_adapter_identity_without_secrets() -&gt; None:
+&gt;       identity = _identity()
+                   ^^^^^^^^^^^
+
+tests/test_s2_completion_identity.py:76: 
+_ _ _ _ _ _ _ _ _ _ _ _ _ _ _ _ _ _ _ _ _ _ _ _ _ _ _ _ _ _ _ _ _ _ _ _ _ _ _ _ 
+tests/test_s2_completion_identity.py:60: in _identity
+    return build_s2_completion_adapter_identity(
+src/paper_eval/s2_completion_identity.py:163: in build_s2_completion_adapter_identity
+    body = _validate_body(
+src/paper_eval/s2_completion_identity.py:93: in _validate_body
+    _reject_unsafe(value)
+_ _ _ _ _ _ _ _ _ _ _ _ _ _ _ _ _ _ _ _ _ _ _ _ _ _ _ _ _ _ _ _ _ _ _ _ _ _ _ _ 
+
+value = {'schema_version': 'membind.paper-eval-v3.s2-completion-adapter-identity.v1', 'retrieval_policy_contract_sha256': '666...180.0, ...}, 'reader_transport_config_sha256': '2222222222222222222222222222222222222222222222222222222222222222', ...}
+
+    def _reject_unsafe(value: Mapping[str, Any]) -&gt; None:
+        if set(_walk_keys(value)) &amp; _FORBIDDEN_KEYS:
+&gt;           raise CompletionIdentityError("completion identity contains secret or raw data")
+E           paper_eval.s2_completion_identity.CompletionIdentityError: completion identity contains secret or raw data
+
+src/paper_eval/s2_completion_identity.py:74: CompletionIdentityError</failure></testcase></testsuite></testsuites>

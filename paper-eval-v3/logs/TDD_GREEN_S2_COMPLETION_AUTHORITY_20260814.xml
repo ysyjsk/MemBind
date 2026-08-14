@@ -1,0 +1,210 @@
+<?xml version="1.0" encoding="utf-8"?><testsuites name="pytest tests"><testsuite name="pytest" errors="0" failures="7" skipped="0" tests="7" time="0.066" timestamp="2026-08-14T20:13:24.070923+08:00" hostname="aces-System-Product-Name"><testcase classname="tests.test_s2_completion_authority" name="test_policy_freeze_is_hash_bound_and_honestly_discloses_r0_exposure" time="0.000"><failure message="paper_eval.s2_completion_authority.CompletionAuthorityError: policy full_offline_green is not a SHA256">def test_policy_freeze_is_hash_bound_and_honestly_discloses_r0_exposure() -&gt; None:
+&gt;       policy = _policy()
+                 ^^^^^^^^^
+
+tests/test_s2_completion_authority.py:118: 
+_ _ _ _ _ _ _ _ _ _ _ _ _ _ _ _ _ _ _ _ _ _ _ _ _ _ _ _ _ _ _ _ _ _ _ _ _ _ _ _ 
+tests/test_s2_completion_authority.py:51: in _policy
+    return build_completion_policy_freeze(
+src/paper_eval/s2_completion_authority.py:147: in build_completion_policy_freeze
+    "evidence_sha256": _hash_map(
+src/paper_eval/s2_completion_authority.py:112: in _hash_map
+    result = {str(key): _sha(item, field=f"{label} {key}") for key, item in value.items()}
+                        ^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^
+_ _ _ _ _ _ _ _ _ _ _ _ _ _ _ _ _ _ _ _ _ _ _ _ _ _ _ _ _ _ _ _ _ _ _ _ _ _ _ _ 
+
+value = '10101010101010101010101010101010101010101010101010101010101010101010101010101010101010101010101010101010101010101010101010101010'
+field = 'policy full_offline_green'
+
+    def _sha(value: object, *, field: str) -&gt; str:
+        if not isinstance(value, str) or _SHA256.fullmatch(value) is None:
+&gt;           raise CompletionAuthorityError(f"{field} is not a SHA256")
+E           paper_eval.s2_completion_authority.CompletionAuthorityError: policy full_offline_green is not a SHA256
+
+src/paper_eval/s2_completion_authority.py:72: CompletionAuthorityError</failure></testcase><testcase classname="tests.test_s2_completion_authority" name="test_policy_freeze_rejects_missing_binding_or_resealed_score_field" time="0.000"><failure message="paper_eval.s2_completion_authority.CompletionAuthorityError: policy full_offline_green is not a SHA256">def test_policy_freeze_rejects_missing_binding_or_resealed_score_field() -&gt; None:
+        bindings = _policy_bindings()
+        del bindings["session_reader_test"]
+        with pytest.raises(CompletionAuthorityError, match="evidence"):
+            build_completion_policy_freeze(
+                contract_file_sha256="a" * 64,
+                contract_sha256="b" * 64,
+                adapter_identity_file_sha256="c" * 64,
+                adapter_identity_sha256="d" * 64,
+                evidence_sha256=bindings,
+                git_commit="deadbeef",
+                run_id="policy-invalid",
+            )
+    
+&gt;       policy = _policy()
+                 ^^^^^^^^^
+
+tests/test_s2_completion_authority.py:146: 
+_ _ _ _ _ _ _ _ _ _ _ _ _ _ _ _ _ _ _ _ _ _ _ _ _ _ _ _ _ _ _ _ _ _ _ _ _ _ _ _ 
+tests/test_s2_completion_authority.py:51: in _policy
+    return build_completion_policy_freeze(
+src/paper_eval/s2_completion_authority.py:147: in build_completion_policy_freeze
+    "evidence_sha256": _hash_map(
+src/paper_eval/s2_completion_authority.py:112: in _hash_map
+    result = {str(key): _sha(item, field=f"{label} {key}") for key, item in value.items()}
+                        ^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^
+_ _ _ _ _ _ _ _ _ _ _ _ _ _ _ _ _ _ _ _ _ _ _ _ _ _ _ _ _ _ _ _ _ _ _ _ _ _ _ _ 
+
+value = '10101010101010101010101010101010101010101010101010101010101010101010101010101010101010101010101010101010101010101010101010101010'
+field = 'policy full_offline_green'
+
+    def _sha(value: object, *, field: str) -&gt; str:
+        if not isinstance(value, str) or _SHA256.fullmatch(value) is None:
+&gt;           raise CompletionAuthorityError(f"{field} is not a SHA256")
+E           paper_eval.s2_completion_authority.CompletionAuthorityError: policy full_offline_green is not a SHA256
+
+src/paper_eval/s2_completion_authority.py:72: CompletionAuthorityError</failure></testcase><testcase classname="tests.test_s2_completion_authority" name="test_offline_qualification_requires_every_passed_prerequisite" time="0.000"><failure message="paper_eval.s2_completion_authority.CompletionAuthorityError: policy full_offline_green is not a SHA256">def test_offline_qualification_requires_every_passed_prerequisite() -&gt; None:
+&gt;       qualification = _qualification()
+                        ^^^^^^^^^^^^^^^^
+
+tests/test_s2_completion_authority.py:154: 
+_ _ _ _ _ _ _ _ _ _ _ _ _ _ _ _ _ _ _ _ _ _ _ _ _ _ _ _ _ _ _ _ _ _ _ _ _ _ _ _ 
+tests/test_s2_completion_authority.py:84: in _qualification
+    policy = _policy()
+             ^^^^^^^^^
+tests/test_s2_completion_authority.py:51: in _policy
+    return build_completion_policy_freeze(
+src/paper_eval/s2_completion_authority.py:147: in build_completion_policy_freeze
+    "evidence_sha256": _hash_map(
+src/paper_eval/s2_completion_authority.py:112: in _hash_map
+    result = {str(key): _sha(item, field=f"{label} {key}") for key, item in value.items()}
+                        ^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^
+_ _ _ _ _ _ _ _ _ _ _ _ _ _ _ _ _ _ _ _ _ _ _ _ _ _ _ _ _ _ _ _ _ _ _ _ _ _ _ _ 
+
+value = '10101010101010101010101010101010101010101010101010101010101010101010101010101010101010101010101010101010101010101010101010101010'
+field = 'policy full_offline_green'
+
+    def _sha(value: object, *, field: str) -&gt; str:
+        if not isinstance(value, str) or _SHA256.fullmatch(value) is None:
+&gt;           raise CompletionAuthorityError(f"{field} is not a SHA256")
+E           paper_eval.s2_completion_authority.CompletionAuthorityError: policy full_offline_green is not a SHA256
+
+src/paper_eval/s2_completion_authority.py:72: CompletionAuthorityError</failure></testcase><testcase classname="tests.test_s2_completion_authority" name="test_authorization_binds_exact_one_shot_paths_and_budget" time="0.001"><failure message="paper_eval.s2_completion_authority.CompletionAuthorityError: policy full_offline_green is not a SHA256">tmp_path = PosixPath('/tmp/pytest-of-ly/pytest-35/test_authorization_binds_exact0')
+
+    def test_authorization_binds_exact_one_shot_paths_and_budget(tmp_path: Path) -&gt; None:
+&gt;       authorization = _authorization(tmp_path)
+                        ^^^^^^^^^^^^^^^^^^^^^^^^
+
+tests/test_s2_completion_authority.py:176: 
+_ _ _ _ _ _ _ _ _ _ _ _ _ _ _ _ _ _ _ _ _ _ _ _ _ _ _ _ _ _ _ _ _ _ _ _ _ _ _ _ 
+tests/test_s2_completion_authority.py:99: in _authorization
+    qualification = _qualification()
+                    ^^^^^^^^^^^^^^^^
+tests/test_s2_completion_authority.py:84: in _qualification
+    policy = _policy()
+             ^^^^^^^^^
+tests/test_s2_completion_authority.py:51: in _policy
+    return build_completion_policy_freeze(
+src/paper_eval/s2_completion_authority.py:147: in build_completion_policy_freeze
+    "evidence_sha256": _hash_map(
+src/paper_eval/s2_completion_authority.py:112: in _hash_map
+    result = {str(key): _sha(item, field=f"{label} {key}") for key, item in value.items()}
+                        ^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^
+_ _ _ _ _ _ _ _ _ _ _ _ _ _ _ _ _ _ _ _ _ _ _ _ _ _ _ _ _ _ _ _ _ _ _ _ _ _ _ _ 
+
+value = '10101010101010101010101010101010101010101010101010101010101010101010101010101010101010101010101010101010101010101010101010101010'
+field = 'policy full_offline_green'
+
+    def _sha(value: object, *, field: str) -&gt; str:
+        if not isinstance(value, str) or _SHA256.fullmatch(value) is None:
+&gt;           raise CompletionAuthorityError(f"{field} is not a SHA256")
+E           paper_eval.s2_completion_authority.CompletionAuthorityError: policy full_offline_green is not a SHA256
+
+src/paper_eval/s2_completion_authority.py:72: CompletionAuthorityError</failure></testcase><testcase classname="tests.test_s2_completion_authority" name="test_authorization_rejects_tamper_even_when_payload_is_resealed" time="0.000"><failure message="paper_eval.s2_completion_authority.CompletionAuthorityError: policy full_offline_green is not a SHA256">tmp_path = PosixPath('/tmp/pytest-of-ly/pytest-35/test_authorization_rejects_tam0')
+
+    def test_authorization_rejects_tamper_even_when_payload_is_resealed(
+        tmp_path: Path,
+    ) -&gt; None:
+&gt;       authorization = _authorization(tmp_path)
+                        ^^^^^^^^^^^^^^^^^^^^^^^^
+
+tests/test_s2_completion_authority.py:198: 
+_ _ _ _ _ _ _ _ _ _ _ _ _ _ _ _ _ _ _ _ _ _ _ _ _ _ _ _ _ _ _ _ _ _ _ _ _ _ _ _ 
+tests/test_s2_completion_authority.py:99: in _authorization
+    qualification = _qualification()
+                    ^^^^^^^^^^^^^^^^
+tests/test_s2_completion_authority.py:84: in _qualification
+    policy = _policy()
+             ^^^^^^^^^
+tests/test_s2_completion_authority.py:51: in _policy
+    return build_completion_policy_freeze(
+src/paper_eval/s2_completion_authority.py:147: in build_completion_policy_freeze
+    "evidence_sha256": _hash_map(
+src/paper_eval/s2_completion_authority.py:112: in _hash_map
+    result = {str(key): _sha(item, field=f"{label} {key}") for key, item in value.items()}
+                        ^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^
+_ _ _ _ _ _ _ _ _ _ _ _ _ _ _ _ _ _ _ _ _ _ _ _ _ _ _ _ _ _ _ _ _ _ _ _ _ _ _ _ 
+
+value = '10101010101010101010101010101010101010101010101010101010101010101010101010101010101010101010101010101010101010101010101010101010'
+field = 'policy full_offline_green'
+
+    def _sha(value: object, *, field: str) -&gt; str:
+        if not isinstance(value, str) or _SHA256.fullmatch(value) is None:
+&gt;           raise CompletionAuthorityError(f"{field} is not a SHA256")
+E           paper_eval.s2_completion_authority.CompletionAuthorityError: policy full_offline_green is not a SHA256
+
+src/paper_eval/s2_completion_authority.py:72: CompletionAuthorityError</failure></testcase><testcase classname="tests.test_s2_completion_authority" name="test_consumption_is_exclusive_hash_bound_and_precedes_live_io" time="0.000"><failure message="paper_eval.s2_completion_authority.CompletionAuthorityError: policy full_offline_green is not a SHA256">tmp_path = PosixPath('/tmp/pytest-of-ly/pytest-35/test_consumption_is_exclusive_0')
+
+    def test_consumption_is_exclusive_hash_bound_and_precedes_live_io(
+        tmp_path: Path,
+    ) -&gt; None:
+&gt;       authorization = _authorization(tmp_path)
+                        ^^^^^^^^^^^^^^^^^^^^^^^^
+
+tests/test_s2_completion_authority.py:209: 
+_ _ _ _ _ _ _ _ _ _ _ _ _ _ _ _ _ _ _ _ _ _ _ _ _ _ _ _ _ _ _ _ _ _ _ _ _ _ _ _ 
+tests/test_s2_completion_authority.py:99: in _authorization
+    qualification = _qualification()
+                    ^^^^^^^^^^^^^^^^
+tests/test_s2_completion_authority.py:84: in _qualification
+    policy = _policy()
+             ^^^^^^^^^
+tests/test_s2_completion_authority.py:51: in _policy
+    return build_completion_policy_freeze(
+src/paper_eval/s2_completion_authority.py:147: in build_completion_policy_freeze
+    "evidence_sha256": _hash_map(
+src/paper_eval/s2_completion_authority.py:112: in _hash_map
+    result = {str(key): _sha(item, field=f"{label} {key}") for key, item in value.items()}
+                        ^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^
+_ _ _ _ _ _ _ _ _ _ _ _ _ _ _ _ _ _ _ _ _ _ _ _ _ _ _ _ _ _ _ _ _ _ _ _ _ _ _ _ 
+
+value = '10101010101010101010101010101010101010101010101010101010101010101010101010101010101010101010101010101010101010101010101010101010'
+field = 'policy full_offline_green'
+
+    def _sha(value: object, *, field: str) -&gt; str:
+        if not isinstance(value, str) or _SHA256.fullmatch(value) is None:
+&gt;           raise CompletionAuthorityError(f"{field} is not a SHA256")
+E           paper_eval.s2_completion_authority.CompletionAuthorityError: policy full_offline_green is not a SHA256
+
+src/paper_eval/s2_completion_authority.py:72: CompletionAuthorityError</failure></testcase><testcase classname="tests.test_s2_completion_authority" name="test_authority_artifacts_contain_no_raw_content_or_credentials" time="0.000"><failure message="paper_eval.s2_completion_authority.CompletionAuthorityError: policy full_offline_green is not a SHA256">tmp_path = PosixPath('/tmp/pytest-of-ly/pytest-35/test_authority_artifacts_conta0')
+
+    def test_authority_artifacts_contain_no_raw_content_or_credentials(
+        tmp_path: Path,
+    ) -&gt; None:
+&gt;       values = [_policy(), _qualification(), _authorization(tmp_path)]
+                  ^^^^^^^^^
+
+tests/test_s2_completion_authority.py:239: 
+_ _ _ _ _ _ _ _ _ _ _ _ _ _ _ _ _ _ _ _ _ _ _ _ _ _ _ _ _ _ _ _ _ _ _ _ _ _ _ _ 
+tests/test_s2_completion_authority.py:51: in _policy
+    return build_completion_policy_freeze(
+src/paper_eval/s2_completion_authority.py:147: in build_completion_policy_freeze
+    "evidence_sha256": _hash_map(
+src/paper_eval/s2_completion_authority.py:112: in _hash_map
+    result = {str(key): _sha(item, field=f"{label} {key}") for key, item in value.items()}
+                        ^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^
+_ _ _ _ _ _ _ _ _ _ _ _ _ _ _ _ _ _ _ _ _ _ _ _ _ _ _ _ _ _ _ _ _ _ _ _ _ _ _ _ 
+
+value = '10101010101010101010101010101010101010101010101010101010101010101010101010101010101010101010101010101010101010101010101010101010'
+field = 'policy full_offline_green'
+
+    def _sha(value: object, *, field: str) -&gt; str:
+        if not isinstance(value, str) or _SHA256.fullmatch(value) is None:
+&gt;           raise CompletionAuthorityError(f"{field} is not a SHA256")
+E           paper_eval.s2_completion_authority.CompletionAuthorityError: policy full_offline_green is not a SHA256
+
+src/paper_eval/s2_completion_authority.py:72: CompletionAuthorityError</failure></testcase></testsuite></testsuites>

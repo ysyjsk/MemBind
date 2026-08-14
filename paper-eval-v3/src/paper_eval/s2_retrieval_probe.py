@@ -275,17 +275,19 @@ def _read_only_query_guard(driver: Any, counters: ProbeCounters):
     if not callable(original):
         raise RetrievalContractError("Graphiti driver has no query API")
 
-    async def execute_read_only(query: str, *args: Any, **kwargs: Any) -> Any:
+    async def execute_read_only(
+        cypher_query_: str, *args: Any, **kwargs: Any
+    ) -> Any:
         routing = kwargs.get("routing_")
         if (
-            not isinstance(query, str)
+            not isinstance(cypher_query_, str)
             or routing != "r"
-            or _MUTATING_CYPHER.search(query) is not None
+            or _MUTATING_CYPHER.search(cypher_query_) is not None
         ):
             counters.database_mutation_attempts += 1
             raise RuntimeError("read-only database contract rejected a query")
         counters.neo4j_read_requests += 1
-        return await original(query, *args, **kwargs)
+        return await original(cypher_query_, *args, **kwargs)
 
     setattr(driver, "execute_query", execute_read_only)
     try:
@@ -571,6 +573,7 @@ def finalize_episode_surface_probe(
     result: EpisodeSurfaceProbeResult,
     reference_sanity_sha256: str,
     authorization_sha256: str,
+    consumption_sha256: str,
     dataset_sha256: str,
     frozen_split_sha256: str,
     source_sha256: Mapping[str, str],
@@ -591,6 +594,7 @@ def finalize_episode_surface_probe(
     for value, field in (
         (reference_sanity_sha256, "reference sanity"),
         (authorization_sha256, "authorization"),
+        (consumption_sha256, "authorization consumption"),
         (dataset_sha256, "dataset"),
         (frozen_split_sha256, "frozen split"),
     ):
@@ -656,6 +660,7 @@ def finalize_episode_surface_probe(
         **counters,
         "reference_sanity_sha256": reference_sanity_sha256,
         "authorization_sha256": authorization_sha256,
+        "consumption_sha256": consumption_sha256,
         "dataset_sha256": dataset_sha256,
         "frozen_split_sha256": frozen_split_sha256,
         "source_sha256": sources,
