@@ -1,0 +1,36 @@
+<?xml version="1.0" encoding="utf-8"?><testsuites name="pytest tests"><testsuite name="pytest" errors="0" failures="1" skipped="0" tests="15" time="0.059" timestamp="2026-08-15T16:20:54.615876+08:00" hostname="aces-System-Product-Name"><testcase classname="tests.test_real_workload_correctness_contract" name="test_contract_requires_real_graphiti_and_exact_direct_invariants" time="0.002" /><testcase classname="tests.test_real_workload_correctness_contract" name="test_semantic_oracle_is_preregistered_and_counts_are_only_descriptive" time="0.002" /><testcase classname="tests.test_real_workload_correctness_contract" name="test_quality_is_paired_per_history_with_frozen_ci_and_margins" time="0.002" /><testcase classname="tests.test_real_workload_correctness_contract" name="test_bindings_are_cross_checked_and_legacy_d0_cannot_authorize" time="0.002" /><testcase classname="tests.test_real_workload_correctness_contract" name="test_authority_allows_only_offline_s5_design" time="0.002" /><testcase classname="tests.test_real_workload_correctness_contract" name="test_verifier_fails_closed_on_scientific_or_authority_drift[&lt;lambda&gt;0]" time="0.002" /><testcase classname="tests.test_real_workload_correctness_contract" name="test_verifier_fails_closed_on_scientific_or_authority_drift[&lt;lambda&gt;1]" time="0.002" /><testcase classname="tests.test_real_workload_correctness_contract" name="test_verifier_fails_closed_on_scientific_or_authority_drift[&lt;lambda&gt;2]" time="0.002" /><testcase classname="tests.test_real_workload_correctness_contract" name="test_verifier_fails_closed_on_scientific_or_authority_drift[&lt;lambda&gt;3]" time="0.002" /><testcase classname="tests.test_real_workload_correctness_contract" name="test_verifier_fails_closed_on_scientific_or_authority_drift[&lt;lambda&gt;4]" time="0.002" /><testcase classname="tests.test_real_workload_correctness_contract" name="test_verifier_fails_closed_on_scientific_or_authority_drift[&lt;lambda&gt;5]" time="0.002" /><testcase classname="tests.test_real_workload_correctness_contract" name="test_verifier_fails_closed_on_scientific_or_authority_drift[&lt;lambda&gt;6]" time="0.002"><failure message="Failed: DID NOT RAISE RealWorkloadCorrectnessError">mutate = &lt;function &lt;lambda&gt; at 0x7e25f59707c0&gt;
+
+    @pytest.mark.parametrize(
+        "mutate",
+        [
+            lambda value: value["payload"]["execution_contract"].update(
+                all_methods_execute_real_graphiti=False
+            ),
+            lambda value: value["payload"]["direct_invariants"].update(
+                episode_source_coverage=0.99
+            ),
+            lambda value: value["payload"]["semantic_graph_contract"].update(
+                aggregate_counts_can_establish_parity=True
+            ),
+            lambda value: value["payload"]["quality_contract"].update(
+                post_result_margin_selection_allowed=True
+            ),
+            lambda value: value["payload"]["legacy_d0"].update(
+                authority_inheritance_allowed=True
+            ),
+            lambda value: value["payload"]["authority"].update(
+                s5_live_execution_authorized=True
+            ),
+            lambda value: value["payload"]["input_bindings"][
+                "native_baseline_freeze"
+            ].update(baseline_id="different-baseline"),
+        ],
+    )
+    def test_verifier_fails_closed_on_scientific_or_authority_drift(mutate) -&gt; None:
+        changed = copy.deepcopy(_build())
+        mutate(changed)
+        changed["payload_sha256"] = payload_sha256(changed["payload"])
+&gt;       with pytest.raises(RealWorkloadCorrectnessError):
+E       Failed: DID NOT RAISE RealWorkloadCorrectnessError
+
+tests/test_real_workload_correctness_contract.py:235: Failed</failure></testcase><testcase classname="tests.test_real_workload_correctness_contract" name="test_builder_rejects_input_identity_or_authority_drift[amendment-&lt;lambda&gt;]" time="0.001" /><testcase classname="tests.test_real_workload_correctness_contract" name="test_builder_rejects_input_identity_or_authority_drift[current-&lt;lambda&gt;]" time="0.001" /><testcase classname="tests.test_real_workload_correctness_contract" name="test_builder_rejects_input_identity_or_authority_drift[freeze-&lt;lambda&gt;]" time="0.001" /></testsuite></testsuites>

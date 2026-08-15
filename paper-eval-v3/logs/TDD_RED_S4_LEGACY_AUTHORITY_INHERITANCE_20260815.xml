@@ -1,0 +1,16 @@
+<?xml version="1.0" encoding="utf-8"?><testsuites name="pytest tests"><testsuite name="pytest" errors="0" failures="1" skipped="0" tests="9" time="0.043" timestamp="2026-08-15T16:06:28.250873+08:00" hostname="aces-System-Product-Name"><testcase classname="tests.test_s4_validation_boundary_amendment" name="test_retry_008_is_preserved_and_old_d0_is_retired_without_becoming_pass" time="0.002" /><testcase classname="tests.test_s4_validation_boundary_amendment" name="test_replacement_lanes_keep_performance_correctness_and_quality_separate" time="0.001" /><testcase classname="tests.test_s4_validation_boundary_amendment" name="test_amendment_authorizes_only_offline_design_and_forbids_retry_009" time="0.001"><failure message="KeyError: 'legacy_d0_replay_infrastructure'">def test_amendment_authorizes_only_offline_design_and_forbids_retry_009() -&gt; None:
+        payload = verify_s4_validation_boundary_amendment(_build())["payload"]
+    
+        assert payload["historical_retry_008"]["disposition"] == {
+            "resume_authorized": False,
+            "cleanup_authorized": False,
+            "rewrite_authorized": False,
+            "retry_009_authorized": False,
+            "candidate_level_replay_is_main_path": False,
+            "legacy_infrastructure_status": "PRESERVED_NON_MAIN_PATH_NON_AUTHORIZING",
+        }
+&gt;       legacy = payload["legacy_d0_replay_infrastructure"]
+                 ^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^
+E       KeyError: 'legacy_d0_replay_infrastructure'
+
+tests/test_s4_validation_boundary_amendment.py:212: KeyError</failure></testcase><testcase classname="tests.test_s4_validation_boundary_amendment" name="test_resealed_semantic_or_authority_drift_fails_closed[&lt;lambda&gt;0]" time="0.001" /><testcase classname="tests.test_s4_validation_boundary_amendment" name="test_resealed_semantic_or_authority_drift_fails_closed[&lt;lambda&gt;1]" time="0.001" /><testcase classname="tests.test_s4_validation_boundary_amendment" name="test_resealed_semantic_or_authority_drift_fails_closed[&lt;lambda&gt;2]" time="0.001" /><testcase classname="tests.test_s4_validation_boundary_amendment" name="test_resealed_semantic_or_authority_drift_fails_closed[&lt;lambda&gt;3]" time="0.001" /><testcase classname="tests.test_s4_validation_boundary_amendment" name="test_document_is_additive_cites_methodology_and_execution_plan_points_to_it" time="0.000" /><testcase classname="tests.test_s4_validation_boundary_amendment" name="test_current_pointer_remains_s3_and_documents_contain_no_runtime_secrets" time="0.000" /></testsuite></testsuites>

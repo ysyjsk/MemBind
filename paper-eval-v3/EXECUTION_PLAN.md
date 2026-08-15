@@ -8,6 +8,182 @@ Protocol SHA256: `4b81c89b33d407f04fc20862a81eab6badba16d0d61d98331cbe188d1bb4f4
 
 This is a new, isolated lane. Existing C0-C5 contracts and artifacts remain historical evidence and are not rewritten. v3 forbids C6, so this lane never schedules C6.
 
+## S4 validation-boundary overlay (2026-08-15)
+
+`S4_VALIDATION_BOUNDARY_AMENDMENT_v2.0.md` is the controlling S4 interpretation overlay.
+It supersedes only the clauses that made full cross-run, candidate-level D0
+replay a qualification gate. The parent protocol, historical D0 identity, all
+retry-008 artifacts, common evaluation configuration, method identities, and
+later statistical rules remain immutable.
+
+Retry-008 is frozen as one real U0 operational canary (`49/49`, PASS) followed
+by an incomplete, non-mergeable internal D0 replay at source sequence 7 with
+`SIDECAR_CALL_CORRELATION_MISSING`. No retry-009, replay resume, namespace
+cleanup, result rewrite, fixed-three activation, or historical D0 PASS is
+authorized.
+
+The replacement surfaces are deliberately separate:
+
+```text
+RX0_NATIVE_REAL_EXECUTION          headline real-system evidence
+TR0_SCHEDULING_TRACE_REPLAY        supporting fixed-demand counterfactual only
+FX0_DETERMINISTIC_MECHANISM_FIXTURE production-path transition correctness
+REAL_WORKLOAD_CORRECTNESS          direct invariants, semantic metrics, quality
+```
+
+TR0 is never headline performance evidence and requires preregistered,
+two-policy, low/near-saturation real-system calibration before paper use. FX0
+size follows transition coverage rather than a fixed episode count. Exact M*
+fixture parity is an S5 method-qualification gate because the production M*
+identity is frozen there. All methods still require actual Graphiti execution
+for headline performance, direct invariants, semantic comparison, retrieval,
+and QA.
+
+This overlay authorizes revised S4/TR0/FX0/S5 offline design only. Model calls,
+Neo4j mutation, live S5 work, PILOT, formal evaluation, and advancement of
+`runtime/CURRENT_STAGE_STATUS.json` remain unauthorized.
+
+### Revised S4 offline gate (2026-08-15)
+
+The revised offline contracts are sealed in
+`artifacts/paper_eval/native/S4_REVISED_OFFLINE_GATE.json` (file SHA256
+`5527752c79eaf6fb6b7932bb271f44b534f8d1b6a13762c9c8dce3ba14034e26`).
+Its status is `OFFLINE_FRAMEWORKS_QUALIFIED_ONLY`; it does not mark S4 live,
+TR0 calibration, FX0 M* parity, or real-workload evaluation complete.
+
+The gate records the following distinctions explicitly:
+
+```text
+TR0  implementation qualified only
+     real measured trace / replay not sealed or executed
+     real-system calibration not satisfied
+
+FX0  harness qualified with a test double only
+     adapter receives an oracle-free execution input
+     M* production identity and exact parity not executed
+
+REAL  evaluation contract frozen offline
+      semantic matching oracle and quality margins not frozen
+      no workload result generated
+```
+
+The FX0 adapter boundary was tightened after an offline audit: expected status,
+canonical state, and publication history remain private to the comparator and
+are never passed to `execute_fixture_case`. The artifact verifier also rejects
+duplicate case IDs, invalid source sequences, contradictory PASS/error rows,
+and unregistered fail-closed results. This is an adapter-correctness repair,
+not a method or workload change.
+
+TDD evidence is preserved as four expected RED records, focused GREEN suites
+of 17 TR0, 17 FX0, 15 real-workload-contract, and 12 aggregate-gate tests, a
+70-test revised-S4 integration run, and a final `959 passed` full offline
+regression. The current pointer remains `S3_CONFIGURATION_FROZEN`; the only
+next action is `S5_PRODUCTION_METHOD_QUALIFICATION_OFFLINE_DESIGN`.
+
+### S5 offline method qualification (2026-08-15)
+
+The S5 order is frozen to one DEVELOPMENT_EXPOSED history and the minimum
+method set needed before a concurrency sweep:
+
+```text
+A0, C=1
+  -> P*, C=2
+  -> M*, C=2 production-path FX0 parity
+  -> M*, C=2 smoke
+```
+
+`S5_PRODUCTION_METHOD_QUALIFICATION_WORKPLAN_v1.0.md` and
+`artifacts/paper_eval/native/S5_METHOD_QUALIFICATION_PLAN.json` authorize only
+offline adapter implementation. Existing C4/C5 components may be reused, but
+their historical authority, namespaces, schedules, and results may not be
+inherited. The existing M2 code remains an exploratory core and is not a
+production M* identity.
+
+The additive P* role clarification is sealed in
+`artifacts/paper_eval/methods/P_STAR_REAL_WORKLOAD_CORRECTNESS_ROLE_AMENDMENT.json`
+(file SHA256
+`2734e5adc7852e772e85d61daa0d68056da365213fad0a17bc23532eaa9ccd63`).
+U0, A0, and M* retain hard-zero direct-invariant gates. P* must retain complete
+accounting and disclose treatment-induced violations with its performance
+record; it cannot claim semantics preservation, correctness equivalence, or
+quality non-inferiority. Incomplete or corrupt P* telemetry remains an
+infrastructure failure and is non-mergeable.
+
+The first A0/P(C=2) adapter core is offline-qualified only. It accepts one
+opaque, injected Native construction callable, excludes episode content from
+public evidence, proves A0 FIFO/single-worker behavior, and recomputes actual
+P(C=2) whole-update interval overlap. Its TDD sequence contains an initial
+missing-module RED, a verifier-QA RED, `17 passed` focused GREEN, and a
+`1014 passed` full offline regression. This evidence does not freeze the real
+Graphiti callable binding, durable store, method identity, live authority, or
+any result. Those boundaries and the M* production core remain pending.
+
+The shared M* scheduling core is now also offline-qualified as a mechanism
+framework. It runs two prepare workers, binds only one source at a time in
+source order, records the latest published prefix and one logical operation
+time per source, and poisons/cancels/awaits remaining work on prepare or bind
+failure. Its callbacks remain opaque provider boundaries; it does not contain
+Graphiti semantic logic. The focused suite is `7 passed`, and the post-fix full
+offline regression is `1021 passed`. A durability-hook failure is fail-closed
+and raised when a terminal evidence record cannot be trusted. This core is not
+yet an M* production identity and cannot authorize FX0 or live work.
+
+The isolated S5 durable attempt store is now framework-qualified as well. It
+uses new manifest/event/checkpoint/result schemas, fsyncs each JSONL append,
+atomically replaces result/checkpoint files, rejects event/hash/private-field
+tampering, refuses existing attempts, and permanently marks failed evidence
+`incomplete_non_mergeable` with `resume_authorized=false`. Its focused suite
+has `7 passed`, and the full offline regression has `1028 passed`. This store
+does not claim DB commit idempotence or in-place resume; a production runner
+must bind it to the pinned Graphiti path and fresh-namespace policy before
+live S5.
+
+The Native Graphiti callable boundary is separately qualified offline. Its
+loader resolves only `graphiti_native.add_episode` and
+`graphiti_native.graphiti_episode_kwargs`, and the wrapper calls that exact
+`add_episode` object with the shared Graphiti instance and opaque episode. The
+focused suite has `7 passed`; the subsequent full offline regression has
+`1035 passed`. This records the symbol contract only. The production source
+file hash, Graphiti commit, runtime factory, and live preflight are still
+unbound and unauthorized.
+
+### S5 production composition and M* FX0 adapter (2026-08-15)
+
+The A0/P(C=2) production composition layer is now offline-qualified in
+`src/paper_eval/s5_production_runner.py`. It binds the exact Native callable to
+the scheduler adapters and the manifest-first S5 attempt store, refuses an
+existing attempt, seals successful evidence, and persists a native failure as
+`incomplete_non_mergeable` with `resume_authorized=false`. Its identity records
+the pinned Graphiti version/commit, Native symbol paths, U0 factory entrypoint,
+source/test hashes, method-specific scheduler policy, runtime-config hash, and
+failure policy. It is explicitly `IDENTITY_ONLY_UNQUALIFIED`; no live authority
+is inferred from this hash.
+
+The shared M* core now has an explicit one-case FX0 mode that does not claim
+prepare overlap while preserving the normal two-worker overlap proof for live
+M*. `src/paper_eval/s5_mstar_production_adapter.py` runs that same core through
+an oracle-free `Fx0ExecutionCase` boundary and returns only observed canonical
+state/publication output. Its tests cover exact parity, registered
+fail-closed duplicate handling, private-output rejection, and identity
+binding. The callbacks in this checkpoint are controlled offline doubles, so
+the M* production identity and exact-parity artifact remain unsealed. The
+separate `s5_graphiti_semantic_binding.py` contract now binds and hashes the
+pinned Graphiti node/edge extraction, resolution, attribute, pointer, and
+`Graphiti._process_episode_data` signatures; its focused suite has `6 passed`.
+The actual local Graphiti 0.29.3 installation was read-only inspected and
+persisted as `artifacts/paper_eval/native/S5_GRAPHITI_SEMANTIC_API_IDENTITY.json`
+with status `OBSERVED_PINNED_LOCAL_INSTALL_NOT_LIVE_AUTHORITY`. The semantic
+runtime callback sequence is covered by four additional offline tests.
+
+The latest focused S5 suites are `51 passed`; the current full offline
+regression is `1068 passed`, `0 failed`, `0 errors`, `0 skipped`. The durable
+M* runner requires the FX0 identity hash and at least two sources, and its
+pipeline events can be projected into the common smoke contract. No model,
+vLLM, Neo4j, namespace, current-stage pointer, or live authority was touched.
+The next action remains wiring this semantic binding into M* with controlled
+FX0 providers and then running the production FX0 parity gate before any M*
+smoke.
+
 ## Current Reader-v2 overlay (2026-08-14)
 
 `NATIVE_READER_V2_QUALIFICATION_WORKPLAN_v1.0.md` is the controlling overlay
@@ -142,7 +318,7 @@ evidence; the selected Episode retrieval policy is bound by the S3-v2 freeze.
 2. **S1**: one fixed calibration history (`07741c45`), pinned upstream U0, serial episode smoke with durable event/checkpoint recovery.
 3. **S2**: dataset/evaluator alignment, C2 reuse decision, and U0 sanity.
 4. **S3**: freeze U0.
-5. **S4-S6**: D0 qualification, method smoke, and development-only concurrency sweep.
+5. **S4-S6**: revised S4 offline framework gate, production-method smoke qualification, and development-only concurrency sweep.
 6. **S7-S8**: bounded pilot and outcome-independent precision planning.
 7. **S9-S10**: freeze and run formal paper evaluation, then write the headline table and stop.
 
@@ -154,7 +330,7 @@ evidence; the selected Episode retrieval policy is bound by the S3-v2 freeze.
 | S1 | dataset binding, namespace rebinding/probe, source-order, failure/resume tests | one `07741c45` U0 construction and one retrieval | per-episode JSONL, atomic checkpoint, final summary | loss, duplicate, order drift, retrieval failure, service disconnect, or namespace mismatch |
 | S2 | dataset/evaluator parity and C2 equivalence decision tests | only missing U0/reference sanity allowed by the decision tree | alignment report and `C2_U0_REUSE_DECISION.json` | parity failure or unexplained near-zero sanity result |
 | S3 | freeze schema/hash tests | none | `NATIVE_BASELINE_V2_FREEZE.json` | incomplete U0 identity or hidden quality claim |
-| S4 | capture/replay coverage and parity tests | one history, then at most four exposed histories | D0 qualification/freeze | oracle miss, fallback, coverage failure, or unexplained semantic drift |
+| S4 | revised boundary, TR0 scheduler, FX0 harness, and real-workload correctness contract tests | no new live action; preserve the completed retry-008 U0 canary and failed historical D0 exactly | amendment plus revised offline gate | any claim inflation, legacy authority reuse, missing test evidence, or input-binding drift |
 | S5 | A0/P/M scheduler and invariant-fixture tests | one exposed history per method, sequential stage order | method smoke artifacts | any method-specific hard gate failure; M failure blocks sweep |
 | S6 | selection-rule tests | fixed four exposed histories, `C={1,2,4,8}` | `METHOD_SELECTION_FREEZE.json` | M has no qualified concurrency |
 | S7 | deterministic role/selection tests | frozen eight-history pilot plus preregistered repeats | pilot manifest/results | correctness or systems signal fails the frozen continuation rule |

@@ -1,0 +1,150 @@
+{
+  "git_commit": "774082cd03da137172e49cdd2990b388b50d9cd7",
+  "payload": {
+    "authority": {
+      "current_stage_pointer_update_authorized": false,
+      "formal_execution_authorized": false,
+      "model_call_authorized": false,
+      "neo4j_mutation_authorized": false,
+      "neo4j_read_authorized": false,
+      "offline_additive_amendment_authorized": true,
+      "pilot_execution_authorized": false,
+      "result_generation_or_inspection_authorized": false,
+      "s5_live_execution_authorized": false
+    },
+    "current_stage": "S3_CONFIGURATION_FROZEN",
+    "decision": "P_STAR_PERFORMANCE_RECORD_RETENTION_WITH_MANDATORY_VIOLATION_DISCLOSURE",
+    "hard_zero_merge_gate": {
+      "methods": [
+        "U0",
+        "A0",
+        "M*"
+      ],
+      "required": {
+        "duplicate_episode_or_source_count": 0,
+        "episode_source_coverage": 1.0,
+        "lost_episode_or_source_count": 0,
+        "source_publication_order_violation_count": 0,
+        "temporal_provenance_violation_count": 0,
+        "visibility_publication_violation_count": 0
+      },
+      "violation_effect": "RESULT_NON_MERGEABLE_FOR_METHOD"
+    },
+    "input_bindings": {
+      "current_stage_pointer": {
+        "current_stage": "S3_CONFIGURATION_FROZEN",
+        "file_sha256": "3cb7edad4bab3ac6fe961a3d9e8768cbb962cf61cf946cb7e0015d74c0edc26d",
+        "payload_sha256": "da17c5dae889d0a0d0e51b2f5bbd478e7a79d50ccf33450ca43f32c34b6dcdcc",
+        "run_id": "s3-native-v2-current-pointer-20260814-001"
+      },
+      "parent_protocol": {
+        "file_sha256": "4b81c89b33d407f04fc20862a81eab6badba16d0d61d98331cbe188d1bb4f41e"
+      },
+      "s4_revised_offline_gate": {
+        "file_sha256": "5527752c79eaf6fb6b7932bb271f44b534f8d1b6a13762c9c8dce3ba14034e26",
+        "payload_sha256": "1d652c83951989d36b7988400ed155b1b11b0a76853444cc6743e3a65c9f2531",
+        "run_id": "s4-revised-offline-gate-20260815-001",
+        "status": "OFFLINE_FRAMEWORKS_QUALIFIED_ONLY"
+      },
+      "s5_method_qualification_plan": {
+        "file_sha256": "1ae543b6067d04402c623edcc2c067e21126159ae5c21af9732bb7f9bc0a248e",
+        "payload_sha256": "ae7e9d7d379d04461cf0a098af853e42de9ff7c7130f6c64454a5bfebc6404c6",
+        "run_id": "s5-method-qualification-plan-20260815-001",
+        "status": "OFFLINE_DESIGN_ONLY"
+      },
+      "sealed_real_workload_correctness_contract": {
+        "container": "S4_REVISED_OFFLINE_GATE.json",
+        "payload_sha256": "55e961c881ab3199ddad5a551c72e9591f27aa3b669e0894bede39cad681d347",
+        "run_id": "real-workload-correctness-contract-20260815-001",
+        "schema_version": "membind.paper-eval-v3.real-workload-correctness-contract.v1",
+        "status": "PRESERVED_WITH_P_STAR_ROLE_CLAUSE_SUPERSEDED_ONLY"
+      }
+    },
+    "next_action": "S5_ADAPTER_IMPLEMENTATION_AND_OFFLINE_TESTS",
+    "offline_evidence": {
+      "focused_green": {
+        "errors": 0,
+        "failures": 0,
+        "junit_file_sha256": "8e5548283ec5303f92228559b45c8414cec63f7296dee34c17a0c04559c8c170",
+        "skipped": 0,
+        "tests": 15
+      },
+      "red": {
+        "errors": 1,
+        "failures": 0,
+        "junit_file_sha256": "30110253621fc33a88d463792d8a0e77729ff64718c2347c96971f2e3150c17d",
+        "skipped": 0,
+        "tests": 1
+      }
+    },
+    "p_star_role": {
+      "all_methods_still_execute_real_graphiti": true,
+      "all_scheduled_sources_require_terminal_classification": true,
+      "claim_boundary": {
+        "correctness_equivalence_claim_authorized": false,
+        "performance_baseline_authorized": true,
+        "quality_equivalence_claim_authorized": false,
+        "quality_measurements_if_executed": "DESCRIPTIVE_WITH_FULL_DISCLOSURE",
+        "quality_non_inferiority_claim_authorized": false,
+        "semantics_preserving_claim_authorized": false
+      },
+      "evidence_failure_policy": {
+        "corrupt_or_unverifiable_artifact": "NON_MERGEABLE_INFRASTRUCTURE_FAILURE",
+        "incomplete_accounting_or_telemetry": "NON_MERGEABLE_INFRASTRUCTURE_FAILURE",
+        "treatment_induced_failure_with_complete_accounting": "RETAIN_AS_SCIENTIFIC_OUTCOME"
+      },
+      "input_accounting_coverage": 1.0,
+      "method": "P*",
+      "required_accounting": [
+        "SCHEDULED_SOURCE_COUNT",
+        "TERMINAL_SOURCE_CLASSIFICATION",
+        "PUBLISHED_SOURCE_COUNT",
+        "TREATMENT_FAILURE_COUNT",
+        "LOST_SOURCE_COUNT",
+        "DUPLICATE_SOURCE_COUNT",
+        "WORK_VOLUME",
+        "RETRY_AND_TRANSACTION_COUNTS",
+        "EVENT_AND_CHECKPOINT_INTEGRITY"
+      ],
+      "role": "NAIVE_WHOLE_UPDATE_PARALLEL_PERFORMANCE_CORRECTNESS_TRADEOFF_BASELINE",
+      "telemetry_coverage": 1.0,
+      "treatment_induced_violation_policy": {
+        "performance_record_retained": true,
+        "reclassified_as_infrastructure_failure": false,
+        "required_disclosure_metrics": [
+          "LOST_SOURCE_COUNT",
+          "DUPLICATE_SOURCE_COUNT",
+          "SOURCE_PUBLICATION_ORDER_VIOLATION_COUNT",
+          "VISIBILITY_PUBLICATION_VIOLATION_COUNT",
+          "TEMPORAL_PROVENANCE_VIOLATION_COUNT",
+          "SEMANTIC_GRAPH_DIFFERENCE_METRICS",
+          "TRANSACTION_AND_METHOD_FAILURE_COUNT",
+          "DRAIN_OR_CENSORING_STATUS"
+        ],
+        "silent_deletion_allowed": false
+      }
+    },
+    "schema_version": "membind.paper-eval-v3.p-star-real-workload-role-amendment.v1",
+    "scope": {
+      "existing_artifacts_rewritten": false,
+      "sealed_real_workload_contract_preserved": true,
+      "sealed_s4_gate_preserved": true,
+      "supersedes_only": [
+        "P_STAR_DIRECT_INVARIANT_ZERO_AS_PERFORMANCE_RECORD_MERGE_GATE",
+        "P_STAR_TREATMENT_VIOLATION_AS_INFRASTRUCTURE_FAILURE"
+      ]
+    },
+    "source_file_sha256": {
+      "amendment_document": "b664ec3d3e720be621b24c7f994bc4334f6d4477ccc8697d3042c77e777eb373",
+      "amendment_finalizer": "d409bca6dd87f1d2f581dabadaa6a0fc6017043230def3d9820e619fe4502868",
+      "amendment_source": "91f89ef4fa59b79584604c1204a419ee109ffc9509c7d3b79a626036f9abb5b6",
+      "amendment_test": "e4a5b428ac9d58769e38216730a8d4cadc854204c052adbdda87027a4fe7e8f4"
+    },
+    "stage": "S5_P_STAR_ROLE_AMENDMENT",
+    "status": "ADDITIVE_ROLE_CLARIFICATION_FROZEN"
+  },
+  "payload_sha256": "21afc2d478068038ebb21303b0ccf667874f886ab27cced53ee479b8aaecd63c",
+  "protocol_version": "paper-eval-v3",
+  "run_id": "p-star-real-workload-role-amendment-20260815-001",
+  "status": "finalized"
+}

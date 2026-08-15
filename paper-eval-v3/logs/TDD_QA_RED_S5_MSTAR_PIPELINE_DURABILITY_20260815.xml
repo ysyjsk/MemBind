@@ -1,0 +1,28 @@
+<?xml version="1.0" encoding="utf-8"?><testsuites name="pytest tests"><testsuite name="pytest" errors="0" failures="1" skipped="0" tests="1" time="0.031" timestamp="2026-08-15T17:40:19.419493+08:00" hostname="aces-System-Product-Name"><testcase classname="tests.test_s5_mstar_pipeline" name="test_prepare_event_failure_does_not_leave_an_unresolved_worker_future" time="0.001"><failure message="AssertionError: Regex pattern did not match.&#10;  Expected regex: 'durable_evidence_unavailable'&#10;  Actual message: 'summary_recomputation_invalid'">@pytest.mark.asyncio
+    async def test_prepare_event_failure_does_not_leave_an_unresolved_worker_future() -&gt; None:
+        calls = 0
+    
+        async def flaky_sink(_event: Mapping[str, object]) -&gt; None:
+            nonlocal calls
+            calls += 1
+            # All durable intents are accepted; the first prepare-start event is not.
+            if calls == 3:
+                raise OSError("journal unavailable")
+    
+        async def prepare(_source: object, _logical_time_ns: int) -&gt; object:
+            raise AssertionError("prepare must not run after its start event fails")
+    
+        async def bind(
+            _prepared: object,
+            _logical_time_ns: int,
+            _source_sequence: int,
+            _visible_publication_prefix: tuple[int, ...],
+        ) -&gt; None:
+            raise AssertionError("bind must not run")
+    
+&gt;       with pytest.raises(MStarPipelineError, match="durable_evidence_unavailable"):
+E       AssertionError: Regex pattern did not match.
+E         Expected regex: 'durable_evidence_unavailable'
+E         Actual message: 'summary_recomputation_invalid'
+
+tests/test_s5_mstar_pipeline.py:287: AssertionError</failure></testcase></testsuite></testsuites>

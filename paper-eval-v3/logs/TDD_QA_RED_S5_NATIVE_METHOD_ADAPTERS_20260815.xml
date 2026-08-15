@@ -1,0 +1,76 @@
+<?xml version="1.0" encoding="utf-8"?><testsuites name="pytest tests"><testsuite name="pytest" errors="0" failures="2" skipped="0" tests="17" time="0.043" timestamp="2026-08-15T17:13:44.610834+08:00" hostname="aces-System-Product-Name"><testcase classname="tests.test_s5_native_method_adapters" name="test_a0_is_fifo_single_worker_and_returns_after_durable_enqueue_ack" time="0.001" /><testcase classname="tests.test_s5_native_method_adapters" name="test_a0_never_starts_native_service_before_intent_is_durable" time="0.001" /><testcase classname="tests.test_s5_native_method_adapters" name="test_p_c2_uses_exactly_two_workers_and_observes_whole_update_overlap" time="0.001" /><testcase classname="tests.test_s5_native_method_adapters" name="test_p_c2_fails_closed_when_two_real_intervals_do_not_overlap" time="0.001" /><testcase classname="tests.test_s5_native_method_adapters" name="test_native_treatment_failure_is_sanitized_durable_and_non_mergeable[A0]" time="0.001" /><testcase classname="tests.test_s5_native_method_adapters" name="test_native_treatment_failure_is_sanitized_durable_and_non_mergeable[P*]" time="0.001" /><testcase classname="tests.test_s5_native_method_adapters" name="test_spec_has_no_legacy_authority_or_namespace_input_surface" time="0.000" /><testcase classname="tests.test_s5_native_method_adapters" name="test_public_evidence_private_or_legacy_fields_fail_closed[namespace]" time="0.000" /><testcase classname="tests.test_s5_native_method_adapters" name="test_public_evidence_private_or_legacy_fields_fail_closed[authority]" time="0.000" /><testcase classname="tests.test_s5_native_method_adapters" name="test_public_evidence_private_or_legacy_fields_fail_closed[api_key]" time="0.000" /><testcase classname="tests.test_s5_native_method_adapters" name="test_public_evidence_private_or_legacy_fields_fail_closed[password]" time="0.000" /><testcase classname="tests.test_s5_native_method_adapters" name="test_public_evidence_private_or_legacy_fields_fail_closed[prompt]" time="0.000" /><testcase classname="tests.test_s5_native_method_adapters" name="test_public_evidence_private_or_legacy_fields_fail_closed[raw_response]" time="0.000" /><testcase classname="tests.test_s5_native_method_adapters" name="test_invalid_method_binding_and_episode_identity_fail_before_native_call" time="0.000" /><testcase classname="tests.test_s5_native_method_adapters" name="test_durable_sink_failure_stops_before_native_construction" time="0.000" /><testcase classname="tests.test_s5_native_method_adapters" name="test_verifier_rejects_safe_looking_shape_and_terminal_summary_drift" time="0.001"><failure message="Failed: DID NOT RAISE S5AdapterError">@pytest.mark.asyncio
+    async def test_verifier_rejects_safe_looking_shape_and_terminal_summary_drift():
+        async def native_add_episode(_native_episode: object) -&gt; None:
+            await asyncio.sleep(0)
+    
+        expected_spec = spec(A0)
+        expected_episodes = episodes(2)
+        evidence = await run_a0(
+            spec=expected_spec,
+            episodes=expected_episodes,
+            native_add_episode=native_add_episode,
+            persist_event=DurableSink(),
+            clock_ns=StepClock(),
+        )
+    
+        extra_summary = {**evidence, "summary": {**evidence["summary"], "friendly": 1}}
+&gt;       with pytest.raises(S5AdapterError, match="summary_shape_invalid"):
+E       Failed: DID NOT RAISE S5AdapterError
+
+tests/test_s5_native_method_adapters.py:342: Failed</failure></testcase><testcase classname="tests.test_s5_native_method_adapters" name="test_verifier_recomputes_a0_and_p_timestamp_semantics" time="0.001"><failure message="Failed: DID NOT RAISE S5AdapterError">@pytest.mark.asyncio
+    async def test_verifier_recomputes_a0_and_p_timestamp_semantics():
+        async def native_add_episode(_native_episode: object) -&gt; None:
+            await asyncio.sleep(0)
+    
+        a0_spec = spec(A0)
+        a0_episodes = episodes(2)
+        a0_evidence = await run_a0(
+            spec=a0_spec,
+            episodes=a0_episodes,
+            native_add_episode=native_add_episode,
+            persist_event=DurableSink(),
+            clock_ns=StepClock(),
+        )
+        invalid_a0 = {**a0_evidence, "events": [dict(item) for item in a0_evidence["events"]]}
+        intent = next(item for item in invalid_a0["events"] if item["event_type"] == "intent")
+        returned = next(
+            item
+            for item in invalid_a0["events"]
+            if item["event_type"] == "caller_return"
+            and item["source_sequence"] == intent["source_sequence"]
+        )
+        returned["durable_enqueue_ack_timestamp_ns"] = intent["intent_timestamp_ns"] - 1
+        returned["caller_return_timestamp_ns"] = intent["intent_timestamp_ns"] - 1
+        with pytest.raises(S5AdapterError, match="a0_caller_return_or_worker_invalid"):
+            verify_s5_native_method_evidence(
+                invalid_a0, expected_spec=a0_spec, expected_episodes=a0_episodes
+            )
+    
+        entered: list[int] = []
+        ready = asyncio.Event()
+    
+        async def overlapping(native_episode: object) -&gt; None:
+            entered.append(int(native_episode["opaque_episode"]))
+            if len(entered) == 2:
+                ready.set()
+            await ready.wait()
+            await asyncio.sleep(0)
+    
+        p_spec = spec(P_STAR)
+        p_episodes = episodes(2)
+        p_evidence = await run_p_c2(
+            spec=p_spec,
+            episodes=p_episodes,
+            native_add_episode=overlapping,
+            persist_event=DurableSink(),
+            clock_ns=StepClock(),
+        )
+        invalid_p = {**p_evidence, "events": [dict(item) for item in p_evidence["events"]]}
+        publication = next(
+            item for item in invalid_p["events"] if item["event_type"] == "publication"
+        )
+        publication["caller_return_timestamp_ns"] = publication["publish_timestamp_ns"] - 1
+&gt;       with pytest.raises(S5AdapterError, match="p_caller_return_invalid"):
+E       Failed: DID NOT RAISE S5AdapterError
+
+tests/test_s5_native_method_adapters.py:421: Failed</failure></testcase></testsuite></testsuites>

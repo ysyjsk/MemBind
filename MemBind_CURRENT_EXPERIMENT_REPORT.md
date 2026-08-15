@@ -831,3 +831,54 @@ execution, authority consumption, fixed-four qualification, S5, and PILOT
 unauthorized. No retry-006 namespace, cache, candidate sidecar, preflight
 artifact, authority, or live result has been created. Retry-005 remains
 incomplete/non-mergeable and its `32/48/7` replay prefix remains untouched.
+
+## 23. Paper-eval-v3 S5 offline production-path composition checkpoint
+
+This checkpoint continued the frozen S5 order without contacting vLLM, model
+APIs, embedding services, or Neo4j. The work is isolated under
+`paper-eval-v3/`; historical C0-C5 artifacts, retry-008, and the current-stage
+pointer were not rewritten.
+
+Implemented and test-driven:
+
+- `src/paper_eval/s5_production_runner.py`: A0/P(C=2) composition of the exact
+  `graphiti_native` callable, offline-qualified schedulers, and durable S5
+  attempt store. Existing attempts are refused; native failure is sealed as
+  `incomplete_non_mergeable` with `resume_authorized=false`.
+- `src/paper_eval/s5_mstar_pipeline.py` and
+  `src/paper_eval/s5_mstar_production_adapter.py`: shared M* prepare/order/bind
+  core plus an oracle-free FX0 adapter. Fixture single-case mode does not claim
+  prepare overlap; normal M* mode still requires observed two-worker overlap.
+- `src/paper_eval/s5_graphiti_semantic_binding.py` and
+  `src/paper_eval/s5_graphiti_mstar_semantics.py`: lazy, hash-bound Graphiti
+  0.29.3 semantic symbol binding and the Native extraction/resolution/
+  invalidation/attribute/commit call sequence with one logical operation time.
+- `src/paper_eval/s5_mstar_production_runner.py` and the smoke projection in
+  `s5_method_smoke_contract.py`: durable M* runner requires an FX0-bound identity
+  and at least two sources; only complete `PASS` terminal evidence can be
+  projected to smoke telemetry.
+
+TDD and verification evidence:
+
+```text
+focused new S5 suites                  51 collected / passed
+full paper-eval-v3 offline regression   1068 passed, 0 failed, 0 errors, 0 skipped
+git diff --check                         passed
+live model / embedding / Neo4j actions   0 / 0 / 0
+```
+
+Persistent evidence and logs:
+
+- `paper-eval-v3/S5_PRODUCTION_RUNNER_OFFLINE_RESULT_20260815.md`
+- `paper-eval-v3/S5_MSTAR_PRODUCTION_ADAPTER_OFFLINE_RESULT_20260815.md`
+- `paper-eval-v3/artifacts/paper_eval/native/S5_GRAPHITI_SEMANTIC_API_IDENTITY.json`
+  (`OBSERVED_PINNED_LOCAL_INSTALL_NOT_LIVE_AUTHORITY`)
+- `paper-eval-v3/logs/TDD_FULL_OFFLINE_GREEN_S5_FINAL_20260815.xml`
+- `paper-eval-v3/logs/TDD_FULL_OFFLINE_GREEN_S5_MSTAR_RUNNER_20260815.xml`
+- `paper-eval-v3/logs/TDD_FULL_OFFLINE_GREEN_S5_GRAPHITI_SEMANTIC_BINDING_V2_20260815.xml`
+
+Current boundary remains strict: `runtime/CURRENT_STAGE_STATUS.json` is still
+`S3_CONFIGURATION_FROZEN`; A0/P/M* live authority, FX0 production exact-parity
+qualification, PILOT, and formal execution are all false. The next authorized
+engineering step is to bind controlled FX0 providers to the pinned Graphiti
+semantic runtime and produce the separate production-path FX0 parity artifact.

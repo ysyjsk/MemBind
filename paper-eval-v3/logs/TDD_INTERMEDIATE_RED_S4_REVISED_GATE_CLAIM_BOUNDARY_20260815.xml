@@ -1,0 +1,478 @@
+<?xml version="1.0" encoding="utf-8"?><testsuites name="pytest tests"><testsuite name="pytest" errors="0" failures="12" skipped="0" tests="12" time="0.077" timestamp="2026-08-15T16:40:38.025965+08:00" hostname="aces-System-Product-Name"><testcase classname="tests.test_s4_revised_offline_gate" name="test_gate_preserves_four_lane_claim_boundaries" time="0.002"><failure message="TypeError: build_revised_s4_offline_gate() got an unexpected keyword argument 'red_evidence'">def test_gate_preserves_four_lane_claim_boundaries() -&gt; None:
+&gt;       payload = verify_revised_s4_offline_gate(_build())["payload"]
+                                                 ^^^^^^^^
+
+tests/test_s4_revised_offline_gate.py:133: 
+_ _ _ _ _ _ _ _ _ _ _ _ _ _ _ _ _ _ _ _ _ _ _ _ _ _ _ _ _ _ _ _ _ _ _ _ _ _ _ _ 
+
+    def _build() -&gt; dict:
+&gt;       return build_revised_s4_offline_gate(
+            amendment_artifact=_load(PATHS["amendment_artifact"]),
+            amendment_artifact_file_sha256=sha256_file(
+                PATHS["amendment_artifact"]
+            ),
+            real_workload_contract=_real_contract(),
+            source_file_sha256={
+                name: (sha256_file(path) if path.exists() else "a" * 64)
+                for name, path in SOURCE_PATHS.items()
+            },
+            focused_green_evidence={
+                "TR0_SCHEDULING_TRACE_REPLAY": _green(17, "b"),
+                "FX0_DETERMINISTIC_MECHANISM_FIXTURE": _green(17, "c"),
+                "REAL_WORKLOAD_CORRECTNESS": _green(15, "d"),
+                "S4_REVISED_OFFLINE_GATE": _green(11, "1"),
+            },
+            red_evidence={
+                "TR0_SCHEDULING_TRACE_REPLAY": _red("2"),
+                "FX0_DETERMINISTIC_MECHANISM_FIXTURE": _red("3"),
+                "REAL_WORKLOAD_CORRECTNESS": _red("4"),
+                "S4_REVISED_OFFLINE_GATE": _red("5"),
+            },
+            full_regression_evidence=_green(950, "e"),
+            git_commit="deadbeef",
+        )
+E       TypeError: build_revised_s4_offline_gate() got an unexpected keyword argument 'red_evidence'
+
+tests/test_s4_revised_offline_gate.py:105: TypeError</failure></testcase><testcase classname="tests.test_s4_revised_offline_gate" name="test_gate_embeds_and_verifies_real_workload_contract" time="0.002"><failure message="TypeError: build_revised_s4_offline_gate() got an unexpected keyword argument 'red_evidence'">def test_gate_embeds_and_verifies_real_workload_contract() -&gt; None:
+&gt;       payload = verify_revised_s4_offline_gate(_build())["payload"]
+                                                 ^^^^^^^^
+
+tests/test_s4_revised_offline_gate.py:171: 
+_ _ _ _ _ _ _ _ _ _ _ _ _ _ _ _ _ _ _ _ _ _ _ _ _ _ _ _ _ _ _ _ _ _ _ _ _ _ _ _ 
+
+    def _build() -&gt; dict:
+&gt;       return build_revised_s4_offline_gate(
+            amendment_artifact=_load(PATHS["amendment_artifact"]),
+            amendment_artifact_file_sha256=sha256_file(
+                PATHS["amendment_artifact"]
+            ),
+            real_workload_contract=_real_contract(),
+            source_file_sha256={
+                name: (sha256_file(path) if path.exists() else "a" * 64)
+                for name, path in SOURCE_PATHS.items()
+            },
+            focused_green_evidence={
+                "TR0_SCHEDULING_TRACE_REPLAY": _green(17, "b"),
+                "FX0_DETERMINISTIC_MECHANISM_FIXTURE": _green(17, "c"),
+                "REAL_WORKLOAD_CORRECTNESS": _green(15, "d"),
+                "S4_REVISED_OFFLINE_GATE": _green(11, "1"),
+            },
+            red_evidence={
+                "TR0_SCHEDULING_TRACE_REPLAY": _red("2"),
+                "FX0_DETERMINISTIC_MECHANISM_FIXTURE": _red("3"),
+                "REAL_WORKLOAD_CORRECTNESS": _red("4"),
+                "S4_REVISED_OFFLINE_GATE": _red("5"),
+            },
+            full_regression_evidence=_green(950, "e"),
+            git_commit="deadbeef",
+        )
+E       TypeError: build_revised_s4_offline_gate() got an unexpected keyword argument 'red_evidence'
+
+tests/test_s4_revised_offline_gate.py:105: TypeError</failure></testcase><testcase classname="tests.test_s4_revised_offline_gate" name="test_gate_binds_complete_source_and_green_evidence_inventory" time="0.002"><failure message="TypeError: build_revised_s4_offline_gate() got an unexpected keyword argument 'red_evidence'">def test_gate_binds_complete_source_and_green_evidence_inventory() -&gt; None:
+&gt;       payload = verify_revised_s4_offline_gate(_build())["payload"]
+                                                 ^^^^^^^^
+
+tests/test_s4_revised_offline_gate.py:187: 
+_ _ _ _ _ _ _ _ _ _ _ _ _ _ _ _ _ _ _ _ _ _ _ _ _ _ _ _ _ _ _ _ _ _ _ _ _ _ _ _ 
+
+    def _build() -&gt; dict:
+&gt;       return build_revised_s4_offline_gate(
+            amendment_artifact=_load(PATHS["amendment_artifact"]),
+            amendment_artifact_file_sha256=sha256_file(
+                PATHS["amendment_artifact"]
+            ),
+            real_workload_contract=_real_contract(),
+            source_file_sha256={
+                name: (sha256_file(path) if path.exists() else "a" * 64)
+                for name, path in SOURCE_PATHS.items()
+            },
+            focused_green_evidence={
+                "TR0_SCHEDULING_TRACE_REPLAY": _green(17, "b"),
+                "FX0_DETERMINISTIC_MECHANISM_FIXTURE": _green(17, "c"),
+                "REAL_WORKLOAD_CORRECTNESS": _green(15, "d"),
+                "S4_REVISED_OFFLINE_GATE": _green(11, "1"),
+            },
+            red_evidence={
+                "TR0_SCHEDULING_TRACE_REPLAY": _red("2"),
+                "FX0_DETERMINISTIC_MECHANISM_FIXTURE": _red("3"),
+                "REAL_WORKLOAD_CORRECTNESS": _red("4"),
+                "S4_REVISED_OFFLINE_GATE": _red("5"),
+            },
+            full_regression_evidence=_green(950, "e"),
+            git_commit="deadbeef",
+        )
+E       TypeError: build_revised_s4_offline_gate() got an unexpected keyword argument 'red_evidence'
+
+tests/test_s4_revised_offline_gate.py:105: TypeError</failure></testcase><testcase classname="tests.test_s4_revised_offline_gate" name="test_gate_authorizes_only_s5_offline_design" time="0.002"><failure message="TypeError: build_revised_s4_offline_gate() got an unexpected keyword argument 'red_evidence'">def test_gate_authorizes_only_s5_offline_design() -&gt; None:
+&gt;       payload = verify_revised_s4_offline_gate(_build())["payload"]
+                                                 ^^^^^^^^
+
+tests/test_s4_revised_offline_gate.py:202: 
+_ _ _ _ _ _ _ _ _ _ _ _ _ _ _ _ _ _ _ _ _ _ _ _ _ _ _ _ _ _ _ _ _ _ _ _ _ _ _ _ 
+
+    def _build() -&gt; dict:
+&gt;       return build_revised_s4_offline_gate(
+            amendment_artifact=_load(PATHS["amendment_artifact"]),
+            amendment_artifact_file_sha256=sha256_file(
+                PATHS["amendment_artifact"]
+            ),
+            real_workload_contract=_real_contract(),
+            source_file_sha256={
+                name: (sha256_file(path) if path.exists() else "a" * 64)
+                for name, path in SOURCE_PATHS.items()
+            },
+            focused_green_evidence={
+                "TR0_SCHEDULING_TRACE_REPLAY": _green(17, "b"),
+                "FX0_DETERMINISTIC_MECHANISM_FIXTURE": _green(17, "c"),
+                "REAL_WORKLOAD_CORRECTNESS": _green(15, "d"),
+                "S4_REVISED_OFFLINE_GATE": _green(11, "1"),
+            },
+            red_evidence={
+                "TR0_SCHEDULING_TRACE_REPLAY": _red("2"),
+                "FX0_DETERMINISTIC_MECHANISM_FIXTURE": _red("3"),
+                "REAL_WORKLOAD_CORRECTNESS": _red("4"),
+                "S4_REVISED_OFFLINE_GATE": _red("5"),
+            },
+            full_regression_evidence=_green(950, "e"),
+            git_commit="deadbeef",
+        )
+E       TypeError: build_revised_s4_offline_gate() got an unexpected keyword argument 'red_evidence'
+
+tests/test_s4_revised_offline_gate.py:105: TypeError</failure></testcase><testcase classname="tests.test_s4_revised_offline_gate" name="test_resealed_claim_or_authority_drift_fails_closed[&lt;lambda&gt;0]" time="0.002"><failure message="TypeError: build_revised_s4_offline_gate() got an unexpected keyword argument 'red_evidence'">mutate = &lt;function &lt;lambda&gt; at 0x71c2775cd4e0&gt;
+
+    @pytest.mark.parametrize(
+        "mutate",
+        [
+            lambda value: value["payload"]["tr0"].update(
+                headline_performance_evidence=True
+            ),
+            lambda value: value["payload"]["fx0"].update(exact_parity_status="PASS"),
+            lambda value: value["payload"]["real_workload_correctness"].update(
+                result_status="PASS"
+            ),
+            lambda value: value["payload"]["authority"].update(
+                s5_live_execution_authorized=True
+            ),
+        ],
+    )
+    def test_resealed_claim_or_authority_drift_fails_closed(mutate) -&gt; None:
+&gt;       artifact = _build()
+                   ^^^^^^^^
+
+tests/test_s4_revised_offline_gate.py:237: 
+_ _ _ _ _ _ _ _ _ _ _ _ _ _ _ _ _ _ _ _ _ _ _ _ _ _ _ _ _ _ _ _ _ _ _ _ _ _ _ _ 
+
+    def _build() -&gt; dict:
+&gt;       return build_revised_s4_offline_gate(
+            amendment_artifact=_load(PATHS["amendment_artifact"]),
+            amendment_artifact_file_sha256=sha256_file(
+                PATHS["amendment_artifact"]
+            ),
+            real_workload_contract=_real_contract(),
+            source_file_sha256={
+                name: (sha256_file(path) if path.exists() else "a" * 64)
+                for name, path in SOURCE_PATHS.items()
+            },
+            focused_green_evidence={
+                "TR0_SCHEDULING_TRACE_REPLAY": _green(17, "b"),
+                "FX0_DETERMINISTIC_MECHANISM_FIXTURE": _green(17, "c"),
+                "REAL_WORKLOAD_CORRECTNESS": _green(15, "d"),
+                "S4_REVISED_OFFLINE_GATE": _green(11, "1"),
+            },
+            red_evidence={
+                "TR0_SCHEDULING_TRACE_REPLAY": _red("2"),
+                "FX0_DETERMINISTIC_MECHANISM_FIXTURE": _red("3"),
+                "REAL_WORKLOAD_CORRECTNESS": _red("4"),
+                "S4_REVISED_OFFLINE_GATE": _red("5"),
+            },
+            full_regression_evidence=_green(950, "e"),
+            git_commit="deadbeef",
+        )
+E       TypeError: build_revised_s4_offline_gate() got an unexpected keyword argument 'red_evidence'
+
+tests/test_s4_revised_offline_gate.py:105: TypeError</failure></testcase><testcase classname="tests.test_s4_revised_offline_gate" name="test_resealed_claim_or_authority_drift_fails_closed[&lt;lambda&gt;1]" time="0.002"><failure message="TypeError: build_revised_s4_offline_gate() got an unexpected keyword argument 'red_evidence'">mutate = &lt;function &lt;lambda&gt; at 0x71c2775cd580&gt;
+
+    @pytest.mark.parametrize(
+        "mutate",
+        [
+            lambda value: value["payload"]["tr0"].update(
+                headline_performance_evidence=True
+            ),
+            lambda value: value["payload"]["fx0"].update(exact_parity_status="PASS"),
+            lambda value: value["payload"]["real_workload_correctness"].update(
+                result_status="PASS"
+            ),
+            lambda value: value["payload"]["authority"].update(
+                s5_live_execution_authorized=True
+            ),
+        ],
+    )
+    def test_resealed_claim_or_authority_drift_fails_closed(mutate) -&gt; None:
+&gt;       artifact = _build()
+                   ^^^^^^^^
+
+tests/test_s4_revised_offline_gate.py:237: 
+_ _ _ _ _ _ _ _ _ _ _ _ _ _ _ _ _ _ _ _ _ _ _ _ _ _ _ _ _ _ _ _ _ _ _ _ _ _ _ _ 
+
+    def _build() -&gt; dict:
+&gt;       return build_revised_s4_offline_gate(
+            amendment_artifact=_load(PATHS["amendment_artifact"]),
+            amendment_artifact_file_sha256=sha256_file(
+                PATHS["amendment_artifact"]
+            ),
+            real_workload_contract=_real_contract(),
+            source_file_sha256={
+                name: (sha256_file(path) if path.exists() else "a" * 64)
+                for name, path in SOURCE_PATHS.items()
+            },
+            focused_green_evidence={
+                "TR0_SCHEDULING_TRACE_REPLAY": _green(17, "b"),
+                "FX0_DETERMINISTIC_MECHANISM_FIXTURE": _green(17, "c"),
+                "REAL_WORKLOAD_CORRECTNESS": _green(15, "d"),
+                "S4_REVISED_OFFLINE_GATE": _green(11, "1"),
+            },
+            red_evidence={
+                "TR0_SCHEDULING_TRACE_REPLAY": _red("2"),
+                "FX0_DETERMINISTIC_MECHANISM_FIXTURE": _red("3"),
+                "REAL_WORKLOAD_CORRECTNESS": _red("4"),
+                "S4_REVISED_OFFLINE_GATE": _red("5"),
+            },
+            full_regression_evidence=_green(950, "e"),
+            git_commit="deadbeef",
+        )
+E       TypeError: build_revised_s4_offline_gate() got an unexpected keyword argument 'red_evidence'
+
+tests/test_s4_revised_offline_gate.py:105: TypeError</failure></testcase><testcase classname="tests.test_s4_revised_offline_gate" name="test_resealed_claim_or_authority_drift_fails_closed[&lt;lambda&gt;2]" time="0.002"><failure message="TypeError: build_revised_s4_offline_gate() got an unexpected keyword argument 'red_evidence'">mutate = &lt;function &lt;lambda&gt; at 0x71c2775cd620&gt;
+
+    @pytest.mark.parametrize(
+        "mutate",
+        [
+            lambda value: value["payload"]["tr0"].update(
+                headline_performance_evidence=True
+            ),
+            lambda value: value["payload"]["fx0"].update(exact_parity_status="PASS"),
+            lambda value: value["payload"]["real_workload_correctness"].update(
+                result_status="PASS"
+            ),
+            lambda value: value["payload"]["authority"].update(
+                s5_live_execution_authorized=True
+            ),
+        ],
+    )
+    def test_resealed_claim_or_authority_drift_fails_closed(mutate) -&gt; None:
+&gt;       artifact = _build()
+                   ^^^^^^^^
+
+tests/test_s4_revised_offline_gate.py:237: 
+_ _ _ _ _ _ _ _ _ _ _ _ _ _ _ _ _ _ _ _ _ _ _ _ _ _ _ _ _ _ _ _ _ _ _ _ _ _ _ _ 
+
+    def _build() -&gt; dict:
+&gt;       return build_revised_s4_offline_gate(
+            amendment_artifact=_load(PATHS["amendment_artifact"]),
+            amendment_artifact_file_sha256=sha256_file(
+                PATHS["amendment_artifact"]
+            ),
+            real_workload_contract=_real_contract(),
+            source_file_sha256={
+                name: (sha256_file(path) if path.exists() else "a" * 64)
+                for name, path in SOURCE_PATHS.items()
+            },
+            focused_green_evidence={
+                "TR0_SCHEDULING_TRACE_REPLAY": _green(17, "b"),
+                "FX0_DETERMINISTIC_MECHANISM_FIXTURE": _green(17, "c"),
+                "REAL_WORKLOAD_CORRECTNESS": _green(15, "d"),
+                "S4_REVISED_OFFLINE_GATE": _green(11, "1"),
+            },
+            red_evidence={
+                "TR0_SCHEDULING_TRACE_REPLAY": _red("2"),
+                "FX0_DETERMINISTIC_MECHANISM_FIXTURE": _red("3"),
+                "REAL_WORKLOAD_CORRECTNESS": _red("4"),
+                "S4_REVISED_OFFLINE_GATE": _red("5"),
+            },
+            full_regression_evidence=_green(950, "e"),
+            git_commit="deadbeef",
+        )
+E       TypeError: build_revised_s4_offline_gate() got an unexpected keyword argument 'red_evidence'
+
+tests/test_s4_revised_offline_gate.py:105: TypeError</failure></testcase><testcase classname="tests.test_s4_revised_offline_gate" name="test_resealed_claim_or_authority_drift_fails_closed[&lt;lambda&gt;3]" time="0.002"><failure message="TypeError: build_revised_s4_offline_gate() got an unexpected keyword argument 'red_evidence'">mutate = &lt;function &lt;lambda&gt; at 0x71c2775cd6c0&gt;
+
+    @pytest.mark.parametrize(
+        "mutate",
+        [
+            lambda value: value["payload"]["tr0"].update(
+                headline_performance_evidence=True
+            ),
+            lambda value: value["payload"]["fx0"].update(exact_parity_status="PASS"),
+            lambda value: value["payload"]["real_workload_correctness"].update(
+                result_status="PASS"
+            ),
+            lambda value: value["payload"]["authority"].update(
+                s5_live_execution_authorized=True
+            ),
+        ],
+    )
+    def test_resealed_claim_or_authority_drift_fails_closed(mutate) -&gt; None:
+&gt;       artifact = _build()
+                   ^^^^^^^^
+
+tests/test_s4_revised_offline_gate.py:237: 
+_ _ _ _ _ _ _ _ _ _ _ _ _ _ _ _ _ _ _ _ _ _ _ _ _ _ _ _ _ _ _ _ _ _ _ _ _ _ _ _ 
+
+    def _build() -&gt; dict:
+&gt;       return build_revised_s4_offline_gate(
+            amendment_artifact=_load(PATHS["amendment_artifact"]),
+            amendment_artifact_file_sha256=sha256_file(
+                PATHS["amendment_artifact"]
+            ),
+            real_workload_contract=_real_contract(),
+            source_file_sha256={
+                name: (sha256_file(path) if path.exists() else "a" * 64)
+                for name, path in SOURCE_PATHS.items()
+            },
+            focused_green_evidence={
+                "TR0_SCHEDULING_TRACE_REPLAY": _green(17, "b"),
+                "FX0_DETERMINISTIC_MECHANISM_FIXTURE": _green(17, "c"),
+                "REAL_WORKLOAD_CORRECTNESS": _green(15, "d"),
+                "S4_REVISED_OFFLINE_GATE": _green(11, "1"),
+            },
+            red_evidence={
+                "TR0_SCHEDULING_TRACE_REPLAY": _red("2"),
+                "FX0_DETERMINISTIC_MECHANISM_FIXTURE": _red("3"),
+                "REAL_WORKLOAD_CORRECTNESS": _red("4"),
+                "S4_REVISED_OFFLINE_GATE": _red("5"),
+            },
+            full_regression_evidence=_green(950, "e"),
+            git_commit="deadbeef",
+        )
+E       TypeError: build_revised_s4_offline_gate() got an unexpected keyword argument 'red_evidence'
+
+tests/test_s4_revised_offline_gate.py:105: TypeError</failure></testcase><testcase classname="tests.test_s4_revised_offline_gate" name="test_resealed_nested_correctness_contract_drift_fails_closed" time="0.002"><failure message="TypeError: build_revised_s4_offline_gate() got an unexpected keyword argument 'red_evidence'">def test_resealed_nested_correctness_contract_drift_fails_closed() -&gt; None:
+&gt;       artifact = _build()
+                   ^^^^^^^^
+
+tests/test_s4_revised_offline_gate.py:245: 
+_ _ _ _ _ _ _ _ _ _ _ _ _ _ _ _ _ _ _ _ _ _ _ _ _ _ _ _ _ _ _ _ _ _ _ _ _ _ _ _ 
+
+    def _build() -&gt; dict:
+&gt;       return build_revised_s4_offline_gate(
+            amendment_artifact=_load(PATHS["amendment_artifact"]),
+            amendment_artifact_file_sha256=sha256_file(
+                PATHS["amendment_artifact"]
+            ),
+            real_workload_contract=_real_contract(),
+            source_file_sha256={
+                name: (sha256_file(path) if path.exists() else "a" * 64)
+                for name, path in SOURCE_PATHS.items()
+            },
+            focused_green_evidence={
+                "TR0_SCHEDULING_TRACE_REPLAY": _green(17, "b"),
+                "FX0_DETERMINISTIC_MECHANISM_FIXTURE": _green(17, "c"),
+                "REAL_WORKLOAD_CORRECTNESS": _green(15, "d"),
+                "S4_REVISED_OFFLINE_GATE": _green(11, "1"),
+            },
+            red_evidence={
+                "TR0_SCHEDULING_TRACE_REPLAY": _red("2"),
+                "FX0_DETERMINISTIC_MECHANISM_FIXTURE": _red("3"),
+                "REAL_WORKLOAD_CORRECTNESS": _red("4"),
+                "S4_REVISED_OFFLINE_GATE": _red("5"),
+            },
+            full_regression_evidence=_green(950, "e"),
+            git_commit="deadbeef",
+        )
+E       TypeError: build_revised_s4_offline_gate() got an unexpected keyword argument 'red_evidence'
+
+tests/test_s4_revised_offline_gate.py:105: TypeError</failure></testcase><testcase classname="tests.test_s4_revised_offline_gate" name="test_builder_rejects_non_green_or_incomplete_evidence" time="0.002"><failure message="TypeError: build_revised_s4_offline_gate() got an unexpected keyword argument 'red_evidence'">def test_builder_rejects_non_green_or_incomplete_evidence() -&gt; None:
+        evidence = {
+            "TR0_SCHEDULING_TRACE_REPLAY": _green(17, "b"),
+            "FX0_DETERMINISTIC_MECHANISM_FIXTURE": _green(17, "c"),
+            "REAL_WORKLOAD_CORRECTNESS": _green(15, "d"),
+            "S4_REVISED_OFFLINE_GATE": _green(11, "1"),
+        }
+        evidence["FX0_DETERMINISTIC_MECHANISM_FIXTURE"]["failures"] = 1
+        with pytest.raises(RevisedS4OfflineGateError):
+&gt;           build_revised_s4_offline_gate(
+                amendment_artifact=_load(PATHS["amendment_artifact"]),
+                amendment_artifact_file_sha256=sha256_file(
+                    PATHS["amendment_artifact"]
+                ),
+                real_workload_contract=_real_contract(),
+                source_file_sha256={name: "f" * 64 for name in SOURCE_PATHS},
+                focused_green_evidence=evidence,
+                red_evidence={
+                    "TR0_SCHEDULING_TRACE_REPLAY": _red("2"),
+                    "FX0_DETERMINISTIC_MECHANISM_FIXTURE": _red("3"),
+                    "REAL_WORKLOAD_CORRECTNESS": _red("4"),
+                    "S4_REVISED_OFFLINE_GATE": _red("5"),
+                },
+                full_regression_evidence=_green(950, "e"),
+                git_commit="deadbeef",
+            )
+E           TypeError: build_revised_s4_offline_gate() got an unexpected keyword argument 'red_evidence'
+
+tests/test_s4_revised_offline_gate.py:263: TypeError</failure></testcase><testcase classname="tests.test_s4_revised_offline_gate" name="test_gate_contains_no_private_runtime_data_and_pointer_stays_s3" time="0.002"><failure message="TypeError: build_revised_s4_offline_gate() got an unexpected keyword argument 'red_evidence'">def test_gate_contains_no_private_runtime_data_and_pointer_stays_s3() -&gt; None:
+&gt;       artifact = verify_revised_s4_offline_gate(_build())
+                                                  ^^^^^^^^
+
+tests/test_s4_revised_offline_gate.py:283: 
+_ _ _ _ _ _ _ _ _ _ _ _ _ _ _ _ _ _ _ _ _ _ _ _ _ _ _ _ _ _ _ _ _ _ _ _ _ _ _ _ 
+
+    def _build() -&gt; dict:
+&gt;       return build_revised_s4_offline_gate(
+            amendment_artifact=_load(PATHS["amendment_artifact"]),
+            amendment_artifact_file_sha256=sha256_file(
+                PATHS["amendment_artifact"]
+            ),
+            real_workload_contract=_real_contract(),
+            source_file_sha256={
+                name: (sha256_file(path) if path.exists() else "a" * 64)
+                for name, path in SOURCE_PATHS.items()
+            },
+            focused_green_evidence={
+                "TR0_SCHEDULING_TRACE_REPLAY": _green(17, "b"),
+                "FX0_DETERMINISTIC_MECHANISM_FIXTURE": _green(17, "c"),
+                "REAL_WORKLOAD_CORRECTNESS": _green(15, "d"),
+                "S4_REVISED_OFFLINE_GATE": _green(11, "1"),
+            },
+            red_evidence={
+                "TR0_SCHEDULING_TRACE_REPLAY": _red("2"),
+                "FX0_DETERMINISTIC_MECHANISM_FIXTURE": _red("3"),
+                "REAL_WORKLOAD_CORRECTNESS": _red("4"),
+                "S4_REVISED_OFFLINE_GATE": _red("5"),
+            },
+            full_regression_evidence=_green(950, "e"),
+            git_commit="deadbeef",
+        )
+E       TypeError: build_revised_s4_offline_gate() got an unexpected keyword argument 'red_evidence'
+
+tests/test_s4_revised_offline_gate.py:105: TypeError</failure></testcase><testcase classname="tests.test_s4_revised_offline_gate" name="test_builder_rejects_contract_parent_or_pointer_not_bound_to_amendment" time="0.002"><failure message="TypeError: build_revised_s4_offline_gate() got an unexpected keyword argument 'red_evidence'">def test_builder_rejects_contract_parent_or_pointer_not_bound_to_amendment() -&gt; None:
+        contract = _real_contract()
+        contract["payload"]["input_bindings"]["parent_protocol"]["file_sha256"] = (
+            "f" * 64
+        )
+        contract["payload_sha256"] = payload_sha256(contract["payload"])
+        with pytest.raises(RevisedS4OfflineGateError, match="current S4 amendment"):
+&gt;           build_revised_s4_offline_gate(
+                amendment_artifact=_load(PATHS["amendment_artifact"]),
+                amendment_artifact_file_sha256=sha256_file(
+                    PATHS["amendment_artifact"]
+                ),
+                real_workload_contract=contract,
+                source_file_sha256={name: "f" * 64 for name in SOURCE_PATHS},
+                focused_green_evidence={
+                    "TR0_SCHEDULING_TRACE_REPLAY": _green(17, "b"),
+                    "FX0_DETERMINISTIC_MECHANISM_FIXTURE": _green(17, "c"),
+                    "REAL_WORKLOAD_CORRECTNESS": _green(15, "d"),
+                    "S4_REVISED_OFFLINE_GATE": _green(11, "1"),
+                },
+                red_evidence={
+                    "TR0_SCHEDULING_TRACE_REPLAY": _red("2"),
+                    "FX0_DETERMINISTIC_MECHANISM_FIXTURE": _red("3"),
+                    "REAL_WORKLOAD_CORRECTNESS": _red("4"),
+                    "S4_REVISED_OFFLINE_GATE": _red("5"),
+                },
+                full_regression_evidence=_green(950, "e"),
+                git_commit="deadbeef",
+            )
+E           TypeError: build_revised_s4_offline_gate() got an unexpected keyword argument 'red_evidence'
+
+tests/test_s4_revised_offline_gate.py:298: TypeError</failure></testcase></testsuite></testsuites>

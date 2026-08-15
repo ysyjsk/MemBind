@@ -1,0 +1,51 @@
+{
+  "current_stage_pointer_update_authorized": false,
+  "graphiti_commit": "021d3a57d511f21b10adaf7fa923bd5c1fce5e9d",
+  "graphiti_version": "0.29.3",
+  "identity_projection": {
+    "module_paths": {
+      "extract_attributes_from_nodes": "graphiti_core.utils.maintenance.node_operations",
+      "extract_edges": "graphiti_core.utils.maintenance.edge_operations",
+      "extract_nodes": "graphiti_core.utils.maintenance.node_operations",
+      "process_episode_data": "graphiti_core.graphiti.Graphiti",
+      "resolve_edge_pointers": "graphiti_core.utils.bulk_utils",
+      "resolve_extracted_edges": "graphiti_core.utils.maintenance.edge_operations",
+      "resolve_extracted_nodes": "graphiti_core.utils.maintenance.node_operations"
+    },
+    "qualnames": {
+      "extract_attributes_from_nodes": "extract_attributes_from_nodes",
+      "extract_edges": "extract_edges",
+      "extract_nodes": "extract_nodes",
+      "process_episode_data": "Graphiti._process_episode_data",
+      "resolve_edge_pointers": "resolve_edge_pointers",
+      "resolve_extracted_edges": "resolve_extracted_edges",
+      "resolve_extracted_nodes": "resolve_extracted_nodes"
+    },
+    "signatures": {
+      "extract_attributes_from_nodes": "(clients: graphiti_core.graphiti_types.GraphitiClients, nodes: list[graphiti_core.nodes.EntityNode], episode: graphiti_core.nodes.EpisodicNode | list[graphiti_core.nodes.EpisodicNode] | None = None, previous_episodes: list[graphiti_core.nodes.EpisodicNode] | None = None, entity_types: dict[str, type[pydantic.main.BaseModel]] | None = None, should_summarize_node: collections.abc.Callable[[graphiti_core.nodes.EntityNode], collections.abc.Awaitable[bool]] | None = None, edges: list[graphiti_core.edges.EntityEdge] | None = None, skip_fact_appending: bool = False, include_type_descriptions: bool = False) -> list[graphiti_core.nodes.EntityNode]",
+      "extract_edges": "(clients: graphiti_core.graphiti_types.GraphitiClients, episode: graphiti_core.nodes.EpisodicNode | list[graphiti_core.nodes.EpisodicNode], nodes: list[graphiti_core.nodes.EntityNode], previous_episodes: list[graphiti_core.nodes.EpisodicNode], edge_type_map: dict[tuple[str, str], list[str]], group_id: str = '', edge_types: dict[str, type[pydantic.main.BaseModel]] | None = None, custom_extraction_instructions: str | None = None) -> list[graphiti_core.edges.EntityEdge]",
+      "extract_nodes": "(clients: graphiti_core.graphiti_types.GraphitiClients, episode: graphiti_core.nodes.EpisodicNode | list[graphiti_core.nodes.EpisodicNode], previous_episodes: list[graphiti_core.nodes.EpisodicNode], entity_types: dict[str, type[pydantic.main.BaseModel]] | None = None, excluded_entity_types: list[str] | None = None, custom_extraction_instructions: str | None = None) -> tuple[list[graphiti_core.nodes.EntityNode], dict[str, list[int]]]",
+      "process_episode_data": "(self, episode: graphiti_core.nodes.EpisodicNode | list[graphiti_core.nodes.EpisodicNode], nodes: list[graphiti_core.nodes.EntityNode], entity_edges: list[graphiti_core.edges.EntityEdge], now: datetime.datetime, group_id: str, saga: str | graphiti_core.nodes.SagaNode | None = None, saga_previous_episode_uuid: str | None = None, node_episode_index_map: dict[str, list[int]] | None = None) -> tuple[list[graphiti_core.edges.EpisodicEdge], graphiti_core.nodes.EpisodicNode]",
+      "resolve_edge_pointers": "(edges: list[~E], uuid_map: dict[str, str])",
+      "resolve_extracted_edges": "(clients: graphiti_core.graphiti_types.GraphitiClients, extracted_edges: list[graphiti_core.edges.EntityEdge], episode: graphiti_core.nodes.EpisodicNode, entities: list[graphiti_core.nodes.EntityNode], edge_types: dict[str, type[pydantic.main.BaseModel]], edge_type_map: dict[tuple[str, str], list[str]], existing_edges_override: list[graphiti_core.edges.EntityEdge] | None = None) -> tuple[list[graphiti_core.edges.EntityEdge], list[graphiti_core.edges.EntityEdge], list[graphiti_core.edges.EntityEdge]]",
+      "resolve_extracted_nodes": "(clients: graphiti_core.graphiti_types.GraphitiClients, extracted_nodes: list[graphiti_core.nodes.EntityNode], episode: graphiti_core.nodes.EpisodicNode | None = None, previous_episodes: list[graphiti_core.nodes.EpisodicNode] | None = None, entity_types: dict[str, type[pydantic.main.BaseModel]] | None = None, existing_nodes_override: list[graphiti_core.nodes.EntityNode] | None = None) -> tuple[list[graphiti_core.nodes.EntityNode], dict[str, str], list[tuple[graphiti_core.nodes.EntityNode, graphiti_core.nodes.EntityNode]]]"
+    }
+  },
+  "identity_sha256": "06909217defc448d7dd380f051b6b282fbb9a8a021c337f998c395fc9bb196fa",
+  "model_call_authorized": false,
+  "neo4j_mutation_authorized": false,
+  "neo4j_read_authorized": false,
+  "payload_sha256": "8ecf8c93176205195b1284a5a6b6cb1a24d739634fc1f8ec3ea3823ded600e04",
+  "s5_live_execution_authorized": false,
+  "schema_version": "membind.paper-eval-v3.s5-graphiti-semantic-identity.v1",
+  "source_file_sha256": {
+    "extract_attributes_from_nodes": "14fc92a462bf7f1dd9b70d10a88e27e36a0ddc1594dc18381888209de7137fb4",
+    "extract_edges": "b773ff4489968af2a996d5074e679cab9806cc0904a7ff9f2aecc74382325abe",
+    "extract_nodes": "14fc92a462bf7f1dd9b70d10a88e27e36a0ddc1594dc18381888209de7137fb4",
+    "process_episode_data": "7c65051a62982d8b510ebdbf37bae4d07020e74520e1f6d9bf8a0ffb26beeccb",
+    "resolve_edge_pointers": "6c7314f24801f0936454b3344788528500432ac5f12692eb36b7d3ef5269f601",
+    "resolve_extracted_edges": "b773ff4489968af2a996d5074e679cab9806cc0904a7ff9f2aecc74382325abe",
+    "resolve_extracted_nodes": "14fc92a462bf7f1dd9b70d10a88e27e36a0ddc1594dc18381888209de7137fb4"
+  },
+  "status": "OBSERVED_PINNED_LOCAL_INSTALL_NOT_LIVE_AUTHORITY"
+}

@@ -1,0 +1,577 @@
+{
+  "git_commit": "774082cd03da137172e49cdd2990b388b50d9cd7",
+  "payload": {
+    "authority": {
+      "current_stage_pointer_update_authorized": false,
+      "formal_execution_authorized": false,
+      "fx0_live_execution_authorized": false,
+      "model_call_authorized": false,
+      "neo4j_mutation_authorized": false,
+      "neo4j_read_authorized": false,
+      "pilot_execution_authorized": false,
+      "result_generation_or_inspection_authorized": false,
+      "revised_s4_offline_design_authorized": true,
+      "s5_live_execution_authorized": false,
+      "s5_offline_design_authorized": true,
+      "tr0_live_execution_authorized": false
+    },
+    "boundary_amendment": {
+      "artifact": {
+        "git_commit": "774082cd03da137172e49cdd2990b388b50d9cd7",
+        "payload": {
+          "amendment_version": "2.0",
+          "authority": {
+            "current_stage_pointer_update_authorized": false,
+            "formal_execution_authorized": false,
+            "fx0_live_execution_authorized": false,
+            "fx0_offline_design_authorized": true,
+            "model_call_authorized": false,
+            "neo4j_mutation_authorized": false,
+            "pilot_execution_authorized": false,
+            "revised_s4_offline_design_authorized": true,
+            "s5_live_execution_authorized": false,
+            "s5_offline_design_authorized": true,
+            "tr0_live_execution_authorized": false,
+            "tr0_offline_design_authorized": true
+          },
+          "decision": "FULL_INTERNAL_D0_REPLAY_RETIRED_AS_QUALIFICATION_BOUNDARY",
+          "decision_timing": "BEFORE_REVISED_S4_OR_METHOD_RESULTS",
+          "historical_d0_identity_preserved": true,
+          "historical_retry_008": {
+            "capture": {
+              "candidate_sidecar_append_count": 178,
+              "candidate_sidecar_record_count": 178,
+              "candidate_sidecar_rejection_count": 0,
+              "canonical_graph_sha256": "ab076234fabef2b94bbd6d8a1815aa4aa8f97f0509086f53675689fe16c24e09",
+              "checkpoint_file_sha256": "5ad6bf25fb5f018484d2d6703ae3cc765303bc558913bb586d23713546c3246b",
+              "completed_episode_count": 49,
+              "events_file_sha256": "4ff12870ae5b2591123aff7fae056518ad394b8198c6821680961f58c868447c",
+              "expected_episode_count": 49,
+              "live_embedding_calls": 67,
+              "live_fallback_count": 0,
+              "live_llm_calls": 532,
+              "mergeable": true,
+              "phase_result_file_sha256": "a11cf71a2e0086fc0783b319d34a59471bc15b103e89525b1fbd6fdd281e8da5",
+              "post_cleanup_node_count": 0,
+              "post_cleanup_relationship_count": 0,
+              "run_id": "s4-d0-capture-20260815-008",
+              "status": "PASS",
+              "unexpected_embedding_count": 0,
+              "unexpected_prompt_count": 0
+            },
+            "disposition": {
+              "candidate_level_replay_is_main_path": false,
+              "cleanup_authorized": false,
+              "legacy_infrastructure_status": "PRESERVED_NON_MAIN_PATH_NON_AUTHORIZING",
+              "resume_authorized": false,
+              "retry_009_authorized": false,
+              "rewrite_authorized": false
+            },
+            "downstream": {
+              "activation_v3_exists": false,
+              "final_smoke_result_exists": false,
+              "retry_008_qualified_d0": false
+            },
+            "replay": {
+              "candidate_sidecar_consumed_count": 20,
+              "candidate_sidecar_remaining_count": 158,
+              "checkpoint_file_sha256": "f28113181d8179b94b9a4de778be10ef3e8ab7eb1bf6173a4b53eb7e804e8287",
+              "completed_episode_count": 7,
+              "error_class": "CandidateSidecarError",
+              "error_code": "SIDECAR_CALL_CORRELATION_MISSING",
+              "events_file_sha256": "0f7835bbf9636623bdb6d858dc7dfc5c63638934c2bfc517e06cc4f409839b68",
+              "execution_log_file_sha256": "16764523fa62b59c0fd304ce8c6afa1a36191b5289d647701abf305839d71d53",
+              "expected_episode_count": 49,
+              "failed_source_sequence": 7,
+              "live_embedding_calls": 0,
+              "live_llm_calls": 0,
+              "live_namespace_state_attested": false,
+              "mergeable": false,
+              "namespace_cleanup_recorded": false,
+              "persisted_namespace_state_declared": true,
+              "phase_result_file_sha256": "246fd8224ea27b1855d34f2c25f9963d844abe63cfc87fee62069a16f739ee45",
+              "preservation_policy": "DO_NOT_CLEAN_OR_RESUME",
+              "preserved_node_count": 32,
+              "preserved_relationship_count": 48,
+              "run_id": "s4-d0-replay-20260815-008",
+              "status": "INCOMPLETE"
+            }
+          },
+          "input_bindings": {
+            "amendment_document": {
+              "file_sha256": "ff117a4b2f7d13e54c5b0dcca1a8b4983470049ffc5f1edea00a376a8a11ad1f",
+              "path": "S4_VALIDATION_BOUNDARY_AMENDMENT_v2.0.md"
+            },
+            "current_stage_pointer": {
+              "current_stage": "S3_CONFIGURATION_FROZEN",
+              "file_sha256": "3cb7edad4bab3ac6fe961a3d9e8768cbb962cf61cf946cb7e0015d74c0edc26d",
+              "path": "runtime/CURRENT_STAGE_STATUS.json"
+            },
+            "legacy_s4_workplan": {
+              "file_sha256": "bab29baec9d83dcb2ce4310e9694774d9efc0278f23a069a0a2716dea26d5c62",
+              "path": "S4_D0_EXECUTION_WORKPLAN_v1.0.md",
+              "status": "SUPERSEDED_ONLY_FOR_S4_D0_BOUNDARY_CLAUSES"
+            },
+            "parent_protocol": {
+              "file_sha256": "4b81c89b33d407f04fc20862a81eab6badba16d0d61d98331cbe188d1bb4f41e",
+              "path": "../（主实验）MemBind_PAPER_EVALUATION_WORKPLAN_v3_SMALL_FIRST_FINAL.md"
+            }
+          },
+          "legacy_d0_replay_infrastructure": {
+            "authority_reuse_allowed": false,
+            "evidence_only_artifact_classes": [
+              "SMOKE_AUTHORITIES",
+              "REMAP_AUTHORITIES",
+              "SIDECAR_AUTHORITIES",
+              "FIXED_THREE_AUTHORITIES",
+              "AUTHORITY_CONSUMPTIONS",
+              "SMOKE_AND_FIXED_THREE_RESULTS",
+              "QUALIFICATION_ACTIVATIONS"
+            ],
+            "inheritance_allowed": false,
+            "mechanisms_requiring_new_lane_qualification": [
+              "ARTIFACT_ENVELOPE_AND_HASHING",
+              "EXCLUSIVE_SINGLE_USE_CONSUMPTION",
+              "CONTIGUOUS_PREFIX_CHECKPOINT",
+              "SANITIZED_NON_MERGEABLE_FAILURE",
+              "PATH_CONFINEMENT_AND_DEPENDENCY_INJECTION",
+              "EXTERNAL_EVIDENCE_RECOMPUTATION",
+              "CANONICAL_NAMESPACE_PROJECTION"
+            ],
+            "modules": [
+              "s4_authority",
+              "s4_candidate_oracle",
+              "s4_candidate_projection",
+              "s4_candidate_sidecar",
+              "s4_candidate_sidecar_runtime",
+              "s4_controller",
+              "s4_d0_contract",
+              "s4_d0_production",
+              "s4_d0_runner",
+              "s4_edge_identity_diagnosis",
+              "s4_edge_identity_diagnosis_authority",
+              "s4_edge_identity_diagnosis_controller",
+              "s4_edge_identity_diagnosis_production",
+              "s4_edge_identity_dry_run",
+              "s4_preflight",
+              "s4_preflight_production",
+              "s4_qualification_activation",
+              "s4_qualification_plan",
+              "s4_remap_authority",
+              "s4_remap_controller",
+              "s4_remap_result",
+              "s4_remap_retry_contract",
+              "s4_retry_008_compatibility",
+              "s4_retry_contract",
+              "s4_sidecar_authority",
+              "s4_sidecar_controller",
+              "s4_sidecar_qualification_activation",
+              "s4_sidecar_qualification_authority",
+              "s4_sidecar_qualification_controller",
+              "s4_sidecar_qualification_data",
+              "s4_sidecar_qualification_result",
+              "s4_sidecar_result",
+              "s4_sidecar_retry_contract",
+              "s4_sidecar_smoke_result_verifier",
+              "s4_smoke_result"
+            ],
+            "status": "LEGACY_EVIDENCE_ONLY_NON_AUTHORIZING"
+          },
+          "offline_evidence": {
+            "focused_green_junit_sha256": "f553f65fd384495b8f72e2d9ea189684c9a40bebe6a0ef1f0c4a5ebeb625a07b",
+            "focused_green_pass_count": 9,
+            "full_green_junit_sha256": "0b2b421ac99517596e9107e87868ba32ffff6d2f9646859abaa7ed816a88e233",
+            "full_green_pass_count": 898,
+            "red_failure_or_error_count": 1,
+            "red_junit_sha256": "3d54834338f702c9f2e629268a078ddc713410483ac7e701fd3d45cae6230c39"
+          },
+          "schema_version": "membind.paper-eval-v3.s4-validation-boundary-amendment.v1",
+          "source_sha256": {
+            "amendment_source": "b2e405dd309d2007f2fd9930f4de12f0053a30b74b3578bf44b5fc76b2cf622f",
+            "amendment_test": "d987340320ec90aa51b48e955b2b8293b1dfb5fec447ad99af63a5ff16d1a523",
+            "finalizer": "79183e039436385bc221d463544d2eb66a2f592a374293e7f9b5147440aff82b"
+          },
+          "stage": "S4",
+          "validation_lanes": {
+            "FX0_DETERMINISTIC_MECHANISM_FIXTURE": {
+              "exact_canonical_state_parity_required": true,
+              "exact_publication_history_parity_required": true,
+              "fixture_count_policy": "TRANSITION_COVERAGE_NOT_FIXED_COUNT",
+              "m_method_qualification_gate": true,
+              "only_controlled_nondeterminism_may_be_stubbed": true,
+              "performance_claims_authorized": false,
+              "production_mechanism_path_required": true,
+              "required_transitions": [
+                "ENTITY_ALIAS_CANONICAL_MERGE",
+                "COMPATIBLE_DUPLICATE_UUID_COALESCING",
+                "CONFLICTING_DUPLICATE_UUID_FAIL_CLOSED",
+                "RELATION_RESOLUTION",
+                "TEMPORAL_INVALIDATION_UPDATE",
+                "PREPARE_TO_BIND_STATE_CHANGE",
+                "SOURCE_ORDERED_PUBLICATION",
+                "RETRY_IDEMPOTENCE",
+                "LOST_DUPLICATE_PARTIAL_PUBLICATION_DETECTION"
+              ]
+            },
+            "REAL_WORKLOAD_CORRECTNESS": {
+              "aggregate_graph_counts_are_descriptive_only": true,
+              "all_methods_execute_real_graphiti": true,
+              "confidence_intervals_required": true,
+              "duplicate": 0,
+              "episode_source_coverage": 1.0,
+              "lost": 0,
+              "paired_per_history_analysis": true,
+              "quality_margins_status": "MUST_PREREGISTER_BEFORE_RESULTS",
+              "quality_metrics": [
+                "EVIDENCE_RECALL_AT_10",
+                "QA_ACCURACY"
+              ],
+              "semantic_graph_metrics_require_preregistered_matching_oracle": true,
+              "source_publication_order_violations": 0,
+              "temporal_provenance_violations": 0,
+              "visibility_publication_violations": 0
+            },
+            "RX0_NATIVE_REAL_EXECUTION": {
+              "formal_results_require_fresh_unmodified_method_runs": true,
+              "headline_performance_source": true,
+              "passive_instrumentation_only": true,
+              "real_system_execution": true,
+              "retry_008_role": "ONE_HISTORY_OPERATIONAL_CANARY_ONLY"
+            },
+            "TR0_SCHEDULING_TRACE_REPLAY": {
+              "calibration_load_regions": [
+                "LOW",
+                "NEAR_SATURATION"
+              ],
+              "calibration_metrics": [
+                "MAKESPAN",
+                "P50_FRESHNESS",
+                "P95_FRESHNESS",
+                "PEAK_BACKLOG",
+                "BACKLOG_AUC",
+                "GOODPUT",
+                "RESOURCE_OCCUPANCY"
+              ],
+              "calibration_policies": [
+                "NATIVE",
+                "CHANGED_POLICY"
+              ],
+              "calibration_threshold_status": "MUST_PREREGISTER_BEFORE_RESULTS",
+              "endogenous_latency_effects_excluded": [
+                "VLLM_BATCHING_AND_QUEUEING",
+                "KV_CACHE_CONTENTION",
+                "CONCURRENCY_DEPENDENT_SERVICE_TIME",
+                "STATE_DEPENDENT_WORK_GENERATION",
+                "DB_CONTENTION"
+              ],
+              "fixed_wall_clock_demand_is_counterfactual_only": true,
+              "headline_performance_source": false,
+              "requires_real_system_calibration": true,
+              "semantic_correctness_oracle": false,
+              "supporting_control_only": true
+            }
+          }
+        },
+        "payload_sha256": "abcbc687b49a0f8b246ec598ec9ac539be827cad412d5062a3ab4dfb406931d5",
+        "protocol_version": "paper-eval-v3",
+        "run_id": "s4-validation-boundary-amendment-20260815-001",
+        "status": "finalized"
+      },
+      "artifact_file_sha256": "a45c942dfd9aa0f79c736745d12ca24cce788b1608ab3511da9cb9bde809cd3f"
+    },
+    "current_stage": "S3_CONFIGURATION_FROZEN",
+    "focused_green_evidence": {
+      "FX0_DETERMINISTIC_MECHANISM_FIXTURE": {
+        "errors": 0,
+        "failures": 0,
+        "junit_file_sha256": "50d1118293af5a4b7eb1d0611545513f3c5712cfc306252bb08ae3b8db737ac7",
+        "skipped": 0,
+        "tests": 17
+      },
+      "REAL_WORKLOAD_CORRECTNESS": {
+        "errors": 0,
+        "failures": 0,
+        "junit_file_sha256": "99732a1a5ec09139aa6cb4abdfca4a1818f8db0db376dc050f7734e70d3f2f0a",
+        "skipped": 0,
+        "tests": 15
+      },
+      "S4_REVISED_OFFLINE_GATE": {
+        "errors": 0,
+        "failures": 0,
+        "junit_file_sha256": "ab1617adc771e8c56975eb324b14467dd2d5ee35da4fb3f29f56270e34a5aa2e",
+        "skipped": 0,
+        "tests": 12
+      },
+      "TR0_SCHEDULING_TRACE_REPLAY": {
+        "errors": 0,
+        "failures": 0,
+        "junit_file_sha256": "32fedeeb4521dfa97ed158d32ebf9dce56449359a1a11005b035dd4288ab8907",
+        "skipped": 0,
+        "tests": 17
+      }
+    },
+    "full_regression_evidence": {
+      "errors": 0,
+      "failures": 0,
+      "junit_file_sha256": "cfe59a8f4b56137082193fb949525cf708f5d7408cffd18deade038ee18b9fb0",
+      "skipped": 0,
+      "tests": 959
+    },
+    "fx0": {
+      "adapter_receives_expected_oracle": false,
+      "exact_parity_status": "NOT_EXECUTED",
+      "framework_status": "HARNESS_QUALIFIED_WITH_TEST_DOUBLE_ONLY",
+      "performance_evidence": false,
+      "production_m_star_identity_status": "NOT_FROZEN",
+      "s5_method_qualification_required": true,
+      "semantic_correctness_evidence": false
+    },
+    "historical_rx0": {
+      "headline_performance_evidence": false,
+      "legacy_d0_error_code": "SIDECAR_CALL_CORRELATION_MISSING",
+      "legacy_d0_mergeable": false,
+      "legacy_d0_status": "INCOMPLETE",
+      "operational_canary_status": "PASS",
+      "real_native_episode_coverage": "49/49",
+      "timing_exclusion_reason": "CANDIDATE_SIDECAR_CAPTURE_ADDED_WORK"
+    },
+    "legacy_boundary": {
+      "legacy_authority_inheritance_allowed": false,
+      "legacy_d0_result_merge_authorized": false,
+      "retry_008_cleanup_authorized": false,
+      "retry_008_resume_authorized": false,
+      "retry_009_authorized": false
+    },
+    "next_action": "S5_PRODUCTION_METHOD_QUALIFICATION_OFFLINE_DESIGN",
+    "real_workload_correctness": {
+      "contract": {
+        "git_commit": "774082cd03da137172e49cdd2990b388b50d9cd7",
+        "payload": {
+          "authority": {
+            "current_stage_pointer_update_authorized": false,
+            "formal_execution_authorized": false,
+            "model_call_authorized": false,
+            "neo4j_mutation_authorized": false,
+            "offline_s5_design_authorized": true,
+            "pilot_execution_authorized": false,
+            "result_generation_or_inspection_authorized": false,
+            "s5_live_execution_authorized": false
+          },
+          "direct_invariants": {
+            "duplicate_episode_or_source_count": 0,
+            "episode_source_coverage": 1.0,
+            "failure_policy": "FAIL_CLOSED_NON_MERGEABLE",
+            "lost_episode_or_source_count": 0,
+            "scope": "PER_METHOD_PER_HISTORY_AND_AGGREGATE",
+            "source_publication_order_violation_count": 0,
+            "temporal_provenance_violation_count": 0,
+            "visibility_publication_violation_count": 0
+          },
+          "execution_contract": {
+            "all_methods_execute_real_graphiti": true,
+            "per_method_per_history_accounting_required": true,
+            "real_workload_results_required_for_headline_performance": true,
+            "result_merge_requires_all_direct_invariants": true,
+            "synthetic_graphiti_substitution_allowed": false
+          },
+          "input_bindings": {
+            "current_stage_pointer": {
+              "current_stage": "S3_CONFIGURATION_FROZEN",
+              "file_sha256": "3cb7edad4bab3ac6fe961a3d9e8768cbb962cf61cf946cb7e0015d74c0edc26d",
+              "path": "runtime/CURRENT_STAGE_STATUS.json",
+              "payload_sha256": "da17c5dae889d0a0d0e51b2f5bbd478e7a79d50ccf33450ca43f32c34b6dcdcc",
+              "run_id": "s3-native-v2-current-pointer-20260814-001"
+            },
+            "dataset_parity": {
+              "file_sha256": "fafe207e6b50a7fe476f65a24992ef331eda4d9685d3b234ecad99f2962edf23",
+              "path": "artifacts/paper_eval/native/DATASET_PARITY.json",
+              "payload_sha256": "12625d3fea09262adbedca3246b050920de929371aaff95261744d117a214f14",
+              "run_id": "s2-20260814-004",
+              "schema_version": "membind.paper-eval-v3.s2-alignment.v1",
+              "status": "finalized"
+            },
+            "evaluator_parity": {
+              "file_sha256": "0632bf5116c2b9040ef7d6c57d27ccdac9b3cacfdc23ea55df831cc720eb3e02",
+              "path": "artifacts/paper_eval/native/EVALUATOR_PARITY.json",
+              "payload_sha256": "20a374a1924994a661adbfe9b07862ddc3e364ce70ba92c4493dfbe9d74fbc03",
+              "run_id": "s2-20260814-004",
+              "schema_version": "membind.paper-eval-v3.s2-alignment.v1",
+              "status": "finalized"
+            },
+            "native_baseline_freeze": {
+              "baseline_id": "native-graphiti-u0-reader-v2",
+              "file_sha256": "3e935af2cb353fb59c4cf58ddec7e44a73387f88410d805324636b76daf2d5e6",
+              "path": "artifacts/paper_eval/native/NATIVE_BASELINE_V2_FREEZE.json",
+              "payload_sha256": "b05720b834e53f2ab8172249b445afddc37ac8356f19674625e1129823c19da7",
+              "run_id": "native-baseline-v2-freeze-20260814-001",
+              "stage": "S3"
+            },
+            "parent_protocol": {
+              "file_sha256": "4b81c89b33d407f04fc20862a81eab6badba16d0d61d98331cbe188d1bb4f41e",
+              "path": "../（主实验）MemBind_PAPER_EVALUATION_WORKPLAN_v3_SMALL_FIRST_FINAL.md"
+            },
+            "role_registry": {
+              "development_exposed_history_ids": [
+                "07741c45",
+                "6071bd76",
+                "a2f3aa27",
+                "b6019101",
+                "c6853660"
+              ],
+              "file_sha256": "6ca5fff6c5d540b718f154fae880ab785b08a7b530c2337c8b5a0c696f7a80e9",
+              "path": "artifacts/paper_eval/DEVELOPMENT_EXPOSED_IDS.json",
+              "payload_sha256": "3b03bf463e856406eea2e46a2c6a8c789a9767d7c920dcceab8d8747ee281dd9",
+              "roles": [
+                "DEVELOPMENT_EXPOSED",
+                "PILOT",
+                "FINAL_PAPER_TEST"
+              ],
+              "run_id": "s0-4b81c89b33d407f0"
+            },
+            "s4_amendment_artifact": {
+              "file_sha256": "a45c942dfd9aa0f79c736745d12ca24cce788b1608ab3511da9cb9bde809cd3f",
+              "path": "artifacts/paper_eval/native/S4_VALIDATION_BOUNDARY_AMENDMENT.json",
+              "payload_sha256": "abcbc687b49a0f8b246ec598ec9ac539be827cad412d5062a3ab4dfb406931d5",
+              "run_id": "s4-validation-boundary-amendment-20260815-001"
+            },
+            "s4_amendment_document": {
+              "file_sha256": "ff117a4b2f7d13e54c5b0dcca1a8b4983470049ffc5f1edea00a376a8a11ad1f",
+              "path": "S4_VALIDATION_BOUNDARY_AMENDMENT_v2.0.md"
+            }
+          },
+          "lane": "REAL_WORKLOAD_CORRECTNESS",
+          "legacy_d0": {
+            "authority_inheritance_allowed": false,
+            "authority_reuse_allowed": false,
+            "historical_evidence_may_be_cited_only_with_original_status": true,
+            "result_merge_allowed": false
+          },
+          "methods": [
+            "U0",
+            "A0",
+            "P*",
+            "M*"
+          ],
+          "quality_contract": {
+            "confidence_intervals_required": true,
+            "freeze_timing": "BEFORE_RESULT_GENERATION_OR_INSPECTION",
+            "metrics": [
+              "EVIDENCE_RECALL_AT_10",
+              "QA_ACCURACY"
+            ],
+            "non_inferiority_and_equivalence_are_distinct": true,
+            "paired_per_history_analysis": true,
+            "post_result_margin_selection_allowed": false,
+            "required_preregistered_fields": [
+              "ESTIMAND_PER_METRIC",
+              "PAIRING_UNIT",
+              "CONFIDENCE_LEVEL",
+              "CI_METHOD",
+              "RESAMPLING_UNIT_IF_APPLICABLE",
+              "MULTIPLICITY_POLICY",
+              "NON_INFERIORITY_MARGIN_PER_METRIC",
+              "EQUIVALENCE_MARGIN_PER_METRIC",
+              "MISSING_RESULT_POLICY"
+            ],
+            "same_history_question_set_across_methods": true
+          },
+          "schema_version": "membind.paper-eval-v3.real-workload-correctness-contract.v1",
+          "semantic_graph_contract": {
+            "aggregate_counts_can_establish_parity": false,
+            "aggregate_graph_counts_are_descriptive_only": true,
+            "matching_oracle_identity_required": true,
+            "matching_oracle_may_not_be_tuned_after_results": true,
+            "matching_oracle_status": "MUST_FREEZE_BEFORE_RESULT_GENERATION_OR_INSPECTION",
+            "required_metrics": [
+              "NODE_PRECISION",
+              "NODE_RECALL",
+              "EDGE_PRECISION",
+              "EDGE_RECALL",
+              "UNMATCHED_NODE_COUNT",
+              "UNMATCHED_EDGE_COUNT",
+              "TEMPORAL_DIFFERENCE_COUNT"
+            ],
+            "required_oracle_freeze_fields": [
+              "NODE_CANONICALIZATION",
+              "NODE_SIMILARITY",
+              "NODE_MATCH_THRESHOLD",
+              "NODE_ASSIGNMENT_AND_TIE_BREAK",
+              "EDGE_ENDPOINT_AND_TYPE_MATCHING",
+              "EDGE_ATTRIBUTE_MATCHING",
+              "TEMPORAL_FIELD_COMPARISON",
+              "MISSING_AND_EXTRA_ITEM_POLICY"
+            ]
+          },
+          "stage": "S4",
+          "status": "OFFLINE_S5_DESIGN_ONLY"
+        },
+        "payload_sha256": "55e961c881ab3199ddad5a551c72e9591f27aa3b669e0894bede39cad681d347",
+        "protocol_version": "paper-eval-v3",
+        "run_id": "real-workload-correctness-contract-20260815-001",
+        "status": "finalized"
+      },
+      "contract_status": "FROZEN_OFFLINE",
+      "matching_oracle_status": "NOT_FROZEN",
+      "quality_margins_status": "NOT_FROZEN",
+      "result_status": "NOT_EXECUTED"
+    },
+    "red_evidence": {
+      "FX0_DETERMINISTIC_MECHANISM_FIXTURE": {
+        "errors": 1,
+        "failures": 0,
+        "junit_file_sha256": "7fcc03835efc97718e470fffbcfb3543e299c2dcf6a95bf62230b4cfede1ccf3",
+        "skipped": 0,
+        "tests": 1
+      },
+      "REAL_WORKLOAD_CORRECTNESS": {
+        "errors": 1,
+        "failures": 0,
+        "junit_file_sha256": "1bae16c27c5816d2ec6704ee51f9e18b76bd2a83a7d85c5ed6fb53e5ea368390",
+        "skipped": 0,
+        "tests": 1
+      },
+      "S4_REVISED_OFFLINE_GATE": {
+        "errors": 1,
+        "failures": 0,
+        "junit_file_sha256": "0bdbe410208211f9632ce8bc22ad9ca4f1c499cbe8387f313b78cc8da2a0ef92",
+        "skipped": 0,
+        "tests": 1
+      },
+      "TR0_SCHEDULING_TRACE_REPLAY": {
+        "errors": 1,
+        "failures": 0,
+        "junit_file_sha256": "a5165e7564e737c913923e5aed0cb5595d25e0cfe3bb54d46263a4c45971f9fd",
+        "skipped": 0,
+        "tests": 1
+      }
+    },
+    "schema_version": "membind.paper-eval-v3.s4-revised-offline-gate.v1",
+    "source_file_sha256": {
+      "fx0_document": "cfa69c46b9e3445f4afaaa2abb98656a3f6240b917efb921c4182d00dfe7e24a",
+      "fx0_source": "ec3a37d51a6b848e9c54aee44b7ba4a93b4b6ad3e24234319704e9af5d323d94",
+      "fx0_test": "c49e7dfd0aecfd919576a0f4a7a972002182f9a35579ad63114fa558f0086aa4",
+      "gate_finalizer": "4cbeec4a333a36d34770e882d34ec3a7af97e9797ca04b30b1eb0d4854b695bf",
+      "gate_source": "ebfa23ab4f04ba749b5dfe5bf3d3ac58a448b6f03cb19f0fe8d43473b923784c",
+      "gate_test": "cd25e6cab291d7d9b9fc1a6fde952bcd81b821c05292a46df71395cde51d3b9c",
+      "real_workload_source": "a69a2aed2960352aa6efa3907f93f04f8f2378782ebeca2b5a1c9e4ce4084881",
+      "real_workload_test": "d1e8a8dd876ca32ea41f0f16d13277ce7286eb7936d500688e99f9a7a3e3f4b5",
+      "tr0_source": "b8d3edc99e41ff6df7e5748798cf26bc1be16763ffac43c29eb7487db4bdcf64",
+      "tr0_test": "53fb4286e97aa22e2d905f16b8aca4825721f6a617e558bd68d7932c19112e11"
+    },
+    "stage": "S4_REVISED_OFFLINE_GATE",
+    "status": "OFFLINE_FRAMEWORKS_QUALIFIED_ONLY",
+    "tr0": {
+      "framework_status": "IMPLEMENTATION_QUALIFIED_ONLY",
+      "headline_performance_evidence": false,
+      "measured_trace_status": "NOT_SEALED",
+      "real_system_calibration_status": "NOT_SATISFIED",
+      "replay_result_status": "NOT_EXECUTED",
+      "semantic_correctness_evidence": false,
+      "supporting_control_only": true
+    }
+  },
+  "payload_sha256": "1d652c83951989d36b7988400ed155b1b11b0a76853444cc6743e3a65c9f2531",
+  "protocol_version": "paper-eval-v3",
+  "run_id": "s4-revised-offline-gate-20260815-001",
+  "status": "finalized"
+}

@@ -1,0 +1,241 @@
+{
+  "git_commit": "774082cd03da137172e49cdd2990b388b50d9cd7",
+  "payload": {
+    "authority": {
+      "current_stage_pointer_update_authorized": false,
+      "formal_execution_authorized": false,
+      "model_call_authorized": false,
+      "neo4j_mutation_authorized": false,
+      "neo4j_read_authorized": false,
+      "pilot_execution_authorized": false,
+      "s5_adapter_implementation_authorized": true,
+      "s5_live_execution_authorized": false,
+      "s5_offline_design_authorized": true
+    },
+    "common_runtime": {
+      "forbidden_runtime_changes": [
+        "PROMPT_OR_RESPONSE_REPLAY",
+        "CANDIDATE_STABILIZER",
+        "SEMANTIC_CACHE_MODIFICATION",
+        "RESOLUTION_OR_INVALIDATION_MODIFICATION",
+        "RETRIEVAL_READER_OR_JUDGE_CHANGE"
+      ],
+      "graphiti_repository_commit": "021d3a57d511f21b10adaf7fa923bd5c1fce5e9d",
+      "graphiti_version": "0.29.3",
+      "native_add_episode_entrypoint": "graphiti_native.add_episode",
+      "same_native_graphiti_construction_base": true,
+      "synthetic_graphiti_substitution_allowed": false,
+      "u0_builder": "native_characterization_runtime.build_u0_graphiti_from_env"
+    },
+    "current_stage": "S3_CONFIGURATION_FROZEN",
+    "execution_order": [
+      "A0",
+      "P*",
+      "M*"
+    ],
+    "history": {
+      "data_role": "DEVELOPMENT_EXPOSED",
+      "episode_count": 49,
+      "history_id": "07741c45",
+      "quality_claim_authorized": false,
+      "selection_rule": "PREDECLARED_DEVELOPMENT_EXPOSED_SMOKE_HISTORY"
+    },
+    "input_bindings": {
+      "current_stage_pointer": {
+        "current_stage": "S3_CONFIGURATION_FROZEN",
+        "file_sha256": "3cb7edad4bab3ac6fe961a3d9e8768cbb962cf61cf946cb7e0015d74c0edc26d",
+        "payload_sha256": "da17c5dae889d0a0d0e51b2f5bbd478e7a79d50ccf33450ca43f32c34b6dcdcc",
+        "run_id": "s3-native-v2-current-pointer-20260814-001"
+      },
+      "native_baseline_freeze": {
+        "baseline_id": "native-graphiti-u0-reader-v2",
+        "file_sha256": "3e935af2cb353fb59c4cf58ddec7e44a73387f88410d805324636b76daf2d5e6",
+        "payload_sha256": "b05720b834e53f2ab8172249b445afddc37ac8356f19674625e1129823c19da7",
+        "run_id": "native-baseline-v2-freeze-20260814-001"
+      },
+      "parent_protocol": {
+        "file_sha256": "4b81c89b33d407f04fc20862a81eab6badba16d0d61d98331cbe188d1bb4f41e"
+      },
+      "role_registry": {
+        "file_sha256": "6ca5fff6c5d540b718f154fae880ab785b08a7b530c2337c8b5a0c696f7a80e9",
+        "payload_sha256": "3b03bf463e856406eea2e46a2c6a8c789a9767d7c920dcceab8d8747ee281dd9",
+        "run_id": "s0-4b81c89b33d407f0",
+        "selected_history_role": "DEVELOPMENT_EXPOSED"
+      },
+      "s4_revised_offline_gate": {
+        "file_sha256": "5527752c79eaf6fb6b7932bb271f44b534f8d1b6a13762c9c8dce3ba14034e26",
+        "payload_sha256": "1d652c83951989d36b7988400ed155b1b11b0a76853444cc6743e3a65c9f2531",
+        "run_id": "s4-revised-offline-gate-20260815-001",
+        "status": "OFFLINE_FRAMEWORKS_QUALIFIED_ONLY"
+      }
+    },
+    "legacy_boundary": {
+      "legacy_d0_authority_inheritance_allowed": false,
+      "legacy_d0_result_merge_allowed": false,
+      "legacy_s4_namespace_reuse_allowed": false,
+      "retry_008_resume_allowed": false,
+      "retry_009_allowed": false
+    },
+    "method_id_aliases_forbidden": [
+      "M0",
+      "M1",
+      "M2"
+    ],
+    "method_registry": {
+      "A0": {
+        "candidate_status": "REUSABLE_COMPONENTS_ENTRYPOINT_NOT_FROZEN",
+        "concurrency": 1,
+        "construction_path": "SAME_U0_GRAPHITI_ADD_EPISODE",
+        "method_id": "A0",
+        "production_identity_status": "NONE_FROZEN",
+        "required_checks": [
+          "FIFO",
+          "SINGLE_WORKER",
+          "DURABLE_ACK_BEFORE_CALLER_RETURN",
+          "SOURCE_ORDER_PUBLICATION",
+          "CALLER_RETURN_AND_PUBLICATION_TIMESTAMPS_DISTINCT",
+          "ZERO_LOST_DUPLICATE_OR_DIRECT_INVARIANT_VIOLATION"
+        ],
+        "reusable_source_roles": [
+          "common_runtime",
+          "native_entrypoint",
+          "a0_scheduler",
+          "a0_live_adapter",
+          "a0_durable_store"
+        ],
+        "scheduler": "FIFO_DURABLE_ENQUEUE_SINGLE_NATIVE_WORKER"
+      },
+      "M*": {
+        "candidate_status": "EXPLORATORY_CORE_NOT_PRODUCTION",
+        "concurrency": 2,
+        "construction_path": "CANDIDATE_GRAPHITI_MEMBIND_CORE",
+        "durable_publication_journal_required": true,
+        "fx0_exact_parity_required": true,
+        "graphiti_private_api_signature_binding_required": true,
+        "method_id": "M*",
+        "production_identity_status": "NONE_FROZEN",
+        "required_checks": [
+          "COMPLETE_CONSTRUCTION",
+          "ZERO_DIRECT_INVARIANT_VIOLATION",
+          "CORRECT_FRESHNESS_TIMESTAMPS",
+          "ZERO_HIDDEN_FALLBACK",
+          "FX0_PRODUCTION_PATH_EXACT_PARITY",
+          "RETRY_IDEMPOTENCE_AND_PARTIAL_PUBLICATION_DETECTION"
+        ],
+        "reusable_source_roles": [
+          "common_runtime",
+          "native_entrypoint",
+          "m_candidate_core",
+          "m_ordered_binder",
+          "m_semantic_compile",
+          "fx0_harness"
+        ],
+        "same_core_for_live_and_fx0_required": true,
+        "scheduler": "PARALLEL_PREPARE_LATEST_STATE_BIND_ORDERED_PUBLICATION"
+      },
+      "P*": {
+        "candidate_status": "C2_SMOKE_ENTRYPOINT_NOT_FROZEN",
+        "concurrency": 2,
+        "construction_path": "CONCURRENT_COMPLETE_U0_GRAPHITI_ADD_EPISODE",
+        "direct_invariant_violation_interpretation": "SCIENTIFIC_OUTCOME_NOT_ADAPTER_FAILURE",
+        "method_id": "P*",
+        "production_identity_status": "NONE_FROZEN",
+        "required_checks": [
+          "TWO_WHOLE_UPDATE_INTERVALS_OVERLAP",
+          "INTENT_AND_PUBLICATION_ACCOUNTING",
+          "TELEMETRY_COMPLETE",
+          "VIOLATION_CHECKER_ACTIVE",
+          "NO_SILENT_DELETION_OF_VIOLATING_RESULT"
+        ],
+        "reusable_source_roles": [
+          "common_runtime",
+          "native_entrypoint",
+          "p_scheduler",
+          "p_live_adapter",
+          "p_invariant_checker"
+        ],
+        "scheduler": "NAIVE_WHOLE_UPDATE_PARALLEL"
+      }
+    },
+    "methods": [
+      "A0",
+      "P*",
+      "M*"
+    ],
+    "next_action": "S5_ADAPTER_IMPLEMENTATION_AND_OFFLINE_TESTS",
+    "offline_evidence": {
+      "focused_green": {
+        "errors": 0,
+        "failures": 0,
+        "junit_file_sha256": "489ff1492ddd6e7c1c1c5f5f470db1d2b41b9aa6a5cb4c8972d51c86e6b28116",
+        "skipped": 0,
+        "tests": 12
+      },
+      "full_green": {
+        "errors": 0,
+        "failures": 0,
+        "junit_file_sha256": "a89c4edbce69477f8efcc76d05830cd81898a2e033cf7501f2e7997589bb1b40",
+        "skipped": 0,
+        "tests": 971
+      },
+      "red": {
+        "errors": 1,
+        "failures": 0,
+        "junit_file_sha256": "8be38fa04912f06a4195743c8eb282bf59aca8abe6885c999510d8fffa5a1dbc",
+        "skipped": 0,
+        "tests": 1
+      }
+    },
+    "required_production_work": [
+      "S5_A0_THIN_ENTRYPOINT_AND_DURABLE_STORE",
+      "S5_P_C2_THIN_ENTRYPOINT_AND_INVARIANT_ACCOUNTING",
+      "M_STAR_DURABLE_INTENT_COMMIT_PUBLICATION_JOURNAL",
+      "M_STAR_FAILURE_POISON_AND_IDEMPOTENT_RETRY",
+      "M_STAR_SHARED_LIVE_AND_FX0_PRODUCTION_CORE",
+      "M_STAR_LOGICAL_TIME_AND_EPISODE_CREATION_PARITY",
+      "M_STAR_GROUP_DATABASE_SEMANTICS_PARITY",
+      "M_STAR_GRAPHITI_PRIVATE_API_SIGNATURE_BINDING",
+      "S5_FX0_PRODUCTION_PARITY_ARTIFACT",
+      "METHOD_SPECIFIC_SINGLE_USE_LIVE_AUTHORITIES"
+    ],
+    "schema_version": "membind.paper-eval-v3.s5-method-qualification-plan.v1",
+    "source_file_sha256": {
+      "a0_durable_store": "b4050a0d844e7e5c91776194cc3f660034020dbf1c18c78d883d41c1e4810181",
+      "a0_live_adapter": "ef28610a5d35552e12e44a64248889178266157fa7dc8dcae5c15e91f295cd9f",
+      "a0_scheduler": "a21a7b22ce5bff1c61c109ca4b8a180cc958b4247b63eefd06ad4a6f743e6eb6",
+      "common_runtime": "4d6bad43289d7cbf9557aed05571601bdfa560855ed1403b0e4a72770ae57ca1",
+      "fx0_harness": "ec3a37d51a6b848e9c54aee44b7ba4a93b4b6ad3e24234319704e9af5d323d94",
+      "m_candidate_core": "69c95b088a0fe886cfe89624716cd2752f462fab1dfeaa3f6dcf27184c65d2de",
+      "m_ordered_binder": "5b75ce6e428dbdbf4fb0f77dc736ca8bf4acd72407087fb495ddbe7e8d1e50bc",
+      "m_semantic_compile": "4edabccd04c09a8390547676a27af9b2f958b383aa69cf75b40da7be32e4dffb",
+      "native_entrypoint": "f25141000494a8899a40b87f2bf5fb5e5cb519ab2d480d72973aeaf9e0d9c8cc",
+      "p_invariant_checker": "b62487fbabd0c0091eac2390fbd3c050f956f8c23fe85563ed549a46a3be4c85",
+      "p_live_adapter": "362496e051ebcdeb119b820d85718863f9a0bb6c7d8948182fb62d6ac8c1ab32",
+      "p_scheduler": "603fe2f05db5d4e88c6020ccc9abc2e842f3515aba742beb45f87a13ce7bbc86",
+      "s5_plan_finalizer": "f7fdd96c5297d6afe07f9e969e810cbcf5ba439d0d3c70ac0cdd64dd5a225a2f",
+      "s5_plan_source": "eff9a511d7738d5fddf25c80169a13bd1804ad4c13d3dd0f583a93822c17101f",
+      "s5_plan_test": "ea7e84535d76345c4718c3a3a610b28fcf2343362ebf2ad7fdc7e55c233a2347",
+      "s5_workplan": "0c73ae917efceb5fe596914e3b71c907a10fbc06200c6b344e08687bb2d8c8bb"
+    },
+    "stage": "S5_METHOD_QUALIFICATION",
+    "status": "OFFLINE_DESIGN_ONLY",
+    "stop_rules": [
+      "A0_SMOKE_FAILURE_STOPS_S5",
+      "P_C2_INFRA_ADAPTER_TELEMETRY_OR_ACCOUNTING_FAILURE_STOPS_S5",
+      "M_STAR_FX0_OR_DIRECT_INVARIANT_FAILURE_STOPS_S5",
+      "NO_C_SWEEP_BEFORE_M_STAR_SMOKE_PASS",
+      "NO_LIVE_ACTION_FROM_THIS_OFFLINE_PLAN"
+    ],
+    "tdd_sequence": [
+      "RED_METHOD_REGISTRY",
+      "FOCUSED_GREEN_METHOD_REGISTRY",
+      "FULL_OFFLINE_GREEN",
+      "FX0_PRODUCTION_IDENTITY_AND_ADAPTER_GREEN",
+      "ONLY_THEN_METHOD_LIVE_AUTHORITY"
+    ]
+  },
+  "payload_sha256": "ae7e9d7d379d04461cf0a098af853e42de9ff7c7130f6c64454a5bfebc6404c6",
+  "protocol_version": "paper-eval-v3",
+  "run_id": "s5-method-qualification-plan-20260815-001",
+  "status": "finalized"
+}

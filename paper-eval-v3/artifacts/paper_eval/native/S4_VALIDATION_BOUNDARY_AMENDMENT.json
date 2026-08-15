@@ -1,0 +1,261 @@
+{
+  "git_commit": "774082cd03da137172e49cdd2990b388b50d9cd7",
+  "payload": {
+    "amendment_version": "2.0",
+    "authority": {
+      "current_stage_pointer_update_authorized": false,
+      "formal_execution_authorized": false,
+      "fx0_live_execution_authorized": false,
+      "fx0_offline_design_authorized": true,
+      "model_call_authorized": false,
+      "neo4j_mutation_authorized": false,
+      "pilot_execution_authorized": false,
+      "revised_s4_offline_design_authorized": true,
+      "s5_live_execution_authorized": false,
+      "s5_offline_design_authorized": true,
+      "tr0_live_execution_authorized": false,
+      "tr0_offline_design_authorized": true
+    },
+    "decision": "FULL_INTERNAL_D0_REPLAY_RETIRED_AS_QUALIFICATION_BOUNDARY",
+    "decision_timing": "BEFORE_REVISED_S4_OR_METHOD_RESULTS",
+    "historical_d0_identity_preserved": true,
+    "historical_retry_008": {
+      "capture": {
+        "candidate_sidecar_append_count": 178,
+        "candidate_sidecar_record_count": 178,
+        "candidate_sidecar_rejection_count": 0,
+        "canonical_graph_sha256": "ab076234fabef2b94bbd6d8a1815aa4aa8f97f0509086f53675689fe16c24e09",
+        "checkpoint_file_sha256": "5ad6bf25fb5f018484d2d6703ae3cc765303bc558913bb586d23713546c3246b",
+        "completed_episode_count": 49,
+        "events_file_sha256": "4ff12870ae5b2591123aff7fae056518ad394b8198c6821680961f58c868447c",
+        "expected_episode_count": 49,
+        "live_embedding_calls": 67,
+        "live_fallback_count": 0,
+        "live_llm_calls": 532,
+        "mergeable": true,
+        "phase_result_file_sha256": "a11cf71a2e0086fc0783b319d34a59471bc15b103e89525b1fbd6fdd281e8da5",
+        "post_cleanup_node_count": 0,
+        "post_cleanup_relationship_count": 0,
+        "run_id": "s4-d0-capture-20260815-008",
+        "status": "PASS",
+        "unexpected_embedding_count": 0,
+        "unexpected_prompt_count": 0
+      },
+      "disposition": {
+        "candidate_level_replay_is_main_path": false,
+        "cleanup_authorized": false,
+        "legacy_infrastructure_status": "PRESERVED_NON_MAIN_PATH_NON_AUTHORIZING",
+        "resume_authorized": false,
+        "retry_009_authorized": false,
+        "rewrite_authorized": false
+      },
+      "downstream": {
+        "activation_v3_exists": false,
+        "final_smoke_result_exists": false,
+        "retry_008_qualified_d0": false
+      },
+      "replay": {
+        "candidate_sidecar_consumed_count": 20,
+        "candidate_sidecar_remaining_count": 158,
+        "checkpoint_file_sha256": "f28113181d8179b94b9a4de778be10ef3e8ab7eb1bf6173a4b53eb7e804e8287",
+        "completed_episode_count": 7,
+        "error_class": "CandidateSidecarError",
+        "error_code": "SIDECAR_CALL_CORRELATION_MISSING",
+        "events_file_sha256": "0f7835bbf9636623bdb6d858dc7dfc5c63638934c2bfc517e06cc4f409839b68",
+        "execution_log_file_sha256": "16764523fa62b59c0fd304ce8c6afa1a36191b5289d647701abf305839d71d53",
+        "expected_episode_count": 49,
+        "failed_source_sequence": 7,
+        "live_embedding_calls": 0,
+        "live_llm_calls": 0,
+        "live_namespace_state_attested": false,
+        "mergeable": false,
+        "namespace_cleanup_recorded": false,
+        "persisted_namespace_state_declared": true,
+        "phase_result_file_sha256": "246fd8224ea27b1855d34f2c25f9963d844abe63cfc87fee62069a16f739ee45",
+        "preservation_policy": "DO_NOT_CLEAN_OR_RESUME",
+        "preserved_node_count": 32,
+        "preserved_relationship_count": 48,
+        "run_id": "s4-d0-replay-20260815-008",
+        "status": "INCOMPLETE"
+      }
+    },
+    "input_bindings": {
+      "amendment_document": {
+        "file_sha256": "ff117a4b2f7d13e54c5b0dcca1a8b4983470049ffc5f1edea00a376a8a11ad1f",
+        "path": "S4_VALIDATION_BOUNDARY_AMENDMENT_v2.0.md"
+      },
+      "current_stage_pointer": {
+        "current_stage": "S3_CONFIGURATION_FROZEN",
+        "file_sha256": "3cb7edad4bab3ac6fe961a3d9e8768cbb962cf61cf946cb7e0015d74c0edc26d",
+        "path": "runtime/CURRENT_STAGE_STATUS.json"
+      },
+      "legacy_s4_workplan": {
+        "file_sha256": "bab29baec9d83dcb2ce4310e9694774d9efc0278f23a069a0a2716dea26d5c62",
+        "path": "S4_D0_EXECUTION_WORKPLAN_v1.0.md",
+        "status": "SUPERSEDED_ONLY_FOR_S4_D0_BOUNDARY_CLAUSES"
+      },
+      "parent_protocol": {
+        "file_sha256": "4b81c89b33d407f04fc20862a81eab6badba16d0d61d98331cbe188d1bb4f41e",
+        "path": "../（主实验）MemBind_PAPER_EVALUATION_WORKPLAN_v3_SMALL_FIRST_FINAL.md"
+      }
+    },
+    "legacy_d0_replay_infrastructure": {
+      "authority_reuse_allowed": false,
+      "evidence_only_artifact_classes": [
+        "SMOKE_AUTHORITIES",
+        "REMAP_AUTHORITIES",
+        "SIDECAR_AUTHORITIES",
+        "FIXED_THREE_AUTHORITIES",
+        "AUTHORITY_CONSUMPTIONS",
+        "SMOKE_AND_FIXED_THREE_RESULTS",
+        "QUALIFICATION_ACTIVATIONS"
+      ],
+      "inheritance_allowed": false,
+      "mechanisms_requiring_new_lane_qualification": [
+        "ARTIFACT_ENVELOPE_AND_HASHING",
+        "EXCLUSIVE_SINGLE_USE_CONSUMPTION",
+        "CONTIGUOUS_PREFIX_CHECKPOINT",
+        "SANITIZED_NON_MERGEABLE_FAILURE",
+        "PATH_CONFINEMENT_AND_DEPENDENCY_INJECTION",
+        "EXTERNAL_EVIDENCE_RECOMPUTATION",
+        "CANONICAL_NAMESPACE_PROJECTION"
+      ],
+      "modules": [
+        "s4_authority",
+        "s4_candidate_oracle",
+        "s4_candidate_projection",
+        "s4_candidate_sidecar",
+        "s4_candidate_sidecar_runtime",
+        "s4_controller",
+        "s4_d0_contract",
+        "s4_d0_production",
+        "s4_d0_runner",
+        "s4_edge_identity_diagnosis",
+        "s4_edge_identity_diagnosis_authority",
+        "s4_edge_identity_diagnosis_controller",
+        "s4_edge_identity_diagnosis_production",
+        "s4_edge_identity_dry_run",
+        "s4_preflight",
+        "s4_preflight_production",
+        "s4_qualification_activation",
+        "s4_qualification_plan",
+        "s4_remap_authority",
+        "s4_remap_controller",
+        "s4_remap_result",
+        "s4_remap_retry_contract",
+        "s4_retry_008_compatibility",
+        "s4_retry_contract",
+        "s4_sidecar_authority",
+        "s4_sidecar_controller",
+        "s4_sidecar_qualification_activation",
+        "s4_sidecar_qualification_authority",
+        "s4_sidecar_qualification_controller",
+        "s4_sidecar_qualification_data",
+        "s4_sidecar_qualification_result",
+        "s4_sidecar_result",
+        "s4_sidecar_retry_contract",
+        "s4_sidecar_smoke_result_verifier",
+        "s4_smoke_result"
+      ],
+      "status": "LEGACY_EVIDENCE_ONLY_NON_AUTHORIZING"
+    },
+    "offline_evidence": {
+      "focused_green_junit_sha256": "f553f65fd384495b8f72e2d9ea189684c9a40bebe6a0ef1f0c4a5ebeb625a07b",
+      "focused_green_pass_count": 9,
+      "full_green_junit_sha256": "0b2b421ac99517596e9107e87868ba32ffff6d2f9646859abaa7ed816a88e233",
+      "full_green_pass_count": 898,
+      "red_failure_or_error_count": 1,
+      "red_junit_sha256": "3d54834338f702c9f2e629268a078ddc713410483ac7e701fd3d45cae6230c39"
+    },
+    "schema_version": "membind.paper-eval-v3.s4-validation-boundary-amendment.v1",
+    "source_sha256": {
+      "amendment_source": "b2e405dd309d2007f2fd9930f4de12f0053a30b74b3578bf44b5fc76b2cf622f",
+      "amendment_test": "d987340320ec90aa51b48e955b2b8293b1dfb5fec447ad99af63a5ff16d1a523",
+      "finalizer": "79183e039436385bc221d463544d2eb66a2f592a374293e7f9b5147440aff82b"
+    },
+    "stage": "S4",
+    "validation_lanes": {
+      "FX0_DETERMINISTIC_MECHANISM_FIXTURE": {
+        "exact_canonical_state_parity_required": true,
+        "exact_publication_history_parity_required": true,
+        "fixture_count_policy": "TRANSITION_COVERAGE_NOT_FIXED_COUNT",
+        "m_method_qualification_gate": true,
+        "only_controlled_nondeterminism_may_be_stubbed": true,
+        "performance_claims_authorized": false,
+        "production_mechanism_path_required": true,
+        "required_transitions": [
+          "ENTITY_ALIAS_CANONICAL_MERGE",
+          "COMPATIBLE_DUPLICATE_UUID_COALESCING",
+          "CONFLICTING_DUPLICATE_UUID_FAIL_CLOSED",
+          "RELATION_RESOLUTION",
+          "TEMPORAL_INVALIDATION_UPDATE",
+          "PREPARE_TO_BIND_STATE_CHANGE",
+          "SOURCE_ORDERED_PUBLICATION",
+          "RETRY_IDEMPOTENCE",
+          "LOST_DUPLICATE_PARTIAL_PUBLICATION_DETECTION"
+        ]
+      },
+      "REAL_WORKLOAD_CORRECTNESS": {
+        "aggregate_graph_counts_are_descriptive_only": true,
+        "all_methods_execute_real_graphiti": true,
+        "confidence_intervals_required": true,
+        "duplicate": 0,
+        "episode_source_coverage": 1.0,
+        "lost": 0,
+        "paired_per_history_analysis": true,
+        "quality_margins_status": "MUST_PREREGISTER_BEFORE_RESULTS",
+        "quality_metrics": [
+          "EVIDENCE_RECALL_AT_10",
+          "QA_ACCURACY"
+        ],
+        "semantic_graph_metrics_require_preregistered_matching_oracle": true,
+        "source_publication_order_violations": 0,
+        "temporal_provenance_violations": 0,
+        "visibility_publication_violations": 0
+      },
+      "RX0_NATIVE_REAL_EXECUTION": {
+        "formal_results_require_fresh_unmodified_method_runs": true,
+        "headline_performance_source": true,
+        "passive_instrumentation_only": true,
+        "real_system_execution": true,
+        "retry_008_role": "ONE_HISTORY_OPERATIONAL_CANARY_ONLY"
+      },
+      "TR0_SCHEDULING_TRACE_REPLAY": {
+        "calibration_load_regions": [
+          "LOW",
+          "NEAR_SATURATION"
+        ],
+        "calibration_metrics": [
+          "MAKESPAN",
+          "P50_FRESHNESS",
+          "P95_FRESHNESS",
+          "PEAK_BACKLOG",
+          "BACKLOG_AUC",
+          "GOODPUT",
+          "RESOURCE_OCCUPANCY"
+        ],
+        "calibration_policies": [
+          "NATIVE",
+          "CHANGED_POLICY"
+        ],
+        "calibration_threshold_status": "MUST_PREREGISTER_BEFORE_RESULTS",
+        "endogenous_latency_effects_excluded": [
+          "VLLM_BATCHING_AND_QUEUEING",
+          "KV_CACHE_CONTENTION",
+          "CONCURRENCY_DEPENDENT_SERVICE_TIME",
+          "STATE_DEPENDENT_WORK_GENERATION",
+          "DB_CONTENTION"
+        ],
+        "fixed_wall_clock_demand_is_counterfactual_only": true,
+        "headline_performance_source": false,
+        "requires_real_system_calibration": true,
+        "semantic_correctness_oracle": false,
+        "supporting_control_only": true
+      }
+    }
+  },
+  "payload_sha256": "abcbc687b49a0f8b246ec598ec9ac539be827cad412d5062a3ab4dfb406931d5",
+  "protocol_version": "paper-eval-v3",
+  "run_id": "s4-validation-boundary-amendment-20260815-001",
+  "status": "finalized"
+}
