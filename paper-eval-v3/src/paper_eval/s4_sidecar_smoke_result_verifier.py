@@ -106,7 +106,9 @@ def _envelope(value: Mapping[str, Any], *, label: str) -> dict[str, Any]:
     return artifact
 
 
-def _attempt(runs: Mapping[str, Any]) -> str:
+def _attempt(runs: Mapping[str, Any], *, expected_attempt: str) -> str:
+    if re.fullmatch(r"\d{3}", expected_attempt) is None:
+        raise ValueError("expected S4 sidecar attempt must be three digits")
     selected = _mapping(runs, label="S4 sidecar runs")
     capture = _mapping(selected.get("U0_CAPTURE"), label="capture run")
     replay = _mapping(selected.get("D0_READ_ONLY_REPLAY"), label="replay run")
@@ -121,6 +123,10 @@ def _attempt(runs: Mapping[str, Any]) -> str:
         or replay.get("run_id") != f"s4-d0-replay-20260815-{attempt}"
     ):
         raise ValueError("S4 sidecar phase attempt identity drift")
+    if attempt != expected_attempt:
+        raise ValueError(
+            f"S4 sidecar evidence is not expected retry-{expected_attempt}"
+        )
     return attempt
 
 
@@ -227,6 +233,7 @@ def verify_s4_sidecar_smoke_result(
     replay_result: Mapping[str, Any],
     replay_result_file_sha256: str,
     candidate_sidecar_file_sha256: str,
+    expected_attempt: str = "008",
 ) -> dict[str, Any]:
     """Recompute every public hard gate and all external-file bindings."""
 
@@ -234,7 +241,7 @@ def verify_s4_sidecar_smoke_result(
     selected_consumption = verify_s4_sidecar_authority_consumption(consumption)
     authority_payload = selected_authority["payload"]
     runs = _mapping(authority_payload.get("runs"), label="authority runs")
-    attempt = _attempt(runs)
+    attempt = _attempt(runs, expected_attempt=expected_attempt)
     capture = _phase(
         capture_result,
         mode="capture",

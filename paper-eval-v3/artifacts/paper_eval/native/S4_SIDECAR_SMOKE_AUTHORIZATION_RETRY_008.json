@@ -1,0 +1,99 @@
+{
+  "git_commit": "0bc93ea10ba133665b2a6d016f172a80855fba83",
+  "payload": {
+    "authority": {
+      "d0_replay_requires_capture_pass": true,
+      "pilot_execution_authorized": false,
+      "s4_four_history_qualification_authorized": false,
+      "s4_sidecar_smoke_pipeline_authorized": true,
+      "s5_authorized": false,
+      "single_use": true
+    },
+    "candidate_oracle": {
+      "capture_only_sidecar_allowed": false,
+      "edge_prompt_name": "dedupe_edges.resolve_edge",
+      "edge_translation_kind": "BILATERAL_UUID_INDEPENDENT_LOGICAL_EDGE_BIJECTION",
+      "exact_edge_prompt_requires_sidecar_binding": true,
+      "node_translation_kind": "VERIFIED_PROMPT_VISIBLE_CANDIDATE_ID_BIJECTION",
+      "partition_preserving": true,
+      "persistent_cache_mutation": false,
+      "position_rank_uuid_identity_allowed": false,
+      "pre_publication_remaining_call_guard": true,
+      "raw_or_parsed_cache_write": false,
+      "wrapper_order": [
+        "GraphitiPromptCacheLLM",
+        "NamespaceNormalizedPromptCache",
+        "CandidateSidecarPromptCache",
+        "CandidateAwareReplayCache",
+        "PromptCache"
+      ]
+    },
+    "common_method_policy_sha256": "5699b88d83ad71de1119930ece69a9176c352ed847ea02be0cacc661b46e79e8",
+    "execution_order": [
+      "U0_CAPTURE",
+      "D0_READ_ONLY_REPLAY"
+    ],
+    "history": {
+      "data_role": "DEVELOPMENT_EXPOSED",
+      "episode_count": 49,
+      "history_id": "07741c45"
+    },
+    "private_cache": {
+      "candidate_sidecar_relpath": "runtime/private/s4-d0-sidecar-07741c45-20260815-008/candidate-sidecar.jsonl",
+      "embedding_relpath": "runtime/private/s4-d0-sidecar-07741c45-20260815-008/embedding.jsonl",
+      "prompt_relpath": "runtime/private/s4-d0-sidecar-07741c45-20260815-008/prompt.jsonl",
+      "reportable_contents": false
+    },
+    "projection_schema_sha256": "28aef596af79a97d73e542e0ed3b21c81fe6dcc7b1fcf442f2f0cddce7436631",
+    "runs": {
+      "D0_READ_ONLY_REPLAY": {
+        "cache_id": "s4-d0-sidecar-07741c45-20260815-008",
+        "method": "D0",
+        "mode": "replay",
+        "namespace": "pev3-s4-d0-replay-20260815-008",
+        "run_id": "s4-d0-replay-20260815-008"
+      },
+      "U0_CAPTURE": {
+        "cache_id": "s4-d0-sidecar-07741c45-20260815-008",
+        "method": "U0",
+        "mode": "capture",
+        "namespace": "pev3-s4-u0-capture-20260815-008",
+        "run_id": "s4-d0-capture-20260815-008"
+      }
+    },
+    "s4_contract_file_sha256": "9693a55816452f4b0353f7ddcca4371df90380c9f3cf887f1d3f263c0fcb343f",
+    "s4_contract_sha256": "eeea545a5f4c404f1b95158472c82935d4edaa1e7287929c89e683d6ab429bd1",
+    "s4_preflight_file_sha256": "9ccb6421546cd77f87a244581e11ae3d07163ab22ca4e869114c83fe32b1b868",
+    "s4_preflight_payload_sha256": "ca619e7ab699086899b732b4651216efa401944c9c0eb57de5e841c424b7337d",
+    "schema_version": "membind.paper-eval-v3.s4-sidecar-smoke-authority.v1",
+    "sidecar_hard_gates": {
+      "cache_and_sidecar_mutation_during_replay": false,
+      "candidate_remap_rejection_count": 0,
+      "canonical_graph_parity": "EXACT_100_PERCENT",
+      "edge_sidecar_resolution_accounting": "EXACT",
+      "sidecar_consumed_equals_record_count": true,
+      "sidecar_prepared_count": 0,
+      "sidecar_rejection_count": 0,
+      "sidecar_remaining_count": 0
+    },
+    "source_sha256": {
+      "authority": "fb5da0500356eaeb29f4d29223664ba52a250c57cf5aa0e5f4bf54e3216a2df5",
+      "candidate_oracle": "567aaa64324e16939aadea32139510e4775fa329f2f9490fe6004df009afbb77",
+      "candidate_projection": "d9328cedbc8473f23625fdfb295199a6f809f6586fdd17a4f33f87f09bfd164a",
+      "candidate_sidecar": "2348c527f547491c151eda6ec023d9b6eca07b26eabbc7746510e6eb1977825c",
+      "candidate_sidecar_runtime": "473cac55365576962e35bdfc6039d2706fd063eac8d3677248bb3c6ff86c2a1a",
+      "controller": "df046fc04a645fed01a23eb3d8060b997c7ece6e1a33109e5a5b60caeba5b605",
+      "edge_identity": "94efcce74e9c23a0e0ea7519f0fcd4d00456d80df9dbef4d28c9a50e435e49ba",
+      "production": "4633cb776a300c6092e2835c4f83bdbe92af517419ada453c172edbcb9f1ad70",
+      "result": "ad189a14339e954178ed0cfa7c4ed38a4b8c5dbd7178f291e24b69403231307b",
+      "runner": "3997cfa3840975563670ecc5d1f12df878ee206c3e9776cc929da6b6ad80d89d",
+      "test": "60fcf2b2c7afe674176c77717544f85b09cbfcedb618034eeb535b2ead10ae3d"
+    },
+    "stage": "S4_BILATERAL_SIDECAR_SMOKE",
+    "status": "AUTHORIZED_SINGLE_USE"
+  },
+  "payload_sha256": "219b7dc3efe3d9c5d32da9b35677cc8e81cf795b9706fcbb79953509e1e1cdd7",
+  "protocol_version": "paper-eval-v3",
+  "run_id": "s4-sidecar-smoke-authority-20260815-008",
+  "status": "finalized"
+}

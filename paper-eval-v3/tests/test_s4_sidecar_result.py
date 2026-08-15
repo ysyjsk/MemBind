@@ -143,3 +143,63 @@ def test_sidecar_smoke_rejects_partial_counter_shapes() -> None:
 
     assert evaluation["verdict"] == "FAIL"
     assert "sidecar_evidence_shape" in evaluation["failures"]
+
+
+@pytest.mark.parametrize(
+    "field",
+    [
+        "unexpected_prompt_count",
+        "unexpected_embedding_count",
+        "live_fallback_count",
+        "cross_encoder_call_count",
+    ],
+)
+def test_sidecar_smoke_rejects_capture_runtime_anomalies(field: str) -> None:
+    capture = _phase(capture=True)
+    capture["payload"]["runtime_evidence"][field] = 1
+
+    evaluation = evaluate_s4_sidecar_smoke(
+        capture_result=capture,
+        replay_result=_phase(capture=False),
+    )
+
+    assert evaluation["verdict"] == "FAIL"
+    assert "capture_runtime_anomaly" in evaluation["failures"]
+
+
+@pytest.mark.parametrize(
+    ("phase", "field", "failure"),
+    [
+        ("capture", "sidecar_capture_append_count", "capture_sidecar_accounting"),
+        ("replay", "sidecar_replay_binding_count", "replay_sidecar_accounting"),
+    ],
+)
+def test_sidecar_smoke_requires_exact_capture_and_replay_sidecar_accounting(
+    phase: str,
+    field: str,
+    failure: str,
+) -> None:
+    capture = _phase(capture=True)
+    replay = _phase(capture=False)
+    selected = capture if phase == "capture" else replay
+    selected["payload"]["runtime_evidence"][field] = 0
+
+    evaluation = evaluate_s4_sidecar_smoke(
+        capture_result=capture,
+        replay_result=replay,
+    )
+
+    assert evaluation["verdict"] == "FAIL"
+    assert failure in evaluation["failures"]
+
+
+def test_sidecar_smoke_allows_resume_reuse_without_replacing_unique_append() -> None:
+    capture = _phase(capture=True)
+    capture["payload"]["runtime_evidence"]["sidecar_capture_reuse_count"] = 2
+
+    evaluation = evaluate_s4_sidecar_smoke(
+        capture_result=capture,
+        replay_result=_phase(capture=False),
+    )
+
+    assert evaluation["verdict"] == "PASS"

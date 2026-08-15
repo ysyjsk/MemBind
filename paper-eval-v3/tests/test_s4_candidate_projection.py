@@ -235,6 +235,67 @@ def test_resolution_context_rejects_non_string_summary(summary: object) -> None:
 
 
 @pytest.mark.asyncio
+async def test_resolution_context_coalesces_canonically_equal_duplicate_uuids() -> None:
+    """Graphiti may resolve several extracted entities to one canonical node."""
+
+    sources = _sources()
+    current = _episode("current", 0)
+    alice = _node("alice", "Alice", labels=["Person", "Entity"])
+    duplicate = _node("alice", " Alice ", labels=["Entity", "Person", "Person"])
+    duplicate.summary = f" {alice.summary} "
+    alice.attributes = {"created_at": "capture-only", "kind": "person"}
+    duplicate.attributes = {"kind": "person", "created_at": "other-volatile-value"}
+    acme = _node("acme", "Acme")
+    projector = GraphitiCandidateProjector(
+        driver=object(),
+        namespace=NAMESPACE,
+        episodes=sources,
+        entity_loader=Loaders([], []).entities,
+        episode_loader=Loaders([], []).provenance,
+    )
+
+    async def project(nodes: list[SimpleNamespace]) -> dict:
+        with activate_resolution_entities(nodes):
+            return await projector.project(
+                extracted_edge=_edge(
+                    "alice", "acme", fact="new", episode_uuid="current"
+                ),
+                related_edges=[],
+                invalidation_edges=[],
+                episode=current,
+            )
+
+    baseline = await project([alice, acme])
+    forward = await project([alice, duplicate, acme])
+    reverse = await project([duplicate, alice, acme])
+
+    assert forward == reverse == baseline
+
+
+@pytest.mark.parametrize(
+    ("field", "conflicting_value"),
+    [
+        ("name", "Alicia"),
+        ("summary", "different summary"),
+        ("labels", ["Organization"]),
+        ("attributes", {"kind": "different"}),
+        ("group_id", "pev3-s4-other-namespace"),
+    ],
+)
+def test_resolution_context_rejects_duplicate_uuid_projection_conflicts(
+    field: str,
+    conflicting_value: object,
+) -> None:
+    first = _node("alice", "Alice")
+    conflicting = _node("alice", "Alice")
+    setattr(conflicting, field, conflicting_value)
+
+    with pytest.raises(CandidateSidecarRuntimeError, match="duplicate.*projection"):
+        with activate_resolution_entities([first, conflicting]):
+            pass
+
+
+@pytest.mark.asyncio
 async def test_direction_and_provenance_are_semantic_identity_components() -> None:
     sources = _sources()
     current = _episode("current", 7)

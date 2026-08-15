@@ -141,6 +141,23 @@ def test_contract_allocates_retry_007_and_binds_edge_identity_source() -> None:
     assert contract["source_sha256"]["edge_identity"] == "b" * 64
 
 
+def test_contract_allocates_fresh_retry_008_identity() -> None:
+    contract = _contract(attempt_number=8)
+
+    assert verify_s4_sidecar_retry_contract(contract) == contract
+    assert contract["attempt_id"] == "008"
+    assert contract["runs"]["U0_CAPTURE"]["run_id"] == (
+        "s4-d0-capture-20260815-008"
+    )
+    assert contract["runs"]["D0_READ_ONLY_REPLAY"]["namespace"] == (
+        "pev3-s4-d0-replay-20260815-008"
+    )
+    assert contract["private_cache"]["candidate_sidecar_relpath"] == (
+        "runtime/private/s4-d0-sidecar-07741c45-20260815-008/"
+        "candidate-sidecar.jsonl"
+    )
+
+
 @pytest.mark.parametrize(
     "mutate",
     [

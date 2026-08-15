@@ -21,7 +21,7 @@ from paper_eval.s4_sidecar_smoke_result_verifier import (
 PROJECT = Path(__file__).resolve().parents[1]
 AUTHORITY_PATH = (
     PROJECT
-    / "artifacts/paper_eval/native/S4_SIDECAR_SMOKE_AUTHORIZATION_RETRY_007.json"
+    / "artifacts/paper_eval/native/S4_SIDECAR_SMOKE_AUTHORIZATION_RETRY_008.json"
 )
 
 
@@ -65,17 +65,17 @@ def _runtime(mode: str) -> dict:
     return value
 
 
-def _phase(mode: str) -> dict:
+def _phase(mode: str, *, attempt: str = "008") -> dict:
     capture = mode == "capture"
     run_id = (
-        "s4-d0-capture-20260815-007"
+        f"s4-d0-capture-20260815-{attempt}"
         if capture
-        else "s4-d0-replay-20260815-007"
+        else f"s4-d0-replay-20260815-{attempt}"
     )
     namespace = (
-        "pev3-s4-u0-capture-20260815-007"
+        f"pev3-s4-u0-capture-20260815-{attempt}"
         if capture
-        else "pev3-s4-d0-replay-20260815-007"
+        else f"pev3-s4-d0-replay-20260815-{attempt}"
     )
     return finalize_envelope(
         payload={
@@ -87,7 +87,7 @@ def _phase(mode: str) -> dict:
             "namespace": namespace,
             "method": "U0" if capture else "D0",
             "mode": mode,
-            "cache_id": "s4-d0-sidecar-07741c45-20260815-007",
+            "cache_id": f"s4-d0-sidecar-07741c45-20260815-{attempt}",
             "status": "PASS",
             "mergeable": True,
             "expected_episode_count": 49,
@@ -117,19 +117,36 @@ def _phase(mode: str) -> dict:
     )
 
 
-def _fixture(tmp_path: Path) -> dict:
+def _replace_attempt(value, *, attempt: str):
+    if isinstance(value, dict):
+        return {
+            key: _replace_attempt(child, attempt=attempt)
+            for key, child in value.items()
+        }
+    if isinstance(value, list):
+        return [_replace_attempt(child, attempt=attempt) for child in value]
+    if isinstance(value, str):
+        return value.replace("008", attempt)
+    return value
+
+
+def _fixture(tmp_path: Path, *, attempt: str = "008") -> dict:
     authority = _load(AUTHORITY_PATH)
     authority_sha = sha256_file(AUTHORITY_PATH)
+    if attempt != "008":
+        authority = _replace_attempt(authority, attempt=attempt)
+        authority = _refinalize(authority)
+        authority_sha = "9" * 64
     consumption_path = tmp_path / "consumption.json"
     consumption = consume_s4_sidecar_authority(
         authority=authority,
         authority_file_sha256=authority_sha,
         output_path=consumption_path,
         git_commit="deadbeef",
-        run_id="s4-sidecar-authority-consumption-20260815-007",
+        run_id=f"s4-sidecar-authority-consumption-20260815-{attempt}",
     )
-    capture = _phase("capture")
-    replay = _phase("replay")
+    capture = _phase("capture", attempt=attempt)
+    replay = _phase("replay", attempt=attempt)
     evaluation = evaluate_s4_sidecar_smoke(
         capture_result=capture,
         replay_result=replay,
@@ -146,7 +163,7 @@ def _fixture(tmp_path: Path) -> dict:
         payload=payload,
         protocol_version=PROTOCOL_VERSION,
         git_commit="deadbeef",
-        run_id="s4-d0-sidecar-smoke-result-20260815-007",
+        run_id=f"s4-d0-sidecar-smoke-result-20260815-{attempt}",
     )
     return {
         "authority": authority,
@@ -159,7 +176,7 @@ def _fixture(tmp_path: Path) -> dict:
     }
 
 
-def _verify(fixture: dict) -> dict:
+def _verify(fixture: dict, *, expected_attempt: str = "008") -> dict:
     return verify_s4_sidecar_smoke_result(
         result=fixture["result"],
         authority=fixture["authority"],
@@ -171,6 +188,7 @@ def _verify(fixture: dict) -> dict:
         replay_result=fixture["replay"],
         replay_result_file_sha256="2" * 64,
         candidate_sidecar_file_sha256="d" * 64,
+        expected_attempt=expected_attempt,
     )
 
 
@@ -187,6 +205,17 @@ def test_verifier_recomputes_all_sidecar_hard_gates(tmp_path: Path) -> None:
     fixture = _fixture(tmp_path)
 
     assert _verify(fixture) == fixture["result"]
+
+
+@pytest.mark.parametrize("attempt", ["007", "009"])
+def test_verifier_is_pinned_to_retry_008(
+    tmp_path: Path,
+    attempt: str,
+) -> None:
+    fixture = _fixture(tmp_path, attempt=attempt)
+
+    with pytest.raises(ValueError, match="expected retry-008"):
+        _verify(fixture)
 
 
 @pytest.mark.parametrize(

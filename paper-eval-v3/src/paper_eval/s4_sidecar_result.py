@@ -125,6 +125,16 @@ def evaluate_s4_sidecar_smoke(
             or capture_runtime["live_embedding_calls"] <= 0
         ):
             fail("capture_live_model_call")
+        if any(
+            capture_runtime[field] != 0
+            for field in (
+                "unexpected_prompt_count",
+                "unexpected_embedding_count",
+                "live_fallback_count",
+                "cross_encoder_call_count",
+            )
+        ):
+            fail("capture_runtime_anomaly")
         if (
             replay_runtime["live_llm_calls"] != 0
             or replay_runtime["live_embedding_calls"] != 0
@@ -163,6 +173,10 @@ def evaluate_s4_sidecar_smoke(
         replay_records = replay_runtime["sidecar_record_count"]
         if capture_records <= 0 or capture_records != replay_records:
             fail("sidecar_record_parity")
+        if capture_runtime["sidecar_capture_append_count"] != capture_records:
+            fail("capture_sidecar_accounting")
+        if replay_runtime["sidecar_replay_binding_count"] != replay_records:
+            fail("replay_sidecar_accounting")
         consumption_exact = (
             replay_runtime["sidecar_prepared_count"] == 0
             and replay_runtime["sidecar_remaining_count"] == 0

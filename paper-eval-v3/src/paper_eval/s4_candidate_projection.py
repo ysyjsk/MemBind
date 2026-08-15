@@ -15,7 +15,10 @@ from .s4_candidate_sidecar_runtime import (
     CandidateSidecarRuntimeError,
     install_candidate_sidecar_hook,
 )
-from .s4_edge_identity_diagnosis import edge_identity_projection
+from .s4_edge_identity_diagnosis import (
+    _endpoint_projection,
+    edge_identity_projection,
+)
 
 
 PROJECTION_SCHEMA = {
@@ -93,6 +96,21 @@ def _endpoint(value: Any) -> tuple[str, dict[str, Any]]:
     }
 
 
+def _resolution_endpoint_projection(endpoint: Mapping[str, Any]) -> dict[str, Any]:
+    """Canonicalize one endpoint while retaining its isolation namespace."""
+
+    try:
+        semantic = _endpoint_projection(endpoint, field="resolution")
+    except (TypeError, ValueError) as error:
+        raise CandidateSidecarRuntimeError(
+            "resolution entity canonical projection is incomplete"
+        ) from error
+    return {
+        "group_id": endpoint.get("group_id"),
+        "semantic": semantic,
+    }
+
+
 @contextmanager
 def activate_resolution_entities(values: Sequence[Any]) -> Iterator[None]:
     """Expose current resolved nodes to concurrent inner edge tasks."""
@@ -100,11 +118,18 @@ def activate_resolution_entities(values: Sequence[Any]) -> Iterator[None]:
     if not isinstance(values, Sequence) or isinstance(values, (str, bytes)):
         raise CandidateSidecarRuntimeError("resolution entities are malformed")
     selected: dict[str, dict[str, Any]] = {}
+    projections: dict[str, dict[str, Any]] = {}
     for value in values:
         uuid, endpoint = _endpoint(value)
+        projection = _resolution_endpoint_projection(endpoint)
         if uuid in selected:
-            raise CandidateSidecarRuntimeError("resolution entity UUID is duplicated")
+            if projections[uuid] != projection:
+                raise CandidateSidecarRuntimeError(
+                    "resolution entity duplicate UUID has conflicting projection"
+                )
+            continue
         selected[uuid] = endpoint
+        projections[uuid] = projection
     token = _CURRENT_ENTITIES.set(selected)
     try:
         yield

@@ -1,0 +1,185 @@
+<?xml version="1.0" encoding="utf-8"?><testsuites name="pytest tests"><testsuite name="pytest" errors="0" failures="6" skipped="0" tests="6" time="0.048" timestamp="2026-08-15T14:31:40.819672+08:00" hostname="aces-System-Product-Name"><testcase classname="tests.test_s4_candidate_projection" name="test_resolution_context_coalesces_canonically_equal_duplicate_uuids" time="0.001"><failure message="paper_eval.s4_candidate_sidecar_runtime.CandidateSidecarRuntimeError: resolution entity UUID is duplicated">@pytest.mark.asyncio
+    async def test_resolution_context_coalesces_canonically_equal_duplicate_uuids() -&gt; None:
+        """Graphiti may resolve several extracted entities to one canonical node."""
+    
+        sources = _sources()
+        current = _episode("current", 0)
+        alice = _node("alice", "Alice", labels=["Person", "Entity"])
+        duplicate = _node("alice", " Alice ", labels=["Entity", "Person", "Person"])
+        duplicate.summary = f" {alice.summary} "
+        alice.attributes = {"created_at": "capture-only", "kind": "person"}
+        duplicate.attributes = {"kind": "person", "created_at": "other-volatile-value"}
+        acme = _node("acme", "Acme")
+        projector = GraphitiCandidateProjector(
+            driver=object(),
+            namespace=NAMESPACE,
+            episodes=sources,
+            entity_loader=Loaders([], []).entities,
+            episode_loader=Loaders([], []).provenance,
+        )
+    
+        async def project(nodes: list[SimpleNamespace]) -&gt; dict:
+            with activate_resolution_entities(nodes):
+                return await projector.project(
+                    extracted_edge=_edge(
+                        "alice", "acme", fact="new", episode_uuid="current"
+                    ),
+                    related_edges=[],
+                    invalidation_edges=[],
+                    episode=current,
+                )
+    
+        baseline = await project([alice, acme])
+&gt;       forward = await project([alice, duplicate, acme])
+                  ^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^
+
+paper-eval-v3/tests/test_s4_candidate_projection.py:269: 
+_ _ _ _ _ _ _ _ _ _ _ _ _ _ _ _ _ _ _ _ _ _ _ _ _ _ _ _ _ _ _ _ _ _ _ _ _ _ _ _ 
+paper-eval-v3/tests/test_s4_candidate_projection.py:258: in project
+    with activate_resolution_entities(nodes):
+/usr/lib/python3.12/contextlib.py:137: in __enter__
+    return next(self.gen)
+           ^^^^^^^^^^^^^^
+_ _ _ _ _ _ _ _ _ _ _ _ _ _ _ _ _ _ _ _ _ _ _ _ _ _ _ _ _ _ _ _ _ _ _ _ _ _ _ _ 
+
+values = [namespace(uuid='alice', group_id='pev3-s4-sidecar-test', name='Alice', labels=['Person', 'Entity'], summary='summary ...up_id='pev3-s4-sidecar-test', name='Acme', labels=['Entity'], summary='summary for Acme', attributes={'kind': 'acme'})]
+
+    @contextmanager
+    def activate_resolution_entities(values: Sequence[Any]) -&gt; Iterator[None]:
+        """Expose current resolved nodes to concurrent inner edge tasks."""
+    
+        if not isinstance(values, Sequence) or isinstance(values, (str, bytes)):
+            raise CandidateSidecarRuntimeError("resolution entities are malformed")
+        selected: dict[str, dict[str, Any]] = {}
+        for value in values:
+            uuid, endpoint = _endpoint(value)
+            if uuid in selected:
+&gt;               raise CandidateSidecarRuntimeError("resolution entity UUID is duplicated")
+E               paper_eval.s4_candidate_sidecar_runtime.CandidateSidecarRuntimeError: resolution entity UUID is duplicated
+
+paper-eval-v3/src/paper_eval/s4_candidate_projection.py:106: CandidateSidecarRuntimeError</failure></testcase><testcase classname="tests.test_s4_candidate_projection" name="test_resolution_context_rejects_duplicate_uuid_projection_conflicts[name-Alicia]" time="0.000"><failure message="AssertionError: Regex pattern did not match.&#10;  Expected regex: 'duplicate.*projection'&#10;  Actual message: 'resolution entity UUID is duplicated'">field = 'name', conflicting_value = 'Alicia'
+
+    @pytest.mark.parametrize(
+        ("field", "conflicting_value"),
+        [
+            ("name", "Alicia"),
+            ("summary", "different summary"),
+            ("labels", ["Organization"]),
+            ("attributes", {"kind": "different"}),
+            ("group_id", "pev3-s4-other-namespace"),
+        ],
+    )
+    def test_resolution_context_rejects_duplicate_uuid_projection_conflicts(
+        field: str,
+        conflicting_value: object,
+    ) -&gt; None:
+        first = _node("alice", "Alice")
+        conflicting = _node("alice", "Alice")
+        setattr(conflicting, field, conflicting_value)
+    
+&gt;       with pytest.raises(CandidateSidecarRuntimeError, match="duplicate.*projection"):
+E       AssertionError: Regex pattern did not match.
+E         Expected regex: 'duplicate.*projection'
+E         Actual message: 'resolution entity UUID is duplicated'
+
+paper-eval-v3/tests/test_s4_candidate_projection.py:293: AssertionError</failure></testcase><testcase classname="tests.test_s4_candidate_projection" name="test_resolution_context_rejects_duplicate_uuid_projection_conflicts[summary-different summary]" time="0.000"><failure message="AssertionError: Regex pattern did not match.&#10;  Expected regex: 'duplicate.*projection'&#10;  Actual message: 'resolution entity UUID is duplicated'">field = 'summary', conflicting_value = 'different summary'
+
+    @pytest.mark.parametrize(
+        ("field", "conflicting_value"),
+        [
+            ("name", "Alicia"),
+            ("summary", "different summary"),
+            ("labels", ["Organization"]),
+            ("attributes", {"kind": "different"}),
+            ("group_id", "pev3-s4-other-namespace"),
+        ],
+    )
+    def test_resolution_context_rejects_duplicate_uuid_projection_conflicts(
+        field: str,
+        conflicting_value: object,
+    ) -&gt; None:
+        first = _node("alice", "Alice")
+        conflicting = _node("alice", "Alice")
+        setattr(conflicting, field, conflicting_value)
+    
+&gt;       with pytest.raises(CandidateSidecarRuntimeError, match="duplicate.*projection"):
+E       AssertionError: Regex pattern did not match.
+E         Expected regex: 'duplicate.*projection'
+E         Actual message: 'resolution entity UUID is duplicated'
+
+paper-eval-v3/tests/test_s4_candidate_projection.py:293: AssertionError</failure></testcase><testcase classname="tests.test_s4_candidate_projection" name="test_resolution_context_rejects_duplicate_uuid_projection_conflicts[labels-conflicting_value2]" time="0.000"><failure message="AssertionError: Regex pattern did not match.&#10;  Expected regex: 'duplicate.*projection'&#10;  Actual message: 'resolution entity UUID is duplicated'">field = 'labels', conflicting_value = ['Organization']
+
+    @pytest.mark.parametrize(
+        ("field", "conflicting_value"),
+        [
+            ("name", "Alicia"),
+            ("summary", "different summary"),
+            ("labels", ["Organization"]),
+            ("attributes", {"kind": "different"}),
+            ("group_id", "pev3-s4-other-namespace"),
+        ],
+    )
+    def test_resolution_context_rejects_duplicate_uuid_projection_conflicts(
+        field: str,
+        conflicting_value: object,
+    ) -&gt; None:
+        first = _node("alice", "Alice")
+        conflicting = _node("alice", "Alice")
+        setattr(conflicting, field, conflicting_value)
+    
+&gt;       with pytest.raises(CandidateSidecarRuntimeError, match="duplicate.*projection"):
+E       AssertionError: Regex pattern did not match.
+E         Expected regex: 'duplicate.*projection'
+E         Actual message: 'resolution entity UUID is duplicated'
+
+paper-eval-v3/tests/test_s4_candidate_projection.py:293: AssertionError</failure></testcase><testcase classname="tests.test_s4_candidate_projection" name="test_resolution_context_rejects_duplicate_uuid_projection_conflicts[attributes-conflicting_value3]" time="0.000"><failure message="AssertionError: Regex pattern did not match.&#10;  Expected regex: 'duplicate.*projection'&#10;  Actual message: 'resolution entity UUID is duplicated'">field = 'attributes', conflicting_value = {'kind': 'different'}
+
+    @pytest.mark.parametrize(
+        ("field", "conflicting_value"),
+        [
+            ("name", "Alicia"),
+            ("summary", "different summary"),
+            ("labels", ["Organization"]),
+            ("attributes", {"kind": "different"}),
+            ("group_id", "pev3-s4-other-namespace"),
+        ],
+    )
+    def test_resolution_context_rejects_duplicate_uuid_projection_conflicts(
+        field: str,
+        conflicting_value: object,
+    ) -&gt; None:
+        first = _node("alice", "Alice")
+        conflicting = _node("alice", "Alice")
+        setattr(conflicting, field, conflicting_value)
+    
+&gt;       with pytest.raises(CandidateSidecarRuntimeError, match="duplicate.*projection"):
+E       AssertionError: Regex pattern did not match.
+E         Expected regex: 'duplicate.*projection'
+E         Actual message: 'resolution entity UUID is duplicated'
+
+paper-eval-v3/tests/test_s4_candidate_projection.py:293: AssertionError</failure></testcase><testcase classname="tests.test_s4_candidate_projection" name="test_resolution_context_rejects_duplicate_uuid_projection_conflicts[group_id-pev3-s4-other-namespace]" time="0.000"><failure message="AssertionError: Regex pattern did not match.&#10;  Expected regex: 'duplicate.*projection'&#10;  Actual message: 'resolution entity UUID is duplicated'">field = 'group_id', conflicting_value = 'pev3-s4-other-namespace'
+
+    @pytest.mark.parametrize(
+        ("field", "conflicting_value"),
+        [
+            ("name", "Alicia"),
+            ("summary", "different summary"),
+            ("labels", ["Organization"]),
+            ("attributes", {"kind": "different"}),
+            ("group_id", "pev3-s4-other-namespace"),
+        ],
+    )
+    def test_resolution_context_rejects_duplicate_uuid_projection_conflicts(
+        field: str,
+        conflicting_value: object,
+    ) -&gt; None:
+        first = _node("alice", "Alice")
+        conflicting = _node("alice", "Alice")
+        setattr(conflicting, field, conflicting_value)
+    
+&gt;       with pytest.raises(CandidateSidecarRuntimeError, match="duplicate.*projection"):
+E       AssertionError: Regex pattern did not match.
+E         Expected regex: 'duplicate.*projection'
+E         Actual message: 'resolution entity UUID is duplicated'
+
+paper-eval-v3/tests/test_s4_candidate_projection.py:293: AssertionError</failure></testcase></testsuite></testsuites>

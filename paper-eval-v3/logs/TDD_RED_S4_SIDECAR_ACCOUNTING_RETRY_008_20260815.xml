@@ -1,0 +1,167 @@
+<?xml version="1.0" encoding="utf-8"?><testsuites name="pytest tests"><testsuite name="pytest" errors="0" failures="6" skipped="0" tests="7" time="0.032" timestamp="2026-08-15T14:35:16.360658+08:00" hostname="aces-System-Product-Name"><testcase classname="tests.test_s4_sidecar_result" name="test_sidecar_smoke_rejects_capture_runtime_anomalies[unexpected_prompt_count]" time="0.000"><failure message="AssertionError: assert 'PASS' == 'FAIL'&#10;  &#10;  - FAIL&#10;  + PASS">field = 'unexpected_prompt_count'
+
+    @pytest.mark.parametrize(
+        "field",
+        [
+            "unexpected_prompt_count",
+            "unexpected_embedding_count",
+            "live_fallback_count",
+            "cross_encoder_call_count",
+        ],
+    )
+    def test_sidecar_smoke_rejects_capture_runtime_anomalies(field: str) -&gt; None:
+        capture = _phase(capture=True)
+        capture["payload"]["runtime_evidence"][field] = 1
+    
+        evaluation = evaluate_s4_sidecar_smoke(
+            capture_result=capture,
+            replay_result=_phase(capture=False),
+        )
+    
+&gt;       assert evaluation["verdict"] == "FAIL"
+E       AssertionError: assert 'PASS' == 'FAIL'
+E         
+E         - FAIL
+E         + PASS
+
+paper-eval-v3/tests/test_s4_sidecar_result.py:166: AssertionError</failure></testcase><testcase classname="tests.test_s4_sidecar_result" name="test_sidecar_smoke_rejects_capture_runtime_anomalies[unexpected_embedding_count]" time="0.000"><failure message="AssertionError: assert 'PASS' == 'FAIL'&#10;  &#10;  - FAIL&#10;  + PASS">field = 'unexpected_embedding_count'
+
+    @pytest.mark.parametrize(
+        "field",
+        [
+            "unexpected_prompt_count",
+            "unexpected_embedding_count",
+            "live_fallback_count",
+            "cross_encoder_call_count",
+        ],
+    )
+    def test_sidecar_smoke_rejects_capture_runtime_anomalies(field: str) -&gt; None:
+        capture = _phase(capture=True)
+        capture["payload"]["runtime_evidence"][field] = 1
+    
+        evaluation = evaluate_s4_sidecar_smoke(
+            capture_result=capture,
+            replay_result=_phase(capture=False),
+        )
+    
+&gt;       assert evaluation["verdict"] == "FAIL"
+E       AssertionError: assert 'PASS' == 'FAIL'
+E         
+E         - FAIL
+E         + PASS
+
+paper-eval-v3/tests/test_s4_sidecar_result.py:166: AssertionError</failure></testcase><testcase classname="tests.test_s4_sidecar_result" name="test_sidecar_smoke_rejects_capture_runtime_anomalies[live_fallback_count]" time="0.000"><failure message="AssertionError: assert 'PASS' == 'FAIL'&#10;  &#10;  - FAIL&#10;  + PASS">field = 'live_fallback_count'
+
+    @pytest.mark.parametrize(
+        "field",
+        [
+            "unexpected_prompt_count",
+            "unexpected_embedding_count",
+            "live_fallback_count",
+            "cross_encoder_call_count",
+        ],
+    )
+    def test_sidecar_smoke_rejects_capture_runtime_anomalies(field: str) -&gt; None:
+        capture = _phase(capture=True)
+        capture["payload"]["runtime_evidence"][field] = 1
+    
+        evaluation = evaluate_s4_sidecar_smoke(
+            capture_result=capture,
+            replay_result=_phase(capture=False),
+        )
+    
+&gt;       assert evaluation["verdict"] == "FAIL"
+E       AssertionError: assert 'PASS' == 'FAIL'
+E         
+E         - FAIL
+E         + PASS
+
+paper-eval-v3/tests/test_s4_sidecar_result.py:166: AssertionError</failure></testcase><testcase classname="tests.test_s4_sidecar_result" name="test_sidecar_smoke_rejects_capture_runtime_anomalies[cross_encoder_call_count]" time="0.000"><failure message="AssertionError: assert 'PASS' == 'FAIL'&#10;  &#10;  - FAIL&#10;  + PASS">field = 'cross_encoder_call_count'
+
+    @pytest.mark.parametrize(
+        "field",
+        [
+            "unexpected_prompt_count",
+            "unexpected_embedding_count",
+            "live_fallback_count",
+            "cross_encoder_call_count",
+        ],
+    )
+    def test_sidecar_smoke_rejects_capture_runtime_anomalies(field: str) -&gt; None:
+        capture = _phase(capture=True)
+        capture["payload"]["runtime_evidence"][field] = 1
+    
+        evaluation = evaluate_s4_sidecar_smoke(
+            capture_result=capture,
+            replay_result=_phase(capture=False),
+        )
+    
+&gt;       assert evaluation["verdict"] == "FAIL"
+E       AssertionError: assert 'PASS' == 'FAIL'
+E         
+E         - FAIL
+E         + PASS
+
+paper-eval-v3/tests/test_s4_sidecar_result.py:166: AssertionError</failure></testcase><testcase classname="tests.test_s4_sidecar_result" name="test_sidecar_smoke_requires_exact_capture_and_replay_sidecar_accounting[capture-sidecar_capture_append_count-capture_sidecar_accounting]" time="0.000"><failure message="AssertionError: assert 'PASS' == 'FAIL'&#10;  &#10;  - FAIL&#10;  + PASS">phase = 'capture', field = 'sidecar_capture_append_count'
+failure = 'capture_sidecar_accounting'
+
+    @pytest.mark.parametrize(
+        ("phase", "field", "failure"),
+        [
+            ("capture", "sidecar_capture_append_count", "capture_sidecar_accounting"),
+            ("replay", "sidecar_replay_binding_count", "replay_sidecar_accounting"),
+        ],
+    )
+    def test_sidecar_smoke_requires_exact_capture_and_replay_sidecar_accounting(
+        phase: str,
+        field: str,
+        failure: str,
+    ) -&gt; None:
+        capture = _phase(capture=True)
+        replay = _phase(capture=False)
+        selected = capture if phase == "capture" else replay
+        selected["payload"]["runtime_evidence"][field] = 0
+    
+        evaluation = evaluate_s4_sidecar_smoke(
+            capture_result=capture,
+            replay_result=replay,
+        )
+    
+&gt;       assert evaluation["verdict"] == "FAIL"
+E       AssertionError: assert 'PASS' == 'FAIL'
+E         
+E         - FAIL
+E         + PASS
+
+paper-eval-v3/tests/test_s4_sidecar_result.py:192: AssertionError</failure></testcase><testcase classname="tests.test_s4_sidecar_result" name="test_sidecar_smoke_requires_exact_capture_and_replay_sidecar_accounting[replay-sidecar_replay_binding_count-replay_sidecar_accounting]" time="0.000"><failure message="AssertionError: assert 'PASS' == 'FAIL'&#10;  &#10;  - FAIL&#10;  + PASS">phase = 'replay', field = 'sidecar_replay_binding_count'
+failure = 'replay_sidecar_accounting'
+
+    @pytest.mark.parametrize(
+        ("phase", "field", "failure"),
+        [
+            ("capture", "sidecar_capture_append_count", "capture_sidecar_accounting"),
+            ("replay", "sidecar_replay_binding_count", "replay_sidecar_accounting"),
+        ],
+    )
+    def test_sidecar_smoke_requires_exact_capture_and_replay_sidecar_accounting(
+        phase: str,
+        field: str,
+        failure: str,
+    ) -&gt; None:
+        capture = _phase(capture=True)
+        replay = _phase(capture=False)
+        selected = capture if phase == "capture" else replay
+        selected["payload"]["runtime_evidence"][field] = 0
+    
+        evaluation = evaluate_s4_sidecar_smoke(
+            capture_result=capture,
+            replay_result=replay,
+        )
+    
+&gt;       assert evaluation["verdict"] == "FAIL"
+E       AssertionError: assert 'PASS' == 'FAIL'
+E         
+E         - FAIL
+E         + PASS
+
+paper-eval-v3/tests/test_s4_sidecar_result.py:192: AssertionError</failure></testcase><testcase classname="tests.test_s4_sidecar_result" name="test_sidecar_smoke_allows_resume_reuse_without_replacing_unique_append" time="0.000" /></testsuite></testsuites>
