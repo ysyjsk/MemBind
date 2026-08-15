@@ -18,15 +18,38 @@ from paper_eval.fx0_mechanism_fixture import (
     run_fx0_fixture,
 )
 from paper_eval.s5_mstar_production_adapter import (
+    Fx0DecodedSource,
     S5MStarProductionAdapter,
     S5MStarProductionAdapterError,
 )
+from paper_eval.s5_mstar_production_core_identity import (
+    build_s5_mstar_production_core_identity,
+)
 
 
+CORE_IDENTITY = build_s5_mstar_production_core_identity(
+    graphiti_version="0.29.3",
+    graphiti_commit="021d3a57d511f21b10adaf7fa923bd5c1fce5e9d",
+    graphiti_semantic_api_sha256="a" * 64,
+    graphiti_semantic_identity_artifact_sha256="b" * 64,
+    runtime_factory_entrypoint="native_characterization_runtime.build_u0_graphiti_from_env",
+    runtime_factory_source_sha256="c" * 64,
+    pipeline_source_sha256="d" * 64,
+    pipeline_test_source_sha256="e" * 64,
+    adapter_source_sha256="f" * 64,
+    adapter_test_source_sha256="1" * 64,
+    semantic_runtime_source_sha256="2" * 64,
+    semantic_runtime_test_source_sha256="3" * 64,
+    semantic_binding_source_sha256="4" * 64,
+    semantic_binding_test_source_sha256="5" * 64,
+    durable_store_source_sha256="6" * 64,
+    durable_store_test_source_sha256="7" * 64,
+    runtime_config_sha256="8" * 64,
+)
 IDENTITY = {
     "status": "FROZEN",
     "method": "M_STAR",
-    "identity_sha256": "a" * 64,
+    "identity_sha256": CORE_IDENTITY["identity_sha256"],
 }
 
 
@@ -91,7 +114,7 @@ def _adapter(*, fail: str | None = None, events: list[dict] | None = None):
             events.append(dict(event))
 
     return S5MStarProductionAdapter(
-        production_path_identity=IDENTITY,
+        production_core_identity=CORE_IDENTITY,
         production_core_identity_sha256=IDENTITY["identity_sha256"],
         semantic_prepare=prepare,
         latest_state_bind=bind,
@@ -193,7 +216,7 @@ def test_adapter_passes_exact_parity_through_fx0_comparator() -> None:
         }
 
     adapter = S5MStarProductionAdapter(
-        production_path_identity=IDENTITY,
+        production_core_identity=CORE_IDENTITY,
         production_core_identity_sha256=IDENTITY["identity_sha256"],
         semantic_prepare=prepare,
         latest_state_bind=bind,
@@ -227,11 +250,8 @@ def test_adapter_fail_closed_preserves_registered_transition_error() -> None:
 def test_adapter_rejects_private_observed_state_and_invalid_identity() -> None:
     with pytest.raises(S5MStarProductionAdapterError, match="IDENTITY"):
         S5MStarProductionAdapter(
-            production_path_identity={
-                **IDENTITY,
-                "identity_sha256": "0" * 64,
-            },
-            production_core_identity_sha256=IDENTITY["identity_sha256"],
+            production_core_identity=CORE_IDENTITY,
+            production_core_identity_sha256="0" * 64,
             semantic_prepare=lambda *_args: None,
             latest_state_bind=lambda *_args: None,
             snapshot=lambda: ({}, []),
@@ -246,7 +266,7 @@ def test_adapter_rejects_private_observed_state_and_invalid_identity() -> None:
         return {"canonical_logical_state": {"prompt": "secret"}}
 
     adapter = S5MStarProductionAdapter(
-        production_path_identity=IDENTITY,
+        production_core_identity=CORE_IDENTITY,
         production_core_identity_sha256=IDENTITY["identity_sha256"],
         semantic_prepare=prepare,
         latest_state_bind=bind,
@@ -254,3 +274,142 @@ def test_adapter_rejects_private_observed_state_and_invalid_identity() -> None:
     )
     with pytest.raises(S5MStarProductionAdapterError, match="PRIVATE"):
         asyncio.run(adapter.execute_fixture_case(_case().execution_input(), _providers()))
+
+
+def test_bind_return_cannot_override_independent_snapshot() -> None:
+    async def prepare(_source, _logical_time, _providers):
+        return None
+
+    async def bind(_prepared, _logical_time, _source, _prefix, _providers):
+        return {
+            "canonical_logical_state": {"nodes": [{"key": "forged"}]},
+            "publication_history": [{"source_sequence": 0, "event": "forged"}],
+        }
+
+    adapter = S5MStarProductionAdapter(
+        production_core_identity=CORE_IDENTITY,
+        production_core_identity_sha256=IDENTITY["identity_sha256"],
+        semantic_prepare=prepare,
+        latest_state_bind=bind,
+        snapshot=lambda: ({"nodes": [], "relationships": []}, []),
+    )
+    outcome = asyncio.run(
+        adapter.execute_fixture_case(_case().execution_input(), _providers())
+    )
+    assert outcome.canonical_logical_state == {"nodes": [], "relationships": []}
+    assert outcome.publication_history == ()
+
+
+def test_adapter_executes_multi_source_case_with_controlled_logical_times() -> None:
+    state = {"nodes": [], "relationships": []}
+    history: list[dict] = []
+    entered: list[int] = []
+    release = asyncio.Event()
+
+    def decode(case, _providers):
+        assert set(case.source) == {"operations"}
+        return tuple(
+            Fx0DecodedSource(
+                source_sha256=f"{index + 40:064x}",
+                opaque_source={"source": index},
+                logical_time_ns=20_000 + index,
+            )
+            for index in range(2)
+        )
+
+    async def prepare(source, logical_time, _providers):
+        entered.append(source["source"])
+        if len(entered) == 2:
+            release.set()
+        await asyncio.wait_for(release.wait(), timeout=1)
+        return {"source": source["source"], "logical_time": logical_time}
+
+    async def bind(prepared, logical_time, source_sequence, prefix, _providers):
+        assert prepared == {"source": source_sequence, "logical_time": logical_time}
+        assert prefix == tuple(range(source_sequence))
+        state["nodes"].append({"source": source_sequence, "at": logical_time})
+        history.append({"source_sequence": source_sequence, "event": "publish"})
+
+    adapter = S5MStarProductionAdapter(
+        production_core_identity=CORE_IDENTITY,
+        production_core_identity_sha256=IDENTITY["identity_sha256"],
+        semantic_prepare=prepare,
+        latest_state_bind=bind,
+        snapshot=lambda: (deepcopy(state), deepcopy(history)),
+        source_decoder=decode,
+    )
+    case = Fx0ExecutionCase(
+        case_id="multi-source",
+        source_sequence=0,
+        source={"operations": [{"source": 0}, {"source": 1}]},
+    )
+    execution = asyncio.run(
+        adapter.execute_fixture_case_with_evidence(case, _providers())
+    )
+    assert execution.outcome.publication_history == (
+        {"source_sequence": 0, "event": "publish"},
+        {"source_sequence": 1, "event": "publish"},
+    )
+    assert execution.pipeline_evidence["summary"]["published_source_sequences"] == [
+        0,
+        1,
+    ]
+    assert execution.pipeline_evidence["summary"]["prepare_overlap_observed"] is True
+    assert [
+        row["logical_time_ns"]
+        for row in execution.pipeline_evidence["events"]
+        if row["event_type"] == "intent"
+    ] == [20_000, 20_001]
+
+
+def test_adapter_records_commit_completed_publication_recovery_as_second_attempt() -> None:
+    state = {"nodes": [], "relationships": []}
+    history: list[dict] = []
+    sink_events: list[dict] = []
+    failed_once = False
+    recoveries: list[int] = []
+
+    async def prepare(source, _logical_time, _providers):
+        return dict(source)
+
+    async def bind(prepared, _logical_time, source_sequence, _prefix, _providers):
+        state["nodes"] = [{"key": prepared["key"]}]
+        history.append({"source_sequence": source_sequence, "event": "publish"})
+
+    async def sink(event):
+        nonlocal failed_once
+        if event["event_type"] == "publication" and not failed_once:
+            failed_once = True
+            raise OSError("journal gap")
+        sink_events.append(dict(event))
+
+    async def recover(source, _logical_time):
+        recoveries.append(source.source_sequence)
+
+    async def reset(_providers):
+        return None
+
+    adapter = S5MStarProductionAdapter(
+        production_core_identity=CORE_IDENTITY,
+        production_core_identity_sha256=IDENTITY["identity_sha256"],
+        semantic_prepare=prepare,
+        latest_state_bind=bind,
+        snapshot=lambda: (deepcopy(state), deepcopy(history)),
+        persist_event=sink,
+        reset_case=reset,
+        recover_publication=recover,
+    )
+    execution = asyncio.run(
+        adapter.execute_fixture_case_with_evidence(
+            _case().execution_input(), _providers()
+        )
+    )
+    assert execution.outcome.status == "PASS"
+    assert execution.attempt_count == 2
+    assert execution.execution_shape["retry_replay_observed"] is True
+    assert execution.execution_shape["publication_fault_detection_observed"] is True
+    assert recoveries == [0]
+    assert [event["event_type"] for event in sink_events][-2:] == [
+        "publication",
+        "terminal_success",
+    ]

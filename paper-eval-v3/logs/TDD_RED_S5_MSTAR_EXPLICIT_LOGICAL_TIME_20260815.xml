@@ -1,0 +1,30 @@
+<?xml version="1.0" encoding="utf-8"?><testsuites name="pytest tests"><testsuite name="pytest" errors="0" failures="1" skipped="0" tests="1" time="0.036" timestamp="2026-08-15T19:45:56.357217+08:00" hostname="aces-System-Product-Name"><testcase classname="tests.test_s5_mstar_pipeline" name="test_explicit_logical_operation_times_do_not_depend_on_telemetry_clock" time="0.001"><failure message="TypeError: MStarSource.__init__() got an unexpected keyword argument 'logical_time_ns'">@pytest.mark.asyncio
+    async def test_explicit_logical_operation_times_do_not_depend_on_telemetry_clock() -&gt; None:
+        sink = DurableSink()
+&gt;       sources = tuple(
+            MStarSource(
+                source_sequence=index,
+                source_sha256=f"{index + 20:064x}",
+                opaque_source={"source": index},
+                logical_time_ns=10_000 + index,
+            )
+            for index in range(2)
+        )
+
+tests/test_s5_mstar_pipeline.py:67: 
+_ _ _ _ _ _ _ _ _ _ _ _ _ _ _ _ _ _ _ _ _ _ _ _ _ _ _ _ _ _ _ _ _ _ _ _ _ _ _ _ 
+
+.0 = &lt;range_iterator object at 0x755d37a4f570&gt;
+
+    sources = tuple(
+&gt;       MStarSource(
+            source_sequence=index,
+            source_sha256=f"{index + 20:064x}",
+            opaque_source={"source": index},
+            logical_time_ns=10_000 + index,
+        )
+        for index in range(2)
+    )
+E   TypeError: MStarSource.__init__() got an unexpected keyword argument 'logical_time_ns'
+
+tests/test_s5_mstar_pipeline.py:68: TypeError</failure></testcase></testsuite></testsuites>

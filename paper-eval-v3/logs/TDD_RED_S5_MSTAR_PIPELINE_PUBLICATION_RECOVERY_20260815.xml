@@ -1,0 +1,46 @@
+<?xml version="1.0" encoding="utf-8"?><testsuites name="pytest tests"><testsuite name="pytest" errors="0" failures="1" skipped="0" tests="1" time="0.034" timestamp="2026-08-15T20:13:25.209963+08:00" hostname="aces-System-Product-Name"><testcase classname="tests.test_s5_mstar_pipeline" name="test_publication_journal_failure_recovers_after_commit_without_rebinding" time="0.001"><failure message="TypeError: run_mstar_pipeline() got an unexpected keyword argument 'recover_publication'">@pytest.mark.asyncio
+    async def test_publication_journal_failure_recovers_after_commit_without_rebinding() -&gt; None:
+        sink = DurableSink()
+        failed_once = False
+        recoveries: list[int] = []
+        bind_calls: list[int] = []
+    
+        async def flaky_sink(event: Mapping[str, object]) -&gt; None:
+            nonlocal failed_once
+            if event["event_type"] == "publication" and not failed_once:
+                failed_once = True
+                raise OSError("simulated journal gap")
+            await sink(event)
+    
+        async def prepare(source: object, _logical_time_ns: int) -&gt; object:
+            await asyncio.sleep(0)
+            return source["source"]
+    
+        async def bind(
+            prepared: object,
+            _logical_time_ns: int,
+            source_sequence: int,
+            _visible_prefix: tuple[int, ...],
+        ) -&gt; None:
+            bind_calls.append(int(prepared))
+    
+        async def recover(source: MStarSource, _logical_time_ns: int) -&gt; None:
+            recoveries.append(source.source_sequence)
+    
+&gt;       evidence = await run_mstar_pipeline(
+            spec=MStarSpec(
+                run_id="s5-mstar-recovery-001",
+                production_core_identity_sha256=CORE_SHA,
+                prepare_concurrency=2,
+                require_prepare_overlap=False,
+            ),
+            sources=(MStarSource(0, "a" * 64, {"source": 0}),),
+            semantic_prepare=prepare,
+            latest_state_bind=bind,
+            persist_event=flaky_sink,
+            clock_ns=StepClock(),
+            recover_publication=recover,
+        )
+E       TypeError: run_mstar_pipeline() got an unexpected keyword argument 'recover_publication'
+
+tests/test_s5_mstar_pipeline.py:144: TypeError</failure></testcase></testsuite></testsuites>

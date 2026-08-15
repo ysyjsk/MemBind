@@ -11,6 +11,7 @@ from __future__ import annotations
 
 import inspect
 from collections.abc import Awaitable, Callable, Mapping, Sequence
+from contextlib import AbstractContextManager, nullcontext
 from dataclasses import dataclass
 from datetime import datetime, timedelta, timezone
 from typing import Any
@@ -19,6 +20,7 @@ from .s5_graphiti_semantic_binding import (
     S5GraphitiSemanticBinding,
     S5GraphitiSemanticBindingError,
 )
+from .artifacts import canonical_bytes
 
 
 class S5GraphitiMStarSemanticError(ValueError):
@@ -27,6 +29,53 @@ class S5GraphitiMStarSemanticError(ValueError):
 
 def _fail(code: str) -> S5GraphitiMStarSemanticError:
     return S5GraphitiMStarSemanticError(code)
+
+
+def _node_uuid(node: object) -> str:
+    value = node.get("uuid") if isinstance(node, Mapping) else getattr(node, "uuid", None)
+    if not isinstance(value, str) or not value:
+        raise _fail("resolved_node_uuid_missing")
+    return value
+
+
+def _node_projection(node: object) -> bytes:
+    if isinstance(node, Mapping):
+        value: object = dict(node)
+    elif hasattr(node, "model_dump") and callable(node.model_dump):
+        try:
+            value = node.model_dump(mode="json")
+        except Exception:
+            raise _fail("resolved_node_projection_invalid") from None
+    elif hasattr(node, "dict") and callable(node.dict):
+        try:
+            value = node.dict()
+        except Exception:
+            raise _fail("resolved_node_projection_invalid") from None
+    else:
+        raise _fail("resolved_node_projection_invalid")
+    try:
+        return canonical_bytes(value)
+    except (TypeError, ValueError):
+        raise _fail("resolved_node_projection_invalid") from None
+
+
+def coalesce_compatible_resolved_nodes(nodes: Sequence[object]) -> list[object]:
+    """Merge identical UUID/projection duplicates and reject conflicts."""
+
+    if isinstance(nodes, (str, bytes)) or not isinstance(nodes, Sequence):
+        raise _fail("resolved_nodes_invalid")
+    selected: list[object] = []
+    by_uuid: dict[str, bytes] = {}
+    for node in nodes:
+        uuid = _node_uuid(node)
+        projection = _node_projection(node)
+        prior = by_uuid.get(uuid)
+        if prior is None:
+            by_uuid[uuid] = projection
+            selected.append(node)
+        elif prior != projection:
+            raise _fail("conflicting_duplicate_uuid")
+    return selected
 
 
 def logical_ns_to_datetime(value: int) -> datetime:
@@ -86,6 +135,7 @@ AwaitableResult = Awaitable[object]
 LatestStateRetriever = Callable[
     [GraphitiEpisodeInput], Awaitable[Sequence[object]]
 ]
+ControlledProviderScope = Callable[[object], AbstractContextManager[object]]
 
 
 class S5GraphitiMStarSemanticRuntime:
@@ -97,6 +147,9 @@ class S5GraphitiMStarSemanticRuntime:
         graphiti: object,
         binding: S5GraphitiSemanticBinding,
         latest_state_retriever: LatestStateRetriever,
+        controlled_provider_scope: ControlledProviderScope | None = None,
+        call_observer: Callable[[str], object] | None = None,
+        require_native_commit_shape: bool = False,
     ) -> None:
         if graphiti is None:
             raise _fail("graphiti_missing")
@@ -104,9 +157,66 @@ class S5GraphitiMStarSemanticRuntime:
             raise _fail("semantic_binding_invalid")
         if not callable(latest_state_retriever):
             raise _fail("latest_state_retriever_invalid")
+        if controlled_provider_scope is not None and not callable(
+            controlled_provider_scope
+        ):
+            raise _fail("controlled_provider_scope_invalid")
+        if call_observer is not None and not callable(call_observer):
+            raise _fail("call_observer_invalid")
+        if not isinstance(require_native_commit_shape, bool):
+            raise _fail("require_native_commit_shape_invalid")
         self.graphiti = graphiti
         self.binding = binding
         self.latest_state_retriever = latest_state_retriever
+        self.controlled_provider_scope = controlled_provider_scope
+        self.call_observer = call_observer
+        self.require_native_commit_shape = require_native_commit_shape
+        self.last_edge_type_map: dict[tuple[str, str], list[str]] = {}
+
+    def _observe(self, name: str) -> None:
+        if self.call_observer is not None:
+            try:
+                self.call_observer(name)
+            except Exception:
+                raise _fail("call_observer_failed") from None
+
+    def _route_group(self, group_id: str) -> None:
+        """Match Native ``add_episode`` database routing before semantic calls."""
+
+        driver = getattr(self.graphiti, "driver", None)
+        clients = getattr(self.graphiti, "clients", None)
+        if driver is None or clients is None:
+            return
+        current_database = getattr(driver, "_database", None)
+        if current_database == group_id:
+            return
+        clone = getattr(driver, "clone", None)
+        if not callable(clone):
+            raise _fail("group_database_routing_unavailable")
+        try:
+            routed = clone(database=group_id)
+            self.graphiti.driver = routed
+            clients.driver = routed
+        except Exception:
+            raise _fail("group_database_routing_failed") from None
+
+    @staticmethod
+    def _edge_type_map(source: GraphitiEpisodeInput) -> dict[tuple[str, str], list[str]]:
+        if source.edge_type_map is not None:
+            return {key: list(value) for key, value in source.edge_type_map.items()}
+        if source.edge_types:
+            return {("Entity", "Entity"): list(source.edge_types.keys())}
+        return {}
+
+    @staticmethod
+    def _validate_native_commit_result(value: object) -> None:
+        if not isinstance(value, tuple) or len(value) != 2:
+            raise _fail("native_commit_result_shape_invalid")
+        episodic_edges, primary_episode = value
+        if not isinstance(episodic_edges, list):
+            raise _fail("native_commit_result_shape_invalid")
+        if not hasattr(primary_episode, "uuid"):
+            raise _fail("native_commit_result_shape_invalid")
 
     async def _await(self, value: object, code: str) -> object:
         if not inspect.isawaitable(value):
@@ -118,6 +228,19 @@ class S5GraphitiMStarSemanticRuntime:
         except Exception:
             raise _fail(code) from None
 
+    def _provider_context(self, providers: object | None) -> AbstractContextManager[object]:
+        if providers is None:
+            return nullcontext()
+        if self.controlled_provider_scope is None:
+            raise _fail("controlled_provider_scope_missing")
+        try:
+            context = self.controlled_provider_scope(providers)
+        except Exception:
+            raise _fail("controlled_provider_scope_failed") from None
+        if not hasattr(context, "__enter__") or not hasattr(context, "__exit__"):
+            raise _fail("controlled_provider_scope_invalid")
+        return context
+
     async def prepare(
         self,
         source: GraphitiEpisodeInput,
@@ -126,12 +249,25 @@ class S5GraphitiMStarSemanticRuntime:
     ) -> GraphitiPreparedBundle:
         """Execute Native extraction only; no canonical graph lookup occurs."""
 
+        with self._provider_context(_providers):
+            if isinstance(source, GraphitiEpisodeInput):
+                self._route_group(source.group_id)
+            return await self._prepare_active(source, logical_time_ns)
+
+    async def _prepare_active(
+        self,
+        source: GraphitiEpisodeInput,
+        logical_time_ns: int,
+    ) -> GraphitiPreparedBundle:
+        """Execute extraction while an optional controlled scope is active."""
+
         if not isinstance(source, GraphitiEpisodeInput):
             raise _fail("semantic_source_invalid")
         # Validate the clock even though extraction itself is state-independent;
         # the same logical time is later reused by bind/commit.
         logical_ns_to_datetime(logical_time_ns)
         try:
+            self._observe("extract_nodes")
             extracted_nodes, node_map = await self._await(
                 self.binding.extract_nodes(
                     self.graphiti.clients,
@@ -143,38 +279,18 @@ class S5GraphitiMStarSemanticRuntime:
                 ),
                 "extract_nodes_failed",
             )
-            extracted_edges = await self._await(
-                self.binding.extract_edges(
-                    self.graphiti.clients,
-                    source.episode_node,
-                    list(extracted_nodes),
-                    list(source.previous_episodes),
-                    {
-                        key: list(value)
-                        for key, value in (source.edge_type_map or {}).items()
-                    },
-                    source.group_id,
-                    source.edge_types,
-                    source.custom_extraction_instructions,
-                ),
-                "extract_edges_failed",
-            )
         except S5GraphitiSemanticBindingError:
             raise _fail("semantic_binding_failed") from None
         if isinstance(extracted_nodes, (str, bytes)) or not isinstance(
             extracted_nodes, Sequence
         ):
             raise _fail("extracted_nodes_invalid")
-        if isinstance(extracted_edges, (str, bytes)) or not isinstance(
-            extracted_edges, Sequence
-        ):
-            raise _fail("extracted_edges_invalid")
         if not isinstance(node_map, Mapping):
             raise _fail("node_episode_index_map_invalid")
         return GraphitiPreparedBundle(
             source=source,
             extracted_nodes=list(extracted_nodes),
-            extracted_edges=list(extracted_edges),
+            extracted_edges=[],
             node_episode_index_map=dict(node_map),
         )
 
@@ -188,6 +304,25 @@ class S5GraphitiMStarSemanticRuntime:
     ) -> GraphitiBindObservation:
         """Resolve against latest state, apply invalidation, and commit Native."""
 
+        with self._provider_context(_providers):
+            if isinstance(prepared, GraphitiPreparedBundle):
+                self._route_group(prepared.source.group_id)
+            return await self._bind_active(
+                prepared,
+                logical_time_ns,
+                source_sequence,
+                _visible_publication_prefix,
+            )
+
+    async def _bind_active(
+        self,
+        prepared: GraphitiPreparedBundle,
+        logical_time_ns: int,
+        source_sequence: int,
+        _visible_publication_prefix: tuple[int, ...],
+    ) -> GraphitiBindObservation:
+        """Execute latest-state resolution while the provider scope is active."""
+
         if not isinstance(prepared, GraphitiPreparedBundle):
             raise _fail("prepared_bundle_invalid")
         if isinstance(source_sequence, bool) or source_sequence < 0:
@@ -200,7 +335,10 @@ class S5GraphitiMStarSemanticRuntime:
         if isinstance(retrieved, (str, bytes)) or not isinstance(retrieved, Sequence):
             raise _fail("latest_state_retrieval_shape_invalid")
         previous_episodes = list(retrieved)
+        edge_type_map = self._edge_type_map(source)
+        self.last_edge_type_map = dict(edge_type_map)
         try:
+            self._observe("resolve_extracted_nodes")
             nodes, uuid_map, _duplicates = await self._await(
                 self.binding.resolve_extracted_nodes(
                     self.graphiti.clients,
@@ -211,14 +349,38 @@ class S5GraphitiMStarSemanticRuntime:
                 ),
                 "resolve_nodes_failed",
             )
+            nodes = coalesce_compatible_resolved_nodes(nodes)
+            # Match pinned Graphiti.add_episode(): edge extraction is invoked
+            # after node resolution, but it receives the original extracted
+            # nodes so the prompt/UUID attribution remains Native-compatible.
+            self._observe("extract_edges")
+            extracted_edges = await self._await(
+                self.binding.extract_edges(
+                    self.graphiti.clients,
+                    source.episode_node,
+                    list(prepared.extracted_nodes),
+                    previous_episodes,
+                    edge_type_map,
+                    source.group_id,
+                    source.edge_types,
+                    source.custom_extraction_instructions,
+                ),
+                "extract_edges_failed",
+            )
+            if isinstance(extracted_edges, (str, bytes)) or not isinstance(
+                extracted_edges, Sequence
+            ):
+                raise _fail("extracted_edges_invalid")
             try:
+                self._observe("resolve_edge_pointers")
                 edges = self.binding.resolve_edge_pointers(
-                    list(prepared.extracted_edges), uuid_map
+                    list(extracted_edges), uuid_map
                 )
             except Exception:
                 raise _fail("resolve_edge_pointers_failed") from None
             if isinstance(edges, (str, bytes)) or not isinstance(edges, Sequence):
                 raise _fail("resolved_edge_pointers_invalid")
+            self._observe("resolve_extracted_edges")
             resolved_edges, invalidated_edges, new_edges = await self._await(
                 self.binding.resolve_extracted_edges(
                     self.graphiti.clients,
@@ -226,13 +388,11 @@ class S5GraphitiMStarSemanticRuntime:
                     source.episode_node,
                     list(nodes),
                     dict(source.edge_types or {}),
-                    {
-                        key: list(value)
-                        for key, value in (source.edge_type_map or {}).items()
-                    },
+                    edge_type_map,
                 ),
                 "resolve_edges_failed",
             )
+            self._observe("extract_attributes_from_nodes")
             hydrated_nodes = await self._await(
                 self.binding.extract_attributes_from_nodes(
                     self.graphiti.clients,
@@ -244,6 +404,7 @@ class S5GraphitiMStarSemanticRuntime:
                 ),
                 "extract_attributes_failed",
             )
+            self._observe("process_episode_data")
             committed = await self._await(
                 self.binding.process_episode_data(
                     self.graphiti,
@@ -258,6 +419,8 @@ class S5GraphitiMStarSemanticRuntime:
                 ),
                 "process_episode_data_failed",
             )
+            if self.require_native_commit_shape:
+                self._validate_native_commit_result(committed)
         except S5GraphitiSemanticBindingError:
             raise _fail("semantic_binding_failed") from None
         return GraphitiBindObservation(
@@ -276,5 +439,6 @@ __all__ = [
     "GraphitiPreparedBundle",
     "S5GraphitiMStarSemanticError",
     "S5GraphitiMStarSemanticRuntime",
+    "coalesce_compatible_resolved_nodes",
     "logical_ns_to_datetime",
 ]

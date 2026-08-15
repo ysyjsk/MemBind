@@ -1,0 +1,44 @@
+<?xml version="1.0" encoding="utf-8"?><testsuites name="pytest tests"><testsuite name="pytest" errors="0" failures="1" skipped="0" tests="2" time="0.666" timestamp="2026-08-15T20:43:43.845791+08:00" hostname="aces-System-Product-Name"><testcase classname="tests.test_s5_graphiti_controlled_fixture" name="test_native_default_edge_type_map_is_preserved" time="0.003" /><testcase classname="tests.test_s5_graphiti_controlled_fixture" name="test_real_graphiti_edge_path_reaches_resolution_and_bulk_commit" time="0.002"><failure message="paper_eval.s5_graphiti_controlled_fixture.ControlledGraphitiFixtureError: resolve_edges_failed">def test_real_graphiti_edge_path_reaches_resolution_and_bulk_commit() -&gt; None:
+        fixture = build_controlled_graphiti_fixture(
+            edge_types=("WorksAt",), edge_fact="Alice works at Acme."
+        )
+&gt;       result = asyncio.run(fixture.run_episode())
+                 ^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^
+
+paper-eval-v3/tests/test_s5_graphiti_controlled_fixture.py:61: 
+_ _ _ _ _ _ _ _ _ _ _ _ _ _ _ _ _ _ _ _ _ _ _ _ _ _ _ _ _ _ _ _ _ _ _ _ _ _ _ _ 
+/usr/lib/python3.12/asyncio/runners.py:194: in run
+    return runner.run(main)
+           ^^^^^^^^^^^^^^^^
+/usr/lib/python3.12/asyncio/runners.py:118: in run
+    return self._loop.run_until_complete(task)
+           ^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^
+/usr/lib/python3.12/asyncio/base_events.py:687: in run_until_complete
+    return future.result()
+           ^^^^^^^^^^^^^^^
+_ _ _ _ _ _ _ _ _ _ _ _ _ _ _ _ _ _ _ _ _ _ _ _ _ _ _ _ _ _ _ _ _ _ _ _ _ _ _ _ 
+
+self = ControlledGraphitiFixture(group_id='controlled-db', configured_database='controlled-db', edge_types=('WorksAt',), edge...event': 'provider_scope_enter'}, {'event': 'provider_scope_exit'}, {'event': 'commit_failed'}], transaction_attempts=0)
+
+    async def run_episode(self) -&gt; ControlledRunResult:
+        self.call_order.clear()
+        source = self._source()
+        logical_time_ns = 1_767_225_600_000_000_000
+        providers = object()
+        try:
+            prepared = await self.runtime.prepare(source, logical_time_ns, providers)
+            observation = await self.runtime.bind(
+                prepared, logical_time_ns, 0, (), providers
+            )
+        except S5GraphitiMStarSemanticError as error:
+            if not any(event.get("event") == "commit_failed" for event in self.events):
+                self.events.append({"event": "commit_failed"})
+            code = str(error)
+            if code == "process_episode_data_failed":
+                raise ControlledGraphitiFixtureError("COMMIT_FAILED") from None
+            if code == "native_commit_result_shape_invalid":
+                raise ControlledGraphitiFixtureError("COMMIT_RESULT_INVALID") from None
+&gt;           raise ControlledGraphitiFixtureError(code) from None
+E           paper_eval.s5_graphiti_controlled_fixture.ControlledGraphitiFixtureError: resolve_edges_failed
+
+paper-eval-v3/src/paper_eval/s5_graphiti_controlled_fixture.py:351: ControlledGraphitiFixtureError</failure></testcase></testsuite></testsuites>

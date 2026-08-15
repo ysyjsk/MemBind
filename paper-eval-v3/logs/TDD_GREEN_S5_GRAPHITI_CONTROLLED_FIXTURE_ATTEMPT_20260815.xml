@@ -1,0 +1,38 @@
+<?xml version="1.0" encoding="utf-8"?><testsuites name="pytest tests"><testsuite name="pytest" errors="0" failures="3" skipped="0" tests="5" time="0.605" timestamp="2026-08-15T20:40:28.099814+08:00" hostname="aces-System-Product-Name"><testcase classname="tests.test_s5_graphiti_controlled_fixture" name="test_fixture_binds_the_pinned_graphiti_identity_and_native_call_order" time="0.005"><failure message="AssertionError: assert ('extract_nod...m_nodes', ...) == ('extract_nod...m_nodes', ...)&#10;  &#10;  At index 1 diff: 'extract_edges' != 'resolve_extracted_nodes'&#10;  Use -v to get more diff">def test_fixture_binds_the_pinned_graphiti_identity_and_native_call_order() -&gt; None:
+        fixture = build_controlled_graphiti_fixture()
+        result = asyncio.run(fixture.run_episode())
+    
+        assert fixture.binding.loader_verified is True
+&gt;       assert result.call_order == (
+            "extract_nodes",
+            "resolve_extracted_nodes",
+            "extract_edges",
+            "resolve_edge_pointers",
+            "resolve_extracted_edges",
+            "extract_attributes_from_nodes",
+            "process_episode_data",
+        )
+E       AssertionError: assert ('extract_nod...m_nodes', ...) == ('extract_nod...m_nodes', ...)
+E         
+E         At index 1 diff: 'extract_edges' != 'resolve_extracted_nodes'
+E         Use -v to get more diff
+
+paper-eval-v3/tests/test_s5_graphiti_controlled_fixture.py:26: AssertionError</failure></testcase><testcase classname="tests.test_s5_graphiti_controlled_fixture" name="test_transaction_failure_is_fail_closed_before_publication" time="0.002"><failure message="AssertionError: assert 'provider_scope_exit' == 'commit_failed'&#10;  &#10;  - commit_failed&#10;  + provider_scope_exit">def test_transaction_failure_is_fail_closed_before_publication() -&gt; None:
+        fixture = build_controlled_graphiti_fixture(fail_transaction=True)
+    
+        with pytest.raises(ControlledGraphitiFixtureError, match="COMMIT"):
+            asyncio.run(fixture.run_episode())
+    
+&gt;       assert fixture.events[-1]["event"] == "commit_failed"
+E       AssertionError: assert 'provider_scope_exit' == 'commit_failed'
+E         
+E         - commit_failed
+E         + provider_scope_exit
+
+paper-eval-v3/tests/test_s5_graphiti_controlled_fixture.py:46: AssertionError</failure></testcase><testcase classname="tests.test_s5_graphiti_controlled_fixture" name="test_native_default_edge_type_map_is_preserved" time="0.002" /><testcase classname="tests.test_s5_graphiti_controlled_fixture" name="test_group_id_routes_all_graphiti_calls_to_the_cloned_database" time="0.002" /><testcase classname="tests.test_s5_graphiti_controlled_fixture" name="test_malformed_native_process_result_fails_closed" time="0.002"><failure message="Failed: DID NOT RAISE ControlledGraphitiFixtureError">def test_malformed_native_process_result_fails_closed() -&gt; None:
+        fixture = build_controlled_graphiti_fixture(malformed_commit_result=True)
+    
+&gt;       with pytest.raises(ControlledGraphitiFixtureError, match="COMMIT_RESULT"):
+E       Failed: DID NOT RAISE ControlledGraphitiFixtureError
+
+paper-eval-v3/tests/test_s5_graphiti_controlled_fixture.py:70: Failed</failure></testcase></testsuite></testsuites>

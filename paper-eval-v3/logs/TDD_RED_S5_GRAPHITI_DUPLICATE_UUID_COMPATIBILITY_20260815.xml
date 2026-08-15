@@ -1,0 +1,63 @@
+<?xml version="1.0" encoding="utf-8"?><testsuites name="pytest tests"><testsuite name="pytest" errors="0" failures="2" skipped="0" tests="2" time="0.032" timestamp="2026-08-15T20:08:40.796263+08:00" hostname="aces-System-Product-Name"><testcase classname="tests.test_s5_graphiti_mstar_semantics" name="test_compatible_duplicate_resolved_uuid_is_deterministically_coalesced" time="0.001"><failure message="AssertionError: assert 2 == 1&#10; +  where 2 = GraphitiBindObservation(source_sequence=0, logical_time_ns=1, resolved_node_count=2, resolved_edge_count=1, invalidated_edge_count=1, commit_result_type='dict').resolved_node_count">def test_compatible_duplicate_resolved_uuid_is_deterministically_coalesced() -&gt; None:
+        calls: list[str] = []
+        binding = _binding(calls)
+    
+        async def resolve_nodes(*args):
+            calls.append("resolve_nodes")
+            return (
+                [{"uuid": "canonical-n1", "name": "Alice"}, {"uuid": "canonical-n1", "name": "Alice"}],
+                {"n1": "canonical-n1"},
+                [],
+            )
+    
+        binding = S5GraphitiSemanticBinding(
+            extract_nodes=binding.extract_nodes,
+            resolve_extracted_nodes=resolve_nodes,
+            extract_attributes_from_nodes=binding.extract_attributes_from_nodes,
+            extract_edges=binding.extract_edges,
+            resolve_extracted_edges=binding.resolve_extracted_edges,
+            resolve_edge_pointers=binding.resolve_edge_pointers,
+            process_episode_data=binding.process_episode_data,
+        )
+        runtime = S5GraphitiMStarSemanticRuntime(
+            graphiti=type("GraphitiDouble", (), {"clients": object()})(),
+            binding=binding,
+            latest_state_retriever=lambda _source: asyncio.sleep(0, result=[]),
+        )
+        prepared = asyncio.run(runtime.prepare(_source(), 1))
+        observation = asyncio.run(runtime.bind(prepared, 1, 0, ()))
+&gt;       assert observation.resolved_node_count == 1
+E       AssertionError: assert 2 == 1
+E        +  where 2 = GraphitiBindObservation(source_sequence=0, logical_time_ns=1, resolved_node_count=2, resolved_edge_count=1, invalidated_edge_count=1, commit_result_type='dict').resolved_node_count
+
+tests/test_s5_graphiti_mstar_semantics.py:232: AssertionError</failure></testcase><testcase classname="tests.test_s5_graphiti_mstar_semantics" name="test_conflicting_duplicate_resolved_uuid_fails_before_attribute_or_commit" time="0.000"><failure message="Failed: DID NOT RAISE S5GraphitiMStarSemanticError">def test_conflicting_duplicate_resolved_uuid_fails_before_attribute_or_commit() -&gt; None:
+        calls: list[str] = []
+        base = _binding(calls)
+    
+        async def resolve_nodes(*args):
+            calls.append("resolve_nodes")
+            return (
+                [{"uuid": "canonical-n1", "name": "Alice"}, {"uuid": "canonical-n1", "name": "Alicia"}],
+                {"n1": "canonical-n1"},
+                [],
+            )
+    
+        binding = S5GraphitiSemanticBinding(
+            extract_nodes=base.extract_nodes,
+            resolve_extracted_nodes=resolve_nodes,
+            extract_attributes_from_nodes=base.extract_attributes_from_nodes,
+            extract_edges=base.extract_edges,
+            resolve_extracted_edges=base.resolve_extracted_edges,
+            resolve_edge_pointers=base.resolve_edge_pointers,
+            process_episode_data=base.process_episode_data,
+        )
+        runtime = S5GraphitiMStarSemanticRuntime(
+            graphiti=type("GraphitiDouble", (), {"clients": object()})(),
+            binding=binding,
+            latest_state_retriever=lambda _source: asyncio.sleep(0, result=[]),
+        )
+        prepared = asyncio.run(runtime.prepare(_source(), 1))
+&gt;       with pytest.raises(S5GraphitiMStarSemanticError, match="conflicting_duplicate"):
+E       Failed: DID NOT RAISE S5GraphitiMStarSemanticError
+
+tests/test_s5_graphiti_mstar_semantics.py:262: Failed</failure></testcase></testsuite></testsuites>

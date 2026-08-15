@@ -482,3 +482,39 @@ The script refuses a duplicate session. Re-running it after an SSH disconnect wi
 Long live commands run in a detached `tmux` session named for the stage and run
 ID. Console output is line-buffered into `logs/`; scientific state is taken only
 from the durable JSONL/checkpoint artifacts, not from terminal output.
+
+## S5 production FX0 hardening checkpoint (2026-08-15)
+
+The S5 lane now has a separate non-circular M* core identity and a distinct
+production FX0 artifact verifier. The old FX0 artifact remains explicitly
+`HARNESS_SELF_TEST_WITH_TEST_DOUBLE_ONLY`; it was not broadened or relabeled.
+
+The offline implementation added:
+
+- explicit controlled logical-operation time on `MStarSource`;
+- typed multi-source decoding and independent snapshot evidence;
+- an explicit controlled-provider scope around Graphiti semantic callbacks;
+- deterministic same-UUID/same-projection coalescing and fail-closed
+  same-UUID/different-projection handling;
+- an fsync publication journal and a narrowly scoped recovery hook that retries
+  only publication journaling after a commit-completed durability gap;
+- a production FX0 schema requiring external input bindings, hash-only case
+  evidence, execution-shape checks, pinned semantic identity, and exact
+  all-false authority.
+
+TDD evidence for this checkpoint:
+
+```text
+focused S5/FX0 suites              37 passed
+full paper-eval-v3 offline         1088 passed
+compileall                         passed
+git diff --check                   passed
+live model/embedding/Neo4j calls   0 / 0 / 0
+```
+
+No production FX0 artifact was sealed. The builder remains fail-closed until
+all transition shapes execute through the actual pinned Graphiti runtime,
+including at least two attempts for `RETRY_IDEMPOTENCE`; a transition label or
+test-double callback cannot satisfy that gate. Therefore the current pointer
+remains `S3_CONFIGURATION_FROZEN`, and S5 live authority, M* smoke, PILOT, and
+formal execution remain unauthorized.

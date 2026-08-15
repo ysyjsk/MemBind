@@ -76,3 +76,32 @@ M* production identity, does not create an FX0 production-parity artifact, and
 does not authorize the M* smoke. The next required step is to bind the adapter
 to the pinned Graphiti extraction/resolution/invalidation/commit path, then run
 the production-path FX0 exact-parity gate. A live M* authority remains false.
+
+## Additive hardening checkpoint (2026-08-15)
+
+The follow-on offline work stayed in the isolated S5 lane. It added the
+non-circular M* core identity, explicit controlled logical-operation time,
+typed multi-source execution evidence, an explicit provider scope around the
+pinned semantic runtime, compatible duplicate-UUID coalescing, and a fsync
+publication journal with post-commit publication recovery. A bind callback's
+returned state/history can no longer override an independent snapshot.
+
+The legacy FX0 self-test artifact contract was not modified. The separate
+`s5_mstar_fx0_artifact.py` verifier requires external fixture/input bindings,
+pinned semantic identity, hash-only case evidence, and all-false authority.
+No production parity artifact was generated: the builder still rejects any
+transition whose execution shape lacks real retry/recovery evidence. This is
+intentional and keeps `RETRY_IDEMPOTENCE` from becoming a label-only pass.
+
+Latest evidence:
+
+```text
+focused S5/FX0 suites       37 passed
+full paper-eval-v3          1088 passed
+compileall                  passed
+git diff --check            passed
+live model/embedding/Neo4j  0 / 0 / 0
+```
+
+The current-stage pointer is still `S3_CONFIGURATION_FROZEN`; A0/P/M* live
+authority, FX0 exact parity, PILOT, and formal execution remain false.

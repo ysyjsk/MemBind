@@ -196,6 +196,7 @@ class MStarSource:
     source_sequence: int
     source_sha256: str
     opaque_source: object
+    logical_time_ns: int | None = None
 
     def __post_init__(self) -> None:
         if (
@@ -207,12 +208,15 @@ class MStarSource:
         _sha(self.source_sha256, "source_identity_invalid")
         if self.opaque_source is None:
             raise _fail("opaque_source_missing")
+        if self.logical_time_ns is not None:
+            _timestamp(self.logical_time_ns, "logical_time_invalid")
 
 
 SemanticPrepare = Callable[[object, int], Awaitable[object]]
 LatestStateBind = Callable[[object, int, int, tuple[int, ...]], Awaitable[object]]
 PersistEvent = Callable[[Mapping[str, object]], Awaitable[object]]
 ClockNs = Callable[[], int]
+RecoverPublication = Callable[[MStarSource, int], Awaitable[object]]
 
 
 @dataclass(frozen=True)
@@ -359,6 +363,7 @@ async def run_mstar_pipeline(
     latest_state_bind: LatestStateBind,
     persist_event: PersistEvent,
     clock_ns: ClockNs,
+    recover_publication: RecoverPublication | None = None,
 ) -> dict[str, object]:
     """Run two-worker prepare, one source-ordered latest-state bind, and publish."""
 
@@ -387,7 +392,11 @@ async def run_mstar_pipeline(
     prepared_count = 0
 
     for item in selected:
-        logical_time = _timestamp(clock_ns(), "clock_timestamp_invalid")
+        logical_time = (
+            item.logical_time_ns
+            if item.logical_time_ns is not None
+            else _timestamp(clock_ns(), "clock_timestamp_invalid")
+        )
         logical_times[item.source_sequence] = logical_time
         await ledger.emit(
             "intent",
@@ -547,18 +556,41 @@ async def run_mstar_pipeline(
                 commit_return_timestamp_ns=commit_return,
             )
             publication = _timestamp(clock_ns(), "clock_timestamp_invalid")
-            await ledger.emit(
-                "publication",
-                run_id=spec.run_id,
-                method=spec.method,
-                source_sequence=sequence,
-                source_sha256=outcome.source.source_sha256,
-                logical_time_ns=outcome.logical_time_ns,
-                visible_publication_prefix=list(visible_prefix),
-                bind_start_timestamp_ns=bind_start,
-                commit_return_timestamp_ns=commit_return,
-                publication_timestamp_ns=publication,
-            )
+            try:
+                await ledger.emit(
+                    "publication",
+                    run_id=spec.run_id,
+                    method=spec.method,
+                    source_sequence=sequence,
+                    source_sha256=outcome.source.source_sha256,
+                    logical_time_ns=outcome.logical_time_ns,
+                    visible_publication_prefix=list(visible_prefix),
+                    bind_start_timestamp_ns=bind_start,
+                    commit_return_timestamp_ns=commit_return,
+                    publication_timestamp_ns=publication,
+                )
+            except MStarPipelineError:
+                if recover_publication is None:
+                    raise
+                recovered = recover_publication(outcome.source, outcome.logical_time_ns)
+                if not inspect.isawaitable(recovered):
+                    raise _fail("publication_recovery_must_be_async")
+                await recovered
+                retry_publication = _timestamp(
+                    clock_ns(), "clock_timestamp_invalid"
+                )
+                await ledger.emit(
+                    "publication",
+                    run_id=spec.run_id,
+                    method=spec.method,
+                    source_sequence=sequence,
+                    source_sha256=outcome.source.source_sha256,
+                    logical_time_ns=outcome.logical_time_ns,
+                    visible_publication_prefix=list(visible_prefix),
+                    bind_start_timestamp_ns=bind_start,
+                    commit_return_timestamp_ns=commit_return,
+                    publication_timestamp_ns=retry_publication,
+                )
             published.append(sequence)
         await cancel_workers()
     except asyncio.CancelledError:
@@ -743,6 +775,14 @@ def verify_mstar_pipeline_evidence(
     }
     for source, intent in intent_by_source.items():
         _timestamp(intent.get("logical_time_ns"), "logical_time_invalid")
+        expected_source = next(
+            item for item in sources if item.source_sequence == source
+        )
+        if (
+            expected_source.logical_time_ns is not None
+            and intent.get("logical_time_ns") != expected_source.logical_time_ns
+        ):
+            raise _fail("logical_time_source_binding_invalid")
     prepared_rows = [event for event in events if event.get("event_type") == "prepared"]
     prepared_sources = [int(event["source_sequence"]) for event in prepared_rows]
     if len(prepared_sources) != len(set(prepared_sources)) or any(

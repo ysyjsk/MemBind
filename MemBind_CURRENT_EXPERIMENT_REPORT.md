@@ -882,3 +882,43 @@ Current boundary remains strict: `runtime/CURRENT_STAGE_STATUS.json` is still
 qualification, PILOT, and formal execution are all false. The next authorized
 engineering step is to bind controlled FX0 providers to the pinned Graphiti
 semantic runtime and produce the separate production-path FX0 parity artifact.
+
+## 24. S5 production FX0 hardening checkpoint
+
+The follow-on S5 work stayed in the isolated `paper-eval-v3/` lane and did not
+touch vLLM, model APIs, embedding services, Neo4j, namespaces, or the current
+stage pointer. It implemented the non-circular M* core identity, explicit
+controlled logical-operation timestamps, typed multi-source execution
+evidence, provider-scope enforcement around Graphiti semantic operations,
+compatible duplicate-UUID coalescing, and an fsync publication journal with
+post-commit publication recovery. The adapter now takes canonical state and
+publication history only from an independent snapshot/journal; bind return
+values cannot forge parity.
+
+The production FX0 artifact contract is separate from the legacy FX0
+self-test. It binds external fixture/input hashes, the pinned Graphiti semantic
+identity, hash-only case rows, execution-shape witnesses, and exact all-false
+authority. No production FX0 artifact was generated: the builder deliberately
+rejects missing real retry/recovery evidence, so `RETRY_IDEMPOTENCE` cannot pass
+from a transition label or a callback double.
+
+TDD evidence:
+
+```text
+focused S5/FX0 suites             37 passed
+full paper-eval-v3 regression     1088 passed, 0 failed, 0 errors, 0 skipped
+compileall                        passed
+git diff --check                  passed
+live model/embedding/Neo4j        0 / 0 / 0
+```
+
+Evidence is persisted in:
+
+- `paper-eval-v3/S5_MSTAR_FX0_ARTIFACT_OFFLINE_RESULT_20260815.md`
+- `paper-eval-v3/S5_MSTAR_PRODUCTION_ADAPTER_OFFLINE_RESULT_20260815.md`
+- `paper-eval-v3/artifacts/paper_eval/native/S5_MSTAR_FX0_PRODUCTION_PARITY_STATUS_20260815.json`
+- `paper-eval-v3/logs/TDD_FOCUSED_GREEN_S5_FX0_FINAL_20260815.xml`
+- `paper-eval-v3/logs/TDD_FULL_OFFLINE_GREEN_S5_FINAL_20260815.xml`
+
+The current pointer remains `S3_CONFIGURATION_FROZEN`; A0/P/M* live
+authority, FX0 exact parity, PILOT, and formal execution remain unauthorized.

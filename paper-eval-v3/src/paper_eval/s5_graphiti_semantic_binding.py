@@ -72,6 +72,7 @@ class S5GraphitiSemanticBinding:
     resolve_extracted_edges: Callable[..., Any]
     resolve_edge_pointers: Callable[..., Any]
     process_episode_data: Callable[..., Any]
+    loader_verified: bool = False
 
     def signature_projection(self) -> dict[str, str]:
         projection = {
@@ -173,7 +174,7 @@ def load_graphiti_semantic_binding(
         module="graphiti_core.graphiti",
         qualname="Graphiti._process_episode_data",
     )
-    return S5GraphitiSemanticBinding(**bound)
+    return S5GraphitiSemanticBinding(**bound, loader_verified=True)
 
 
 def verify_graphiti_semantic_identity(value: Mapping[str, object]) -> dict[str, object]:

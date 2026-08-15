@@ -62,6 +62,109 @@ def _sources(count: int = 4) -> tuple[MStarSource, ...]:
 
 
 @pytest.mark.asyncio
+async def test_explicit_logical_operation_times_do_not_depend_on_telemetry_clock() -> None:
+    sink = DurableSink()
+    sources = tuple(
+        MStarSource(
+            source_sequence=index,
+            source_sha256=f"{index + 20:064x}",
+            opaque_source={"source": index},
+            logical_time_ns=10_000 + index,
+        )
+        for index in range(2)
+    )
+    entered = 0
+    release = asyncio.Event()
+    observed: list[tuple[int, int]] = []
+
+    async def prepare(source: object, logical_time_ns: int) -> object:
+        nonlocal entered
+        entered += 1
+        if entered == 2:
+            release.set()
+        await asyncio.wait_for(release.wait(), timeout=1)
+        return source
+
+    async def bind(
+        _prepared: object,
+        logical_time_ns: int,
+        source_sequence: int,
+        _visible_prefix: tuple[int, ...],
+    ) -> None:
+        observed.append((source_sequence, logical_time_ns))
+
+    evidence = await run_mstar_pipeline(
+        spec=_spec(),
+        sources=sources,
+        semantic_prepare=prepare,
+        latest_state_bind=bind,
+        persist_event=sink,
+        clock_ns=StepClock(),
+    )
+    verify_mstar_pipeline_evidence(
+        evidence, expected_spec=_spec(), expected_sources=sources
+    )
+    assert observed == [(0, 10_000), (1, 10_001)]
+    assert [
+        event["logical_time_ns"]
+        for event in evidence["events"]
+        if event["event_type"] == "intent"
+    ] == [10_000, 10_001]
+
+
+@pytest.mark.asyncio
+async def test_publication_journal_failure_recovers_after_commit_without_rebinding() -> None:
+    sink = DurableSink()
+    failed_once = False
+    recoveries: list[int] = []
+    bind_calls: list[int] = []
+
+    async def flaky_sink(event: Mapping[str, object]) -> None:
+        nonlocal failed_once
+        if event["event_type"] == "publication" and not failed_once:
+            failed_once = True
+            raise OSError("simulated journal gap")
+        await sink(event)
+
+    async def prepare(source: object, _logical_time_ns: int) -> object:
+        await asyncio.sleep(0)
+        return source["source"]
+
+    async def bind(
+        prepared: object,
+        _logical_time_ns: int,
+        source_sequence: int,
+        _visible_prefix: tuple[int, ...],
+    ) -> None:
+        bind_calls.append(int(prepared))
+
+    async def recover(source: MStarSource, _logical_time_ns: int) -> None:
+        recoveries.append(source.source_sequence)
+
+    evidence = await run_mstar_pipeline(
+        spec=MStarSpec(
+            run_id="s5-mstar-recovery-001",
+            production_core_identity_sha256=CORE_SHA,
+            prepare_concurrency=2,
+            require_prepare_overlap=False,
+        ),
+        sources=(MStarSource(0, "a" * 64, {"source": 0}),),
+        semantic_prepare=prepare,
+        latest_state_bind=bind,
+        persist_event=flaky_sink,
+        clock_ns=StepClock(),
+        recover_publication=recover,
+    )
+    assert evidence["status"] == "PASS"
+    assert bind_calls == [0]
+    assert recoveries == [0]
+    assert [event["event_type"] for event in sink.events][-2:] == [
+        "publication",
+        "terminal_success",
+    ]
+
+
+@pytest.mark.asyncio
 async def test_parallel_prepare_binds_and_publishes_in_source_order() -> None:
     sink = DurableSink()
     entered: list[int] = []

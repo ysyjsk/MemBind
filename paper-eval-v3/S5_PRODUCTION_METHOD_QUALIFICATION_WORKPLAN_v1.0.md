@@ -250,8 +250,25 @@ single-source runs so live overlap cannot be silently omitted. The common
 smoke projection is implemented in `s5_method_smoke_contract.py`. These are
 offline composition checks only; they do not authorize the M* smoke.
 
-The final offline checkpoint for this implementation wave is `1068 passed`,
+The pre-hardening offline checkpoint for the prior implementation wave was
+`1068 passed`,
 `0 failed`, `0 errors`, `0 skipped` in
 `logs/TDD_FULL_OFFLINE_GREEN_S5_FINAL_20260815.xml`. The next action is a
 production-path FX0 exact-parity run with controlled providers; no live action
 is implied by this regression.
+
+## 10. Additive hardening checkpoint (2026-08-15)
+
+The implementation order above was continued with a non-circular M* core
+identity, typed multi-source adapter evidence, explicit controlled-provider
+scope, same-UUID projection compatibility handling, and a fsync publication
+journal/recovery hook. The legacy FX0 self-test contract remains unchanged.
+
+The separate production artifact verifier is now implemented, but no
+production FX0 artifact is sealed. Its execution-shape gate requires actual
+source-order/state-change evidence and at least two attempts for
+`RETRY_IDEMPOTENCE`; a transition label, callback double, or recomputed hash
+cannot satisfy it. The current-stage pointer and every live authority remain
+unchanged. Latest TDD evidence is `37` focused S5/FX0 tests and `1088` full
+offline tests, all green; this is still offline design/qualification work and
+does not authorize M* smoke.

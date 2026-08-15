@@ -1,0 +1,11 @@
+<?xml version="1.0" encoding="utf-8"?><testsuites name="pytest tests"><testsuite name="pytest" errors="0" failures="1" skipped="0" tests="1" time="0.029" timestamp="2026-08-15T19:50:47.373209+08:00" hostname="aces-System-Product-Name"><testcase classname="tests.test_s5_graphiti_mstar_semantics" name="test_fx0_controlled_providers_require_and_enter_explicit_scope" time="0.001"><failure message="Failed: DID NOT RAISE S5GraphitiMStarSemanticError">def test_fx0_controlled_providers_require_and_enter_explicit_scope() -&gt; None:
+        providers = object()
+        runtime_without_scope = S5GraphitiMStarSemanticRuntime(
+            graphiti=type("GraphitiDouble", (), {"clients": object()})(),
+            binding=_binding([]),
+            latest_state_retriever=lambda _source: asyncio.sleep(0, result=[]),
+        )
+&gt;       with pytest.raises(S5GraphitiMStarSemanticError, match="provider_scope"):
+E       Failed: DID NOT RAISE S5GraphitiMStarSemanticError
+
+tests/test_s5_graphiti_mstar_semantics.py:167: Failed</failure></testcase></testsuite></testsuites>
