@@ -1,10 +1,10 @@
 # MemBind Native Graphiti Characterization: Current Experiment Report
 
-> Report snapshot: 2026-08-13 20:36 CST  
+> Report snapshot: 2026-08-15 02:07 CST
 > Repository: `/data/predator/ly/MemBind`  
 > Validation workspace: `/data/predator/ly/MemBind/membind-validation`  
 > Authoritative workplan: `MemBind_NATIVE_GRAPHITI_CHARACTERIZATION_WORKPLAN_v1.1.md`  
-> Current scope: Native Graphiti C0-C5 characterization and supplemental Judge qualification; C6 has not yet produced a formal verdict.
+> Current scope: Native Graphiti C0-C5 characterization plus the isolated paper-eval-v3 Native-v2 and S4 deterministic-control lane. Candidate-aware retry-005 capture completed, while replay failed closed on ambiguous edge candidate identity; all later live stages remain unauthorized.
 
 Unless otherwise stated, every artifact path in this report is relative to the repository root shown above.
 
@@ -454,15 +454,289 @@ Key file SHA256 values at this report snapshot:
 
 ## 15. Current stage and next permitted work
 
-C5 execution is complete, verified, and mergeable. The repository's current state pointers have not yet been advanced from the pre-C5 live authorization state, and C6 has not been produced. The next protocol-conformant action is:
+C5 characterization remains complete, verified, and mergeable; C6 remains
+unproduced. That characterization lane is retained as historical motivation
+rather than being expanded while the separate paper-eval-v3 plan establishes
+its common evaluation layer.
+
+The characterization lane remains closed. In the isolated paper-eval-v3 lane,
+the Native-v2 configuration is frozen and both S4 retry-004 and retry-005 are
+now diagnosed. The current authorized action is narrower:
 
 ```text
-TDD C5 completion/state closure
- -> bind and synchronize the completed C5 artifacts
- -> evaluate C6 G1-G4
- -> write CHARACTERIZATION_REPORT.md and DESIGN_DECISION.md
- -> issue only PROBLEM_SUPPORTED / PARTIAL / NOT_SUPPORTED
- -> immediate STOP
+preserve failed retry-004 and retry-005 as non-mergeable evidence
+ -> preserve retry-005 replay namespace for explicit read-only diagnosis
+ -> make an explicit offline design decision for ambiguous edge identities
+ -> no cleanup or new S4 live attempt before a new sealed authority
+ -> do not start four-history qualification, S5, or PILOT
 ```
 
-C6 must not automatically enter M2 or select a MemBind mechanism. Any mechanism comparison requires a separate, reviewed, test-driven plan.
+Neither the Reader-v2 canary nor a future C6 verdict automatically authorizes
+MemBind/M2, PILOT, or method comparison.
+
+## 16. Paper-eval-v3 S2 completion update
+
+The isolated paper-evaluation lane completed one bounded, one-shot Native U0
+retrieval -> Reader -> Judge chain on DEVELOPMENT_EXPOSED history `07741c45`.
+The policy was Graphiti 0.29.3 Episode BM25/RRF evaluated as LongMemEval
+sessions at top 10. It was frozen from benchmark/API semantics, with honest
+disclosure that S2-R0 had already been observed; no candidate policy search or
+numeric score selection was performed.
+
+### Result
+
+| Surface | Value |
+|---|---:|
+| Retrieved/gold sessions | 10 / 2 |
+| Covered gold sessions | 2 |
+| Gold ranks | 2, 1 |
+| Evidence Recall@10 (`Recall_all`) | 1.0 |
+| QA Accuracy | 0.0 |
+| Reader prompt/completion tokens | 27,814 / 13 |
+| Reader truncations/retries | 0 / 0 |
+| Judge status/parse | SUCCESS / valid NO |
+
+The chain performed exactly one Graphiti search, one Reader request, and one
+Judge request; it performed zero construction LLM, embedding, cross-encoder,
+mutation, cleanup, or retry operations. Neo4j issued two read-routed requests.
+
+Offline hash analysis showed that the formal ranked-list hash exactly matches
+the successful R0 list. The updated gold session ranked first and the prior
+state ranked second. Under official chronological Reader presentation, the
+prior state appeared at position 1 and the update at position 8. The Reader
+output hash exactly matches a known stale-prior-state answer candidate, so the
+QA zero is a real stale-state Reader error, not retrieval miss, service
+failure, context overflow, Judge parser error, or Judge false negative.
+
+This single development item is not a general quality estimate. It supports
+only the bounded statement that Episode retrieval made both relevant sessions
+available, while the pinned Qwen3 Reader failed temporal update selection. The
+result is `REVIEW_REQUIRED`, `result_mergeable=false`, `s3_ready=false`, and
+`s3_authorized=false`. No automatic rerun, prompt/order/top-k tuning, or S3
+freeze was performed.
+
+Detailed report:
+
+- `paper-eval-v3/S2_COMPLETION_RESULT_REPORT_20260814.md`
+
+Primary evidence:
+
+- `paper-eval-v3/artifacts/paper_eval/native/runs/s2-completion-20260814-001/S2_COMPLETION_RESULT.json`
+- `paper-eval-v3/artifacts/paper_eval/native/runs/s2-completion-20260814-001/events.jsonl`
+- `paper-eval-v3/artifacts/paper_eval/native/runs/s2-completion-20260814-001/checkpoint.json`
+- `paper-eval-v3/logs/TDD_FULL_OFFLINE_GREEN_S2_COMPLETION_POSTLIVE_20260814.xml` (`377 passed`)
+
+## 17. Paper-eval-v3 Native Reader-v2 update
+
+The direct S2 failure motivated a transparent, non-blind Reader version change.
+Pinned LongMemEval source inspection established that its recommended public
+`READING_METHOD=con` is a single answer completion with `cot=true`,
+`con=false`, and default `max_tokens=800`; it is not the multi-call
+`con-separate` path. Graphiti construction, Episode BM25/RRF retrieval, K=10,
+session values, chronological presentation, JSON, both conversation sides,
+Qwen3-32B, and the Judge were kept fixed.
+
+The preselected DEVELOPMENT_EXPOSED compatibility canary was `b6019101`, the
+first remaining item after the exposed direct sample in the frozen calibration
+order. Its sealed C2 namespace was used read-only. Because that graph has a
+disclosed construction-revision difference from current S1 U0, its numerical
+values are adapter diagnostics only.
+
+Result:
+
+| Surface | Value |
+|---|---:|
+| Compatibility | PASS |
+| Retrieved/gold/covered sessions | 10 / 2 / 2 |
+| Gold ranks | 1, 2 |
+| Evidence Recall@10 | 1.0 |
+| QA diagnostic | 1.0 |
+| Reader prompt/completion tokens | 26,205 / 131 |
+| Reader truncations | 0 |
+| Judge status/parse | SUCCESS / YES |
+
+The chain used exactly one Graphiti search, two Neo4j reads, one Reader, and one
+Judge request. Construction LLM, embedding, cross-encoder, mutation, cleanup,
+and retry counts were all zero. QA was not a compatibility gate: the same
+freeze would have been produced for any valid QA=0 or QA=1 response.
+
+The common-policy freeze binds the same Reader and Judge identities for
+U0/A0/P*/M*. It authorizes an S3 configuration update only; it does not
+authorize PILOT/S4 or make a Native quality claim.
+
+Final TDD state:
+
+```text
+Reader-v2 focused tests      74 passed
+paper-eval-v3 full offline  451 passed
+git diff --check             passed
+```
+
+Detailed report and primary artifacts:
+
+- `paper-eval-v3/NATIVE_READER_V2_QUALIFICATION_RESULT_REPORT_20260814.md`
+- `paper-eval-v3/artifacts/paper_eval/native/runs/native-reader-v2-canary-20260814-001/NATIVE_READER_V2_RESULT.json`
+- `paper-eval-v3/artifacts/paper_eval/native/NATIVE_READER_V2_FREEZE.json`
+- `paper-eval-v3/logs/TDD_FULL_OFFLINE_GREEN_NATIVE_READER_V2_RECONCILED_FINAL_20260814.xml`
+
+## 18. Paper-eval-v3 S3 Native baseline v2 freeze
+
+The Native-v2 configuration is now frozen without changing the historical
+Gate-C implementation or any failed S2 artifact. The accepted baseline path
+keeps Graphiti construction, Episode BM25/RRF retrieval, K=10, dataset,
+session adapter, Qwen3-32B, and Judge fixed, while using the already qualified
+single-call LongMemEval CoN Reader-v2 for every method.
+
+No 8-16 item qualification wave, K sweep, retrieval redesign, extra benchmark,
+extra baseline, or model change was added. The Reader-v2 canary's QA/Recall is
+not present in the common method-policy identity and was not a freeze gate.
+
+Frozen common identity:
+
+```text
+U0 == A0 == P* == M*
+method policy SHA256
+5699b88d83ad71de1119930ece69a9176c352ed847ea02be0cacc661b46e79e8
+```
+
+The S3 artifact explicitly limits its meaning:
+
+```text
+configuration_freeze_only       true
+s2_quality_pass_claimed          false
+quality_estimate_status          NOT_ESTIMATED
+s4_live_execution_authorized     false
+pilot_execution_authorized       false
+```
+
+A construction revision evidence mismatch is disclosed rather than hidden:
+S0's declared revision is `aa55da1...`, while the S1-bound runtime source
+constant is `6e2312b...`. The constant did not enter requests and cache was
+disabled, so S1 remains usable; a lightweight live identity preflight is
+required before S4 live authority.
+
+TDD result:
+
+```text
+S3-v2 focused                   24 passed
+pre-seal full offline          475 passed
+production pointer              2 passed
+git diff --check                passed
+```
+
+Primary records:
+
+- `paper-eval-v3/S3_NATIVE_BASELINE_V2_FREEZE_RESULT_REPORT_20260814.md`
+- `paper-eval-v3/artifacts/paper_eval/native/NATIVE_BASELINE_V2_FREEZE.json`
+  (`3e935af2cb353fb59c4cf58ddec7e44a73387f88410d805324636b76daf2d5e6`)
+- `paper-eval-v3/runtime/CURRENT_STAGE_STATUS.json`
+  (`3cb7edad4bab3ac6fe961a3d9e8768cbb962cf61cf946cb7e0015d74c0edc26d`)
+
+The S3 pointer remains the latest successful stage. A failed S4 qualification
+does not advance it.
+
+## 19. Paper-eval-v3 S4 D0 smoke result
+
+The valid retry-004 U0 capture completed all 49 episodes for exposed history
+`07741c45`. It resolved 511 logical prompts and 1,206 embedding inputs, with
+zero unexpected oracle item, fallback, or cross-encoder call. Capture exported
+its canonical graph and exact-cleaned its namespace to `0/0` nodes and
+relationships.
+
+D0 replay then completed two episodes and failed closed at source sequence 2:
+
+```text
+error class                    UnexpectedPromptError
+replay logical prompts         9
+replay embedding resolutions  17
+live LLM / embedding calls     0 / 0
+fallback / cross-encoder       0 / 0
+unexpected prompt / embedding  1 / 0
+```
+
+The prompt and embedding caches did not change. Independent hash-only
+diagnosis proved that `dedupe_nodes.nodes` received the same two candidates in
+a different presentation order. D0's stable sort reassigned positional
+`candidate_id` values, and the reconstructed sorted capture prompt exactly
+matched the failed replay hash. The classification is
+`ORDER_ONLY_CANDIDATE_RENUMBERING_CONFIRMED`.
+
+This is a correctness result, not a serving failure. Graphiti's node and edge
+dedupe responses contain position-indexed entity/fact references, so blindly
+treating reordered prompts as cache hits can silently resolve a different
+entity or edge. The replay remains permanently non-mergeable. Its namespace
+was exact-cleaned from 4 nodes and 3 relationships to `0/0`; S4 qualification,
+S5, and PILOT remain unauthorized.
+
+TDD closure after the diagnosis is `34` focused tests and `551` complete
+paper-eval-v3 offline tests passing, with `git diff --check` clean.
+
+Detailed report and primary evidence:
+
+- `paper-eval-v3/S4_D0_SMOKE_RESULT_REPORT_20260815.md`
+- `paper-eval-v3/artifacts/paper_eval/native/runs/s4-d0-capture-20260814-004/phase_result.json`
+- `paper-eval-v3/artifacts/paper_eval/native/runs/s4-d0-replay-20260814-004/phase_result.json`
+- `paper-eval-v3/artifacts/paper_eval/native/runs/s4-d0-replay-20260814-004/DIAGNOSIS_AND_INVALIDATION.json`
+- `paper-eval-v3/logs/TDD_FULL_OFFLINE_GREEN_S4_POST_DIAGNOSIS_20260815.xml`
+
+That diagnosis led to candidate-aware retry-005, whose result is recorded in
+the next section. Retry-004 remains immutable historical evidence.
+
+## 20. Paper-eval-v3 S4 candidate-remap retry-005
+
+Retry-005 used the same exposed 49-episode history with fresh capture/replay
+namespaces, fresh private caches, a new preflight, and a single-use authority.
+The candidate oracle kept exact prompt lookup first and allowed semantic
+translation only for Graphiti's active positional node- and edge-deduplication
+surfaces. Missing members, partition drift, duplicate visible identities, bad
+indices, and cache ambiguity were specified to fail closed.
+
+U0 capture passed all 49 episodes:
+
+```text
+resolved prompts / embeddings  531 / 1,242
+live LLM / embedding calls      532 / 67
+unexpected / fallback / cross   0 / 0 / 0
+capture namespace cleanup       0 nodes / 0 relationships
+```
+
+D0 replay completed source sequences `0..6` and stopped at source sequence 7:
+
+```text
+error class / code              CandidateRemapError /
+                                AMBIGUOUS_CANDIDATE_IDENTITY
+failure surface                 edge invalidation candidate partition
+exact / remap prompt hits       44 / 24
+node / edge remap hits          6 / 18
+resolved prompts / embeddings   77 / 175
+live LLM / embedding calls      0 / 0
+unexpected / fallback / cross   0 / 0 / 0
+```
+
+The prompt and embedding cache hashes exactly matched the capture-sealed
+hashes after failure. The current prompt-visible fields could not uniquely
+identify duplicated edge invalidation candidates, so translating positional
+indices would have risked resolving or invalidating the wrong edge. Stopping
+was the required correctness behavior, not a serving failure.
+
+Retry-005 is incomplete and non-mergeable. Its replay namespace is preserved
+at 32 nodes and 48 relationships; no cleanup was performed. No smoke PASS
+result, qualification activation, qualification namespace, S5 action, or
+PILOT action was generated.
+
+The activation-layer TDD added during stable capture wait passed 10 focused
+tests and the complete paper-eval-v3 suite now passes 632 tests. This code can
+only activate the exact sealed qualification plan after strict smoke PASS, so
+it correctly produced no activation artifact for retry-005.
+
+Detailed report and primary evidence:
+
+- `paper-eval-v3/S4_D0_REMAP_RETRY_005_FAILURE_REPORT_20260815.md`
+- `paper-eval-v3/artifacts/paper_eval/native/runs/s4-d0-capture-20260815-005/phase_result.json`
+- `paper-eval-v3/artifacts/paper_eval/native/runs/s4-d0-replay-20260815-005/phase_result.json`
+- `paper-eval-v3/logs/TDD_FULL_OFFLINE_GREEN_S4_RETRY_005_FAILURE_CLOSURE_20260815.xml`
+
+The next step requires an explicit offline design decision: enrich edge
+identity with independently captured evidence, adopt a disclosed trace-order
+oracle, or reconsider the D0 candidate-presentation control. Do not weaken the
+oracle, clean retry-005, or allocate retry-006 automatically.

@@ -1,0 +1,114 @@
+{
+  "authority": {
+    "pilot_execution_authorized": false,
+    "s4_live_execution_authorized": false,
+    "s4_preflight_authorized": true
+  },
+  "canonical_comparison": {
+    "artifact_only": true,
+    "entity_group_id_projection": "__S4_ISOLATED_NAMESPACE__",
+    "other_fields_normalized_beyond_existing_canonicalizer": false
+  },
+  "common_method_policy_sha256": "5699b88d83ad71de1119930ece69a9176c352ed847ea02be0cacc661b46e79e8",
+  "contract_sha256": "20775d96a2138e47fdf256de448b2fd651dee5ae00367d8994ef38598a58e862",
+  "current_pointer_payload_sha256": "da17c5dae889d0a0d0e51b2f5bbd478e7a79d50ccf33450ca43f32c34b6dcdcc",
+  "d0_replay": {
+    "candidate_order_stabilizers": [
+      "edge_search",
+      "node_resolution",
+      "edge_query",
+      "node_query"
+    ],
+    "embedding_oracle_mode": "read_only",
+    "live_embedding_fallback": false,
+    "live_llm_fallback": false,
+    "prompt_oracle_mode": "read_only",
+    "serial_add_episode": true
+  },
+  "durability": {
+    "checkpoint": "ATOMIC_REPLACE_FSYNC_AFTER_EACH_PUBLICATION",
+    "event_log": "APPEND_ONLY_FLUSH_FSYNC",
+    "failed_attempt_mergeable": false,
+    "resume": "CONTIGUOUS_DURABLE_PREFIX_ONLY"
+  },
+  "execution_order": [
+    "U0_CAPTURE",
+    "D0_READ_ONLY_REPLAY"
+  ],
+  "hard_gates": {
+    "cache_mutation_during_replay": false,
+    "canonical_graph_parity": "EXACT_100_PERCENT",
+    "capture_episode_coverage": "49/49_exactly_once_source_order",
+    "capture_live_embedding_calls": "GREATER_THAN_ZERO",
+    "capture_live_llm_calls": "GREATER_THAN_ZERO",
+    "replay_cross_encoder_call_count": 0,
+    "replay_episode_coverage": "49/49_exactly_once_source_order",
+    "replay_live_embedding_calls": 0,
+    "replay_live_fallback_count": 0,
+    "replay_live_llm_calls": 0,
+    "replay_oracle_miss_count": 0,
+    "resolved_embedding_count": "CAPTURE_EQUALS_REPLAY",
+    "resolved_prompt_count": "CAPTURE_EQUALS_REPLAY"
+  },
+  "history": {
+    "data_role": "DEVELOPMENT_EXPOSED",
+    "episode_count": 49,
+    "history_id": "07741c45"
+  },
+  "namespace_policy": {
+    "capture_and_replay_distinct": true,
+    "cleanup_scope": "EXACT_GROUP_ID_ONLY",
+    "fresh_before_first_mutation": true,
+    "global_database_cleanup_allowed": false,
+    "historical_s1_namespace_read_only": true
+  },
+  "native_baseline_v2_freeze_file_sha256": "3e935af2cb353fb59c4cf58ddec7e44a73387f88410d805324636b76daf2d5e6",
+  "native_baseline_v2_freeze_payload_sha256": "b05720b834e53f2ab8172249b445afddc37ac8356f19674625e1129823c19da7",
+  "parent_workplan_sha256": "4b81c89b33d407f04fc20862a81eab6badba16d0d61d98331cbe188d1bb4f41e",
+  "preflight": {
+    "construction_model": "qwen3-32b-fp8",
+    "construction_revision_conflict_disclosed": true,
+    "embedding_model": "qwen3-embedding-0.6b",
+    "max_model_len_minimum": 65536,
+    "neo4j_connectivity_required": true,
+    "required_before_live_authority": true,
+    "vllm_version": "0.26.0"
+  },
+  "runs": {
+    "D0_READ_ONLY_REPLAY": {
+      "cache_id": "s4-d0-07741c45-20260814-001",
+      "method": "D0",
+      "mode": "replay",
+      "namespace": "pev3-s4-d0-replay-20260814-001",
+      "run_id": "s4-d0-replay-20260814-001"
+    },
+    "U0_CAPTURE": {
+      "cache_id": "s4-d0-07741c45-20260814-001",
+      "method": "U0",
+      "mode": "capture",
+      "namespace": "pev3-s4-u0-capture-20260814-001",
+      "run_id": "s4-d0-capture-20260814-001"
+    }
+  },
+  "s4_workplan_sha256": "bab29baec9d83dcb2ce4310e9694774d9efc0278f23a069a0a2716dea26d5c62",
+  "schema_version": "membind.paper-eval-v3.s4-d0-contract.v1",
+  "source_sha256": {
+    "canonicalizer": "75d31455274c5633ff1815876e843fdcec91c69af7a9d421d4729f5bfd5ef003",
+    "embedding_oracle": "98d5f73f72787f9bcaed8eb3c05d4a5c00d7d16ec421443e2bcd838c45f5ac8f",
+    "graphiti_d0_factory": "f25141000494a8899a40b87f2bf5fb5e5cb519ab2d480d72973aeaf9e0d9c8cc",
+    "native_u0_runtime": "4d6bad43289d7cbf9557aed05571601bdfa560855ed1403b0e4a72770ae57ca1",
+    "prompt_oracle": "22a60568f8a6a54e70f3518c0f6509568b453ff8e1a75166b8ab5a685b61fa80",
+    "s1_namespace_adapter": "6f468d5af23c84bdd8d34edeada5d9aedc97e291e9ca6a7c9468acbe79099b2c",
+    "s4_contract_source": "709100d99d771f24f97e9a25144a21e1dda20c0b61dee552c3c15af79a64accc",
+    "s4_contract_test": "c8274749da901908705ce60eb53c89bf40f5e722fd6664556b1e4b8a20fe42be"
+  },
+  "u0_capture": {
+    "candidate_order_stabilization": false,
+    "embedding_oracle_mode": "capture_empty_new",
+    "live_embedding_calls_required": true,
+    "live_llm_calls_required": true,
+    "prior_cache_allowed": false,
+    "prompt_oracle_mode": "capture_empty_new",
+    "serial_add_episode": true
+  }
+}

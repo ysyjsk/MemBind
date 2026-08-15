@@ -1,0 +1,49 @@
+<?xml version="1.0" encoding="utf-8"?><testsuites name="pytest tests"><testsuite name="pytest" errors="0" failures="1" skipped="0" tests="1" time="0.030" timestamp="2026-08-14T23:59:53.573679+08:00" hostname="aces-System-Product-Name"><testcase classname="tests.test_s4_authority" name="test_authority_accepts_only_the_sealed_retry_004_identity" time="0.000"><failure message="paper_eval.s4_d0_contract.S4D0ContractError: S4 D0 contract shape drift">def test_authority_accepts_only_the_sealed_retry_004_identity() -&gt; None:
+&gt;       authority = build_s4_smoke_authority(
+            contract=_load(RETRY_CONTRACT),
+            contract_file_sha256=sha256_file(RETRY_CONTRACT),
+            preflight=_load(RETRY_PREFLIGHT),
+            preflight_file_sha256=sha256_file(RETRY_PREFLIGHT),
+            source_sha256=_sources(),
+        )
+
+tests/test_s4_authority.py:81: 
+_ _ _ _ _ _ _ _ _ _ _ _ _ _ _ _ _ _ _ _ _ _ _ _ _ _ _ _ _ _ _ _ _ _ _ _ _ _ _ _ 
+src/paper_eval/s4_authority.py:75: in build_s4_smoke_authority
+    selected_contract = verify_s4_d0_contract(contract)
+                        ^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^
+_ _ _ _ _ _ _ _ _ _ _ _ _ _ _ _ _ _ _ _ _ _ _ _ _ _ _ _ _ _ _ _ _ _ _ _ _ _ _ _ 
+
+value = {'attempt_id': '004', 'authority': {'live_execution_authorized': False, 'pilot_execution_authorized': False, 'prefligh...847ea02be0cacc661b46e79e8', 'contract_sha256': '6c5698508e29f55ce91f38dbf63254263c6187ac2b027955c4a257ada5b3257a', ...}
+
+    def verify_s4_d0_contract(value: Mapping[str, Any]) -&gt; dict[str, Any]:
+        """Verify the exact serialized contract and its non-authorizing semantics."""
+    
+        contract = _mapping(value, label="S4 D0 contract")
+        stored_hash = contract.pop("contract_sha256", None)
+        expected_fields = {
+            "schema_version",
+            "parent_workplan_sha256",
+            "s4_workplan_sha256",
+            "native_baseline_v2_freeze_file_sha256",
+            "native_baseline_v2_freeze_payload_sha256",
+            "current_pointer_payload_sha256",
+            "common_method_policy_sha256",
+            "history",
+            "execution_order",
+            "runs",
+            "u0_capture",
+            "d0_replay",
+            "hard_gates",
+            "canonical_comparison",
+            "namespace_policy",
+            "durability",
+            "preflight",
+            "authority",
+            "source_sha256",
+        }
+        if set(contract) != expected_fields:
+&gt;           raise S4D0ContractError("S4 D0 contract shape drift")
+E           paper_eval.s4_d0_contract.S4D0ContractError: S4 D0 contract shape drift
+
+src/paper_eval/s4_d0_contract.py:310: S4D0ContractError</failure></testcase></testsuite></testsuites>

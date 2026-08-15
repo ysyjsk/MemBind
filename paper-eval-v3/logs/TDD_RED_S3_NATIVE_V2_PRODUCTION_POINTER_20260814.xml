@@ -1,0 +1,30 @@
+<?xml version="1.0" encoding="utf-8"?><testsuites name="pytest tests"><testsuite name="pytest" errors="0" failures="1" skipped="0" tests="2" time="0.036" timestamp="2026-08-14T22:34:21.634783+08:00" hostname="aces-System-Product-Name"><testcase classname="tests.test_s3_native_v2_production" name="test_sealed_freeze_matches_every_bound_file_and_source" time="0.001" /><testcase classname="tests.test_s3_native_v2_production" name="test_current_pointer_advances_only_to_s4_offline" time="0.000"><failure message="FileNotFoundError: [Errno 2] No such file or directory: '/data/predator/ly/MemBind/paper-eval-v3/runtime/CURRENT_STAGE_STATUS.json'">def test_current_pointer_advances_only_to_s4_offline() -&gt; None:
+&gt;       pointer = _load(CURRENT_POINTER)
+                  ^^^^^^^^^^^^^^^^^^^^^^
+
+tests/test_s3_native_v2_production.py:76: 
+_ _ _ _ _ _ _ _ _ _ _ _ _ _ _ _ _ _ _ _ _ _ _ _ _ _ _ _ _ _ _ _ _ _ _ _ _ _ _ _ 
+tests/test_s3_native_v2_production.py:21: in _load
+    return json.loads(path.read_text(encoding="utf-8"))
+                      ^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^
+/usr/lib/python3.12/pathlib.py:1029: in read_text
+    with self.open(mode='r', encoding=encoding, errors=errors) as f:
+         ^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^
+_ _ _ _ _ _ _ _ _ _ _ _ _ _ _ _ _ _ _ _ _ _ _ _ _ _ _ _ _ _ _ _ _ _ _ _ _ _ _ _ 
+
+self = PosixPath('/data/predator/ly/MemBind/paper-eval-v3/runtime/CURRENT_STAGE_STATUS.json')
+mode = 'r', buffering = -1, encoding = 'utf-8', errors = None, newline = None
+
+    def open(self, mode='r', buffering=-1, encoding=None,
+             errors=None, newline=None):
+        """
+        Open the file pointed by this path and return a file object, as
+        the built-in open() function does.
+        """
+        if "b" not in mode:
+            encoding = io.text_encoding(encoding)
+&gt;       return io.open(self, mode, buffering, encoding, errors, newline)
+               ^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^
+E       FileNotFoundError: [Errno 2] No such file or directory: '/data/predator/ly/MemBind/paper-eval-v3/runtime/CURRENT_STAGE_STATUS.json'
+
+/usr/lib/python3.12/pathlib.py:1015: FileNotFoundError</failure></testcase></testsuite></testsuites>

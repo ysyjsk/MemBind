@@ -1,0 +1,84 @@
+<?xml version="1.0" encoding="utf-8"?><testsuites name="pytest tests"><testsuite name="pytest" errors="0" failures="2" skipped="0" tests="2" time="0.158" timestamp="2026-08-14T22:51:14.902994+08:00" hostname="aces-System-Product-Name"><testcase classname="tests.test_s4_d0_runner" name="test_finalization_failure_is_checkpointed_and_sanitized[graph_export]" time="0.048"><failure message="ValueError: private graph export detail">tmp_path = PosixPath('/tmp/pytest-of-ly/pytest-79/test_finalization_failure_is_c0')
+failure_stage = 'graph_export'
+
+    @pytest.mark.asyncio
+    @pytest.mark.parametrize("failure_stage", ["graph_export", "cleanup"])
+    async def test_finalization_failure_is_checkpointed_and_sanitized(
+        tmp_path: Path, failure_stage: str
+    ) -&gt; None:
+        graph = FakeGraph()
+    
+        async def failing_export(*_args) -&gt; dict:
+            raise ValueError("private graph export detail")
+    
+        with pytest.raises(S4PhaseFailed) as raised:
+&gt;           await _run(
+                tmp_path,
+                graph,
+                cleanup_error=failure_stage == "cleanup",
+                graph_exporter=(
+                    failing_export if failure_stage == "graph_export" else None
+                ),
+            )
+
+tests/test_s4_d0_runner.py:261: 
+_ _ _ _ _ _ _ _ _ _ _ _ _ _ _ _ _ _ _ _ _ _ _ _ _ _ _ _ _ _ _ _ _ _ _ _ _ _ _ _ 
+tests/test_s4_d0_runner.py:125: in _run
+    return await run_s4_phase(
+src/paper_eval/s4_d0_runner.py:424: in run_s4_phase
+    await _call(graph_exporter, graph, episodes, selected["namespace"]),
+    ^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^
+src/paper_eval/s4_d0_runner.py:242: in _call
+    return await result
+           ^^^^^^^^^^^^
+_ _ _ _ _ _ _ _ _ _ _ _ _ _ _ _ _ _ _ _ _ _ _ _ _ _ _ _ _ _ _ _ _ _ _ _ _ _ _ _ 
+
+_args = (&lt;test_s4_d0_runner.FakeGraph object at 0x79ef798f7650&gt;, [Episode(source_sequence=0), Episode(source_sequence=1), Episode(source_sequence=2)], 'pev3-s4-test-capture')
+
+    async def failing_export(*_args) -&gt; dict:
+&gt;       raise ValueError("private graph export detail")
+E       ValueError: private graph export detail
+
+tests/test_s4_d0_runner.py:258: ValueError</failure></testcase><testcase classname="tests.test_s4_d0_runner" name="test_finalization_failure_is_checkpointed_and_sanitized[cleanup]" time="0.049"><failure message="RuntimeError: private cleanup detail">tmp_path = PosixPath('/tmp/pytest-of-ly/pytest-79/test_finalization_failure_is_c1')
+failure_stage = 'cleanup'
+
+    @pytest.mark.asyncio
+    @pytest.mark.parametrize("failure_stage", ["graph_export", "cleanup"])
+    async def test_finalization_failure_is_checkpointed_and_sanitized(
+        tmp_path: Path, failure_stage: str
+    ) -&gt; None:
+        graph = FakeGraph()
+    
+        async def failing_export(*_args) -&gt; dict:
+            raise ValueError("private graph export detail")
+    
+        with pytest.raises(S4PhaseFailed) as raised:
+&gt;           await _run(
+                tmp_path,
+                graph,
+                cleanup_error=failure_stage == "cleanup",
+                graph_exporter=(
+                    failing_export if failure_stage == "graph_export" else None
+                ),
+            )
+
+tests/test_s4_d0_runner.py:261: 
+_ _ _ _ _ _ _ _ _ _ _ _ _ _ _ _ _ _ _ _ _ _ _ _ _ _ _ _ _ _ _ _ _ _ _ _ _ _ _ _ 
+tests/test_s4_d0_runner.py:125: in _run
+    return await run_s4_phase(
+src/paper_eval/s4_d0_runner.py:433: in run_s4_phase
+    await _call(cleanup_namespace, selected["namespace"])
+src/paper_eval/s4_d0_runner.py:242: in _call
+    return await result
+           ^^^^^^^^^^^^
+_ _ _ _ _ _ _ _ _ _ _ _ _ _ _ _ _ _ _ _ _ _ _ _ _ _ _ _ _ _ _ _ _ _ _ _ _ _ _ _ 
+
+namespace = 'pev3-s4-test-capture'
+
+    async def cleanup(namespace: str) -&gt; None:
+        calls.append(namespace)
+        if cleanup_error:
+&gt;           raise RuntimeError("private cleanup detail")
+E           RuntimeError: private cleanup detail
+
+tests/test_s4_d0_runner.py:121: RuntimeError</failure></testcase></testsuite></testsuites>

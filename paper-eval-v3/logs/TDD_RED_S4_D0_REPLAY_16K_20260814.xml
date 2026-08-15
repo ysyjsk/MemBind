@@ -1,0 +1,60 @@
+<?xml version="1.0" encoding="utf-8"?><testsuites name="pytest tests"><testsuite name="pytest" errors="0" failures="1" skipped="0" tests="1" time="0.034" timestamp="2026-08-14T23:23:59.775698+08:00" hostname="aces-System-Product-Name"><testcase classname="tests.test_s4_d0_production" name="test_replay_build_uses_frozen_16k_without_mutating_parent_environment" time="0.001"><failure message="AssertionError: assert '2048' == '16384'&#10;  &#10;  - 16384&#10;  + 2048">tmp_path = PosixPath('/tmp/pytest-of-ly/pytest-96/test_replay_build_uses_frozen_0')
+monkeypatch = &lt;_pytest.monkeypatch.MonkeyPatch object at 0x7ed955e28080&gt;
+
+    def test_replay_build_uses_frozen_16k_without_mutating_parent_environment(
+        tmp_path: Path, monkeypatch: pytest.MonkeyPatch
+    ) -&gt; None:
+        paths = _paths(tmp_path)
+        namespace = build_embedding_namespace(FakeEmbeddingNamespace)
+        open_s4_oracles(
+            paths=paths,
+            mode="capture",
+            resume_capture=False,
+            namespace=namespace,
+            prompt_cache_type=FakePromptCache,
+            embedding_cache_type=FakeEmbeddingCache,
+        )
+        calls: list[tuple] = []
+        factories = _factories(calls)
+        original = factories.build_d0
+    
+        def assert_frozen(*args, **kwargs):
+            import os
+    
+            assert os.environ["CONSTRUCTION_MAX_TOKENS"] == "16384"
+            return original(*args, **kwargs)
+    
+        factories = S4ProductionFactories(
+            **{
+                **factories.__dict__,
+                "build_d0": assert_frozen,
+            }
+        )
+        monkeypatch.setenv("CONSTRUCTION_MAX_TOKENS", "2048")
+    
+&gt;       build_s4_phase_runtime(
+            spec=_spec("replay"),
+            cache_paths=paths,
+            factories=factories,
+            resume_capture=False,
+        )
+
+tests/test_s4_d0_production.py:382: 
+_ _ _ _ _ _ _ _ _ _ _ _ _ _ _ _ _ _ _ _ _ _ _ _ _ _ _ _ _ _ _ _ _ _ _ _ _ _ _ _ 
+src/paper_eval/s4_d0_production.py:319: in build_s4_phase_runtime
+    graph = components.build_d0(
+_ _ _ _ _ _ _ _ _ _ _ _ _ _ _ _ _ _ _ _ _ _ _ _ _ _ _ _ _ _ _ _ _ _ _ _ _ _ _ _ 
+
+args = (&lt;test_s4_d0_production.FakePromptCache object at 0x7ed955e2ac30&gt;, &lt;test_s4_d0_production.FakeEmbeddingCache object at 0x7ed955e2ade0&gt;)
+kwargs = {'authorization_checker': &lt;function build_s4_phase_runtime.&lt;locals&gt;.&lt;lambda&gt; at 0x7ed955e54ea0&gt;}
+
+    def assert_frozen(*args, **kwargs):
+        import os
+    
+&gt;       assert os.environ["CONSTRUCTION_MAX_TOKENS"] == "16384"
+E       AssertionError: assert '2048' == '16384'
+E         
+E         - 16384
+E         + 2048
+
+tests/test_s4_d0_production.py:371: AssertionError</failure></testcase></testsuite></testsuites>

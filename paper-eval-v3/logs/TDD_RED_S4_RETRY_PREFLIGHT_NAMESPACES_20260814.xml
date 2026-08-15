@@ -1,0 +1,28 @@
+<?xml version="1.0" encoding="utf-8"?><testsuites name="pytest tests"><testsuite name="pytest" errors="0" failures="1" skipped="0" tests="1" time="0.024" timestamp="2026-08-14T23:57:40.487413+08:00" hostname="aces-System-Product-Name"><testcase classname="tests.test_s4_preflight" name="test_retry_preflight_uses_new_attempt_namespaces" time="0.001"><failure message="TypeError: collect_s4_preflight() got an unexpected keyword argument 'capture_namespace'">@pytest.mark.asyncio
+    async def test_retry_preflight_uses_new_attempt_namespaces() -&gt; None:
+        capture = "pev3-s4-u0-capture-20260814-004"
+        replay = "pev3-s4-d0-replay-20260814-004"
+        namespaces: list[str] = []
+    
+        async def get_json(base_url: str, path: str) -&gt; dict:
+            if path == "/version":
+                return {"version": "0.26.0"}
+            if ":8000" in base_url:
+                return {"data": [{"id": "qwen3-32b-fp8", "max_model_len": 65536}]}
+            return {"data": [{"id": "qwen3-embedding-0.6b"}]}
+    
+        async def namespace_state(namespace: str) -&gt; dict:
+            namespaces.append(namespace)
+            return _s1_state() if namespace == HISTORICAL_S1_NAMESPACE else _empty()
+    
+&gt;       result = await collect_s4_preflight(
+            get_json=get_json,
+            neo4j_connectivity=lambda: True,
+            namespace_state=namespace_state,
+            expected_historical_s1_state=_s1_state(),
+            capture_namespace=capture,
+            replay_namespace=replay,
+        )
+E       TypeError: collect_s4_preflight() got an unexpected keyword argument 'capture_namespace'
+
+tests/test_s4_preflight.py:190: TypeError</failure></testcase></testsuite></testsuites>

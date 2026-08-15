@@ -1,0 +1,55 @@
+{
+  "git_commit": "0d21c26ce1aa944418a19f8c05cddd72145f4268",
+  "payload": {
+    "authority": {
+      "pilot_execution_authorized": false,
+      "s4_authority_creation_authorized": true,
+      "s4_live_execution_authorized": false
+    },
+    "evaluation": {
+      "authority": {
+        "pilot_execution_authorized": false,
+        "s4_authority_creation_authorized": true,
+        "s4_live_execution_authorized": false
+      },
+      "construction": {
+        "max_model_len": 65536,
+        "served_model_id": "qwen3-32b-fp8",
+        "vllm_version": "0.26.0"
+      },
+      "embedding": {
+        "served_model_id": "qwen3-embedding-0.6b"
+      },
+      "failures": [],
+      "namespace_checks": {
+        "capture_empty": true,
+        "historical_s1_unchanged": true,
+        "replay_empty": true
+      },
+      "namespace_state_sha256": {
+        "capture": "46da7fa792619c2fe4cfa65fb2a8cde84136e9aef82d0377e40be3eec4d800ae",
+        "historical_s1_actual": "a90c174f9d63a6bd5a2aa5204faf837d120c34b8455b5bde3981c553c1f3e84a",
+        "historical_s1_expected": "a90c174f9d63a6bd5a2aa5204faf837d120c34b8455b5bde3981c553c1f3e84a",
+        "replay": "46da7fa792619c2fe4cfa65fb2a8cde84136e9aef82d0377e40be3eec4d800ae"
+      },
+      "neo4j_connectivity": "PASS",
+      "schema_version": "membind.paper-eval-v3.s4-preflight-evaluation.v1",
+      "verdict": "PASS"
+    },
+    "s1_checkpoint_file_sha256": "287de35d917ec45f43b9107b55b32aae0be4d513c16f06908b5d7b281ec8894e",
+    "s4_contract_file_sha256": "55b30f8e22c7406ef26c70f95e3e7a3501e0ca6259c4c0c4abdb909ecc48aa4b",
+    "s4_contract_sha256": "20775d96a2138e47fdf256de448b2fd651dee5ae00367d8994ef38598a58e862",
+    "schema_version": "membind.paper-eval-v3.s4-preflight-artifact.v1",
+    "source_sha256": {
+      "preflight": "1c81038fffb0f4e0b383b8b7cddb314ae4965ae6b080e10b4cc3ebb7036c278d",
+      "production": "0783806dfd9c691d77a25128fda6d527428c2c4205096bf38b569c18f8dbefcd",
+      "test": "3f1654f1fd8bb8279975fb7385290a9c3c2f8654ce343d1b6f13b72bdee24fa6"
+    },
+    "stage": "S4_PREFLIGHT",
+    "verdict": "PASS"
+  },
+  "payload_sha256": "4d03ff218db646088b7192d5e43a5e715dee9e493e437368ee3294836ef156a7",
+  "protocol_version": "paper-eval-v3",
+  "run_id": "s4-preflight-20260814-001",
+  "status": "finalized"
+}

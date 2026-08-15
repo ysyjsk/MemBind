@@ -1,0 +1,25 @@
+<?xml version="1.0" encoding="utf-8"?><testsuites name="pytest tests"><testsuite name="pytest" errors="0" failures="1" skipped="0" tests="1" time="0.028" timestamp="2026-08-14T23:27:23.691217+08:00" hostname="aces-System-Product-Name"><testcase classname="tests.test_s4_d0_production" name="test_oracle_open_modes_are_fail_closed_and_capture_resume_is_explicit" time="0.001"><failure message="AssertionError: assert False&#10; +  where False = is_file()&#10; +    where is_file = PosixPath('/tmp/pytest-of-ly/pytest-99/test_oracle_open_modes_are_fai0/shared.prompt.jsonl').is_file&#10; +      where PosixPath('/tmp/pytest-of-ly/pytest-99/test_oracle_open_modes_are_fai0/shared.prompt.jsonl') = S4CachePaths(prompt=PosixPath('/tmp/pytest-of-ly/pytest-99/test_oracle_open_modes_are_fai0/shared.prompt.jsonl'), embedding=PosixPath('/tmp/pytest-of-ly/pytest-99/test_oracle_open_modes_are_fai0/shared.embedding.jsonl')).prompt">tmp_path = PosixPath('/tmp/pytest-of-ly/pytest-99/test_oracle_open_modes_are_fai0')
+
+    def test_oracle_open_modes_are_fail_closed_and_capture_resume_is_explicit(
+        tmp_path: Path,
+    ) -&gt; None:
+        paths = _paths(tmp_path)
+        namespace = build_embedding_namespace(FakeEmbeddingNamespace)
+    
+        capture = open_s4_oracles(
+            paths=paths,
+            mode="capture",
+            resume_capture=False,
+            namespace=namespace,
+            prompt_cache_type=FakePromptCache,
+            embedding_cache_type=FakeEmbeddingCache,
+        )
+        assert capture.prompt.read_only is False
+        assert capture.embedding.read_only is False
+&gt;       assert paths.prompt.is_file()
+E       AssertionError: assert False
+E        +  where False = is_file()
+E        +    where is_file = PosixPath('/tmp/pytest-of-ly/pytest-99/test_oracle_open_modes_are_fai0/shared.prompt.jsonl').is_file
+E        +      where PosixPath('/tmp/pytest-of-ly/pytest-99/test_oracle_open_modes_are_fai0/shared.prompt.jsonl') = S4CachePaths(prompt=PosixPath('/tmp/pytest-of-ly/pytest-99/test_oracle_open_modes_are_fai0/shared.prompt.jsonl'), embedding=PosixPath('/tmp/pytest-of-ly/pytest-99/test_oracle_open_modes_are_fai0/shared.embedding.jsonl')).prompt
+
+tests/test_s4_d0_production.py:216: AssertionError</failure></testcase></testsuite></testsuites>

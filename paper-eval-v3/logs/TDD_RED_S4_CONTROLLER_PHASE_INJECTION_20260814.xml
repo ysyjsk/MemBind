@@ -1,0 +1,69 @@
+<?xml version="1.0" encoding="utf-8"?><testsuites name="pytest tests"><testsuite name="pytest" errors="0" failures="2" skipped="0" tests="2" time="0.039" timestamp="2026-08-14T23:29:40.950917+08:00" hostname="aces-System-Product-Name"><testcase classname="tests.test_s4_controller" name="test_orchestrator_runs_capture_then_conditional_replay" time="0.001"><failure message="KeyError: 'phase'">@pytest.mark.asyncio
+    async def test_orchestrator_runs_capture_then_conditional_replay() -&gt; None:
+        calls: list[str] = []
+    
+        async def execute(spec: dict) -&gt; dict:
+            calls.append(f"{spec['phase']}:{spec['mode']}")
+            return _phase(spec["mode"])
+    
+        def evaluate(*, capture_result: dict, replay_result: dict) -&gt; dict:
+            assert capture_result["payload"]["mode"] == "capture"
+            assert replay_result["payload"]["mode"] == "replay"
+            return {"verdict": "PASS", "s4_four_history_qualification_authorized": True}
+    
+&gt;       result = await orchestrate_s4_smoke(
+            authority=_authority(),
+            execute_phase=execute,
+            evaluate=evaluate,
+        )
+
+tests/test_s4_controller.py:70: 
+_ _ _ _ _ _ _ _ _ _ _ _ _ _ _ _ _ _ _ _ _ _ _ _ _ _ _ _ _ _ _ _ _ _ _ _ _ _ _ _ 
+src/paper_eval/s4_controller.py:81: in orchestrate_s4_smoke
+    capture = await _await(execute_phase(dict(runs["U0_CAPTURE"])))
+              ^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^
+src/paper_eval/s4_controller.py:66: in _await
+    return await value if inspect.isawaitable(value) else value
+           ^^^^^^^^^^^
+_ _ _ _ _ _ _ _ _ _ _ _ _ _ _ _ _ _ _ _ _ _ _ _ _ _ _ _ _ _ _ _ _ _ _ _ _ _ _ _ 
+
+spec = {'cache_id': 's4-cache', 'method': 'U0', 'mode': 'capture', 'namespace': 'pev3-s4-capture', ...}
+
+    async def execute(spec: dict) -&gt; dict:
+&gt;       calls.append(f"{spec['phase']}:{spec['mode']}")
+                        ^^^^^^^^^^^^^
+E       KeyError: 'phase'
+
+tests/test_s4_controller.py:62: KeyError</failure></testcase><testcase classname="tests.test_s4_controller" name="test_orchestrator_never_runs_replay_after_capture_failure" time="0.000"><failure message="KeyError: 'phase'">@pytest.mark.asyncio
+    async def test_orchestrator_never_runs_replay_after_capture_failure() -&gt; None:
+        calls: list[str] = []
+    
+        async def execute(spec: dict) -&gt; dict:
+            calls.append(f"{spec['phase']}:{spec['mode']}")
+            return _phase(spec["mode"], status="INCOMPLETE")
+    
+        with pytest.raises(RuntimeError, match="capture"):
+&gt;           await orchestrate_s4_smoke(
+                authority=_authority(),
+                execute_phase=execute,
+                evaluate=lambda **_kwargs: {"verdict": "PASS"},
+            )
+
+tests/test_s4_controller.py:89: 
+_ _ _ _ _ _ _ _ _ _ _ _ _ _ _ _ _ _ _ _ _ _ _ _ _ _ _ _ _ _ _ _ _ _ _ _ _ _ _ _ 
+src/paper_eval/s4_controller.py:81: in orchestrate_s4_smoke
+    capture = await _await(execute_phase(dict(runs["U0_CAPTURE"])))
+              ^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^
+src/paper_eval/s4_controller.py:66: in _await
+    return await value if inspect.isawaitable(value) else value
+           ^^^^^^^^^^^
+_ _ _ _ _ _ _ _ _ _ _ _ _ _ _ _ _ _ _ _ _ _ _ _ _ _ _ _ _ _ _ _ _ _ _ _ _ _ _ _ 
+
+spec = {'cache_id': 's4-cache', 'method': 'U0', 'mode': 'capture', 'namespace': 'pev3-s4-capture', ...}
+
+    async def execute(spec: dict) -&gt; dict:
+&gt;       calls.append(f"{spec['phase']}:{spec['mode']}")
+                        ^^^^^^^^^^^^^
+E       KeyError: 'phase'
+
+tests/test_s4_controller.py:85: KeyError</failure></testcase></testsuite></testsuites>

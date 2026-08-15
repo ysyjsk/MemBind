@@ -1,0 +1,90 @@
+{
+  "canary_history_id": "b6019101",
+  "canary_namespace_sha256": "6973a5b0b83170986bde14c2b0d5cb6ea2070c2eec812dd89af3f830d7a2dafd",
+  "canary_selection": {
+    "canary_construction_revision_matches_current_u0": false,
+    "canary_use": "ADAPTER_COMPATIBILITY_ONLY",
+    "data_role": "DEVELOPMENT_EXPOSED",
+    "excluded_observed_history_id": "07741c45",
+    "selected_before_reader_v2_outcome": true,
+    "selection_rule": "first_remaining_frozen_calibration_id"
+  },
+  "contract_sha256": "3a61baf4c2fe61ad76c1e85ffe67289e8d682a67d88a4a55a073c9bb2ecd2381",
+  "disclosure": {
+    "change_motivated_by_observed_failure": true,
+    "direct_path_was_officially_supported": true,
+    "prior_direct_failure_observed": true,
+    "reader_v2_selection_not_blinded": true,
+    "recipe_source": "upstream_recommended",
+    "retrieval_or_top_k_candidate_search": false
+  },
+  "historical_direct_result_sha256": "d9fc42a6479e3071fce56b8670a583aaa9ad76ce24687f4b6de957173064733d",
+  "judge_identity_sha256": "ca587d057c71631b8faf13f697d7141c31b365f4b5c4a898549b82a6d7ffb335",
+  "method_reader_bindings": {
+    "A0": "35cda64f27664f1901b2bf129cc95b5d77e8c51cac90abfbbe1c4118dd92737b",
+    "M*": "35cda64f27664f1901b2bf129cc95b5d77e8c51cac90abfbbe1c4118dd92737b",
+    "P*": "35cda64f27664f1901b2bf129cc95b5d77e8c51cac90abfbbe1c4118dd92737b",
+    "U0": "35cda64f27664f1901b2bf129cc95b5d77e8c51cac90abfbbe1c4118dd92737b"
+  },
+  "reader": {
+    "con": false,
+    "cot": true,
+    "effective_enable_thinking": false,
+    "has_answer_label_removed": true,
+    "history_format": "json",
+    "implementation": "longmemeval_official_con_session_reader_v2",
+    "input_representation": "longmemeval_flat_session_item",
+    "max_attempts": 1,
+    "max_tokens": 800,
+    "merge_key_expansion_into_value": "none",
+    "messages": [
+      "user"
+    ],
+    "model": "qwen3-32b-fp8",
+    "n": 1,
+    "presentation_order": "chronological_after_top_k_rank_stable_ties",
+    "prompt_template_sha256": "9e2b3110622929ab896696dd8937231c7436740ec3b9586f653f97346e19ab2c",
+    "reader_requests_per_question": 1,
+    "reading_method": "con",
+    "retriever_type": "flat-session",
+    "retry_delays_seconds": [],
+    "sdk_hidden_retries": 0,
+    "separate_note_extraction": false,
+    "session_value_source": "frozen_dataset_haystack_sessions",
+    "system_prompt": null,
+    "temperature": 0,
+    "thinking_control": "client_request",
+    "thinking_parameter_sent": true,
+    "topk_context": 10,
+    "truncation_policy": "FAIL_CLOSED_IF_CONTEXT_EXCEEDED",
+    "upstream_commit": "9e0b455f4ef0e2ab8f2e582289761153549043fc",
+    "upstream_readme_sha256": "c4ff45676683d9e2f7cf7d9099d26426f14635ec110dbb1da818d1019a142573",
+    "upstream_repository": "xiaowu0162/LongMemEval",
+    "upstream_runner_path": "src/generation/run_generation.sh",
+    "upstream_runner_sha256": "6602147b866eca4a80acdf5e6689389586086216c9198fce7b8380b7495c5422",
+    "upstream_source_path": "src/generation/run_generation.py",
+    "upstream_source_sha256": "4f1eb3c69d7ad40f04065b9c0bc86f6582441018fc6ff751d162d66c95baf672",
+    "useronly": false
+  },
+  "reader_config_sha256": "35cda64f27664f1901b2bf129cc95b5d77e8c51cac90abfbbe1c4118dd92737b",
+  "reader_transport": {
+    "endpoint_identity_sha256": "31970724e893444d34ba6eca9bfa2b2118122436fa843ec574b7607e60747d98",
+    "implementation": "openai_compatible_chat_completions",
+    "max_attempts": 1,
+    "sdk_hidden_retries": 0,
+    "served_model_name": "qwen3-32b-fp8",
+    "timeout_seconds": 180.0
+  },
+  "reader_transport_config_sha256": "824b1bd95b79d090831be1f0632824ddf890c6ce3ee1f456702bc66b8b9cf244",
+  "retrieval_policy_file_sha256": "45aa71657a23615f540b0426252e457c38d2c4565542d45f8350953c41084473",
+  "schema_version": "membind.paper-eval-v3.native-reader-v2-contract.v1",
+  "source_sha256": {
+    "historical_result": "d9fc42a6479e3071fce56b8670a583aaa9ad76ce24687f4b6de957173064733d",
+    "parent_workplan": "4b81c89b33d407f04fc20862a81eab6badba16d0d61d98331cbe188d1bb4f41e",
+    "qualification_source": "a1666d71388b328583777650830d1b7f3f3b9642f43dbd78cc283a8cbf49f04b",
+    "qualification_test": "5c5ac1365274aa166a4a32e28f17057b9cb7591390809d5e84759070d52cd443",
+    "reader_source": "c4e6cabc6c685bfbed9ced68f669ffadfb59726420814e350b8b3afc991fea76",
+    "reader_test": "12f7f39214cd6cdfae4413563af8675420373b4ae9430332d97d5f83b08fe56f",
+    "workplan": "26ccc72e7309677336c33b1423581ac7337fc8d78a47cc2acb9cccfac402117c"
+  }
+}

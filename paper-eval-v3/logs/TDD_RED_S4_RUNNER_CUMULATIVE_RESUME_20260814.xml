@@ -1,0 +1,43 @@
+<?xml version="1.0" encoding="utf-8"?><testsuites name="pytest tests"><testsuite name="pytest" errors="0" failures="1" skipped="0" tests="1" time="0.079" timestamp="2026-08-14T23:18:16.110976+08:00" hostname="aces-System-Product-Name"><testcase classname="tests.test_s4_d0_runner" name="test_resume_accumulates_runtime_work_across_process_counters" time="0.047"><failure message="KeyError: 'runtime_evidence_cumulative'">tmp_path = PosixPath('/tmp/pytest-of-ly/pytest-92/test_resume_accumulates_runtim0')
+
+    @pytest.mark.asyncio
+    async def test_resume_accumulates_runtime_work_across_process_counters(
+        tmp_path: Path,
+    ) -&gt; None:
+        graph = FakeGraph(fail_on=1)
+        process_start = 0
+    
+        def evidence() -&gt; dict:
+            current = len(graph.published) - process_start
+            return _runtime_evidence(mode="capture", count=current)
+    
+        async def cleanup(_namespace: str) -&gt; None:
+            graph.published.clear()
+    
+        async def execute() -&gt; dict:
+            return await run_s4_phase(
+                spec=_spec(mode="capture"),
+                episodes=[Episode(index) for index in range(3)],
+                graph=graph,
+                episode_kwargs=lambda item: {"source_sequence": item.source_sequence},
+                namespace_probe=_state(graph),
+                graph_exporter=_export(graph),
+                runtime_evidence=evidence,
+                cache_evidence=lambda: {
+                    "prompt_cache_sha256": "1" * 64,
+                    "embedding_cache_sha256": "2" * 64,
+                },
+                cleanup_namespace=cleanup,
+                artifact_root=tmp_path,
+                expected_episode_count=3,
+                git_commit="deadbeef",
+            )
+    
+        with pytest.raises(S4PhaseFailed):
+            await execute()
+        checkpoint = json.loads((tmp_path / "s4-test-capture/checkpoint.json").read_text())
+&gt;       assert checkpoint["runtime_evidence_cumulative"]["live_llm_calls"] == 1
+               ^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^
+E       KeyError: 'runtime_evidence_cumulative'
+
+tests/test_s4_d0_runner.py:259: KeyError</failure></testcase></testsuite></testsuites>

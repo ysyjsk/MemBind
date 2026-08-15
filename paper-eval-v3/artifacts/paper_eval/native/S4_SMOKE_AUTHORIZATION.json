@@ -1,0 +1,62 @@
+{
+  "git_commit": "0d21c26ce1aa944418a19f8c05cddd72145f4268",
+  "payload": {
+    "authority": {
+      "d0_replay_requires_capture_pass": true,
+      "pilot_execution_authorized": false,
+      "s4_four_history_qualification_authorized": false,
+      "s4_smoke_pipeline_authorized": true,
+      "s5_authorized": false,
+      "single_use": true
+    },
+    "common_method_policy_sha256": "5699b88d83ad71de1119930ece69a9176c352ed847ea02be0cacc661b46e79e8",
+    "execution_order": [
+      "U0_CAPTURE",
+      "D0_READ_ONLY_REPLAY"
+    ],
+    "history": {
+      "data_role": "DEVELOPMENT_EXPOSED",
+      "episode_count": 49,
+      "history_id": "07741c45"
+    },
+    "private_cache": {
+      "embedding_relpath": "runtime/private/s4-d0-07741c45-20260814-001/embedding.jsonl",
+      "prompt_relpath": "runtime/private/s4-d0-07741c45-20260814-001/prompt.jsonl",
+      "reportable_contents": false
+    },
+    "runs": {
+      "D0_READ_ONLY_REPLAY": {
+        "cache_id": "s4-d0-07741c45-20260814-001",
+        "method": "D0",
+        "mode": "replay",
+        "namespace": "pev3-s4-d0-replay-20260814-001",
+        "run_id": "s4-d0-replay-20260814-001"
+      },
+      "U0_CAPTURE": {
+        "cache_id": "s4-d0-07741c45-20260814-001",
+        "method": "U0",
+        "mode": "capture",
+        "namespace": "pev3-s4-u0-capture-20260814-001",
+        "run_id": "s4-d0-capture-20260814-001"
+      }
+    },
+    "s4_contract_file_sha256": "55b30f8e22c7406ef26c70f95e3e7a3501e0ca6259c4c0c4abdb909ecc48aa4b",
+    "s4_contract_sha256": "20775d96a2138e47fdf256de448b2fd651dee5ae00367d8994ef38598a58e862",
+    "s4_preflight_file_sha256": "95b0c582451d0ede5eb8bda9f6806ee9656a8b3b0f9f449b2d46e719690b4f2c",
+    "s4_preflight_payload_sha256": "4d03ff218db646088b7192d5e43a5e715dee9e493e437368ee3294836ef156a7",
+    "schema_version": "membind.paper-eval-v3.s4-smoke-authority.v1",
+    "source_sha256": {
+      "authority": "9c13238714a2d72699c91f369bfc684060e6e2aba68f74fd9a0a253bc804d011",
+      "controller": "0decfe2f855e5e2b1efd5140d997d0bac3a009b70ee6bbff4d33cf4ad5e9ac30",
+      "production": "080a8081afc3a040f097cd5674a39db441c1ee191cb437b3be15ad6bad6aee13",
+      "runner": "1f7c6b6c36f5f5daadbca88c33f26fb4c48016ac78cbf4375ada09cc4ddc235b",
+      "test": "44cb08100325c2efa48237bdb8677f0cc4057a0c38af13d8f9f38342a023d956"
+    },
+    "stage": "S4_SMOKE",
+    "status": "AUTHORIZED_SINGLE_USE"
+  },
+  "payload_sha256": "cc2824a63cb7f1d50303b404d2cad6e392ba16c0ed9d0a31994b2604f3edb9d5",
+  "protocol_version": "paper-eval-v3",
+  "run_id": "s4-smoke-authority-20260814-001",
+  "status": "finalized"
+}

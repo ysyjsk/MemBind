@@ -1,0 +1,779 @@
+<?xml version="1.0" encoding="utf-8"?><testsuites name="pytest tests"><testsuite name="pytest" errors="0" failures="22" skipped="0" tests="23" time="0.143" timestamp="2026-08-14T22:28:35.638284+08:00" hostname="aces-System-Product-Name"><testcase classname="tests.test_s3_native_v2_freeze" name="test_builds_additive_native_v2_freeze_without_live_authority" time="0.001"><failure message="paper_eval.s3_native_v2_freeze.NativeBaselineV2FreezeError: parent workplan binding drift">def test_builds_additive_native_v2_freeze_without_live_authority() -&gt; None:
+&gt;       freeze = verify_native_baseline_v2_freeze(_build())
+                                                  ^^^^^^^^
+
+tests/test_s3_native_v2_freeze.py:109: 
+_ _ _ _ _ _ _ _ _ _ _ _ _ _ _ _ _ _ _ _ _ _ _ _ _ _ _ _ _ _ _ _ _ _ _ _ _ _ _ _ 
+tests/test_s3_native_v2_freeze.py:72: in _build
+    return build_native_baseline_v2_freeze(
+_ _ _ _ _ _ _ _ _ _ _ _ _ _ _ _ _ _ _ _ _ _ _ _ _ _ _ _ _ _ _ _ _ _ _ _ _ _ _ _ 
+
+s0_current_state = {'git_commit': '62c114d4d33763ad194cf21ee882c453ad6f7ba7', 'payload': {'live_actions_performed': 0, 'repo_root': '/dat..._sha256': '7eb7f9e8b97a5e44090360cb6f821259b5925833fa37fff47eb90b9dedec98fe', 'protocol_version': 'paper-eval-v3', ...}
+s1_u0_smoke = {'git_commit': '62c114d4d33763ad194cf21ee882c453ad6f7ba7', 'payload': {'add_episode_call_count': 49, 'checkpoint_sha25..._sha256': 'baf0327ffc35ff8bd1209163ea6f3d7a70fb43fa4546f70f4a86c5bd6d513897', 'protocol_version': 'paper-eval-v3', ...}
+u0_qualification = {'git_commit': '62c114d4d33763ad194cf21ee882c453ad6f7ba7', 'payload': {'authorization': 'AUTHORIZE_S2_U0_1_HISTORY', '...677c666870c2449e626a6e3a590c02347ac02ac7c9d7', 'protocol_version': 'membind.paper-eval-v3.s2-u0-qualification.v1', ...}
+dataset_parity = {'git_commit': '62c114d4d33763ad194cf21ee882c453ad6f7ba7', 'payload': {'checked_count': 5, 'checked_question_ids': ['0..._sha256': '12625d3fea09262adbedca3246b050920de929371aaff95261744d117a214f14', 'protocol_version': 'paper-eval-v3', ...}
+evaluator_parity = {'git_commit': '62c114d4d33763ad194cf21ee882c453ad6f7ba7', 'payload': {'adapter_source': 'membind-validation/src/evalu..._sha256': '20a374a1924994a661adbfe9b07862ddc3e364ce70ba92c4493dfbe9d74fbc03', 'protocol_version': 'paper-eval-v3', ...}
+direct_add_episode_contract = {'contract_sha256': 'a2008f5ed6741b61d6ed5ed6978ae5d261d9e2c4f77b18833520d167fb1b896b', 'namespace_field': 'group_id', 'operation': 'graphiti.add_episode', 'source': 'membind-validation/src/graphiti_native.py:graphiti_episode_kwargs', ...}
+completion_adapter_identity = {'identity_sha256': '57ed691c688274a63d4c3ab2c2b91d341a8475cf26fb9d9d65c448f72d0a4b82', 'judge': {'backend_public_conf...7acdd', 'judge_qualification_artifact_sha256': '31a16da6d8a668517315ec22c5b375f9c494f34dbb5c62428be86c39dd028485', ...}
+retrieval_contract = {'contract_sha256': '4c3503201cf10551f8081c47e80acc544d54e5896b46d7d8ad17df4601caaada', 'failure_policy': {'automatic_...uestion_session_recall_all_at_10', 'name': 'evidence_recall_at_10', 'substitutable_by_other_metric': False, ...}}, ...}
+retrieval_policy_freeze = {'git_commit': 'a2886c12e0703625a5afc85761bbb43c96f65aae', 'payload': {'adapter_identity_file_sha256': 'ca587d057c7163..._sha256': '7f36f474efb1c0298d2dcf76041c0f6b76cf48b9505f3041989133bad9581ba5', 'protocol_version': 'paper-eval-v3', ...}
+role_registry = {'git_commit': '62c114d4d33763ad194cf21ee882c453ad6f7ba7', 'payload': {'exposure_evidence_policy': 'persisted_executio..._sha256': '3b03bf463e856406eea2e46a2c6a8c789a9767d7c920dcceab8d8747ee281dd9', 'protocol_version': 'paper-eval-v3', ...}
+reader_v2_contract = {'canary_history_id': 'b6019101', 'canary_namespace_sha256': '6973a5b0b83170986bde14c2b0d5cb6ea2070c2eec812dd89af3f830...tory_id': '07741c45', ...}, 'contract_sha256': '3a61baf4c2fe61ad76c1e85ffe67289e8d682a67d88a4a55a073c9bb2ecd2381', ...}
+reader_v2_freeze = {'git_commit': '0d21c26ce1aa944418a19f8c05cddd72145f4268', 'payload': {'compatibility_status': 'PASS', 'contract_sha25..._sha256': '43f3acf656fecd2fefacb357a532bb8826c44f55264c36ede5293a2e6348d27a', 'protocol_version': 'paper-eval-v3', ...}
+input_file_sha256 = {'parent_workplan': '1111111111111111111111111111111111111111111111111111111111111111', 'reader_v2_workplan': '2222222...09051db2a8c8dfa0f0f94d206f404', 's1_u0_smoke': 'f3bbd95560d08047d9b390cef2a5c95df6ad007922fdd2d4c0b672a684b1fc8d', ...}
+source_sha256 = {'finalize_script': '3333333333333333333333333333333333333333333333333333333333333333', 'focused_green_preseal': '4444...55555555555555555555555555555', 'freeze_test': '6666666666666666666666666666666666666666666666666666666666666666', ...}
+git_commit = 'deadbeef', run_id = 'native-baseline-v2-freeze-test-001'
+
+    def build_native_baseline_v2_freeze(
+        *,
+        s0_current_state: Mapping[str, Any],
+        s1_u0_smoke: Mapping[str, Any],
+        u0_qualification: Mapping[str, Any],
+        dataset_parity: Mapping[str, Any],
+        evaluator_parity: Mapping[str, Any],
+        direct_add_episode_contract: Mapping[str, Any],
+        completion_adapter_identity: Mapping[str, Any],
+        retrieval_contract: Mapping[str, Any],
+        retrieval_policy_freeze: Mapping[str, Any],
+        role_registry: Mapping[str, Any],
+        reader_v2_contract: Mapping[str, Any],
+        reader_v2_freeze: Mapping[str, Any],
+        input_file_sha256: Mapping[str, str],
+        source_sha256: Mapping[str, str],
+        git_commit: str,
+        run_id: str,
+    ) -&gt; dict[str, Any]:
+        """Build the configuration-only S3 freeze from already sealed evidence."""
+    
+        input_files = _hash_inventory(
+            input_file_sha256, names=_INPUT_FILE_NAMES, label="input file hashes"
+        )
+        sources = _hash_inventory(
+            source_sha256, names=_SOURCE_NAMES, label="source hashes"
+        )
+        s0, s0_payload = _sealed(s0_current_state, label="S0 current state")
+        if s0_payload.get("stage") != "S0":
+            raise NativeBaselineV2FreezeError("S0 current state stage drift")
+        runtime = _mapping(
+            s0_payload.get("runtime_identities"), label="runtime identities"
+        )
+        required_runtime = {"graphiti", "construction", "embedding", "neo4j"}
+        if not required_runtime.issubset(runtime):
+            raise NativeBaselineV2FreezeError("runtime identities are incomplete")
+        source_state = _mapping(s0_payload.get("source_hashes"), label="S0 sources")
+        if input_files["parent_workplan"] != source_state.get("protocol"):
+&gt;           raise NativeBaselineV2FreezeError("parent workplan binding drift")
+E           paper_eval.s3_native_v2_freeze.NativeBaselineV2FreezeError: parent workplan binding drift
+
+src/paper_eval/s3_native_v2_freeze.py:319: NativeBaselineV2FreezeError</failure></testcase><testcase classname="tests.test_s3_native_v2_freeze" name="test_binds_one_common_dataset_retrieval_reader_and_judge_policy" time="0.001"><failure message="paper_eval.s3_native_v2_freeze.NativeBaselineV2FreezeError: parent workplan binding drift">def test_binds_one_common_dataset_retrieval_reader_and_judge_policy() -&gt; None:
+&gt;       payload = _build()["payload"]
+                  ^^^^^^^^
+
+tests/test_s3_native_v2_freeze.py:132: 
+_ _ _ _ _ _ _ _ _ _ _ _ _ _ _ _ _ _ _ _ _ _ _ _ _ _ _ _ _ _ _ _ _ _ _ _ _ _ _ _ 
+tests/test_s3_native_v2_freeze.py:72: in _build
+    return build_native_baseline_v2_freeze(
+_ _ _ _ _ _ _ _ _ _ _ _ _ _ _ _ _ _ _ _ _ _ _ _ _ _ _ _ _ _ _ _ _ _ _ _ _ _ _ _ 
+
+s0_current_state = {'git_commit': '62c114d4d33763ad194cf21ee882c453ad6f7ba7', 'payload': {'live_actions_performed': 0, 'repo_root': '/dat..._sha256': '7eb7f9e8b97a5e44090360cb6f821259b5925833fa37fff47eb90b9dedec98fe', 'protocol_version': 'paper-eval-v3', ...}
+s1_u0_smoke = {'git_commit': '62c114d4d33763ad194cf21ee882c453ad6f7ba7', 'payload': {'add_episode_call_count': 49, 'checkpoint_sha25..._sha256': 'baf0327ffc35ff8bd1209163ea6f3d7a70fb43fa4546f70f4a86c5bd6d513897', 'protocol_version': 'paper-eval-v3', ...}
+u0_qualification = {'git_commit': '62c114d4d33763ad194cf21ee882c453ad6f7ba7', 'payload': {'authorization': 'AUTHORIZE_S2_U0_1_HISTORY', '...677c666870c2449e626a6e3a590c02347ac02ac7c9d7', 'protocol_version': 'membind.paper-eval-v3.s2-u0-qualification.v1', ...}
+dataset_parity = {'git_commit': '62c114d4d33763ad194cf21ee882c453ad6f7ba7', 'payload': {'checked_count': 5, 'checked_question_ids': ['0..._sha256': '12625d3fea09262adbedca3246b050920de929371aaff95261744d117a214f14', 'protocol_version': 'paper-eval-v3', ...}
+evaluator_parity = {'git_commit': '62c114d4d33763ad194cf21ee882c453ad6f7ba7', 'payload': {'adapter_source': 'membind-validation/src/evalu..._sha256': '20a374a1924994a661adbfe9b07862ddc3e364ce70ba92c4493dfbe9d74fbc03', 'protocol_version': 'paper-eval-v3', ...}
+direct_add_episode_contract = {'contract_sha256': 'a2008f5ed6741b61d6ed5ed6978ae5d261d9e2c4f77b18833520d167fb1b896b', 'namespace_field': 'group_id', 'operation': 'graphiti.add_episode', 'source': 'membind-validation/src/graphiti_native.py:graphiti_episode_kwargs', ...}
+completion_adapter_identity = {'identity_sha256': '57ed691c688274a63d4c3ab2c2b91d341a8475cf26fb9d9d65c448f72d0a4b82', 'judge': {'backend_public_conf...7acdd', 'judge_qualification_artifact_sha256': '31a16da6d8a668517315ec22c5b375f9c494f34dbb5c62428be86c39dd028485', ...}
+retrieval_contract = {'contract_sha256': '4c3503201cf10551f8081c47e80acc544d54e5896b46d7d8ad17df4601caaada', 'failure_policy': {'automatic_...uestion_session_recall_all_at_10', 'name': 'evidence_recall_at_10', 'substitutable_by_other_metric': False, ...}}, ...}
+retrieval_policy_freeze = {'git_commit': 'a2886c12e0703625a5afc85761bbb43c96f65aae', 'payload': {'adapter_identity_file_sha256': 'ca587d057c7163..._sha256': '7f36f474efb1c0298d2dcf76041c0f6b76cf48b9505f3041989133bad9581ba5', 'protocol_version': 'paper-eval-v3', ...}
+role_registry = {'git_commit': '62c114d4d33763ad194cf21ee882c453ad6f7ba7', 'payload': {'exposure_evidence_policy': 'persisted_executio..._sha256': '3b03bf463e856406eea2e46a2c6a8c789a9767d7c920dcceab8d8747ee281dd9', 'protocol_version': 'paper-eval-v3', ...}
+reader_v2_contract = {'canary_history_id': 'b6019101', 'canary_namespace_sha256': '6973a5b0b83170986bde14c2b0d5cb6ea2070c2eec812dd89af3f830...tory_id': '07741c45', ...}, 'contract_sha256': '3a61baf4c2fe61ad76c1e85ffe67289e8d682a67d88a4a55a073c9bb2ecd2381', ...}
+reader_v2_freeze = {'git_commit': '0d21c26ce1aa944418a19f8c05cddd72145f4268', 'payload': {'compatibility_status': 'PASS', 'contract_sha25..._sha256': '43f3acf656fecd2fefacb357a532bb8826c44f55264c36ede5293a2e6348d27a', 'protocol_version': 'paper-eval-v3', ...}
+input_file_sha256 = {'parent_workplan': '1111111111111111111111111111111111111111111111111111111111111111', 'reader_v2_workplan': '2222222...09051db2a8c8dfa0f0f94d206f404', 's1_u0_smoke': 'f3bbd95560d08047d9b390cef2a5c95df6ad007922fdd2d4c0b672a684b1fc8d', ...}
+source_sha256 = {'finalize_script': '3333333333333333333333333333333333333333333333333333333333333333', 'focused_green_preseal': '4444...55555555555555555555555555555', 'freeze_test': '6666666666666666666666666666666666666666666666666666666666666666', ...}
+git_commit = 'deadbeef', run_id = 'native-baseline-v2-freeze-test-001'
+
+    def build_native_baseline_v2_freeze(
+        *,
+        s0_current_state: Mapping[str, Any],
+        s1_u0_smoke: Mapping[str, Any],
+        u0_qualification: Mapping[str, Any],
+        dataset_parity: Mapping[str, Any],
+        evaluator_parity: Mapping[str, Any],
+        direct_add_episode_contract: Mapping[str, Any],
+        completion_adapter_identity: Mapping[str, Any],
+        retrieval_contract: Mapping[str, Any],
+        retrieval_policy_freeze: Mapping[str, Any],
+        role_registry: Mapping[str, Any],
+        reader_v2_contract: Mapping[str, Any],
+        reader_v2_freeze: Mapping[str, Any],
+        input_file_sha256: Mapping[str, str],
+        source_sha256: Mapping[str, str],
+        git_commit: str,
+        run_id: str,
+    ) -&gt; dict[str, Any]:
+        """Build the configuration-only S3 freeze from already sealed evidence."""
+    
+        input_files = _hash_inventory(
+            input_file_sha256, names=_INPUT_FILE_NAMES, label="input file hashes"
+        )
+        sources = _hash_inventory(
+            source_sha256, names=_SOURCE_NAMES, label="source hashes"
+        )
+        s0, s0_payload = _sealed(s0_current_state, label="S0 current state")
+        if s0_payload.get("stage") != "S0":
+            raise NativeBaselineV2FreezeError("S0 current state stage drift")
+        runtime = _mapping(
+            s0_payload.get("runtime_identities"), label="runtime identities"
+        )
+        required_runtime = {"graphiti", "construction", "embedding", "neo4j"}
+        if not required_runtime.issubset(runtime):
+            raise NativeBaselineV2FreezeError("runtime identities are incomplete")
+        source_state = _mapping(s0_payload.get("source_hashes"), label="S0 sources")
+        if input_files["parent_workplan"] != source_state.get("protocol"):
+&gt;           raise NativeBaselineV2FreezeError("parent workplan binding drift")
+E           paper_eval.s3_native_v2_freeze.NativeBaselineV2FreezeError: parent workplan binding drift
+
+src/paper_eval/s3_native_v2_freeze.py:319: NativeBaselineV2FreezeError</failure></testcase><testcase classname="tests.test_s3_native_v2_freeze" name="test_freeze_projects_runtime_and_s1_integrity_without_raw_content" time="0.001"><failure message="paper_eval.s3_native_v2_freeze.NativeBaselineV2FreezeError: parent workplan binding drift">def test_freeze_projects_runtime_and_s1_integrity_without_raw_content() -&gt; None:
+&gt;       payload = _build()["payload"]
+                  ^^^^^^^^
+
+tests/test_s3_native_v2_freeze.py:159: 
+_ _ _ _ _ _ _ _ _ _ _ _ _ _ _ _ _ _ _ _ _ _ _ _ _ _ _ _ _ _ _ _ _ _ _ _ _ _ _ _ 
+tests/test_s3_native_v2_freeze.py:72: in _build
+    return build_native_baseline_v2_freeze(
+_ _ _ _ _ _ _ _ _ _ _ _ _ _ _ _ _ _ _ _ _ _ _ _ _ _ _ _ _ _ _ _ _ _ _ _ _ _ _ _ 
+
+s0_current_state = {'git_commit': '62c114d4d33763ad194cf21ee882c453ad6f7ba7', 'payload': {'live_actions_performed': 0, 'repo_root': '/dat..._sha256': '7eb7f9e8b97a5e44090360cb6f821259b5925833fa37fff47eb90b9dedec98fe', 'protocol_version': 'paper-eval-v3', ...}
+s1_u0_smoke = {'git_commit': '62c114d4d33763ad194cf21ee882c453ad6f7ba7', 'payload': {'add_episode_call_count': 49, 'checkpoint_sha25..._sha256': 'baf0327ffc35ff8bd1209163ea6f3d7a70fb43fa4546f70f4a86c5bd6d513897', 'protocol_version': 'paper-eval-v3', ...}
+u0_qualification = {'git_commit': '62c114d4d33763ad194cf21ee882c453ad6f7ba7', 'payload': {'authorization': 'AUTHORIZE_S2_U0_1_HISTORY', '...677c666870c2449e626a6e3a590c02347ac02ac7c9d7', 'protocol_version': 'membind.paper-eval-v3.s2-u0-qualification.v1', ...}
+dataset_parity = {'git_commit': '62c114d4d33763ad194cf21ee882c453ad6f7ba7', 'payload': {'checked_count': 5, 'checked_question_ids': ['0..._sha256': '12625d3fea09262adbedca3246b050920de929371aaff95261744d117a214f14', 'protocol_version': 'paper-eval-v3', ...}
+evaluator_parity = {'git_commit': '62c114d4d33763ad194cf21ee882c453ad6f7ba7', 'payload': {'adapter_source': 'membind-validation/src/evalu..._sha256': '20a374a1924994a661adbfe9b07862ddc3e364ce70ba92c4493dfbe9d74fbc03', 'protocol_version': 'paper-eval-v3', ...}
+direct_add_episode_contract = {'contract_sha256': 'a2008f5ed6741b61d6ed5ed6978ae5d261d9e2c4f77b18833520d167fb1b896b', 'namespace_field': 'group_id', 'operation': 'graphiti.add_episode', 'source': 'membind-validation/src/graphiti_native.py:graphiti_episode_kwargs', ...}
+completion_adapter_identity = {'identity_sha256': '57ed691c688274a63d4c3ab2c2b91d341a8475cf26fb9d9d65c448f72d0a4b82', 'judge': {'backend_public_conf...7acdd', 'judge_qualification_artifact_sha256': '31a16da6d8a668517315ec22c5b375f9c494f34dbb5c62428be86c39dd028485', ...}
+retrieval_contract = {'contract_sha256': '4c3503201cf10551f8081c47e80acc544d54e5896b46d7d8ad17df4601caaada', 'failure_policy': {'automatic_...uestion_session_recall_all_at_10', 'name': 'evidence_recall_at_10', 'substitutable_by_other_metric': False, ...}}, ...}
+retrieval_policy_freeze = {'git_commit': 'a2886c12e0703625a5afc85761bbb43c96f65aae', 'payload': {'adapter_identity_file_sha256': 'ca587d057c7163..._sha256': '7f36f474efb1c0298d2dcf76041c0f6b76cf48b9505f3041989133bad9581ba5', 'protocol_version': 'paper-eval-v3', ...}
+role_registry = {'git_commit': '62c114d4d33763ad194cf21ee882c453ad6f7ba7', 'payload': {'exposure_evidence_policy': 'persisted_executio..._sha256': '3b03bf463e856406eea2e46a2c6a8c789a9767d7c920dcceab8d8747ee281dd9', 'protocol_version': 'paper-eval-v3', ...}
+reader_v2_contract = {'canary_history_id': 'b6019101', 'canary_namespace_sha256': '6973a5b0b83170986bde14c2b0d5cb6ea2070c2eec812dd89af3f830...tory_id': '07741c45', ...}, 'contract_sha256': '3a61baf4c2fe61ad76c1e85ffe67289e8d682a67d88a4a55a073c9bb2ecd2381', ...}
+reader_v2_freeze = {'git_commit': '0d21c26ce1aa944418a19f8c05cddd72145f4268', 'payload': {'compatibility_status': 'PASS', 'contract_sha25..._sha256': '43f3acf656fecd2fefacb357a532bb8826c44f55264c36ede5293a2e6348d27a', 'protocol_version': 'paper-eval-v3', ...}
+input_file_sha256 = {'parent_workplan': '1111111111111111111111111111111111111111111111111111111111111111', 'reader_v2_workplan': '2222222...09051db2a8c8dfa0f0f94d206f404', 's1_u0_smoke': 'f3bbd95560d08047d9b390cef2a5c95df6ad007922fdd2d4c0b672a684b1fc8d', ...}
+source_sha256 = {'finalize_script': '3333333333333333333333333333333333333333333333333333333333333333', 'focused_green_preseal': '4444...55555555555555555555555555555', 'freeze_test': '6666666666666666666666666666666666666666666666666666666666666666', ...}
+git_commit = 'deadbeef', run_id = 'native-baseline-v2-freeze-test-001'
+
+    def build_native_baseline_v2_freeze(
+        *,
+        s0_current_state: Mapping[str, Any],
+        s1_u0_smoke: Mapping[str, Any],
+        u0_qualification: Mapping[str, Any],
+        dataset_parity: Mapping[str, Any],
+        evaluator_parity: Mapping[str, Any],
+        direct_add_episode_contract: Mapping[str, Any],
+        completion_adapter_identity: Mapping[str, Any],
+        retrieval_contract: Mapping[str, Any],
+        retrieval_policy_freeze: Mapping[str, Any],
+        role_registry: Mapping[str, Any],
+        reader_v2_contract: Mapping[str, Any],
+        reader_v2_freeze: Mapping[str, Any],
+        input_file_sha256: Mapping[str, str],
+        source_sha256: Mapping[str, str],
+        git_commit: str,
+        run_id: str,
+    ) -&gt; dict[str, Any]:
+        """Build the configuration-only S3 freeze from already sealed evidence."""
+    
+        input_files = _hash_inventory(
+            input_file_sha256, names=_INPUT_FILE_NAMES, label="input file hashes"
+        )
+        sources = _hash_inventory(
+            source_sha256, names=_SOURCE_NAMES, label="source hashes"
+        )
+        s0, s0_payload = _sealed(s0_current_state, label="S0 current state")
+        if s0_payload.get("stage") != "S0":
+            raise NativeBaselineV2FreezeError("S0 current state stage drift")
+        runtime = _mapping(
+            s0_payload.get("runtime_identities"), label="runtime identities"
+        )
+        required_runtime = {"graphiti", "construction", "embedding", "neo4j"}
+        if not required_runtime.issubset(runtime):
+            raise NativeBaselineV2FreezeError("runtime identities are incomplete")
+        source_state = _mapping(s0_payload.get("source_hashes"), label="S0 sources")
+        if input_files["parent_workplan"] != source_state.get("protocol"):
+&gt;           raise NativeBaselineV2FreezeError("parent workplan binding drift")
+E           paper_eval.s3_native_v2_freeze.NativeBaselineV2FreezeError: parent workplan binding drift
+
+src/paper_eval/s3_native_v2_freeze.py:319: NativeBaselineV2FreezeError</failure></testcase><testcase classname="tests.test_s3_native_v2_freeze" name="test_reader_canary_qa_is_accepted_but_never_a_freeze_gate[0.0]" time="0.001"><failure message="paper_eval.s3_native_v2_freeze.NativeBaselineV2FreezeError: parent workplan binding drift">qa_accuracy = 0.0
+
+    @pytest.mark.parametrize("qa_accuracy", [0.0, 1.0])
+    def test_reader_canary_qa_is_accepted_but_never_a_freeze_gate(
+        qa_accuracy: float,
+    ) -&gt; None:
+        fixture = _fixture()
+        reader = fixture["reader_v2_freeze"]
+        reader["payload"]["qa_accuracy_diagnostic"] = qa_accuracy
+        _reseal(reader)
+        fixture["input_file_sha256"]["reader_v2_freeze"] = "8" * 64
+    
+&gt;       payload = _build(fixture)["payload"]
+                  ^^^^^^^^^^^^^^^
+
+tests/test_s3_native_v2_freeze.py:205: 
+_ _ _ _ _ _ _ _ _ _ _ _ _ _ _ _ _ _ _ _ _ _ _ _ _ _ _ _ _ _ _ _ _ _ _ _ _ _ _ _ 
+tests/test_s3_native_v2_freeze.py:72: in _build
+    return build_native_baseline_v2_freeze(
+_ _ _ _ _ _ _ _ _ _ _ _ _ _ _ _ _ _ _ _ _ _ _ _ _ _ _ _ _ _ _ _ _ _ _ _ _ _ _ _ 
+
+s0_current_state = {'git_commit': '62c114d4d33763ad194cf21ee882c453ad6f7ba7', 'payload': {'live_actions_performed': 0, 'repo_root': '/dat..._sha256': '7eb7f9e8b97a5e44090360cb6f821259b5925833fa37fff47eb90b9dedec98fe', 'protocol_version': 'paper-eval-v3', ...}
+s1_u0_smoke = {'git_commit': '62c114d4d33763ad194cf21ee882c453ad6f7ba7', 'payload': {'add_episode_call_count': 49, 'checkpoint_sha25..._sha256': 'baf0327ffc35ff8bd1209163ea6f3d7a70fb43fa4546f70f4a86c5bd6d513897', 'protocol_version': 'paper-eval-v3', ...}
+u0_qualification = {'git_commit': '62c114d4d33763ad194cf21ee882c453ad6f7ba7', 'payload': {'authorization': 'AUTHORIZE_S2_U0_1_HISTORY', '...677c666870c2449e626a6e3a590c02347ac02ac7c9d7', 'protocol_version': 'membind.paper-eval-v3.s2-u0-qualification.v1', ...}
+dataset_parity = {'git_commit': '62c114d4d33763ad194cf21ee882c453ad6f7ba7', 'payload': {'checked_count': 5, 'checked_question_ids': ['0..._sha256': '12625d3fea09262adbedca3246b050920de929371aaff95261744d117a214f14', 'protocol_version': 'paper-eval-v3', ...}
+evaluator_parity = {'git_commit': '62c114d4d33763ad194cf21ee882c453ad6f7ba7', 'payload': {'adapter_source': 'membind-validation/src/evalu..._sha256': '20a374a1924994a661adbfe9b07862ddc3e364ce70ba92c4493dfbe9d74fbc03', 'protocol_version': 'paper-eval-v3', ...}
+direct_add_episode_contract = {'contract_sha256': 'a2008f5ed6741b61d6ed5ed6978ae5d261d9e2c4f77b18833520d167fb1b896b', 'namespace_field': 'group_id', 'operation': 'graphiti.add_episode', 'source': 'membind-validation/src/graphiti_native.py:graphiti_episode_kwargs', ...}
+completion_adapter_identity = {'identity_sha256': '57ed691c688274a63d4c3ab2c2b91d341a8475cf26fb9d9d65c448f72d0a4b82', 'judge': {'backend_public_conf...7acdd', 'judge_qualification_artifact_sha256': '31a16da6d8a668517315ec22c5b375f9c494f34dbb5c62428be86c39dd028485', ...}
+retrieval_contract = {'contract_sha256': '4c3503201cf10551f8081c47e80acc544d54e5896b46d7d8ad17df4601caaada', 'failure_policy': {'automatic_...uestion_session_recall_all_at_10', 'name': 'evidence_recall_at_10', 'substitutable_by_other_metric': False, ...}}, ...}
+retrieval_policy_freeze = {'git_commit': 'a2886c12e0703625a5afc85761bbb43c96f65aae', 'payload': {'adapter_identity_file_sha256': 'ca587d057c7163..._sha256': '7f36f474efb1c0298d2dcf76041c0f6b76cf48b9505f3041989133bad9581ba5', 'protocol_version': 'paper-eval-v3', ...}
+role_registry = {'git_commit': '62c114d4d33763ad194cf21ee882c453ad6f7ba7', 'payload': {'exposure_evidence_policy': 'persisted_executio..._sha256': '3b03bf463e856406eea2e46a2c6a8c789a9767d7c920dcceab8d8747ee281dd9', 'protocol_version': 'paper-eval-v3', ...}
+reader_v2_contract = {'canary_history_id': 'b6019101', 'canary_namespace_sha256': '6973a5b0b83170986bde14c2b0d5cb6ea2070c2eec812dd89af3f830...tory_id': '07741c45', ...}, 'contract_sha256': '3a61baf4c2fe61ad76c1e85ffe67289e8d682a67d88a4a55a073c9bb2ecd2381', ...}
+reader_v2_freeze = {'git_commit': '0d21c26ce1aa944418a19f8c05cddd72145f4268', 'payload': {'compatibility_status': 'PASS', 'contract_sha25..._sha256': '446f65f1dbd5c279eb61db9f76c52294fe738709b745332d5a16c46c6cfdb805', 'protocol_version': 'paper-eval-v3', ...}
+input_file_sha256 = {'parent_workplan': '1111111111111111111111111111111111111111111111111111111111111111', 'reader_v2_workplan': '2222222...09051db2a8c8dfa0f0f94d206f404', 's1_u0_smoke': 'f3bbd95560d08047d9b390cef2a5c95df6ad007922fdd2d4c0b672a684b1fc8d', ...}
+source_sha256 = {'finalize_script': '3333333333333333333333333333333333333333333333333333333333333333', 'focused_green_preseal': '4444...55555555555555555555555555555', 'freeze_test': '6666666666666666666666666666666666666666666666666666666666666666', ...}
+git_commit = 'deadbeef', run_id = 'native-baseline-v2-freeze-test-001'
+
+    def build_native_baseline_v2_freeze(
+        *,
+        s0_current_state: Mapping[str, Any],
+        s1_u0_smoke: Mapping[str, Any],
+        u0_qualification: Mapping[str, Any],
+        dataset_parity: Mapping[str, Any],
+        evaluator_parity: Mapping[str, Any],
+        direct_add_episode_contract: Mapping[str, Any],
+        completion_adapter_identity: Mapping[str, Any],
+        retrieval_contract: Mapping[str, Any],
+        retrieval_policy_freeze: Mapping[str, Any],
+        role_registry: Mapping[str, Any],
+        reader_v2_contract: Mapping[str, Any],
+        reader_v2_freeze: Mapping[str, Any],
+        input_file_sha256: Mapping[str, str],
+        source_sha256: Mapping[str, str],
+        git_commit: str,
+        run_id: str,
+    ) -&gt; dict[str, Any]:
+        """Build the configuration-only S3 freeze from already sealed evidence."""
+    
+        input_files = _hash_inventory(
+            input_file_sha256, names=_INPUT_FILE_NAMES, label="input file hashes"
+        )
+        sources = _hash_inventory(
+            source_sha256, names=_SOURCE_NAMES, label="source hashes"
+        )
+        s0, s0_payload = _sealed(s0_current_state, label="S0 current state")
+        if s0_payload.get("stage") != "S0":
+            raise NativeBaselineV2FreezeError("S0 current state stage drift")
+        runtime = _mapping(
+            s0_payload.get("runtime_identities"), label="runtime identities"
+        )
+        required_runtime = {"graphiti", "construction", "embedding", "neo4j"}
+        if not required_runtime.issubset(runtime):
+            raise NativeBaselineV2FreezeError("runtime identities are incomplete")
+        source_state = _mapping(s0_payload.get("source_hashes"), label="S0 sources")
+        if input_files["parent_workplan"] != source_state.get("protocol"):
+&gt;           raise NativeBaselineV2FreezeError("parent workplan binding drift")
+E           paper_eval.s3_native_v2_freeze.NativeBaselineV2FreezeError: parent workplan binding drift
+
+src/paper_eval/s3_native_v2_freeze.py:319: NativeBaselineV2FreezeError</failure></testcase><testcase classname="tests.test_s3_native_v2_freeze" name="test_reader_canary_qa_is_accepted_but_never_a_freeze_gate[1.0]" time="0.001"><failure message="paper_eval.s3_native_v2_freeze.NativeBaselineV2FreezeError: parent workplan binding drift">qa_accuracy = 1.0
+
+    @pytest.mark.parametrize("qa_accuracy", [0.0, 1.0])
+    def test_reader_canary_qa_is_accepted_but_never_a_freeze_gate(
+        qa_accuracy: float,
+    ) -&gt; None:
+        fixture = _fixture()
+        reader = fixture["reader_v2_freeze"]
+        reader["payload"]["qa_accuracy_diagnostic"] = qa_accuracy
+        _reseal(reader)
+        fixture["input_file_sha256"]["reader_v2_freeze"] = "8" * 64
+    
+&gt;       payload = _build(fixture)["payload"]
+                  ^^^^^^^^^^^^^^^
+
+tests/test_s3_native_v2_freeze.py:205: 
+_ _ _ _ _ _ _ _ _ _ _ _ _ _ _ _ _ _ _ _ _ _ _ _ _ _ _ _ _ _ _ _ _ _ _ _ _ _ _ _ 
+tests/test_s3_native_v2_freeze.py:72: in _build
+    return build_native_baseline_v2_freeze(
+_ _ _ _ _ _ _ _ _ _ _ _ _ _ _ _ _ _ _ _ _ _ _ _ _ _ _ _ _ _ _ _ _ _ _ _ _ _ _ _ 
+
+s0_current_state = {'git_commit': '62c114d4d33763ad194cf21ee882c453ad6f7ba7', 'payload': {'live_actions_performed': 0, 'repo_root': '/dat..._sha256': '7eb7f9e8b97a5e44090360cb6f821259b5925833fa37fff47eb90b9dedec98fe', 'protocol_version': 'paper-eval-v3', ...}
+s1_u0_smoke = {'git_commit': '62c114d4d33763ad194cf21ee882c453ad6f7ba7', 'payload': {'add_episode_call_count': 49, 'checkpoint_sha25..._sha256': 'baf0327ffc35ff8bd1209163ea6f3d7a70fb43fa4546f70f4a86c5bd6d513897', 'protocol_version': 'paper-eval-v3', ...}
+u0_qualification = {'git_commit': '62c114d4d33763ad194cf21ee882c453ad6f7ba7', 'payload': {'authorization': 'AUTHORIZE_S2_U0_1_HISTORY', '...677c666870c2449e626a6e3a590c02347ac02ac7c9d7', 'protocol_version': 'membind.paper-eval-v3.s2-u0-qualification.v1', ...}
+dataset_parity = {'git_commit': '62c114d4d33763ad194cf21ee882c453ad6f7ba7', 'payload': {'checked_count': 5, 'checked_question_ids': ['0..._sha256': '12625d3fea09262adbedca3246b050920de929371aaff95261744d117a214f14', 'protocol_version': 'paper-eval-v3', ...}
+evaluator_parity = {'git_commit': '62c114d4d33763ad194cf21ee882c453ad6f7ba7', 'payload': {'adapter_source': 'membind-validation/src/evalu..._sha256': '20a374a1924994a661adbfe9b07862ddc3e364ce70ba92c4493dfbe9d74fbc03', 'protocol_version': 'paper-eval-v3', ...}
+direct_add_episode_contract = {'contract_sha256': 'a2008f5ed6741b61d6ed5ed6978ae5d261d9e2c4f77b18833520d167fb1b896b', 'namespace_field': 'group_id', 'operation': 'graphiti.add_episode', 'source': 'membind-validation/src/graphiti_native.py:graphiti_episode_kwargs', ...}
+completion_adapter_identity = {'identity_sha256': '57ed691c688274a63d4c3ab2c2b91d341a8475cf26fb9d9d65c448f72d0a4b82', 'judge': {'backend_public_conf...7acdd', 'judge_qualification_artifact_sha256': '31a16da6d8a668517315ec22c5b375f9c494f34dbb5c62428be86c39dd028485', ...}
+retrieval_contract = {'contract_sha256': '4c3503201cf10551f8081c47e80acc544d54e5896b46d7d8ad17df4601caaada', 'failure_policy': {'automatic_...uestion_session_recall_all_at_10', 'name': 'evidence_recall_at_10', 'substitutable_by_other_metric': False, ...}}, ...}
+retrieval_policy_freeze = {'git_commit': 'a2886c12e0703625a5afc85761bbb43c96f65aae', 'payload': {'adapter_identity_file_sha256': 'ca587d057c7163..._sha256': '7f36f474efb1c0298d2dcf76041c0f6b76cf48b9505f3041989133bad9581ba5', 'protocol_version': 'paper-eval-v3', ...}
+role_registry = {'git_commit': '62c114d4d33763ad194cf21ee882c453ad6f7ba7', 'payload': {'exposure_evidence_policy': 'persisted_executio..._sha256': '3b03bf463e856406eea2e46a2c6a8c789a9767d7c920dcceab8d8747ee281dd9', 'protocol_version': 'paper-eval-v3', ...}
+reader_v2_contract = {'canary_history_id': 'b6019101', 'canary_namespace_sha256': '6973a5b0b83170986bde14c2b0d5cb6ea2070c2eec812dd89af3f830...tory_id': '07741c45', ...}, 'contract_sha256': '3a61baf4c2fe61ad76c1e85ffe67289e8d682a67d88a4a55a073c9bb2ecd2381', ...}
+reader_v2_freeze = {'git_commit': '0d21c26ce1aa944418a19f8c05cddd72145f4268', 'payload': {'compatibility_status': 'PASS', 'contract_sha25..._sha256': '43f3acf656fecd2fefacb357a532bb8826c44f55264c36ede5293a2e6348d27a', 'protocol_version': 'paper-eval-v3', ...}
+input_file_sha256 = {'parent_workplan': '1111111111111111111111111111111111111111111111111111111111111111', 'reader_v2_workplan': '2222222...09051db2a8c8dfa0f0f94d206f404', 's1_u0_smoke': 'f3bbd95560d08047d9b390cef2a5c95df6ad007922fdd2d4c0b672a684b1fc8d', ...}
+source_sha256 = {'finalize_script': '3333333333333333333333333333333333333333333333333333333333333333', 'focused_green_preseal': '4444...55555555555555555555555555555', 'freeze_test': '6666666666666666666666666666666666666666666666666666666666666666', ...}
+git_commit = 'deadbeef', run_id = 'native-baseline-v2-freeze-test-001'
+
+    def build_native_baseline_v2_freeze(
+        *,
+        s0_current_state: Mapping[str, Any],
+        s1_u0_smoke: Mapping[str, Any],
+        u0_qualification: Mapping[str, Any],
+        dataset_parity: Mapping[str, Any],
+        evaluator_parity: Mapping[str, Any],
+        direct_add_episode_contract: Mapping[str, Any],
+        completion_adapter_identity: Mapping[str, Any],
+        retrieval_contract: Mapping[str, Any],
+        retrieval_policy_freeze: Mapping[str, Any],
+        role_registry: Mapping[str, Any],
+        reader_v2_contract: Mapping[str, Any],
+        reader_v2_freeze: Mapping[str, Any],
+        input_file_sha256: Mapping[str, str],
+        source_sha256: Mapping[str, str],
+        git_commit: str,
+        run_id: str,
+    ) -&gt; dict[str, Any]:
+        """Build the configuration-only S3 freeze from already sealed evidence."""
+    
+        input_files = _hash_inventory(
+            input_file_sha256, names=_INPUT_FILE_NAMES, label="input file hashes"
+        )
+        sources = _hash_inventory(
+            source_sha256, names=_SOURCE_NAMES, label="source hashes"
+        )
+        s0, s0_payload = _sealed(s0_current_state, label="S0 current state")
+        if s0_payload.get("stage") != "S0":
+            raise NativeBaselineV2FreezeError("S0 current state stage drift")
+        runtime = _mapping(
+            s0_payload.get("runtime_identities"), label="runtime identities"
+        )
+        required_runtime = {"graphiti", "construction", "embedding", "neo4j"}
+        if not required_runtime.issubset(runtime):
+            raise NativeBaselineV2FreezeError("runtime identities are incomplete")
+        source_state = _mapping(s0_payload.get("source_hashes"), label="S0 sources")
+        if input_files["parent_workplan"] != source_state.get("protocol"):
+&gt;           raise NativeBaselineV2FreezeError("parent workplan binding drift")
+E           paper_eval.s3_native_v2_freeze.NativeBaselineV2FreezeError: parent workplan binding drift
+
+src/paper_eval/s3_native_v2_freeze.py:319: NativeBaselineV2FreezeError</failure></testcase><testcase classname="tests.test_s3_native_v2_freeze" name="test_rejects_failed_native_or_alignment_evidence[s1_u0_smoke-mutation0-S1 U0 smoke]" time="0.001"><failure message="AssertionError: Regex pattern did not match.&#10;  Expected regex: 'S1 U0 smoke'&#10;  Actual message: 'parent workplan binding drift'">artifact_name = 's1_u0_smoke', mutation = ('verdict', 'FAIL')
+error = 'S1 U0 smoke'
+
+    @pytest.mark.parametrize(
+        "artifact_name,mutation,error",
+        [
+            ("s1_u0_smoke", ("verdict", "FAIL"), "S1 U0 smoke"),
+            ("dataset_parity", ("verdict", "FAIL"), "dataset parity"),
+            ("evaluator_parity", ("verdict", "FAIL"), "evaluator parity"),
+        ],
+    )
+    def test_rejects_failed_native_or_alignment_evidence(
+        artifact_name: str, mutation: tuple[str, object], error: str
+    ) -&gt; None:
+        fixture = _fixture()
+        artifact = fixture[artifact_name]
+        artifact["payload"][mutation[0]] = mutation[1]
+        _reseal(artifact)
+    
+&gt;       with pytest.raises(NativeBaselineV2FreezeError, match=error):
+E       AssertionError: Regex pattern did not match.
+E         Expected regex: 'S1 U0 smoke'
+E         Actual message: 'parent workplan binding drift'
+
+tests/test_s3_native_v2_freeze.py:229: AssertionError</failure></testcase><testcase classname="tests.test_s3_native_v2_freeze" name="test_rejects_failed_native_or_alignment_evidence[dataset_parity-mutation1-dataset parity]" time="0.001"><failure message="AssertionError: Regex pattern did not match.&#10;  Expected regex: 'dataset parity'&#10;  Actual message: 'parent workplan binding drift'">artifact_name = 'dataset_parity', mutation = ('verdict', 'FAIL')
+error = 'dataset parity'
+
+    @pytest.mark.parametrize(
+        "artifact_name,mutation,error",
+        [
+            ("s1_u0_smoke", ("verdict", "FAIL"), "S1 U0 smoke"),
+            ("dataset_parity", ("verdict", "FAIL"), "dataset parity"),
+            ("evaluator_parity", ("verdict", "FAIL"), "evaluator parity"),
+        ],
+    )
+    def test_rejects_failed_native_or_alignment_evidence(
+        artifact_name: str, mutation: tuple[str, object], error: str
+    ) -&gt; None:
+        fixture = _fixture()
+        artifact = fixture[artifact_name]
+        artifact["payload"][mutation[0]] = mutation[1]
+        _reseal(artifact)
+    
+&gt;       with pytest.raises(NativeBaselineV2FreezeError, match=error):
+E       AssertionError: Regex pattern did not match.
+E         Expected regex: 'dataset parity'
+E         Actual message: 'parent workplan binding drift'
+
+tests/test_s3_native_v2_freeze.py:229: AssertionError</failure></testcase><testcase classname="tests.test_s3_native_v2_freeze" name="test_rejects_failed_native_or_alignment_evidence[evaluator_parity-mutation2-evaluator parity]" time="0.001"><failure message="AssertionError: Regex pattern did not match.&#10;  Expected regex: 'evaluator parity'&#10;  Actual message: 'parent workplan binding drift'">artifact_name = 'evaluator_parity', mutation = ('verdict', 'FAIL')
+error = 'evaluator parity'
+
+    @pytest.mark.parametrize(
+        "artifact_name,mutation,error",
+        [
+            ("s1_u0_smoke", ("verdict", "FAIL"), "S1 U0 smoke"),
+            ("dataset_parity", ("verdict", "FAIL"), "dataset parity"),
+            ("evaluator_parity", ("verdict", "FAIL"), "evaluator parity"),
+        ],
+    )
+    def test_rejects_failed_native_or_alignment_evidence(
+        artifact_name: str, mutation: tuple[str, object], error: str
+    ) -&gt; None:
+        fixture = _fixture()
+        artifact = fixture[artifact_name]
+        artifact["payload"][mutation[0]] = mutation[1]
+        _reseal(artifact)
+    
+&gt;       with pytest.raises(NativeBaselineV2FreezeError, match=error):
+E       AssertionError: Regex pattern did not match.
+E         Expected regex: 'evaluator parity'
+E         Actual message: 'parent workplan binding drift'
+
+tests/test_s3_native_v2_freeze.py:229: AssertionError</failure></testcase><testcase classname="tests.test_s3_native_v2_freeze" name="test_rejects_incomplete_or_nonserial_s1_coverage" time="0.001"><failure message="AssertionError: Regex pattern did not match.&#10;  Expected regex: 'coverage'&#10;  Actual message: 'parent workplan binding drift'">def test_rejects_incomplete_or_nonserial_s1_coverage() -&gt; None:
+        fixture = _fixture()
+        smoke = fixture["s1_u0_smoke"]
+        smoke["payload"]["coverage"]["published"] = 48
+        _reseal(smoke)
+    
+&gt;       with pytest.raises(NativeBaselineV2FreezeError, match="coverage"):
+E       AssertionError: Regex pattern did not match.
+E         Expected regex: 'coverage'
+E         Actual message: 'parent workplan binding drift'
+
+tests/test_s3_native_v2_freeze.py:239: AssertionError</failure></testcase><testcase classname="tests.test_s3_native_v2_freeze" name="test_rejects_retrieval_policy_drift[top_k-5]" time="0.001"><failure message="AssertionError: Regex pattern did not match.&#10;  Expected regex: 'retrieval policy'&#10;  Actual message: 'parent workplan binding drift'">field = 'top_k', value = 5
+
+    @pytest.mark.parametrize(
+        "field,value",
+        [
+            ("top_k", 5),
+            ("retrieval_surface", "custom_surface"),
+            ("retrieval_method", "custom_search"),
+        ],
+    )
+    def test_rejects_retrieval_policy_drift(field: str, value: object) -&gt; None:
+        fixture = _fixture()
+        fixture["retrieval_contract"]["retrieval_policy"][field] = value
+    
+&gt;       with pytest.raises(Exception, match="retrieval policy"):
+E       AssertionError: Regex pattern did not match.
+E         Expected regex: 'retrieval policy'
+E         Actual message: 'parent workplan binding drift'
+
+tests/test_s3_native_v2_freeze.py:255: AssertionError</failure></testcase><testcase classname="tests.test_s3_native_v2_freeze" name="test_rejects_retrieval_policy_drift[retrieval_surface-custom_surface]" time="0.001"><failure message="AssertionError: Regex pattern did not match.&#10;  Expected regex: 'retrieval policy'&#10;  Actual message: 'parent workplan binding drift'">field = 'retrieval_surface', value = 'custom_surface'
+
+    @pytest.mark.parametrize(
+        "field,value",
+        [
+            ("top_k", 5),
+            ("retrieval_surface", "custom_surface"),
+            ("retrieval_method", "custom_search"),
+        ],
+    )
+    def test_rejects_retrieval_policy_drift(field: str, value: object) -&gt; None:
+        fixture = _fixture()
+        fixture["retrieval_contract"]["retrieval_policy"][field] = value
+    
+&gt;       with pytest.raises(Exception, match="retrieval policy"):
+E       AssertionError: Regex pattern did not match.
+E         Expected regex: 'retrieval policy'
+E         Actual message: 'parent workplan binding drift'
+
+tests/test_s3_native_v2_freeze.py:255: AssertionError</failure></testcase><testcase classname="tests.test_s3_native_v2_freeze" name="test_rejects_retrieval_policy_drift[retrieval_method-custom_search]" time="0.001"><failure message="AssertionError: Regex pattern did not match.&#10;  Expected regex: 'retrieval policy'&#10;  Actual message: 'parent workplan binding drift'">field = 'retrieval_method', value = 'custom_search'
+
+    @pytest.mark.parametrize(
+        "field,value",
+        [
+            ("top_k", 5),
+            ("retrieval_surface", "custom_surface"),
+            ("retrieval_method", "custom_search"),
+        ],
+    )
+    def test_rejects_retrieval_policy_drift(field: str, value: object) -&gt; None:
+        fixture = _fixture()
+        fixture["retrieval_contract"]["retrieval_policy"][field] = value
+    
+&gt;       with pytest.raises(Exception, match="retrieval policy"):
+E       AssertionError: Regex pattern did not match.
+E         Expected regex: 'retrieval policy'
+E         Actual message: 'parent workplan binding drift'
+
+tests/test_s3_native_v2_freeze.py:255: AssertionError</failure></testcase><testcase classname="tests.test_s3_native_v2_freeze" name="test_rejects_outcome_selected_retrieval_policy" time="0.001"><failure message="AssertionError: Regex pattern did not match.&#10;  Expected regex: 'retrieval policy freeze'&#10;  Actual message: 'parent workplan binding drift'">def test_rejects_outcome_selected_retrieval_policy() -&gt; None:
+        fixture = _fixture()
+        policy = fixture["retrieval_policy_freeze"]
+        policy["payload"]["r0_numeric_score_used_for_policy_choice"] = True
+        _reseal(policy)
+    
+&gt;       with pytest.raises(NativeBaselineV2FreezeError, match="retrieval policy freeze"):
+E       AssertionError: Regex pattern did not match.
+E         Expected regex: 'retrieval policy freeze'
+E         Actual message: 'parent workplan binding drift'
+
+tests/test_s3_native_v2_freeze.py:265: AssertionError</failure></testcase><testcase classname="tests.test_s3_native_v2_freeze" name="test_rejects_reader_contract_or_retrieval_policy_file_drift" time="0.001"><failure message="AssertionError: Regex pattern did not match.&#10;  Expected regex: 'retrieval policy'&#10;  Actual message: 'parent workplan binding drift'">def test_rejects_reader_contract_or_retrieval_policy_file_drift() -&gt; None:
+        fixture = _fixture()
+        fixture["reader_v2_contract"]["retrieval_policy_file_sha256"] = "0" * 64
+        fixture["reader_v2_contract"]["contract_sha256"] = payload_sha256(
+            {
+                key: value
+                for key, value in fixture["reader_v2_contract"].items()
+                if key != "contract_sha256"
+            }
+        )
+&gt;       with pytest.raises(Exception, match="retrieval policy"):
+E       AssertionError: Regex pattern did not match.
+E         Expected regex: 'retrieval policy'
+E         Actual message: 'parent workplan binding drift'
+
+tests/test_s3_native_v2_freeze.py:279: AssertionError</failure></testcase><testcase classname="tests.test_s3_native_v2_freeze" name="test_rejects_judge_binding_drift" time="0.001"><failure message="AssertionError: Regex pattern did not match.&#10;  Expected regex: 'Reader-v2 freeze'&#10;  Actual message: 'parent workplan binding drift'">def test_rejects_judge_binding_drift() -&gt; None:
+        fixture = _fixture()
+        reader = fixture["reader_v2_freeze"]
+        reader["payload"]["method_judge_bindings"]["M*"] = "0" * 64
+        _reseal(reader)
+    
+&gt;       with pytest.raises(Exception, match="Reader-v2 freeze"):
+E       AssertionError: Regex pattern did not match.
+E         Expected regex: 'Reader-v2 freeze'
+E         Actual message: 'parent workplan binding drift'
+
+tests/test_s3_native_v2_freeze.py:294: AssertionError</failure></testcase><testcase classname="tests.test_s3_native_v2_freeze" name="test_rejects_reader_v2_semantic_or_binding_drift[quality_gate-Reader-v2 freeze]" time="0.001"><failure message="AssertionError: Regex pattern did not match.&#10;  Expected regex: 'Reader-v2 freeze'&#10;  Actual message: 'parent workplan binding drift'">mutation = 'quality_gate', error = 'Reader-v2 freeze'
+
+    @pytest.mark.parametrize(
+        "mutation,error",
+        [
+            ("quality_gate", "Reader-v2 freeze"),
+            ("reader_binding", "Reader-v2 freeze"),
+            ("s3_config_authority", "Reader-v2 freeze"),
+        ],
+    )
+    def test_rejects_reader_v2_semantic_or_binding_drift(
+        mutation: str, error: str
+    ) -&gt; None:
+        fixture = _fixture()
+        reader = fixture["reader_v2_freeze"]
+        if mutation == "quality_gate":
+            reader["payload"]["quality_gate_used"] = True
+        elif mutation == "reader_binding":
+            reader["payload"]["method_reader_bindings"]["M*"] = "9" * 64
+        else:
+            reader["payload"]["s3_configuration_update_authorized"] = False
+        _reseal(reader)
+    
+&gt;       with pytest.raises(Exception, match=error):
+E       AssertionError: Regex pattern did not match.
+E         Expected regex: 'Reader-v2 freeze'
+E         Actual message: 'parent workplan binding drift'
+
+tests/test_s3_native_v2_freeze.py:319: AssertionError</failure></testcase><testcase classname="tests.test_s3_native_v2_freeze" name="test_rejects_reader_v2_semantic_or_binding_drift[reader_binding-Reader-v2 freeze]" time="0.001"><failure message="AssertionError: Regex pattern did not match.&#10;  Expected regex: 'Reader-v2 freeze'&#10;  Actual message: 'parent workplan binding drift'">mutation = 'reader_binding', error = 'Reader-v2 freeze'
+
+    @pytest.mark.parametrize(
+        "mutation,error",
+        [
+            ("quality_gate", "Reader-v2 freeze"),
+            ("reader_binding", "Reader-v2 freeze"),
+            ("s3_config_authority", "Reader-v2 freeze"),
+        ],
+    )
+    def test_rejects_reader_v2_semantic_or_binding_drift(
+        mutation: str, error: str
+    ) -&gt; None:
+        fixture = _fixture()
+        reader = fixture["reader_v2_freeze"]
+        if mutation == "quality_gate":
+            reader["payload"]["quality_gate_used"] = True
+        elif mutation == "reader_binding":
+            reader["payload"]["method_reader_bindings"]["M*"] = "9" * 64
+        else:
+            reader["payload"]["s3_configuration_update_authorized"] = False
+        _reseal(reader)
+    
+&gt;       with pytest.raises(Exception, match=error):
+E       AssertionError: Regex pattern did not match.
+E         Expected regex: 'Reader-v2 freeze'
+E         Actual message: 'parent workplan binding drift'
+
+tests/test_s3_native_v2_freeze.py:319: AssertionError</failure></testcase><testcase classname="tests.test_s3_native_v2_freeze" name="test_rejects_reader_v2_semantic_or_binding_drift[s3_config_authority-Reader-v2 freeze]" time="0.001"><failure message="AssertionError: Regex pattern did not match.&#10;  Expected regex: 'Reader-v2 freeze'&#10;  Actual message: 'parent workplan binding drift'">mutation = 's3_config_authority', error = 'Reader-v2 freeze'
+
+    @pytest.mark.parametrize(
+        "mutation,error",
+        [
+            ("quality_gate", "Reader-v2 freeze"),
+            ("reader_binding", "Reader-v2 freeze"),
+            ("s3_config_authority", "Reader-v2 freeze"),
+        ],
+    )
+    def test_rejects_reader_v2_semantic_or_binding_drift(
+        mutation: str, error: str
+    ) -&gt; None:
+        fixture = _fixture()
+        reader = fixture["reader_v2_freeze"]
+        if mutation == "quality_gate":
+            reader["payload"]["quality_gate_used"] = True
+        elif mutation == "reader_binding":
+            reader["payload"]["method_reader_bindings"]["M*"] = "9" * 64
+        else:
+            reader["payload"]["s3_configuration_update_authorized"] = False
+        _reseal(reader)
+    
+&gt;       with pytest.raises(Exception, match=error):
+E       AssertionError: Regex pattern did not match.
+E         Expected regex: 'Reader-v2 freeze'
+E         Actual message: 'parent workplan binding drift'
+
+tests/test_s3_native_v2_freeze.py:319: AssertionError</failure></testcase><testcase classname="tests.test_s3_native_v2_freeze" name="test_rejects_role_overlap_and_role_drift" time="0.001"><failure message="AssertionError: Regex pattern did not match.&#10;  Expected regex: 'role registry'&#10;  Actual message: 'parent workplan binding drift'">def test_rejects_role_overlap_and_role_drift() -&gt; None:
+        fixture = _fixture()
+        roles = fixture["role_registry"]
+        roles["payload"]["roles"]["PILOT"] = ["07741c45"]
+        _reseal(roles)
+    
+&gt;       with pytest.raises(NativeBaselineV2FreezeError, match="role registry"):
+E       AssertionError: Regex pattern did not match.
+E         Expected regex: 'role registry'
+E         Actual message: 'parent workplan binding drift'
+
+tests/test_s3_native_v2_freeze.py:329: AssertionError</failure></testcase><testcase classname="tests.test_s3_native_v2_freeze" name="test_rejects_missing_runtime_identity_and_invalid_hash_inventory" time="0.001" /><testcase classname="tests.test_s3_native_v2_freeze" name="test_rejects_parent_or_reader_workplan_hash_drift" time="0.001"><failure message="AssertionError: Regex pattern did not match.&#10;  Expected regex: 'Reader-v2 workplan'&#10;  Actual message: 'parent workplan binding drift'">def test_rejects_parent_or_reader_workplan_hash_drift() -&gt; None:
+        fixture = _fixture()
+        fixture["input_file_sha256"]["parent_workplan"] = "0" * 64
+        with pytest.raises(NativeBaselineV2FreezeError, match="parent workplan"):
+            _build(fixture)
+    
+        fixture = _fixture()
+        fixture["input_file_sha256"]["reader_v2_workplan"] = "0" * 64
+&gt;       with pytest.raises(NativeBaselineV2FreezeError, match="Reader-v2 workplan"):
+E       AssertionError: Regex pattern did not match.
+E         Expected regex: 'Reader-v2 workplan'
+E         Actual message: 'parent workplan binding drift'
+
+tests/test_s3_native_v2_freeze.py:356: AssertionError</failure></testcase><testcase classname="tests.test_s3_native_v2_freeze" name="test_verifier_rejects_tampering_authority_and_policy_hash" time="0.001"><failure message="paper_eval.s3_native_v2_freeze.NativeBaselineV2FreezeError: parent workplan binding drift">def test_verifier_rejects_tampering_authority_and_policy_hash() -&gt; None:
+&gt;       freeze = _build()
+                 ^^^^^^^^
+
+tests/test_s3_native_v2_freeze.py:366: 
+_ _ _ _ _ _ _ _ _ _ _ _ _ _ _ _ _ _ _ _ _ _ _ _ _ _ _ _ _ _ _ _ _ _ _ _ _ _ _ _ 
+tests/test_s3_native_v2_freeze.py:72: in _build
+    return build_native_baseline_v2_freeze(
+_ _ _ _ _ _ _ _ _ _ _ _ _ _ _ _ _ _ _ _ _ _ _ _ _ _ _ _ _ _ _ _ _ _ _ _ _ _ _ _ 
+
+s0_current_state = {'git_commit': '62c114d4d33763ad194cf21ee882c453ad6f7ba7', 'payload': {'live_actions_performed': 0, 'repo_root': '/dat..._sha256': '7eb7f9e8b97a5e44090360cb6f821259b5925833fa37fff47eb90b9dedec98fe', 'protocol_version': 'paper-eval-v3', ...}
+s1_u0_smoke = {'git_commit': '62c114d4d33763ad194cf21ee882c453ad6f7ba7', 'payload': {'add_episode_call_count': 49, 'checkpoint_sha25..._sha256': 'baf0327ffc35ff8bd1209163ea6f3d7a70fb43fa4546f70f4a86c5bd6d513897', 'protocol_version': 'paper-eval-v3', ...}
+u0_qualification = {'git_commit': '62c114d4d33763ad194cf21ee882c453ad6f7ba7', 'payload': {'authorization': 'AUTHORIZE_S2_U0_1_HISTORY', '...677c666870c2449e626a6e3a590c02347ac02ac7c9d7', 'protocol_version': 'membind.paper-eval-v3.s2-u0-qualification.v1', ...}
+dataset_parity = {'git_commit': '62c114d4d33763ad194cf21ee882c453ad6f7ba7', 'payload': {'checked_count': 5, 'checked_question_ids': ['0..._sha256': '12625d3fea09262adbedca3246b050920de929371aaff95261744d117a214f14', 'protocol_version': 'paper-eval-v3', ...}
+evaluator_parity = {'git_commit': '62c114d4d33763ad194cf21ee882c453ad6f7ba7', 'payload': {'adapter_source': 'membind-validation/src/evalu..._sha256': '20a374a1924994a661adbfe9b07862ddc3e364ce70ba92c4493dfbe9d74fbc03', 'protocol_version': 'paper-eval-v3', ...}
+direct_add_episode_contract = {'contract_sha256': 'a2008f5ed6741b61d6ed5ed6978ae5d261d9e2c4f77b18833520d167fb1b896b', 'namespace_field': 'group_id', 'operation': 'graphiti.add_episode', 'source': 'membind-validation/src/graphiti_native.py:graphiti_episode_kwargs', ...}
+completion_adapter_identity = {'identity_sha256': '57ed691c688274a63d4c3ab2c2b91d341a8475cf26fb9d9d65c448f72d0a4b82', 'judge': {'backend_public_conf...7acdd', 'judge_qualification_artifact_sha256': '31a16da6d8a668517315ec22c5b375f9c494f34dbb5c62428be86c39dd028485', ...}
+retrieval_contract = {'contract_sha256': '4c3503201cf10551f8081c47e80acc544d54e5896b46d7d8ad17df4601caaada', 'failure_policy': {'automatic_...uestion_session_recall_all_at_10', 'name': 'evidence_recall_at_10', 'substitutable_by_other_metric': False, ...}}, ...}
+retrieval_policy_freeze = {'git_commit': 'a2886c12e0703625a5afc85761bbb43c96f65aae', 'payload': {'adapter_identity_file_sha256': 'ca587d057c7163..._sha256': '7f36f474efb1c0298d2dcf76041c0f6b76cf48b9505f3041989133bad9581ba5', 'protocol_version': 'paper-eval-v3', ...}
+role_registry = {'git_commit': '62c114d4d33763ad194cf21ee882c453ad6f7ba7', 'payload': {'exposure_evidence_policy': 'persisted_executio..._sha256': '3b03bf463e856406eea2e46a2c6a8c789a9767d7c920dcceab8d8747ee281dd9', 'protocol_version': 'paper-eval-v3', ...}
+reader_v2_contract = {'canary_history_id': 'b6019101', 'canary_namespace_sha256': '6973a5b0b83170986bde14c2b0d5cb6ea2070c2eec812dd89af3f830...tory_id': '07741c45', ...}, 'contract_sha256': '3a61baf4c2fe61ad76c1e85ffe67289e8d682a67d88a4a55a073c9bb2ecd2381', ...}
+reader_v2_freeze = {'git_commit': '0d21c26ce1aa944418a19f8c05cddd72145f4268', 'payload': {'compatibility_status': 'PASS', 'contract_sha25..._sha256': '43f3acf656fecd2fefacb357a532bb8826c44f55264c36ede5293a2e6348d27a', 'protocol_version': 'paper-eval-v3', ...}
+input_file_sha256 = {'parent_workplan': '1111111111111111111111111111111111111111111111111111111111111111', 'reader_v2_workplan': '2222222...09051db2a8c8dfa0f0f94d206f404', 's1_u0_smoke': 'f3bbd95560d08047d9b390cef2a5c95df6ad007922fdd2d4c0b672a684b1fc8d', ...}
+source_sha256 = {'finalize_script': '3333333333333333333333333333333333333333333333333333333333333333', 'focused_green_preseal': '4444...55555555555555555555555555555', 'freeze_test': '6666666666666666666666666666666666666666666666666666666666666666', ...}
+git_commit = 'deadbeef', run_id = 'native-baseline-v2-freeze-test-001'
+
+    def build_native_baseline_v2_freeze(
+        *,
+        s0_current_state: Mapping[str, Any],
+        s1_u0_smoke: Mapping[str, Any],
+        u0_qualification: Mapping[str, Any],
+        dataset_parity: Mapping[str, Any],
+        evaluator_parity: Mapping[str, Any],
+        direct_add_episode_contract: Mapping[str, Any],
+        completion_adapter_identity: Mapping[str, Any],
+        retrieval_contract: Mapping[str, Any],
+        retrieval_policy_freeze: Mapping[str, Any],
+        role_registry: Mapping[str, Any],
+        reader_v2_contract: Mapping[str, Any],
+        reader_v2_freeze: Mapping[str, Any],
+        input_file_sha256: Mapping[str, str],
+        source_sha256: Mapping[str, str],
+        git_commit: str,
+        run_id: str,
+    ) -&gt; dict[str, Any]:
+        """Build the configuration-only S3 freeze from already sealed evidence."""
+    
+        input_files = _hash_inventory(
+            input_file_sha256, names=_INPUT_FILE_NAMES, label="input file hashes"
+        )
+        sources = _hash_inventory(
+            source_sha256, names=_SOURCE_NAMES, label="source hashes"
+        )
+        s0, s0_payload = _sealed(s0_current_state, label="S0 current state")
+        if s0_payload.get("stage") != "S0":
+            raise NativeBaselineV2FreezeError("S0 current state stage drift")
+        runtime = _mapping(
+            s0_payload.get("runtime_identities"), label="runtime identities"
+        )
+        required_runtime = {"graphiti", "construction", "embedding", "neo4j"}
+        if not required_runtime.issubset(runtime):
+            raise NativeBaselineV2FreezeError("runtime identities are incomplete")
+        source_state = _mapping(s0_payload.get("source_hashes"), label="S0 sources")
+        if input_files["parent_workplan"] != source_state.get("protocol"):
+&gt;           raise NativeBaselineV2FreezeError("parent workplan binding drift")
+E           paper_eval.s3_native_v2_freeze.NativeBaselineV2FreezeError: parent workplan binding drift
+
+src/paper_eval/s3_native_v2_freeze.py:319: NativeBaselineV2FreezeError</failure></testcase><testcase classname="tests.test_s3_native_v2_freeze" name="test_finalization_is_exclusive_and_never_overwrites" time="0.001"><failure message="paper_eval.s3_native_v2_freeze.NativeBaselineV2FreezeError: parent workplan binding drift">tmp_path = PosixPath('/tmp/pytest-of-ly/pytest-69/test_finalization_is_exclusive0')
+
+    def test_finalization_is_exclusive_and_never_overwrites(tmp_path: Path) -&gt; None:
+&gt;       freeze = _build()
+                 ^^^^^^^^
+
+tests/test_s3_native_v2_freeze.py:380: 
+_ _ _ _ _ _ _ _ _ _ _ _ _ _ _ _ _ _ _ _ _ _ _ _ _ _ _ _ _ _ _ _ _ _ _ _ _ _ _ _ 
+tests/test_s3_native_v2_freeze.py:72: in _build
+    return build_native_baseline_v2_freeze(
+_ _ _ _ _ _ _ _ _ _ _ _ _ _ _ _ _ _ _ _ _ _ _ _ _ _ _ _ _ _ _ _ _ _ _ _ _ _ _ _ 
+
+s0_current_state = {'git_commit': '62c114d4d33763ad194cf21ee882c453ad6f7ba7', 'payload': {'live_actions_performed': 0, 'repo_root': '/dat..._sha256': '7eb7f9e8b97a5e44090360cb6f821259b5925833fa37fff47eb90b9dedec98fe', 'protocol_version': 'paper-eval-v3', ...}
+s1_u0_smoke = {'git_commit': '62c114d4d33763ad194cf21ee882c453ad6f7ba7', 'payload': {'add_episode_call_count': 49, 'checkpoint_sha25..._sha256': 'baf0327ffc35ff8bd1209163ea6f3d7a70fb43fa4546f70f4a86c5bd6d513897', 'protocol_version': 'paper-eval-v3', ...}
+u0_qualification = {'git_commit': '62c114d4d33763ad194cf21ee882c453ad6f7ba7', 'payload': {'authorization': 'AUTHORIZE_S2_U0_1_HISTORY', '...677c666870c2449e626a6e3a590c02347ac02ac7c9d7', 'protocol_version': 'membind.paper-eval-v3.s2-u0-qualification.v1', ...}
+dataset_parity = {'git_commit': '62c114d4d33763ad194cf21ee882c453ad6f7ba7', 'payload': {'checked_count': 5, 'checked_question_ids': ['0..._sha256': '12625d3fea09262adbedca3246b050920de929371aaff95261744d117a214f14', 'protocol_version': 'paper-eval-v3', ...}
+evaluator_parity = {'git_commit': '62c114d4d33763ad194cf21ee882c453ad6f7ba7', 'payload': {'adapter_source': 'membind-validation/src/evalu..._sha256': '20a374a1924994a661adbfe9b07862ddc3e364ce70ba92c4493dfbe9d74fbc03', 'protocol_version': 'paper-eval-v3', ...}
+direct_add_episode_contract = {'contract_sha256': 'a2008f5ed6741b61d6ed5ed6978ae5d261d9e2c4f77b18833520d167fb1b896b', 'namespace_field': 'group_id', 'operation': 'graphiti.add_episode', 'source': 'membind-validation/src/graphiti_native.py:graphiti_episode_kwargs', ...}
+completion_adapter_identity = {'identity_sha256': '57ed691c688274a63d4c3ab2c2b91d341a8475cf26fb9d9d65c448f72d0a4b82', 'judge': {'backend_public_conf...7acdd', 'judge_qualification_artifact_sha256': '31a16da6d8a668517315ec22c5b375f9c494f34dbb5c62428be86c39dd028485', ...}
+retrieval_contract = {'contract_sha256': '4c3503201cf10551f8081c47e80acc544d54e5896b46d7d8ad17df4601caaada', 'failure_policy': {'automatic_...uestion_session_recall_all_at_10', 'name': 'evidence_recall_at_10', 'substitutable_by_other_metric': False, ...}}, ...}
+retrieval_policy_freeze = {'git_commit': 'a2886c12e0703625a5afc85761bbb43c96f65aae', 'payload': {'adapter_identity_file_sha256': 'ca587d057c7163..._sha256': '7f36f474efb1c0298d2dcf76041c0f6b76cf48b9505f3041989133bad9581ba5', 'protocol_version': 'paper-eval-v3', ...}
+role_registry = {'git_commit': '62c114d4d33763ad194cf21ee882c453ad6f7ba7', 'payload': {'exposure_evidence_policy': 'persisted_executio..._sha256': '3b03bf463e856406eea2e46a2c6a8c789a9767d7c920dcceab8d8747ee281dd9', 'protocol_version': 'paper-eval-v3', ...}
+reader_v2_contract = {'canary_history_id': 'b6019101', 'canary_namespace_sha256': '6973a5b0b83170986bde14c2b0d5cb6ea2070c2eec812dd89af3f830...tory_id': '07741c45', ...}, 'contract_sha256': '3a61baf4c2fe61ad76c1e85ffe67289e8d682a67d88a4a55a073c9bb2ecd2381', ...}
+reader_v2_freeze = {'git_commit': '0d21c26ce1aa944418a19f8c05cddd72145f4268', 'payload': {'compatibility_status': 'PASS', 'contract_sha25..._sha256': '43f3acf656fecd2fefacb357a532bb8826c44f55264c36ede5293a2e6348d27a', 'protocol_version': 'paper-eval-v3', ...}
+input_file_sha256 = {'parent_workplan': '1111111111111111111111111111111111111111111111111111111111111111', 'reader_v2_workplan': '2222222...09051db2a8c8dfa0f0f94d206f404', 's1_u0_smoke': 'f3bbd95560d08047d9b390cef2a5c95df6ad007922fdd2d4c0b672a684b1fc8d', ...}
+source_sha256 = {'finalize_script': '3333333333333333333333333333333333333333333333333333333333333333', 'focused_green_preseal': '4444...55555555555555555555555555555', 'freeze_test': '6666666666666666666666666666666666666666666666666666666666666666', ...}
+git_commit = 'deadbeef', run_id = 'native-baseline-v2-freeze-test-001'
+
+    def build_native_baseline_v2_freeze(
+        *,
+        s0_current_state: Mapping[str, Any],
+        s1_u0_smoke: Mapping[str, Any],
+        u0_qualification: Mapping[str, Any],
+        dataset_parity: Mapping[str, Any],
+        evaluator_parity: Mapping[str, Any],
+        direct_add_episode_contract: Mapping[str, Any],
+        completion_adapter_identity: Mapping[str, Any],
+        retrieval_contract: Mapping[str, Any],
+        retrieval_policy_freeze: Mapping[str, Any],
+        role_registry: Mapping[str, Any],
+        reader_v2_contract: Mapping[str, Any],
+        reader_v2_freeze: Mapping[str, Any],
+        input_file_sha256: Mapping[str, str],
+        source_sha256: Mapping[str, str],
+        git_commit: str,
+        run_id: str,
+    ) -&gt; dict[str, Any]:
+        """Build the configuration-only S3 freeze from already sealed evidence."""
+    
+        input_files = _hash_inventory(
+            input_file_sha256, names=_INPUT_FILE_NAMES, label="input file hashes"
+        )
+        sources = _hash_inventory(
+            source_sha256, names=_SOURCE_NAMES, label="source hashes"
+        )
+        s0, s0_payload = _sealed(s0_current_state, label="S0 current state")
+        if s0_payload.get("stage") != "S0":
+            raise NativeBaselineV2FreezeError("S0 current state stage drift")
+        runtime = _mapping(
+            s0_payload.get("runtime_identities"), label="runtime identities"
+        )
+        required_runtime = {"graphiti", "construction", "embedding", "neo4j"}
+        if not required_runtime.issubset(runtime):
+            raise NativeBaselineV2FreezeError("runtime identities are incomplete")
+        source_state = _mapping(s0_payload.get("source_hashes"), label="S0 sources")
+        if input_files["parent_workplan"] != source_state.get("protocol"):
+&gt;           raise NativeBaselineV2FreezeError("parent workplan binding drift")
+E           paper_eval.s3_native_v2_freeze.NativeBaselineV2FreezeError: parent workplan binding drift
+
+src/paper_eval/s3_native_v2_freeze.py:319: NativeBaselineV2FreezeError</failure></testcase></testsuite></testsuites>

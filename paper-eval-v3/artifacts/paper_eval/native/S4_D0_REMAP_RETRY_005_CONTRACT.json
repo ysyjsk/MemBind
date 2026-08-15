@@ -1,0 +1,84 @@
+{
+  "amendment_file_sha256": "d22ad4b76f5c7ae53b021479ec0dfa635ebab8e2991fadce634d9734543c3334",
+  "attempt_id": "005",
+  "authority": {
+    "live_execution_authorized": false,
+    "pilot_execution_authorized": false,
+    "preflight_authorized": true,
+    "s4_four_history_qualification_authorized": false,
+    "s5_authorized": false
+  },
+  "candidate_oracle": {
+    "edge_response_fields": [
+      "contradicted_facts[]",
+      "duplicate_facts[]"
+    ],
+    "exact_lookup_first": true,
+    "fail_closed_on_membership_or_identity_drift": true,
+    "node_response_fields": [
+      "entity_resolutions[].duplicate_candidate_id"
+    ],
+    "persistent_cache_mutation": false,
+    "raw_or_parsed_cache_write": false,
+    "supported_prompt_names": [
+      "dedupe_edges.resolve_edge",
+      "dedupe_nodes.nodes"
+    ],
+    "translation_kind": "VERIFIED_CANDIDATE_ID_BIJECTION"
+  },
+  "common_method_policy_sha256": "5699b88d83ad71de1119930ece69a9176c352ed847ea02be0cacc661b46e79e8",
+  "contract_sha256": "05b0983fa1d8e44eedc626c26b123a311252e6980d23052bc4b12824e88d2aa0",
+  "diagnosis_file_sha256": "2c3020094f453ce14c9d887f1af696dc84501a727fc47c2baa9ddca2eeff030a",
+  "diagnosis_payload_sha256": "a1948bfa42cffee43dbf81f6f4dbc4309b64a2b2956e42d24f671c795084aac6",
+  "execution_order": [
+    "U0_CAPTURE",
+    "D0_READ_ONLY_REPLAY"
+  ],
+  "history": {
+    "data_role": "DEVELOPMENT_EXPOSED",
+    "episode_count": 49,
+    "history_id": "07741c45"
+  },
+  "parent_contract_file_sha256": "55b30f8e22c7406ef26c70f95e3e7a3501e0ca6259c4c0c4abdb909ecc48aa4b",
+  "parent_contract_sha256": "20775d96a2138e47fdf256de448b2fd651dee5ae00367d8994ef38598a58e862",
+  "prior_retry_contract_file_sha256": "019bf14d932ae9b18f5b3cb01261785db402b697471f0ecf0e74f4d074b2f89f",
+  "prior_retry_contract_sha256": "6c5698508e29f55ce91f38dbf63254263c6187ac2b027955c4a257ada5b3257a",
+  "private_cache": {
+    "embedding_relpath": "runtime/private/s4-d0-remap-07741c45-20260815-005/embedding.jsonl",
+    "prompt_relpath": "runtime/private/s4-d0-remap-07741c45-20260815-005/prompt.jsonl",
+    "reportable_contents": false
+  },
+  "remap_hard_gates": {
+    "cache_mutation_during_replay": false,
+    "candidate_oracle_resolution_accounting": "EXACT_PLUS_REMAP_EQUALS_RESOLVED",
+    "candidate_remap_breakdown": "NODE_PLUS_EDGE_EQUALS_TOTAL",
+    "candidate_remap_rejection_count": 0,
+    "canonical_graph_parity": "EXACT_100_PERCENT"
+  },
+  "runs": {
+    "D0_READ_ONLY_REPLAY": {
+      "cache_id": "s4-d0-remap-07741c45-20260815-005",
+      "method": "D0",
+      "mode": "replay",
+      "namespace": "pev3-s4-d0-replay-20260815-005",
+      "run_id": "s4-d0-replay-20260815-005"
+    },
+    "U0_CAPTURE": {
+      "cache_id": "s4-d0-remap-07741c45-20260815-005",
+      "method": "U0",
+      "mode": "capture",
+      "namespace": "pev3-s4-u0-capture-20260815-005",
+      "run_id": "s4-d0-capture-20260815-005"
+    }
+  },
+  "schema_version": "membind.paper-eval-v3.s4-remap-retry-contract.v1",
+  "source_sha256": {
+    "candidate_oracle": "43b85774e022ee2763720481a128fe7fabf0baf31a2c05ea1e728974425f0b28",
+    "contract": "91d9dbada122a3cd4968630341beccab6927fa587e980c63b8192460cd5730ee",
+    "production": "6300618419c78eafacba8c504b208125918ad8f032d7709d75188f075f238b9f",
+    "runner": "fc2d8238702c8787d0941462f2725e6a57aee8889cf63aef658728b8661c48e0",
+    "test": "cd6e04b4a9f8eabbac7e62a2de08c38e16cc7344d8cd602eee4706c91c626535"
+  },
+  "stage": "S4",
+  "status": "REMAP_RETRY_EXECUTION_IDENTITY_FROZEN"
+}

@@ -1,0 +1,60 @@
+<?xml version="1.0" encoding="utf-8"?><testsuites name="pytest tests"><testsuite name="pytest" errors="0" failures="2" skipped="0" tests="2" time="0.043" timestamp="2026-08-14T23:52:51.233530+08:00" hostname="aces-System-Product-Name"><testcase classname="tests.test_s4_d0_production" name="test_capture_uses_only_u0_factory_and_exact_namespace_cleanup" time="0.005"><failure message="assert namespace(call_count=0) is &lt;paper_eval.s4_d0_production._ResolvedPromptCounter object at 0x79d9a0398290&gt;&#10; +  where namespace(call_count=0) = namespace(llm_client=namespace(call_count=0), embedder=&lt;object object at 0x79d9a1979ac0&gt;, cross_encoder=&lt;object object at 0x79d9a1979ad0&gt;).llm_client&#10; +    where namespace(llm_client=namespace(call_count=0), embedder=&lt;object object at 0x79d9a1979ac0&gt;, cross_encoder=&lt;object object at 0x79d9a1979ad0&gt;) = &lt;test_s4_d0_production.FakeGraph object at 0x79d9a03980b0&gt;.clients&#10; +      where &lt;test_s4_d0_production.FakeGraph object at 0x79d9a03980b0&gt; = S4PhaseRuntime(graph=&lt;test_s4_d0_production.FakeGraph object at 0x79d9a03980b0&gt;, episode_kwargs=&lt;function build_s4_pha...ptCache object at 0x79d9a1261100&gt;, embedding_cache=&lt;test_s4_d0_production.FakeEmbeddingCache object at 0x79d9a0398080&gt;).graph&#10; +  and   &lt;paper_eval.s4_d0_production._ResolvedPromptCounter object at 0x79d9a0398290&gt; = &lt;test_s4_d0_production.FakeGraph object at 0x79d9a03980b0&gt;.llm_client&#10; +    where &lt;test_s4_d0_production.FakeGraph object at 0x79d9a03980b0&gt; = S4PhaseRuntime(graph=&lt;test_s4_d0_production.FakeGraph object at 0x79d9a03980b0&gt;, episode_kwargs=&lt;function build_s4_pha...ptCache object at 0x79d9a1261100&gt;, embedding_cache=&lt;test_s4_d0_production.FakeEmbeddingCache object at 0x79d9a0398080&gt;).graph">tmp_path = PosixPath('/tmp/pytest-of-ly/pytest-106/test_capture_uses_only_u0_fact0')
+
+    @pytest.mark.asyncio
+    async def test_capture_uses_only_u0_factory_and_exact_namespace_cleanup(
+        tmp_path: Path,
+    ) -&gt; None:
+        calls: list[tuple] = []
+        runtime = build_s4_phase_runtime(
+            spec=_spec("capture"),
+            cache_paths=_paths(tmp_path),
+            factories=_factories(calls),
+            resume_capture=False,
+        )
+    
+        assert [call[0] for call in calls] == ["build_u0"]
+        assert isinstance(runtime.graph.llm_client.inner, FakePromptLLM)
+        assert isinstance(runtime.graph.embedder, FakeCountingEmbedder)
+        assert isinstance(runtime.graph.cross_encoder, FakeCrossEncoderAudit)
+&gt;       assert runtime.graph.clients.llm_client is runtime.graph.llm_client
+E       assert namespace(call_count=0) is &lt;paper_eval.s4_d0_production._ResolvedPromptCounter object at 0x79d9a0398290&gt;
+E        +  where namespace(call_count=0) = namespace(llm_client=namespace(call_count=0), embedder=&lt;object object at 0x79d9a1979ac0&gt;, cross_encoder=&lt;object object at 0x79d9a1979ad0&gt;).llm_client
+E        +    where namespace(llm_client=namespace(call_count=0), embedder=&lt;object object at 0x79d9a1979ac0&gt;, cross_encoder=&lt;object object at 0x79d9a1979ad0&gt;) = &lt;test_s4_d0_production.FakeGraph object at 0x79d9a03980b0&gt;.clients
+E        +      where &lt;test_s4_d0_production.FakeGraph object at 0x79d9a03980b0&gt; = S4PhaseRuntime(graph=&lt;test_s4_d0_production.FakeGraph object at 0x79d9a03980b0&gt;, episode_kwargs=&lt;function build_s4_pha...ptCache object at 0x79d9a1261100&gt;, embedding_cache=&lt;test_s4_d0_production.FakeEmbeddingCache object at 0x79d9a0398080&gt;).graph
+E        +  and   &lt;paper_eval.s4_d0_production._ResolvedPromptCounter object at 0x79d9a0398290&gt; = &lt;test_s4_d0_production.FakeGraph object at 0x79d9a03980b0&gt;.llm_client
+E        +    where &lt;test_s4_d0_production.FakeGraph object at 0x79d9a03980b0&gt; = S4PhaseRuntime(graph=&lt;test_s4_d0_production.FakeGraph object at 0x79d9a03980b0&gt;, episode_kwargs=&lt;function build_s4_pha...ptCache object at 0x79d9a1261100&gt;, embedding_cache=&lt;test_s4_d0_production.FakeEmbeddingCache object at 0x79d9a0398080&gt;).graph
+
+tests/test_s4_d0_production.py:317: AssertionError</failure></testcase><testcase classname="tests.test_s4_d0_production" name="test_replay_uses_d0_factory_read_only_and_reports_zero_live_calls" time="0.004"><failure message="assert namespace(call_count=0) is &lt;paper_eval.s4_d0_production._ResolvedPromptCounter object at 0x79d9a03989e0&gt;&#10; +  where namespace(call_count=0) = namespace(llm_client=namespace(call_count=0), embedder=&lt;object object at 0x79d9a1979b80&gt;, cross_encoder=&lt;object object at 0x79d9a1979b40&gt;).llm_client&#10; +    where namespace(llm_client=namespace(call_count=0), embedder=&lt;object object at 0x79d9a1979b80&gt;, cross_encoder=&lt;object object at 0x79d9a1979b40&gt;) = &lt;test_s4_d0_production.FakeGraph object at 0x79d9a0399190&gt;.clients&#10; +      where &lt;test_s4_d0_production.FakeGraph object at 0x79d9a0399190&gt; = S4PhaseRuntime(graph=&lt;test_s4_d0_production.FakeGraph object at 0x79d9a0399190&gt;, episode_kwargs=&lt;function build_s4_pha...ptCache object at 0x79d9a0384c80&gt;, embedding_cache=&lt;test_s4_d0_production.FakeEmbeddingCache object at 0x79d9a0eee240&gt;).graph&#10; +  and   &lt;paper_eval.s4_d0_production._ResolvedPromptCounter object at 0x79d9a03989e0&gt; = &lt;test_s4_d0_production.FakeGraph object at 0x79d9a0399190&gt;.llm_client&#10; +    where &lt;test_s4_d0_production.FakeGraph object at 0x79d9a0399190&gt; = S4PhaseRuntime(graph=&lt;test_s4_d0_production.FakeGraph object at 0x79d9a0399190&gt;, episode_kwargs=&lt;function build_s4_pha...ptCache object at 0x79d9a0384c80&gt;, embedding_cache=&lt;test_s4_d0_production.FakeEmbeddingCache object at 0x79d9a0eee240&gt;).graph">tmp_path = PosixPath('/tmp/pytest-of-ly/pytest-106/test_replay_uses_d0_factory_re0')
+
+    @pytest.mark.asyncio
+    async def test_replay_uses_d0_factory_read_only_and_reports_zero_live_calls(
+        tmp_path: Path,
+    ) -&gt; None:
+        paths = _paths(tmp_path)
+        namespace = build_embedding_namespace(FakeEmbeddingNamespace)
+        open_s4_oracles(
+            paths=paths,
+            mode="capture",
+            resume_capture=False,
+            namespace=namespace,
+            prompt_cache_type=FakePromptCache,
+            embedding_cache_type=FakeEmbeddingCache,
+        )
+        calls: list[tuple] = []
+        runtime = build_s4_phase_runtime(
+            spec=_spec("replay"),
+            cache_paths=paths,
+            factories=_factories(calls),
+            resume_capture=False,
+        )
+    
+        assert calls == [("build_d0", True, True, {"authorization_checker"})]
+&gt;       assert runtime.graph.clients.llm_client is runtime.graph.llm_client
+E       assert namespace(call_count=0) is &lt;paper_eval.s4_d0_production._ResolvedPromptCounter object at 0x79d9a03989e0&gt;
+E        +  where namespace(call_count=0) = namespace(llm_client=namespace(call_count=0), embedder=&lt;object object at 0x79d9a1979b80&gt;, cross_encoder=&lt;object object at 0x79d9a1979b40&gt;).llm_client
+E        +    where namespace(llm_client=namespace(call_count=0), embedder=&lt;object object at 0x79d9a1979b80&gt;, cross_encoder=&lt;object object at 0x79d9a1979b40&gt;) = &lt;test_s4_d0_production.FakeGraph object at 0x79d9a0399190&gt;.clients
+E        +      where &lt;test_s4_d0_production.FakeGraph object at 0x79d9a0399190&gt; = S4PhaseRuntime(graph=&lt;test_s4_d0_production.FakeGraph object at 0x79d9a0399190&gt;, episode_kwargs=&lt;function build_s4_pha...ptCache object at 0x79d9a0384c80&gt;, embedding_cache=&lt;test_s4_d0_production.FakeEmbeddingCache object at 0x79d9a0eee240&gt;).graph
+E        +  and   &lt;paper_eval.s4_d0_production._ResolvedPromptCounter object at 0x79d9a03989e0&gt; = &lt;test_s4_d0_production.FakeGraph object at 0x79d9a0399190&gt;.llm_client
+E        +    where &lt;test_s4_d0_production.FakeGraph object at 0x79d9a0399190&gt; = S4PhaseRuntime(graph=&lt;test_s4_d0_production.FakeGraph object at 0x79d9a0399190&gt;, episode_kwargs=&lt;function build_s4_pha...ptCache object at 0x79d9a0384c80&gt;, embedding_cache=&lt;test_s4_d0_production.FakeEmbeddingCache object at 0x79d9a0eee240&gt;).graph
+
+tests/test_s4_d0_production.py:354: AssertionError</failure></testcase></testsuite></testsuites>

@@ -1,0 +1,52 @@
+{
+  "attempt_id": "004",
+  "authority": {
+    "live_execution_authorized": false,
+    "pilot_execution_authorized": false,
+    "preflight_authorized": true
+  },
+  "common_method_policy_sha256": "5699b88d83ad71de1119930ece69a9176c352ed847ea02be0cacc661b46e79e8",
+  "contract_sha256": "6c5698508e29f55ce91f38dbf63254263c6187ac2b027955c4a257ada5b3257a",
+  "execution_order": [
+    "U0_CAPTURE",
+    "D0_READ_ONLY_REPLAY"
+  ],
+  "history": {
+    "data_role": "DEVELOPMENT_EXPOSED",
+    "episode_count": 49,
+    "history_id": "07741c45"
+  },
+  "inherited_gate_projection_sha256": "9476678a6b785a438f9743a4470af9fcf485920cab253c392835089cc24b66de",
+  "invalidation_file_sha256": "2b0fe1c03ef83cb0e4b187bc65f0b5a66c6a0ae5b51e46aec40a28027de94d59",
+  "invalidation_payload_sha256": "4673512f03208f792dcacc8c0c5b3910b87b2b73afb68bc7bee5499c9fe965f8",
+  "parent_contract_file_sha256": "55b30f8e22c7406ef26c70f95e3e7a3501e0ca6259c4c0c4abdb909ecc48aa4b",
+  "parent_contract_sha256": "20775d96a2138e47fdf256de448b2fd651dee5ae00367d8994ef38598a58e862",
+  "private_cache": {
+    "embedding_relpath": "runtime/private/s4-d0-07741c45-20260814-004/embedding.jsonl",
+    "prompt_relpath": "runtime/private/s4-d0-07741c45-20260814-004/prompt.jsonl",
+    "reportable_contents": false
+  },
+  "runs": {
+    "D0_READ_ONLY_REPLAY": {
+      "cache_id": "s4-d0-07741c45-20260814-004",
+      "method": "D0",
+      "mode": "replay",
+      "namespace": "pev3-s4-d0-replay-20260814-004",
+      "run_id": "s4-d0-replay-20260814-004"
+    },
+    "U0_CAPTURE": {
+      "cache_id": "s4-d0-07741c45-20260814-004",
+      "method": "U0",
+      "mode": "capture",
+      "namespace": "pev3-s4-u0-capture-20260814-004",
+      "run_id": "s4-d0-capture-20260814-004"
+    }
+  },
+  "schema_version": "membind.paper-eval-v3.s4-d0-retry-contract.v1",
+  "source_sha256": {
+    "retry_contract": "f64d5a2fb2173e3e2d214a5a54e9a132436c503ffa323cdccb0c4023644ef400",
+    "test": "ed3fab4c632f19f611df1b65698ae90f089a4909b307bd175c5b10948c66d90d"
+  },
+  "stage": "S4",
+  "status": "RETRY_EXECUTION_IDENTITY_FROZEN"
+}
