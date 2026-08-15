@@ -4,6 +4,7 @@ from __future__ import annotations
 
 import copy
 import json
+from contextlib import contextmanager
 from dataclasses import dataclass
 from pathlib import Path
 
@@ -26,6 +27,20 @@ REMAP_RUNTIME = {
     "candidate_remap_node_hit_count": 1,
     "candidate_remap_edge_hit_count": 1,
     "candidate_remap_rejection_count": 0,
+}
+
+SIDECAR_RUNTIME = {
+    "sidecar_exact_hit_count": 2,
+    "sidecar_remap_hit_count": 3,
+    "sidecar_rejection_count": 0,
+    "sidecar_capture_append_count": 4,
+    "sidecar_capture_reuse_count": 1,
+    "sidecar_replay_binding_count": 3,
+    "sidecar_record_count": 7,
+    "sidecar_consumed_count": 7,
+    "sidecar_remaining_count": 0,
+    "sidecar_resumed_consumed_count": 4,
+    "sidecar_prepared_count": 0,
 }
 
 
@@ -153,6 +168,55 @@ def test_runtime_evidence_rejects_partial_candidate_remap_counters() -> None:
         _merge_runtime_evidence({}, partial)
 
 
+def test_runtime_evidence_merges_the_complete_sidecar_counter_set() -> None:
+    current = {
+        **_runtime_evidence(mode="replay", count=9),
+        **REMAP_RUNTIME,
+        **SIDECAR_RUNTIME,
+    }
+    prefix = {
+        **_runtime_evidence(mode="replay", count=4),
+        **{field: 0 for field in REMAP_RUNTIME},
+        **{
+            "sidecar_exact_hit_count": 1,
+            "sidecar_remap_hit_count": 1,
+            "sidecar_rejection_count": 0,
+            "sidecar_capture_append_count": 2,
+            "sidecar_capture_reuse_count": 0,
+            "sidecar_replay_binding_count": 1,
+            "sidecar_record_count": 7,
+            "sidecar_consumed_count": 4,
+            "sidecar_remaining_count": 3,
+            "sidecar_resumed_consumed_count": 0,
+            "sidecar_prepared_count": 0,
+        },
+    }
+
+    merged = _merge_runtime_evidence(prefix, current)
+
+    assert merged["resolved_prompt_count"] == 13
+    assert merged["sidecar_exact_hit_count"] == 3
+    assert merged["sidecar_remap_hit_count"] == 4
+    assert merged["sidecar_capture_append_count"] == 6
+    assert merged["sidecar_capture_reuse_count"] == 1
+    assert merged["sidecar_replay_binding_count"] == 4
+    assert merged["sidecar_record_count"] == 7
+    assert merged["sidecar_consumed_count"] == 7
+    assert merged["sidecar_remaining_count"] == 0
+    assert merged["sidecar_resumed_consumed_count"] == 4
+
+
+def test_runtime_evidence_rejects_partial_sidecar_counters() -> None:
+    partial = {
+        **_runtime_evidence(mode="replay", count=9),
+        **REMAP_RUNTIME,
+        "sidecar_remap_hit_count": 1,
+    }
+
+    with pytest.raises(ValueError, match="shape drift"):
+        _merge_runtime_evidence({}, partial)
+
+
 async def _run(
     tmp_path: Path,
     graph: FakeGraph,
@@ -161,6 +225,9 @@ async def _run(
     cleanup_calls: list[str] | None = None,
     cleanup_error: bool = False,
     graph_exporter=None,
+    episode_scope=None,
+    pre_cleanup_finalize=None,
+    restore_prefix=None,
 ) -> dict:
     calls = cleanup_calls if cleanup_calls is not None else []
 
@@ -187,6 +254,9 @@ async def _run(
         artifact_root=tmp_path,
         expected_episode_count=count,
         git_commit="deadbeef",
+        episode_scope=episode_scope,
+        pre_cleanup_finalize=pre_cleanup_finalize,
+        restore_prefix=restore_prefix,
     )
 
 
@@ -236,6 +306,175 @@ async def test_phase_checkpoints_every_episode_and_cleans_exact_namespace(
         )
         for event in events
     )
+
+
+@pytest.mark.asyncio
+async def test_episode_scope_wraps_each_add_episode_call(tmp_path: Path) -> None:
+    active: set[int] = set()
+    order: list[str] = []
+
+    class ScopedGraph(FakeGraph):
+        async def add_episode(self, *, source_sequence: int) -> None:
+            assert source_sequence in active
+            order.append(f"add:{source_sequence}")
+            await super().add_episode(source_sequence=source_sequence)
+
+    @contextmanager
+    def scope(item: Episode):
+        sequence = item.source_sequence
+        order.append(f"enter:{sequence}")
+        active.add(sequence)
+        try:
+            yield
+        finally:
+            active.remove(sequence)
+            order.append(f"exit:{sequence}")
+
+    result = await _run(tmp_path, ScopedGraph(), episode_scope=scope)
+
+    assert result["payload"]["status"] == "PASS"
+    assert order == [
+        "enter:0",
+        "add:0",
+        "exit:0",
+        "enter:1",
+        "add:1",
+        "exit:1",
+        "enter:2",
+        "add:2",
+        "exit:2",
+    ]
+    assert active == set()
+
+
+@pytest.mark.asyncio
+async def test_validated_checkpoint_prefix_is_restored_before_episode_scope(
+    tmp_path: Path,
+) -> None:
+    graph = FakeGraph(fail_on=1)
+    restored: list[list[int]] = []
+    observed: list[tuple[int, list[int]]] = []
+
+    def restore_prefix(prefix) -> None:
+        restored.append(list(prefix))
+
+    @contextmanager
+    def scope(item: Episode):
+        observed.append((item.source_sequence, list(restored[-1])))
+        yield
+
+    with pytest.raises(S4PhaseFailed):
+        await _run(
+            tmp_path,
+            graph,
+            episode_scope=scope,
+            restore_prefix=restore_prefix,
+        )
+
+    graph.fail_on = None
+    await _run(
+        tmp_path,
+        graph,
+        episode_scope=scope,
+        restore_prefix=restore_prefix,
+    )
+
+    assert restored == [[], [0]]
+    assert observed == [(0, []), (1, []), (1, [0]), (2, [0])]
+
+
+@pytest.mark.asyncio
+async def test_episode_scope_failure_stops_before_graph_call_and_publication(
+    tmp_path: Path,
+) -> None:
+    graph = FakeGraph()
+
+    @contextmanager
+    def scope(item: Episode):
+        if item.source_sequence == 1:
+            raise RuntimeError("private pre-publication hook detail")
+        yield
+
+    with pytest.raises(S4PhaseFailed) as raised:
+        await _run(tmp_path, graph, episode_scope=scope)
+
+    assert graph.published == [0]
+    assert raised.value.result["payload"]["completed_source_sequences"] == [0]
+    assert "private pre-publication" not in json.dumps(raised.value.result)
+
+
+@pytest.mark.asyncio
+async def test_pre_cleanup_finalize_runs_after_export_and_before_cleanup(
+    tmp_path: Path,
+) -> None:
+    graph = FakeGraph()
+    order: list[str] = []
+
+    async def export(*args) -> dict:
+        order.append("export")
+        return await _export(graph)(*args)
+
+    async def finalize() -> None:
+        order.append("finalize")
+
+    async def cleanup(namespace: str) -> None:
+        order.append(f"cleanup:{namespace}")
+        graph.published.clear()
+
+    result = await run_s4_phase(
+        spec=_spec(mode="capture"),
+        episodes=[Episode(index) for index in range(3)],
+        graph=graph,
+        episode_kwargs=lambda item: {"source_sequence": item.source_sequence},
+        namespace_probe=_state(graph),
+        graph_exporter=export,
+        runtime_evidence=lambda: _runtime_evidence(mode="capture", count=3),
+        cache_evidence=lambda: {
+            "prompt_cache_sha256": "1" * 64,
+            "embedding_cache_sha256": "2" * 64,
+        },
+        cleanup_namespace=cleanup,
+        artifact_root=tmp_path,
+        expected_episode_count=3,
+        git_commit="deadbeef",
+        pre_cleanup_finalize=finalize,
+    )
+
+    assert result["payload"]["status"] == "PASS"
+    assert order == ["export", "finalize", "cleanup:pev3-s4-test-capture"]
+
+
+@pytest.mark.asyncio
+async def test_pre_cleanup_finalize_failure_preserves_namespace_and_blocks_pass(
+    tmp_path: Path,
+) -> None:
+    graph = FakeGraph()
+    cleanup_calls: list[str] = []
+
+    async def finalize() -> None:
+        raise RuntimeError("private sidecar terminal detail")
+
+    with pytest.raises(S4PhaseFailed) as raised:
+        await _run(
+            tmp_path,
+            graph,
+            cleanup_calls=cleanup_calls,
+            pre_cleanup_finalize=finalize,
+        )
+
+    assert graph.published == [0, 1, 2]
+    assert cleanup_calls == []
+    assert raised.value.result["payload"]["status"] == "INCOMPLETE"
+    assert raised.value.result["payload"]["cleanup"] is None
+    assert "private sidecar" not in json.dumps(raised.value.result)
+    run_dir = tmp_path / "s4-test-capture"
+    assert (run_dir / "canonical_graph.json").is_file()
+    events = [
+        json.loads(line)
+        for line in (run_dir / "events.jsonl").read_text().splitlines()
+    ]
+    assert events[-1]["event_type"] == "failure"
+    assert events[-1]["failure_stage"] == "finalization"
 
 
 @pytest.mark.asyncio

@@ -17,6 +17,8 @@ from collections.abc import Mapping
 from dataclasses import asdict, dataclass, is_dataclass
 from typing import Any
 
+from .s4_candidate_sidecar import current_replay_binding, replay_binding_sha256
+
 
 NODE_PROMPT = "dedupe_nodes.nodes"
 EDGE_PROMPT = "dedupe_edges.resolve_edge"
@@ -48,9 +50,18 @@ class CandidateRemapError(RuntimeError):
 class _RemappedRecord:
     """Read-only view of a cache record with an in-memory parsed response."""
 
-    def __init__(self, original: Any, parsed_response: Any) -> None:
+    def __init__(
+        self,
+        original: Any,
+        parsed_response: Any,
+        *,
+        sidecar_binding_sha256: str | None = None,
+        sidecar_logical_call_sha256: str | None = None,
+    ) -> None:
         self._original = original
         self.parsed_response = parsed_response
+        self.sidecar_binding_sha256 = sidecar_binding_sha256
+        self.sidecar_logical_call_sha256 = sidecar_logical_call_sha256
 
     def __getattr__(self, name: str) -> Any:
         return getattr(self._original, name)
@@ -332,6 +343,157 @@ def _safe_hash(parts: Mapping[str, Any]) -> str:
     return hashlib.sha256(encoded).hexdigest()
 
 
+_SIDECAR_BINDING_FIELDS = {
+    "capture_partitions",
+    "capture_prompt_sha256",
+    "invalidation_id_map",
+    "logical_call_sha256",
+    "related_id_map",
+    "replay_partitions",
+    "source_sequence",
+}
+
+
+def _is_sha256(value: Any) -> bool:
+    return (
+        isinstance(value, str)
+        and len(value) == 64
+        and all(character in "0123456789abcdef" for character in value)
+    )
+
+
+def _sidecar_candidates(
+    value: Any,
+    *,
+    offset: int,
+) -> tuple[tuple[int, str, str], ...]:
+    if not isinstance(value, list):
+        raise CandidateRemapError("SIDECAR_BINDING_MALFORMED")
+    selected: list[tuple[int, str, str]] = []
+    identities: set[str] = set()
+    for ordinal, candidate in enumerate(value):
+        if not isinstance(candidate, Mapping) or set(candidate) != {
+            "candidate_id",
+            "fact_sha256",
+            "logical_identity_sha256",
+        }:
+            raise CandidateRemapError("SIDECAR_BINDING_MALFORMED")
+        candidate_id = candidate.get("candidate_id")
+        fact_sha256 = candidate.get("fact_sha256")
+        identity_sha256 = candidate.get("logical_identity_sha256")
+        if (
+            not _is_int(candidate_id)
+            or candidate_id != offset + ordinal
+            or not _is_sha256(fact_sha256)
+            or not _is_sha256(identity_sha256)
+            or identity_sha256 in identities
+        ):
+            raise CandidateRemapError("SIDECAR_BINDING_MALFORMED")
+        identities.add(identity_sha256)
+        selected.append((candidate_id, fact_sha256, identity_sha256))
+    return tuple(selected)
+
+
+def _sidecar_partitions(value: Any) -> dict[str, tuple[tuple[int, str, str], ...]]:
+    if not isinstance(value, Mapping) or set(value) != {"related", "invalidation"}:
+        raise CandidateRemapError("SIDECAR_BINDING_MALFORMED")
+    related = _sidecar_candidates(value["related"], offset=0)
+    invalidation = _sidecar_candidates(
+        value["invalidation"],
+        offset=len(related),
+    )
+    if {item[2] for item in related} & {item[2] for item in invalidation}:
+        raise CandidateRemapError("SIDECAR_BINDING_MALFORMED")
+    return {"related": related, "invalidation": invalidation}
+
+
+def _sidecar_id_map(value: Any) -> dict[int, int]:
+    if not isinstance(value, Mapping):
+        raise CandidateRemapError("SIDECAR_BINDING_MALFORMED")
+    selected: dict[int, int] = {}
+    for capture_id, replay_id in value.items():
+        if not _is_int(capture_id) or not _is_int(replay_id):
+            raise CandidateRemapError("SIDECAR_BINDING_MALFORMED")
+        selected[capture_id] = replay_id
+    if len(set(selected.values())) != len(selected):
+        raise CandidateRemapError("SIDECAR_BINDING_MALFORMED")
+    return selected
+
+
+def _expected_sidecar_id_map(
+    capture: tuple[tuple[int, str, str], ...],
+    replay: tuple[tuple[int, str, str], ...],
+) -> dict[int, int]:
+    capture_by_identity = {item[2]: item for item in capture}
+    replay_by_identity = {item[2]: item for item in replay}
+    if set(capture_by_identity) != set(replay_by_identity):
+        raise CandidateRemapError("SIDECAR_BINDING_MALFORMED")
+    expected: dict[int, int] = {}
+    for identity_sha256, captured in capture_by_identity.items():
+        replayed = replay_by_identity[identity_sha256]
+        if captured[1] != replayed[1]:
+            raise CandidateRemapError("SIDECAR_BINDING_MALFORMED")
+        expected[captured[0]] = replayed[0]
+    return expected
+
+
+def _validate_sidecar_binding(value: Any) -> dict[str, Any]:
+    if not isinstance(value, Mapping) or set(value) != _SIDECAR_BINDING_FIELDS:
+        raise CandidateRemapError("SIDECAR_BINDING_MALFORMED")
+    source_sequence = value.get("source_sequence")
+    if (
+        not _is_int(source_sequence)
+        or source_sequence < 0
+        or source_sequence >= 49
+        or not _is_sha256(value.get("logical_call_sha256"))
+        or not _is_sha256(value.get("capture_prompt_sha256"))
+    ):
+        raise CandidateRemapError("SIDECAR_BINDING_MALFORMED")
+    capture = _sidecar_partitions(value.get("capture_partitions"))
+    replay = _sidecar_partitions(value.get("replay_partitions"))
+    related_map = _sidecar_id_map(value.get("related_id_map"))
+    invalidation_map = _sidecar_id_map(value.get("invalidation_id_map"))
+    if related_map != _expected_sidecar_id_map(
+        capture["related"], replay["related"]
+    ) or invalidation_map != _expected_sidecar_id_map(
+        capture["invalidation"], replay["invalidation"]
+    ):
+        raise CandidateRemapError("SIDECAR_BINDING_MAP_DRIFT")
+    return {
+        "capture_partitions": capture,
+        "capture_prompt_sha256": value["capture_prompt_sha256"],
+        "invalidation_id_map": invalidation_map,
+        "logical_call_sha256": value["logical_call_sha256"],
+        "related_id_map": related_map,
+        "replay_partitions": replay,
+        "source_sequence": source_sequence,
+    }
+
+
+def _verify_prompt_projection(
+    parsed: _ParsedPrompt,
+    expected: Mapping[str, tuple[tuple[int, str, str], ...]],
+) -> None:
+    related, invalidation = parsed.candidates
+    for prompt_partition, sidecar_partition in (
+        (related, expected["related"]),
+        (invalidation, expected["invalidation"]),
+    ):
+        projection = tuple(
+            (
+                candidate_id,
+                hashlib.sha256(fact.encode("utf-8")).hexdigest(),
+            )
+            for candidate_id, fact in prompt_partition
+        )
+        expected_projection = tuple(
+            (candidate_id, fact_sha256)
+            for candidate_id, fact_sha256, _ in sidecar_partition
+        )
+        if projection != expected_projection:
+            raise CandidateRemapError("SIDECAR_PROMPT_PROJECTION_DRIFT")
+
+
 class CandidateAwareReplayCache:
     """Exact prompt cache with a fail-closed, in-memory positional fallback."""
 
@@ -342,6 +504,9 @@ class CandidateAwareReplayCache:
         self.exact_prompt_hit_count = 0
         self.candidate_remap_hit_count = 0
         self.candidate_remap_rejection_count = 0
+        self.sidecar_exact_hit_count = 0
+        self.sidecar_remap_hit_count = 0
+        self.sidecar_rejection_count = 0
         self.remap_hit_counts: dict[str, int] = {}
         self.remap_diagnostics: list[dict[str, Any]] = []
 
@@ -370,8 +535,95 @@ class CandidateAwareReplayCache:
             }
         )
 
+    def _sidecar_record(
+        self,
+        *,
+        capture_prompt_sha256: str,
+    ) -> tuple[Any, dict[str, Any]]:
+        matches = [
+            record
+            for record in self._records()
+            if getattr(record, "prompt_hash", None) == capture_prompt_sha256
+        ]
+        if len(matches) != 1:
+            raise CandidateRemapError("SIDECAR_CAPTURE_PROMPT_MISSING")
+        record = matches[0]
+        capture = _parts_dict(getattr(record, "prompt_parts", {}))
+        if (
+            _safe_hash(capture) != capture_prompt_sha256
+            or getattr(record, "prompt_hash", None) != capture_prompt_sha256
+        ):
+            raise CandidateRemapError("SIDECAR_CAPTURE_PROMPT_HASH_DRIFT")
+        return record, capture
+
+    def _get_with_sidecar(
+        self,
+        *,
+        exact: Any | None,
+        requested: Mapping[str, Any],
+        prompt_name: str | None,
+        raw_binding: Mapping[str, Any],
+    ) -> Any:
+        if prompt_name != EDGE_PROMPT:
+            raise CandidateRemapError("SIDECAR_UNSUPPORTED_PROMPT")
+        binding = _validate_sidecar_binding(raw_binding)
+        record, capture = self._sidecar_record(
+            capture_prompt_sha256=binding["capture_prompt_sha256"]
+        )
+        if exact is not None and exact is not record:
+            raise CandidateRemapError("SIDECAR_CAPTURE_PROMPT_HASH_DRIFT")
+        if not _same_non_user_parts(capture, requested):
+            raise CandidateRemapError("SIDECAR_NON_CANDIDATE_PROMPT_DRIFT")
+
+        capture_prompt = _parse_edge_prompt(capture["user_prompt"])
+        replay_prompt = _parse_edge_prompt(requested["user_prompt"])
+        if capture_prompt.skeleton != replay_prompt.skeleton:
+            raise CandidateRemapError("SIDECAR_NON_CANDIDATE_PROMPT_DRIFT")
+        _verify_prompt_projection(
+            capture_prompt,
+            binding["capture_partitions"],
+        )
+        _verify_prompt_projection(
+            replay_prompt,
+            binding["replay_partitions"],
+        )
+        parsed = _remap_edge_response(
+            getattr(record, "parsed_response", None),
+            binding["related_id_map"],
+            binding["invalidation_id_map"],
+        )
+        if exact is not None:
+            self.exact_prompt_hit_count += 1
+            self.sidecar_exact_hit_count += 1
+        self.sidecar_remap_hit_count += 1
+        return _RemappedRecord(
+            record,
+            parsed,
+            sidecar_binding_sha256=replay_binding_sha256(raw_binding),
+            sidecar_logical_call_sha256=binding["logical_call_sha256"],
+        )
+
     def get(self, parts: Any) -> Any | None:
         exact = self.inner.get(parts)
+        raw_binding = current_replay_binding()
+        if raw_binding is not None:
+            requested = _parts_dict(parts)
+            prompt_name = _prompt_name(requested)
+            try:
+                return self._get_with_sidecar(
+                    exact=exact,
+                    requested=requested,
+                    prompt_name=prompt_name,
+                    raw_binding=raw_binding,
+                )
+            except CandidateRemapError as error:
+                self.sidecar_rejection_count += 1
+                self._reject(
+                    error,
+                    prompt_name=prompt_name or "unknown",
+                    parts=requested,
+                )
+                raise
         if exact is not None:
             self.exact_prompt_hit_count += 1
             return exact

@@ -6,10 +6,12 @@ Live constructors are loaded only after a stage controller consumes authority.
 
 from __future__ import annotations
 
+import copy
 import inspect
 import os
 import sys
 from collections.abc import Awaitable, Callable, Mapping, Sequence
+from contextlib import nullcontext
 from dataclasses import dataclass, replace
 from pathlib import Path
 from typing import Any
@@ -20,6 +22,17 @@ from .s4_candidate_oracle import (
     NODE_PROMPT,
     CandidateAwareReplayCache,
 )
+from .s4_candidate_projection import (
+    PROJECTION_SCHEMA_SHA256,
+    GraphitiCandidateProjector,
+    install_graphiti_candidate_sidecar_hooks,
+)
+from .s4_candidate_sidecar import (
+    CaptureSidecarStore,
+    ReplaySidecarBinder,
+    load_capture_sidecar,
+)
+from .s4_candidate_sidecar_runtime import CandidateSidecarPromptCache
 
 
 ROOT = Path(__file__).resolve().parents[3]
@@ -45,6 +58,29 @@ class S4CachePaths:
             raise ValueError("S4 prompt and embedding cache paths must differ")
         object.__setattr__(self, "prompt", prompt)
         object.__setattr__(self, "embedding", embedding)
+
+
+@dataclass(frozen=True)
+class S4CandidateSidecarConfig:
+    """Optional offline-wired candidate sidecar dependencies for one phase."""
+
+    path: Path
+    identity: Mapping[str, Any]
+    episodes: Sequence[Any]
+    edge_operations_module: Any
+    namespace: str
+    entity_loader: Any | None = None
+    episode_loader: Any | None = None
+
+    def __post_init__(self) -> None:
+        selected_path = Path(self.path)
+        if not selected_path.name:
+            raise ValueError("S4 candidate sidecar path is invalid")
+        if not isinstance(self.namespace, str) or not self.namespace.startswith(
+            "pev3-s4-"
+        ):
+            raise ValueError("S4 candidate sidecar namespace is invalid")
+        object.__setattr__(self, "path", selected_path)
 
 
 @dataclass(frozen=True)
@@ -82,6 +118,13 @@ class S4PhaseRuntime:
     cleanup_namespace: Callable[[str], Awaitable[Any]]
     prompt_cache: Any
     embedding_cache: Any
+    phase_context: Callable[[], Any]
+    restore_sidecar_prefix: Callable[[Sequence[int]], None]
+    pre_finalize_sidecar: Callable[
+        [Mapping[str, str | None]], Mapping[str, Any] | None
+    ]
+    sidecar_counters: Callable[[], dict[str, int]]
+    sidecar_cache_sha256: Callable[[], str | None]
 
 
 class _ResolvedPromptCounter:
@@ -351,6 +394,7 @@ def build_s4_phase_runtime(
     cache_paths: S4CachePaths,
     resume_capture: bool,
     factories: S4ProductionFactories | None = None,
+    sidecar: S4CandidateSidecarConfig | None = None,
 ) -> S4PhaseRuntime:
     """Build clients after authority; this function itself issues no request."""
 
@@ -367,13 +411,49 @@ def build_s4_phase_runtime(
         prompt_cache_type=components.prompt_cache_type,
         embedding_cache_type=components.embedding_cache_type,
     )
+    if sidecar is not None and sidecar.namespace != selected["namespace"]:
+        raise ValueError("S4 candidate sidecar namespace drift")
     candidate_prompt_cache = (
         CandidateAwareReplayCache(oracles.prompt)
         if selected["mode"] == "replay"
         else None
     )
+    sidecar_store: CaptureSidecarStore | None = None
+    sidecar_loaded: dict[str, Any] | None = None
+    sidecar_prompt_cache: CandidateSidecarPromptCache | None = None
+    if sidecar is not None:
+        if selected["mode"] == "capture":
+            sidecar_store = (
+                CaptureSidecarStore.resume_for_finalization(
+                    sidecar.path,
+                    identity=sidecar.identity,
+                )
+                if resume_capture
+                else CaptureSidecarStore.create(
+                    sidecar.path,
+                    identity=sidecar.identity,
+                )
+            )
+            sidecar_prompt_cache = CandidateSidecarPromptCache.capture(
+                oracles.prompt,
+                store=sidecar_store,
+            )
+        else:
+            sidecar_loaded = load_capture_sidecar(
+                sidecar.path,
+                expected_identity=sidecar.identity,
+            )
+            sidecar_prompt_cache = CandidateSidecarPromptCache.replay(
+                candidate_prompt_cache,
+                binder=ReplaySidecarBinder(
+                    identity=sidecar_loaded["identity"],
+                    records=sidecar_loaded["records"],
+                ),
+            )
     prompt_cache = NamespaceNormalizedPromptCache(
-        candidate_prompt_cache or oracles.prompt
+        sidecar_prompt_cache
+        or candidate_prompt_cache
+        or oracles.prompt
     )
 
     no_gate = lambda _action: None
@@ -424,6 +504,146 @@ def build_s4_phase_runtime(
         cross_encoder=cross_encoder,
     )
 
+    projector: GraphitiCandidateProjector | None = None
+    if sidecar is not None:
+        projector = GraphitiCandidateProjector(
+            driver=graph.driver,
+            namespace=selected["namespace"],
+            episodes=sidecar.episodes,
+            entity_loader=sidecar.entity_loader,
+            episode_loader=sidecar.episode_loader,
+        )
+        if (
+            sidecar.identity.get("episode_manifest_sha256")
+            != projector.episode_manifest_sha256
+            or sidecar.identity.get("projection_schema_sha256")
+            != PROJECTION_SCHEMA_SHA256
+        ):
+            raise ValueError("S4 candidate sidecar projection identity drift")
+
+    def phase_context() -> Any:
+        if sidecar is None or projector is None:
+            return nullcontext()
+        return install_graphiti_candidate_sidecar_hooks(
+            sidecar.edge_operations_module,
+            projector=projector,
+            phase_owner=graph,
+            replay_binder=(
+                sidecar_prompt_cache.binder
+                if selected["mode"] == "replay"
+                and sidecar_prompt_cache is not None
+                else None
+            ),
+        )
+
+    restored_prefix: tuple[int, ...] | None = None
+
+    def restore_sidecar_prefix(completed_source_sequences: Sequence[int]) -> None:
+        nonlocal restored_prefix
+        completed = tuple(completed_source_sequences)
+        if completed != tuple(range(len(completed))):
+            raise ValueError("S4 sidecar checkpoint prefix is not contiguous")
+        if (
+            sidecar_store is not None
+            and sidecar_store.is_sealed
+            and completed != tuple(range(len(sidecar.episodes)))
+        ):
+            raise ValueError(
+                "S4 sealed candidate sidecar requires the complete checkpoint prefix"
+            )
+        if sidecar_store is not None and not sidecar_store.is_sealed:
+            max_allowed_source = min(len(completed), len(sidecar.episodes) - 1)
+            if any(
+                int(record["source_sequence"]) > max_allowed_source
+                for record in sidecar_store.records
+            ):
+                raise ValueError(
+                    "S4 candidate sidecar contains a future source record"
+                )
+        if restored_prefix is not None:
+            if completed != restored_prefix:
+                raise ValueError("S4 sidecar checkpoint prefix drift")
+            return
+        restored_prefix = completed
+        if sidecar_prompt_cache is None or selected["mode"] != "replay":
+            return
+        assert sidecar_loaded is not None
+        sidecar_prompt_cache.binder = ReplaySidecarBinder(
+            identity=sidecar_loaded["identity"],
+            records=sidecar_loaded["records"],
+            consumed_source_sequences=completed,
+        )
+
+    def _base_cache_evidence(
+        value: Mapping[str, str | None],
+    ) -> dict[str, str]:
+        expected = {"prompt_cache_sha256", "embedding_cache_sha256"}
+        allowed = expected | {"candidate_sidecar_sha256"}
+        if frozenset(value) not in {frozenset(expected), frozenset(allowed)} or any(
+            not isinstance(value.get(field), str) for field in expected
+        ):
+            raise ValueError("S4 sidecar cache evidence shape drift")
+        if "candidate_sidecar_sha256" in value and (
+            not isinstance(value["candidate_sidecar_sha256"], str)
+            or value["candidate_sidecar_sha256"] != _cache_sha(sidecar.path)
+        ):
+            raise ValueError("S4 sidecar cache hash drift")
+        return {field: str(value[field]) for field in sorted(expected)}
+
+    initial_sidecar_sha = _cache_sha(sidecar.path) if sidecar is not None else None
+
+    def pre_finalize_sidecar(
+        value: Mapping[str, str | None],
+    ) -> Mapping[str, Any] | None:
+        if sidecar is None or sidecar_prompt_cache is None:
+            return None
+        cache = _base_cache_evidence(value)
+        if selected["mode"] == "capture":
+            assert sidecar_store is not None
+            return sidecar_store.seal(cache_evidence=cache)
+        assert sidecar_loaded is not None
+        binder = sidecar_prompt_cache.binder
+        if (
+            binder is None
+            or binder.prepared_count != 0
+            or binder.remaining_count != 0
+        ):
+            raise ValueError("S4 sidecar replay consumption is incomplete")
+        if sidecar_loaded["seal"].get("cache_evidence") != cache:
+            raise ValueError("S4 sidecar replay cache evidence drift")
+        if _cache_sha(sidecar.path) != initial_sidecar_sha:
+            raise ValueError("S4 sidecar replay file hash drift")
+        return copy.deepcopy(sidecar_loaded["seal"])
+
+    def sidecar_counters() -> dict[str, int]:
+        if sidecar_prompt_cache is None:
+            return {}
+        binder = sidecar_prompt_cache.binder
+        record_count = (
+            len(sidecar_store.records)
+            if sidecar_store is not None
+            else int(binder.consumed_count + binder.remaining_count)
+            if binder is not None
+            else 0
+        )
+        return {
+            "capture_append_count": int(
+                sidecar_prompt_cache.capture_append_count
+            ),
+            "capture_reuse_count": int(sidecar_prompt_cache.capture_reuse_count),
+            "replay_binding_count": int(sidecar_prompt_cache.replay_binding_count),
+            "consumed_call_count": int(binder.consumed_count) if binder else 0,
+            "remaining_call_count": int(binder.remaining_count) if binder else 0,
+            "resumed_consumed_call_count": (
+                int(binder.resumed_consumed_count) if binder else 0
+            ),
+            "record_count": int(record_count),
+            "prepared_call_count": int(binder.prepared_count) if binder else 0,
+        }
+
+    def sidecar_cache_sha256() -> str | None:
+        return _cache_sha(sidecar.path) if sidecar is not None else None
+
     def runtime_evidence() -> dict[str, int]:
         live_llm = _nested_int(prompt_counter, "call_count")
         live_embedding = int(getattr(embedder, "api_call_count", 0))
@@ -470,13 +690,59 @@ def build_s4_phase_runtime(
                     ),
                 }
             )
+        if sidecar_prompt_cache is not None:
+            sidecar_state = sidecar_counters()
+            evidence.update(
+                {
+                    "sidecar_exact_hit_count": int(
+                        candidate_prompt_cache.sidecar_exact_hit_count
+                        if candidate_prompt_cache is not None
+                        else 0
+                    ),
+                    "sidecar_remap_hit_count": int(
+                        candidate_prompt_cache.sidecar_remap_hit_count
+                        if candidate_prompt_cache is not None
+                        else 0
+                    ),
+                    "sidecar_rejection_count": int(
+                        candidate_prompt_cache.sidecar_rejection_count
+                        if candidate_prompt_cache is not None
+                        else 0
+                    ),
+                    "sidecar_capture_append_count": int(
+                        sidecar_prompt_cache.capture_append_count
+                    ),
+                    "sidecar_capture_reuse_count": int(
+                        sidecar_prompt_cache.capture_reuse_count
+                    ),
+                    "sidecar_replay_binding_count": int(
+                        sidecar_prompt_cache.replay_binding_count
+                    ),
+                    "sidecar_record_count": sidecar_state["record_count"],
+                    "sidecar_consumed_count": sidecar_state[
+                        "consumed_call_count"
+                    ],
+                    "sidecar_remaining_count": sidecar_state[
+                        "remaining_call_count"
+                    ],
+                    "sidecar_resumed_consumed_count": sidecar_state[
+                        "resumed_consumed_call_count"
+                    ],
+                    "sidecar_prepared_count": sidecar_state[
+                        "prepared_call_count"
+                    ],
+                }
+            )
         return evidence
 
     def cache_evidence() -> dict[str, str | None]:
-        return {
+        evidence = {
             "prompt_cache_sha256": _cache_sha(cache_paths.prompt),
             "embedding_cache_sha256": _cache_sha(cache_paths.embedding),
         }
+        if sidecar is not None:
+            evidence["candidate_sidecar_sha256"] = _cache_sha(sidecar.path)
+        return evidence
 
     async def namespace_probe() -> Mapping[str, Any]:
         return await _await(
@@ -518,4 +784,9 @@ def build_s4_phase_runtime(
         cleanup_namespace=cleanup_namespace,
         prompt_cache=oracles.prompt,
         embedding_cache=oracles.embedding,
+        phase_context=phase_context,
+        restore_sidecar_prefix=restore_sidecar_prefix,
+        pre_finalize_sidecar=pre_finalize_sidecar,
+        sidecar_counters=sidecar_counters,
+        sidecar_cache_sha256=sidecar_cache_sha256,
     )

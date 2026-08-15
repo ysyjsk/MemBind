@@ -3,14 +3,20 @@
 from __future__ import annotations
 
 from dataclasses import dataclass
+import hashlib
 from pathlib import Path
 from types import SimpleNamespace
 
 import pytest
 
+from paper_eval.artifacts import payload_sha256
 from paper_eval.s4_candidate_oracle import CandidateAwareReplayCache
+from paper_eval.s4_candidate_projection import PROJECTION_SCHEMA_SHA256
+from paper_eval.s4_candidate_sidecar import build_candidate_call_record
+from paper_eval.s4_candidate_sidecar_runtime import CandidateSidecarPromptCache
 from paper_eval.s4_d0_production import (
     S4CachePaths,
+    S4CandidateSidecarConfig,
     NamespaceNormalizedPromptCache,
     S4ProductionFactories,
     build_embedding_namespace,
@@ -110,6 +116,12 @@ class FakeGraph:
             entity=SimpleNamespace(_embedder=self.embedder),
         )
 
+        async def extract_and_resolve_edges(*args, **kwargs):
+            del args, kwargs
+            return []
+
+        self._extract_and_resolve_edges = extract_and_resolve_edges
+
 
 def _paths(tmp_path: Path) -> S4CachePaths:
     return S4CachePaths(
@@ -190,6 +202,71 @@ def _spec(mode: str) -> dict[str, str]:
         "mode": mode,
         "cache_id": "s4-shared-cache",
     }
+
+
+@dataclass(frozen=True)
+class FakeSourceEpisode:
+    source_sequence: int
+    source_hash: str
+    name: str
+    body: str
+    group_id: str = "source-group"
+
+
+def _sha(value: str) -> str:
+    return hashlib.sha256(value.encode("utf-8")).hexdigest()
+
+
+def _sidecar_sources() -> list[FakeSourceEpisode]:
+    return [
+        FakeSourceEpisode(
+            source_sequence=index,
+            source_hash=_sha(f"source-{index}"),
+            name=f"episode-{index}",
+            body=f"synthetic body {index}",
+        )
+        for index in range(49)
+    ]
+
+
+def _sidecar_config(
+    path: Path,
+    *,
+    namespace: str,
+) -> tuple[S4CandidateSidecarConfig, SimpleNamespace]:
+    sources = _sidecar_sources()
+    manifest = {
+        source.name: {
+            "body_sha256": _sha(source.body),
+            "source_hash": source.source_hash,
+            "source_sequence": source.source_sequence,
+        }
+        for source in sources
+    }
+
+    async def resolve_extracted_edge(*args, **kwargs):
+        del args, kwargs
+        return (None, [], [])
+
+    edge_operations = SimpleNamespace(
+        resolve_extracted_edge=resolve_extracted_edge,
+    )
+    return (
+        S4CandidateSidecarConfig(
+            path=path,
+            identity={
+                "attempt_id": "006",
+                "cache_id": "s4-d0-sidecar-07741c45-20260815-006",
+                "history_id": "07741c45",
+                "episode_manifest_sha256": payload_sha256(manifest),
+                "projection_schema_sha256": PROJECTION_SCHEMA_SHA256,
+            },
+            episodes=sources,
+            edge_operations_module=edge_operations,
+            namespace=namespace,
+        ),
+        edge_operations,
+    )
 
 
 def test_embedding_namespace_is_the_operator_attested_deployment() -> None:
@@ -492,3 +569,255 @@ def test_prompt_oracle_normalizes_only_cache_key_namespace_metadata() -> None:
             "group_id": "__S4_ISOLATED_NAMESPACE__",
             "max_tokens": 16384,
         }
+
+
+def test_default_runtime_sidecar_surface_is_noop_and_evidence_is_unchanged(
+    tmp_path: Path,
+) -> None:
+    runtime = build_s4_phase_runtime(
+        spec=_spec("capture"),
+        cache_paths=_paths(tmp_path),
+        factories=_factories([]),
+        resume_capture=False,
+    )
+    original_outer = runtime.graph._extract_and_resolve_edges
+
+    with runtime.phase_context():
+        assert runtime.graph._extract_and_resolve_edges is original_outer
+
+    assert runtime.restore_sidecar_prefix([]) is None
+    assert runtime.pre_finalize_sidecar(runtime.cache_evidence()) is None
+    assert runtime.sidecar_counters() == {}
+    assert runtime.sidecar_cache_sha256() is None
+    assert set(runtime.cache_evidence()) == {
+        "prompt_cache_sha256",
+        "embedding_cache_sha256",
+    }
+
+
+def test_optional_capture_sidecar_has_exact_wrapper_order_and_phase_hooks(
+    tmp_path: Path,
+) -> None:
+    sidecar, edge_operations = _sidecar_config(
+        tmp_path / "candidate-sidecar.jsonl",
+        namespace=_spec("capture")["namespace"],
+    )
+    runtime = build_s4_phase_runtime(
+        spec=_spec("capture"),
+        cache_paths=_paths(tmp_path),
+        factories=_factories([]),
+        resume_capture=False,
+        sidecar=sidecar,
+    )
+
+    namespace_cache = runtime.graph.llm_client.inner.cache
+    assert isinstance(namespace_cache, NamespaceNormalizedPromptCache)
+    sidecar_cache = namespace_cache.inner
+    assert isinstance(sidecar_cache, CandidateSidecarPromptCache)
+    assert sidecar_cache.mode == "capture"
+    assert sidecar_cache.inner is runtime.prompt_cache
+    assert not isinstance(sidecar_cache.inner, CandidateAwareReplayCache)
+
+    original_outer = runtime.graph._extract_and_resolve_edges
+    original_inner = edge_operations.resolve_extracted_edge
+    with runtime.phase_context():
+        assert runtime.graph._extract_and_resolve_edges is not original_outer
+        assert edge_operations.resolve_extracted_edge is not original_inner
+    assert runtime.graph._extract_and_resolve_edges is original_outer
+    assert edge_operations.resolve_extracted_edge is original_inner
+
+    assert runtime.restore_sidecar_prefix([]) is None
+    assert runtime.sidecar_counters() == {
+        "capture_append_count": 0,
+        "capture_reuse_count": 0,
+        "replay_binding_count": 0,
+        "consumed_call_count": 0,
+        "remaining_call_count": 0,
+        "resumed_consumed_call_count": 0,
+        "record_count": 0,
+        "prepared_call_count": 0,
+    }
+    assert runtime.sidecar_cache_sha256() == _sha(
+        (tmp_path / "candidate-sidecar.jsonl").read_text(encoding="ascii")
+    )
+    assert runtime.runtime_evidence() | {} == {
+        **{
+            "live_llm_calls": 0,
+            "live_embedding_calls": 0,
+            "resolved_prompt_count": 0,
+            "resolved_embedding_count": 0,
+            "unexpected_prompt_count": 0,
+            "unexpected_embedding_count": 0,
+            "live_fallback_count": 0,
+            "cross_encoder_call_count": 0,
+        },
+        "sidecar_exact_hit_count": 0,
+        "sidecar_remap_hit_count": 0,
+        "sidecar_rejection_count": 0,
+        "sidecar_capture_append_count": 0,
+        "sidecar_capture_reuse_count": 0,
+        "sidecar_replay_binding_count": 0,
+        "sidecar_record_count": 0,
+        "sidecar_consumed_count": 0,
+        "sidecar_remaining_count": 0,
+        "sidecar_resumed_consumed_count": 0,
+        "sidecar_prepared_count": 0,
+    }
+    assert set(runtime.cache_evidence()) == {
+        "prompt_cache_sha256",
+        "embedding_cache_sha256",
+        "candidate_sidecar_sha256",
+    }
+
+
+def test_sidecar_capture_finalize_and_replay_prefix_restore_are_hash_stable(
+    tmp_path: Path,
+) -> None:
+    path = tmp_path / "candidate-sidecar.jsonl"
+    paths = _paths(tmp_path)
+    capture_config, _ = _sidecar_config(
+        path,
+        namespace=_spec("capture")["namespace"],
+    )
+    capture = build_s4_phase_runtime(
+        spec=_spec("capture"),
+        cache_paths=paths,
+        factories=_factories([]),
+        resume_capture=False,
+        sidecar=capture_config,
+    )
+    capture_wrapper = capture.graph.llm_client.inner.cache.inner
+    capture_wrapper.store.append(
+        build_candidate_call_record(
+            source_sequence=0,
+            source_hash=_sha("source-0"),
+            logical_call_sha256=_sha("logical-call-0"),
+            prompt_sha256=_sha("prompt-0"),
+            related=[],
+            invalidation=[],
+        )
+    )
+    seal = capture.pre_finalize_sidecar(capture.cache_evidence())
+    sealed_sha = capture.sidecar_cache_sha256()
+
+    assert seal["record_count"] == 1
+    assert seal["cache_evidence"] == {
+        key: value
+        for key, value in capture.cache_evidence().items()
+        if key != "candidate_sidecar_sha256"
+    }
+    assert capture.pre_finalize_sidecar(capture.cache_evidence()) == seal
+    assert capture.sidecar_cache_sha256() == sealed_sha
+
+    replay_config, _ = _sidecar_config(
+        path,
+        namespace=_spec("replay")["namespace"],
+    )
+    replay = build_s4_phase_runtime(
+        spec=_spec("replay"),
+        cache_paths=paths,
+        factories=_factories([]),
+        resume_capture=False,
+        sidecar=replay_config,
+    )
+
+    namespace_cache = replay.graph.llm_client.inner.cache
+    assert isinstance(namespace_cache, NamespaceNormalizedPromptCache)
+    sidecar_cache = namespace_cache.inner
+    assert isinstance(sidecar_cache, CandidateSidecarPromptCache)
+    assert sidecar_cache.mode == "replay"
+    assert isinstance(sidecar_cache.inner, CandidateAwareReplayCache)
+    assert sidecar_cache.inner.inner is replay.prompt_cache
+    sidecar_cache.inner.sidecar_exact_hit_count = 1
+    sidecar_cache.inner.sidecar_remap_hit_count = 2
+    sidecar_cache.inner.sidecar_rejection_count = 0
+
+    replay.restore_sidecar_prefix([0])
+    assert replay.sidecar_counters() == {
+        "capture_append_count": 0,
+        "capture_reuse_count": 0,
+        "replay_binding_count": 0,
+        "consumed_call_count": 1,
+        "remaining_call_count": 0,
+        "resumed_consumed_call_count": 1,
+        "record_count": 1,
+        "prepared_call_count": 0,
+    }
+    assert replay.pre_finalize_sidecar(replay.cache_evidence()) == seal
+    assert replay.sidecar_cache_sha256() == sealed_sha
+    evidence = replay.runtime_evidence()
+    assert evidence["sidecar_exact_hit_count"] == 1
+    assert evidence["sidecar_remap_hit_count"] == 2
+    assert evidence["sidecar_rejection_count"] == 0
+    assert evidence["sidecar_replay_binding_count"] == 0
+
+
+def test_sealed_capture_resume_requires_the_complete_checkpoint_prefix(
+    tmp_path: Path,
+) -> None:
+    path = tmp_path / "candidate-sidecar.jsonl"
+    paths = _paths(tmp_path)
+    config, _ = _sidecar_config(
+        path,
+        namespace=_spec("capture")["namespace"],
+    )
+    capture = build_s4_phase_runtime(
+        spec=_spec("capture"),
+        cache_paths=paths,
+        factories=_factories([]),
+        resume_capture=False,
+        sidecar=config,
+    )
+    sealed = capture.pre_finalize_sidecar(capture.cache_evidence())
+
+    resumed = build_s4_phase_runtime(
+        spec=_spec("capture"),
+        cache_paths=paths,
+        factories=_factories([]),
+        resume_capture=True,
+        sidecar=config,
+    )
+
+    with pytest.raises(ValueError, match="sealed.*prefix"):
+        resumed.restore_sidecar_prefix(list(range(48)))
+    resumed.restore_sidecar_prefix(list(range(49)))
+    assert resumed.pre_finalize_sidecar(resumed.cache_evidence()) == sealed
+
+
+def test_unsealed_capture_resume_rejects_sidecar_records_beyond_failed_source(
+    tmp_path: Path,
+) -> None:
+    path = tmp_path / "candidate-sidecar.jsonl"
+    paths = _paths(tmp_path)
+    config, _ = _sidecar_config(
+        path,
+        namespace=_spec("capture")["namespace"],
+    )
+    capture = build_s4_phase_runtime(
+        spec=_spec("capture"),
+        cache_paths=paths,
+        factories=_factories([]),
+        resume_capture=False,
+        sidecar=config,
+    )
+    capture.graph.llm_client.inner.cache.inner.store.append(
+        build_candidate_call_record(
+            source_sequence=2,
+            source_hash=_sha("source-2"),
+            logical_call_sha256=_sha("future-call"),
+            prompt_sha256=_sha("future-prompt"),
+            related=[],
+            invalidation=[],
+        )
+    )
+
+    resumed = build_s4_phase_runtime(
+        spec=_spec("capture"),
+        cache_paths=paths,
+        factories=_factories([]),
+        resume_capture=True,
+        sidecar=config,
+    )
+
+    with pytest.raises(ValueError, match="future source"):
+        resumed.restore_sidecar_prefix([])

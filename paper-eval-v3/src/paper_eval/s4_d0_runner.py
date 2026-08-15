@@ -7,6 +7,7 @@ import json
 import re
 import time
 from collections.abc import Awaitable, Callable, Mapping, Sequence
+from contextlib import asynccontextmanager
 from copy import deepcopy
 from pathlib import Path
 from typing import Any
@@ -259,7 +260,28 @@ def _merge_runtime_evidence(
         "candidate_remap_edge_hit_count",
         "candidate_remap_rejection_count",
     }
-    valid_shapes = (base_fields, base_fields | candidate_remap_fields)
+    sidecar_counter_fields = {
+        "sidecar_exact_hit_count",
+        "sidecar_remap_hit_count",
+        "sidecar_rejection_count",
+        "sidecar_capture_append_count",
+        "sidecar_capture_reuse_count",
+        "sidecar_replay_binding_count",
+    }
+    sidecar_state_fields = {
+        "sidecar_record_count",
+        "sidecar_consumed_count",
+        "sidecar_remaining_count",
+        "sidecar_resumed_consumed_count",
+        "sidecar_prepared_count",
+    }
+    sidecar_fields = sidecar_counter_fields | sidecar_state_fields
+    valid_shapes = (
+        base_fields,
+        base_fields | candidate_remap_fields,
+        base_fields | sidecar_fields,
+        base_fields | candidate_remap_fields | sidecar_fields,
+    )
     if not prefix and not current:
         return {}
     current_fields = set(current)
@@ -273,7 +295,7 @@ def _merge_runtime_evidence(
         observed = int(current[field])
         if prior < 0 or observed < 0:
             raise ValueError("S4 runtime evidence contains a negative counter")
-        result[field] = prior + observed
+        result[field] = observed if field in sidecar_state_fields else prior + observed
     return result
 
 
@@ -297,6 +319,26 @@ async def _call(value: Callable[..., Any], *args: Any) -> Any:
     if inspect.isawaitable(result):
         return await result
     return result
+
+
+@asynccontextmanager
+async def _episode_context(
+    episode_scope: Callable[[Any], Any] | None,
+    item: Any,
+):
+    if episode_scope is None:
+        yield
+        return
+    selected = episode_scope(item)
+    if hasattr(selected, "__aenter__") and hasattr(selected, "__aexit__"):
+        async with selected:
+            yield
+        return
+    if hasattr(selected, "__enter__") and hasattr(selected, "__exit__"):
+        with selected:
+            yield
+        return
+    raise TypeError("S4 episode scope must be a context manager")
 
 
 async def _close_graph(graph: Any) -> None:
@@ -370,6 +412,9 @@ async def run_s4_phase(
     expected_episode_count: int,
     git_commit: str,
     event_sink: Callable[[Mapping[str, Any]], Any] | None = None,
+    episode_scope: Callable[[Any], Any] | None = None,
+    pre_cleanup_finalize: Callable[[], Any] | None = None,
+    restore_prefix: Callable[[Sequence[int]], Any] | None = None,
 ) -> dict[str, Any]:
     """Run or resume one phase, preserving a durable prefix on failure."""
 
@@ -412,6 +457,8 @@ async def run_s4_phase(
             checkpoint.get("runtime_evidence_cumulative", {}),
             label="checkpoint runtime evidence",
         )
+        if restore_prefix is not None:
+            await _call(restore_prefix, tuple(completed))
         if not existed:
             atomic_write_json(checkpoint_path, _hash_record(checkpoint))
         else:
@@ -434,7 +481,8 @@ async def run_s4_phase(
                 event_sink=event_sink,
             )
             try:
-                await graph.add_episode(**dict(episode_kwargs(item)))
+                async with _episode_context(episode_scope, item):
+                    await graph.add_episode(**dict(episode_kwargs(item)))
             except Exception as error:
                 _event(
                     path=events_path,
@@ -500,6 +548,8 @@ async def run_s4_phase(
         normalized = normalize_isolated_namespace_graph(exported)
         canonical_sha = payload_sha256(normalized)
         atomic_write_json(graph_path, normalized)
+        if pre_cleanup_finalize is not None:
+            await _call(pre_cleanup_finalize)
         runtime = _merge_runtime_evidence(
             runtime_prefix,
             _mapping(runtime_evidence(), label="runtime evidence"),

@@ -740,3 +740,94 @@ The next step requires an explicit offline design decision: enrich edge
 identity with independently captured evidence, adopt a disclosed trace-order
 oracle, or reconsider the D0 candidate-presentation control. Do not weaken the
 oracle, clean retry-005, or allocate retry-006 automatically.
+
+## 21. Paper-eval-v3 S4 retry-005 edge-identity diagnosis
+
+The bounded follow-up chose the stable logical-identity direction without
+changing Native Graphiti, candidate selection/presentation, dataset,
+retrieval, Reader, Judge, K, construction model, or workload. Existing
+retry-005 evidence first confirmed that nine of ten source-7 edge-resolution
+prompts contained the same prompt-visible fact twice; the terminal capture
+graph contained two such edges with different directed endpoints.
+
+A source-7-only cache-driven dry run then stopped at Graphiti's pre-prompt
+edge boundary and collected all ten calls. Every invalidation partition had
+ten candidates and ten distinct enriched logical identities. The result used
+no position, rank, runtime UUID, group ID, Neo4j ID, or `created_at`.
+
+```text
+verdict                         SIDECAR_AMENDMENT_JUSTIFIED
+source-7 calls                  10/10
+network / live LLM / embedding  0 / 0 / 0
+cross-encoder / DB writes       0 / 0
+publication / cache writes      0 / 0
+Neo4j reads                     62
+pre/post namespace              32 nodes / 48 relationships / 7 episodes
+pre/post snapshot hash          exact
+pre/post cache hashes           exact
+```
+
+This does not prove a retry-005 capture/replay bijection because capture-side
+internal candidate linkage was not recorded. It authorizes only offline TDD
+for a bilateral capture-sidecar plus replay internal projection. Retry-005
+remains incomplete/non-mergeable and preserved; retry-006, fixed-four
+qualification, S5, and PILOT remain unauthorized.
+
+TDD closed at 77 focused tests and 709 complete paper-eval-v3 tests passing.
+
+Detailed report and primary evidence:
+
+- `paper-eval-v3/S4_EDGE_IDENTITY_DIAGNOSIS_RESULT_REPORT_20260815.md`
+- `paper-eval-v3/artifacts/paper_eval/native/S4_EDGE_IDENTITY_DIAGNOSIS_RETRY_005.json`
+- `paper-eval-v3/logs/TDD_FULL_OFFLINE_GREEN_S4_EDGE_IDENTITY_D2_POST_LIVE_20260815.xml`
+
+## 22. Paper-eval-v3 S4 bilateral-sidecar D3 qualification
+
+The diagnosis-supported repair is now implemented and qualified offline
+without modifying Native Graphiti or any common evaluation choice. Capture
+associates the real namespace-normalized edge prompt hash with a durable,
+hash-only internal candidate projection. Replay exposes the same projection
+at the same pre-prompt boundary, proves partition-preserving logical identity
+equality, translates only positional response references in memory, and
+commits consumption only after the replay cache acknowledges the exact
+binding.
+
+The implementation excludes candidate position, rank, runtime UUID, group ID,
+Neo4j ID, and `created_at` from semantic identity. Exact edge prompt hits do
+not bypass the sidecar. A capture-prompt/replay-fast-path asymmetry is blocked
+before Graphiti publication, while symmetric no-prompt fast paths create no
+artificial record. Checkpoint resume reconstructs only the completed prefix;
+future-source capture records, partial sealed prefixes, cache/sidecar drift,
+remaining calls, and prepared leases all fail closed.
+
+TDD closure:
+
+```text
+focused sidecar/production/contract tests     147 passed
+complete paper-eval-v3 offline regression     801 passed
+compileall                                    passed
+git diff --check                              passed
+live LLM / embedding / Neo4j actions          0 / 0 / 0
+```
+
+The fresh retry identity is sealed in:
+
+- `paper-eval-v3/S4_BILATERAL_LOGICAL_EDGE_SIDECAR_AMENDMENT_v1.0.md`
+- `paper-eval-v3/artifacts/paper_eval/native/S4_D0_SIDECAR_RETRY_006_CONTRACT.json`
+  - file SHA256:
+    `c8c25600d38da62b3560b07ac479f34303cc8337b63205875bb3caef074f7172`
+  - contract SHA256:
+    `17df1d5f5b312ccee1a5bf303c0dbc65ffec730f3e37f0f2d261ad98b6dd6008`
+- `paper-eval-v3/logs/TDD_FOCUSED_GREEN_S4_SIDECAR_RETRY_006_20260815.xml`
+  - SHA256:
+    `45238bed22640fdd6e1f81b28b5766a408b15d6bb1803c7841a6d3b191894b22`
+- `paper-eval-v3/logs/TDD_FULL_OFFLINE_GREEN_S4_SIDECAR_RETRY_006_20260815.xml`
+  - SHA256:
+    `2a4858ce7f24694231bc94d95a3746e1a58c815958a2ebf651044f4fa199104c`
+
+The contract allocates fresh attempt `006` run/cache/namespace identities but
+authorizes only a bounded read-only preflight. It explicitly leaves live
+execution, authority consumption, fixed-four qualification, S5, and PILOT
+unauthorized. No retry-006 namespace, cache, candidate sidecar, preflight
+artifact, authority, or live result has been created. Retry-005 remains
+incomplete/non-mergeable and its `32/48/7` replay prefix remains untouched.

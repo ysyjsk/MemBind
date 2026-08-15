@@ -1,0 +1,55 @@
+{
+  "git_commit": "b57c1fdcfce40118235510081fb61575cb92bd7b",
+  "payload": {
+    "authority": {
+      "pilot_execution_authorized": false,
+      "s4_authority_creation_authorized": true,
+      "s4_live_execution_authorized": false
+    },
+    "evaluation": {
+      "authority": {
+        "pilot_execution_authorized": false,
+        "s4_authority_creation_authorized": true,
+        "s4_live_execution_authorized": false
+      },
+      "construction": {
+        "max_model_len": 65536,
+        "served_model_id": "qwen3-32b-fp8",
+        "vllm_version": "0.26.0"
+      },
+      "embedding": {
+        "served_model_id": "qwen3-embedding-0.6b"
+      },
+      "failures": [],
+      "namespace_checks": {
+        "capture_empty": true,
+        "historical_s1_unchanged": true,
+        "replay_empty": true
+      },
+      "namespace_state_sha256": {
+        "capture": "46da7fa792619c2fe4cfa65fb2a8cde84136e9aef82d0377e40be3eec4d800ae",
+        "historical_s1_actual": "a90c174f9d63a6bd5a2aa5204faf837d120c34b8455b5bde3981c553c1f3e84a",
+        "historical_s1_expected": "a90c174f9d63a6bd5a2aa5204faf837d120c34b8455b5bde3981c553c1f3e84a",
+        "replay": "46da7fa792619c2fe4cfa65fb2a8cde84136e9aef82d0377e40be3eec4d800ae"
+      },
+      "neo4j_connectivity": "PASS",
+      "schema_version": "membind.paper-eval-v3.s4-preflight-evaluation.v1",
+      "verdict": "PASS"
+    },
+    "s1_checkpoint_file_sha256": "287de35d917ec45f43b9107b55b32aae0be4d513c16f06908b5d7b281ec8894e",
+    "s4_contract_file_sha256": "a5acaa9b79f2cd67ff2552b3f697af30c90a072101d8ede1c1d98397e21296d8",
+    "s4_contract_sha256": "ab599ba9ee99e0eb5dffb97253ff91f48b142a340e24e83e003042719f8adbf9",
+    "schema_version": "membind.paper-eval-v3.s4-preflight-artifact.v1",
+    "source_sha256": {
+      "preflight": "e94e74cf24393d2bb08bc58d2a13b4b7892e7e49d4af1da2724be0b33d9bc48e",
+      "production": "6d1b542bcc538e60298c02d4be9f7a13bfd8820abe60188fe0dcbad6e393ced6",
+      "test": "376fe9bfc246842be9b341c8bf65251fdb2b2c88a543ffb69e904f7e2f59d902"
+    },
+    "stage": "S4_PREFLIGHT",
+    "verdict": "PASS"
+  },
+  "payload_sha256": "f587a0f0a068bb54c89e687b10d6e428121a037dcf1fbfa53f94853a5f0c1ce5",
+  "protocol_version": "paper-eval-v3",
+  "run_id": "s4-preflight-sidecar-retry-007",
+  "status": "finalized"
+}

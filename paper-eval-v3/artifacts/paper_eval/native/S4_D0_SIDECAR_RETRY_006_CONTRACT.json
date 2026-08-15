@@ -1,0 +1,99 @@
+{
+  "amendment_file_sha256": "1a9ec42bb729b797d4166f47c968486e99c10b588ecb1aabc1f75e0cff3be83a",
+  "attempt_id": "006",
+  "authority": {
+    "live_execution_authorized": false,
+    "pilot_execution_authorized": false,
+    "preflight_authorized": true,
+    "s4_four_history_qualification_authorized": false,
+    "s5_authorized": false
+  },
+  "candidate_oracle": {
+    "capture_only_sidecar_allowed": false,
+    "edge_prompt_name": "dedupe_edges.resolve_edge",
+    "edge_translation_kind": "BILATERAL_UUID_INDEPENDENT_LOGICAL_EDGE_BIJECTION",
+    "exact_edge_prompt_requires_sidecar_binding": true,
+    "node_translation_kind": "VERIFIED_PROMPT_VISIBLE_CANDIDATE_ID_BIJECTION",
+    "partition_preserving": true,
+    "persistent_cache_mutation": false,
+    "position_rank_uuid_identity_allowed": false,
+    "pre_publication_remaining_call_guard": true,
+    "raw_or_parsed_cache_write": false,
+    "wrapper_order": [
+      "GraphitiPromptCacheLLM",
+      "NamespaceNormalizedPromptCache",
+      "CandidateSidecarPromptCache",
+      "CandidateAwareReplayCache",
+      "PromptCache"
+    ]
+  },
+  "common_method_policy_sha256": "5699b88d83ad71de1119930ece69a9176c352ed847ea02be0cacc661b46e79e8",
+  "contract_sha256": "17df1d5f5b312ccee1a5bf303c0dbc65ffec730f3e37f0f2d261ad98b6dd6008",
+  "diagnosis_artifact_sha256": "dcb224eb92f040405697e7e8e1b98387949923cc6527c7e88c59949e84d4f237",
+  "diagnosis_file_sha256": "b8ca37b4fcc014027ec5c9111ed9ee73d15f275bb507d1acfd1d510ac9a8c4ae",
+  "execution_order": [
+    "U0_CAPTURE",
+    "D0_READ_ONLY_REPLAY"
+  ],
+  "history": {
+    "data_role": "DEVELOPMENT_EXPOSED",
+    "episode_count": 49,
+    "history_id": "07741c45"
+  },
+  "offline_evidence": {
+    "focused_junit_sha256": "45238bed22640fdd6e1f81b28b5766a408b15d6bb1803c7841a6d3b191894b22",
+    "focused_pass_count": 147,
+    "full_junit_sha256": "2a4858ce7f24694231bc94d95a3746e1a58c815958a2ebf651044f4fa199104c",
+    "full_pass_count": 801
+  },
+  "parent_contract_file_sha256": "55b30f8e22c7406ef26c70f95e3e7a3501e0ca6259c4c0c4abdb909ecc48aa4b",
+  "parent_contract_sha256": "20775d96a2138e47fdf256de448b2fd651dee5ae00367d8994ef38598a58e862",
+  "prior_retry_contract_file_sha256": "bb122deec49e9f4f015639b46be49a1cbd2c6cca0afa49574033f0c4c3841922",
+  "prior_retry_contract_sha256": "05b0983fa1d8e44eedc626c26b123a311252e6980d23052bc4b12824e88d2aa0",
+  "private_cache": {
+    "candidate_sidecar_relpath": "runtime/private/s4-d0-sidecar-07741c45-20260815-006/candidate-sidecar.jsonl",
+    "embedding_relpath": "runtime/private/s4-d0-sidecar-07741c45-20260815-006/embedding.jsonl",
+    "prompt_relpath": "runtime/private/s4-d0-sidecar-07741c45-20260815-006/prompt.jsonl",
+    "reportable_contents": false
+  },
+  "projection_schema_sha256": "28aef596af79a97d73e542e0ed3b21c81fe6dcc7b1fcf442f2f0cddce7436631",
+  "runs": {
+    "D0_READ_ONLY_REPLAY": {
+      "cache_id": "s4-d0-sidecar-07741c45-20260815-006",
+      "method": "D0",
+      "mode": "replay",
+      "namespace": "pev3-s4-d0-replay-20260815-006",
+      "run_id": "s4-d0-replay-20260815-006"
+    },
+    "U0_CAPTURE": {
+      "cache_id": "s4-d0-sidecar-07741c45-20260815-006",
+      "method": "U0",
+      "mode": "capture",
+      "namespace": "pev3-s4-u0-capture-20260815-006",
+      "run_id": "s4-d0-capture-20260815-006"
+    }
+  },
+  "schema_version": "membind.paper-eval-v3.s4-sidecar-retry-contract.v1",
+  "sidecar_hard_gates": {
+    "cache_and_sidecar_mutation_during_replay": false,
+    "candidate_remap_rejection_count": 0,
+    "canonical_graph_parity": "EXACT_100_PERCENT",
+    "edge_sidecar_resolution_accounting": "EXACT",
+    "sidecar_consumed_equals_record_count": true,
+    "sidecar_prepared_count": 0,
+    "sidecar_rejection_count": 0,
+    "sidecar_remaining_count": 0
+  },
+  "source_sha256": {
+    "candidate_oracle": "567aaa64324e16939aadea32139510e4775fa329f2f9490fe6004df009afbb77",
+    "candidate_projection": "0b4d38741a5698f91a7906a85b7aff623ce06241ecdf6efaeda0e47a43a723a7",
+    "candidate_sidecar": "2348c527f547491c151eda6ec023d9b6eca07b26eabbc7746510e6eb1977825c",
+    "candidate_sidecar_runtime": "473cac55365576962e35bdfc6039d2706fd063eac8d3677248bb3c6ff86c2a1a",
+    "contract": "98fcfc4624c2cd560839e583df6c426bd4a4e024cd8e022e81b9319963e12b98",
+    "production": "4633cb776a300c6092e2835c4f83bdbe92af517419ada453c172edbcb9f1ad70",
+    "runner": "3997cfa3840975563670ecc5d1f12df878ee206c3e9776cc929da6b6ad80d89d",
+    "test": "b429bc8751dab0ea3a4f4a068a816ae27f36269c1376c6d662d18ce017640b08"
+  },
+  "stage": "S4",
+  "status": "BILATERAL_SIDECAR_RETRY_EXECUTION_IDENTITY_FROZEN"
+}

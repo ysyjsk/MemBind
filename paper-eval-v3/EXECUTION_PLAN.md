@@ -227,10 +227,71 @@ stable. It re-runs the strict retry-005 result verifier and can activate only
 the exact sealed fixed-four plan; it continues to deny S5 and PILOT. The full
 offline gate is now 632 tests passing. Because retry-005 did not produce
 `S4_D0_REMAP_SMOKE_RESULT.json`, no activation artifact was generated.
+That activation implementation is retry-005-specific and may not consume a
+future retry-006 result. A successful sidecar-aware retry-006 requires an
+additive result verifier and activation v2 bound to its new identities. The
+sealed fixed four remain four distinct histories total: the smoke history is
+reused and only the other three run as fresh qualification blocks.
 
-The next action is an explicit offline design decision about ambiguous edge
-candidate identity. Do not clean the failed namespace, allocate retry-006,
-relax the fail-closed oracle, or start qualification automatically.
+The bounded next action is frozen in
+`S4_EDGE_IDENTITY_DIAGNOSIS_WORKPLAN_v1.0.md`. It first seals the persisted
+retry-005 diagnosis, then permits one source-7-only, cache-driven dry run over
+the preserved replay prefix under hard network, database-write, publication,
+and cache-mutation fences. Because retry-005 never recorded capture-side
+internal candidate linkage, that dry run may establish only whether a stable
+endpoint-aware logical edge identity is available on the replay prefix; it
+cannot retroactively prove a capture/replay bijection.
+
+Only the workplan verdict `SIDECAR_AMENDMENT_JUSTIFIED` may open offline TDD
+for a two-sided mechanism: a hash-only capture candidate sidecar plus the same
+internal candidate projection at replay before prompt rendering. A
+capture-only sidecar is insufficient. If the allowed logical identity remains
+non-unique, execution stops without adding rank, position, UUID, group ID,
+Neo4j element ID, or `created_at` as identity. Do not clean the failed
+namespace, allocate retry-006, relax the fail-closed oracle, or start the
+fixed-four qualification automatically.
+
+The bounded retry-005 diagnosis is now complete and sealed in
+`S4_EDGE_IDENTITY_DIAGNOSIS_RESULT_REPORT_20260815.md` and
+`artifacts/paper_eval/native/S4_EDGE_IDENTITY_DIAGNOSIS_RETRY_005.json`.
+It collected all ten source-7 pre-prompt edge calls. Each invalidation
+partition contained ten candidates and ten enriched identities, including the
+nine partitions whose fact-only projection had one duplicate pair. Pre/post
+namespace and cache hashes were exact, with zero network, model, database
+write, publication, or cache-write counters. Its verdict is
+`SIDECAR_AMENDMENT_JUSTIFIED`, which authorizes only the D3 bilateral-sidecar
+offline TDD in the controlling workplan. Retry-005 remains failed and
+non-mergeable; its namespace is still preserved at 32 nodes and 48
+relationships, and retry-006/fixed-four/S5/PILOT remain unauthorized.
+
+The D3 bilateral-sidecar offline production integration is now complete. The
+attempt-scoped runtime records hash-only capture candidate calls, recomputes
+the same UUID-independent projection at replay, keeps candidate partitions
+structural, translates cached positional decisions only after a unique
+bijection, and commits replay consumption only after oracle acknowledgement.
+It also blocks capture-prompt/replay-fast-path drift before Graphiti's
+`_process_episode_data` publication boundary, reconstructs a validated
+checkpoint prefix, and seals/verifies the sidecar after canonical export and
+before exact namespace cleanup.
+
+The frozen amendment and evidence are:
+
+```text
+S4_BILATERAL_LOGICAL_EDGE_SIDECAR_AMENDMENT_v1.0.md
+focused offline gate                         147 passed
+complete paper-eval-v3 offline gate          801 passed
+retry-006 contract file SHA256
+c8c25600d38da62b3560b07ac479f34303cc8337b63205875bb3caef074f7172
+```
+
+`artifacts/paper_eval/native/S4_D0_SIDECAR_RETRY_006_CONTRACT.json`
+allocates only fresh attempt `006` identities and authorizes only the bounded
+read-only preflight. It explicitly keeps live execution, authority
+consumption, fixed-four qualification, S5, and PILOT false. No retry-006
+namespace, cache, sidecar, preflight artifact, live authority, or phase result
+exists yet. The next permitted action is the contract-bound read-only
+preflight; a PASS must still be sealed before a distinct single-use live
+authority can be created.
 
 ## S1 tmux operations
 
