@@ -1,0 +1,24 @@
+<?xml version="1.0" encoding="utf-8"?><testsuites name="pytest tests"><testsuite name="pytest" errors="0" failures="1" skipped="0" tests="3" time="0.621" timestamp="2026-08-15T23:36:31.223032+08:00" hostname="aces-System-Product-Name"><testcase classname="tests.test_s5_graphiti_fx0_environment" name="test_environment_runs_real_graphiti_and_publishes_canonical_snapshot" time="0.004" /><testcase classname="tests.test_s5_graphiti_fx0_environment" name="test_environment_publication_schedule_is_detected_from_observed_history" time="0.003" /><testcase classname="tests.test_s5_graphiti_fx0_environment" name="test_environment_transaction_schedule_drives_real_idempotent_retry" time="0.003"><failure message="AssertionError: assert 1 == 2&#10; +  where 1 = S5MStarFx0ExecutionEvidence(outcome=MechanismOutcome(case_id='case-a', status='PASS', error_code=None, canonical_logic...le_logical_publication_observed': True, 'retry_replay_observed': False, 'publication_fault_detection_observed': False}).attempt_count">def test_environment_transaction_schedule_drives_real_idempotent_retry() -&gt; None:
+        environment = S5GraphitiFx0ControlledEnvironment()
+        adapter = environment.build_adapter(production_core_identity=CORE_IDENTITY)
+        providers = _providers()
+        providers = ControlledNondeterminism(
+            llm_responses=providers.llm_responses,
+            embeddings=providers.embeddings,
+            logical_times=providers.logical_times,
+            initial_state=providers.initial_state,
+            candidate_sets=providers.candidate_sets,
+            transaction_io_schedule={"fail_after_callback_attempts": [1]},
+            publication_sink_schedule=providers.publication_sink_schedule,
+        )
+    
+        execution = asyncio.run(
+            adapter.execute_fixture_case_with_evidence(_case(), providers)
+        )
+    
+        assert execution.outcome.status == "PASS"
+&gt;       assert execution.attempt_count == 2
+E       AssertionError: assert 1 == 2
+E        +  where 1 = S5MStarFx0ExecutionEvidence(outcome=MechanismOutcome(case_id='case-a', status='PASS', error_code=None, canonical_logic...le_logical_publication_observed': True, 'retry_replay_observed': False, 'publication_fault_detection_observed': False}).attempt_count
+
+tests/test_s5_graphiti_fx0_environment.py:214: AssertionError</failure></testcase></testsuite></testsuites>

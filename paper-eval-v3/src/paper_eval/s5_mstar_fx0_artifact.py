@@ -19,16 +19,17 @@ from typing import Any
 from . import PROTOCOL_VERSION
 from .artifacts import atomic_write_json, finalize_envelope, payload_sha256
 from .fx0_mechanism_fixture import (
-    CONTROLLED_PROVIDER_NAMES,
     FIXTURE_COUNT_POLICY,
     FX0_REQUIRED_FAILURE_MODES,
     FX0_REQUIRED_TRANSITIONS,
+    PRODUCTION_CONTROLLED_PROVIDER_NAMES,
 )
 from .s5_mstar_production_core_identity import (
     S5MStarProductionCoreIdentityError,
     verify_s5_mstar_production_core_identity,
 )
 from .s5_graphiti_mstar_semantics import S5GraphitiMStarSemanticRuntime
+from .s5_graphiti_fx0_environment import S5GraphitiFx0ControlledEnvironment
 from .s5_mstar_production_adapter import (
     S5MStarFx0ExecutionEvidence,
     S5MStarProductionAdapter,
@@ -42,6 +43,9 @@ PRODUCTION_FX0_SCHEMA = (
 PRODUCTION_FX0_LANE = "S5_MSTAR_PRODUCTION_PATH_FX0_PARITY"
 PRODUCTION_FX0_VERDICT = "PRODUCTION_PATH_EXACT_PARITY_PASS"
 PRODUCTION_FX0_SCOPE = "CONTROLLED_OFFLINE_HASH_BOUND_GRAPHITI_PRODUCTION_CORE"
+PRODUCTION_FX0_FIXTURE_MANIFEST_SCHEMA = (
+    "membind.paper-eval-v3.s5-mstar-production-fx0-fixture-manifest.v1"
+)
 PINNED_GRAPHITI_SEMANTIC_API_SHA256 = (
     "06909217defc448d7dd380f051b6b282fbb9a8a021c337f998c395fc9bb196fa"
 )
@@ -83,6 +87,7 @@ _CASE_FIELDS = {
 _EXECUTION_SHAPE_FIELDS = {
     "source_count",
     "attempt_count",
+    "transaction_attempt_count",
     "prepare_overlap_observed",
     "published_source_count",
     "published_source_order_observed",
@@ -205,6 +210,133 @@ _PUBLICATION_FAILURE_OUTCOMES = {
     mode: _outcome_class("FAIL_CLOSED", mode)
     for mode in FX0_REQUIRED_FAILURE_MODES
 }
+
+
+def _case_binding_projection(case: object) -> dict[str, str]:
+    """Bind one case's input, providers, and oracle to the same identity."""
+
+    case_identity_sha256 = payload_sha256({"case_id": case.case_id})
+    common = {
+        "case_identity_sha256": case_identity_sha256,
+        "transition": case.transition,
+    }
+    return {
+        **common,
+        "execution_input_sha256": payload_sha256(
+            {
+                **common,
+                "source_sequence": case.source_sequence,
+                "source_sha256": payload_sha256(case.source),
+            }
+        ),
+        "controlled_provider_sha256": payload_sha256(
+            {
+                **common,
+                "production_hash_projection": (
+                    case.providers.production_hash_projection()
+                ),
+            }
+        ),
+        "oracle_outcome_sha256": payload_sha256(
+            {
+                **common,
+                "status": case.expected_status,
+                "error_code": case.expected_error_code,
+                "canonical_logical_state": (
+                    case.expected_canonical_logical_state
+                ),
+                "publication_history": case.expected_publication_history,
+            }
+        ),
+    }
+
+
+def _binding_set_sha256(
+    rows: Sequence[Mapping[str, str]], field: str
+) -> str:
+    projection = [
+        {
+            "case_identity_sha256": row["case_identity_sha256"],
+            "transition": row["transition"],
+            field: row[field],
+        }
+        for row in rows
+    ]
+    return payload_sha256(projection)
+
+
+def _fixture_manifest_from_case_bindings(
+    *,
+    case_bindings: Sequence[Mapping[str, str]],
+) -> dict[str, Any]:
+    rows = sorted(
+        (deepcopy(dict(row)) for row in case_bindings),
+        key=lambda row: row["case_identity_sha256"],
+    )
+    execution_input_set_sha256 = _binding_set_sha256(
+        rows, "execution_input_sha256"
+    )
+    controlled_provider_set_sha256 = _binding_set_sha256(
+        rows, "controlled_provider_sha256"
+    )
+    oracle_set_sha256 = _binding_set_sha256(rows, "oracle_outcome_sha256")
+    body = {
+        "schema_version": PRODUCTION_FX0_FIXTURE_MANIFEST_SCHEMA,
+        "fixture_count_policy": FIXTURE_COUNT_POLICY,
+        "fixture_count": len(rows),
+        "controlled_nondeterminism_providers": list(
+            PRODUCTION_CONTROLLED_PROVIDER_NAMES
+        ),
+        "case_bindings": rows,
+        "execution_input_set_sha256": execution_input_set_sha256,
+        "controlled_provider_set_sha256": controlled_provider_set_sha256,
+        "oracle_set_sha256": oracle_set_sha256,
+    }
+    return {
+        **body,
+        "fx0_fixture_manifest_sha256": payload_sha256(body),
+    }
+
+
+def derive_s5_mstar_fx0_fixture_manifest(spec: object) -> dict[str, Any]:
+    """Derive the deterministic production binding manifest from an FX0 spec."""
+
+    from .fx0_mechanism_fixture import Fx0FixtureCase, Fx0FixtureSpec
+
+    if not isinstance(spec, Fx0FixtureSpec):
+        raise _fail("fx0_fixture_spec_invalid")
+    case_bindings = []
+    for case in spec.cases:
+        if not isinstance(case, Fx0FixtureCase):
+            raise _fail("fx0_fixture_case_invalid")
+        case_bindings.append(_case_binding_projection(case))
+    return _fixture_manifest_from_case_bindings(
+        case_bindings=case_bindings,
+    )
+
+
+def _validate_fixture_bindings(
+    spec: object, bindings: Mapping[str, str]
+) -> dict[str, Any]:
+    manifest = derive_s5_mstar_fx0_fixture_manifest(spec)
+    derived = {
+        "parent_protocol_sha256": spec.parent_protocol_sha256,
+        "amendment_sha256": spec.amendment_sha256,
+        "current_stage_pointer_sha256": spec.current_stage_pointer_sha256,
+        "fx0_fixture_manifest_sha256": manifest[
+            "fx0_fixture_manifest_sha256"
+        ],
+        "execution_input_set_sha256": manifest[
+            "execution_input_set_sha256"
+        ],
+        "controlled_provider_set_sha256": manifest[
+            "controlled_provider_set_sha256"
+        ],
+        "oracle_set_sha256": manifest["oracle_set_sha256"],
+    }
+    if any(bindings.get(field) != digest for field, digest in derived.items()):
+        raise _fail("fixture_binding_mismatch")
+    return manifest
 
 
 def _legacy_schema(value: object) -> bool:
@@ -351,9 +483,14 @@ def verify_s5_mstar_fx0_artifact(
             number = shape.get(field)
             if isinstance(number, bool) or not isinstance(number, int) or number < 0:
                 raise _fail("execution_shape_count_invalid")
+        if "transaction_attempt_count" in shape:
+            number = shape["transaction_attempt_count"]
+            if isinstance(number, bool) or not isinstance(number, int) or number < 1:
+                raise _fail("execution_shape_count_invalid")
         for field in _EXECUTION_SHAPE_FIELDS - {
             "source_count",
             "attempt_count",
+            "transaction_attempt_count",
             "published_source_count",
         }:
             if not isinstance(shape.get(field), bool):
@@ -397,6 +534,28 @@ def verify_s5_mstar_fx0_artifact(
 
     if len(case_ids) != len(set(case_ids)):
         raise _fail("case_identity_duplicate")
+    evidence_manifest = _fixture_manifest_from_case_bindings(
+        case_bindings=[
+            {
+                "case_identity_sha256": str(row["case_identity_sha256"]),
+                "transition": str(row["transition"]),
+                "execution_input_sha256": str(row["execution_input_sha256"]),
+                "controlled_provider_sha256": str(
+                    row["controlled_provider_sha256"]
+                ),
+                "oracle_outcome_sha256": str(row["oracle_outcome_sha256"]),
+            }
+            for row in rows
+        ],
+    )
+    for field in (
+        "execution_input_set_sha256",
+        "controlled_provider_set_sha256",
+        "oracle_set_sha256",
+        "fx0_fixture_manifest_sha256",
+    ):
+        if bindings[field] != evidence_manifest[field]:
+            raise _fail("artifact_fixture_binding_mismatch")
     expected_failure_hashes = set(_PUBLICATION_FAILURE_OUTCOMES.values())
     if (
         transitions != set(FX0_REQUIRED_TRANSITIONS)
@@ -406,7 +565,7 @@ def verify_s5_mstar_fx0_artifact(
         or set(payload.get("covered_publication_failure_mode_hashes", ()))
         != expected_failure_hashes
         or payload.get("controlled_nondeterminism_providers")
-        != list(CONTROLLED_PROVIDER_NAMES)
+        != list(PRODUCTION_CONTROLLED_PROVIDER_NAMES)
         or payload.get("parity") != _PARITY
         or payload.get("claims") != _CLAIMS
         or payload.get("legacy_boundary") != _LEGACY_BOUNDARY
@@ -435,6 +594,8 @@ def _validate_production_binding(
         or mechanism.reset_case is None
         or mechanism.witness_snapshot is None
         or not mechanism.persist_event_supplied
+        or not mechanism.controlled_provider_factory_supplied
+        or not mechanism.publication_fault_detector_supplied
     ):
         raise _fail("production_adapter_boundary_incomplete")
     if (
@@ -454,6 +615,34 @@ def _validate_production_binding(
         raise _fail("pinned_graphiti_runtime_binding_invalid")
     if prepare_owner.binding.loader_verified is not True:
         raise _fail("pinned_graphiti_binding_not_loader_verified")
+    environment_owner = getattr(mechanism.source_decoder, "__self__", None)
+    environment_hooks = (
+        mechanism.reset_case,
+        mechanism.snapshot,
+        mechanism.persist_event,
+        mechanism.witness_snapshot,
+        mechanism.controlled_provider_factory,
+        mechanism.publication_fault_detector,
+        mechanism.clock_ns,
+    )
+    if (
+        not isinstance(environment_owner, S5GraphitiFx0ControlledEnvironment)
+        or environment_owner.runtime is not prepare_owner
+        or any(
+            getattr(callback, "__self__", None) is not environment_owner
+            for callback in environment_hooks
+        )
+        or getattr(prepare_owner.controlled_provider_scope, "__self__", None)
+        is not environment_owner
+        or getattr(prepare_owner.latest_state_retriever, "__self__", None)
+        is not environment_owner
+        or (
+            mechanism.recover_publication is not None
+            and getattr(mechanism.recover_publication, "__self__", None)
+            is not environment_owner
+        )
+    ):
+        raise _fail("controlled_environment_binding_invalid")
     try:
         semantic_identity = prepare_owner.binding.identity_sha256()
     except Exception:
@@ -485,28 +674,22 @@ def _row_from_execution(
     ):
         raise _fail("production_fx0_exact_parity_failed")
     shape = _mapping(execution.execution_shape, "execution_shape_invalid")
-    return {
-        "case_identity_sha256": payload_sha256({"case_id": case.case_id}),
+    case_binding = _case_binding_projection(case)
+    common = {
+        "case_identity_sha256": case_binding["case_identity_sha256"],
         "transition": case.transition,
-        "execution_input_sha256": payload_sha256(
-            {
-                "source_sequence": case.source_sequence,
-                "source_sha256": payload_sha256(case.source),
-            }
-        ),
-        "controlled_provider_sha256": payload_sha256(
-            case.providers.hash_projection()
-        ),
-        "oracle_outcome_sha256": payload_sha256(
-            {
-                "status": expected_status,
-                "error_code": expected_error_code,
-                "canonical_logical_state": expected_state,
-                "publication_history": expected_history,
-            }
-        ),
+    }
+    return {
+        "case_identity_sha256": case_binding["case_identity_sha256"],
+        "transition": case.transition,
+        "execution_input_sha256": case_binding["execution_input_sha256"],
+        "controlled_provider_sha256": case_binding[
+            "controlled_provider_sha256"
+        ],
+        "oracle_outcome_sha256": case_binding["oracle_outcome_sha256"],
         "observed_outcome_sha256": payload_sha256(
             {
+                **common,
                 "status": observed.status,
                 "error_code": observed.error_code,
                 "canonical_logical_state": observed.canonical_logical_state,
@@ -539,11 +722,6 @@ async def build_s5_mstar_fx0_artifact_async(
 
     if not isinstance(spec, Fx0FixtureSpec):
         raise _fail("fx0_fixture_spec_invalid")
-    adapter = _validate_production_binding(
-        mechanism, production_core_identity=production_core_identity
-    )
-    if spec.production_path_identity != adapter.production_path_identity:
-        raise _fail("legacy_production_path_identity_mismatch")
     bindings = _mapping(expected_input_bindings, "input_bindings_invalid")
     if set(bindings) != _INPUT_BINDING_FIELDS:
         raise _fail("input_binding_shape_invalid")
@@ -553,6 +731,19 @@ async def build_s5_mstar_fx0_artifact_async(
         "identity_sha256"
     ):
         raise _fail("fixture_binding_mismatch")
+    expected_production_path_identity = {
+        "status": "FROZEN",
+        "method": "M_STAR",
+        "identity_sha256": bindings["production_core_identity_sha256"],
+    }
+    if spec.production_path_identity != expected_production_path_identity:
+        raise _fail("fixture_binding_mismatch")
+    _validate_fixture_bindings(spec, bindings)
+    adapter = _validate_production_binding(
+        mechanism, production_core_identity=production_core_identity
+    )
+    if spec.production_path_identity != adapter.production_path_identity:
+        raise _fail("legacy_production_path_identity_mismatch")
     rows: list[dict[str, object]] = []
     for case in spec.cases:
         if not isinstance(case, Fx0FixtureCase):
@@ -593,7 +784,9 @@ async def build_s5_mstar_fx0_artifact_async(
                 if row["transition"] == "LOST_DUPLICATE_PARTIAL_PUBLICATION_DETECTION"
             }
         ),
-        "controlled_nondeterminism_providers": list(CONTROLLED_PROVIDER_NAMES),
+        "controlled_nondeterminism_providers": list(
+            PRODUCTION_CONTROLLED_PROVIDER_NAMES
+        ),
         "production_core_identity": deepcopy(dict(production_core_identity)),
         "input_bindings": bindings,
         "case_evidence": rows,
@@ -649,11 +842,13 @@ __all__ = [
     "PRODUCTION_FX0_SCHEMA",
     "PRODUCTION_FX0_SCOPE",
     "PRODUCTION_FX0_VERDICT",
+    "PRODUCTION_FX0_FIXTURE_MANIFEST_SCHEMA",
     "PINNED_GRAPHITI_SEMANTIC_API_SHA256",
     "PINNED_GRAPHITI_SEMANTIC_IDENTITY_ARTIFACT_SHA256",
     "S5MStarProductionFx0ArtifactError",
     "build_s5_mstar_fx0_artifact",
     "build_s5_mstar_fx0_artifact_async",
+    "derive_s5_mstar_fx0_fixture_manifest",
     "verify_s5_mstar_fx0_artifact",
     "write_s5_mstar_fx0_artifact_exclusive",
 ]

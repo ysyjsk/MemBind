@@ -25,6 +25,7 @@ from .fx0_mechanism_fixture import (
     MechanismOutcome,
 )
 from .s5_mstar_pipeline import MStarSource, MStarSpec, run_mstar_pipeline
+from .s5_graphiti_mstar_semantics import S5GraphitiMStarSemanticError
 from .s5_mstar_production_core_identity import (
     S5MStarProductionCoreIdentityError,
     verify_s5_mstar_production_core_identity,
@@ -135,21 +136,27 @@ class S5MStarFx0ExecutionEvidence:
 
 
 SemanticPrepare = Callable[
-    [object, int, ControlledNondeterminism], Awaitable[object]
+    [object, int, object], Awaitable[object]
 ]
 LatestStateBind = Callable[
-    [object, int, int, tuple[int, ...], ControlledNondeterminism],
+    [object, int, int, tuple[int, ...], object],
     Awaitable[object],
 ]
 Snapshot = Callable[[], tuple[Mapping[str, Any], Sequence[Mapping[str, Any]]]]
 PersistEvent = Callable[[Mapping[str, object]], Awaitable[object]]
 ClockNs = Callable[[], int]
 SourceDecoder = Callable[
-    [Fx0ExecutionCase, ControlledNondeterminism], Sequence[Fx0DecodedSource]
+    [Fx0ExecutionCase, object], Sequence[Fx0DecodedSource]
 ]
-CaseReset = Callable[[ControlledNondeterminism], Awaitable[object]]
-WitnessSnapshot = Callable[[str], Mapping[str, bool]]
+CaseReset = Callable[[object], Awaitable[object]]
+WitnessSnapshot = Callable[[str], Mapping[str, object]]
 RecoverPublication = Callable[[MStarSource, int], Awaitable[object]]
+ControlledProviderFactory = Callable[
+    [ControlledNondeterminism], object
+]
+PublicationFaultDetector = Callable[
+    [int, Mapping[str, Any], Sequence[Mapping[str, Any]]], object
+]
 
 
 class S5MStarProductionAdapter:
@@ -174,6 +181,8 @@ class S5MStarProductionAdapter:
         reset_case: CaseReset | None = None,
         witness_snapshot: WitnessSnapshot | None = None,
         recover_publication: RecoverPublication | None = None,
+        controlled_provider_factory: ControlledProviderFactory | None = None,
+        publication_fault_detector: PublicationFaultDetector | None = None,
     ) -> None:
         self.production_core_identity = _identity(production_core_identity)
         if production_core_identity_sha256 != self.production_core_identity[
@@ -199,11 +208,31 @@ class S5MStarProductionAdapter:
             raise S5MStarProductionAdapterError("WITNESS_SNAPSHOT_NOT_CALLABLE")
         if recover_publication is not None and not callable(recover_publication):
             raise S5MStarProductionAdapterError("RECOVER_PUBLICATION_NOT_CALLABLE")
+        if controlled_provider_factory is not None and not callable(
+            controlled_provider_factory
+        ):
+            raise S5MStarProductionAdapterError(
+                "CONTROLLED_PROVIDER_FACTORY_NOT_CALLABLE"
+            )
+        if publication_fault_detector is not None and not callable(
+            publication_fault_detector
+        ):
+            raise S5MStarProductionAdapterError(
+                "PUBLICATION_FAULT_DETECTOR_NOT_CALLABLE"
+            )
         self.source_decoder = source_decoder or self._decode_single_source
         self.source_decoder_supplied = source_decoder is not None
         self.reset_case = reset_case
         self.witness_snapshot = witness_snapshot
         self.recover_publication = recover_publication
+        self.controlled_provider_factory = (
+            controlled_provider_factory or self._identity_provider
+        )
+        self.controlled_provider_factory_supplied = (
+            controlled_provider_factory is not None
+        )
+        self.publication_fault_detector = publication_fault_detector
+        self.publication_fault_detector_supplied = publication_fault_detector is not None
         self.production_path_identity = {
             "status": "FROZEN",
             "method": "M_STAR",
@@ -213,6 +242,14 @@ class S5MStarProductionAdapter:
     @staticmethod
     async def _discard_event(_event: Mapping[str, object]) -> None:
         return None
+
+    @staticmethod
+    def _identity_provider(
+        providers: ControlledNondeterminism,
+    ) -> ControlledNondeterminism:
+        """Compatibility path for the pre-typed offline adapter tests."""
+
+        return providers
 
     @staticmethod
     def _logical_time_ns(value: str) -> int:
@@ -230,8 +267,12 @@ class S5MStarProductionAdapter:
     def _decode_single_source(
         self,
         case: Fx0ExecutionCase,
-        providers: ControlledNondeterminism,
+        providers: object,
     ) -> tuple[Fx0DecodedSource, ...]:
+        if not isinstance(providers, ControlledNondeterminism):
+            raise S5MStarProductionAdapterError(
+                "FX0_TYPED_PROVIDER_SOURCE_DECODER_REQUIRED"
+            )
         if len(providers.logical_times) != 1:
             raise S5MStarProductionAdapterError("FX0_LOGICAL_TIME_COUNT_INVALID")
         return (
@@ -270,12 +311,25 @@ class S5MStarProductionAdapter:
                 "FX0_SINGLE_CASE_SOURCE_SEQUENCE_MUST_BE_ZERO"
             )
 
+        try:
+            active_providers = self.controlled_provider_factory(providers)
+        except S5MStarProductionAdapterError:
+            raise
+        except Exception:
+            raise S5MStarProductionAdapterError(
+                "CONTROLLED_PROVIDER_FACTORY_FAILED"
+            ) from None
+        if active_providers is None or inspect.isawaitable(active_providers):
+            raise S5MStarProductionAdapterError(
+                "CONTROLLED_PROVIDER_FACTORY_INVALID"
+            )
+
         if self.reset_case is not None:
-            reset = self.reset_case(providers)
+            reset = self.reset_case(active_providers)
             if not inspect.isawaitable(reset):
                 raise S5MStarProductionAdapterError("CASE_RESET_MUST_BE_ASYNC")
             await reset
-        decoded = self.source_decoder(case, providers)
+        decoded = self.source_decoder(case, active_providers)
         if isinstance(decoded, (str, bytes)) or not isinstance(decoded, Sequence):
             raise S5MStarProductionAdapterError("FX0_DECODED_SOURCES_INVALID")
         selected = tuple(decoded)
@@ -306,7 +360,7 @@ class S5MStarProductionAdapter:
         async def prepare(opaque_source: object, logical_time_ns: int) -> object:
             try:
                 result = self.semantic_prepare(
-                    opaque_source, logical_time_ns, providers
+                    opaque_source, logical_time_ns, active_providers
                 )
                 if not inspect.isawaitable(result):
                     raise TypeError("semantic_prepare must be async")
@@ -328,7 +382,7 @@ class S5MStarProductionAdapter:
                     logical_time_ns,
                     source_sequence,
                     visible_prefix,
-                    providers,
+                    active_providers,
                 )
                 if not inspect.isawaitable(result):
                     raise TypeError("latest_state_bind must be async")
@@ -339,6 +393,11 @@ class S5MStarProductionAdapter:
                 nonlocal callback_failure
                 callback_failure = error.error_code
                 raise
+            except S5GraphitiMStarSemanticError as error:
+                if str(error) != "conflicting_duplicate_uuid":
+                    raise
+                callback_failure = "CONFLICTING_DUPLICATE_UUID"
+                raise S5MStarProductionAdapterError(callback_failure) from None
 
         async def recover(source: MStarSource, logical_time_ns: int) -> object:
             nonlocal recovery_count
@@ -360,12 +419,40 @@ class S5MStarProductionAdapter:
             clock_ns=self.clock_ns,
             recover_publication=recover if self.recover_publication is not None else None,
         )
-        if evidence["status"] == "PASS":
-            state, history = self.snapshot()
+        state, history = self.snapshot()
+        _assert_public(state)
+        _assert_public(history)
+        detected_publication_failure: str | None = None
+        if evidence["status"] == "PASS" and self.publication_fault_detector is not None:
+            try:
+                detected = self.publication_fault_detector(
+                    len(sources), state, history
+                )
+                if inspect.isawaitable(detected):
+                    detected = await detected
+            except S5MStarProductionAdapterError:
+                raise
+            except Exception:
+                raise S5MStarProductionAdapterError(
+                    "PUBLICATION_FAULT_DETECTOR_FAILED"
+                ) from None
+            if detected is not None:
+                if (
+                    not isinstance(detected, str)
+                    or detected not in _REGISTERED_FX0_FAILURES
+                ):
+                    raise S5MStarProductionAdapterError(
+                        "PUBLICATION_FAULT_DETECTOR_RESULT_INVALID"
+                    )
+                detected_publication_failure = detected
+
+        if detected_publication_failure is not None:
+            error_code = detected_publication_failure
+            status = "FAIL_CLOSED"
+        elif evidence["status"] == "PASS":
             error_code = None
             status = "PASS"
         else:
-            state, history = self.snapshot()
             if (
                 callback_failure is not None
                 and callback_failure not in _REGISTERED_FX0_FAILURES
@@ -380,13 +467,16 @@ class S5MStarProductionAdapter:
         shape: dict[str, object] = {
             "source_count": len(sources),
             "attempt_count": 1 + recovery_count,
+            "transaction_attempt_count": 1,
             "prepare_overlap_observed": summary["prepare_overlap_observed"] is True,
             "published_source_count": len(published),
             "published_source_order_observed": published == list(range(len(published))),
             "prepare_to_bind_state_change_observed": False,
             "single_logical_publication_observed": len(published) == 1,
             "retry_replay_observed": recovery_count > 0,
-            "publication_fault_detection_observed": recovery_count > 0,
+            "publication_fault_detection_observed": (
+                detected_publication_failure is not None or recovery_count > 0
+            ),
         }
         if self.witness_snapshot is not None:
             witness = self.witness_snapshot(case.case_id)
@@ -397,15 +487,28 @@ class S5MStarProductionAdapter:
                 "prepare_to_bind_state_change_observed",
                 "retry_replay_observed",
                 "publication_fault_detection_observed",
+                "transaction_attempt_count",
             }
             if set(witness) - allowed:
                 raise S5MStarProductionAdapterError("FX0_WITNESS_SHAPE_INVALID")
             for key, value in witness.items():
+                if key == "transaction_attempt_count":
+                    if (
+                        isinstance(value, bool)
+                        or not isinstance(value, int)
+                        or value < 1
+                    ):
+                        raise S5MStarProductionAdapterError(
+                            "FX0_WITNESS_VALUE_INVALID"
+                        )
+                    shape[key] = value
+                    shape["attempt_count"] = max(int(shape["attempt_count"]), value)
+                    continue
                 if value is not True and value is not False:
                     raise S5MStarProductionAdapterError("FX0_WITNESS_VALUE_INVALID")
                 shape[key] = value
-        if shape["retry_replay_observed"] is True and recovery_count < 1:
-            raise S5MStarProductionAdapterError("FX0_RETRY_WITNESS_WITHOUT_RECOVERY")
+        if shape["retry_replay_observed"] is True and shape["attempt_count"] < 2:
+            raise S5MStarProductionAdapterError("FX0_RETRY_WITNESS_WITHOUT_REPLAY")
         try:
             outcome = MechanismOutcome(
                 case_id=case.case_id,
@@ -420,7 +523,7 @@ class S5MStarProductionAdapter:
             outcome=outcome,
             pipeline_evidence=evidence,
             source_count=len(sources),
-            attempt_count=1 + recovery_count,
+            attempt_count=int(shape["attempt_count"]),
             execution_shape=shape,
         )
 
@@ -430,4 +533,5 @@ __all__ = [
     "S5MStarProductionAdapter",
     "S5MStarProductionAdapterError",
     "S5MStarFx0ExecutionEvidence",
+    "PublicationFaultDetector",
 ]

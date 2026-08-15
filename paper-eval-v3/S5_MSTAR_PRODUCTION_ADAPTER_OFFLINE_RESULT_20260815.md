@@ -105,3 +105,28 @@ live model/embedding/Neo4j  0 / 0 / 0
 
 The current-stage pointer is still `S3_CONFIGURATION_FROZEN`; A0/P/M* live
 authority, FX0 exact parity, PILOT, and formal execution remain false.
+
+## Pinned Graphiti adapter execution-shape follow-up (2026-08-15)
+
+The production adapter is now connected to the real controlled Graphiti
+fixture through an explicit typed-provider factory. Offline cases cover one
+real source, two-source prepare overlap and source ordering, a compatible
+duplicate UUID coalesced by the semantic runtime, a latest-state change after
+prepare, and a transaction callback retry backed by equal durable-row
+projections. Callback return projections remain non-authoritative; snapshots
+and witnesses are independent.
+
+The latest full paper-eval-v3 regression is `1110 passed`, with zero failures,
+errors, and skips and one upstream Pydantic deprecation warning. Evidence is in
+`logs/TDD_FULL_OFFLINE_GREEN_S5_GRAPHITI_EXECUTION_SHAPES_20260815.xml` and
+`tests/test_s5_graphiti_production_adapter_integration.py`. This follow-up does
+not generate a production FX0 artifact or authorize live work; the current
+stage and all authority bits remain unchanged.
+
+The subsequent publication-fault boundary is also covered offline. An
+independent detector catches lost, duplicate, and partial publication history
+from controlled durable sinks, and rejects unregistered results. The latest
+full regression is `1114 passed` with zero failures, errors, and skips and one
+upstream warning; see
+`logs/TDD_FULL_OFFLINE_GREEN_S5_GRAPHITI_PUBLICATION_FAULTS_FINAL_20260815.xml`.
+This remains non-authorizing evidence and does not seal FX0 parity.

@@ -272,3 +272,30 @@ cannot satisfy it. The current-stage pointer and every live authority remain
 unchanged. Latest TDD evidence is `37` focused S5/FX0 tests and `1088` full
 offline tests, all green; this is still offline design/qualification work and
 does not authorize M* smoke.
+
+## 11. Production-path execution-shape checkpoint (2026-08-15)
+
+The bounded follow-up now connects the M* adapter to the real pinned Graphiti
+fixture through a typed provider factory. It has offline evidence for:
+
+```text
+real Native semantic call order and transaction boundary
+compatible duplicate UUID coalescing
+two-source prepare overlap and source-ordered publication
+latest-state change after prepare
+transaction callback replay with equal durable projections
+independent lost/duplicate/partial publication detection
+```
+
+The adapter rejects missing typed-provider conversion and missing publication
+detector at the production artifact boundary. The latest full offline
+regression is `1114 passed`, `0 failed`, `0 errors`, `0 skipped`, with one
+upstream Pydantic deprecation warning. Evidence is persisted in
+`S5_GRAPHITI_PRODUCTION_ADAPTER_EXECUTION_SHAPES_OFFLINE_RESULT_20260815.md`
+and `logs/TDD_FULL_OFFLINE_GREEN_S5_GRAPHITI_PUBLICATION_FAULTS_FINAL_20260815.xml`.
+
+This checkpoint still does not seal the production FX0 artifact. The remaining
+offline task is to assemble the complete frozen transition inventory through
+this adapter and run the independent artifact verifier; no transition label,
+callback double, or old artifact may be promoted. M* live smoke, current-stage
+updates, and all external service actions remain unauthorized.

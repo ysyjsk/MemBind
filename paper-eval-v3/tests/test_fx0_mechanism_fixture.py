@@ -7,12 +7,14 @@ the harness contract; the harness never supplies a simplified MemBind method.
 from __future__ import annotations
 
 import copy
-from dataclasses import dataclass
+from dataclasses import dataclass, replace
 
 import pytest
 
 from paper_eval.artifacts import payload_sha256
 from paper_eval.fx0_mechanism_fixture import (
+    CONTROLLED_PROVIDER_NAMES,
+    PRODUCTION_CONTROLLED_PROVIDER_NAMES,
     FX0_REQUIRED_FAILURE_MODES,
     FX0_REQUIRED_TRANSITIONS,
     ControlledNondeterminism,
@@ -30,6 +32,49 @@ from paper_eval.fx0_mechanism_fixture import (
 PARENT_SHA = "4b81c89b33d407f04fc20862a81eab6badba16d0d61d98331cbe188d1bb4f41e"
 AMENDMENT_SHA = "b" * 64
 POINTER_SHA = "c" * 64
+
+
+def test_controlled_provider_hash_covers_transaction_and_publication_schedules():
+    base = ControlledNondeterminism(
+        transaction_io_schedule={"fail_after_callback_attempts": []},
+        publication_sink_schedule={"actions_by_source": ["APPEND"]},
+    )
+    retry = replace(
+        base,
+        transaction_io_schedule={"fail_after_callback_attempts": [1]},
+    )
+    dropped = replace(
+        base,
+        publication_sink_schedule={"actions_by_source": ["DROP"]},
+    )
+
+    projection = base.production_hash_projection()
+    assert set(projection) == {
+        "llm_responses_sha256",
+        "embeddings_sha256",
+        "logical_times_sha256",
+        "initial_graph_state_sha256",
+        "candidate_sets_sha256",
+        "transaction_io_schedule_sha256",
+        "publication_sink_schedule_sha256",
+    }
+    assert payload_sha256(projection) != payload_sha256(
+        retry.production_hash_projection()
+    )
+    assert payload_sha256(projection) != payload_sha256(
+        dropped.production_hash_projection()
+    )
+    assert PRODUCTION_CONTROLLED_PROVIDER_NAMES[-2:] == (
+        "TRANSACTION_IO_SCHEDULE",
+        "PUBLICATION_SINK_SCHEDULE",
+    )
+    assert CONTROLLED_PROVIDER_NAMES == (
+        "LLM_RESPONSES",
+        "EMBEDDINGS",
+        "LOGICAL_TIME",
+        "INITIAL_GRAPH_STATE",
+        "CANDIDATE_SETS",
+    )
 
 
 @dataclass

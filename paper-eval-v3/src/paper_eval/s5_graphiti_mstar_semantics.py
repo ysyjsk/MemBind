@@ -172,6 +172,9 @@ class S5GraphitiMStarSemanticRuntime:
         self.call_observer = call_observer
         self.require_native_commit_shape = require_native_commit_shape
         self.last_edge_type_map: dict[tuple[str, str], list[str]] = {}
+        self.resolved_node_coalescing_observations: list[
+            dict[str, int | None]
+        ] = []
 
     def _observe(self, name: str) -> None:
         if self.call_observer is not None:
@@ -349,7 +352,10 @@ class S5GraphitiMStarSemanticRuntime:
                 ),
                 "resolve_nodes_failed",
             )
+            coalescing = {"pre_count": len(nodes), "post_count": None}
+            self.resolved_node_coalescing_observations.append(coalescing)
             nodes = coalesce_compatible_resolved_nodes(nodes)
+            coalescing["post_count"] = len(nodes)
             # Match pinned Graphiti.add_episode(): edge extraction is invoked
             # after node resolution, but it receives the original extracted
             # nodes so the prompt/UUID attribution remains Native-compatible.

@@ -46,6 +46,11 @@ CONTROLLED_PROVIDER_NAMES = (
     "INITIAL_GRAPH_STATE",
     "CANDIDATE_SETS",
 )
+PRODUCTION_CONTROLLED_PROVIDER_NAMES = (
+    *CONTROLLED_PROVIDER_NAMES,
+    "TRANSACTION_IO_SCHEDULE",
+    "PUBLICATION_SINK_SCHEDULE",
+)
 
 _SHA256 = re.compile(r"^[0-9a-f]{64}$")
 _ALLOWED_STATUS = {"PASS", "FAIL_CLOSED"}
@@ -123,6 +128,8 @@ class ControlledNondeterminism:
     logical_times: Sequence[str] = field(default_factory=tuple)
     initial_state: Mapping[str, Any] = field(default_factory=dict)
     candidate_sets: Sequence[Mapping[str, Any]] = field(default_factory=tuple)
+    transaction_io_schedule: Mapping[str, Any] = field(default_factory=dict)
+    publication_sink_schedule: Mapping[str, Any] = field(default_factory=dict)
 
     def __post_init__(self) -> None:
         object.__setattr__(
@@ -155,9 +162,25 @@ class ControlledNondeterminism:
                 self.candidate_sets, label="candidate sets"
             ),
         )
+        object.__setattr__(
+            self,
+            "transaction_io_schedule",
+            _copy_mapping(
+                self.transaction_io_schedule,
+                label="transaction I/O schedule",
+            ),
+        )
+        object.__setattr__(
+            self,
+            "publication_sink_schedule",
+            _copy_mapping(
+                self.publication_sink_schedule,
+                label="publication sink schedule",
+            ),
+        )
 
     def hash_projection(self) -> dict[str, Any]:
-        """Return hash-only provider evidence suitable for a public artifact."""
+        """Return the frozen five-provider legacy self-test projection."""
 
         return {
             "llm_responses_sha256": payload_sha256(self.llm_responses),
@@ -165,6 +188,19 @@ class ControlledNondeterminism:
             "logical_times_sha256": payload_sha256(self.logical_times),
             "initial_graph_state_sha256": payload_sha256(self.initial_state),
             "candidate_sets_sha256": payload_sha256(self.candidate_sets),
+        }
+
+    def production_hash_projection(self) -> dict[str, Any]:
+        """Bind every controlled provider used by production FX0 execution."""
+
+        return {
+            **self.hash_projection(),
+            "transaction_io_schedule_sha256": payload_sha256(
+                self.transaction_io_schedule
+            ),
+            "publication_sink_schedule_sha256": payload_sha256(
+                self.publication_sink_schedule
+            ),
         }
 
 

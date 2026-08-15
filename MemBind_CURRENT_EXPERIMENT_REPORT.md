@@ -922,3 +922,181 @@ Evidence is persisted in:
 
 The current pointer remains `S3_CONFIGURATION_FROZEN`; A0/P/M* live
 authority, FX0 exact parity, PILOT, and formal execution remain unauthorized.
+
+## S5 controlled Graphiti fixture checkpoint (2026-08-15)
+
+The isolated S5 lane now has a real pinned Graphiti 0.29.3 controlled offline
+fixture. It executes the installed extraction, resolution, edge pointer,
+edge invalidation, attribute, and `_process_episode_data` functions while
+replacing only declared external providers with deterministic in-memory
+implementations. The fixture matches Native `add_episode()` call order and
+checks the transaction commit boundary before publication.
+
+Results:
+
+```text
+focused controlled fixture      14 passed
+combined S5/Graphiti suites      41 passed
+full paper-eval-v3 offline       1102 passed, 0 failed, 0 errors, 0 skipped
+compileall / git diff --check    passed / passed
+live model/embed/Neo4j calls     0 / 0 / 0
+```
+
+Verified cases include canonical node merge, real edge resolution, temporal
+invalidation, default edge-type map, group/database routing, malformed commit
+shape rejection, and transaction-retry fail-closed behavior. The default
+retry case is deliberately not marked idempotent; a bounded controlled upsert
+witness now passes only when
+the complete durable row projection is identical across two attempts; changed
+same-UUID payloads are rejected. Provider consumption is ledgered and case reset is tested;
+two independent real Graphiti sources also publish in source order, but that
+is not yet the full M* scheduler execution-shape proof.
+
+Evidence and test locations:
+
+- `paper-eval-v3/src/paper_eval/s5_graphiti_controlled_fixture.py`
+- `paper-eval-v3/tests/test_s5_graphiti_controlled_fixture.py`
+- `paper-eval-v3/S5_GRAPHITI_CONTROLLED_FIXTURE_OFFLINE_RESULT_20260815.md`
+- `paper-eval-v3/logs/TDD_FULL_OFFLINE_GREEN_S5_GRAPHITI_REAL_FIXTURE_20260815.xml`
+- `paper-eval-v3/logs/TDD_FULL_OFFLINE_GREEN_S5_GRAPHITI_CONTROLLED_FINAL_20260815.xml`
+- `paper-eval-v3/logs/TDD_FULL_OFFLINE_GREEN_S5_GRAPHITI_FINAL_20260815.xml`
+
+No production FX0 parity artifact was generated, no live authority was
+consumed, and `runtime/CURRENT_STAGE_STATUS.json` remains
+`S3_CONFIGURATION_FROZEN`. The next work is still offline TDD for the complete
+FX0 transition inventory and production-bound retry/idempotence evidence.
+
+## S5 typed-provider adapter checkpoint (2026-08-15)
+
+The latest offline checkpoint keeps the pinned Graphiti 0.29.3 fixture and the
+production adapter boundary separate from all live services. The focused
+controlled-fixture suite is now `15 passed`; the current adapter/semantic/
+artifact focused selection is `35 passed`; and the full paper-eval-v3 offline
+regression is `1103 passed`, with zero failures, errors, and skips. The only
+warning remains the upstream Pydantic deprecation warning in Graphiti.
+
+The new adapter contract test confirms that consecutive cases reset mutable
+state, callback inputs stay oracle-free, and a forged bind-return state/history
+cannot override an independent snapshot. This does not qualify production FX0
+parity. The production artifact is still intentionally absent because the
+complete transition inventory and production-bound retry/idempotence evidence
+have not executed through the pinned Graphiti path.
+
+Evidence:
+
+```text
+paper-eval-v3/logs/TDD_FOCUSED_GREEN_S5_GRAPHITI_TYPED_PROVIDERS_FINAL_20260815.xml
+paper-eval-v3/logs/TDD_FULL_OFFLINE_GREEN_S5_GRAPHITI_TYPED_PROVIDERS_20260815.xml
+paper-eval-v3/tests/test_s5_mstar_production_adapter.py
+```
+
+The authority bits and `runtime/CURRENT_STAGE_STATUS.json` were not changed;
+the current stage remains `S3_CONFIGURATION_FROZEN`.
+
+## S5 production-adapter typed-provider integration (2026-08-15)
+
+The next TDD step connected the production adapter to the real pinned Graphiti
+controlled fixture without starting any external service. The RED contract
+showed that a typed provider could not previously cross the adapter boundary.
+The minimum implementation added `controlled_provider_factory`; one typed
+provider object now flows through reset, source decoding, prepare, and bind.
+The production artifact validator requires this explicit factory, while the
+older callback-only offline tests retain a compatibility identity conversion.
+
+The real integration observed the complete Graphiti 0.29.3 semantic order,
+transaction completion, independent durable snapshot, and provider-scope
+cleanup. The focused selection passed `30` tests with one upstream Pydantic
+deprecation warning. The full paper-eval-v3 offline regression passed `1106`
+tests with zero failures, errors, or skips; the same one warning is retained.
+
+Evidence:
+
+```text
+paper-eval-v3/logs/TDD_RED_S5_GRAPHITI_PRODUCTION_ADAPTER_INTEGRATION_20260815.xml
+paper-eval-v3/logs/TDD_GREEN_S5_GRAPHITI_PRODUCTION_ADAPTER_INTEGRATION_20260815.xml
+paper-eval-v3/logs/TDD_FULL_OFFLINE_GREEN_S5_TYPED_PROVIDER_ADAPTER_20260815.xml
+paper-eval-v3/tests/test_s5_graphiti_production_adapter_integration.py
+```
+
+This remains bounded adapter/semantic evidence, not production FX0 exact
+parity. The complete transition inventory, multi-source scheduler execution
+shape, and production-bound retry witness remain fail-closed. No current
+pointer or authority bit changed; the stage remains `S3_CONFIGURATION_FROZEN`.
+
+## S5 real transaction-retry witness (2026-08-15)
+
+The following TDD step exercised two additional production-path shapes through
+the real pinned Graphiti fixture. A two-source case observed prepare overlap,
+source-ordered publication, and two separate commits. A retry case configured
+the controlled transaction to replay once; the fixture compared the complete
+durable row projection across attempts and exposed an independent witness to
+the adapter. The adapter now reports `transaction_attempt_count` and refuses a
+retry claim without at least two actual attempts.
+
+The RED test initially failed because the adapter accepted only journal
+recovery as a second attempt. After the minimum shape extension, the focused
+retry-witness selection passed `42` tests with one upstream warning. The full
+offline regression passed `1108` tests with zero failures, errors, or skips.
+
+Evidence:
+
+```text
+paper-eval-v3/logs/TDD_RED_S5_GRAPHITI_TRANSACTION_RETRY_WITNESS_20260815.xml
+paper-eval-v3/logs/TDD_GREEN_S5_GRAPHITI_TRANSACTION_RETRY_WITNESS_20260815.xml
+paper-eval-v3/logs/TDD_FOCUSED_GREEN_S5_GRAPHITI_RETRY_WITNESS_FINAL_20260815.xml
+paper-eval-v3/logs/TDD_FULL_OFFLINE_GREEN_S5_GRAPHITI_RETRY_WITNESS_20260815.xml
+paper-eval-v3/tests/test_s5_graphiti_production_adapter_integration.py
+```
+
+This is still bounded controlled retry evidence, not complete FX0 exact parity.
+The production artifact remains absent; no live service, namespace, current
+pointer, or authority bit was changed.
+
+## S5 execution-shape completion checkpoint (2026-08-15)
+
+The latest bounded case covers the state transition between real prepare and
+bind. After pinned Graphiti extraction completes, the controlled latest-state
+retriever is changed to a valid new episodic node; bind observes that node and
+the independent witness marks `prepare_to_bind_state_change_observed=true`.
+The checkpoint also retains real compatible duplicate-UUID coalescing,
+two-source source ordering, and durable transaction-retry evidence.
+
+The focused execution-shape selection passed `42` tests with one upstream
+Pydantic deprecation warning. The final full paper-eval-v3 offline regression
+passed `1110` tests with zero failures, errors, or skips. Evidence:
+
+```text
+paper-eval-v3/logs/TDD_GREEN_S5_GRAPHITI_PREPARE_BIND_STATE_CHANGE_20260815.xml
+paper-eval-v3/logs/TDD_FOCUSED_GREEN_S5_GRAPHITI_EXECUTION_SHAPES_20260815.xml
+paper-eval-v3/logs/TDD_FULL_OFFLINE_GREEN_S5_GRAPHITI_EXECUTION_SHAPES_20260815.xml
+```
+
+This is still bounded offline transition evidence. The complete FX0 inventory,
+including independent publication fault detectors, has not been sealed into a
+production artifact. No external service, namespace, current pointer, or
+authority bit was changed; the stage remains `S3_CONFIGURATION_FROZEN`.
+
+## S5 independent publication-fault detection (2026-08-15)
+
+The adapter now separates publication-fault detection from semantic callbacks.
+The detector receives only source count and an independent durable
+snapshot/history. Controlled sinks exercise silent loss, duplicate history,
+and partial two-source history; the detector returns exactly
+`LOST_PUBLICATION`, `DUPLICATE_PUBLICATION`, or `PARTIAL_PUBLICATION`. An
+unregistered or non-string result fails closed. No source field supplies an
+expected error code.
+
+The focused fault-mode tests are green with one upstream warning. The final
+full offline regression passed `1114` tests with zero failures, errors, or
+skips. Evidence:
+
+```text
+paper-eval-v3/logs/TDD_RED_S5_GRAPHITI_PUBLICATION_FAULT_DETECTOR_20260815.xml
+paper-eval-v3/logs/TDD_GREEN_S5_GRAPHITI_PUBLICATION_FAULT_DETECTOR_20260815.xml
+paper-eval-v3/logs/TDD_GREEN_S5_GRAPHITI_PUBLICATION_FAULT_MODES_20260815.xml
+paper-eval-v3/logs/TDD_FULL_OFFLINE_GREEN_S5_GRAPHITI_PUBLICATION_FAULTS_FINAL_20260815.xml
+```
+
+This is still bounded offline evidence. The production FX0 artifact remains
+absent until all transition rows are assembled and verified together; no live
+service, namespace, current pointer, or authority bit was changed.

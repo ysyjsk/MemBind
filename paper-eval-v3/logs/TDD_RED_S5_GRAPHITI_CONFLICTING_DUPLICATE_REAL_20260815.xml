@@ -1,0 +1,33 @@
+<?xml version="1.0" encoding="utf-8"?><testsuites name="pytest tests"><testsuite name="pytest" errors="0" failures="1" skipped="0" tests="1" time="0.636" timestamp="2026-08-15T23:15:13.843143+08:00" hostname="aces-System-Product-Name"><testcase classname="tests.test_s5_graphiti_controlled_fixture" name="test_real_graphiti_conflicting_candidate_projection_fails_before_commit" time="0.000"><failure message="paper_eval.s5_graphiti_controlled_fixture.ControlledGraphitiFixtureError: UNKNOWN_FIXTURE_OPTION">def test_real_graphiti_conflicting_candidate_projection_fails_before_commit() -&gt; None:
+&gt;       fixture = build_controlled_graphiti_fixture(
+            conflicting_candidate_projections=True,
+        )
+
+tests/test_s5_graphiti_controlled_fixture.py:101: 
+_ _ _ _ _ _ _ _ _ _ _ _ _ _ _ _ _ _ _ _ _ _ _ _ _ _ _ _ _ _ _ _ _ _ _ _ _ _ _ _ 
+
+kwargs = {'conflicting_candidate_projections': True}
+
+    def build_controlled_graphiti_fixture(**kwargs: Any) -&gt; ControlledGraphitiFixture:
+        """Build a no-network fixture around real pinned Graphiti symbols."""
+    
+        unknown = set(kwargs) - {
+            "group_id",
+            "configured_database",
+            "edge_types",
+            "edge_fact",
+            "fail_transaction",
+            "malformed_commit_result",
+            "retry_transaction_once",
+            "idempotent_retry",
+            "mutate_retry_payload",
+            "missing_llm_response",
+            "canonical_candidate",
+            "duplicate_entity",
+            "invalidation_candidate",
+        }
+        if unknown:
+&gt;           raise ControlledGraphitiFixtureError("UNKNOWN_FIXTURE_OPTION")
+E           paper_eval.s5_graphiti_controlled_fixture.ControlledGraphitiFixtureError: UNKNOWN_FIXTURE_OPTION
+
+src/paper_eval/s5_graphiti_controlled_fixture.py:680: ControlledGraphitiFixtureError</failure></testcase></testsuite></testsuites>

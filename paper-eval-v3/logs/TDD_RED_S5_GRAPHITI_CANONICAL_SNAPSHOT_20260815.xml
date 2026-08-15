@@ -1,0 +1,16 @@
+<?xml version="1.0" encoding="utf-8"?><testsuites name="pytest tests"><testsuite name="pytest" errors="0" failures="1" skipped="0" tests="1" time="0.627" timestamp="2026-08-15T23:17:31.020943+08:00" hostname="aces-System-Product-Name"><testcase classname="tests.test_s5_graphiti_controlled_fixture" name="test_canonical_logical_state_excludes_random_identity_and_wall_clock" time="0.006"><failure message="AttributeError: 'ControlledGraphitiFixture' object has no attribute 'canonical_logical_state'">def test_canonical_logical_state_excludes_random_identity_and_wall_clock() -&gt; None:
+        options = {
+            "edge_types": ("WorksAt",),
+            "edge_fact": "Alice works at Acme.",
+            "invalidation_candidate": True,
+        }
+        first = build_controlled_graphiti_fixture(**options)
+        second = build_controlled_graphiti_fixture(**options)
+        asyncio.run(first.run_episode())
+        asyncio.run(second.run_episode())
+    
+&gt;       first_state = first.canonical_logical_state()
+                      ^^^^^^^^^^^^^^^^^^^^^^^^^^^^^
+E       AttributeError: 'ControlledGraphitiFixture' object has no attribute 'canonical_logical_state'
+
+tests/test_s5_graphiti_controlled_fixture.py:124: AttributeError</failure></testcase></testsuite></testsuites>

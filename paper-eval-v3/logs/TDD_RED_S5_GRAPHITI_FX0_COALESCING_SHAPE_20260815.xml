@@ -1,0 +1,30 @@
+<?xml version="1.0" encoding="utf-8"?><testsuites name="pytest tests"><testsuite name="pytest" errors="0" failures="1" skipped="0" tests="1" time="0.628" timestamp="2026-08-15T23:52:09.708436+08:00" hostname="aces-System-Product-Name"><testcase classname="tests.test_s5_graphiti_fx0_inventory" name="test_inventory_exact_parity_runs_through_one_pinned_environment" time="0.007"><failure message="AttributeError: 'S5GraphitiMStarSemanticRuntime' object has no attribute 'resolved_node_coalescing_observations'">def test_inventory_exact_parity_runs_through_one_pinned_environment() -&gt; None:
+        spec = _spec()
+        environment = S5GraphitiFx0ControlledEnvironment()
+        adapter = environment.build_adapter(production_core_identity=CORE_IDENTITY)
+    
+        for case in spec.cases:
+            execution = asyncio.run(
+                adapter.execute_fixture_case_with_evidence(
+                    case.execution_input(), case.providers
+                )
+            )
+            assert execution.outcome.status == case.expected_status, case.case_id
+            assert execution.outcome.error_code == case.expected_error_code, case.case_id
+            assert (
+                execution.outcome.canonical_logical_state
+                == case.expected_canonical_logical_state
+            ), case.case_id
+            assert (
+                execution.outcome.publication_history
+                == case.expected_publication_history
+            ), case.case_id
+    
+            if case.transition == "COMPATIBLE_DUPLICATE_UUID_COALESCING":
+&gt;               assert environment.runtime.resolved_node_coalescing_observations == [
+                       ^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^
+                    {"pre_count": 2, "post_count": 1}
+                ]
+E               AttributeError: 'S5GraphitiMStarSemanticRuntime' object has no attribute 'resolved_node_coalescing_observations'
+
+tests/test_s5_graphiti_fx0_inventory.py:106: AttributeError</failure></testcase></testsuite></testsuites>

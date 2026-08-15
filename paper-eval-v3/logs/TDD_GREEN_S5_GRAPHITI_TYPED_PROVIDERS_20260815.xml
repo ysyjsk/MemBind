@@ -1,0 +1,9 @@
+<?xml version="1.0" encoding="utf-8"?><testsuites name="pytest tests"><testsuite name="pytest" errors="0" failures="1" skipped="0" tests="2" time="0.668" timestamp="2026-08-15T21:06:35.571490+08:00" hostname="aces-System-Product-Name"><testcase classname="tests.test_s5_graphiti_controlled_fixture" name="test_controlled_provider_consumption_is_allowlisted_and_complete" time="0.003" /><testcase classname="tests.test_s5_graphiti_controlled_fixture" name="test_missing_controlled_llm_response_fails_closed_before_commit" time="0.001"><failure message="AssertionError: Regex pattern did not match.&#10;  Expected regex: 'LLM_RESPONSE'&#10;  Actual message: 'extract_nodes_failed'">def test_missing_controlled_llm_response_fails_closed_before_commit() -&gt; None:
+        fixture = build_controlled_graphiti_fixture(missing_llm_response="ExtractedEntities")
+    
+&gt;       with pytest.raises(ControlledGraphitiFixtureError, match="LLM_RESPONSE"):
+E       AssertionError: Regex pattern did not match.
+E         Expected regex: 'LLM_RESPONSE'
+E         Actual message: 'extract_nodes_failed'
+
+paper-eval-v3/tests/test_s5_graphiti_controlled_fixture.py:174: AssertionError</failure></testcase></testsuite></testsuites>

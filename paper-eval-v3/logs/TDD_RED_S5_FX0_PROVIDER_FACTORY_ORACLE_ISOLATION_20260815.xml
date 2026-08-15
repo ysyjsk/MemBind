@@ -1,0 +1,19 @@
+<?xml version="1.0" encoding="utf-8"?><testsuites name="pytest tests"><testsuite name="pytest" errors="0" failures="1" skipped="0" tests="1" time="0.042" timestamp="2026-08-15T23:26:21.579350+08:00" hostname="aces-System-Product-Name"><testcase classname="tests.test_s5_mstar_production_adapter" name="test_controlled_provider_factory_receives_only_provider_plan" time="0.001"><failure message="AssertionError: assert [(Fx0Executio... 'Alice'},)))] == [(ControlledN...'Alice'},)),)]&#10;  &#10;  At index 0 diff: (Fx0ExecutionCase(case_id='fx0-case', source_sequence=0, source={'key': 'Alice'}), ControlledNondeterminism(llm_responses={'entity': 'Alice'}, embeddings={'entity': [0.1, 0.2]}, logical_times=('2026-01-01T00:00:00Z',), initial_state={'nodes': [], 'relationships': []}, candidate_sets=({'candidate': 'Alice'},))) != (ControlledNondeterminism(llm_responses={'entity': 'Alice'}, embeddings={'entity': [0.1, 0.2]}, logical_times=('2026-01-01T00:00:00Z',), initial_state={'nodes': [], 'relationships': []}, candidate_sets=({'candidate': 'Alice'},)),)&#10;  Use -v to get more diff">def test_controlled_provider_factory_receives_only_provider_plan() -&gt; None:
+        providers = _providers()
+        received: list[tuple[object, ...]] = []
+    
+        def provider_factory(*args: object) -&gt; ControlledNondeterminism:
+            received.append(args)
+            return providers
+    
+        adapter = _adapter()
+        adapter.controlled_provider_factory = provider_factory
+        asyncio.run(adapter.execute_fixture_case(_case().execution_input(), providers))
+    
+&gt;       assert received == [(providers,)]
+E       AssertionError: assert [(Fx0Executio... 'Alice'},)))] == [(ControlledN...'Alice'},)),)]
+E         
+E         At index 0 diff: (Fx0ExecutionCase(case_id='fx0-case', source_sequence=0, source={'key': 'Alice'}), ControlledNondeterminism(llm_responses={'entity': 'Alice'}, embeddings={'entity': [0.1, 0.2]}, logical_times=('2026-01-01T00:00:00Z',), initial_state={'nodes': [], 'relationships': []}, candidate_sets=({'candidate': 'Alice'},))) != (ControlledNondeterminism(llm_responses={'entity': 'Alice'}, embeddings={'entity': [0.1, 0.2]}, logical_times=('2026-01-01T00:00:00Z',), initial_state={'nodes': [], 'relationships': []}, candidate_sets=({'candidate': 'Alice'},)),)
+E         Use -v to get more diff
+
+tests/test_s5_mstar_production_adapter.py:429: AssertionError</failure></testcase></testsuite></testsuites>

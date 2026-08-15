@@ -1,0 +1,258 @@
+<?xml version="1.0" encoding="utf-8"?><testsuites name="pytest tests"><testsuite name="pytest" errors="0" failures="1" skipped="0" tests="1" time="0.643" timestamp="2026-08-15T23:41:47.775446+08:00" hostname="aces-System-Product-Name"><testcase classname="tests.test_s5_graphiti_fx0_environment" name="test_two_real_sources_overlap_publish_in_order_and_observe_state_change" time="0.006"><failure message="paper_eval.s5_mstar_pipeline.MStarPipelineError: prepare_overlap_or_worker_proof_invalid">def test_two_real_sources_overlap_publish_in_order_and_observe_state_change() -&gt; None:
+        environment = S5GraphitiFx0ControlledEnvironment()
+        adapter = environment.build_adapter(production_core_identity=CORE_IDENTITY)
+        providers = _providers()
+        llm_responses = deepcopy(dict(providers.llm_responses))
+        llm_responses["__prepare_rendezvous_parties__"] = 2
+        providers = ControlledNondeterminism(
+            llm_responses=llm_responses,
+            embeddings=providers.embeddings,
+            logical_times=(
+                "2026-01-01T00:00:00Z",
+                "2026-01-01T00:00:01Z",
+            ),
+            initial_state=providers.initial_state,
+            candidate_sets=providers.candidate_sets,
+            transaction_io_schedule=providers.transaction_io_schedule,
+            publication_sink_schedule={"actions_by_source": ["APPEND", "APPEND"]},
+        )
+        source = _source()
+        second = deepcopy(source["episodes"][0])
+        second.update(
+            {
+                "uuid": "episode-1",
+                "name": "episode-1",
+                "content": "Alice joined Acme one second later.",
+                "valid_at": "2026-01-01T00:00:01Z",
+            }
+        )
+        source["episodes"].append(second)
+        case = Fx0ExecutionCase(
+            case_id="two-source-state-change",
+            source_sequence=0,
+            source=source,
+        )
+    
+&gt;       execution = asyncio.run(
+            adapter.execute_fixture_case_with_evidence(case, providers)
+        )
+
+tests/test_s5_graphiti_fx0_environment.py:257: 
+_ _ _ _ _ _ _ _ _ _ _ _ _ _ _ _ _ _ _ _ _ _ _ _ _ _ _ _ _ _ _ _ _ _ _ _ _ _ _ _ 
+/usr/lib/python3.12/asyncio/runners.py:194: in run
+    return runner.run(main)
+           ^^^^^^^^^^^^^^^^
+/usr/lib/python3.12/asyncio/runners.py:118: in run
+    return self._loop.run_until_complete(task)
+           ^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^
+/usr/lib/python3.12/asyncio/base_events.py:687: in run_until_complete
+    return future.result()
+           ^^^^^^^^^^^^^^^
+src/paper_eval/s5_mstar_production_adapter.py:413: in execute_fixture_case_with_evidence
+    evidence = await run_mstar_pipeline(
+src/paper_eval/s5_mstar_pipeline.py:650: in run_mstar_pipeline
+    return verify_mstar_pipeline_evidence(
+_ _ _ _ _ _ _ _ _ _ _ _ _ _ _ _ _ _ _ _ _ _ _ _ _ _ _ _ _ _ _ _ _ _ _ _ _ _ _ _ 
+
+value = {'schema_version': 'membind.paper-eval-v3.s5-mstar-pipeline-evidence.v1', 'run_id': 's5-mstar-fx0-two-source-state-cha...hod': 'M*', 'production_core_identity_sha256': '8e65879005dcaafbfa06cc4b64afcbd697f641a252c69ff27d1a935696fba0d6', ...}
+expected_spec = MStarSpec(run_id='s5-mstar-fx0-two-source-state-change', production_core_identity_sha256='8e65879005dcaafbfa06cc4b64afcbd697f641a252c69ff27d1a935696fba0d6', prepare_concurrency=2, method='M*', require_prepare_overlap=True)
+expected_sources = (MStarSource(source_sequence=0, source_sha256='43c571244a84f85524abfcfbe78b900e8570e84f56a86b94ef79fa1aa2a67965', opaq...=None, edge_types=None, edge_type_map=None, custom_extraction_instructions=None), logical_time_ns=1767225601000000000))
+
+    def verify_mstar_pipeline_evidence(
+        value: Mapping[str, object],
+        *,
+        expected_spec: MStarSpec,
+        expected_sources: Sequence[MStarSource],
+    ) -&gt; dict[str, object]:
+        """Recompute source, interval, ordering, and terminal-event invariants."""
+    
+        if not isinstance(value, Mapping):
+            raise _fail("evidence_not_mapping")
+        evidence = deepcopy(dict(value))
+        _assert_public(evidence)
+        if set(evidence) != {
+            "schema_version",
+            "run_id",
+            "method",
+            "production_core_identity_sha256",
+            "status",
+            "mergeable",
+            "failure_code",
+            "events",
+            "summary",
+        }:
+            raise _fail("evidence_shape_invalid")
+        if not isinstance(expected_spec, MStarSpec):
+            raise _fail("expected_spec_invalid")
+        sources = tuple(expected_sources)
+        if not sources or any(not isinstance(item, MStarSource) for item in sources):
+            raise _fail("expected_sources_invalid")
+        expected_sequences = [item.source_sequence for item in sources]
+        expected_hashes = {item.source_sequence: item.source_sha256 for item in sources}
+        if (
+            evidence.get("schema_version") != SCHEMA
+            or evidence.get("run_id") != expected_spec.run_id
+            or evidence.get("method") != MSTAR
+            or evidence.get("production_core_identity_sha256")
+            != expected_spec.production_core_identity_sha256
+        ):
+            raise _fail("evidence_identity_invalid")
+        status = evidence.get("status")
+        if status not in {"PASS", "FAIL_CLOSED"}:
+            raise _fail("status_invalid")
+        if evidence.get("mergeable") is not (status == "PASS"):
+            raise _fail("mergeability_invalid")
+        if (status == "PASS") != (evidence.get("failure_code") is None):
+            raise _fail("failure_status_invalid")
+        raw_events = evidence.get("events")
+        summary = evidence.get("summary")
+        if (
+            isinstance(raw_events, (str, bytes))
+            or not isinstance(raw_events, Sequence)
+            or not isinstance(summary, Mapping)
+            or set(summary) != _SUMMARY_FIELDS
+        ):
+            raise _fail("evidence_sections_invalid")
+        events = [dict(item) if isinstance(item, Mapping) else {} for item in raw_events]
+        if not events or [event.get("event_sequence") for event in events] != list(range(len(events))):
+            raise _fail("event_sequence_invalid")
+        for event in events:
+            event_type = event.get("event_type")
+            if event_type not in _EVENT_FIELDS or set(event) != _EVENT_FIELDS[str(event_type)]:
+                raise _fail("event_shape_invalid")
+            if event.get("run_id") != expected_spec.run_id or event.get("method") != MSTAR:
+                raise _fail("event_identity_invalid")
+        terminal_type = "terminal_success" if status == "PASS" else "terminal_failure"
+        if events[-1].get("event_type") != terminal_type or sum(
+            event.get("event_type") in {"terminal_success", "terminal_failure"}
+            for event in events
+        ) != 1:
+            raise _fail("terminal_event_invalid")
+        terminal = events[-1]
+        if any(terminal.get(name) != summary.get(name) for name in _SUMMARY_FIELDS):
+            raise _fail("terminal_summary_invalid")
+    
+        intents = [
+            int(event["source_sequence"])
+            for event in events
+            if event.get("event_type") == "intent"
+        ]
+        if intents != expected_sequences:
+            raise _fail("intent_coverage_invalid")
+        for event in events:
+            event_type = event.get("event_type")
+            if event_type in {"intent", "prepare_start", "prepared", "bind_start", "commit_returned", "publication"}:
+                source = event.get("source_sequence")
+                if (
+                    not isinstance(source, int)
+                    or source not in expected_hashes
+                    or event.get("source_sha256") != expected_hashes[source]
+                ):
+                    raise _fail("source_identity_invalid")
+    
+        intent_by_source = {
+            int(event["source_sequence"]): event
+            for event in events
+            if event.get("event_type") == "intent"
+        }
+        for source, intent in intent_by_source.items():
+            _timestamp(intent.get("logical_time_ns"), "logical_time_invalid")
+            expected_source = next(
+                item for item in sources if item.source_sequence == source
+            )
+            if (
+                expected_source.logical_time_ns is not None
+                and intent.get("logical_time_ns") != expected_source.logical_time_ns
+            ):
+                raise _fail("logical_time_source_binding_invalid")
+        prepared_rows = [event for event in events if event.get("event_type") == "prepared"]
+        prepared_sources = [int(event["source_sequence"]) for event in prepared_rows]
+        if len(prepared_sources) != len(set(prepared_sources)) or any(
+            source not in expected_hashes for source in prepared_sources
+        ):
+            raise _fail("prepared_accounting_invalid")
+        for event in events:
+            if event.get("event_type") in {"prepare_start", "prepared"}:
+                source = int(event["source_sequence"])
+                if event.get("logical_time_ns") != intent_by_source[source].get("logical_time_ns"):
+                    raise _fail("logical_time_drift")
+                worker = event.get("worker_id")
+                if isinstance(worker, bool) or not isinstance(worker, int) or worker not in {0, 1}:
+                    raise _fail("prepare_worker_invalid")
+                _timestamp(
+                    event.get(
+                        "prepare_start_timestamp_ns"
+                        if event.get("event_type") == "prepare_start"
+                        else "prepare_end_timestamp_ns"
+                    ),
+                    "prepare_timestamp_invalid",
+                )
+        prepare_intervals = _intervals(events, "prepare_start", "prepared")
+        if any(end &lt; start for start, end, _worker, _source in prepare_intervals):
+            raise _fail("prepare_timestamp_order_invalid")
+    
+        bind_starts = {
+            int(event["source_sequence"]): event
+            for event in events
+            if event.get("event_type") == "bind_start"
+        }
+        commit_rows = {
+            int(event["source_sequence"]): event
+            for event in events
+            if event.get("event_type") == "commit_returned"
+        }
+        publication_rows = [event for event in events if event.get("event_type") == "publication"]
+        publications = [int(event["source_sequence"]) for event in publication_rows]
+        if publications != list(range(len(publications))):
+            raise _fail("publication_source_order_invalid")
+        for event in bind_starts.values():
+            source = int(event["source_sequence"])
+            prefix = event.get("visible_publication_prefix")
+            if prefix != list(range(source)) or event.get("logical_time_ns") != intent_by_source[source].get("logical_time_ns"):
+                raise _fail("latest_state_prefix_invalid")
+            _timestamp(event.get("bind_start_timestamp_ns"), "bind_timestamp_invalid")
+        for event in commit_rows.values():
+            source = int(event["source_sequence"])
+            if source not in bind_starts:
+                raise _fail("commit_without_bind_invalid")
+            start = _timestamp(bind_starts[source].get("bind_start_timestamp_ns"), "bind_timestamp_invalid")
+            returned = _timestamp(event.get("commit_return_timestamp_ns"), "bind_timestamp_invalid")
+            if returned &lt; start:
+                raise _fail("bind_timestamp_order_invalid")
+        for event in publication_rows:
+            source = int(event["source_sequence"])
+            if source not in commit_rows:
+                raise _fail("publication_without_commit_invalid")
+            returned = _timestamp(commit_rows[source].get("commit_return_timestamp_ns"), "bind_timestamp_invalid")
+            publication = _timestamp(event.get("publication_timestamp_ns"), "bind_timestamp_invalid")
+            if publication &lt; returned or event.get("visible_publication_prefix") != list(range(source)):
+                raise _fail("publication_timestamp_or_prefix_invalid")
+    
+        bind_intervals = _intervals(events, "bind_start", "publication")
+        summary_expected = {
+            "configured_prepare_concurrency": expected_spec.prepare_concurrency,
+            "observed_prepare_worker_ids": sorted({int(event["worker_id"]) for event in events if event.get("event_type") == "prepare_start"}),
+            "max_active_prepare": _max_active(prepare_intervals),
+            "prepare_overlap_observed": _overlap(prepare_intervals),
+            "max_active_bind": _max_active(bind_intervals),
+            "intent_count": len(intents),
+            "prepared_count": len(prepared_sources),
+            "publication_count": len(publications),
+            "published_source_sequences": publications,
+            "fallback_count": 0,
+        }
+        if dict(summary) != summary_expected:
+            raise _fail("summary_recomputation_invalid")
+    
+        if status == "PASS":
+            if sorted(prepared_sources) != expected_sequences or publications != expected_sequences:
+                raise _fail("successful_coverage_invalid")
+            if expected_spec.require_prepare_overlap and (
+                summary_expected["observed_prepare_worker_ids"] != [0, 1]
+                or summary_expected["max_active_prepare"] != 2
+                or summary_expected["prepare_overlap_observed"] is not True
+            ):
+&gt;               raise _fail("prepare_overlap_or_worker_proof_invalid")
+E               paper_eval.s5_mstar_pipeline.MStarPipelineError: prepare_overlap_or_worker_proof_invalid
+
+src/paper_eval/s5_mstar_pipeline.py:873: MStarPipelineError</failure></testcase></testsuite></testsuites>

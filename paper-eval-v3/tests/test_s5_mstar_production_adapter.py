@@ -89,7 +89,12 @@ def _case(*, status: str = "PASS", error_code: str | None = None) -> Fx0FixtureC
     )
 
 
-def _adapter(*, fail: str | None = None, events: list[dict] | None = None):
+def _adapter(
+    *,
+    fail: str | None = None,
+    events: list[dict] | None = None,
+    publication_fault_detector=None,
+):
     state = {"nodes": [], "relationships": []}
     history: list[dict] = []
 
@@ -120,6 +125,7 @@ def _adapter(*, fail: str | None = None, events: list[dict] | None = None):
         latest_state_bind=bind,
         snapshot=snapshot,
         persist_event=persist if events is not None else None,
+        publication_fault_detector=publication_fault_detector,
     )
 
 
@@ -298,6 +304,138 @@ def test_bind_return_cannot_override_independent_snapshot() -> None:
     )
     assert outcome.canonical_logical_state == {"nodes": [], "relationships": []}
     assert outcome.publication_history == ()
+
+
+def test_adapter_resets_each_case_and_keeps_provider_input_oracle_free() -> None:
+    state = {"nodes": [], "relationships": []}
+    history: list[dict] = []
+    reset_calls: list[ControlledNondeterminism] = []
+    callback_providers: list[ControlledNondeterminism] = []
+
+    async def reset(providers: ControlledNondeterminism) -> None:
+        reset_calls.append(providers)
+        state["nodes"] = []
+        state["relationships"] = []
+        history.clear()
+
+    async def prepare(source, _logical_time, providers):
+        callback_providers.append(providers)
+        assert set(source) == {"key"}
+        return {"key": source["key"]}
+
+    async def bind(
+        prepared,
+        _logical_time,
+        source_sequence,
+        _prefix,
+        providers,
+    ):
+        callback_providers.append(providers)
+        state["nodes"] = [{"key": prepared["key"]}]
+        history.clear()
+        history.append({"source_sequence": source_sequence, "event": "publish"})
+        # The adapter must use its independent snapshot even when a callback
+        # returns a plausible-looking but forged projection.
+        return {
+            "canonical_logical_state": {"nodes": [{"key": "forged"}]},
+            "publication_history": [{"source_sequence": 99, "event": "forged"}],
+        }
+
+    providers = _providers()
+    adapter = S5MStarProductionAdapter(
+        production_core_identity=CORE_IDENTITY,
+        production_core_identity_sha256=IDENTITY["identity_sha256"],
+        semantic_prepare=prepare,
+        latest_state_bind=bind,
+        snapshot=lambda: (deepcopy(state), deepcopy(history)),
+        reset_case=reset,
+    )
+
+    first = Fx0ExecutionCase(
+        case_id="reset-first",
+        source_sequence=0,
+        source={"key": "Alice"},
+    )
+    second = Fx0ExecutionCase(
+        case_id="reset-second",
+        source_sequence=0,
+        source={"key": "Bob"},
+    )
+
+    first_outcome = asyncio.run(adapter.execute_fixture_case(first, providers))
+    second_outcome = asyncio.run(adapter.execute_fixture_case(second, providers))
+
+    assert first_outcome.canonical_logical_state == {
+        "nodes": [{"key": "Alice"}],
+        "relationships": [],
+    }
+    assert second_outcome.canonical_logical_state == {
+        "nodes": [{"key": "Bob"}],
+        "relationships": [],
+    }
+    assert first_outcome.publication_history == (
+        {"source_sequence": 0, "event": "publish"},
+    )
+    assert second_outcome.publication_history == (
+        {"source_sequence": 0, "event": "publish"},
+    )
+    assert reset_calls == [providers, providers]
+    assert callback_providers == [providers] * 4
+
+    # The adapter boundary exposes only the oracle-free execution projection;
+    # fixture expectations never enter either callback.
+    assert set(vars(first)) == {"case_id", "source_sequence", "source"}
+    assert set(vars(second)) == {"case_id", "source_sequence", "source"}
+    assert not any(
+        name.startswith("expected_")
+        for name in vars(first)
+    )
+
+
+def test_controlled_provider_factory_failure_is_fail_closed() -> None:
+    async def prepare(*_args):
+        return None
+
+    async def bind(*_args):
+        return None
+
+    adapter = S5MStarProductionAdapter(
+        production_core_identity=CORE_IDENTITY,
+        production_core_identity_sha256=IDENTITY["identity_sha256"],
+        semantic_prepare=prepare,
+        latest_state_bind=bind,
+        snapshot=lambda: ({"nodes": [], "relationships": []}, []),
+        controlled_provider_factory=lambda _providers: None,
+    )
+    with pytest.raises(
+        S5MStarProductionAdapterError,
+        match="CONTROLLED_PROVIDER_FACTORY_INVALID",
+    ):
+        asyncio.run(adapter.execute_fixture_case(_case().execution_input(), _providers()))
+
+
+def test_controlled_provider_factory_receives_only_provider_plan() -> None:
+    providers = _providers()
+    received: list[tuple[object, ...]] = []
+
+    def provider_factory(*args: object) -> ControlledNondeterminism:
+        received.append(args)
+        return providers
+
+    adapter = _adapter()
+    adapter.controlled_provider_factory = provider_factory
+    asyncio.run(adapter.execute_fixture_case(_case().execution_input(), providers))
+
+    assert received == [(providers,)]
+
+
+def test_publication_fault_detector_rejects_unregistered_result() -> None:
+    adapter = _adapter(publication_fault_detector=lambda *_args: {"bad": True})
+    with pytest.raises(
+        S5MStarProductionAdapterError,
+        match="PUBLICATION_FAULT_DETECTOR_RESULT_INVALID",
+    ):
+        asyncio.run(adapter.execute_fixture_case(_case().execution_input(), _providers()))
 
 
 def test_adapter_executes_multi_source_case_with_controlled_logical_times() -> None:

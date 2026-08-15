@@ -1,0 +1,73 @@
+<?xml version="1.0" encoding="utf-8"?><testsuites name="pytest tests"><testsuite name="pytest" errors="0" failures="1" skipped="0" tests="1" time="0.615" timestamp="2026-08-15T21:33:24.175305+08:00" hostname="aces-System-Product-Name"><testcase classname="tests.test_s5_graphiti_production_adapter_integration" name="test_production_adapter_detects_lost_publication_from_independent_history" time="0.000"><failure message="TypeError: S5MStarProductionAdapter.__init__() got an unexpected keyword argument 'publication_fault_detector'">def test_production_adapter_detects_lost_publication_from_independent_history() -&gt; None:
+        fixture = build_controlled_graphiti_fixture()
+        external_history: list[dict[str, object]] = []
+        legacy_providers = ControlledNondeterminism(
+            llm_responses={"opaque": "not an oracle"},
+            embeddings={"opaque": [0.0, 1.0]},
+            logical_times=("2026-01-01T00:00:00Z",),
+            initial_state={},
+            candidate_sets=(),
+        )
+    
+        def provider_factory(_case, _providers):
+            return fixture.providers
+    
+        def decode(case, providers):
+            return (
+                Fx0DecodedSource(
+                    source_sha256=payload_sha256(case.source),
+                    opaque_source=fixture._source(0),
+                    logical_time_ns=providers.logical_time_ns,
+                ),
+            )
+    
+        async def reset(_providers):
+            fixture.reset_case()
+            external_history.clear()
+    
+        async def prepare(source, logical_time_ns, providers):
+            return await fixture.runtime.prepare(source, logical_time_ns, providers)
+    
+        async def bind(prepared, logical_time_ns, source_sequence, prefix, providers):
+            return await fixture.runtime.bind(
+                prepared, logical_time_ns, source_sequence, prefix, providers
+            )
+    
+        async def persist(event):
+            # The sink silently loses publication while returning success; the
+            # independent detector must catch the durable-history mismatch.
+            if event["event_type"] != "publication":
+                external_history.append(deepcopy(event))
+    
+        def snapshot():
+            return (
+                {
+                    "nodes": sorted(fixture.durable_records["nodes"]),
+                    "relationships": sorted(fixture.durable_records["edges"]),
+                },
+                tuple(external_history),
+            )
+    
+        def detect(source_count, _state, history):
+            publications = [
+                event for event in history if event.get("event_type") == "publication"
+            ]
+            if source_count == 1 and not publications:
+                return "LOST_PUBLICATION"
+            return None
+    
+&gt;       adapter = S5MStarProductionAdapter(
+            production_core_identity=CORE_IDENTITY,
+            production_core_identity_sha256=CORE_IDENTITY["identity_sha256"],
+            semantic_prepare=prepare,
+            latest_state_bind=bind,
+            snapshot=snapshot,
+            persist_event=persist,
+            source_decoder=decode,
+            reset_case=reset,
+            publication_fault_detector=detect,
+            controlled_provider_factory=provider_factory,
+        )
+E       TypeError: S5MStarProductionAdapter.__init__() got an unexpected keyword argument 'publication_fault_detector'
+
+tests/test_s5_graphiti_production_adapter_integration.py:483: TypeError</failure></testcase></testsuite></testsuites>

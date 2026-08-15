@@ -1,0 +1,23 @@
+<?xml version="1.0" encoding="utf-8"?><testsuites name="pytest tests"><testsuite name="pytest" errors="0" failures="2" skipped="0" tests="2" time="0.643" timestamp="2026-08-15T20:52:55.547682+08:00" hostname="aces-System-Product-Name"><testcase classname="tests.test_s5_graphiti_controlled_fixture" name="test_controlled_provider_consumption_is_allowlisted_and_complete" time="0.003"><failure message="AttributeError: 'ControlledGraphitiFixture' object has no attribute 'provider_consumption'">def test_controlled_provider_consumption_is_allowlisted_and_complete() -&gt; None:
+        fixture = build_controlled_graphiti_fixture()
+        asyncio.run(fixture.run_episode())
+    
+&gt;       assert set(fixture.provider_consumption) == {
+                   ^^^^^^^^^^^^^^^^^^^^^^^^^^^^
+            "provider_scope",
+            "logical_time",
+            "initial_state",
+            "llm",
+            "embedding",
+            "candidate_query",
+        }
+E       AttributeError: 'ControlledGraphitiFixture' object has no attribute 'provider_consumption'
+
+paper-eval-v3/tests/test_s5_graphiti_controlled_fixture.py:133: AttributeError</failure></testcase><testcase classname="tests.test_s5_graphiti_controlled_fixture" name="test_fixture_case_reset_clears_prior_events_and_transaction_attempts" time="0.002"><failure message="AttributeError: 'ControlledGraphitiFixture' object has no attribute 'reset_case'">def test_fixture_case_reset_clears_prior_events_and_transaction_attempts() -&gt; None:
+        fixture = build_controlled_graphiti_fixture()
+        first = asyncio.run(fixture.run_episode())
+&gt;       fixture.reset_case()
+        ^^^^^^^^^^^^^^^^^^
+E       AttributeError: 'ControlledGraphitiFixture' object has no attribute 'reset_case'
+
+paper-eval-v3/tests/test_s5_graphiti_controlled_fixture.py:147: AttributeError</failure></testcase></testsuite></testsuites>

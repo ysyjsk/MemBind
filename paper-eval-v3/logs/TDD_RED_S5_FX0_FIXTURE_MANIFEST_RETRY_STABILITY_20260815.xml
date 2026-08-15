@@ -1,0 +1,24 @@
+<?xml version="1.0" encoding="utf-8"?><testsuites name="pytest tests"><testsuite name="pytest" errors="0" failures="1" skipped="0" tests="1" time="0.602" timestamp="2026-08-15T23:39:02.424154+08:00" hostname="aces-System-Product-Name"><testcase classname="tests.test_s5_mstar_fx0_artifact" name="test_fixture_manifest_is_deterministic_and_binds_production_schedules" time="0.002"><failure message="AssertionError: assert {'schema_vers...unt': 11, ...} == {'schema_vers...unt': 11, ...}&#10;  &#10;  Omitting 11 identical items, use -vv to show&#10;  Differing items:&#10;  {'run_id': 'fx0-production-binding-retry'} != {'run_id': 'fx0-production-binding-test'}&#10;  {'fx0_fixture_manifest_sha256': 'de2342ed2739e0a49cf75b4d8d9ea6707ecc5fe491ee2789d76e5a74d9f80f3c'} != {'fx0_fixture_manifest_sha256': 'f3f81c0bf3eefdcdc0509b65496aba456d5026fe45a5f802a38a947f84ea2568'}&#10;  Use -v to get more diff">def test_fixture_manifest_is_deterministic_and_binds_production_schedules() -&gt; None:
+        spec = _fixture_spec()
+        forward = fx0_artifact.derive_s5_mstar_fx0_fixture_manifest(spec)
+        reverse = fx0_artifact.derive_s5_mstar_fx0_fixture_manifest(
+            replace(spec, cases=tuple(reversed(spec.cases)))
+        )
+    
+        assert forward == reverse
+        assert len(forward["case_bindings"]) == 11
+        assert list(forward["case_bindings"]) == sorted(
+            forward["case_bindings"], key=lambda row: row["case_identity_sha256"]
+        )
+&gt;       assert fx0_artifact.derive_s5_mstar_fx0_fixture_manifest(
+            replace(spec, run_id="fx0-production-binding-retry")
+        ) == forward
+E       AssertionError: assert {'schema_vers...unt': 11, ...} == {'schema_vers...unt': 11, ...}
+E         
+E         Omitting 11 identical items, use -vv to show
+E         Differing items:
+E         {'run_id': 'fx0-production-binding-retry'} != {'run_id': 'fx0-production-binding-test'}
+E         {'fx0_fixture_manifest_sha256': 'de2342ed2739e0a49cf75b4d8d9ea6707ecc5fe491ee2789d76e5a74d9f80f3c'} != {'fx0_fixture_manifest_sha256': 'f3f81c0bf3eefdcdc0509b65496aba456d5026fe45a5f802a38a947f84ea2568'}
+E         Use -v to get more diff
+
+tests/test_s5_mstar_fx0_artifact.py:434: AssertionError</failure></testcase></testsuite></testsuites>

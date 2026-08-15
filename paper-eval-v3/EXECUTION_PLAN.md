@@ -518,3 +518,160 @@ including at least two attempts for `RETRY_IDEMPOTENCE`; a transition label or
 test-double callback cannot satisfy that gate. Therefore the current pointer
 remains `S3_CONFIGURATION_FROZEN`, and S5 live authority, M* smoke, PILOT, and
 formal execution remain unauthorized.
+
+## S5 pinned Graphiti controlled-fixture checkpoint (2026-08-15)
+
+The next offline TDD step was completed in the isolated `paper-eval-v3/`
+lane. `s5_graphiti_controlled_fixture.py` constructs real pinned Graphiti
+0.29.3 objects and invokes the installed extraction, resolution, edge,
+attribute, pointer, and `_process_episode_data` functions. Only LLM,
+embedding, candidate-search, logical-clock, and in-memory transaction
+providers are controlled; no external service is contacted.
+
+The fixture now verifies Native call order, default edge-type routing,
+canonical node merge, real edge resolution, temporal invalidation, group ID
+database clone routing, commit-result shape, and commit-before-publication.
+It also detects transaction callback replay and fails closed instead of
+claiming retry idempotence without an independent witness.
+
+TDD evidence:
+
+```text
+focused controlled fixture      14 passed
+combined S5/Graphiti suites      41 passed
+full paper-eval-v3 offline       1102 passed, 0 failed, 0 errors, 0 skipped
+compileall / git diff --check    passed / passed
+live model/embed/Neo4j calls     0 / 0 / 0
+```
+
+Detailed evidence is in
+`S5_GRAPHITI_CONTROLLED_FIXTURE_OFFLINE_RESULT_20260815.md` and
+`logs/TDD_FULL_OFFLINE_GREEN_S5_GRAPHITI_REAL_FIXTURE_20260815.xml`.
+
+This does not generate a production FX0 artifact and does not authorize S5
+live execution. The controlled retry witness is bounded to its in-memory
+upsert store; production `RETRY_IDEMPOTENCE`, full M* scheduler execution
+shape, and the remaining transition inventory are still fail-closed. The
+current stage pointer remains `S3_CONFIGURATION_FROZEN`.
+
+### S5 typed-provider adapter checkpoint (2026-08-15)
+
+The controlled Graphiti fixture now has an explicit typed provider scope and
+continues to execute only the pinned Graphiti 0.29.3 semantic path offline.
+The latest focused controlled-fixture suite is `15 passed`; the current
+adapter/semantic/artifact focused selection is `35 passed`; and the complete
+paper-eval-v3 offline regression is `1103 passed`, `0 failed`, `0 errors`, and
+`0 skipped`. Evidence is persisted in
+`logs/TDD_FOCUSED_GREEN_S5_GRAPHITI_TYPED_PROVIDERS_FINAL_20260815.xml` and
+`logs/TDD_FULL_OFFLINE_GREEN_S5_GRAPHITI_TYPED_PROVIDERS_20260815.xml`.
+
+The adapter contract also verifies that every case starts from its declared
+controlled state, expected outcome fields never enter semantic callbacks, and
+an independent snapshot is authoritative over any callback return projection.
+This remains adapter compatibility evidence only. The production FX0 artifact
+is still absent because the complete transition inventory, scheduler execution
+shape, and production-bound retry witness have not all executed through the
+pinned Graphiti fixture. Authority remains all-false and the stage remains
+`S3_CONFIGURATION_FROZEN`.
+
+### S5 production-adapter typed-provider integration (2026-08-15)
+
+The next bounded TDD step connected the same production adapter to the real
+pinned Graphiti controlled fixture. A RED test first demonstrated that the
+adapter had no explicit typed-provider conversion boundary. The minimum GREEN
+implementation added `controlled_provider_factory`; its output is reused by
+case reset, source decoding, prepare, and bind. The production FX0 validator
+now requires that factory, while older offline callback tests retain an
+identity compatibility path.
+
+Evidence:
+
+```text
+RED       logs/TDD_RED_S5_GRAPHITI_PRODUCTION_ADAPTER_INTEGRATION_20260815.xml
+GREEN     logs/TDD_GREEN_S5_GRAPHITI_PRODUCTION_ADAPTER_INTEGRATION_20260815.xml
+focused   30 passed, 1 warning
+full      1106 passed, 0 failed, 0 errors, 0 skipped, 1 warning
+full log  logs/TDD_FULL_OFFLINE_GREEN_S5_TYPED_PROVIDER_ADAPTER_20260815.xml
+```
+
+The integration observed the actual Graphiti 0.29.3 call sequence, transaction
+completion, independent snapshot, and typed provider scope cleanup. This does
+not seal a production FX0 artifact: the complete transition inventory,
+multi-source scheduler shape, and production-bound retry witness remain
+required. No live service or authority bit was touched; the stage remains
+`S3_CONFIGURATION_FROZEN`.
+
+### S5 real transaction-retry witness (2026-08-15)
+
+The next RED contract required the production adapter to report a real pinned
+Graphiti transaction callback replay, rather than counting only publication
+journal recovery. The minimum implementation adds a bounded
+`transaction_attempt_count` witness field. It is merged into the execution
+attempt count only when the independent controlled fixture reports at least
+two attempts; a retry flag without that evidence fails closed.
+
+The two-source integration now observes prepare overlap, source-ordered
+publication, and two actual Graphiti transaction commits. The retry case
+observes two `execute_write` attempts with identical complete durable-row
+projections and one logical publication. Evidence and regression status:
+
+```text
+RED       logs/TDD_RED_S5_GRAPHITI_TRANSACTION_RETRY_WITNESS_20260815.xml
+GREEN     logs/TDD_GREEN_S5_GRAPHITI_TRANSACTION_RETRY_WITNESS_20260815.xml
+focused   42 passed, 1 warning
+full      1108 passed, 0 failed, 0 errors, 0 skipped, 1 warning
+full log  logs/TDD_FULL_OFFLINE_GREEN_S5_GRAPHITI_RETRY_WITNESS_20260815.xml
+```
+
+This remains bounded controlled retry evidence. It does not claim that every
+production transition is covered, does not generate a production FX0 artifact,
+and does not authorize live S5. All authority bits and the stage pointer remain
+unchanged at `S3_CONFIGURATION_FROZEN`.
+
+### S5 prepare-to-bind latest-state witness (2026-08-15)
+
+The pinned Graphiti adapter fixture now covers the state transition between
+prepare and bind. After real extraction finishes, the controlled latest-state
+provider is changed to a valid new `EpisodicNode`; bind then retrieves and uses
+that new state. The witness is derived from the independent retriever
+observation, not from an expected outcome supplied to the adapter.
+
+The same execution-shape selection also retains the real compatible duplicate
+UUID coalescing, two-source source-order, and transaction-retry cases. The
+latest full offline regression is:
+
+```text
+1110 passed, 0 failed, 0 errors, 0 skipped, 1 warning
+logs/TDD_GREEN_S5_GRAPHITI_PREPARE_BIND_STATE_CHANGE_20260815.xml
+logs/TDD_FOCUSED_GREEN_S5_GRAPHITI_EXECUTION_SHAPES_20260815.xml
+logs/TDD_FULL_OFFLINE_GREEN_S5_GRAPHITI_EXECUTION_SHAPES_20260815.xml
+```
+
+This remains offline transition evidence only. The production FX0 artifact is
+still absent, all live/S5 authority remains false, and the stage pointer is
+still `S3_CONFIGURATION_FROZEN`.
+
+### S5 independent publication-fault detection (2026-08-15)
+
+The adapter now has a separate publication-fault detector boundary. It reads
+only observed durable snapshot/history plus source count; it never receives
+expected fixture status/state/history. Silent lost publication, duplicate
+publication, and partial two-source publication are injected at the external
+history sink and detected as the three registered fail-closed modes. Unknown
+detector results are rejected rather than converted into a scientific outcome.
+
+TDD and regression evidence:
+
+```text
+RED       logs/TDD_RED_S5_GRAPHITI_PUBLICATION_FAULT_DETECTOR_20260815.xml
+GREEN     logs/TDD_GREEN_S5_GRAPHITI_PUBLICATION_FAULT_DETECTOR_20260815.xml
+GREEN     logs/TDD_GREEN_S5_GRAPHITI_PUBLICATION_FAULT_MODES_20260815.xml
+focused   8 integration/fault tests, 1 warning
+full      1114 passed, 0 failed, 0 errors, 0 skipped, 1 warning
+full log  logs/TDD_FULL_OFFLINE_GREEN_S5_GRAPHITI_PUBLICATION_FAULTS_FINAL_20260815.xml
+```
+
+The production FX0 validator requires an explicit detector, but no artifact is
+sealed yet: all transition rows must still be assembled and independently
+verified together. No live service, namespace, authority bit, or current
+stage pointer was changed.

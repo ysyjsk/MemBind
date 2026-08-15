@@ -1,0 +1,7 @@
+<?xml version="1.0" encoding="utf-8"?><testsuites name="pytest tests"><testsuite name="pytest" errors="0" failures="1" skipped="0" tests="1" time="0.649" timestamp="2026-08-15T20:54:42.736668+08:00" hostname="aces-System-Product-Name"><testcase classname="tests.test_s5_graphiti_controlled_fixture" name="test_real_graphiti_multi_source_commit_publishes_in_source_order" time="0.000"><failure message="AttributeError: 'ControlledGraphitiFixture' object has no attribute 'run_sources'">def test_real_graphiti_multi_source_commit_publishes_in_source_order() -&gt; None:
+        fixture = build_controlled_graphiti_fixture()
+&gt;       observations, publication_order = asyncio.run(fixture.run_sources(2))
+                                                      ^^^^^^^^^^^^^^^^^^^
+E       AttributeError: 'ControlledGraphitiFixture' object has no attribute 'run_sources'
+
+paper-eval-v3/tests/test_s5_graphiti_controlled_fixture.py:157: AttributeError</failure></testcase></testsuite></testsuites>

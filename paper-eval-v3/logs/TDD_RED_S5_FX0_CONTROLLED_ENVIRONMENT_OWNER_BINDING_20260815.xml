@@ -1,0 +1,26 @@
+<?xml version="1.0" encoding="utf-8"?><testsuites name="pytest tests"><testsuite name="pytest" errors="0" failures="1" skipped="0" tests="2" time="0.626" timestamp="2026-08-15T23:35:02.704057+08:00" hostname="aces-System-Product-Name"><testcase classname="tests.test_s5_mstar_fx0_artifact" name="test_production_binding_accepts_one_generic_environment_owner" time="0.001" /><testcase classname="tests.test_s5_mstar_fx0_artifact" name="test_production_binding_rejects_mixed_controlled_environment_hook_owners" time="0.001"><failure message="Failed: DID NOT RAISE S5MStarProductionFx0ArtifactError">def test_production_binding_rejects_mixed_controlled_environment_hook_owners() -&gt; None:
+        core = _pinned_core_identity()
+        environment = S5GraphitiFx0ControlledEnvironment()
+        other = S5GraphitiFx0ControlledEnvironment()
+        adapter = S5MStarProductionAdapter(
+            production_core_identity=core,
+            production_core_identity_sha256=core["identity_sha256"],
+            semantic_prepare=environment.runtime.prepare,
+            latest_state_bind=environment.runtime.bind,
+            snapshot=environment.snapshot,
+            persist_event=environment.persist_event,
+            clock_ns=environment.clock_ns,
+            source_decoder=environment.source_decoder,
+            reset_case=environment.reset_case,
+            witness_snapshot=other.witness_snapshot,
+            controlled_provider_factory=environment.controlled_provider_factory,
+            publication_fault_detector=environment.publication_fault_detector,
+        )
+    
+&gt;       with pytest.raises(
+            S5MStarProductionFx0ArtifactError,
+            match="controlled_environment_binding_invalid",
+        ):
+E       Failed: DID NOT RAISE S5MStarProductionFx0ArtifactError
+
+tests/test_s5_mstar_fx0_artifact.py:293: Failed</failure></testcase></testsuite></testsuites>

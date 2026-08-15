@@ -1,0 +1,261 @@
+<?xml version="1.0" encoding="utf-8"?><testsuites name="pytest tests"><testsuite name="pytest" errors="0" failures="9" skipped="0" tests="9" time="0.089" timestamp="2026-08-15T23:34:11.226645+08:00" hostname="aces-System-Product-Name"><testcase classname="tests.test_s5_mstar_fx0_artifact" name="test_fixture_manifest_is_deterministic_and_binds_production_schedules" time="0.001"><failure message="AttributeError: module 'paper_eval.s5_mstar_fx0_artifact' has no attribute 'derive_s5_mstar_fx0_fixture_manifest'">def test_fixture_manifest_is_deterministic_and_binds_production_schedules() -&gt; None:
+        spec = _fixture_spec()
+&gt;       forward = fx0_artifact.derive_s5_mstar_fx0_fixture_manifest(spec)
+                  ^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^
+E       AttributeError: module 'paper_eval.s5_mstar_fx0_artifact' has no attribute 'derive_s5_mstar_fx0_fixture_manifest'
+
+tests/test_s5_mstar_fx0_artifact.py:258: AttributeError</failure></testcase><testcase classname="tests.test_s5_mstar_fx0_artifact" name="test_fixture_manifest_preserves_case_to_provider_association" time="0.000"><failure message="AttributeError: module 'paper_eval.s5_mstar_fx0_artifact' has no attribute 'derive_s5_mstar_fx0_fixture_manifest'">def test_fixture_manifest_preserves_case_to_provider_association() -&gt; None:
+        spec = _fixture_spec()
+        first, second, *rest = spec.cases
+        swapped = replace(
+            spec,
+            cases=(
+                replace(first, providers=second.providers),
+                replace(second, providers=first.providers),
+                *rest,
+            ),
+        )
+    
+&gt;       baseline = fx0_artifact.derive_s5_mstar_fx0_fixture_manifest(spec)
+                   ^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^
+E       AttributeError: module 'paper_eval.s5_mstar_fx0_artifact' has no attribute 'derive_s5_mstar_fx0_fixture_manifest'
+
+tests/test_s5_mstar_fx0_artifact.py:305: AttributeError</failure></testcase><testcase classname="tests.test_s5_mstar_fx0_artifact" name="test_fixture_binding_drift_fails_before_adapter_validation_or_execution[parent_protocol_sha256]" time="0.001"><failure message="AttributeError: module 'paper_eval.s5_mstar_fx0_artifact' has no attribute 'derive_s5_mstar_fx0_fixture_manifest'">monkeypatch = &lt;_pytest.monkeypatch.MonkeyPatch object at 0x7eaae9823200&gt;
+field = 'parent_protocol_sha256'
+
+    @pytest.mark.parametrize(
+        "field",
+        [
+            "parent_protocol_sha256",
+            "amendment_sha256",
+            "current_stage_pointer_sha256",
+            "fx0_fixture_manifest_sha256",
+            "execution_input_set_sha256",
+            "oracle_set_sha256",
+            "controlled_provider_set_sha256",
+        ],
+    )
+    def test_fixture_binding_drift_fails_before_adapter_validation_or_execution(
+        monkeypatch: pytest.MonkeyPatch,
+        field: str,
+    ) -&gt; None:
+        spec = _fixture_spec()
+&gt;       bindings = _input_bindings(spec)
+                   ^^^^^^^^^^^^^^^^^^^^^
+
+tests/test_s5_mstar_fx0_artifact.py:333: 
+_ _ _ _ _ _ _ _ _ _ _ _ _ _ _ _ _ _ _ _ _ _ _ _ _ _ _ _ _ _ _ _ _ _ _ _ _ _ _ _ 
+
+spec = Fx0FixtureSpec(run_id='fx0-production-binding-test', parent_protocol_sha256='bbbbbbbbbbbbbbbbbbbbbbbbbbbbbbbbbbbbbbbbb...ogical_state={'nodes': [], 'relationships': []}, expected_publication_history=())), legacy_authority_inheritance=False)
+
+    def _input_bindings(spec: Fx0FixtureSpec) -&gt; dict[str, str]:
+        core = _core_identity()
+&gt;       manifest = fx0_artifact.derive_s5_mstar_fx0_fixture_manifest(spec)
+                   ^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^
+E       AttributeError: module 'paper_eval.s5_mstar_fx0_artifact' has no attribute 'derive_s5_mstar_fx0_fixture_manifest'
+
+tests/test_s5_mstar_fx0_artifact.py:142: AttributeError</failure></testcase><testcase classname="tests.test_s5_mstar_fx0_artifact" name="test_fixture_binding_drift_fails_before_adapter_validation_or_execution[amendment_sha256]" time="0.001"><failure message="AttributeError: module 'paper_eval.s5_mstar_fx0_artifact' has no attribute 'derive_s5_mstar_fx0_fixture_manifest'">monkeypatch = &lt;_pytest.monkeypatch.MonkeyPatch object at 0x7eaae9826840&gt;
+field = 'amendment_sha256'
+
+    @pytest.mark.parametrize(
+        "field",
+        [
+            "parent_protocol_sha256",
+            "amendment_sha256",
+            "current_stage_pointer_sha256",
+            "fx0_fixture_manifest_sha256",
+            "execution_input_set_sha256",
+            "oracle_set_sha256",
+            "controlled_provider_set_sha256",
+        ],
+    )
+    def test_fixture_binding_drift_fails_before_adapter_validation_or_execution(
+        monkeypatch: pytest.MonkeyPatch,
+        field: str,
+    ) -&gt; None:
+        spec = _fixture_spec()
+&gt;       bindings = _input_bindings(spec)
+                   ^^^^^^^^^^^^^^^^^^^^^
+
+tests/test_s5_mstar_fx0_artifact.py:333: 
+_ _ _ _ _ _ _ _ _ _ _ _ _ _ _ _ _ _ _ _ _ _ _ _ _ _ _ _ _ _ _ _ _ _ _ _ _ _ _ _ 
+
+spec = Fx0FixtureSpec(run_id='fx0-production-binding-test', parent_protocol_sha256='bbbbbbbbbbbbbbbbbbbbbbbbbbbbbbbbbbbbbbbbb...ogical_state={'nodes': [], 'relationships': []}, expected_publication_history=())), legacy_authority_inheritance=False)
+
+    def _input_bindings(spec: Fx0FixtureSpec) -&gt; dict[str, str]:
+        core = _core_identity()
+&gt;       manifest = fx0_artifact.derive_s5_mstar_fx0_fixture_manifest(spec)
+                   ^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^
+E       AttributeError: module 'paper_eval.s5_mstar_fx0_artifact' has no attribute 'derive_s5_mstar_fx0_fixture_manifest'
+
+tests/test_s5_mstar_fx0_artifact.py:142: AttributeError</failure></testcase><testcase classname="tests.test_s5_mstar_fx0_artifact" name="test_fixture_binding_drift_fails_before_adapter_validation_or_execution[current_stage_pointer_sha256]" time="0.001"><failure message="AttributeError: module 'paper_eval.s5_mstar_fx0_artifact' has no attribute 'derive_s5_mstar_fx0_fixture_manifest'">monkeypatch = &lt;_pytest.monkeypatch.MonkeyPatch object at 0x7eaae98278f0&gt;
+field = 'current_stage_pointer_sha256'
+
+    @pytest.mark.parametrize(
+        "field",
+        [
+            "parent_protocol_sha256",
+            "amendment_sha256",
+            "current_stage_pointer_sha256",
+            "fx0_fixture_manifest_sha256",
+            "execution_input_set_sha256",
+            "oracle_set_sha256",
+            "controlled_provider_set_sha256",
+        ],
+    )
+    def test_fixture_binding_drift_fails_before_adapter_validation_or_execution(
+        monkeypatch: pytest.MonkeyPatch,
+        field: str,
+    ) -&gt; None:
+        spec = _fixture_spec()
+&gt;       bindings = _input_bindings(spec)
+                   ^^^^^^^^^^^^^^^^^^^^^
+
+tests/test_s5_mstar_fx0_artifact.py:333: 
+_ _ _ _ _ _ _ _ _ _ _ _ _ _ _ _ _ _ _ _ _ _ _ _ _ _ _ _ _ _ _ _ _ _ _ _ _ _ _ _ 
+
+spec = Fx0FixtureSpec(run_id='fx0-production-binding-test', parent_protocol_sha256='bbbbbbbbbbbbbbbbbbbbbbbbbbbbbbbbbbbbbbbbb...ogical_state={'nodes': [], 'relationships': []}, expected_publication_history=())), legacy_authority_inheritance=False)
+
+    def _input_bindings(spec: Fx0FixtureSpec) -&gt; dict[str, str]:
+        core = _core_identity()
+&gt;       manifest = fx0_artifact.derive_s5_mstar_fx0_fixture_manifest(spec)
+                   ^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^
+E       AttributeError: module 'paper_eval.s5_mstar_fx0_artifact' has no attribute 'derive_s5_mstar_fx0_fixture_manifest'
+
+tests/test_s5_mstar_fx0_artifact.py:142: AttributeError</failure></testcase><testcase classname="tests.test_s5_mstar_fx0_artifact" name="test_fixture_binding_drift_fails_before_adapter_validation_or_execution[fx0_fixture_manifest_sha256]" time="0.001"><failure message="AttributeError: module 'paper_eval.s5_mstar_fx0_artifact' has no attribute 'derive_s5_mstar_fx0_fixture_manifest'">monkeypatch = &lt;_pytest.monkeypatch.MonkeyPatch object at 0x7eaae9825cd0&gt;
+field = 'fx0_fixture_manifest_sha256'
+
+    @pytest.mark.parametrize(
+        "field",
+        [
+            "parent_protocol_sha256",
+            "amendment_sha256",
+            "current_stage_pointer_sha256",
+            "fx0_fixture_manifest_sha256",
+            "execution_input_set_sha256",
+            "oracle_set_sha256",
+            "controlled_provider_set_sha256",
+        ],
+    )
+    def test_fixture_binding_drift_fails_before_adapter_validation_or_execution(
+        monkeypatch: pytest.MonkeyPatch,
+        field: str,
+    ) -&gt; None:
+        spec = _fixture_spec()
+&gt;       bindings = _input_bindings(spec)
+                   ^^^^^^^^^^^^^^^^^^^^^
+
+tests/test_s5_mstar_fx0_artifact.py:333: 
+_ _ _ _ _ _ _ _ _ _ _ _ _ _ _ _ _ _ _ _ _ _ _ _ _ _ _ _ _ _ _ _ _ _ _ _ _ _ _ _ 
+
+spec = Fx0FixtureSpec(run_id='fx0-production-binding-test', parent_protocol_sha256='bbbbbbbbbbbbbbbbbbbbbbbbbbbbbbbbbbbbbbbbb...ogical_state={'nodes': [], 'relationships': []}, expected_publication_history=())), legacy_authority_inheritance=False)
+
+    def _input_bindings(spec: Fx0FixtureSpec) -&gt; dict[str, str]:
+        core = _core_identity()
+&gt;       manifest = fx0_artifact.derive_s5_mstar_fx0_fixture_manifest(spec)
+                   ^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^
+E       AttributeError: module 'paper_eval.s5_mstar_fx0_artifact' has no attribute 'derive_s5_mstar_fx0_fixture_manifest'
+
+tests/test_s5_mstar_fx0_artifact.py:142: AttributeError</failure></testcase><testcase classname="tests.test_s5_mstar_fx0_artifact" name="test_fixture_binding_drift_fails_before_adapter_validation_or_execution[execution_input_set_sha256]" time="0.001"><failure message="AttributeError: module 'paper_eval.s5_mstar_fx0_artifact' has no attribute 'derive_s5_mstar_fx0_fixture_manifest'">monkeypatch = &lt;_pytest.monkeypatch.MonkeyPatch object at 0x7eaae98255b0&gt;
+field = 'execution_input_set_sha256'
+
+    @pytest.mark.parametrize(
+        "field",
+        [
+            "parent_protocol_sha256",
+            "amendment_sha256",
+            "current_stage_pointer_sha256",
+            "fx0_fixture_manifest_sha256",
+            "execution_input_set_sha256",
+            "oracle_set_sha256",
+            "controlled_provider_set_sha256",
+        ],
+    )
+    def test_fixture_binding_drift_fails_before_adapter_validation_or_execution(
+        monkeypatch: pytest.MonkeyPatch,
+        field: str,
+    ) -&gt; None:
+        spec = _fixture_spec()
+&gt;       bindings = _input_bindings(spec)
+                   ^^^^^^^^^^^^^^^^^^^^^
+
+tests/test_s5_mstar_fx0_artifact.py:333: 
+_ _ _ _ _ _ _ _ _ _ _ _ _ _ _ _ _ _ _ _ _ _ _ _ _ _ _ _ _ _ _ _ _ _ _ _ _ _ _ _ 
+
+spec = Fx0FixtureSpec(run_id='fx0-production-binding-test', parent_protocol_sha256='bbbbbbbbbbbbbbbbbbbbbbbbbbbbbbbbbbbbbbbbb...ogical_state={'nodes': [], 'relationships': []}, expected_publication_history=())), legacy_authority_inheritance=False)
+
+    def _input_bindings(spec: Fx0FixtureSpec) -&gt; dict[str, str]:
+        core = _core_identity()
+&gt;       manifest = fx0_artifact.derive_s5_mstar_fx0_fixture_manifest(spec)
+                   ^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^
+E       AttributeError: module 'paper_eval.s5_mstar_fx0_artifact' has no attribute 'derive_s5_mstar_fx0_fixture_manifest'
+
+tests/test_s5_mstar_fx0_artifact.py:142: AttributeError</failure></testcase><testcase classname="tests.test_s5_mstar_fx0_artifact" name="test_fixture_binding_drift_fails_before_adapter_validation_or_execution[oracle_set_sha256]" time="0.001"><failure message="AttributeError: module 'paper_eval.s5_mstar_fx0_artifact' has no attribute 'derive_s5_mstar_fx0_fixture_manifest'">monkeypatch = &lt;_pytest.monkeypatch.MonkeyPatch object at 0x7eaae9722a50&gt;
+field = 'oracle_set_sha256'
+
+    @pytest.mark.parametrize(
+        "field",
+        [
+            "parent_protocol_sha256",
+            "amendment_sha256",
+            "current_stage_pointer_sha256",
+            "fx0_fixture_manifest_sha256",
+            "execution_input_set_sha256",
+            "oracle_set_sha256",
+            "controlled_provider_set_sha256",
+        ],
+    )
+    def test_fixture_binding_drift_fails_before_adapter_validation_or_execution(
+        monkeypatch: pytest.MonkeyPatch,
+        field: str,
+    ) -&gt; None:
+        spec = _fixture_spec()
+&gt;       bindings = _input_bindings(spec)
+                   ^^^^^^^^^^^^^^^^^^^^^
+
+tests/test_s5_mstar_fx0_artifact.py:333: 
+_ _ _ _ _ _ _ _ _ _ _ _ _ _ _ _ _ _ _ _ _ _ _ _ _ _ _ _ _ _ _ _ _ _ _ _ _ _ _ _ 
+
+spec = Fx0FixtureSpec(run_id='fx0-production-binding-test', parent_protocol_sha256='bbbbbbbbbbbbbbbbbbbbbbbbbbbbbbbbbbbbbbbbb...ogical_state={'nodes': [], 'relationships': []}, expected_publication_history=())), legacy_authority_inheritance=False)
+
+    def _input_bindings(spec: Fx0FixtureSpec) -&gt; dict[str, str]:
+        core = _core_identity()
+&gt;       manifest = fx0_artifact.derive_s5_mstar_fx0_fixture_manifest(spec)
+                   ^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^
+E       AttributeError: module 'paper_eval.s5_mstar_fx0_artifact' has no attribute 'derive_s5_mstar_fx0_fixture_manifest'
+
+tests/test_s5_mstar_fx0_artifact.py:142: AttributeError</failure></testcase><testcase classname="tests.test_s5_mstar_fx0_artifact" name="test_fixture_binding_drift_fails_before_adapter_validation_or_execution[controlled_provider_set_sha256]" time="0.001"><failure message="AttributeError: module 'paper_eval.s5_mstar_fx0_artifact' has no attribute 'derive_s5_mstar_fx0_fixture_manifest'">monkeypatch = &lt;_pytest.monkeypatch.MonkeyPatch object at 0x7eaae9723800&gt;
+field = 'controlled_provider_set_sha256'
+
+    @pytest.mark.parametrize(
+        "field",
+        [
+            "parent_protocol_sha256",
+            "amendment_sha256",
+            "current_stage_pointer_sha256",
+            "fx0_fixture_manifest_sha256",
+            "execution_input_set_sha256",
+            "oracle_set_sha256",
+            "controlled_provider_set_sha256",
+        ],
+    )
+    def test_fixture_binding_drift_fails_before_adapter_validation_or_execution(
+        monkeypatch: pytest.MonkeyPatch,
+        field: str,
+    ) -&gt; None:
+        spec = _fixture_spec()
+&gt;       bindings = _input_bindings(spec)
+                   ^^^^^^^^^^^^^^^^^^^^^
+
+tests/test_s5_mstar_fx0_artifact.py:333: 
+_ _ _ _ _ _ _ _ _ _ _ _ _ _ _ _ _ _ _ _ _ _ _ _ _ _ _ _ _ _ _ _ _ _ _ _ _ _ _ _ 
+
+spec = Fx0FixtureSpec(run_id='fx0-production-binding-test', parent_protocol_sha256='bbbbbbbbbbbbbbbbbbbbbbbbbbbbbbbbbbbbbbbbb...ogical_state={'nodes': [], 'relationships': []}, expected_publication_history=())), legacy_authority_inheritance=False)
+
+    def _input_bindings(spec: Fx0FixtureSpec) -&gt; dict[str, str]:
+        core = _core_identity()
+&gt;       manifest = fx0_artifact.derive_s5_mstar_fx0_fixture_manifest(spec)
+                   ^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^
+E       AttributeError: module 'paper_eval.s5_mstar_fx0_artifact' has no attribute 'derive_s5_mstar_fx0_fixture_manifest'
+
+tests/test_s5_mstar_fx0_artifact.py:142: AttributeError</failure></testcase></testsuite></testsuites>

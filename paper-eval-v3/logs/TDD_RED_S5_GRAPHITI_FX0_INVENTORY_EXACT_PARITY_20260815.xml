@@ -1,0 +1,26 @@
+<?xml version="1.0" encoding="utf-8"?><testsuites name="pytest tests"><testsuite name="pytest" errors="0" failures="1" skipped="0" tests="1" time="0.624" timestamp="2026-08-15T23:49:56.725787+08:00" hostname="aces-System-Product-Name"><testcase classname="tests.test_s5_graphiti_fx0_inventory" name="test_inventory_exact_parity_runs_through_one_pinned_environment" time="0.014"><failure message="AssertionError: graphiti-temporal-invalidation&#10;assert {'nodes': [{'...Beta.', ...}]} == {'nodes': [{'...Acme.', ...}]}&#10;  &#10;  Omitting 1 identical items, use -vv to show&#10;  Differing items:&#10;  {'relationships': [{'source': 'name:alice', 'target': 'name:acme', 'name': 'WorksAt', 'fact': 'Alice works at Acme.', ...nal:old-source', 'target': 'external:old-target', 'name': 'WorksAt', 'fact': 'Alice previously worked at Beta.', ...}]} != {'relationships': [{'source': 'name:alice', 'target': 'name:acme', 'name': 'WorksAt', 'fact': 'Alice works at Acme.', ...}]}&#10;  Use -v to get more diff">def test_inventory_exact_parity_runs_through_one_pinned_environment() -&gt; None:
+        spec = _spec()
+        environment = S5GraphitiFx0ControlledEnvironment()
+        adapter = environment.build_adapter(production_core_identity=CORE_IDENTITY)
+    
+        for case in spec.cases:
+            execution = asyncio.run(
+                adapter.execute_fixture_case_with_evidence(
+                    case.execution_input(), case.providers
+                )
+            )
+            assert execution.outcome.status == case.expected_status, case.case_id
+            assert execution.outcome.error_code == case.expected_error_code, case.case_id
+&gt;           assert (
+                execution.outcome.canonical_logical_state
+                == case.expected_canonical_logical_state
+            ), case.case_id
+E           AssertionError: graphiti-temporal-invalidation
+E           assert {'nodes': [{'...Beta.', ...}]} == {'nodes': [{'...Acme.', ...}]}
+E             
+E             Omitting 1 identical items, use -vv to show
+E             Differing items:
+E             {'relationships': [{'source': 'name:alice', 'target': 'name:acme', 'name': 'WorksAt', 'fact': 'Alice works at Acme.', ...nal:old-source', 'target': 'external:old-target', 'name': 'WorksAt', 'fact': 'Alice previously worked at Beta.', ...}]} != {'relationships': [{'source': 'name:alice', 'target': 'name:acme', 'name': 'WorksAt', 'fact': 'Alice works at Acme.', ...}]}
+E             Use -v to get more diff
+
+tests/test_s5_graphiti_fx0_inventory.py:96: AssertionError</failure></testcase></testsuite></testsuites>
