@@ -1,0 +1,342 @@
+<?xml version="1.0" encoding="utf-8"?><testsuites name="pytest tests"><testsuite name="pytest" errors="0" failures="11" skipped="0" tests="40" time="0.164" timestamp="2026-08-16T12:48:40.395854+08:00" hostname="aces-System-Product-Name"><testcase classname="tests.test_s5_mstar_pipeline" name="test_explicit_logical_operation_times_do_not_depend_on_telemetry_clock" time="0.002"><failure message="KeyError: 'intent_timestamp_ns'">@pytest.mark.asyncio
+    async def test_explicit_logical_operation_times_do_not_depend_on_telemetry_clock() -&gt; None:
+        sink = DurableSink()
+        sources = tuple(
+            MStarSource(
+                source_sequence=index,
+                source_sha256=f"{index + 20:064x}",
+                opaque_source={"source": index},
+                logical_time_ns=10_000 + index,
+            )
+            for index in range(2)
+        )
+        entered = 0
+        release = asyncio.Event()
+        observed: list[tuple[int, int]] = []
+    
+        async def prepare(source: object, logical_time_ns: int) -&gt; object:
+            nonlocal entered
+            entered += 1
+            if entered == 2:
+                release.set()
+            await asyncio.wait_for(release.wait(), timeout=1)
+            return source
+    
+        async def bind(
+            _prepared: object,
+            logical_time_ns: int,
+            source_sequence: int,
+            _visible_prefix: tuple[int, ...],
+        ) -&gt; None:
+            observed.append((source_sequence, logical_time_ns))
+    
+        evidence = await run_mstar_pipeline(
+            spec=_spec(),
+            sources=sources,
+            semantic_prepare=prepare,
+            latest_state_bind=bind,
+            persist_event=sink,
+            clock_ns=StepClock(),
+        )
+        verify_mstar_pipeline_evidence(
+            evidence, expected_spec=_spec(), expected_sources=sources
+        )
+        assert observed == [(0, 10_000), (1, 10_001)]
+        assert [
+            event["logical_time_ns"]
+            for event in evidence["events"]
+            if event["event_type"] == "intent"
+        ] == [10_000, 10_001]
+        assert [
+&gt;           event["intent_timestamp_ns"]
+            for event in evidence["events"]
+            if event["event_type"] == "intent"
+        ] == [101, 102]
+E       KeyError: 'intent_timestamp_ns'
+
+tests/test_s5_mstar_pipeline.py:114: KeyError</failure></testcase><testcase classname="tests.test_s5_mstar_pipeline" name="test_publication_journal_failure_recovers_after_commit_without_rebinding" time="0.001" /><testcase classname="tests.test_s5_mstar_pipeline" name="test_parallel_prepare_binds_and_publishes_in_source_order" time="0.002" /><testcase classname="tests.test_s5_mstar_pipeline" name="test_prepare_failure_poison_cancels_and_awaits_workers_before_terminal" time="0.001" /><testcase classname="tests.test_s5_mstar_pipeline" name="test_bind_failure_keeps_only_durable_published_prefix_and_no_late_events" time="0.001" /><testcase classname="tests.test_s5_mstar_pipeline" name="test_durable_event_failure_aborts_before_semantic_work" time="0.000" /><testcase classname="tests.test_s5_mstar_pipeline" name="test_prepare_event_failure_does_not_leave_an_unresolved_worker_future" time="0.000" /><testcase classname="tests.test_s5_mstar_pipeline" name="test_verifier_rejects_order_fallback_shape_and_private_drift" time="0.002" /><testcase classname="tests.test_s5_mstar_pipeline" name="test_spec_and_source_reject_legacy_aliases_or_invalid_identity" time="0.000" /><testcase classname="tests.test_s5_mstar_pipeline" name="test_spec_accepts_only_protocol_concurrency_grid[1]" time="0.000"><failure message="paper_eval.s5_mstar_pipeline.MStarPipelineError: prepare_concurrency_must_be_two">concurrency = 1
+
+    @pytest.mark.parametrize("concurrency", [1, 2, 4, 8])
+    def test_spec_accepts_only_protocol_concurrency_grid(concurrency: int) -&gt; None:
+&gt;       spec = MStarSpec(
+            "s5-mstar-grid-001",
+            CORE_SHA,
+            concurrency,
+            require_prepare_overlap=concurrency &gt; 1,
+        )
+
+tests/test_s5_mstar_pipeline.py:477: 
+_ _ _ _ _ _ _ _ _ _ _ _ _ _ _ _ _ _ _ _ _ _ _ _ _ _ _ _ _ _ _ _ _ _ _ _ _ _ _ _ 
+&lt;string&gt;:8: in __init__
+    ???
+_ _ _ _ _ _ _ _ _ _ _ _ _ _ _ _ _ _ _ _ _ _ _ _ _ _ _ _ _ _ _ _ _ _ _ _ _ _ _ _ 
+
+self = MStarSpec(run_id='s5-mstar-grid-001', production_core_identity_sha256='aaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaa', prepare_concurrency=1, method='M*', require_prepare_overlap=False)
+
+    def __post_init__(self) -&gt; None:
+        if not isinstance(self.run_id, str) or _RUN_ID.fullmatch(self.run_id) is None:
+            raise _fail("run_id_invalid")
+        if self.method != MSTAR:
+            raise _fail("legacy_method_identity_forbidden")
+        _sha(self.production_core_identity_sha256, "production_core_identity_invalid")
+        if self.prepare_concurrency != 2:
+&gt;           raise _fail("prepare_concurrency_must_be_two")
+E           paper_eval.s5_mstar_pipeline.MStarPipelineError: prepare_concurrency_must_be_two
+
+src/paper_eval/s5_mstar_pipeline.py:189: MStarPipelineError</failure></testcase><testcase classname="tests.test_s5_mstar_pipeline" name="test_spec_accepts_only_protocol_concurrency_grid[2]" time="0.000" /><testcase classname="tests.test_s5_mstar_pipeline" name="test_spec_accepts_only_protocol_concurrency_grid[4]" time="0.000"><failure message="paper_eval.s5_mstar_pipeline.MStarPipelineError: prepare_concurrency_must_be_two">concurrency = 4
+
+    @pytest.mark.parametrize("concurrency", [1, 2, 4, 8])
+    def test_spec_accepts_only_protocol_concurrency_grid(concurrency: int) -&gt; None:
+&gt;       spec = MStarSpec(
+            "s5-mstar-grid-001",
+            CORE_SHA,
+            concurrency,
+            require_prepare_overlap=concurrency &gt; 1,
+        )
+
+tests/test_s5_mstar_pipeline.py:477: 
+_ _ _ _ _ _ _ _ _ _ _ _ _ _ _ _ _ _ _ _ _ _ _ _ _ _ _ _ _ _ _ _ _ _ _ _ _ _ _ _ 
+&lt;string&gt;:8: in __init__
+    ???
+_ _ _ _ _ _ _ _ _ _ _ _ _ _ _ _ _ _ _ _ _ _ _ _ _ _ _ _ _ _ _ _ _ _ _ _ _ _ _ _ 
+
+self = MStarSpec(run_id='s5-mstar-grid-001', production_core_identity_sha256='aaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaa', prepare_concurrency=4, method='M*', require_prepare_overlap=True)
+
+    def __post_init__(self) -&gt; None:
+        if not isinstance(self.run_id, str) or _RUN_ID.fullmatch(self.run_id) is None:
+            raise _fail("run_id_invalid")
+        if self.method != MSTAR:
+            raise _fail("legacy_method_identity_forbidden")
+        _sha(self.production_core_identity_sha256, "production_core_identity_invalid")
+        if self.prepare_concurrency != 2:
+&gt;           raise _fail("prepare_concurrency_must_be_two")
+E           paper_eval.s5_mstar_pipeline.MStarPipelineError: prepare_concurrency_must_be_two
+
+src/paper_eval/s5_mstar_pipeline.py:189: MStarPipelineError</failure></testcase><testcase classname="tests.test_s5_mstar_pipeline" name="test_spec_accepts_only_protocol_concurrency_grid[8]" time="0.000"><failure message="paper_eval.s5_mstar_pipeline.MStarPipelineError: prepare_concurrency_must_be_two">concurrency = 8
+
+    @pytest.mark.parametrize("concurrency", [1, 2, 4, 8])
+    def test_spec_accepts_only_protocol_concurrency_grid(concurrency: int) -&gt; None:
+&gt;       spec = MStarSpec(
+            "s5-mstar-grid-001",
+            CORE_SHA,
+            concurrency,
+            require_prepare_overlap=concurrency &gt; 1,
+        )
+
+tests/test_s5_mstar_pipeline.py:477: 
+_ _ _ _ _ _ _ _ _ _ _ _ _ _ _ _ _ _ _ _ _ _ _ _ _ _ _ _ _ _ _ _ _ _ _ _ _ _ _ _ 
+&lt;string&gt;:8: in __init__
+    ???
+_ _ _ _ _ _ _ _ _ _ _ _ _ _ _ _ _ _ _ _ _ _ _ _ _ _ _ _ _ _ _ _ _ _ _ _ _ _ _ _ 
+
+self = MStarSpec(run_id='s5-mstar-grid-001', production_core_identity_sha256='aaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaa', prepare_concurrency=8, method='M*', require_prepare_overlap=True)
+
+    def __post_init__(self) -&gt; None:
+        if not isinstance(self.run_id, str) or _RUN_ID.fullmatch(self.run_id) is None:
+            raise _fail("run_id_invalid")
+        if self.method != MSTAR:
+            raise _fail("legacy_method_identity_forbidden")
+        _sha(self.production_core_identity_sha256, "production_core_identity_invalid")
+        if self.prepare_concurrency != 2:
+&gt;           raise _fail("prepare_concurrency_must_be_two")
+E           paper_eval.s5_mstar_pipeline.MStarPipelineError: prepare_concurrency_must_be_two
+
+src/paper_eval/s5_mstar_pipeline.py:189: MStarPipelineError</failure></testcase><testcase classname="tests.test_s5_mstar_pipeline" name="test_spec_rejects_concurrency_outside_protocol_grid" time="0.000"><failure message="AssertionError: Regex pattern did not match.&#10;  Expected regex: 'prepare_concurrency_invalid'&#10;  Actual message: 'prepare_concurrency_must_be_two'">def test_spec_rejects_concurrency_outside_protocol_grid() -&gt; None:
+&gt;       with pytest.raises(MStarPipelineError, match="prepare_concurrency_invalid"):
+E       AssertionError: Regex pattern did not match.
+E         Expected regex: 'prepare_concurrency_invalid'
+E         Actual message: 'prepare_concurrency_must_be_two'
+
+tests/test_s5_mstar_pipeline.py:487: AssertionError</failure></testcase><testcase classname="tests.test_s5_mstar_pipeline" name="test_verifier_accepts_every_observed_worker_in_protocol_grid[1]" time="0.001"><failure message="paper_eval.s5_mstar_pipeline.MStarPipelineError: prepare_concurrency_must_be_two">concurrency = 1
+
+    @pytest.mark.asyncio
+    @pytest.mark.parametrize("concurrency", [1, 2, 4, 8])
+    async def test_verifier_accepts_every_observed_worker_in_protocol_grid(
+        concurrency: int,
+    ) -&gt; None:
+        sources = _sources(concurrency)
+        entered = 0
+        release = asyncio.Event()
+    
+        async def prepare(source: object, _logical_time_ns: int) -&gt; object:
+            nonlocal entered
+            entered += 1
+            if entered == concurrency:
+                release.set()
+            await asyncio.wait_for(release.wait(), timeout=1)
+            return source
+    
+        async def bind(*_args: object) -&gt; None:
+            await asyncio.sleep(0)
+    
+&gt;       spec = MStarSpec(
+            f"s5-mstar-grid-live-{concurrency}",
+            CORE_SHA,
+            concurrency,
+            require_prepare_overlap=concurrency &gt; 1,
+        )
+
+tests/test_s5_mstar_pipeline.py:511: 
+_ _ _ _ _ _ _ _ _ _ _ _ _ _ _ _ _ _ _ _ _ _ _ _ _ _ _ _ _ _ _ _ _ _ _ _ _ _ _ _ 
+&lt;string&gt;:8: in __init__
+    ???
+_ _ _ _ _ _ _ _ _ _ _ _ _ _ _ _ _ _ _ _ _ _ _ _ _ _ _ _ _ _ _ _ _ _ _ _ _ _ _ _ 
+
+self = MStarSpec(run_id='s5-mstar-grid-live-1', production_core_identity_sha256='aaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaa', prepare_concurrency=1, method='M*', require_prepare_overlap=False)
+
+    def __post_init__(self) -&gt; None:
+        if not isinstance(self.run_id, str) or _RUN_ID.fullmatch(self.run_id) is None:
+            raise _fail("run_id_invalid")
+        if self.method != MSTAR:
+            raise _fail("legacy_method_identity_forbidden")
+        _sha(self.production_core_identity_sha256, "production_core_identity_invalid")
+        if self.prepare_concurrency != 2:
+&gt;           raise _fail("prepare_concurrency_must_be_two")
+E           paper_eval.s5_mstar_pipeline.MStarPipelineError: prepare_concurrency_must_be_two
+
+src/paper_eval/s5_mstar_pipeline.py:189: MStarPipelineError</failure></testcase><testcase classname="tests.test_s5_mstar_pipeline" name="test_verifier_accepts_every_observed_worker_in_protocol_grid[2]" time="0.001" /><testcase classname="tests.test_s5_mstar_pipeline" name="test_verifier_accepts_every_observed_worker_in_protocol_grid[4]" time="0.000"><failure message="paper_eval.s5_mstar_pipeline.MStarPipelineError: prepare_concurrency_must_be_two">concurrency = 4
+
+    @pytest.mark.asyncio
+    @pytest.mark.parametrize("concurrency", [1, 2, 4, 8])
+    async def test_verifier_accepts_every_observed_worker_in_protocol_grid(
+        concurrency: int,
+    ) -&gt; None:
+        sources = _sources(concurrency)
+        entered = 0
+        release = asyncio.Event()
+    
+        async def prepare(source: object, _logical_time_ns: int) -&gt; object:
+            nonlocal entered
+            entered += 1
+            if entered == concurrency:
+                release.set()
+            await asyncio.wait_for(release.wait(), timeout=1)
+            return source
+    
+        async def bind(*_args: object) -&gt; None:
+            await asyncio.sleep(0)
+    
+&gt;       spec = MStarSpec(
+            f"s5-mstar-grid-live-{concurrency}",
+            CORE_SHA,
+            concurrency,
+            require_prepare_overlap=concurrency &gt; 1,
+        )
+
+tests/test_s5_mstar_pipeline.py:511: 
+_ _ _ _ _ _ _ _ _ _ _ _ _ _ _ _ _ _ _ _ _ _ _ _ _ _ _ _ _ _ _ _ _ _ _ _ _ _ _ _ 
+&lt;string&gt;:8: in __init__
+    ???
+_ _ _ _ _ _ _ _ _ _ _ _ _ _ _ _ _ _ _ _ _ _ _ _ _ _ _ _ _ _ _ _ _ _ _ _ _ _ _ _ 
+
+self = MStarSpec(run_id='s5-mstar-grid-live-4', production_core_identity_sha256='aaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaa', prepare_concurrency=4, method='M*', require_prepare_overlap=True)
+
+    def __post_init__(self) -&gt; None:
+        if not isinstance(self.run_id, str) or _RUN_ID.fullmatch(self.run_id) is None:
+            raise _fail("run_id_invalid")
+        if self.method != MSTAR:
+            raise _fail("legacy_method_identity_forbidden")
+        _sha(self.production_core_identity_sha256, "production_core_identity_invalid")
+        if self.prepare_concurrency != 2:
+&gt;           raise _fail("prepare_concurrency_must_be_two")
+E           paper_eval.s5_mstar_pipeline.MStarPipelineError: prepare_concurrency_must_be_two
+
+src/paper_eval/s5_mstar_pipeline.py:189: MStarPipelineError</failure></testcase><testcase classname="tests.test_s5_mstar_pipeline" name="test_verifier_accepts_every_observed_worker_in_protocol_grid[8]" time="0.001"><failure message="paper_eval.s5_mstar_pipeline.MStarPipelineError: prepare_concurrency_must_be_two">concurrency = 8
+
+    @pytest.mark.asyncio
+    @pytest.mark.parametrize("concurrency", [1, 2, 4, 8])
+    async def test_verifier_accepts_every_observed_worker_in_protocol_grid(
+        concurrency: int,
+    ) -&gt; None:
+        sources = _sources(concurrency)
+        entered = 0
+        release = asyncio.Event()
+    
+        async def prepare(source: object, _logical_time_ns: int) -&gt; object:
+            nonlocal entered
+            entered += 1
+            if entered == concurrency:
+                release.set()
+            await asyncio.wait_for(release.wait(), timeout=1)
+            return source
+    
+        async def bind(*_args: object) -&gt; None:
+            await asyncio.sleep(0)
+    
+&gt;       spec = MStarSpec(
+            f"s5-mstar-grid-live-{concurrency}",
+            CORE_SHA,
+            concurrency,
+            require_prepare_overlap=concurrency &gt; 1,
+        )
+
+tests/test_s5_mstar_pipeline.py:511: 
+_ _ _ _ _ _ _ _ _ _ _ _ _ _ _ _ _ _ _ _ _ _ _ _ _ _ _ _ _ _ _ _ _ _ _ _ _ _ _ _ 
+&lt;string&gt;:8: in __init__
+    ???
+_ _ _ _ _ _ _ _ _ _ _ _ _ _ _ _ _ _ _ _ _ _ _ _ _ _ _ _ _ _ _ _ _ _ _ _ _ _ _ _ 
+
+self = MStarSpec(run_id='s5-mstar-grid-live-8', production_core_identity_sha256='aaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaa', prepare_concurrency=8, method='M*', require_prepare_overlap=True)
+
+    def __post_init__(self) -&gt; None:
+        if not isinstance(self.run_id, str) or _RUN_ID.fullmatch(self.run_id) is None:
+            raise _fail("run_id_invalid")
+        if self.method != MSTAR:
+            raise _fail("legacy_method_identity_forbidden")
+        _sha(self.production_core_identity_sha256, "production_core_identity_invalid")
+        if self.prepare_concurrency != 2:
+&gt;           raise _fail("prepare_concurrency_must_be_two")
+E           paper_eval.s5_mstar_pipeline.MStarPipelineError: prepare_concurrency_must_be_two
+
+src/paper_eval/s5_mstar_pipeline.py:189: MStarPipelineError</failure></testcase><testcase classname="tests.test_s5_mstar_pipeline" name="test_fx0_single_case_mode_uses_same_core_without_claiming_prepare_overlap" time="0.001" /><testcase classname="tests.test_s5_method_smoke_contract" name="test_a0_requires_fifo_single_worker_and_separates_return_from_publish" time="0.000" /><testcase classname="tests.test_s5_method_smoke_contract" name="test_p_requires_real_overlap_but_retains_direct_violation_as_observation" time="0.000" /><testcase classname="tests.test_s5_method_smoke_contract" name="test_m_requires_source_order_no_fallback_and_zero_direct_violations" time="0.000" /><testcase classname="tests.test_s5_method_smoke_contract" name="test_smoke_contract_fails_closed_on_loss_duplicate_or_bad_telemetry[&lt;lambda&gt;0]" time="0.000" /><testcase classname="tests.test_s5_method_smoke_contract" name="test_smoke_contract_fails_closed_on_loss_duplicate_or_bad_telemetry[&lt;lambda&gt;1]" time="0.000" /><testcase classname="tests.test_s5_method_smoke_contract" name="test_smoke_contract_fails_closed_on_loss_duplicate_or_bad_telemetry[&lt;lambda&gt;2]" time="0.000" /><testcase classname="tests.test_s5_method_smoke_contract" name="test_smoke_contract_fails_closed_on_loss_duplicate_or_bad_telemetry[&lt;lambda&gt;3]" time="0.000" /><testcase classname="tests.test_s5_method_smoke_contract" name="test_smoke_contract_fails_closed_on_loss_duplicate_or_bad_telemetry[&lt;lambda&gt;4]" time="0.000" /><testcase classname="tests.test_s5_method_smoke_contract" name="test_smoke_contract_fails_closed_on_loss_duplicate_or_bad_telemetry[&lt;lambda&gt;5]" time="0.000" /><testcase classname="tests.test_s5_method_smoke_contract" name="test_p_rejects_no_overlap_and_m_rejects_fallback_or_direct_violation" time="0.000" /><testcase classname="tests.test_s5_method_smoke_contract" name="test_contract_rejects_legacy_method_ids_and_private_fields" time="0.000" /><testcase classname="tests.test_s5_method_smoke_contract" name="test_mstar_pipeline_projection_reuses_common_smoke_contract" time="0.000" /><testcase classname="tests.test_s5_method_smoke_contract" name="test_mstar_projection_keeps_epoch_logical_time_out_of_monotonic_telemetry" time="0.000"><failure message="assert 1735000000000000000 == 10">def test_mstar_projection_keeps_epoch_logical_time_out_of_monotonic_telemetry() -&gt; None:
+        epoch_ns = 1_735_000_000_000_000_000
+        evidence = {
+            "method": "M*",
+            "status": "PASS",
+            "events": [
+                {
+                    "event_sequence": 0,
+                    "event_type": "intent",
+                    "source_sequence": 0,
+                    "logical_time_ns": epoch_ns,
+                    "intent_timestamp_ns": 10,
+                },
+                {
+                    "event_sequence": 1,
+                    "event_type": "prepare_start",
+                    "source_sequence": 0,
+                    "worker_id": 0,
+                    "prepare_start_timestamp_ns": 11,
+                },
+                {
+                    "event_sequence": 2,
+                    "event_type": "commit_returned",
+                    "source_sequence": 0,
+                    "commit_return_timestamp_ns": 20,
+                },
+                {
+                    "event_sequence": 3,
+                    "event_type": "publication",
+                    "source_sequence": 0,
+                    "publication_timestamp_ns": 21,
+                },
+                {"event_sequence": 4, "event_type": "terminal_success"},
+            ],
+        }
+    
+        records = mstar_pipeline_to_smoke_records(evidence)
+&gt;       assert records[0]["arrival_timestamp_ns"] == 10
+E       assert 1735000000000000000 == 10
+
+tests/test_s5_method_smoke_contract.py:177: AssertionError</failure></testcase><testcase classname="tests.test_s5_method_smoke_contract" name="test_mstar_pipeline_projection_fails_closed_on_missing_phase" time="0.000" /><testcase classname="tests.test_s5_method_smoke_contract" name="test_native_a0_evidence_projects_into_the_common_smoke_contract" time="0.000" /><testcase classname="tests.test_s5_method_smoke_contract" name="test_native_p_projection_binds_explicit_invariant_observations" time="0.000" /><testcase classname="tests.test_s5_method_smoke_contract" name="test_native_projection_rejects_missing_durable_or_publication_event" time="0.000" /><testcase classname="tests.test_s5_method_smoke_contract" name="test_native_projection_requires_explicit_complete_invariant_observation" time="0.000" /><testcase classname="tests.test_s5_method_smoke_contract" name="test_a0_requires_caller_return_to_precede_publication_strictly" time="0.000" /><testcase classname="tests.test_s5_mstar_live_chain" name="test_mstar_controller_exposes_production_entrypoint" time="0.006"><failure message="ImportError: cannot import name 'execute_s5_mstar_production' from 'paper_eval.s5_mstar_controller' (/data/predator/ly/MemBind/paper-eval-v3/src/paper_eval/s5_mstar_controller.py)">def test_mstar_controller_exposes_production_entrypoint() -&gt; None:
+&gt;       from paper_eval.s5_mstar_controller import execute_s5_mstar_production
+E       ImportError: cannot import name 'execute_s5_mstar_production' from 'paper_eval.s5_mstar_controller' (/data/predator/ly/MemBind/paper-eval-v3/src/paper_eval/s5_mstar_controller.py)
+
+tests/test_s5_mstar_live_chain.py:9: ImportError</failure></testcase><testcase classname="tests.test_s5_mstar_live_chain" name="test_mstar_tmux_launcher_exists" time="0.000"><failure message="AssertionError: assert False&#10; +  where False = is_file()&#10; +    where is_file = PosixPath('/data/predator/ly/MemBind/paper-eval-v3/scripts/run_s5_mstar_tmux.sh').is_file">def test_mstar_tmux_launcher_exists() -&gt; None:
+        launcher = Path(__file__).parents[1] / "scripts" / "run_s5_mstar_tmux.sh"
+&gt;       assert launcher.is_file()
+E       AssertionError: assert False
+E        +  where False = is_file()
+E        +    where is_file = PosixPath('/data/predator/ly/MemBind/paper-eval-v3/scripts/run_s5_mstar_tmux.sh').is_file
+
+tests/test_s5_mstar_live_chain.py:16: AssertionError</failure></testcase></testsuite></testsuites>

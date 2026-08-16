@@ -1,0 +1,1347 @@
+<?xml version="1.0" encoding="utf-8"?><testsuites name="pytest tests"><testsuite name="pytest" errors="0" failures="21" skipped="0" tests="465" time="63.472" timestamp="2026-08-16T15:04:41.221253+08:00" hostname="aces-System-Product-Name"><testcase classname="tests.test_s5_a0_controller" name="test_complete_sealed_chain_is_validated_before_authority_consumption" time="0.019" /><testcase classname="tests.test_s5_a0_controller" name="test_consumption_is_exclusive_and_precedes_env_runtime_graphiti_and_readiness" time="0.084" /><testcase classname="tests.test_s5_a0_controller" name="test_post_consumption_failures_are_sanitized_incomplete_and_non_resumable[runtime-runtime_construction-expected_trace0]" time="0.049" /><testcase classname="tests.test_s5_a0_controller" name="test_post_consumption_failures_are_sanitized_incomplete_and_non_resumable[readiness-runtime_readiness-expected_trace1]" time="0.058" /><testcase classname="tests.test_s5_a0_controller" name="test_post_consumption_failures_are_sanitized_incomplete_and_non_resumable[native-native_execution-expected_trace2]" time="0.061" /><testcase classname="tests.test_s5_a0_controller" name="test_native_incomplete_result_is_not_promoted_to_controller_or_scientific_pass" time="0.043" /><testcase classname="tests.test_s5_a0_controller" name="test_raw_unqualified_identity_cannot_substitute_for_qualification" time="0.014" /><testcase classname="tests.test_s5_a0_controller_production" name="test_production_entry_consumes_before_env_and_rebinds_exact_workload" time="0.055" /><testcase classname="tests.test_s5_a0_controller_production" name="test_production_env_failure_is_after_consumption_and_sanitized" time="0.040" /><testcase classname="tests.test_s5_a0_controller_production" name="test_runtime_readiness_and_close_use_graphiti_lifecycle" time="0.000" /><testcase classname="tests.test_s5_a0_controller_production" name="test_invalid_runtime_and_missing_close_fail_closed" time="0.000" /><testcase classname="tests.test_s5_a0_controller_production" name="test_result_verifier_source_drift_stops_before_consumption" time="0.011" /><testcase classname="tests.test_s5_a0_controller_production" name="test_runtime_close_failure_is_single_call_and_has_its_own_stage" time="0.043" /><testcase classname="tests.test_s5_a0_controller_production" name="test_cli_builds_run_scoped_paths_without_executing_live" time="0.001" /><testcase classname="tests.test_s5_a0_controller_production" name="test_cli_returns_nonzero_for_incomplete_controller_result" time="0.001" /><testcase classname="tests.test_s5_a0_controller_production" name="test_cli_does_not_print_unknown_exception_messages" time="0.001" /><testcase classname="tests.test_s5_a0_postprocess" name="test_complete_durable_chain_observes_closes_and_finalizes_pass" time="1.518" /><testcase classname="tests.test_s5_a0_postprocess" name="test_incomplete_controller_or_attempt_blocks_before_private_env" time="0.009" /><testcase classname="tests.test_s5_a0_postprocess" name="test_observer_failure_is_sanitized_and_driver_is_closed" time="1.503" /><testcase classname="tests.test_s5_a0_postprocess" name="test_driver_close_and_finalizer_failures_checkpoint_and_stop[driver-driver_construction-expected_trace0-False]" time="1.504" /><testcase classname="tests.test_s5_a0_postprocess" name="test_driver_close_and_finalizer_failures_checkpoint_and_stop[close-driver_close-expected_trace1-True]" time="1.495" /><testcase classname="tests.test_s5_a0_postprocess" name="test_driver_close_and_finalizer_failures_checkpoint_and_stop[finalizer-finalization-expected_trace2-True]" time="1.495" /><testcase classname="tests.test_s5_a0_postprocess" name="test_git_commit_drift_blocks_before_private_env" time="1.502" /><testcase classname="tests.test_s5_a0_postprocess" name="test_cli_derives_run_scoped_paths_and_returns_pass" time="0.001" /><testcase classname="tests.test_s5_a0_postprocess" name="test_cli_unknown_failure_is_sanitized_and_nonzero" time="0.001" /><testcase classname="tests.test_s5_a0_postprocess" name="test_production_parser_has_no_cleanup_or_resume_surface" time="0.000" /><testcase classname="tests.test_s5_a0_production_identity_materializer" name="test_real_a0_materialization_binds_exact_repo_and_49_source_workload" time="0.127"><failure message="paper_eval.s5_a0_production_identity_materializer.S5A0MaterializationError: native_freeze_binding_mismatch">def test_real_a0_materialization_binds_exact_repo_and_49_source_workload() -&gt; None:
+&gt;       bundle = _materialize()
+                 ^^^^^^^^^^^^^^
+
+tests/test_s5_a0_production_identity_materializer.py:88: 
+_ _ _ _ _ _ _ _ _ _ _ _ _ _ _ _ _ _ _ _ _ _ _ _ _ _ _ _ _ _ _ _ _ _ _ _ _ _ _ _ 
+tests/test_s5_a0_production_identity_materializer.py:57: in _materialize
+    return materialize_s5_a0_production_identity(
+src/paper_eval/s5_a0_production_identity_materializer.py:482: in materialize_s5_a0_production_identity
+    return _build_bundle(paths=paths, git_commit=git_commit, run_id=run_id)
+           ^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^
+src/paper_eval/s5_a0_production_identity_materializer.py:333: in _build_bundle
+    freeze, native, freeze_file_sha = _verify_freeze(
+_ _ _ _ _ _ _ _ _ _ _ _ _ _ _ _ _ _ _ _ _ _ _ _ _ _ _ _ _ _ _ _ _ _ _ _ _ _ _ _ 
+
+path = PosixPath('/data/predator/ly/MemBind/paper-eval-v3/artifacts/paper_eval/native/NATIVE_BASELINE_V2_FREEZE.json')
+dataset_sha256 = 'd6f21ea9d60a0d56f34a05b609c79c88a451d2ae03597821ea3d5a9678c3a442'
+dataset_builder_sha256 = '0dc97963f4e6143b555853d6061967b6e7606d36e0cba66acc70e27ba0a4d163'
+graphiti_native_sha256 = '2be18e4d39d5bbf792b9d23b002d0d0186af737b070d8b38901cc2a55b00bfda'
+runtime_factory_sha256 = '4d6bad43289d7cbf9557aed05571601bdfa560855ed1403b0e4a72770ae57ca1'
+
+    def _verify_freeze(
+        path: Path,
+        *,
+        dataset_sha256: str,
+        dataset_builder_sha256: str,
+        graphiti_native_sha256: str,
+        runtime_factory_sha256: str,
+    ) -&gt; tuple[dict[str, Any], dict[str, Any], str]:
+        artifact, payload = _sealed_envelope(
+            _load_json(path, "native_freeze_invalid"), "native_freeze_invalid"
+        )
+        native = _mapping(payload.get("native_construction"), "native_freeze_invalid")
+        critical = _mapping(payload.get("critical_source_sha256"), "native_freeze_invalid")
+        common = _mapping(payload.get("common_evaluation_policy"), "native_freeze_invalid")
+        if (
+            payload.get("schema_version")
+            != "membind.paper-eval-v3.native-baseline-v2-freeze.v1"
+            or payload.get("status") != "PASS"
+            or payload.get("baseline_id") != "native-graphiti-u0-reader-v2"
+            or native.get("history_id") != EXPECTED_S1_HISTORY_ID
+            or native.get("episode_count") != EXPECTED_EPISODE_COUNT
+            or common.get("dataset_sha256") != dataset_sha256
+            or critical.get("dataset_builder") != dataset_builder_sha256
+            or critical.get("direct_add_episode") != graphiti_native_sha256
+            or critical.get("u0_runtime") != runtime_factory_sha256
+        ):
+&gt;           raise _fail("native_freeze_binding_mismatch")
+E           paper_eval.s5_a0_production_identity_materializer.S5A0MaterializationError: native_freeze_binding_mismatch
+
+src/paper_eval/s5_a0_production_identity_materializer.py:204: S5A0MaterializationError</failure></testcase><testcase classname="tests.test_s5_a0_production_identity_materializer" name="test_materialization_is_deterministic_and_contains_no_private_runtime_data" time="0.127"><failure message="paper_eval.s5_a0_production_identity_materializer.S5A0MaterializationError: native_freeze_binding_mismatch">def test_materialization_is_deterministic_and_contains_no_private_runtime_data() -&gt; None:
+&gt;       first = _materialize()
+                ^^^^^^^^^^^^^^
+
+tests/test_s5_a0_production_identity_materializer.py:163: 
+_ _ _ _ _ _ _ _ _ _ _ _ _ _ _ _ _ _ _ _ _ _ _ _ _ _ _ _ _ _ _ _ _ _ _ _ _ _ _ _ 
+tests/test_s5_a0_production_identity_materializer.py:57: in _materialize
+    return materialize_s5_a0_production_identity(
+src/paper_eval/s5_a0_production_identity_materializer.py:482: in materialize_s5_a0_production_identity
+    return _build_bundle(paths=paths, git_commit=git_commit, run_id=run_id)
+           ^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^
+src/paper_eval/s5_a0_production_identity_materializer.py:333: in _build_bundle
+    freeze, native, freeze_file_sha = _verify_freeze(
+_ _ _ _ _ _ _ _ _ _ _ _ _ _ _ _ _ _ _ _ _ _ _ _ _ _ _ _ _ _ _ _ _ _ _ _ _ _ _ _ 
+
+path = PosixPath('/data/predator/ly/MemBind/paper-eval-v3/artifacts/paper_eval/native/NATIVE_BASELINE_V2_FREEZE.json')
+dataset_sha256 = 'd6f21ea9d60a0d56f34a05b609c79c88a451d2ae03597821ea3d5a9678c3a442'
+dataset_builder_sha256 = '0dc97963f4e6143b555853d6061967b6e7606d36e0cba66acc70e27ba0a4d163'
+graphiti_native_sha256 = '2be18e4d39d5bbf792b9d23b002d0d0186af737b070d8b38901cc2a55b00bfda'
+runtime_factory_sha256 = '4d6bad43289d7cbf9557aed05571601bdfa560855ed1403b0e4a72770ae57ca1'
+
+    def _verify_freeze(
+        path: Path,
+        *,
+        dataset_sha256: str,
+        dataset_builder_sha256: str,
+        graphiti_native_sha256: str,
+        runtime_factory_sha256: str,
+    ) -&gt; tuple[dict[str, Any], dict[str, Any], str]:
+        artifact, payload = _sealed_envelope(
+            _load_json(path, "native_freeze_invalid"), "native_freeze_invalid"
+        )
+        native = _mapping(payload.get("native_construction"), "native_freeze_invalid")
+        critical = _mapping(payload.get("critical_source_sha256"), "native_freeze_invalid")
+        common = _mapping(payload.get("common_evaluation_policy"), "native_freeze_invalid")
+        if (
+            payload.get("schema_version")
+            != "membind.paper-eval-v3.native-baseline-v2-freeze.v1"
+            or payload.get("status") != "PASS"
+            or payload.get("baseline_id") != "native-graphiti-u0-reader-v2"
+            or native.get("history_id") != EXPECTED_S1_HISTORY_ID
+            or native.get("episode_count") != EXPECTED_EPISODE_COUNT
+            or common.get("dataset_sha256") != dataset_sha256
+            or critical.get("dataset_builder") != dataset_builder_sha256
+            or critical.get("direct_add_episode") != graphiti_native_sha256
+            or critical.get("u0_runtime") != runtime_factory_sha256
+        ):
+&gt;           raise _fail("native_freeze_binding_mismatch")
+E           paper_eval.s5_a0_production_identity_materializer.S5A0MaterializationError: native_freeze_binding_mismatch
+
+src/paper_eval/s5_a0_production_identity_materializer.py:204: S5A0MaterializationError</failure></testcase><testcase classname="tests.test_s5_a0_production_identity_materializer" name="test_any_materialized_input_drift_fails_closed[native_baseline_freeze]" time="0.175"><failure message="paper_eval.s5_a0_production_identity_materializer.S5A0MaterializationError: native_freeze_binding_mismatch">tmp_path = PosixPath('/tmp/pytest-of-ly/pytest-463/test_any_materialized_input_dr0')
+field = 'native_baseline_freeze'
+
+    @pytest.mark.parametrize(
+        "field",
+        [
+            "native_baseline_freeze",
+            "current_stage_pointer",
+            "graphiti_semantic_identity",
+            "dataset",
+            "frozen_split",
+            "dataset_builder",
+            "graphiti_native",
+            "runtime_factory",
+            "scheduler",
+            "scheduler_test",
+            "durable_store",
+            "durable_store_test",
+        ],
+    )
+    def test_any_materialized_input_drift_fails_closed(
+        tmp_path: Path, field: str
+    ) -&gt; None:
+        paths = _copy_inputs(tmp_path)
+&gt;       bundle = _materialize(paths)
+                 ^^^^^^^^^^^^^^^^^^^
+
+tests/test_s5_a0_production_identity_materializer.py:206: 
+_ _ _ _ _ _ _ _ _ _ _ _ _ _ _ _ _ _ _ _ _ _ _ _ _ _ _ _ _ _ _ _ _ _ _ _ _ _ _ _ 
+tests/test_s5_a0_production_identity_materializer.py:57: in _materialize
+    return materialize_s5_a0_production_identity(
+src/paper_eval/s5_a0_production_identity_materializer.py:482: in materialize_s5_a0_production_identity
+    return _build_bundle(paths=paths, git_commit=git_commit, run_id=run_id)
+           ^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^
+src/paper_eval/s5_a0_production_identity_materializer.py:333: in _build_bundle
+    freeze, native, freeze_file_sha = _verify_freeze(
+_ _ _ _ _ _ _ _ _ _ _ _ _ _ _ _ _ _ _ _ _ _ _ _ _ _ _ _ _ _ _ _ _ _ _ _ _ _ _ _ 
+
+path = PosixPath('/tmp/pytest-of-ly/pytest-463/test_any_materialized_input_dr0/paper-eval-v3/artifacts/paper_eval/native/NATIVE_BASELINE_V2_FREEZE.json')
+dataset_sha256 = 'd6f21ea9d60a0d56f34a05b609c79c88a451d2ae03597821ea3d5a9678c3a442'
+dataset_builder_sha256 = '0dc97963f4e6143b555853d6061967b6e7606d36e0cba66acc70e27ba0a4d163'
+graphiti_native_sha256 = '2be18e4d39d5bbf792b9d23b002d0d0186af737b070d8b38901cc2a55b00bfda'
+runtime_factory_sha256 = '4d6bad43289d7cbf9557aed05571601bdfa560855ed1403b0e4a72770ae57ca1'
+
+    def _verify_freeze(
+        path: Path,
+        *,
+        dataset_sha256: str,
+        dataset_builder_sha256: str,
+        graphiti_native_sha256: str,
+        runtime_factory_sha256: str,
+    ) -&gt; tuple[dict[str, Any], dict[str, Any], str]:
+        artifact, payload = _sealed_envelope(
+            _load_json(path, "native_freeze_invalid"), "native_freeze_invalid"
+        )
+        native = _mapping(payload.get("native_construction"), "native_freeze_invalid")
+        critical = _mapping(payload.get("critical_source_sha256"), "native_freeze_invalid")
+        common = _mapping(payload.get("common_evaluation_policy"), "native_freeze_invalid")
+        if (
+            payload.get("schema_version")
+            != "membind.paper-eval-v3.native-baseline-v2-freeze.v1"
+            or payload.get("status") != "PASS"
+            or payload.get("baseline_id") != "native-graphiti-u0-reader-v2"
+            or native.get("history_id") != EXPECTED_S1_HISTORY_ID
+            or native.get("episode_count") != EXPECTED_EPISODE_COUNT
+            or common.get("dataset_sha256") != dataset_sha256
+            or critical.get("dataset_builder") != dataset_builder_sha256
+            or critical.get("direct_add_episode") != graphiti_native_sha256
+            or critical.get("u0_runtime") != runtime_factory_sha256
+        ):
+&gt;           raise _fail("native_freeze_binding_mismatch")
+E           paper_eval.s5_a0_production_identity_materializer.S5A0MaterializationError: native_freeze_binding_mismatch
+
+src/paper_eval/s5_a0_production_identity_materializer.py:204: S5A0MaterializationError</failure></testcase><testcase classname="tests.test_s5_a0_production_identity_materializer" name="test_any_materialized_input_drift_fails_closed[current_stage_pointer]" time="0.172"><failure message="paper_eval.s5_a0_production_identity_materializer.S5A0MaterializationError: native_freeze_binding_mismatch">tmp_path = PosixPath('/tmp/pytest-of-ly/pytest-463/test_any_materialized_input_dr1')
+field = 'current_stage_pointer'
+
+    @pytest.mark.parametrize(
+        "field",
+        [
+            "native_baseline_freeze",
+            "current_stage_pointer",
+            "graphiti_semantic_identity",
+            "dataset",
+            "frozen_split",
+            "dataset_builder",
+            "graphiti_native",
+            "runtime_factory",
+            "scheduler",
+            "scheduler_test",
+            "durable_store",
+            "durable_store_test",
+        ],
+    )
+    def test_any_materialized_input_drift_fails_closed(
+        tmp_path: Path, field: str
+    ) -&gt; None:
+        paths = _copy_inputs(tmp_path)
+&gt;       bundle = _materialize(paths)
+                 ^^^^^^^^^^^^^^^^^^^
+
+tests/test_s5_a0_production_identity_materializer.py:206: 
+_ _ _ _ _ _ _ _ _ _ _ _ _ _ _ _ _ _ _ _ _ _ _ _ _ _ _ _ _ _ _ _ _ _ _ _ _ _ _ _ 
+tests/test_s5_a0_production_identity_materializer.py:57: in _materialize
+    return materialize_s5_a0_production_identity(
+src/paper_eval/s5_a0_production_identity_materializer.py:482: in materialize_s5_a0_production_identity
+    return _build_bundle(paths=paths, git_commit=git_commit, run_id=run_id)
+           ^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^
+src/paper_eval/s5_a0_production_identity_materializer.py:333: in _build_bundle
+    freeze, native, freeze_file_sha = _verify_freeze(
+_ _ _ _ _ _ _ _ _ _ _ _ _ _ _ _ _ _ _ _ _ _ _ _ _ _ _ _ _ _ _ _ _ _ _ _ _ _ _ _ 
+
+path = PosixPath('/tmp/pytest-of-ly/pytest-463/test_any_materialized_input_dr1/paper-eval-v3/artifacts/paper_eval/native/NATIVE_BASELINE_V2_FREEZE.json')
+dataset_sha256 = 'd6f21ea9d60a0d56f34a05b609c79c88a451d2ae03597821ea3d5a9678c3a442'
+dataset_builder_sha256 = '0dc97963f4e6143b555853d6061967b6e7606d36e0cba66acc70e27ba0a4d163'
+graphiti_native_sha256 = '2be18e4d39d5bbf792b9d23b002d0d0186af737b070d8b38901cc2a55b00bfda'
+runtime_factory_sha256 = '4d6bad43289d7cbf9557aed05571601bdfa560855ed1403b0e4a72770ae57ca1'
+
+    def _verify_freeze(
+        path: Path,
+        *,
+        dataset_sha256: str,
+        dataset_builder_sha256: str,
+        graphiti_native_sha256: str,
+        runtime_factory_sha256: str,
+    ) -&gt; tuple[dict[str, Any], dict[str, Any], str]:
+        artifact, payload = _sealed_envelope(
+            _load_json(path, "native_freeze_invalid"), "native_freeze_invalid"
+        )
+        native = _mapping(payload.get("native_construction"), "native_freeze_invalid")
+        critical = _mapping(payload.get("critical_source_sha256"), "native_freeze_invalid")
+        common = _mapping(payload.get("common_evaluation_policy"), "native_freeze_invalid")
+        if (
+            payload.get("schema_version")
+            != "membind.paper-eval-v3.native-baseline-v2-freeze.v1"
+            or payload.get("status") != "PASS"
+            or payload.get("baseline_id") != "native-graphiti-u0-reader-v2"
+            or native.get("history_id") != EXPECTED_S1_HISTORY_ID
+            or native.get("episode_count") != EXPECTED_EPISODE_COUNT
+            or common.get("dataset_sha256") != dataset_sha256
+            or critical.get("dataset_builder") != dataset_builder_sha256
+            or critical.get("direct_add_episode") != graphiti_native_sha256
+            or critical.get("u0_runtime") != runtime_factory_sha256
+        ):
+&gt;           raise _fail("native_freeze_binding_mismatch")
+E           paper_eval.s5_a0_production_identity_materializer.S5A0MaterializationError: native_freeze_binding_mismatch
+
+src/paper_eval/s5_a0_production_identity_materializer.py:204: S5A0MaterializationError</failure></testcase><testcase classname="tests.test_s5_a0_production_identity_materializer" name="test_any_materialized_input_drift_fails_closed[graphiti_semantic_identity]" time="0.171"><failure message="paper_eval.s5_a0_production_identity_materializer.S5A0MaterializationError: native_freeze_binding_mismatch">tmp_path = PosixPath('/tmp/pytest-of-ly/pytest-463/test_any_materialized_input_dr2')
+field = 'graphiti_semantic_identity'
+
+    @pytest.mark.parametrize(
+        "field",
+        [
+            "native_baseline_freeze",
+            "current_stage_pointer",
+            "graphiti_semantic_identity",
+            "dataset",
+            "frozen_split",
+            "dataset_builder",
+            "graphiti_native",
+            "runtime_factory",
+            "scheduler",
+            "scheduler_test",
+            "durable_store",
+            "durable_store_test",
+        ],
+    )
+    def test_any_materialized_input_drift_fails_closed(
+        tmp_path: Path, field: str
+    ) -&gt; None:
+        paths = _copy_inputs(tmp_path)
+&gt;       bundle = _materialize(paths)
+                 ^^^^^^^^^^^^^^^^^^^
+
+tests/test_s5_a0_production_identity_materializer.py:206: 
+_ _ _ _ _ _ _ _ _ _ _ _ _ _ _ _ _ _ _ _ _ _ _ _ _ _ _ _ _ _ _ _ _ _ _ _ _ _ _ _ 
+tests/test_s5_a0_production_identity_materializer.py:57: in _materialize
+    return materialize_s5_a0_production_identity(
+src/paper_eval/s5_a0_production_identity_materializer.py:482: in materialize_s5_a0_production_identity
+    return _build_bundle(paths=paths, git_commit=git_commit, run_id=run_id)
+           ^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^
+src/paper_eval/s5_a0_production_identity_materializer.py:333: in _build_bundle
+    freeze, native, freeze_file_sha = _verify_freeze(
+_ _ _ _ _ _ _ _ _ _ _ _ _ _ _ _ _ _ _ _ _ _ _ _ _ _ _ _ _ _ _ _ _ _ _ _ _ _ _ _ 
+
+path = PosixPath('/tmp/pytest-of-ly/pytest-463/test_any_materialized_input_dr2/paper-eval-v3/artifacts/paper_eval/native/NATIVE_BASELINE_V2_FREEZE.json')
+dataset_sha256 = 'd6f21ea9d60a0d56f34a05b609c79c88a451d2ae03597821ea3d5a9678c3a442'
+dataset_builder_sha256 = '0dc97963f4e6143b555853d6061967b6e7606d36e0cba66acc70e27ba0a4d163'
+graphiti_native_sha256 = '2be18e4d39d5bbf792b9d23b002d0d0186af737b070d8b38901cc2a55b00bfda'
+runtime_factory_sha256 = '4d6bad43289d7cbf9557aed05571601bdfa560855ed1403b0e4a72770ae57ca1'
+
+    def _verify_freeze(
+        path: Path,
+        *,
+        dataset_sha256: str,
+        dataset_builder_sha256: str,
+        graphiti_native_sha256: str,
+        runtime_factory_sha256: str,
+    ) -&gt; tuple[dict[str, Any], dict[str, Any], str]:
+        artifact, payload = _sealed_envelope(
+            _load_json(path, "native_freeze_invalid"), "native_freeze_invalid"
+        )
+        native = _mapping(payload.get("native_construction"), "native_freeze_invalid")
+        critical = _mapping(payload.get("critical_source_sha256"), "native_freeze_invalid")
+        common = _mapping(payload.get("common_evaluation_policy"), "native_freeze_invalid")
+        if (
+            payload.get("schema_version")
+            != "membind.paper-eval-v3.native-baseline-v2-freeze.v1"
+            or payload.get("status") != "PASS"
+            or payload.get("baseline_id") != "native-graphiti-u0-reader-v2"
+            or native.get("history_id") != EXPECTED_S1_HISTORY_ID
+            or native.get("episode_count") != EXPECTED_EPISODE_COUNT
+            or common.get("dataset_sha256") != dataset_sha256
+            or critical.get("dataset_builder") != dataset_builder_sha256
+            or critical.get("direct_add_episode") != graphiti_native_sha256
+            or critical.get("u0_runtime") != runtime_factory_sha256
+        ):
+&gt;           raise _fail("native_freeze_binding_mismatch")
+E           paper_eval.s5_a0_production_identity_materializer.S5A0MaterializationError: native_freeze_binding_mismatch
+
+src/paper_eval/s5_a0_production_identity_materializer.py:204: S5A0MaterializationError</failure></testcase><testcase classname="tests.test_s5_a0_production_identity_materializer" name="test_any_materialized_input_drift_fails_closed[dataset]" time="0.172"><failure message="paper_eval.s5_a0_production_identity_materializer.S5A0MaterializationError: native_freeze_binding_mismatch">tmp_path = PosixPath('/tmp/pytest-of-ly/pytest-463/test_any_materialized_input_dr3')
+field = 'dataset'
+
+    @pytest.mark.parametrize(
+        "field",
+        [
+            "native_baseline_freeze",
+            "current_stage_pointer",
+            "graphiti_semantic_identity",
+            "dataset",
+            "frozen_split",
+            "dataset_builder",
+            "graphiti_native",
+            "runtime_factory",
+            "scheduler",
+            "scheduler_test",
+            "durable_store",
+            "durable_store_test",
+        ],
+    )
+    def test_any_materialized_input_drift_fails_closed(
+        tmp_path: Path, field: str
+    ) -&gt; None:
+        paths = _copy_inputs(tmp_path)
+&gt;       bundle = _materialize(paths)
+                 ^^^^^^^^^^^^^^^^^^^
+
+tests/test_s5_a0_production_identity_materializer.py:206: 
+_ _ _ _ _ _ _ _ _ _ _ _ _ _ _ _ _ _ _ _ _ _ _ _ _ _ _ _ _ _ _ _ _ _ _ _ _ _ _ _ 
+tests/test_s5_a0_production_identity_materializer.py:57: in _materialize
+    return materialize_s5_a0_production_identity(
+src/paper_eval/s5_a0_production_identity_materializer.py:482: in materialize_s5_a0_production_identity
+    return _build_bundle(paths=paths, git_commit=git_commit, run_id=run_id)
+           ^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^
+src/paper_eval/s5_a0_production_identity_materializer.py:333: in _build_bundle
+    freeze, native, freeze_file_sha = _verify_freeze(
+_ _ _ _ _ _ _ _ _ _ _ _ _ _ _ _ _ _ _ _ _ _ _ _ _ _ _ _ _ _ _ _ _ _ _ _ _ _ _ _ 
+
+path = PosixPath('/tmp/pytest-of-ly/pytest-463/test_any_materialized_input_dr3/paper-eval-v3/artifacts/paper_eval/native/NATIVE_BASELINE_V2_FREEZE.json')
+dataset_sha256 = 'd6f21ea9d60a0d56f34a05b609c79c88a451d2ae03597821ea3d5a9678c3a442'
+dataset_builder_sha256 = '0dc97963f4e6143b555853d6061967b6e7606d36e0cba66acc70e27ba0a4d163'
+graphiti_native_sha256 = '2be18e4d39d5bbf792b9d23b002d0d0186af737b070d8b38901cc2a55b00bfda'
+runtime_factory_sha256 = '4d6bad43289d7cbf9557aed05571601bdfa560855ed1403b0e4a72770ae57ca1'
+
+    def _verify_freeze(
+        path: Path,
+        *,
+        dataset_sha256: str,
+        dataset_builder_sha256: str,
+        graphiti_native_sha256: str,
+        runtime_factory_sha256: str,
+    ) -&gt; tuple[dict[str, Any], dict[str, Any], str]:
+        artifact, payload = _sealed_envelope(
+            _load_json(path, "native_freeze_invalid"), "native_freeze_invalid"
+        )
+        native = _mapping(payload.get("native_construction"), "native_freeze_invalid")
+        critical = _mapping(payload.get("critical_source_sha256"), "native_freeze_invalid")
+        common = _mapping(payload.get("common_evaluation_policy"), "native_freeze_invalid")
+        if (
+            payload.get("schema_version")
+            != "membind.paper-eval-v3.native-baseline-v2-freeze.v1"
+            or payload.get("status") != "PASS"
+            or payload.get("baseline_id") != "native-graphiti-u0-reader-v2"
+            or native.get("history_id") != EXPECTED_S1_HISTORY_ID
+            or native.get("episode_count") != EXPECTED_EPISODE_COUNT
+            or common.get("dataset_sha256") != dataset_sha256
+            or critical.get("dataset_builder") != dataset_builder_sha256
+            or critical.get("direct_add_episode") != graphiti_native_sha256
+            or critical.get("u0_runtime") != runtime_factory_sha256
+        ):
+&gt;           raise _fail("native_freeze_binding_mismatch")
+E           paper_eval.s5_a0_production_identity_materializer.S5A0MaterializationError: native_freeze_binding_mismatch
+
+src/paper_eval/s5_a0_production_identity_materializer.py:204: S5A0MaterializationError</failure></testcase><testcase classname="tests.test_s5_a0_production_identity_materializer" name="test_any_materialized_input_drift_fails_closed[frozen_split]" time="0.173"><failure message="paper_eval.s5_a0_production_identity_materializer.S5A0MaterializationError: native_freeze_binding_mismatch">tmp_path = PosixPath('/tmp/pytest-of-ly/pytest-463/test_any_materialized_input_dr4')
+field = 'frozen_split'
+
+    @pytest.mark.parametrize(
+        "field",
+        [
+            "native_baseline_freeze",
+            "current_stage_pointer",
+            "graphiti_semantic_identity",
+            "dataset",
+            "frozen_split",
+            "dataset_builder",
+            "graphiti_native",
+            "runtime_factory",
+            "scheduler",
+            "scheduler_test",
+            "durable_store",
+            "durable_store_test",
+        ],
+    )
+    def test_any_materialized_input_drift_fails_closed(
+        tmp_path: Path, field: str
+    ) -&gt; None:
+        paths = _copy_inputs(tmp_path)
+&gt;       bundle = _materialize(paths)
+                 ^^^^^^^^^^^^^^^^^^^
+
+tests/test_s5_a0_production_identity_materializer.py:206: 
+_ _ _ _ _ _ _ _ _ _ _ _ _ _ _ _ _ _ _ _ _ _ _ _ _ _ _ _ _ _ _ _ _ _ _ _ _ _ _ _ 
+tests/test_s5_a0_production_identity_materializer.py:57: in _materialize
+    return materialize_s5_a0_production_identity(
+src/paper_eval/s5_a0_production_identity_materializer.py:482: in materialize_s5_a0_production_identity
+    return _build_bundle(paths=paths, git_commit=git_commit, run_id=run_id)
+           ^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^
+src/paper_eval/s5_a0_production_identity_materializer.py:333: in _build_bundle
+    freeze, native, freeze_file_sha = _verify_freeze(
+_ _ _ _ _ _ _ _ _ _ _ _ _ _ _ _ _ _ _ _ _ _ _ _ _ _ _ _ _ _ _ _ _ _ _ _ _ _ _ _ 
+
+path = PosixPath('/tmp/pytest-of-ly/pytest-463/test_any_materialized_input_dr4/paper-eval-v3/artifacts/paper_eval/native/NATIVE_BASELINE_V2_FREEZE.json')
+dataset_sha256 = 'd6f21ea9d60a0d56f34a05b609c79c88a451d2ae03597821ea3d5a9678c3a442'
+dataset_builder_sha256 = '0dc97963f4e6143b555853d6061967b6e7606d36e0cba66acc70e27ba0a4d163'
+graphiti_native_sha256 = '2be18e4d39d5bbf792b9d23b002d0d0186af737b070d8b38901cc2a55b00bfda'
+runtime_factory_sha256 = '4d6bad43289d7cbf9557aed05571601bdfa560855ed1403b0e4a72770ae57ca1'
+
+    def _verify_freeze(
+        path: Path,
+        *,
+        dataset_sha256: str,
+        dataset_builder_sha256: str,
+        graphiti_native_sha256: str,
+        runtime_factory_sha256: str,
+    ) -&gt; tuple[dict[str, Any], dict[str, Any], str]:
+        artifact, payload = _sealed_envelope(
+            _load_json(path, "native_freeze_invalid"), "native_freeze_invalid"
+        )
+        native = _mapping(payload.get("native_construction"), "native_freeze_invalid")
+        critical = _mapping(payload.get("critical_source_sha256"), "native_freeze_invalid")
+        common = _mapping(payload.get("common_evaluation_policy"), "native_freeze_invalid")
+        if (
+            payload.get("schema_version")
+            != "membind.paper-eval-v3.native-baseline-v2-freeze.v1"
+            or payload.get("status") != "PASS"
+            or payload.get("baseline_id") != "native-graphiti-u0-reader-v2"
+            or native.get("history_id") != EXPECTED_S1_HISTORY_ID
+            or native.get("episode_count") != EXPECTED_EPISODE_COUNT
+            or common.get("dataset_sha256") != dataset_sha256
+            or critical.get("dataset_builder") != dataset_builder_sha256
+            or critical.get("direct_add_episode") != graphiti_native_sha256
+            or critical.get("u0_runtime") != runtime_factory_sha256
+        ):
+&gt;           raise _fail("native_freeze_binding_mismatch")
+E           paper_eval.s5_a0_production_identity_materializer.S5A0MaterializationError: native_freeze_binding_mismatch
+
+src/paper_eval/s5_a0_production_identity_materializer.py:204: S5A0MaterializationError</failure></testcase><testcase classname="tests.test_s5_a0_production_identity_materializer" name="test_any_materialized_input_drift_fails_closed[dataset_builder]" time="0.172"><failure message="paper_eval.s5_a0_production_identity_materializer.S5A0MaterializationError: native_freeze_binding_mismatch">tmp_path = PosixPath('/tmp/pytest-of-ly/pytest-463/test_any_materialized_input_dr5')
+field = 'dataset_builder'
+
+    @pytest.mark.parametrize(
+        "field",
+        [
+            "native_baseline_freeze",
+            "current_stage_pointer",
+            "graphiti_semantic_identity",
+            "dataset",
+            "frozen_split",
+            "dataset_builder",
+            "graphiti_native",
+            "runtime_factory",
+            "scheduler",
+            "scheduler_test",
+            "durable_store",
+            "durable_store_test",
+        ],
+    )
+    def test_any_materialized_input_drift_fails_closed(
+        tmp_path: Path, field: str
+    ) -&gt; None:
+        paths = _copy_inputs(tmp_path)
+&gt;       bundle = _materialize(paths)
+                 ^^^^^^^^^^^^^^^^^^^
+
+tests/test_s5_a0_production_identity_materializer.py:206: 
+_ _ _ _ _ _ _ _ _ _ _ _ _ _ _ _ _ _ _ _ _ _ _ _ _ _ _ _ _ _ _ _ _ _ _ _ _ _ _ _ 
+tests/test_s5_a0_production_identity_materializer.py:57: in _materialize
+    return materialize_s5_a0_production_identity(
+src/paper_eval/s5_a0_production_identity_materializer.py:482: in materialize_s5_a0_production_identity
+    return _build_bundle(paths=paths, git_commit=git_commit, run_id=run_id)
+           ^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^
+src/paper_eval/s5_a0_production_identity_materializer.py:333: in _build_bundle
+    freeze, native, freeze_file_sha = _verify_freeze(
+_ _ _ _ _ _ _ _ _ _ _ _ _ _ _ _ _ _ _ _ _ _ _ _ _ _ _ _ _ _ _ _ _ _ _ _ _ _ _ _ 
+
+path = PosixPath('/tmp/pytest-of-ly/pytest-463/test_any_materialized_input_dr5/paper-eval-v3/artifacts/paper_eval/native/NATIVE_BASELINE_V2_FREEZE.json')
+dataset_sha256 = 'd6f21ea9d60a0d56f34a05b609c79c88a451d2ae03597821ea3d5a9678c3a442'
+dataset_builder_sha256 = '0dc97963f4e6143b555853d6061967b6e7606d36e0cba66acc70e27ba0a4d163'
+graphiti_native_sha256 = '2be18e4d39d5bbf792b9d23b002d0d0186af737b070d8b38901cc2a55b00bfda'
+runtime_factory_sha256 = '4d6bad43289d7cbf9557aed05571601bdfa560855ed1403b0e4a72770ae57ca1'
+
+    def _verify_freeze(
+        path: Path,
+        *,
+        dataset_sha256: str,
+        dataset_builder_sha256: str,
+        graphiti_native_sha256: str,
+        runtime_factory_sha256: str,
+    ) -&gt; tuple[dict[str, Any], dict[str, Any], str]:
+        artifact, payload = _sealed_envelope(
+            _load_json(path, "native_freeze_invalid"), "native_freeze_invalid"
+        )
+        native = _mapping(payload.get("native_construction"), "native_freeze_invalid")
+        critical = _mapping(payload.get("critical_source_sha256"), "native_freeze_invalid")
+        common = _mapping(payload.get("common_evaluation_policy"), "native_freeze_invalid")
+        if (
+            payload.get("schema_version")
+            != "membind.paper-eval-v3.native-baseline-v2-freeze.v1"
+            or payload.get("status") != "PASS"
+            or payload.get("baseline_id") != "native-graphiti-u0-reader-v2"
+            or native.get("history_id") != EXPECTED_S1_HISTORY_ID
+            or native.get("episode_count") != EXPECTED_EPISODE_COUNT
+            or common.get("dataset_sha256") != dataset_sha256
+            or critical.get("dataset_builder") != dataset_builder_sha256
+            or critical.get("direct_add_episode") != graphiti_native_sha256
+            or critical.get("u0_runtime") != runtime_factory_sha256
+        ):
+&gt;           raise _fail("native_freeze_binding_mismatch")
+E           paper_eval.s5_a0_production_identity_materializer.S5A0MaterializationError: native_freeze_binding_mismatch
+
+src/paper_eval/s5_a0_production_identity_materializer.py:204: S5A0MaterializationError</failure></testcase><testcase classname="tests.test_s5_a0_production_identity_materializer" name="test_any_materialized_input_drift_fails_closed[graphiti_native]" time="0.173"><failure message="paper_eval.s5_a0_production_identity_materializer.S5A0MaterializationError: native_freeze_binding_mismatch">tmp_path = PosixPath('/tmp/pytest-of-ly/pytest-463/test_any_materialized_input_dr6')
+field = 'graphiti_native'
+
+    @pytest.mark.parametrize(
+        "field",
+        [
+            "native_baseline_freeze",
+            "current_stage_pointer",
+            "graphiti_semantic_identity",
+            "dataset",
+            "frozen_split",
+            "dataset_builder",
+            "graphiti_native",
+            "runtime_factory",
+            "scheduler",
+            "scheduler_test",
+            "durable_store",
+            "durable_store_test",
+        ],
+    )
+    def test_any_materialized_input_drift_fails_closed(
+        tmp_path: Path, field: str
+    ) -&gt; None:
+        paths = _copy_inputs(tmp_path)
+&gt;       bundle = _materialize(paths)
+                 ^^^^^^^^^^^^^^^^^^^
+
+tests/test_s5_a0_production_identity_materializer.py:206: 
+_ _ _ _ _ _ _ _ _ _ _ _ _ _ _ _ _ _ _ _ _ _ _ _ _ _ _ _ _ _ _ _ _ _ _ _ _ _ _ _ 
+tests/test_s5_a0_production_identity_materializer.py:57: in _materialize
+    return materialize_s5_a0_production_identity(
+src/paper_eval/s5_a0_production_identity_materializer.py:482: in materialize_s5_a0_production_identity
+    return _build_bundle(paths=paths, git_commit=git_commit, run_id=run_id)
+           ^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^
+src/paper_eval/s5_a0_production_identity_materializer.py:333: in _build_bundle
+    freeze, native, freeze_file_sha = _verify_freeze(
+_ _ _ _ _ _ _ _ _ _ _ _ _ _ _ _ _ _ _ _ _ _ _ _ _ _ _ _ _ _ _ _ _ _ _ _ _ _ _ _ 
+
+path = PosixPath('/tmp/pytest-of-ly/pytest-463/test_any_materialized_input_dr6/paper-eval-v3/artifacts/paper_eval/native/NATIVE_BASELINE_V2_FREEZE.json')
+dataset_sha256 = 'd6f21ea9d60a0d56f34a05b609c79c88a451d2ae03597821ea3d5a9678c3a442'
+dataset_builder_sha256 = '0dc97963f4e6143b555853d6061967b6e7606d36e0cba66acc70e27ba0a4d163'
+graphiti_native_sha256 = '2be18e4d39d5bbf792b9d23b002d0d0186af737b070d8b38901cc2a55b00bfda'
+runtime_factory_sha256 = '4d6bad43289d7cbf9557aed05571601bdfa560855ed1403b0e4a72770ae57ca1'
+
+    def _verify_freeze(
+        path: Path,
+        *,
+        dataset_sha256: str,
+        dataset_builder_sha256: str,
+        graphiti_native_sha256: str,
+        runtime_factory_sha256: str,
+    ) -&gt; tuple[dict[str, Any], dict[str, Any], str]:
+        artifact, payload = _sealed_envelope(
+            _load_json(path, "native_freeze_invalid"), "native_freeze_invalid"
+        )
+        native = _mapping(payload.get("native_construction"), "native_freeze_invalid")
+        critical = _mapping(payload.get("critical_source_sha256"), "native_freeze_invalid")
+        common = _mapping(payload.get("common_evaluation_policy"), "native_freeze_invalid")
+        if (
+            payload.get("schema_version")
+            != "membind.paper-eval-v3.native-baseline-v2-freeze.v1"
+            or payload.get("status") != "PASS"
+            or payload.get("baseline_id") != "native-graphiti-u0-reader-v2"
+            or native.get("history_id") != EXPECTED_S1_HISTORY_ID
+            or native.get("episode_count") != EXPECTED_EPISODE_COUNT
+            or common.get("dataset_sha256") != dataset_sha256
+            or critical.get("dataset_builder") != dataset_builder_sha256
+            or critical.get("direct_add_episode") != graphiti_native_sha256
+            or critical.get("u0_runtime") != runtime_factory_sha256
+        ):
+&gt;           raise _fail("native_freeze_binding_mismatch")
+E           paper_eval.s5_a0_production_identity_materializer.S5A0MaterializationError: native_freeze_binding_mismatch
+
+src/paper_eval/s5_a0_production_identity_materializer.py:204: S5A0MaterializationError</failure></testcase><testcase classname="tests.test_s5_a0_production_identity_materializer" name="test_any_materialized_input_drift_fails_closed[runtime_factory]" time="0.172"><failure message="paper_eval.s5_a0_production_identity_materializer.S5A0MaterializationError: native_freeze_binding_mismatch">tmp_path = PosixPath('/tmp/pytest-of-ly/pytest-463/test_any_materialized_input_dr7')
+field = 'runtime_factory'
+
+    @pytest.mark.parametrize(
+        "field",
+        [
+            "native_baseline_freeze",
+            "current_stage_pointer",
+            "graphiti_semantic_identity",
+            "dataset",
+            "frozen_split",
+            "dataset_builder",
+            "graphiti_native",
+            "runtime_factory",
+            "scheduler",
+            "scheduler_test",
+            "durable_store",
+            "durable_store_test",
+        ],
+    )
+    def test_any_materialized_input_drift_fails_closed(
+        tmp_path: Path, field: str
+    ) -&gt; None:
+        paths = _copy_inputs(tmp_path)
+&gt;       bundle = _materialize(paths)
+                 ^^^^^^^^^^^^^^^^^^^
+
+tests/test_s5_a0_production_identity_materializer.py:206: 
+_ _ _ _ _ _ _ _ _ _ _ _ _ _ _ _ _ _ _ _ _ _ _ _ _ _ _ _ _ _ _ _ _ _ _ _ _ _ _ _ 
+tests/test_s5_a0_production_identity_materializer.py:57: in _materialize
+    return materialize_s5_a0_production_identity(
+src/paper_eval/s5_a0_production_identity_materializer.py:482: in materialize_s5_a0_production_identity
+    return _build_bundle(paths=paths, git_commit=git_commit, run_id=run_id)
+           ^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^
+src/paper_eval/s5_a0_production_identity_materializer.py:333: in _build_bundle
+    freeze, native, freeze_file_sha = _verify_freeze(
+_ _ _ _ _ _ _ _ _ _ _ _ _ _ _ _ _ _ _ _ _ _ _ _ _ _ _ _ _ _ _ _ _ _ _ _ _ _ _ _ 
+
+path = PosixPath('/tmp/pytest-of-ly/pytest-463/test_any_materialized_input_dr7/paper-eval-v3/artifacts/paper_eval/native/NATIVE_BASELINE_V2_FREEZE.json')
+dataset_sha256 = 'd6f21ea9d60a0d56f34a05b609c79c88a451d2ae03597821ea3d5a9678c3a442'
+dataset_builder_sha256 = '0dc97963f4e6143b555853d6061967b6e7606d36e0cba66acc70e27ba0a4d163'
+graphiti_native_sha256 = '2be18e4d39d5bbf792b9d23b002d0d0186af737b070d8b38901cc2a55b00bfda'
+runtime_factory_sha256 = '4d6bad43289d7cbf9557aed05571601bdfa560855ed1403b0e4a72770ae57ca1'
+
+    def _verify_freeze(
+        path: Path,
+        *,
+        dataset_sha256: str,
+        dataset_builder_sha256: str,
+        graphiti_native_sha256: str,
+        runtime_factory_sha256: str,
+    ) -&gt; tuple[dict[str, Any], dict[str, Any], str]:
+        artifact, payload = _sealed_envelope(
+            _load_json(path, "native_freeze_invalid"), "native_freeze_invalid"
+        )
+        native = _mapping(payload.get("native_construction"), "native_freeze_invalid")
+        critical = _mapping(payload.get("critical_source_sha256"), "native_freeze_invalid")
+        common = _mapping(payload.get("common_evaluation_policy"), "native_freeze_invalid")
+        if (
+            payload.get("schema_version")
+            != "membind.paper-eval-v3.native-baseline-v2-freeze.v1"
+            or payload.get("status") != "PASS"
+            or payload.get("baseline_id") != "native-graphiti-u0-reader-v2"
+            or native.get("history_id") != EXPECTED_S1_HISTORY_ID
+            or native.get("episode_count") != EXPECTED_EPISODE_COUNT
+            or common.get("dataset_sha256") != dataset_sha256
+            or critical.get("dataset_builder") != dataset_builder_sha256
+            or critical.get("direct_add_episode") != graphiti_native_sha256
+            or critical.get("u0_runtime") != runtime_factory_sha256
+        ):
+&gt;           raise _fail("native_freeze_binding_mismatch")
+E           paper_eval.s5_a0_production_identity_materializer.S5A0MaterializationError: native_freeze_binding_mismatch
+
+src/paper_eval/s5_a0_production_identity_materializer.py:204: S5A0MaterializationError</failure></testcase><testcase classname="tests.test_s5_a0_production_identity_materializer" name="test_any_materialized_input_drift_fails_closed[scheduler]" time="0.173"><failure message="paper_eval.s5_a0_production_identity_materializer.S5A0MaterializationError: native_freeze_binding_mismatch">tmp_path = PosixPath('/tmp/pytest-of-ly/pytest-463/test_any_materialized_input_dr8')
+field = 'scheduler'
+
+    @pytest.mark.parametrize(
+        "field",
+        [
+            "native_baseline_freeze",
+            "current_stage_pointer",
+            "graphiti_semantic_identity",
+            "dataset",
+            "frozen_split",
+            "dataset_builder",
+            "graphiti_native",
+            "runtime_factory",
+            "scheduler",
+            "scheduler_test",
+            "durable_store",
+            "durable_store_test",
+        ],
+    )
+    def test_any_materialized_input_drift_fails_closed(
+        tmp_path: Path, field: str
+    ) -&gt; None:
+        paths = _copy_inputs(tmp_path)
+&gt;       bundle = _materialize(paths)
+                 ^^^^^^^^^^^^^^^^^^^
+
+tests/test_s5_a0_production_identity_materializer.py:206: 
+_ _ _ _ _ _ _ _ _ _ _ _ _ _ _ _ _ _ _ _ _ _ _ _ _ _ _ _ _ _ _ _ _ _ _ _ _ _ _ _ 
+tests/test_s5_a0_production_identity_materializer.py:57: in _materialize
+    return materialize_s5_a0_production_identity(
+src/paper_eval/s5_a0_production_identity_materializer.py:482: in materialize_s5_a0_production_identity
+    return _build_bundle(paths=paths, git_commit=git_commit, run_id=run_id)
+           ^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^
+src/paper_eval/s5_a0_production_identity_materializer.py:333: in _build_bundle
+    freeze, native, freeze_file_sha = _verify_freeze(
+_ _ _ _ _ _ _ _ _ _ _ _ _ _ _ _ _ _ _ _ _ _ _ _ _ _ _ _ _ _ _ _ _ _ _ _ _ _ _ _ 
+
+path = PosixPath('/tmp/pytest-of-ly/pytest-463/test_any_materialized_input_dr8/paper-eval-v3/artifacts/paper_eval/native/NATIVE_BASELINE_V2_FREEZE.json')
+dataset_sha256 = 'd6f21ea9d60a0d56f34a05b609c79c88a451d2ae03597821ea3d5a9678c3a442'
+dataset_builder_sha256 = '0dc97963f4e6143b555853d6061967b6e7606d36e0cba66acc70e27ba0a4d163'
+graphiti_native_sha256 = '2be18e4d39d5bbf792b9d23b002d0d0186af737b070d8b38901cc2a55b00bfda'
+runtime_factory_sha256 = '4d6bad43289d7cbf9557aed05571601bdfa560855ed1403b0e4a72770ae57ca1'
+
+    def _verify_freeze(
+        path: Path,
+        *,
+        dataset_sha256: str,
+        dataset_builder_sha256: str,
+        graphiti_native_sha256: str,
+        runtime_factory_sha256: str,
+    ) -&gt; tuple[dict[str, Any], dict[str, Any], str]:
+        artifact, payload = _sealed_envelope(
+            _load_json(path, "native_freeze_invalid"), "native_freeze_invalid"
+        )
+        native = _mapping(payload.get("native_construction"), "native_freeze_invalid")
+        critical = _mapping(payload.get("critical_source_sha256"), "native_freeze_invalid")
+        common = _mapping(payload.get("common_evaluation_policy"), "native_freeze_invalid")
+        if (
+            payload.get("schema_version")
+            != "membind.paper-eval-v3.native-baseline-v2-freeze.v1"
+            or payload.get("status") != "PASS"
+            or payload.get("baseline_id") != "native-graphiti-u0-reader-v2"
+            or native.get("history_id") != EXPECTED_S1_HISTORY_ID
+            or native.get("episode_count") != EXPECTED_EPISODE_COUNT
+            or common.get("dataset_sha256") != dataset_sha256
+            or critical.get("dataset_builder") != dataset_builder_sha256
+            or critical.get("direct_add_episode") != graphiti_native_sha256
+            or critical.get("u0_runtime") != runtime_factory_sha256
+        ):
+&gt;           raise _fail("native_freeze_binding_mismatch")
+E           paper_eval.s5_a0_production_identity_materializer.S5A0MaterializationError: native_freeze_binding_mismatch
+
+src/paper_eval/s5_a0_production_identity_materializer.py:204: S5A0MaterializationError</failure></testcase><testcase classname="tests.test_s5_a0_production_identity_materializer" name="test_any_materialized_input_drift_fails_closed[scheduler_test]" time="0.172"><failure message="paper_eval.s5_a0_production_identity_materializer.S5A0MaterializationError: native_freeze_binding_mismatch">tmp_path = PosixPath('/tmp/pytest-of-ly/pytest-463/test_any_materialized_input_dr9')
+field = 'scheduler_test'
+
+    @pytest.mark.parametrize(
+        "field",
+        [
+            "native_baseline_freeze",
+            "current_stage_pointer",
+            "graphiti_semantic_identity",
+            "dataset",
+            "frozen_split",
+            "dataset_builder",
+            "graphiti_native",
+            "runtime_factory",
+            "scheduler",
+            "scheduler_test",
+            "durable_store",
+            "durable_store_test",
+        ],
+    )
+    def test_any_materialized_input_drift_fails_closed(
+        tmp_path: Path, field: str
+    ) -&gt; None:
+        paths = _copy_inputs(tmp_path)
+&gt;       bundle = _materialize(paths)
+                 ^^^^^^^^^^^^^^^^^^^
+
+tests/test_s5_a0_production_identity_materializer.py:206: 
+_ _ _ _ _ _ _ _ _ _ _ _ _ _ _ _ _ _ _ _ _ _ _ _ _ _ _ _ _ _ _ _ _ _ _ _ _ _ _ _ 
+tests/test_s5_a0_production_identity_materializer.py:57: in _materialize
+    return materialize_s5_a0_production_identity(
+src/paper_eval/s5_a0_production_identity_materializer.py:482: in materialize_s5_a0_production_identity
+    return _build_bundle(paths=paths, git_commit=git_commit, run_id=run_id)
+           ^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^
+src/paper_eval/s5_a0_production_identity_materializer.py:333: in _build_bundle
+    freeze, native, freeze_file_sha = _verify_freeze(
+_ _ _ _ _ _ _ _ _ _ _ _ _ _ _ _ _ _ _ _ _ _ _ _ _ _ _ _ _ _ _ _ _ _ _ _ _ _ _ _ 
+
+path = PosixPath('/tmp/pytest-of-ly/pytest-463/test_any_materialized_input_dr9/paper-eval-v3/artifacts/paper_eval/native/NATIVE_BASELINE_V2_FREEZE.json')
+dataset_sha256 = 'd6f21ea9d60a0d56f34a05b609c79c88a451d2ae03597821ea3d5a9678c3a442'
+dataset_builder_sha256 = '0dc97963f4e6143b555853d6061967b6e7606d36e0cba66acc70e27ba0a4d163'
+graphiti_native_sha256 = '2be18e4d39d5bbf792b9d23b002d0d0186af737b070d8b38901cc2a55b00bfda'
+runtime_factory_sha256 = '4d6bad43289d7cbf9557aed05571601bdfa560855ed1403b0e4a72770ae57ca1'
+
+    def _verify_freeze(
+        path: Path,
+        *,
+        dataset_sha256: str,
+        dataset_builder_sha256: str,
+        graphiti_native_sha256: str,
+        runtime_factory_sha256: str,
+    ) -&gt; tuple[dict[str, Any], dict[str, Any], str]:
+        artifact, payload = _sealed_envelope(
+            _load_json(path, "native_freeze_invalid"), "native_freeze_invalid"
+        )
+        native = _mapping(payload.get("native_construction"), "native_freeze_invalid")
+        critical = _mapping(payload.get("critical_source_sha256"), "native_freeze_invalid")
+        common = _mapping(payload.get("common_evaluation_policy"), "native_freeze_invalid")
+        if (
+            payload.get("schema_version")
+            != "membind.paper-eval-v3.native-baseline-v2-freeze.v1"
+            or payload.get("status") != "PASS"
+            or payload.get("baseline_id") != "native-graphiti-u0-reader-v2"
+            or native.get("history_id") != EXPECTED_S1_HISTORY_ID
+            or native.get("episode_count") != EXPECTED_EPISODE_COUNT
+            or common.get("dataset_sha256") != dataset_sha256
+            or critical.get("dataset_builder") != dataset_builder_sha256
+            or critical.get("direct_add_episode") != graphiti_native_sha256
+            or critical.get("u0_runtime") != runtime_factory_sha256
+        ):
+&gt;           raise _fail("native_freeze_binding_mismatch")
+E           paper_eval.s5_a0_production_identity_materializer.S5A0MaterializationError: native_freeze_binding_mismatch
+
+src/paper_eval/s5_a0_production_identity_materializer.py:204: S5A0MaterializationError</failure></testcase><testcase classname="tests.test_s5_a0_production_identity_materializer" name="test_any_materialized_input_drift_fails_closed[durable_store]" time="0.172"><failure message="paper_eval.s5_a0_production_identity_materializer.S5A0MaterializationError: native_freeze_binding_mismatch">tmp_path = PosixPath('/tmp/pytest-of-ly/pytest-463/test_any_materialized_input_dr10')
+field = 'durable_store'
+
+    @pytest.mark.parametrize(
+        "field",
+        [
+            "native_baseline_freeze",
+            "current_stage_pointer",
+            "graphiti_semantic_identity",
+            "dataset",
+            "frozen_split",
+            "dataset_builder",
+            "graphiti_native",
+            "runtime_factory",
+            "scheduler",
+            "scheduler_test",
+            "durable_store",
+            "durable_store_test",
+        ],
+    )
+    def test_any_materialized_input_drift_fails_closed(
+        tmp_path: Path, field: str
+    ) -&gt; None:
+        paths = _copy_inputs(tmp_path)
+&gt;       bundle = _materialize(paths)
+                 ^^^^^^^^^^^^^^^^^^^
+
+tests/test_s5_a0_production_identity_materializer.py:206: 
+_ _ _ _ _ _ _ _ _ _ _ _ _ _ _ _ _ _ _ _ _ _ _ _ _ _ _ _ _ _ _ _ _ _ _ _ _ _ _ _ 
+tests/test_s5_a0_production_identity_materializer.py:57: in _materialize
+    return materialize_s5_a0_production_identity(
+src/paper_eval/s5_a0_production_identity_materializer.py:482: in materialize_s5_a0_production_identity
+    return _build_bundle(paths=paths, git_commit=git_commit, run_id=run_id)
+           ^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^
+src/paper_eval/s5_a0_production_identity_materializer.py:333: in _build_bundle
+    freeze, native, freeze_file_sha = _verify_freeze(
+_ _ _ _ _ _ _ _ _ _ _ _ _ _ _ _ _ _ _ _ _ _ _ _ _ _ _ _ _ _ _ _ _ _ _ _ _ _ _ _ 
+
+path = PosixPath('/tmp/pytest-of-ly/pytest-463/test_any_materialized_input_dr10/paper-eval-v3/artifacts/paper_eval/native/NATIVE_BASELINE_V2_FREEZE.json')
+dataset_sha256 = 'd6f21ea9d60a0d56f34a05b609c79c88a451d2ae03597821ea3d5a9678c3a442'
+dataset_builder_sha256 = '0dc97963f4e6143b555853d6061967b6e7606d36e0cba66acc70e27ba0a4d163'
+graphiti_native_sha256 = '2be18e4d39d5bbf792b9d23b002d0d0186af737b070d8b38901cc2a55b00bfda'
+runtime_factory_sha256 = '4d6bad43289d7cbf9557aed05571601bdfa560855ed1403b0e4a72770ae57ca1'
+
+    def _verify_freeze(
+        path: Path,
+        *,
+        dataset_sha256: str,
+        dataset_builder_sha256: str,
+        graphiti_native_sha256: str,
+        runtime_factory_sha256: str,
+    ) -&gt; tuple[dict[str, Any], dict[str, Any], str]:
+        artifact, payload = _sealed_envelope(
+            _load_json(path, "native_freeze_invalid"), "native_freeze_invalid"
+        )
+        native = _mapping(payload.get("native_construction"), "native_freeze_invalid")
+        critical = _mapping(payload.get("critical_source_sha256"), "native_freeze_invalid")
+        common = _mapping(payload.get("common_evaluation_policy"), "native_freeze_invalid")
+        if (
+            payload.get("schema_version")
+            != "membind.paper-eval-v3.native-baseline-v2-freeze.v1"
+            or payload.get("status") != "PASS"
+            or payload.get("baseline_id") != "native-graphiti-u0-reader-v2"
+            or native.get("history_id") != EXPECTED_S1_HISTORY_ID
+            or native.get("episode_count") != EXPECTED_EPISODE_COUNT
+            or common.get("dataset_sha256") != dataset_sha256
+            or critical.get("dataset_builder") != dataset_builder_sha256
+            or critical.get("direct_add_episode") != graphiti_native_sha256
+            or critical.get("u0_runtime") != runtime_factory_sha256
+        ):
+&gt;           raise _fail("native_freeze_binding_mismatch")
+E           paper_eval.s5_a0_production_identity_materializer.S5A0MaterializationError: native_freeze_binding_mismatch
+
+src/paper_eval/s5_a0_production_identity_materializer.py:204: S5A0MaterializationError</failure></testcase><testcase classname="tests.test_s5_a0_production_identity_materializer" name="test_any_materialized_input_drift_fails_closed[durable_store_test]" time="0.171"><failure message="paper_eval.s5_a0_production_identity_materializer.S5A0MaterializationError: native_freeze_binding_mismatch">tmp_path = PosixPath('/tmp/pytest-of-ly/pytest-463/test_any_materialized_input_dr11')
+field = 'durable_store_test'
+
+    @pytest.mark.parametrize(
+        "field",
+        [
+            "native_baseline_freeze",
+            "current_stage_pointer",
+            "graphiti_semantic_identity",
+            "dataset",
+            "frozen_split",
+            "dataset_builder",
+            "graphiti_native",
+            "runtime_factory",
+            "scheduler",
+            "scheduler_test",
+            "durable_store",
+            "durable_store_test",
+        ],
+    )
+    def test_any_materialized_input_drift_fails_closed(
+        tmp_path: Path, field: str
+    ) -&gt; None:
+        paths = _copy_inputs(tmp_path)
+&gt;       bundle = _materialize(paths)
+                 ^^^^^^^^^^^^^^^^^^^
+
+tests/test_s5_a0_production_identity_materializer.py:206: 
+_ _ _ _ _ _ _ _ _ _ _ _ _ _ _ _ _ _ _ _ _ _ _ _ _ _ _ _ _ _ _ _ _ _ _ _ _ _ _ _ 
+tests/test_s5_a0_production_identity_materializer.py:57: in _materialize
+    return materialize_s5_a0_production_identity(
+src/paper_eval/s5_a0_production_identity_materializer.py:482: in materialize_s5_a0_production_identity
+    return _build_bundle(paths=paths, git_commit=git_commit, run_id=run_id)
+           ^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^
+src/paper_eval/s5_a0_production_identity_materializer.py:333: in _build_bundle
+    freeze, native, freeze_file_sha = _verify_freeze(
+_ _ _ _ _ _ _ _ _ _ _ _ _ _ _ _ _ _ _ _ _ _ _ _ _ _ _ _ _ _ _ _ _ _ _ _ _ _ _ _ 
+
+path = PosixPath('/tmp/pytest-of-ly/pytest-463/test_any_materialized_input_dr11/paper-eval-v3/artifacts/paper_eval/native/NATIVE_BASELINE_V2_FREEZE.json')
+dataset_sha256 = 'd6f21ea9d60a0d56f34a05b609c79c88a451d2ae03597821ea3d5a9678c3a442'
+dataset_builder_sha256 = '0dc97963f4e6143b555853d6061967b6e7606d36e0cba66acc70e27ba0a4d163'
+graphiti_native_sha256 = '2be18e4d39d5bbf792b9d23b002d0d0186af737b070d8b38901cc2a55b00bfda'
+runtime_factory_sha256 = '4d6bad43289d7cbf9557aed05571601bdfa560855ed1403b0e4a72770ae57ca1'
+
+    def _verify_freeze(
+        path: Path,
+        *,
+        dataset_sha256: str,
+        dataset_builder_sha256: str,
+        graphiti_native_sha256: str,
+        runtime_factory_sha256: str,
+    ) -&gt; tuple[dict[str, Any], dict[str, Any], str]:
+        artifact, payload = _sealed_envelope(
+            _load_json(path, "native_freeze_invalid"), "native_freeze_invalid"
+        )
+        native = _mapping(payload.get("native_construction"), "native_freeze_invalid")
+        critical = _mapping(payload.get("critical_source_sha256"), "native_freeze_invalid")
+        common = _mapping(payload.get("common_evaluation_policy"), "native_freeze_invalid")
+        if (
+            payload.get("schema_version")
+            != "membind.paper-eval-v3.native-baseline-v2-freeze.v1"
+            or payload.get("status") != "PASS"
+            or payload.get("baseline_id") != "native-graphiti-u0-reader-v2"
+            or native.get("history_id") != EXPECTED_S1_HISTORY_ID
+            or native.get("episode_count") != EXPECTED_EPISODE_COUNT
+            or common.get("dataset_sha256") != dataset_sha256
+            or critical.get("dataset_builder") != dataset_builder_sha256
+            or critical.get("direct_add_episode") != graphiti_native_sha256
+            or critical.get("u0_runtime") != runtime_factory_sha256
+        ):
+&gt;           raise _fail("native_freeze_binding_mismatch")
+E           paper_eval.s5_a0_production_identity_materializer.S5A0MaterializationError: native_freeze_binding_mismatch
+
+src/paper_eval/s5_a0_production_identity_materializer.py:204: S5A0MaterializationError</failure></testcase><testcase classname="tests.test_s5_a0_production_identity_materializer" name="test_missing_input_and_tampered_artifact_fail_closed" time="0.301"><failure message="paper_eval.s5_a0_production_identity_materializer.S5A0MaterializationError: native_freeze_binding_mismatch">tmp_path = PosixPath('/tmp/pytest-of-ly/pytest-463/test_missing_input_and_tampere0')
+
+    def test_missing_input_and_tampered_artifact_fail_closed(tmp_path: Path) -&gt; None:
+        paths = _copy_inputs(tmp_path)
+        paths.dataset_builder.unlink()
+        with pytest.raises(S5A0MaterializationError, match="missing"):
+            _materialize(paths)
+    
+&gt;       bundle = _materialize()
+                 ^^^^^^^^^^^^^^
+
+tests/test_s5_a0_production_identity_materializer.py:225: 
+_ _ _ _ _ _ _ _ _ _ _ _ _ _ _ _ _ _ _ _ _ _ _ _ _ _ _ _ _ _ _ _ _ _ _ _ _ _ _ _ 
+tests/test_s5_a0_production_identity_materializer.py:57: in _materialize
+    return materialize_s5_a0_production_identity(
+src/paper_eval/s5_a0_production_identity_materializer.py:482: in materialize_s5_a0_production_identity
+    return _build_bundle(paths=paths, git_commit=git_commit, run_id=run_id)
+           ^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^
+src/paper_eval/s5_a0_production_identity_materializer.py:333: in _build_bundle
+    freeze, native, freeze_file_sha = _verify_freeze(
+_ _ _ _ _ _ _ _ _ _ _ _ _ _ _ _ _ _ _ _ _ _ _ _ _ _ _ _ _ _ _ _ _ _ _ _ _ _ _ _ 
+
+path = PosixPath('/data/predator/ly/MemBind/paper-eval-v3/artifacts/paper_eval/native/NATIVE_BASELINE_V2_FREEZE.json')
+dataset_sha256 = 'd6f21ea9d60a0d56f34a05b609c79c88a451d2ae03597821ea3d5a9678c3a442'
+dataset_builder_sha256 = '0dc97963f4e6143b555853d6061967b6e7606d36e0cba66acc70e27ba0a4d163'
+graphiti_native_sha256 = '2be18e4d39d5bbf792b9d23b002d0d0186af737b070d8b38901cc2a55b00bfda'
+runtime_factory_sha256 = '4d6bad43289d7cbf9557aed05571601bdfa560855ed1403b0e4a72770ae57ca1'
+
+    def _verify_freeze(
+        path: Path,
+        *,
+        dataset_sha256: str,
+        dataset_builder_sha256: str,
+        graphiti_native_sha256: str,
+        runtime_factory_sha256: str,
+    ) -&gt; tuple[dict[str, Any], dict[str, Any], str]:
+        artifact, payload = _sealed_envelope(
+            _load_json(path, "native_freeze_invalid"), "native_freeze_invalid"
+        )
+        native = _mapping(payload.get("native_construction"), "native_freeze_invalid")
+        critical = _mapping(payload.get("critical_source_sha256"), "native_freeze_invalid")
+        common = _mapping(payload.get("common_evaluation_policy"), "native_freeze_invalid")
+        if (
+            payload.get("schema_version")
+            != "membind.paper-eval-v3.native-baseline-v2-freeze.v1"
+            or payload.get("status") != "PASS"
+            or payload.get("baseline_id") != "native-graphiti-u0-reader-v2"
+            or native.get("history_id") != EXPECTED_S1_HISTORY_ID
+            or native.get("episode_count") != EXPECTED_EPISODE_COUNT
+            or common.get("dataset_sha256") != dataset_sha256
+            or critical.get("dataset_builder") != dataset_builder_sha256
+            or critical.get("direct_add_episode") != graphiti_native_sha256
+            or critical.get("u0_runtime") != runtime_factory_sha256
+        ):
+&gt;           raise _fail("native_freeze_binding_mismatch")
+E           paper_eval.s5_a0_production_identity_materializer.S5A0MaterializationError: native_freeze_binding_mismatch
+
+src/paper_eval/s5_a0_production_identity_materializer.py:204: S5A0MaterializationError</failure></testcase><testcase classname="tests.test_s5_a0_production_identity_materializer" name="test_three_artifacts_are_written_exclusively_and_round_trip" time="0.168"><failure message="paper_eval.s5_a0_production_identity_materializer.S5A0MaterializationError: native_freeze_binding_mismatch">tmp_path = PosixPath('/tmp/pytest-of-ly/pytest-463/test_three_artifacts_are_writt0')
+
+    def test_three_artifacts_are_written_exclusively_and_round_trip(
+        tmp_path: Path,
+    ) -&gt; None:
+&gt;       bundle = _materialize()
+                 ^^^^^^^^^^^^^^
+
+tests/test_s5_a0_production_identity_materializer.py:240: 
+_ _ _ _ _ _ _ _ _ _ _ _ _ _ _ _ _ _ _ _ _ _ _ _ _ _ _ _ _ _ _ _ _ _ _ _ _ _ _ _ 
+tests/test_s5_a0_production_identity_materializer.py:57: in _materialize
+    return materialize_s5_a0_production_identity(
+src/paper_eval/s5_a0_production_identity_materializer.py:482: in materialize_s5_a0_production_identity
+    return _build_bundle(paths=paths, git_commit=git_commit, run_id=run_id)
+           ^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^
+src/paper_eval/s5_a0_production_identity_materializer.py:333: in _build_bundle
+    freeze, native, freeze_file_sha = _verify_freeze(
+_ _ _ _ _ _ _ _ _ _ _ _ _ _ _ _ _ _ _ _ _ _ _ _ _ _ _ _ _ _ _ _ _ _ _ _ _ _ _ _ 
+
+path = PosixPath('/data/predator/ly/MemBind/paper-eval-v3/artifacts/paper_eval/native/NATIVE_BASELINE_V2_FREEZE.json')
+dataset_sha256 = 'd6f21ea9d60a0d56f34a05b609c79c88a451d2ae03597821ea3d5a9678c3a442'
+dataset_builder_sha256 = '0dc97963f4e6143b555853d6061967b6e7606d36e0cba66acc70e27ba0a4d163'
+graphiti_native_sha256 = '2be18e4d39d5bbf792b9d23b002d0d0186af737b070d8b38901cc2a55b00bfda'
+runtime_factory_sha256 = '4d6bad43289d7cbf9557aed05571601bdfa560855ed1403b0e4a72770ae57ca1'
+
+    def _verify_freeze(
+        path: Path,
+        *,
+        dataset_sha256: str,
+        dataset_builder_sha256: str,
+        graphiti_native_sha256: str,
+        runtime_factory_sha256: str,
+    ) -&gt; tuple[dict[str, Any], dict[str, Any], str]:
+        artifact, payload = _sealed_envelope(
+            _load_json(path, "native_freeze_invalid"), "native_freeze_invalid"
+        )
+        native = _mapping(payload.get("native_construction"), "native_freeze_invalid")
+        critical = _mapping(payload.get("critical_source_sha256"), "native_freeze_invalid")
+        common = _mapping(payload.get("common_evaluation_policy"), "native_freeze_invalid")
+        if (
+            payload.get("schema_version")
+            != "membind.paper-eval-v3.native-baseline-v2-freeze.v1"
+            or payload.get("status") != "PASS"
+            or payload.get("baseline_id") != "native-graphiti-u0-reader-v2"
+            or native.get("history_id") != EXPECTED_S1_HISTORY_ID
+            or native.get("episode_count") != EXPECTED_EPISODE_COUNT
+            or common.get("dataset_sha256") != dataset_sha256
+            or critical.get("dataset_builder") != dataset_builder_sha256
+            or critical.get("direct_add_episode") != graphiti_native_sha256
+            or critical.get("u0_runtime") != runtime_factory_sha256
+        ):
+&gt;           raise _fail("native_freeze_binding_mismatch")
+E           paper_eval.s5_a0_production_identity_materializer.S5A0MaterializationError: native_freeze_binding_mismatch
+
+src/paper_eval/s5_a0_production_identity_materializer.py:204: S5A0MaterializationError</failure></testcase><testcase classname="tests.test_s5_a0_progress" name="test_not_started_projection_is_stable_and_has_no_resume_authority" time="0.000" /><testcase classname="tests.test_s5_a0_progress" name="test_controller_failure_reports_only_sanitized_checkpoint_state" time="0.034" /><testcase classname="tests.test_s5_a0_progress" name="test_complete_chain_reports_counts_without_execution_identity" time="1.493" /><testcase classname="tests.test_s5_a0_progress" name="test_corrupt_evidence_is_classified_without_leaking_parser_details" time="0.001" /><testcase classname="tests.test_s5_a0_real_qualification_integration" name="test_real_materialization_qualifies_with_semantic_artifact_digests" time="0.125"><failure message="paper_eval.s5_a0_production_identity_materializer.S5A0MaterializationError: native_freeze_binding_mismatch">tmp_path = PosixPath('/tmp/pytest-of-ly/pytest-463/test_real_materialization_qual0')
+
+    def test_real_materialization_qualifies_with_semantic_artifact_digests(
+        tmp_path: Path,
+    ) -&gt; None:
+        materialization_paths = _paths()
+&gt;       bundle = _materialize(materialization_paths)
+                 ^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^
+
+tests/test_s5_a0_real_qualification_integration.py:44: 
+_ _ _ _ _ _ _ _ _ _ _ _ _ _ _ _ _ _ _ _ _ _ _ _ _ _ _ _ _ _ _ _ _ _ _ _ _ _ _ _ 
+tests/test_s5_a0_production_identity_materializer.py:57: in _materialize
+    return materialize_s5_a0_production_identity(
+src/paper_eval/s5_a0_production_identity_materializer.py:482: in materialize_s5_a0_production_identity
+    return _build_bundle(paths=paths, git_commit=git_commit, run_id=run_id)
+           ^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^
+src/paper_eval/s5_a0_production_identity_materializer.py:333: in _build_bundle
+    freeze, native, freeze_file_sha = _verify_freeze(
+_ _ _ _ _ _ _ _ _ _ _ _ _ _ _ _ _ _ _ _ _ _ _ _ _ _ _ _ _ _ _ _ _ _ _ _ _ _ _ _ 
+
+path = PosixPath('/data/predator/ly/MemBind/paper-eval-v3/artifacts/paper_eval/native/NATIVE_BASELINE_V2_FREEZE.json')
+dataset_sha256 = 'd6f21ea9d60a0d56f34a05b609c79c88a451d2ae03597821ea3d5a9678c3a442'
+dataset_builder_sha256 = '0dc97963f4e6143b555853d6061967b6e7606d36e0cba66acc70e27ba0a4d163'
+graphiti_native_sha256 = '2be18e4d39d5bbf792b9d23b002d0d0186af737b070d8b38901cc2a55b00bfda'
+runtime_factory_sha256 = '4d6bad43289d7cbf9557aed05571601bdfa560855ed1403b0e4a72770ae57ca1'
+
+    def _verify_freeze(
+        path: Path,
+        *,
+        dataset_sha256: str,
+        dataset_builder_sha256: str,
+        graphiti_native_sha256: str,
+        runtime_factory_sha256: str,
+    ) -&gt; tuple[dict[str, Any], dict[str, Any], str]:
+        artifact, payload = _sealed_envelope(
+            _load_json(path, "native_freeze_invalid"), "native_freeze_invalid"
+        )
+        native = _mapping(payload.get("native_construction"), "native_freeze_invalid")
+        critical = _mapping(payload.get("critical_source_sha256"), "native_freeze_invalid")
+        common = _mapping(payload.get("common_evaluation_policy"), "native_freeze_invalid")
+        if (
+            payload.get("schema_version")
+            != "membind.paper-eval-v3.native-baseline-v2-freeze.v1"
+            or payload.get("status") != "PASS"
+            or payload.get("baseline_id") != "native-graphiti-u0-reader-v2"
+            or native.get("history_id") != EXPECTED_S1_HISTORY_ID
+            or native.get("episode_count") != EXPECTED_EPISODE_COUNT
+            or common.get("dataset_sha256") != dataset_sha256
+            or critical.get("dataset_builder") != dataset_builder_sha256
+            or critical.get("direct_add_episode") != graphiti_native_sha256
+            or critical.get("u0_runtime") != runtime_factory_sha256
+        ):
+&gt;           raise _fail("native_freeze_binding_mismatch")
+E           paper_eval.s5_a0_production_identity_materializer.S5A0MaterializationError: native_freeze_binding_mismatch
+
+src/paper_eval/s5_a0_production_identity_materializer.py:204: S5A0MaterializationError</failure></testcase><testcase classname="tests.test_s5_a0_result_finalizer" name="test_complete_cross_bound_chain_is_the_only_path_to_scientific_pass" time="1.517" /><testcase classname="tests.test_s5_a0_result_finalizer" name="test_missing_observation_never_defaults_direct_invariants_to_zero" time="1.496" /><testcase classname="tests.test_s5_a0_result_finalizer" name="test_observed_direct_invariant_violation_blocks_a0_pass" time="1.503" /><testcase classname="tests.test_s5_a0_result_finalizer" name="test_authority_must_bind_the_executed_result_verifier_source" time="0.011" /><testcase classname="tests.test_s5_a0_result_finalizer" name="test_native_or_observation_tampering_fails_before_result_write" time="1.506" /><testcase classname="tests.test_s5_a0_result_finalizer" name="test_final_result_is_exclusive_and_standalone_tampering_is_rejected" time="1.521" /><testcase classname="tests.test_s5_a0_tmux_launcher" name="test_launcher_uses_verified_authority_and_explicit_detached_command" time="0.000" /><testcase classname="tests.test_s5_a0_tmux_launcher" name="test_launcher_required_options_match_final_controller_parser" time="0.000" /><testcase classname="tests.test_s5_a0_tmux_launcher" name="test_launcher_derives_identity_and_starts_exactly_one_detached_session" time="0.013" /><testcase classname="tests.test_s5_a0_tmux_launcher" name="test_launcher_rejects_every_existing_single_use_output[authority_consumption.json]" time="0.008" /><testcase classname="tests.test_s5_a0_tmux_launcher" name="test_launcher_rejects_every_existing_single_use_output[controller]" time="0.008" /><testcase classname="tests.test_s5_a0_tmux_launcher" name="test_launcher_rejects_every_existing_single_use_output[attempt]" time="0.007" /><testcase classname="tests.test_s5_a0_tmux_launcher" name="test_launcher_rejects_every_existing_single_use_output[attempt/result.json]" time="0.007" /><testcase classname="tests.test_s5_a0_tmux_launcher" name="test_launcher_rejects_every_existing_single_use_output[post_observation.json]" time="0.007" /><testcase classname="tests.test_s5_a0_tmux_launcher" name="test_launcher_rejects_every_existing_single_use_output[S5_A0_RESULT.json]" time="0.008" /><testcase classname="tests.test_s5_a0_tmux_launcher" name="test_launcher_rejects_every_existing_single_use_output[postprocess/checkpoint.json]" time="0.007" /><testcase classname="tests.test_s5_a0_tmux_launcher" name="test_launcher_rejects_existing_tmux_session" time="0.009" /><testcase classname="tests.test_s5_a0_tmux_launcher" name="test_launcher_rejects_invalid_verified_identity[FAKE_RUN_ID-../escape]" time="0.008" /><testcase classname="tests.test_s5_a0_tmux_launcher" name="test_launcher_rejects_invalid_verified_identity[FAKE_RUN_ID-s5-p-star-20260816-001]" time="0.007" /><testcase classname="tests.test_s5_a0_tmux_launcher" name="test_launcher_rejects_invalid_verified_identity[FAKE_NAMESPACE-pev3-wrong-run]" time="0.007" /><testcase classname="tests.test_s5_a0_tmux_launcher" name="test_launcher_propagates_authority_reader_failure_without_starting_tmux" time="0.007" /><testcase classname="tests.test_s5_a0_tmux_launcher" name="test_launcher_rejects_missing_controller_input_before_starting_tmux" time="0.007" /><testcase classname="tests.test_s5_durable_attempt_store" name="test_manifest_first_append_hashes_events_and_rejects_duplicate_attempt" time="0.036" /><testcase classname="tests.test_s5_durable_attempt_store" name="test_each_durable_event_advances_atomic_nonresumable_checkpoint" time="0.034" /><testcase classname="tests.test_s5_durable_attempt_store" name="test_append_is_contiguous_and_sanitized" time="0.026" /><testcase classname="tests.test_s5_durable_attempt_store" name="test_tampered_event_hash_fails_closed" time="0.028" /><testcase classname="tests.test_s5_durable_attempt_store" name="test_rehashed_private_event_still_fails_closed" time="0.024" /><testcase classname="tests.test_s5_durable_attempt_store" name="test_finalize_binds_result_and_writes_atomic_checkpoint" time="0.046" /><testcase classname="tests.test_s5_durable_attempt_store" name="test_finalize_derives_published_sources_from_durable_events_not_summary" time="0.055" /><testcase classname="tests.test_s5_durable_attempt_store" name="test_inspection_rejects_checkpoint_event_count_or_publication_drift" time="0.025" /><testcase classname="tests.test_s5_durable_attempt_store" name="test_finalize_rejects_event_or_identity_mismatch" time="0.025" /><testcase classname="tests.test_s5_durable_attempt_store" name="test_failed_evidence_is_terminal_non_mergeable_and_not_resumable" time="0.050" /><testcase classname="tests.test_s5_durable_attempt_store" name="test_inspection_rejects_rehashed_event_manifest_binding_drift[run_id-s5-mstar-different-001]" time="0.025" /><testcase classname="tests.test_s5_durable_attempt_store" name="test_inspection_rejects_rehashed_event_manifest_binding_drift[method-A0]" time="0.025" /><testcase classname="tests.test_s5_durable_attempt_store" name="test_inspection_rejects_rehashed_event_manifest_binding_drift[source_sha256-ffffffffffffffffffffffffffffffffffffffffffffffffffffffffffffffff]" time="0.025" /><testcase classname="tests.test_s5_durable_attempt_store" name="test_inspection_rejects_resealed_result_payload_cross_binding_drift[&lt;lambda&gt;0]" time="0.045" /><testcase classname="tests.test_s5_durable_attempt_store" name="test_inspection_rejects_resealed_result_payload_cross_binding_drift[&lt;lambda&gt;1]" time="0.045" /><testcase classname="tests.test_s5_durable_attempt_store" name="test_inspection_rejects_resealed_result_payload_cross_binding_drift[&lt;lambda&gt;2]" time="0.046" /><testcase classname="tests.test_s5_durable_attempt_store" name="test_inspection_rejects_resealed_manifest_source_inventory_drift" time="0.024" /><testcase classname="tests.test_s5_graphiti_controlled_fixture" name="test_fixture_binds_the_pinned_graphiti_identity_and_native_call_order" time="0.003" /><testcase classname="tests.test_s5_graphiti_controlled_fixture" name="test_transaction_failure_is_fail_closed_before_publication" time="0.002" /><testcase classname="tests.test_s5_graphiti_controlled_fixture" name="test_native_default_edge_type_map_is_preserved" time="0.002" /><testcase classname="tests.test_s5_graphiti_controlled_fixture" name="test_real_graphiti_edge_path_reaches_resolution_and_bulk_commit" time="0.002" /><testcase classname="tests.test_s5_graphiti_controlled_fixture" name="test_real_graphiti_resolution_can_merge_an_alias_into_existing_canonical_node" time="0.002" /><testcase classname="tests.test_s5_graphiti_controlled_fixture" name="test_real_graphiti_compatible_duplicate_uuid_is_coalesced" time="0.002" /><testcase classname="tests.test_s5_graphiti_controlled_fixture" name="test_real_graphiti_conflicting_candidate_projection_fails_before_commit" time="0.001" /><testcase classname="tests.test_s5_graphiti_controlled_fixture" name="test_canonical_logical_state_excludes_random_identity_and_wall_clock" time="0.005" /><testcase classname="tests.test_s5_graphiti_controlled_fixture" name="test_real_graphiti_temporal_invalidation_is_observed_before_commit" time="0.002" /><testcase classname="tests.test_s5_graphiti_controlled_fixture" name="test_group_id_routes_all_graphiti_calls_to_the_cloned_database" time="0.002" /><testcase classname="tests.test_s5_graphiti_controlled_fixture" name="test_malformed_native_process_result_fails_closed" time="0.002" /><testcase classname="tests.test_s5_graphiti_controlled_fixture" name="test_transaction_callback_retry_is_not_claimed_idempotent" time="0.002" /><testcase classname="tests.test_s5_graphiti_controlled_fixture" name="test_transaction_callback_retry_can_pass_only_with_durable_upsert_witness" time="0.002" /><testcase classname="tests.test_s5_graphiti_controlled_fixture" name="test_retry_witness_rejects_same_uuid_with_changed_durable_projection" time="0.002" /><testcase classname="tests.test_s5_graphiti_controlled_fixture" name="test_controlled_provider_consumption_is_allowlisted_and_complete" time="0.002" /><testcase classname="tests.test_s5_graphiti_controlled_fixture" name="test_missing_controlled_llm_response_fails_closed_before_commit" time="0.001" /><testcase classname="tests.test_s5_graphiti_controlled_fixture" name="test_fixture_case_reset_clears_prior_events_and_transaction_attempts" time="0.004" /><testcase classname="tests.test_s5_graphiti_controlled_fixture" name="test_real_graphiti_multi_source_commit_publishes_in_source_order" time="0.004" /><testcase classname="tests.test_s5_graphiti_fx0_environment" name="test_environment_factory_is_independent_of_case_identity_and_source" time="0.000" /><testcase classname="tests.test_s5_graphiti_fx0_environment" name="test_source_decoder_rejects_transition_error_and_fault_directives[transition]" time="0.000" /><testcase classname="tests.test_s5_graphiti_fx0_environment" name="test_source_decoder_rejects_transition_error_and_fault_directives[error_code]" time="0.000" /><testcase classname="tests.test_s5_graphiti_fx0_environment" name="test_source_decoder_rejects_transition_error_and_fault_directives[expected_status]" time="0.000" /><testcase classname="tests.test_s5_graphiti_fx0_environment" name="test_source_decoder_rejects_transition_error_and_fault_directives[expected_error_code]" time="0.000" /><testcase classname="tests.test_s5_graphiti_fx0_environment" name="test_source_decoder_rejects_transition_error_and_fault_directives[expected_state]" time="0.000" /><testcase classname="tests.test_s5_graphiti_fx0_environment" name="test_source_decoder_rejects_transition_error_and_fault_directives[expected_history]" time="0.000" /><testcase classname="tests.test_s5_graphiti_fx0_environment" name="test_source_decoder_rejects_transition_error_and_fault_directives[fault_mode]" time="0.000" /><testcase classname="tests.test_s5_graphiti_fx0_environment" name="test_source_decoder_rejects_transition_error_and_fault_directives[raise]" time="0.000" /><testcase classname="tests.test_s5_graphiti_fx0_environment" name="test_source_decoder_rejects_transition_error_and_fault_directives[result]" time="0.000" /><testcase classname="tests.test_s5_graphiti_fx0_environment" name="test_source_decoder_rejects_transition_error_and_fault_directives[verdict]" time="0.000" /><testcase classname="tests.test_s5_graphiti_fx0_environment" name="test_source_decoder_rejects_nested_control_directive" time="0.000" /><testcase classname="tests.test_s5_graphiti_fx0_environment" name="test_environment_runs_real_graphiti_and_publishes_canonical_snapshot" time="0.003" /><testcase classname="tests.test_s5_graphiti_fx0_environment" name="test_environment_publication_schedule_is_detected_from_observed_history" time="0.003" /><testcase classname="tests.test_s5_graphiti_fx0_environment" name="test_environment_transaction_schedule_drives_real_idempotent_retry" time="0.003" /><testcase classname="tests.test_s5_graphiti_fx0_environment" name="test_two_real_sources_overlap_publish_in_order_and_observe_state_change" time="0.034" /><testcase classname="tests.test_s5_graphiti_fx0_finalizer" name="test_finalizer_seals_real_closure_without_changing_current_pointer" time="0.070" /><testcase classname="tests.test_s5_graphiti_fx0_inventory" name="test_inventory_is_exactly_the_frozen_eleven_case_transition_set" time="0.001" /><testcase classname="tests.test_s5_graphiti_fx0_inventory" name="test_inventory_exact_parity_runs_through_one_pinned_environment" time="0.033" /><testcase classname="tests.test_s5_graphiti_fx0_inventory" name="test_complete_inventory_builds_independently_verifiable_artifact" time="0.037" /><testcase classname="tests.test_s5_graphiti_mstar_semantics" name="test_prepare_then_bind_uses_native_order_and_same_logical_time" time="0.000" /><testcase classname="tests.test_s5_graphiti_mstar_semantics" name="test_default_edge_type_map_matches_pinned_native_graphiti" time="0.000" /><testcase classname="tests.test_s5_graphiti_mstar_semantics" name="test_logical_time_conversion_is_utc_and_invalid_values_fail_closed" time="0.000" /><testcase classname="tests.test_s5_graphiti_mstar_semantics" name="test_prepare_and_bind_reject_malformed_inputs_without_fallback" time="0.000" /><testcase classname="tests.test_s5_graphiti_mstar_semantics" name="test_upstream_failure_is_sanitized_and_does_not_commit" time="0.000" /><testcase classname="tests.test_s5_graphiti_mstar_semantics" name="test_semantic_runtime_rejects_nonsequence_upstream_shapes" time="0.000" /><testcase classname="tests.test_s5_graphiti_mstar_semantics" name="test_fx0_controlled_providers_require_and_enter_explicit_scope" time="0.000" /><testcase classname="tests.test_s5_graphiti_mstar_semantics" name="test_compatible_duplicate_resolved_uuid_is_deterministically_coalesced" time="0.000" /><testcase classname="tests.test_s5_graphiti_mstar_semantics" name="test_conflicting_duplicate_resolved_uuid_fails_before_attribute_or_commit" time="0.000" /><testcase classname="tests.test_s5_graphiti_mstar_semantics" name="test_bind_substage_failure_keeps_only_sanitized_code_and_upstream_class[resolve_extracted_nodes-resolve_nodes_failed-resolve_nodes_broken]" time="0.000" /><testcase classname="tests.test_s5_graphiti_mstar_semantics" name="test_bind_substage_failure_keeps_only_sanitized_code_and_upstream_class[extract_edges-extract_edges_failed-extract_edges_broken]" time="0.000" /><testcase classname="tests.test_s5_graphiti_mstar_semantics" name="test_bind_substage_failure_keeps_only_sanitized_code_and_upstream_class[resolve_extracted_edges-resolve_edges_failed-resolve_edges_broken]" time="0.000" /><testcase classname="tests.test_s5_graphiti_mstar_semantics" name="test_bind_substage_failure_keeps_only_sanitized_code_and_upstream_class[extract_attributes_from_nodes-extract_attributes_failed-extract_attributes_broken]" time="0.001" /><testcase classname="tests.test_s5_graphiti_mstar_semantics" name="test_bind_substage_failure_keeps_only_sanitized_code_and_upstream_class[process_episode_data-process_episode_data_failed-process_broken]" time="0.000" /><testcase classname="tests.test_s5_graphiti_native_binding" name="test_loader_freezes_exact_native_symbols_without_live_import" time="0.000" /><testcase classname="tests.test_s5_graphiti_native_binding" name="test_wrapper_calls_the_same_native_add_episode_object" time="0.000" /><testcase classname="tests.test_s5_graphiti_native_binding" name="test_wrapper_rejects_non_awaitable_native_boundary" time="0.000" /><testcase classname="tests.test_s5_graphiti_native_binding" name="test_loader_fails_closed_on_symbol_or_module_drift[&lt;lambda&gt;0]" time="0.000" /><testcase classname="tests.test_s5_graphiti_native_binding" name="test_loader_fails_closed_on_symbol_or_module_drift[&lt;lambda&gt;1]" time="0.000" /><testcase classname="tests.test_s5_graphiti_native_binding" name="test_loader_fails_closed_on_symbol_or_module_drift[&lt;lambda&gt;2]" time="0.000" /><testcase classname="tests.test_s5_graphiti_native_binding" name="test_identity_rejects_legacy_or_private_fields" time="0.000" /><testcase classname="tests.test_s5_graphiti_production_adapter_integration" name="test_production_adapter_binds_typed_provider_to_real_graphiti_fixture" time="0.003" /><testcase classname="tests.test_s5_graphiti_production_adapter_integration" name="test_production_adapter_executes_two_real_sources_in_source_order" time="0.007" /><testcase classname="tests.test_s5_graphiti_production_adapter_integration" name="test_production_adapter_reports_real_graphiti_transaction_retry_witness" time="0.003" /><testcase classname="tests.test_s5_graphiti_production_adapter_integration" name="test_production_adapter_bind_reads_state_changed_after_real_prepare" time="0.003" /><testcase classname="tests.test_s5_graphiti_production_adapter_integration" name="test_production_adapter_detects_lost_publication_from_independent_history" time="0.003" /><testcase classname="tests.test_s5_graphiti_production_adapter_integration" name="test_production_adapter_detects_publication_history_faults[duplicate-1-DUPLICATE_PUBLICATION]" time="0.003" /><testcase classname="tests.test_s5_graphiti_production_adapter_integration" name="test_production_adapter_detects_publication_history_faults[partial-2-PARTIAL_PUBLICATION]" time="0.007" /><testcase classname="tests.test_s5_graphiti_production_adapter_integration" name="test_real_graphiti_conflict_maps_only_to_registered_failure" time="0.002" /><testcase classname="tests.test_s5_graphiti_semantic_binding" name="test_loader_binds_all_semantic_symbols_and_seals_signature_projection" time="0.000" /><testcase classname="tests.test_s5_graphiti_semantic_binding" name="test_loader_fails_closed_on_symbol_drift[&lt;lambda&gt;0]" time="0.000" /><testcase classname="tests.test_s5_graphiti_semantic_binding" name="test_loader_fails_closed_on_symbol_drift[&lt;lambda&gt;1]" time="0.000" /><testcase classname="tests.test_s5_graphiti_semantic_binding" name="test_loader_fails_closed_on_symbol_drift[&lt;lambda&gt;2]" time="0.000" /><testcase classname="tests.test_s5_graphiti_semantic_binding" name="test_identity_verifier_rejects_hash_or_private_projection_tampering" time="0.000" /><testcase classname="tests.test_s5_graphiti_semantic_binding" name="test_loader_is_lazy_and_does_not_instantiate_graphiti" time="0.000" /><testcase classname="tests.test_s5_graphiti_semantic_binding" name="test_persisted_local_identity_is_observed_only_and_hash_sealed" time="0.000" /><testcase classname="tests.test_s5_live_authority" name="test_live_authority_requires_the_exact_preflight_qualification" time="0.002" /><testcase classname="tests.test_s5_live_authority" name="test_raw_identity_and_qualification_file_drift_cannot_reach_authority" time="0.002" /><testcase classname="tests.test_s5_live_authority" name="test_authority_is_method_scoped_single_use_and_preformal[A0]" time="0.002" /><testcase classname="tests.test_s5_live_authority" name="test_authority_is_method_scoped_single_use_and_preformal[P*]" time="0.002" /><testcase classname="tests.test_s5_live_authority" name="test_authority_is_method_scoped_single_use_and_preformal[M*]" time="0.002" /><testcase classname="tests.test_s5_live_authority" name="test_authority_rejects_method_order_scope_and_fx0_drift[A0-&lt;lambda&gt;0]" time="0.002" /><testcase classname="tests.test_s5_live_authority" name="test_authority_rejects_method_order_scope_and_fx0_drift[A0-&lt;lambda&gt;1]" time="0.002" /><testcase classname="tests.test_s5_live_authority" name="test_authority_rejects_method_order_scope_and_fx0_drift[P*-&lt;lambda&gt;]" time="0.002" /><testcase classname="tests.test_s5_live_authority" name="test_authority_rejects_method_order_scope_and_fx0_drift[M*-&lt;lambda&gt;0]" time="0.002" /><testcase classname="tests.test_s5_live_authority" name="test_authority_rejects_method_order_scope_and_fx0_drift[M*-&lt;lambda&gt;1]" time="0.002" /><testcase classname="tests.test_s5_live_authority" name="test_authority_rejects_preflight_identity_and_pointer_drift" time="0.001" /><testcase classname="tests.test_s5_live_authority" name="test_authority_rejects_source_manifest_drift_from_preflight" time="0.002" /><testcase classname="tests.test_s5_live_authority" name="test_authority_consumes_exact_canonical_preflight_finalizer_artifact" time="0.007" /><testcase classname="tests.test_s5_live_authority" name="test_finalization_and_consumption_are_exclusive" time="0.011" /><testcase classname="tests.test_s5_live_authority" name="test_verifier_rejects_scope_hash_and_private_field_tamper" time="0.002" /><testcase classname="tests.test_s5_live_preflight" name="test_pass_preflight_requires_sealed_identity_qualification" time="0.001" /><testcase classname="tests.test_s5_live_preflight" name="test_raw_identity_cannot_reach_a_pass_preflight" time="0.000" /><testcase classname="tests.test_s5_live_preflight" name="test_qualification_native_freeze_must_match_the_current_pointer" time="0.001" /><testcase classname="tests.test_s5_live_preflight" name="test_method_specific_preflight_passes_only_exact_frozen_bindings[A0]" time="0.001" /><testcase classname="tests.test_s5_live_preflight" name="test_method_specific_preflight_passes_only_exact_frozen_bindings[P*]" time="0.001" /><testcase classname="tests.test_s5_live_preflight" name="test_method_specific_preflight_passes_only_exact_frozen_bindings[M*]" time="0.001" /><testcase classname="tests.test_s5_live_preflight" name="test_preflight_binds_the_exact_49_source_workload_manifest" time="0.001" /><testcase classname="tests.test_s5_live_preflight" name="test_predecessor_policy_is_strict_and_mstar_requires_fx0" time="0.002" /><testcase classname="tests.test_s5_live_preflight" name="test_service_or_namespace_drift_fails_without_authority[construction.served_model_id-wrong-construction_model]" time="0.001" /><testcase classname="tests.test_s5_live_preflight" name="test_service_or_namespace_drift_fails_without_authority[construction.vllm_version-0.25.0-vllm_version]" time="0.001" /><testcase classname="tests.test_s5_live_preflight" name="test_service_or_namespace_drift_fails_without_authority[construction.max_model_len-65535-max_model_len]" time="0.001" /><testcase classname="tests.test_s5_live_preflight" name="test_service_or_namespace_drift_fails_without_authority[embedding.served_model_id-wrong-embedding_model]" time="0.001" /><testcase classname="tests.test_s5_live_preflight" name="test_service_or_namespace_drift_fails_without_authority[neo4j_connectivity-False-neo4j_connectivity]" time="0.001" /><testcase classname="tests.test_s5_live_preflight" name="test_service_or_namespace_drift_fails_without_authority[namespace_state.node_count-1-namespace_not_empty]" time="0.001" /><testcase classname="tests.test_s5_live_preflight" name="test_method_namespace_identity_and_pointer_are_fail_closed" time="0.001" /><testcase classname="tests.test_s5_live_preflight" name="test_collect_performs_only_three_service_reads_and_one_namespace_read" time="0.001" /><testcase classname="tests.test_s5_live_preflight" name="test_finalize_is_sanitized_exclusive_and_tamper_evident" time="0.006" /><testcase classname="tests.test_s5_live_preflight_production" name="test_production_collection_uses_injected_read_only_dependencies_and_closes" time="0.001" /><testcase classname="tests.test_s5_live_preflight_production" name="test_production_collection_rejects_partial_injection_without_network" time="0.001" /><testcase classname="tests.test_s5_live_preflight_production" name="test_production_collection_closes_probe_when_collection_fails" time="0.001" /><testcase classname="tests.test_s5_live_preflight_production" name="test_raw_identity_is_rejected_before_any_read_only_probe" time="0.000" /><testcase classname="tests.test_s5_method_qualification_plan" name="test_s5_registry_is_offline_only_and_uses_new_method_identities" time="0.003" /><testcase classname="tests.test_s5_method_qualification_plan" name="test_s5_freezes_one_development_history_without_quality_claim" time="0.003" /><testcase classname="tests.test_s5_method_qualification_plan" name="test_s5_method_statuses_do_not_promote_old_components" time="0.003" /><testcase classname="tests.test_s5_method_qualification_plan" name="test_s5_requires_common_native_runtime_and_explicit_c2_smoke" time="0.003" /><testcase classname="tests.test_s5_method_qualification_plan" name="test_s5_tdd_and_stop_rules_are_frozen" time="0.003" /><testcase classname="tests.test_s5_method_qualification_plan" name="test_s5_authority_and_legacy_boundary_are_closed" time="0.003" /><testcase classname="tests.test_s5_method_qualification_plan" name="test_s5_verifier_fails_closed_on_identity_or_authority_drift[&lt;lambda&gt;0]" time="0.003" /><testcase classname="tests.test_s5_method_qualification_plan" name="test_s5_verifier_fails_closed_on_identity_or_authority_drift[&lt;lambda&gt;1]" time="0.003" /><testcase classname="tests.test_s5_method_qualification_plan" name="test_s5_verifier_fails_closed_on_identity_or_authority_drift[&lt;lambda&gt;2]" time="0.003" /><testcase classname="tests.test_s5_method_qualification_plan" name="test_s5_verifier_fails_closed_on_identity_or_authority_drift[&lt;lambda&gt;3]" time="0.003" /><testcase classname="tests.test_s5_method_qualification_plan" name="test_s5_rejects_missing_source_identity_and_private_data" time="0.000" /><testcase classname="tests.test_s5_method_qualification_plan" name="test_s5_plan_has_no_runtime_secrets" time="0.003" /><testcase classname="tests.test_s5_method_smoke_contract" name="test_a0_requires_fifo_single_worker_and_separates_return_from_publish" time="0.000" /><testcase classname="tests.test_s5_method_smoke_contract" name="test_p_requires_real_overlap_but_retains_direct_violation_as_observation" time="0.000" /><testcase classname="tests.test_s5_method_smoke_contract" name="test_m_requires_source_order_no_fallback_and_zero_direct_violations" time="0.000" /><testcase classname="tests.test_s5_method_smoke_contract" name="test_smoke_contract_fails_closed_on_loss_duplicate_or_bad_telemetry[&lt;lambda&gt;0]" time="0.000" /><testcase classname="tests.test_s5_method_smoke_contract" name="test_smoke_contract_fails_closed_on_loss_duplicate_or_bad_telemetry[&lt;lambda&gt;1]" time="0.000" /><testcase classname="tests.test_s5_method_smoke_contract" name="test_smoke_contract_fails_closed_on_loss_duplicate_or_bad_telemetry[&lt;lambda&gt;2]" time="0.000" /><testcase classname="tests.test_s5_method_smoke_contract" name="test_smoke_contract_fails_closed_on_loss_duplicate_or_bad_telemetry[&lt;lambda&gt;3]" time="0.000" /><testcase classname="tests.test_s5_method_smoke_contract" name="test_smoke_contract_fails_closed_on_loss_duplicate_or_bad_telemetry[&lt;lambda&gt;4]" time="0.000" /><testcase classname="tests.test_s5_method_smoke_contract" name="test_smoke_contract_fails_closed_on_loss_duplicate_or_bad_telemetry[&lt;lambda&gt;5]" time="0.000" /><testcase classname="tests.test_s5_method_smoke_contract" name="test_p_rejects_no_overlap_and_m_rejects_fallback_or_direct_violation" time="0.000" /><testcase classname="tests.test_s5_method_smoke_contract" name="test_contract_rejects_legacy_method_ids_and_private_fields" time="0.000" /><testcase classname="tests.test_s5_method_smoke_contract" name="test_mstar_pipeline_projection_reuses_common_smoke_contract" time="0.000" /><testcase classname="tests.test_s5_method_smoke_contract" name="test_mstar_projection_keeps_epoch_logical_time_out_of_monotonic_telemetry" time="0.000" /><testcase classname="tests.test_s5_method_smoke_contract" name="test_mstar_pipeline_projection_fails_closed_on_missing_phase" time="0.000" /><testcase classname="tests.test_s5_method_smoke_contract" name="test_native_a0_evidence_projects_into_the_common_smoke_contract" time="0.000" /><testcase classname="tests.test_s5_method_smoke_contract" name="test_native_p_projection_binds_explicit_invariant_observations" time="0.000" /><testcase classname="tests.test_s5_method_smoke_contract" name="test_native_projection_rejects_missing_durable_or_publication_event" time="0.000" /><testcase classname="tests.test_s5_method_smoke_contract" name="test_native_projection_requires_explicit_complete_invariant_observation" time="0.000" /><testcase classname="tests.test_s5_method_smoke_contract" name="test_a0_requires_caller_return_to_precede_publication_strictly" time="0.000" /><testcase classname="tests.test_s5_mstar_controller" name="test_runtime_composition_binds_exact_workload_and_external_commit_evidence" time="0.001" /><testcase classname="tests.test_s5_mstar_controller" name="test_runtime_composition_rejects_drift_before_adapter_construction[episodes0-pev3-s5-mstar-20260816-101-&lt;lambda&gt;-workload]" time="0.000" /><testcase classname="tests.test_s5_mstar_controller" name="test_runtime_composition_rejects_drift_before_adapter_construction[episodes1-pev3-s5-mstar-20260816-101-&lt;lambda&gt;-namespace]" time="0.000" /><testcase classname="tests.test_s5_mstar_controller" name="test_runtime_composition_rejects_drift_before_adapter_construction[episodes2-pev3-s5-mstar-20260816-101-None-commit_evidence]" time="0.000" /><testcase classname="tests.test_s5_mstar_controller" name="test_controller_builds_runtime_and_promotes_only_bound_runner_pass" time="0.029" /><testcase classname="tests.test_s5_mstar_controller" name="test_identity_drift_fails_before_runtime_or_controller_artifacts" time="0.001" /><testcase classname="tests.test_s5_mstar_controller" name="test_post_start_failures_are_sanitized_and_nonmergeable[runtime-runtime_construction-trace0]" time="0.014" /><testcase classname="tests.test_s5_mstar_controller" name="test_post_start_failures_are_sanitized_and_nonmergeable[readiness-runtime_readiness-trace1]" time="0.016" /><testcase classname="tests.test_s5_mstar_controller" name="test_post_start_failures_are_sanitized_and_nonmergeable[composition-runtime_composition-trace2]" time="0.028" /><testcase classname="tests.test_s5_mstar_controller" name="test_post_start_failures_are_sanitized_and_nonmergeable[runner_factory-runner_construction-trace3]" time="0.022" /><testcase classname="tests.test_s5_mstar_controller" name="test_post_start_failures_are_sanitized_and_nonmergeable[runner-mstar_execution-trace4]" time="0.026" /><testcase classname="tests.test_s5_mstar_controller" name="test_post_start_failures_are_sanitized_and_nonmergeable[close-runtime_close-trace5]" time="0.026" /><testcase classname="tests.test_s5_mstar_controller" name="test_incomplete_runner_is_not_promoted" time="0.029" /><testcase classname="tests.test_s5_mstar_controller" name="test_controller_is_single_use_before_runtime" time="0.028" /><testcase classname="tests.test_s5_mstar_failure_envelope" name="test_failure_envelope_classification_is_strict_and_sealed[event0-json.decoder.JSONDecodeError-CAP_EXHAUSTED]" time="0.000" /><testcase classname="tests.test_s5_mstar_failure_envelope" name="test_failure_envelope_classification_is_strict_and_sealed[event1-json.decoder.JSONDecodeError-STRUCTURED_INVALID]" time="0.000" /><testcase classname="tests.test_s5_mstar_failure_envelope" name="test_failure_envelope_classification_is_strict_and_sealed[event2-json.decoder.JSONDecodeError-UNCLASSIFIED]" time="0.000" /><testcase classname="tests.test_s5_mstar_failure_envelope" name="test_failure_envelope_classification_is_strict_and_sealed[event3-json.decoder.JSONDecodeError-UNCLASSIFIED]" time="0.000" /><testcase classname="tests.test_s5_mstar_failure_envelope" name="test_failure_envelope_classification_is_strict_and_sealed[event4-None-UNCLASSIFIED]" time="0.000" /><testcase classname="tests.test_s5_mstar_failure_envelope" name="test_failure_envelope_rejects_private_or_unknown_transport_fields[messages]" time="0.000" /><testcase classname="tests.test_s5_mstar_failure_envelope" name="test_failure_envelope_rejects_private_or_unknown_transport_fields[raw_response]" time="0.000" /><testcase classname="tests.test_s5_mstar_failure_envelope" name="test_failure_envelope_rejects_private_or_unknown_transport_fields[prompt]" time="0.000" /><testcase classname="tests.test_s5_mstar_failure_envelope" name="test_failure_envelope_rejects_private_or_unknown_transport_fields[authorization]" time="0.000" /><testcase classname="tests.test_s5_mstar_failure_envelope" name="test_failure_envelope_rejects_private_or_unknown_transport_fields[api_key]" time="0.000" /><testcase classname="tests.test_s5_mstar_failure_envelope" name="test_failure_envelope_write_is_atomic_hash_bound_and_tamper_evident" time="0.006" /><testcase classname="tests.test_s5_mstar_fx0_artifact" name="test_legacy_self_test_artifact_is_rejected_by_production_verifier" time="0.000" /><testcase classname="tests.test_s5_mstar_fx0_artifact" name="test_production_verifier_requires_external_manifest_binding" time="0.000" /><testcase classname="tests.test_s5_mstar_fx0_artifact" name="test_transition_inventory_is_imported_from_frozen_fx0_contract" time="0.000" /><testcase classname="tests.test_s5_mstar_fx0_artifact" name="test_production_binding_rejects_arbitrary_callback_doubles" time="0.000" /><testcase classname="tests.test_s5_mstar_fx0_artifact" name="test_production_binding_accepts_one_generic_environment_owner" time="0.001" /><testcase classname="tests.test_s5_mstar_fx0_artifact" name="test_production_binding_rejects_mixed_controlled_environment_hook_owners" time="0.000" /><testcase classname="tests.test_s5_mstar_fx0_artifact" name="test_authority_tamper_is_fail_closed_even_when_hashes_are_recomputed" time="0.000" /><testcase classname="tests.test_s5_mstar_fx0_artifact" name="test_fixture_manifest_is_deterministic_and_binds_production_schedules" time="0.002" /><testcase classname="tests.test_s5_mstar_fx0_artifact" name="test_fixture_manifest_preserves_case_to_provider_association" time="0.001" /><testcase classname="tests.test_s5_mstar_fx0_artifact" name="test_production_verifier_rederives_fixture_bindings_from_case_evidence" time="0.004" /><testcase classname="tests.test_s5_mstar_fx0_artifact" name="test_fixture_binding_drift_fails_before_adapter_validation_or_execution[parent_protocol_sha256]" time="0.002" /><testcase classname="tests.test_s5_mstar_fx0_artifact" name="test_fixture_binding_drift_fails_before_adapter_validation_or_execution[amendment_sha256]" time="0.002" /><testcase classname="tests.test_s5_mstar_fx0_artifact" name="test_fixture_binding_drift_fails_before_adapter_validation_or_execution[current_stage_pointer_sha256]" time="0.002" /><testcase classname="tests.test_s5_mstar_fx0_artifact" name="test_fixture_binding_drift_fails_before_adapter_validation_or_execution[fx0_fixture_manifest_sha256]" time="0.002" /><testcase classname="tests.test_s5_mstar_fx0_artifact" name="test_fixture_binding_drift_fails_before_adapter_validation_or_execution[execution_input_set_sha256]" time="0.002" /><testcase classname="tests.test_s5_mstar_fx0_artifact" name="test_fixture_binding_drift_fails_before_adapter_validation_or_execution[oracle_set_sha256]" time="0.002" /><testcase classname="tests.test_s5_mstar_fx0_artifact" name="test_fixture_binding_drift_fails_before_adapter_validation_or_execution[controlled_provider_set_sha256]" time="0.002" /><testcase classname="tests.test_s5_mstar_live_chain" name="test_mstar_controller_exposes_production_entrypoint" time="0.000" /><testcase classname="tests.test_s5_mstar_live_chain" name="test_mstar_tmux_launcher_exists" time="0.000" /><testcase classname="tests.test_s5_mstar_live_semantic_adapter" name="test_live_adapter_matches_native_snapshot_and_latest_retrieval_arguments" time="0.000" /><testcase classname="tests.test_s5_mstar_live_semantic_adapter" name="test_materialized_sources_are_exact_and_use_epoch_not_monotonic_time" time="0.000" /><testcase classname="tests.test_s5_mstar_live_semantic_adapter" name="test_materialization_rejects_monotonic_clock_as_semantic_epoch" time="0.000" /><testcase classname="tests.test_s5_mstar_live_semantic_adapter" name="test_materialization_fails_closed_on_workload_or_namespace_drift[&lt;lambda&gt;-source_count]" time="0.000" /><testcase classname="tests.test_s5_mstar_live_semantic_adapter" name="test_materialization_fails_closed_on_workload_or_namespace_drift[&lt;lambda&gt;-namespace]" time="0.000" /><testcase classname="tests.test_s5_mstar_live_semantic_adapter" name="test_adapter_rejects_non_utc_reference_time_before_model_or_db_work" time="0.000" /><testcase classname="tests.test_s5_mstar_pipeline" name="test_explicit_logical_operation_times_do_not_depend_on_telemetry_clock" time="0.001" /><testcase classname="tests.test_s5_mstar_pipeline" name="test_publication_journal_failure_recovers_after_commit_without_rebinding" time="0.001" /><testcase classname="tests.test_s5_mstar_pipeline" name="test_parallel_prepare_binds_and_publishes_in_source_order" time="0.002" /><testcase classname="tests.test_s5_mstar_pipeline" name="test_prepare_failure_poison_cancels_and_awaits_workers_before_terminal" time="0.001" /><testcase classname="tests.test_s5_mstar_pipeline" name="test_bind_failure_keeps_only_durable_published_prefix_and_no_late_events" time="0.001" /><testcase classname="tests.test_s5_mstar_pipeline" name="test_bind_failure_persists_sanitized_semantic_substage_without_message" time="0.001" /><testcase classname="tests.test_s5_mstar_pipeline" name="test_durable_event_failure_aborts_before_semantic_work" time="0.000" /><testcase classname="tests.test_s5_mstar_pipeline" name="test_prepare_event_failure_does_not_leave_an_unresolved_worker_future" time="0.000" /><testcase classname="tests.test_s5_mstar_pipeline" name="test_verifier_rejects_order_fallback_shape_and_private_drift" time="0.002" /><testcase classname="tests.test_s5_mstar_pipeline" name="test_spec_and_source_reject_legacy_aliases_or_invalid_identity" time="0.000" /><testcase classname="tests.test_s5_mstar_pipeline" name="test_spec_accepts_only_protocol_concurrency_grid[1]" time="0.000" /><testcase classname="tests.test_s5_mstar_pipeline" name="test_spec_accepts_only_protocol_concurrency_grid[2]" time="0.000" /><testcase classname="tests.test_s5_mstar_pipeline" name="test_spec_accepts_only_protocol_concurrency_grid[4]" time="0.000" /><testcase classname="tests.test_s5_mstar_pipeline" name="test_spec_accepts_only_protocol_concurrency_grid[8]" time="0.000" /><testcase classname="tests.test_s5_mstar_pipeline" name="test_spec_rejects_concurrency_outside_protocol_grid" time="0.000" /><testcase classname="tests.test_s5_mstar_pipeline" name="test_verifier_accepts_every_observed_worker_in_protocol_grid[1]" time="0.001" /><testcase classname="tests.test_s5_mstar_pipeline" name="test_verifier_accepts_every_observed_worker_in_protocol_grid[2]" time="0.001" /><testcase classname="tests.test_s5_mstar_pipeline" name="test_verifier_accepts_every_observed_worker_in_protocol_grid[4]" time="0.002" /><testcase classname="tests.test_s5_mstar_pipeline" name="test_verifier_accepts_every_observed_worker_in_protocol_grid[8]" time="0.003" /><testcase classname="tests.test_s5_mstar_pipeline" name="test_fx0_single_case_mode_uses_same_core_without_claiming_prepare_overlap" time="0.001" /><testcase classname="tests.test_s5_mstar_post_observation" name="test_exact_three_way_publication_binding_is_sealed_and_sanitized" time="0.003" /><testcase classname="tests.test_s5_mstar_post_observation" name="test_incomplete_or_conflicting_journal_fails_closed[missing_commit]" time="0.002" /><testcase classname="tests.test_s5_mstar_post_observation" name="test_incomplete_or_conflicting_journal_fails_closed[source_conflict]" time="0.001" /><testcase classname="tests.test_s5_mstar_post_observation" name="test_direct_invariant_observation_is_retained_not_relabelled_pass" time="0.004" /><testcase classname="tests.test_s5_mstar_post_observation" name="test_resealed_operation_manifest_cannot_cross_bind_to_another_run" time="0.004" /><testcase classname="tests.test_s5_mstar_postprocess" name="test_smoke_summary_accepts_independent_zero_violation_observation" time="0.000" /><testcase classname="tests.test_s5_mstar_postprocess" name="test_smoke_summary_preserves_counterexample_without_calling_it_adapter_failure" time="0.000" /><testcase classname="tests.test_s5_mstar_production_adapter" name="test_adapter_receives_oracle_free_input_and_runs_shared_core" time="0.001" /><testcase classname="tests.test_s5_mstar_production_adapter" name="test_adapter_passes_exact_parity_through_fx0_comparator" time="0.005" /><testcase classname="tests.test_s5_mstar_production_adapter" name="test_adapter_fail_closed_preserves_registered_transition_error" time="0.001" /><testcase classname="tests.test_s5_mstar_production_adapter" name="test_adapter_rejects_private_observed_state_and_invalid_identity" time="0.001" /><testcase classname="tests.test_s5_mstar_production_adapter" name="test_bind_return_cannot_override_independent_snapshot" time="0.001" /><testcase classname="tests.test_s5_mstar_production_adapter" name="test_adapter_resets_each_case_and_keeps_provider_input_oracle_free" time="0.001" /><testcase classname="tests.test_s5_mstar_production_adapter" name="test_controlled_provider_factory_failure_is_fail_closed" time="0.000" /><testcase classname="tests.test_s5_mstar_production_adapter" name="test_controlled_provider_factory_receives_only_provider_plan" time="0.001" /><testcase classname="tests.test_s5_mstar_production_adapter" name="test_publication_fault_detector_rejects_unregistered_result" time="0.001" /><testcase classname="tests.test_s5_mstar_production_adapter" name="test_adapter_executes_multi_source_case_with_controlled_logical_times" time="0.001" /><testcase classname="tests.test_s5_mstar_production_adapter" name="test_adapter_records_commit_completed_publication_recovery_as_second_attempt" time="0.001" /><testcase classname="tests.test_s5_mstar_production_core_identity" name="test_core_identity_is_frozen_without_fx0_self_reference" time="0.000" /><testcase classname="tests.test_s5_mstar_production_core_identity" name="test_core_identity_rejects_private_or_hash_mutation" time="0.000" /><testcase classname="tests.test_s5_mstar_production_core_identity" name="test_core_identity_rejects_fx0_field_injection" time="0.000" /><testcase classname="tests.test_s5_mstar_production_runner" name="test_mstar_runner_cross_binds_distinct_identities_and_journals_commit_order" time="0.244" /><testcase classname="tests.test_s5_mstar_production_runner" name="test_mstar_runner_rejects_identity_cross_binding_drift[spec_core-production_core_identity_mismatch]" time="0.001" /><testcase classname="tests.test_s5_mstar_production_runner" name="test_mstar_runner_rejects_identity_cross_binding_drift[fx0_core-fx0_core_identity_mismatch]" time="0.001" /><testcase classname="tests.test_s5_mstar_production_runner" name="test_mstar_runner_rejects_identity_cross_binding_drift[fx0_artifact-fx0_artifact_identity_mismatch]" time="0.001" /><testcase classname="tests.test_s5_mstar_production_runner" name="test_mstar_runner_rejects_identity_cross_binding_drift[fx0_runtime-fx0_runtime_config_mismatch]" time="0.001" /><testcase classname="tests.test_s5_mstar_production_runner" name="test_mstar_runner_rejects_identity_cross_binding_drift[generic_source-production_core_source_binding_mismatch]" time="0.001" /><testcase classname="tests.test_s5_mstar_production_runner" name="test_mstar_runner_rejects_tampered_fx0_qualification_seal" time="0.001" /><testcase classname="tests.test_s5_mstar_production_runner" name="test_mstar_bind_failure_is_incomplete_and_keeps_published_prefix" time="0.177" /><testcase classname="tests.test_s5_mstar_production_runner" name="test_mstar_semantic_failure_writes_hash_bound_envelope_before_finalize" time="0.178" /><testcase classname="tests.test_s5_mstar_production_runner" name="test_mstar_success_never_reads_or_fabricates_failure_telemetry" time="0.233" /><testcase classname="tests.test_s5_mstar_production_runner" name="test_private_failure_snapshot_is_rejected_without_leaking_or_guessing" time="0.145" /><testcase classname="tests.test_s5_mstar_production_runner" name="test_invalid_commit_evidence_fails_closed_without_publication" time="0.143" /><testcase classname="tests.test_s5_mstar_production_runner" name="test_journal_exception_terminalizes_and_preserves_durable_published_prefix" time="0.158" /><testcase classname="tests.test_s5_mstar_production_runner" name="test_pipeline_exception_terminalizes_empty_attempt" time="0.037" /><testcase classname="tests.test_s5_mstar_production_runner" name="test_mstar_runner_rejects_missing_fx0_identity_or_single_source" time="0.001" /><testcase classname="tests.test_s5_mstar_progress" name="test_not_started_projection_is_fixed_and_never_authorizes_resume" time="0.000" /><testcase classname="tests.test_s5_mstar_progress" name="test_running_prefix_reports_attempt_and_journal_without_private_identity" time="0.051" /><testcase classname="tests.test_s5_mstar_progress" name="test_corrupt_journal_is_sanitized_and_cannot_authorize_resume" time="0.001" /><testcase classname="tests.test_s5_mstar_publication_journal" name="test_commit_then_missing_publication_recovers_once_after_reload" time="0.013" /><testcase classname="tests.test_s5_mstar_publication_journal" name="test_duplicate_commit_and_publication_are_idempotent_but_conflict_fails_closed" time="0.012" /><testcase classname="tests.test_s5_mstar_publication_journal" name="test_recovery_requires_probe_to_confirm_external_commit" time="0.009" /><testcase classname="tests.test_s5_mstar_publication_journal" name="test_reloaded_journal_rejects_rehashed_event_shape_tampering" time="0.006" /><testcase classname="tests.test_s5_mstar_result_finalizer" name="test_pass_result_requires_complete_publication_and_zero_invariants" time="0.001" /><testcase classname="tests.test_s5_mstar_result_finalizer" name="test_valid_invariant_counterexample_is_terminal_but_never_pass_authority" time="0.000" /><testcase classname="tests.test_s5_mstar_result_finalizer" name="test_result_verifier_rejects_resealed_publication_or_summary_drift" time="0.001" /><testcase classname="tests.test_s5_mstar_result_finalizer" name="test_final_write_is_exclusive" time="0.004" /><testcase classname="tests.test_s5_native_method_adapters" name="test_a0_is_fifo_single_worker_and_returns_after_durable_enqueue_ack" time="0.001" /><testcase classname="tests.test_s5_native_method_adapters" name="test_a0_never_starts_native_service_before_intent_is_durable" time="0.001" /><testcase classname="tests.test_s5_native_method_adapters" name="test_p_c2_uses_exactly_two_workers_and_observes_whole_update_overlap" time="0.001" /><testcase classname="tests.test_s5_native_method_adapters" name="test_p_c2_fails_closed_when_two_real_intervals_do_not_overlap" time="0.001" /><testcase classname="tests.test_s5_native_method_adapters" name="test_p_c2_treatment_failure_classifies_every_scheduled_source" time="0.003" /><testcase classname="tests.test_s5_native_method_adapters" name="test_p_c2_scientific_outcome_fails_closed_on_terminal_accounting_loss" time="0.001" /><testcase classname="tests.test_s5_native_method_adapters" name="test_p_c2_does_not_return_scientific_outcome_without_durable_classification" time="0.000" /><testcase classname="tests.test_s5_native_method_adapters" name="test_native_treatment_failure_is_sanitized_and_durably_classified[A0]" time="0.001" /><testcase classname="tests.test_s5_native_method_adapters" name="test_native_treatment_failure_is_sanitized_and_durably_classified[P*]" time="0.001" /><testcase classname="tests.test_s5_native_method_adapters" name="test_spec_has_no_legacy_authority_or_namespace_input_surface" time="0.000" /><testcase classname="tests.test_s5_native_method_adapters" name="test_public_evidence_private_or_legacy_fields_fail_closed[namespace]" time="0.000" /><testcase classname="tests.test_s5_native_method_adapters" name="test_public_evidence_private_or_legacy_fields_fail_closed[authority]" time="0.000" /><testcase classname="tests.test_s5_native_method_adapters" name="test_public_evidence_private_or_legacy_fields_fail_closed[api_key]" time="0.000" /><testcase classname="tests.test_s5_native_method_adapters" name="test_public_evidence_private_or_legacy_fields_fail_closed[password]" time="0.000" /><testcase classname="tests.test_s5_native_method_adapters" name="test_public_evidence_private_or_legacy_fields_fail_closed[prompt]" time="0.000" /><testcase classname="tests.test_s5_native_method_adapters" name="test_public_evidence_private_or_legacy_fields_fail_closed[raw_response]" time="0.000" /><testcase classname="tests.test_s5_native_method_adapters" name="test_invalid_method_binding_and_episode_identity_fail_before_native_call" time="0.000" /><testcase classname="tests.test_s5_native_method_adapters" name="test_durable_sink_failure_stops_before_native_construction" time="0.000" /><testcase classname="tests.test_s5_native_method_adapters" name="test_verifier_rejects_safe_looking_shape_and_terminal_summary_drift" time="0.001" /><testcase classname="tests.test_s5_native_method_adapters" name="test_verifier_recomputes_a0_and_p_timestamp_semantics" time="0.001" /><testcase classname="tests.test_s5_native_post_observation" name="test_exact_49_source_observation_is_sanitized_and_hash_sealed" time="0.001" /><testcase classname="tests.test_s5_native_post_observation" name="test_observation_verifier_accepts_canonical_sorted_json_round_trip" time="0.001" /><testcase classname="tests.test_s5_native_post_observation" name="test_graphiti_query_adapter_maps_exact_episode_name_without_db_source_fields" time="0.001" /><testcase classname="tests.test_s5_native_post_observation" name="test_expected_source_inventory_must_be_exactly_49[-1]" time="0.000" /><testcase classname="tests.test_s5_native_post_observation" name="test_expected_source_inventory_must_be_exactly_49[1]" time="0.000" /><testcase classname="tests.test_s5_native_post_observation" name="test_durable_publication_coverage_fails_closed[lost]" time="0.001" /><testcase classname="tests.test_s5_native_post_observation" name="test_durable_publication_coverage_fails_closed[duplicate]" time="0.001" /><testcase classname="tests.test_s5_native_post_observation" name="test_durable_publication_coverage_fails_closed[unexpected]" time="0.001" /><testcase classname="tests.test_s5_native_post_observation" name="test_durable_publication_coverage_fails_closed[hash]" time="0.001" /><testcase classname="tests.test_s5_native_post_observation" name="test_persisted_episodic_coverage_fails_closed[lost]" time="0.001" /><testcase classname="tests.test_s5_native_post_observation" name="test_persisted_episodic_coverage_fails_closed[duplicate]" time="0.001" /><testcase classname="tests.test_s5_native_post_observation" name="test_persisted_episodic_coverage_fails_closed[unexpected]" time="0.001" /><testcase classname="tests.test_s5_native_post_observation" name="test_persisted_episodic_coverage_fails_closed[hash]" time="0.001" /><testcase classname="tests.test_s5_native_post_observation" name="test_cross_namespace_episodic_cannot_satisfy_exact_source_coverage" time="0.001" /><testcase classname="tests.test_s5_native_post_observation" name="test_relation_without_provenance_is_classified_as_dangling" time="0.001" /><testcase classname="tests.test_s5_native_post_observation" name="test_graph_escape_provenance_and_temporal_violations_are_counted" time="0.001" /><testcase classname="tests.test_s5_native_post_observation" name="test_expired_at_is_not_compared_with_reference_time" time="0.001" /><testcase classname="tests.test_s5_native_post_observation" name="test_neo4j_datetime_values_use_the_driver_native_conversion" time="0.001" /><testcase classname="tests.test_s5_native_post_observation" name="test_query_failure_is_sanitized" time="0.000" /><testcase classname="tests.test_s5_native_post_observation" name="test_artifact_digest_or_public_shape_tampering_fails_closed" time="0.001" /><testcase classname="tests.test_s5_production_identity_qualification" name="test_ap_qualification_binds_every_frozen_input_and_only_preflight" time="0.003" /><testcase classname="tests.test_s5_production_identity_qualification" name="test_raw_identity_cannot_impersonate_a_qualification" time="0.001" /><testcase classname="tests.test_s5_production_identity_qualification" name="test_ap_source_closure_is_exact_and_cannot_omit_a_role[durable_store]" time="0.002" /><testcase classname="tests.test_s5_production_identity_qualification" name="test_ap_source_closure_is_exact_and_cannot_omit_a_role[durable_store_test]" time="0.002" /><testcase classname="tests.test_s5_production_identity_qualification" name="test_ap_source_closure_is_exact_and_cannot_omit_a_role[graphiti_native]" time="0.002" /><testcase classname="tests.test_s5_production_identity_qualification" name="test_ap_source_closure_is_exact_and_cannot_omit_a_role[graphiti_semantic_api]" time="0.002" /><testcase classname="tests.test_s5_production_identity_qualification" name="test_ap_source_closure_is_exact_and_cannot_omit_a_role[method_smoke_contract]" time="0.002" /><testcase classname="tests.test_s5_production_identity_qualification" name="test_ap_source_closure_is_exact_and_cannot_omit_a_role[method_smoke_contract_test]" time="0.002" /><testcase classname="tests.test_s5_production_identity_qualification" name="test_ap_source_closure_is_exact_and_cannot_omit_a_role[native_binding]" time="0.002" /><testcase classname="tests.test_s5_production_identity_qualification" name="test_ap_source_closure_is_exact_and_cannot_omit_a_role[native_binding_test]" time="0.002" /><testcase classname="tests.test_s5_production_identity_qualification" name="test_ap_source_closure_is_exact_and_cannot_omit_a_role[production_runner]" time="0.002" /><testcase classname="tests.test_s5_production_identity_qualification" name="test_ap_source_closure_is_exact_and_cannot_omit_a_role[production_runner_test]" time="0.002" /><testcase classname="tests.test_s5_production_identity_qualification" name="test_ap_source_closure_is_exact_and_cannot_omit_a_role[runtime_config]" time="0.002" /><testcase classname="tests.test_s5_production_identity_qualification" name="test_ap_source_closure_is_exact_and_cannot_omit_a_role[runtime_factory]" time="0.002" /><testcase classname="tests.test_s5_production_identity_qualification" name="test_ap_source_closure_is_exact_and_cannot_omit_a_role[scheduler]" time="0.002" /><testcase classname="tests.test_s5_production_identity_qualification" name="test_ap_source_closure_is_exact_and_cannot_omit_a_role[scheduler_test]" time="0.002" /><testcase classname="tests.test_s5_production_identity_qualification" name="test_source_or_frozen_binding_drift_fails_closed" time="0.003" /><testcase classname="tests.test_s5_production_identity_qualification" name="test_full_regression_must_be_exactly_green" time="0.002" /><testcase classname="tests.test_s5_production_identity_qualification" name="test_mstar_requires_and_binds_the_matching_fx0_gate" time="0.006" /><testcase classname="tests.test_s5_production_identity_qualification" name="test_mstar_source_closure_covers_the_actual_live_and_observation_chain" time="0.000" /><testcase classname="tests.test_s5_production_identity_qualification" name="test_qualification_is_hash_sealed_private_safe_and_exclusive" time="0.007" /><testcase classname="tests.test_s5_production_runner" name="test_identity_is_hash_sealed_to_pinned_graphiti_and_method" time="0.000" /><testcase classname="tests.test_s5_production_runner" name="test_identity_drift_fails_closed[&lt;lambda&gt;0]" time="0.000" /><testcase classname="tests.test_s5_production_runner" name="test_identity_drift_fails_closed[&lt;lambda&gt;1]" time="0.000" /><testcase classname="tests.test_s5_production_runner" name="test_identity_drift_fails_closed[&lt;lambda&gt;2]" time="0.000" /><testcase classname="tests.test_s5_production_runner" name="test_identity_drift_fails_closed[&lt;lambda&gt;3]" time="0.000" /><testcase classname="tests.test_s5_production_runner" name="test_mstar_identity_requires_sealed_fx0_parity_artifact" time="0.000" /><testcase classname="tests.test_s5_production_runner" name="test_a0_runner_uses_exact_native_binding_and_seals_attempt" time="0.120" /><testcase classname="tests.test_s5_production_runner" name="test_runner_refuses_identity_method_or_existing_attempt" time="0.117" /><testcase classname="tests.test_s5_production_runner" name="test_p_c2_runner_requires_real_two_worker_overlap" time="0.147" /><testcase classname="tests.test_s5_production_runner" name="test_native_failure_is_persisted_as_incomplete_and_never_resumable" time="0.091" /><testcase classname="tests.test_s5_production_runner" name="test_p_treatment_failure_is_sealed_as_complete_scientific_outcome" time="0.109" /><testcase classname="tests.test_s5_production_runner" name="test_runner_rejects_private_identity_fields" time="0.001" /><testcase classname="tests.test_s5_pstar_controller" name="test_pass_and_complete_scientific_outcome_are_both_controller_complete" time="3.085" /><testcase classname="tests.test_s5_pstar_controller" name="test_infrastructure_or_telemetry_failure_remains_incomplete_non_mergeable" time="1.533" /><testcase classname="tests.test_s5_pstar_controller" name="test_controller_binds_a0_predecessor_file_and_payload" time="1.507" /><testcase classname="tests.test_s5_pstar_controller" name="test_self_sealed_minimal_a0_pass_is_not_a_valid_predecessor" time="1.543" /><testcase classname="tests.test_s5_pstar_post_observation" name="test_full_publication_retains_direct_invariant_violation" time="0.001" /><testcase classname="tests.test_s5_pstar_post_observation" name="test_partial_treatment_failure_observes_exact_published_subset" time="0.001" /><testcase classname="tests.test_s5_pstar_post_observation" name="test_incomplete_or_mismatched_partial_evidence_fails_closed[missing_terminal]" time="0.000" /><testcase classname="tests.test_s5_pstar_post_observation" name="test_incomplete_or_mismatched_partial_evidence_fails_closed[extra_episode]" time="0.000" /><testcase classname="tests.test_s5_pstar_post_observation" name="test_incomplete_or_mismatched_partial_evidence_fails_closed[missing_episode]" time="0.000" /><testcase classname="tests.test_s5_pstar_post_observation" name="test_per_source_violation_coverage_must_match_published_sources" time="0.000" /><testcase classname="tests.test_s5_pstar_postprocess" name="test_full_and_partial_terminal_branches_finalize[False-PASS]" time="3.001" /><testcase classname="tests.test_s5_pstar_postprocess" name="test_full_and_partial_terminal_branches_finalize[True-TREATMENT_FAILURE_OBSERVED]" time="2.555" /><testcase classname="tests.test_s5_pstar_postprocess" name="test_successful_repeat_is_verified_idempotent_without_private_io" time="3.045" /><testcase classname="tests.test_s5_pstar_postprocess" name="test_existing_conflicting_output_fails_closed" time="3.015" /><testcase classname="tests.test_s5_pstar_postprocess" name="test_observer_failure_writes_sanitized_terminal_checkpoint" time="3.002" /><testcase classname="tests.test_s5_pstar_postprocess" name="test_parser_and_cli_derive_pstar_paths" time="0.001" /><testcase classname="tests.test_s5_pstar_postprocess" name="test_default_bounded_observer_derives_real_violation_classes" time="0.001" /><testcase classname="tests.test_s5_pstar_production_identity_materializer" name="test_materialization_binds_two_worker_policy_and_current_sources" time="0.001"><failure message="paper_eval.s5_pstar_production_identity_materializer.S5PStarMaterializationError: source_closure_or_a0_binding_invalid">def test_materialization_binds_two_worker_policy_and_current_sources() -&gt; None:
+&gt;       bundle = materialize_s5_pstar_production_identity(
+            paths=_paths(),
+            git_commit="568afb26053a5f8fb133e29f0583eaa524dad1bd",
+            run_id="s5-p-star-production-identity-20260816-001",
+        )
+
+tests/test_s5_pstar_production_identity_materializer.py:51: 
+_ _ _ _ _ _ _ _ _ _ _ _ _ _ _ _ _ _ _ _ _ _ _ _ _ _ _ _ _ _ _ _ _ _ _ _ _ _ _ _ 
+src/paper_eval/s5_pstar_production_identity_materializer.py:367: in materialize_s5_pstar_production_identity
+    a0, a0_payload, closure = _validate_a0_base(paths)
+                              ^^^^^^^^^^^^^^^^^^^^^^^^
+_ _ _ _ _ _ _ _ _ _ _ _ _ _ _ _ _ _ _ _ _ _ _ _ _ _ _ _ _ _ _ _ _ _ _ _ _ _ _ _ 
+
+paths = S5PStarMaterializationPaths(a0_runtime_config=PosixPath('/data/predator/ly/MemBind/paper-eval-v3/artifacts/paper_eval/...e.py'), durable_store_test=PosixPath('/data/predator/ly/MemBind/paper-eval-v3/tests/test_s5_durable_attempt_store.py'))
+
+    def _validate_a0_base(
+        paths: S5PStarMaterializationPaths,
+    ) -&gt; tuple[dict[str, Any], dict[str, Any], dict[str, str]]:
+        a0, payload = _sealed(
+            _load(paths.a0_runtime_config, "a0_runtime_config_invalid"),
+            "a0_runtime_config_invalid",
+        )
+        pointer, pointer_payload = _sealed(
+            _load(paths.current_stage_pointer, "current_stage_pointer_invalid"),
+            "current_stage_pointer_invalid",
+        )
+        closure = _source_closure(paths)
+        if (
+            payload.get("schema_version") != _A0_SCHEMA
+            or payload.get("stage") != "S5"
+            or payload.get("status") != "FROZEN_IDENTITY_ONLY"
+            or payload.get("method") != "A0"
+            or payload.get("baseline_id") != "native-graphiti-u0-reader-v2"
+            or payload.get("history_id") != "07741c45"
+            or payload.get("episode_count") != 49
+            or payload.get("failure_policy") != _FAILURE_POLICY
+            or payload.get("runtime_factory_entrypoint")
+            != "native_characterization_runtime.build_u0_graphiti_from_env"
+            or payload.get("source_closure_sha256") != closure
+            or pointer_payload.get("current_stage") != "S3_CONFIGURATION_FROZEN"
+            or payload.get("current_stage_pointer_file_sha256")
+            != _file_sha(paths.current_stage_pointer, "current_stage_pointer_missing")
+            or payload.get("current_stage_pointer_payload_sha256")
+            != pointer.get("payload_sha256")
+        ):
+&gt;           raise _fail("source_closure_or_a0_binding_invalid")
+E           paper_eval.s5_pstar_production_identity_materializer.S5PStarMaterializationError: source_closure_or_a0_binding_invalid
+
+src/paper_eval/s5_pstar_production_identity_materializer.py:261: S5PStarMaterializationError</failure></testcase><testcase classname="tests.test_s5_pstar_production_identity_materializer" name="test_runtime_config_tamper_and_source_drift_fail_closed" time="0.001"><failure message="paper_eval.s5_pstar_production_identity_materializer.S5PStarMaterializationError: source_closure_or_a0_binding_invalid">tmp_path = PosixPath('/tmp/pytest-of-ly/pytest-463/test_runtime_config_tamper_and0')
+
+    def test_runtime_config_tamper_and_source_drift_fail_closed(tmp_path: Path) -&gt; None:
+&gt;       bundle = materialize_s5_pstar_production_identity(
+            paths=_paths(),
+            git_commit="568afb26053a5f8fb133e29f0583eaa524dad1bd",
+            run_id="s5-p-star-production-identity-20260816-001",
+        )
+
+tests/test_s5_pstar_production_identity_materializer.py:81: 
+_ _ _ _ _ _ _ _ _ _ _ _ _ _ _ _ _ _ _ _ _ _ _ _ _ _ _ _ _ _ _ _ _ _ _ _ _ _ _ _ 
+src/paper_eval/s5_pstar_production_identity_materializer.py:367: in materialize_s5_pstar_production_identity
+    a0, a0_payload, closure = _validate_a0_base(paths)
+                              ^^^^^^^^^^^^^^^^^^^^^^^^
+_ _ _ _ _ _ _ _ _ _ _ _ _ _ _ _ _ _ _ _ _ _ _ _ _ _ _ _ _ _ _ _ _ _ _ _ _ _ _ _ 
+
+paths = S5PStarMaterializationPaths(a0_runtime_config=PosixPath('/data/predator/ly/MemBind/paper-eval-v3/artifacts/paper_eval/...e.py'), durable_store_test=PosixPath('/data/predator/ly/MemBind/paper-eval-v3/tests/test_s5_durable_attempt_store.py'))
+
+    def _validate_a0_base(
+        paths: S5PStarMaterializationPaths,
+    ) -&gt; tuple[dict[str, Any], dict[str, Any], dict[str, str]]:
+        a0, payload = _sealed(
+            _load(paths.a0_runtime_config, "a0_runtime_config_invalid"),
+            "a0_runtime_config_invalid",
+        )
+        pointer, pointer_payload = _sealed(
+            _load(paths.current_stage_pointer, "current_stage_pointer_invalid"),
+            "current_stage_pointer_invalid",
+        )
+        closure = _source_closure(paths)
+        if (
+            payload.get("schema_version") != _A0_SCHEMA
+            or payload.get("stage") != "S5"
+            or payload.get("status") != "FROZEN_IDENTITY_ONLY"
+            or payload.get("method") != "A0"
+            or payload.get("baseline_id") != "native-graphiti-u0-reader-v2"
+            or payload.get("history_id") != "07741c45"
+            or payload.get("episode_count") != 49
+            or payload.get("failure_policy") != _FAILURE_POLICY
+            or payload.get("runtime_factory_entrypoint")
+            != "native_characterization_runtime.build_u0_graphiti_from_env"
+            or payload.get("source_closure_sha256") != closure
+            or pointer_payload.get("current_stage") != "S3_CONFIGURATION_FROZEN"
+            or payload.get("current_stage_pointer_file_sha256")
+            != _file_sha(paths.current_stage_pointer, "current_stage_pointer_missing")
+            or payload.get("current_stage_pointer_payload_sha256")
+            != pointer.get("payload_sha256")
+        ):
+&gt;           raise _fail("source_closure_or_a0_binding_invalid")
+E           paper_eval.s5_pstar_production_identity_materializer.S5PStarMaterializationError: source_closure_or_a0_binding_invalid
+
+src/paper_eval/s5_pstar_production_identity_materializer.py:261: S5PStarMaterializationError</failure></testcase><testcase classname="tests.test_s5_pstar_production_identity_materializer" name="test_exclusive_writer_never_overwrites" time="0.001"><failure message="paper_eval.s5_pstar_production_identity_materializer.S5PStarMaterializationError: source_closure_or_a0_binding_invalid">tmp_path = PosixPath('/tmp/pytest-of-ly/pytest-463/test_exclusive_writer_never_ov0')
+
+    def test_exclusive_writer_never_overwrites(tmp_path: Path) -&gt; None:
+&gt;       bundle = materialize_s5_pstar_production_identity(
+            paths=_paths(),
+            git_commit="568afb26053a5f8fb133e29f0583eaa524dad1bd",
+            run_id="s5-p-star-production-identity-20260816-001",
+        )
+
+tests/test_s5_pstar_production_identity_materializer.py:108: 
+_ _ _ _ _ _ _ _ _ _ _ _ _ _ _ _ _ _ _ _ _ _ _ _ _ _ _ _ _ _ _ _ _ _ _ _ _ _ _ _ 
+src/paper_eval/s5_pstar_production_identity_materializer.py:367: in materialize_s5_pstar_production_identity
+    a0, a0_payload, closure = _validate_a0_base(paths)
+                              ^^^^^^^^^^^^^^^^^^^^^^^^
+_ _ _ _ _ _ _ _ _ _ _ _ _ _ _ _ _ _ _ _ _ _ _ _ _ _ _ _ _ _ _ _ _ _ _ _ _ _ _ _ 
+
+paths = S5PStarMaterializationPaths(a0_runtime_config=PosixPath('/data/predator/ly/MemBind/paper-eval-v3/artifacts/paper_eval/...e.py'), durable_store_test=PosixPath('/data/predator/ly/MemBind/paper-eval-v3/tests/test_s5_durable_attempt_store.py'))
+
+    def _validate_a0_base(
+        paths: S5PStarMaterializationPaths,
+    ) -&gt; tuple[dict[str, Any], dict[str, Any], dict[str, str]]:
+        a0, payload = _sealed(
+            _load(paths.a0_runtime_config, "a0_runtime_config_invalid"),
+            "a0_runtime_config_invalid",
+        )
+        pointer, pointer_payload = _sealed(
+            _load(paths.current_stage_pointer, "current_stage_pointer_invalid"),
+            "current_stage_pointer_invalid",
+        )
+        closure = _source_closure(paths)
+        if (
+            payload.get("schema_version") != _A0_SCHEMA
+            or payload.get("stage") != "S5"
+            or payload.get("status") != "FROZEN_IDENTITY_ONLY"
+            or payload.get("method") != "A0"
+            or payload.get("baseline_id") != "native-graphiti-u0-reader-v2"
+            or payload.get("history_id") != "07741c45"
+            or payload.get("episode_count") != 49
+            or payload.get("failure_policy") != _FAILURE_POLICY
+            or payload.get("runtime_factory_entrypoint")
+            != "native_characterization_runtime.build_u0_graphiti_from_env"
+            or payload.get("source_closure_sha256") != closure
+            or pointer_payload.get("current_stage") != "S3_CONFIGURATION_FROZEN"
+            or payload.get("current_stage_pointer_file_sha256")
+            != _file_sha(paths.current_stage_pointer, "current_stage_pointer_missing")
+            or payload.get("current_stage_pointer_payload_sha256")
+            != pointer.get("payload_sha256")
+        ):
+&gt;           raise _fail("source_closure_or_a0_binding_invalid")
+E           paper_eval.s5_pstar_production_identity_materializer.S5PStarMaterializationError: source_closure_or_a0_binding_invalid
+
+src/paper_eval/s5_pstar_production_identity_materializer.py:261: S5PStarMaterializationError</failure></testcase><testcase classname="tests.test_s5_pstar_production_identity_materializer" name="test_real_pstar_materialization_passes_generic_ap_qualifier" time="0.001"><failure message="paper_eval.s5_pstar_production_identity_materializer.S5PStarMaterializationError: source_closure_or_a0_binding_invalid">tmp_path = PosixPath('/tmp/pytest-of-ly/pytest-463/test_real_pstar_materializatio0')
+
+    def test_real_pstar_materialization_passes_generic_ap_qualifier(
+        tmp_path: Path,
+    ) -&gt; None:
+&gt;       bundle = materialize_s5_pstar_production_identity(
+            paths=_paths(),
+            git_commit="568afb26053a5f8fb133e29f0583eaa524dad1bd",
+            run_id="s5-p-star-production-identity-20260816-001",
+        )
+
+tests/test_s5_pstar_production_identity_materializer.py:133: 
+_ _ _ _ _ _ _ _ _ _ _ _ _ _ _ _ _ _ _ _ _ _ _ _ _ _ _ _ _ _ _ _ _ _ _ _ _ _ _ _ 
+src/paper_eval/s5_pstar_production_identity_materializer.py:367: in materialize_s5_pstar_production_identity
+    a0, a0_payload, closure = _validate_a0_base(paths)
+                              ^^^^^^^^^^^^^^^^^^^^^^^^
+_ _ _ _ _ _ _ _ _ _ _ _ _ _ _ _ _ _ _ _ _ _ _ _ _ _ _ _ _ _ _ _ _ _ _ _ _ _ _ _ 
+
+paths = S5PStarMaterializationPaths(a0_runtime_config=PosixPath('/data/predator/ly/MemBind/paper-eval-v3/artifacts/paper_eval/...e.py'), durable_store_test=PosixPath('/data/predator/ly/MemBind/paper-eval-v3/tests/test_s5_durable_attempt_store.py'))
+
+    def _validate_a0_base(
+        paths: S5PStarMaterializationPaths,
+    ) -&gt; tuple[dict[str, Any], dict[str, Any], dict[str, str]]:
+        a0, payload = _sealed(
+            _load(paths.a0_runtime_config, "a0_runtime_config_invalid"),
+            "a0_runtime_config_invalid",
+        )
+        pointer, pointer_payload = _sealed(
+            _load(paths.current_stage_pointer, "current_stage_pointer_invalid"),
+            "current_stage_pointer_invalid",
+        )
+        closure = _source_closure(paths)
+        if (
+            payload.get("schema_version") != _A0_SCHEMA
+            or payload.get("stage") != "S5"
+            or payload.get("status") != "FROZEN_IDENTITY_ONLY"
+            or payload.get("method") != "A0"
+            or payload.get("baseline_id") != "native-graphiti-u0-reader-v2"
+            or payload.get("history_id") != "07741c45"
+            or payload.get("episode_count") != 49
+            or payload.get("failure_policy") != _FAILURE_POLICY
+            or payload.get("runtime_factory_entrypoint")
+            != "native_characterization_runtime.build_u0_graphiti_from_env"
+            or payload.get("source_closure_sha256") != closure
+            or pointer_payload.get("current_stage") != "S3_CONFIGURATION_FROZEN"
+            or payload.get("current_stage_pointer_file_sha256")
+            != _file_sha(paths.current_stage_pointer, "current_stage_pointer_missing")
+            or payload.get("current_stage_pointer_payload_sha256")
+            != pointer.get("payload_sha256")
+        ):
+&gt;           raise _fail("source_closure_or_a0_binding_invalid")
+E           paper_eval.s5_pstar_production_identity_materializer.S5PStarMaterializationError: source_closure_or_a0_binding_invalid
+
+src/paper_eval/s5_pstar_production_identity_materializer.py:261: S5PStarMaterializationError</failure></testcase><testcase classname="tests.test_s5_pstar_progress" name="test_not_started_projection_is_fixed_and_never_authorizes_resume" time="0.000" /><testcase classname="tests.test_s5_pstar_progress" name="test_complete_treatment_failure_is_scientific_progress_not_corruption" time="0.072" /><testcase classname="tests.test_s5_pstar_progress" name="test_post_and_final_statuses_are_read_only_verifier_projections" time="0.002" /><testcase classname="tests.test_s5_pstar_progress" name="test_corrupt_evidence_is_sanitized_and_cannot_be_resumed" time="0.001" /><testcase classname="tests.test_s5_pstar_result_finalizer" name="test_full_publication_is_independently_finalized_without_erasing_violations[0-PASS]" time="2.995" /><testcase classname="tests.test_s5_pstar_result_finalizer" name="test_full_publication_is_independently_finalized_without_erasing_violations[2-DIRECT_INVARIANT_VIOLATION_OBSERVED]" time="3.022" /><testcase classname="tests.test_s5_pstar_result_finalizer" name="test_treatment_failure_is_a_complete_scientific_outcome_with_exact_accounting" time="2.560" /><testcase classname="tests.test_s5_pstar_result_finalizer" name="test_finalizer_rejects_post_observation_or_predecessor_drift" time="2.979" /><testcase classname="tests.test_s5_pstar_result_finalizer" name="test_result_write_is_exclusive_and_standalone_tampering_fails" time="3.018" /><testcase classname="tests.test_s5_pstar_tmux_launcher" name="test_launcher_source_has_detached_verified_nonsecret_chain" time="0.000" /><testcase classname="tests.test_s5_pstar_tmux_launcher" name="test_launcher_required_options_match_controller_parser" time="0.000" /><testcase classname="tests.test_s5_pstar_tmux_launcher" name="test_launcher_derives_identity_and_starts_one_detached_session" time="0.012" /><testcase classname="tests.test_s5_pstar_tmux_launcher" name="test_launcher_rejects_existing_single_use_output[authority_consumption.json]" time="0.008" /><testcase classname="tests.test_s5_pstar_tmux_launcher" name="test_launcher_rejects_existing_single_use_output[controller]" time="0.008" /><testcase classname="tests.test_s5_pstar_tmux_launcher" name="test_launcher_rejects_existing_single_use_output[attempt]" time="0.008" /><testcase classname="tests.test_s5_pstar_tmux_launcher" name="test_launcher_rejects_existing_single_use_output[attempt/result.json]" time="0.008" /><testcase classname="tests.test_s5_pstar_tmux_launcher" name="test_launcher_rejects_existing_single_use_output[post_observation.json]" time="0.008" /><testcase classname="tests.test_s5_pstar_tmux_launcher" name="test_launcher_rejects_existing_single_use_output[S5_PSTAR_RESULT.json]" time="0.007" /><testcase classname="tests.test_s5_pstar_tmux_launcher" name="test_launcher_rejects_existing_single_use_output[postprocess/checkpoint.json]" time="0.008" /><testcase classname="tests.test_s5_pstar_tmux_launcher" name="test_launcher_rejects_log_or_symlink_collision" time="0.008" /><testcase classname="tests.test_s5_pstar_tmux_launcher" name="test_launcher_rejects_existing_tmux_session" time="0.013" /><testcase classname="tests.test_s5_pstar_tmux_launcher" name="test_launcher_rejects_invalid_verified_identity[FAKE_RUN_ID-../escape]" time="0.007" /><testcase classname="tests.test_s5_pstar_tmux_launcher" name="test_launcher_rejects_invalid_verified_identity[FAKE_RUN_ID-s5-a0-20260816-001]" time="0.007" /><testcase classname="tests.test_s5_pstar_tmux_launcher" name="test_launcher_rejects_invalid_verified_identity[FAKE_NAMESPACE-pev3-wrong-run]" time="0.007" /><testcase classname="tests.test_s5_pstar_tmux_launcher" name="test_launcher_rejects_invalid_verified_identity[FAKE_CONCURRENCY-1]" time="0.007" /><testcase classname="tests.test_s5_pstar_tmux_launcher" name="test_launcher_rejects_reader_failure_missing_input_or_shell_control" time="0.019" /><testcase classname="tests.test_s5_pstar_tmux_launcher" name="test_launcher_requires_explicit_predecessor_path" time="0.003" /></testsuite></testsuites>

@@ -1,0 +1,341 @@
+<?xml version="1.0" encoding="utf-8"?><testsuites name="pytest tests"><testsuite name="pytest" errors="0" failures="6" skipped="0" tests="25" time="0.304" timestamp="2026-08-16T15:10:09.018736+08:00" hostname="aces-System-Product-Name"><testcase classname="tests.test_s5_mstar_failure_envelope" name="test_failure_envelope_classification_is_strict_and_sealed[event0-json.decoder.JSONDecodeError-CAP_EXHAUSTED]" time="0.001"><failure message="KeyError: 'prompt_name'">event = {'request_ordinal': 3, 'source_sequence': 8, 'response_format_type': 'json_schema', 'json_schema_name': 'ExtractedEdges', ...}
+upstream_error_class = 'json.decoder.JSONDecodeError'
+classification = 'CAP_EXHAUSTED'
+
+    @pytest.mark.parametrize(
+        ("event", "upstream_error_class", "classification"),
+        [
+            (_event(), "json.decoder.JSONDecodeError", "CAP_EXHAUSTED"),
+            (
+                _event(finish_reason="stop", completion_tokens=1_203, total_tokens=20_468),
+                "json.decoder.JSONDecodeError",
+                "STRUCTURED_INVALID",
+            ),
+            (
+                _event(completion_tokens=16_383, total_tokens=35_648),
+                "json.decoder.JSONDecodeError",
+                "UNCLASSIFIED",
+            ),
+            (
+                _event(source_sequence=9),
+                "json.decoder.JSONDecodeError",
+                "UNCLASSIFIED",
+            ),
+            (_event(), None, "UNCLASSIFIED"),
+        ],
+    )
+    def test_failure_envelope_classification_is_strict_and_sealed(
+        event: dict[str, object],
+        upstream_error_class: str | None,
+        classification: str,
+    ) -&gt; None:
+        artifact = _build(
+            upstream_error_class=upstream_error_class,
+            transport_events=[event],
+        )
+    
+        assert artifact["classification"] == classification
+&gt;       assert artifact["prompt_name"] == "extract_edges"
+               ^^^^^^^^^^^^^^^^^^^^^^^
+E       KeyError: 'prompt_name'
+
+tests/test_s5_mstar_failure_envelope.py:91: KeyError</failure></testcase><testcase classname="tests.test_s5_mstar_failure_envelope" name="test_failure_envelope_classification_is_strict_and_sealed[event1-json.decoder.JSONDecodeError-STRUCTURED_INVALID]" time="0.000"><failure message="KeyError: 'prompt_name'">event = {'request_ordinal': 3, 'source_sequence': 8, 'response_format_type': 'json_schema', 'json_schema_name': 'ExtractedEdges', ...}
+upstream_error_class = 'json.decoder.JSONDecodeError'
+classification = 'STRUCTURED_INVALID'
+
+    @pytest.mark.parametrize(
+        ("event", "upstream_error_class", "classification"),
+        [
+            (_event(), "json.decoder.JSONDecodeError", "CAP_EXHAUSTED"),
+            (
+                _event(finish_reason="stop", completion_tokens=1_203, total_tokens=20_468),
+                "json.decoder.JSONDecodeError",
+                "STRUCTURED_INVALID",
+            ),
+            (
+                _event(completion_tokens=16_383, total_tokens=35_648),
+                "json.decoder.JSONDecodeError",
+                "UNCLASSIFIED",
+            ),
+            (
+                _event(source_sequence=9),
+                "json.decoder.JSONDecodeError",
+                "UNCLASSIFIED",
+            ),
+            (_event(), None, "UNCLASSIFIED"),
+        ],
+    )
+    def test_failure_envelope_classification_is_strict_and_sealed(
+        event: dict[str, object],
+        upstream_error_class: str | None,
+        classification: str,
+    ) -&gt; None:
+        artifact = _build(
+            upstream_error_class=upstream_error_class,
+            transport_events=[event],
+        )
+    
+        assert artifact["classification"] == classification
+&gt;       assert artifact["prompt_name"] == "extract_edges"
+               ^^^^^^^^^^^^^^^^^^^^^^^
+E       KeyError: 'prompt_name'
+
+tests/test_s5_mstar_failure_envelope.py:91: KeyError</failure></testcase><testcase classname="tests.test_s5_mstar_failure_envelope" name="test_failure_envelope_classification_is_strict_and_sealed[event2-json.decoder.JSONDecodeError-UNCLASSIFIED]" time="0.000"><failure message="KeyError: 'prompt_name'">event = {'request_ordinal': 3, 'source_sequence': 8, 'response_format_type': 'json_schema', 'json_schema_name': 'ExtractedEdges', ...}
+upstream_error_class = 'json.decoder.JSONDecodeError'
+classification = 'UNCLASSIFIED'
+
+    @pytest.mark.parametrize(
+        ("event", "upstream_error_class", "classification"),
+        [
+            (_event(), "json.decoder.JSONDecodeError", "CAP_EXHAUSTED"),
+            (
+                _event(finish_reason="stop", completion_tokens=1_203, total_tokens=20_468),
+                "json.decoder.JSONDecodeError",
+                "STRUCTURED_INVALID",
+            ),
+            (
+                _event(completion_tokens=16_383, total_tokens=35_648),
+                "json.decoder.JSONDecodeError",
+                "UNCLASSIFIED",
+            ),
+            (
+                _event(source_sequence=9),
+                "json.decoder.JSONDecodeError",
+                "UNCLASSIFIED",
+            ),
+            (_event(), None, "UNCLASSIFIED"),
+        ],
+    )
+    def test_failure_envelope_classification_is_strict_and_sealed(
+        event: dict[str, object],
+        upstream_error_class: str | None,
+        classification: str,
+    ) -&gt; None:
+        artifact = _build(
+            upstream_error_class=upstream_error_class,
+            transport_events=[event],
+        )
+    
+        assert artifact["classification"] == classification
+&gt;       assert artifact["prompt_name"] == "extract_edges"
+               ^^^^^^^^^^^^^^^^^^^^^^^
+E       KeyError: 'prompt_name'
+
+tests/test_s5_mstar_failure_envelope.py:91: KeyError</failure></testcase><testcase classname="tests.test_s5_mstar_failure_envelope" name="test_failure_envelope_classification_is_strict_and_sealed[event3-json.decoder.JSONDecodeError-UNCLASSIFIED]" time="0.000"><failure message="KeyError: 'prompt_name'">event = {'request_ordinal': 3, 'source_sequence': 9, 'response_format_type': 'json_schema', 'json_schema_name': 'ExtractedEdges', ...}
+upstream_error_class = 'json.decoder.JSONDecodeError'
+classification = 'UNCLASSIFIED'
+
+    @pytest.mark.parametrize(
+        ("event", "upstream_error_class", "classification"),
+        [
+            (_event(), "json.decoder.JSONDecodeError", "CAP_EXHAUSTED"),
+            (
+                _event(finish_reason="stop", completion_tokens=1_203, total_tokens=20_468),
+                "json.decoder.JSONDecodeError",
+                "STRUCTURED_INVALID",
+            ),
+            (
+                _event(completion_tokens=16_383, total_tokens=35_648),
+                "json.decoder.JSONDecodeError",
+                "UNCLASSIFIED",
+            ),
+            (
+                _event(source_sequence=9),
+                "json.decoder.JSONDecodeError",
+                "UNCLASSIFIED",
+            ),
+            (_event(), None, "UNCLASSIFIED"),
+        ],
+    )
+    def test_failure_envelope_classification_is_strict_and_sealed(
+        event: dict[str, object],
+        upstream_error_class: str | None,
+        classification: str,
+    ) -&gt; None:
+        artifact = _build(
+            upstream_error_class=upstream_error_class,
+            transport_events=[event],
+        )
+    
+        assert artifact["classification"] == classification
+&gt;       assert artifact["prompt_name"] == "extract_edges"
+               ^^^^^^^^^^^^^^^^^^^^^^^
+E       KeyError: 'prompt_name'
+
+tests/test_s5_mstar_failure_envelope.py:91: KeyError</failure></testcase><testcase classname="tests.test_s5_mstar_failure_envelope" name="test_failure_envelope_classification_is_strict_and_sealed[event4-None-UNCLASSIFIED]" time="0.000"><failure message="KeyError: 'prompt_name'">event = {'request_ordinal': 3, 'source_sequence': 8, 'response_format_type': 'json_schema', 'json_schema_name': 'ExtractedEdges', ...}
+upstream_error_class = None, classification = 'UNCLASSIFIED'
+
+    @pytest.mark.parametrize(
+        ("event", "upstream_error_class", "classification"),
+        [
+            (_event(), "json.decoder.JSONDecodeError", "CAP_EXHAUSTED"),
+            (
+                _event(finish_reason="stop", completion_tokens=1_203, total_tokens=20_468),
+                "json.decoder.JSONDecodeError",
+                "STRUCTURED_INVALID",
+            ),
+            (
+                _event(completion_tokens=16_383, total_tokens=35_648),
+                "json.decoder.JSONDecodeError",
+                "UNCLASSIFIED",
+            ),
+            (
+                _event(source_sequence=9),
+                "json.decoder.JSONDecodeError",
+                "UNCLASSIFIED",
+            ),
+            (_event(), None, "UNCLASSIFIED"),
+        ],
+    )
+    def test_failure_envelope_classification_is_strict_and_sealed(
+        event: dict[str, object],
+        upstream_error_class: str | None,
+        classification: str,
+    ) -&gt; None:
+        artifact = _build(
+            upstream_error_class=upstream_error_class,
+            transport_events=[event],
+        )
+    
+        assert artifact["classification"] == classification
+&gt;       assert artifact["prompt_name"] == "extract_edges"
+               ^^^^^^^^^^^^^^^^^^^^^^^
+E       KeyError: 'prompt_name'
+
+tests/test_s5_mstar_failure_envelope.py:91: KeyError</failure></testcase><testcase classname="tests.test_s5_mstar_failure_envelope" name="test_failure_envelope_rejects_private_or_unknown_transport_fields[messages]" time="0.000" /><testcase classname="tests.test_s5_mstar_failure_envelope" name="test_failure_envelope_rejects_private_or_unknown_transport_fields[raw_response]" time="0.000" /><testcase classname="tests.test_s5_mstar_failure_envelope" name="test_failure_envelope_rejects_private_or_unknown_transport_fields[prompt]" time="0.000" /><testcase classname="tests.test_s5_mstar_failure_envelope" name="test_failure_envelope_rejects_private_or_unknown_transport_fields[authorization]" time="0.000" /><testcase classname="tests.test_s5_mstar_failure_envelope" name="test_failure_envelope_rejects_private_or_unknown_transport_fields[api_key]" time="0.000" /><testcase classname="tests.test_s5_mstar_failure_envelope" name="test_failure_envelope_write_is_atomic_hash_bound_and_tamper_evident" time="0.009" /><testcase classname="tests.test_s5_mstar_controller" name="test_runtime_composition_binds_exact_workload_and_external_commit_evidence" time="0.001"><failure message="AssertionError: assert () == ({'request_or...': None, ...})&#10;  &#10;  Right contains 2 more items, first extra item: {'request_ordinal': 0, 'source_sequence': 0, 'response_format_type': None, 'json_schema_name': None, ...}&#10;  Use -v to get more diff">monkeypatch = &lt;_pytest.monkeypatch.MonkeyPatch object at 0x7192de36f1d0&gt;
+
+    def test_runtime_composition_binds_exact_workload_and_external_commit_evidence(
+        monkeypatch: pytest.MonkeyPatch,
+    ) -&gt; None:
+        graphiti = object()
+        runtime = SimpleNamespace(
+            graphiti=graphiti,
+            llm_client=SimpleNamespace(
+                call_events=[
+                    {
+                        "episode_key": (NAMESPACE, 0),
+                        "token_usage": {
+                            "prompt_tokens": 19_265,
+                            "completion_tokens": 16_384,
+                            "total_tokens": 35_649,
+                        },
+                        "max_tokens": 16_384,
+                        "finish_reason": "length",
+                    },
+                    {
+                        "episode_key": None,
+                        "token_usage": {},
+                        "max_tokens": 16_384,
+                        "finish_reason": None,
+                    },
+                ]
+            ),
+        )
+        ticks = iter([1_735_000_000_000_000_000] * 49)
+    
+        def projector(_episode: object) -&gt; dict[str, object]:
+            return {}
+    
+        class EpisodeNode:
+            pass
+    
+        async def commit_evidence(*_args: object) -&gt; str:
+            return "f" * 64
+    
+        scope_events: list[tuple[str, int, str]] = []
+    
+        class AdapterDouble:
+            def __init__(self, **_kwargs: object) -&gt; None:
+                pass
+    
+            async def prepare(self, source: object, _logical_time: int) -&gt; object:
+                scope_events.append((NAMESPACE, source.source_sequence, "prepare"))
+                return source
+    
+            async def bind(
+                self,
+                _prepared: object,
+                _logical_time: int,
+                source_sequence: int,
+                _visible_prefix: tuple[int, ...],
+            ) -&gt; object:
+                scope_events.append((NAMESPACE, source_sequence, "bind"))
+                return None
+    
+        monkeypatch.setattr(
+            "paper_eval.s5_mstar_controller.S5MStarLiveSemanticAdapter",
+            AdapterDouble,
+        )
+    
+        @contextmanager
+        def telemetry_scope(run_id: str, source_sequence: int):
+            scope_events.append((run_id, source_sequence, "enter"))
+            try:
+                yield
+            finally:
+                scope_events.append((run_id, source_sequence, "exit"))
+    
+        composition = build_s5_mstar_runtime_composition(
+            runtime=runtime,
+            episodes=_episodes(),
+            namespace=NAMESPACE,
+            semantic_binding=_binding(),
+            graphiti_episode_kwargs=projector,
+            episodic_node_type=EpisodeNode,
+            epoch_clock_ns=lambda: next(ticks),
+            commit_evidence=commit_evidence,
+            telemetry_clock_ns=lambda: 123,
+            telemetry_scope=telemetry_scope,
+        )
+    
+        assert len(composition.sources) == 49
+        assert [source.source_sequence for source in composition.sources] == list(range(49))
+        assert [source.source_sha256 for source in composition.sources] == [
+            ref.source_sha256 for ref in _episodes()
+        ]
+        assert [source.logical_time_ns for source in composition.sources] == [
+            1_735_000_000_000_000_000 + index * 1_000 for index in range(49)
+        ]
+        assert composition.commit_evidence is commit_evidence
+        assert composition.telemetry_clock_ns() == 123
+        assert callable(composition.semantic_prepare)
+        assert callable(composition.latest_state_bind)
+        assert callable(composition.failure_telemetry_snapshot)
+&gt;       assert composition.failure_telemetry_snapshot() == (
+            {
+                "request_ordinal": 0,
+                "source_sequence": 0,
+                "response_format_type": None,
+                "json_schema_name": None,
+                "json_schema_sha256": None,
+                "requested_max_tokens": 16_384,
+                "prompt_tokens": 19_265,
+                "completion_tokens": 16_384,
+                "total_tokens": 35_649,
+                "finish_reason": "length",
+                "transport_outcome": "response_received",
+                "http_status": None,
+                "error_class": None,
+            },
+            {
+                "request_ordinal": 1,
+                "source_sequence": None,
+                "response_format_type": None,
+                "json_schema_name": None,
+                "json_schema_sha256": None,
+                "requested_max_tokens": 16_384,
+                "prompt_tokens": None,
+                "completion_tokens": None,
+                "total_tokens": None,
+                "finish_reason": None,
+                "transport_outcome": "response_received",
+                "http_status": None,
+                "error_class": None,
+            },
+        )
+E       AssertionError: assert () == ({'request_or...': None, ...})
+E         
+E         Right contains 2 more items, first extra item: {'request_ordinal': 0, 'source_sequence': 0, 'response_format_type': None, 'json_schema_name': None, ...}
+E         Use -v to get more diff
+
+tests/test_s5_mstar_controller.py:399: AssertionError</failure></testcase><testcase classname="tests.test_s5_mstar_controller" name="test_runtime_composition_rejects_drift_before_adapter_construction[episodes0-pev3-s5-mstar-20260816-101-&lt;lambda&gt;-workload]" time="0.000" /><testcase classname="tests.test_s5_mstar_controller" name="test_runtime_composition_rejects_drift_before_adapter_construction[episodes1-pev3-s5-mstar-20260816-101-&lt;lambda&gt;-namespace]" time="0.000" /><testcase classname="tests.test_s5_mstar_controller" name="test_runtime_composition_rejects_drift_before_adapter_construction[episodes2-pev3-s5-mstar-20260816-101-None-commit_evidence]" time="0.000" /><testcase classname="tests.test_s5_mstar_controller" name="test_controller_builds_runtime_and_promotes_only_bound_runner_pass" time="0.028" /><testcase classname="tests.test_s5_mstar_controller" name="test_identity_drift_fails_before_runtime_or_controller_artifacts" time="0.001" /><testcase classname="tests.test_s5_mstar_controller" name="test_post_start_failures_are_sanitized_and_nonmergeable[runtime-runtime_construction-trace0]" time="0.013" /><testcase classname="tests.test_s5_mstar_controller" name="test_post_start_failures_are_sanitized_and_nonmergeable[readiness-runtime_readiness-trace1]" time="0.016" /><testcase classname="tests.test_s5_mstar_controller" name="test_post_start_failures_are_sanitized_and_nonmergeable[composition-runtime_composition-trace2]" time="0.019" /><testcase classname="tests.test_s5_mstar_controller" name="test_post_start_failures_are_sanitized_and_nonmergeable[runner_factory-runner_construction-trace3]" time="0.022" /><testcase classname="tests.test_s5_mstar_controller" name="test_post_start_failures_are_sanitized_and_nonmergeable[runner-mstar_execution-trace4]" time="0.025" /><testcase classname="tests.test_s5_mstar_controller" name="test_post_start_failures_are_sanitized_and_nonmergeable[close-runtime_close-trace5]" time="0.025" /><testcase classname="tests.test_s5_mstar_controller" name="test_incomplete_runner_is_not_promoted" time="0.028" /><testcase classname="tests.test_s5_mstar_controller" name="test_controller_is_single_use_before_runtime" time="0.028" /></testsuite></testsuites>

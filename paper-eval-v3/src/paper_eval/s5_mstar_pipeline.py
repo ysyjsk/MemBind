@@ -17,10 +17,14 @@ from dataclasses import dataclass
 from typing import Any
 
 
-SCHEMA = "membind.paper-eval-v3.s5-mstar-pipeline-evidence.v1"
+SCHEMA = "membind.paper-eval-v3.s5-mstar-pipeline-evidence.v2"
 MSTAR = "M*"
 _SHA256 = re.compile(r"^[0-9a-f]{64}$")
 _RUN_ID = re.compile(r"^s5-mstar-[a-z0-9][a-z0-9-]{2,127}$")
+_STABLE_CODE = re.compile(r"^[a-z][a-z0-9_]{2,95}$")
+_QUALIFIED_CLASS = re.compile(
+    r"^[A-Za-z_][A-Za-z0-9_]*(?:\.[A-Za-z_][A-Za-z0-9_]*)+$"
+)
 _SUMMARY_FIELDS = {
     "configured_prepare_concurrency",
     "observed_prepare_worker_ids",
@@ -60,6 +64,7 @@ _EVENT_FIELDS: dict[str, set[str]] = {
         "source_sequence",
         "source_sha256",
         "logical_time_ns",
+        "intent_timestamp_ns",
     },
     "prepare_start": {
         "event_sequence",
@@ -135,6 +140,8 @@ _EVENT_FIELDS: dict[str, set[str]] = {
         "failed_source_sequence",
         "failure_code",
         "error_class",
+        "semantic_error_code",
+        "upstream_error_class",
         *_SUMMARY_FIELDS,
     },
 }
@@ -185,8 +192,8 @@ class MStarSpec:
         if self.method != MSTAR:
             raise _fail("legacy_method_identity_forbidden")
         _sha(self.production_core_identity_sha256, "production_core_identity_invalid")
-        if self.prepare_concurrency != 2:
-            raise _fail("prepare_concurrency_must_be_two")
+        if self.prepare_concurrency not in {1, 2, 4, 8}:
+            raise _fail("prepare_concurrency_invalid")
         if not isinstance(self.require_prepare_overlap, bool):
             raise _fail("require_prepare_overlap_invalid")
 
@@ -265,6 +272,22 @@ class _Ledger:
 def _qualified_error_class(error: BaseException) -> str:
     kind = type(error)
     return f"{kind.__module__}.{kind.__qualname__}"
+
+
+def _semantic_failure_fields(
+    error: BaseException,
+) -> tuple[str | None, str | None]:
+    """Project only stable fields exposed by the qualified semantic adapter."""
+
+    code = getattr(error, "code", None)
+    upstream = getattr(error, "upstream_error_class", None)
+    if not isinstance(code, str) or _STABLE_CODE.fullmatch(code) is None:
+        return None, None
+    if upstream is not None and (
+        not isinstance(upstream, str) or _QUALIFIED_CLASS.fullmatch(upstream) is None
+    ):
+        return None, None
+    return code, upstream
 
 
 def _validate_inputs(
@@ -398,6 +421,7 @@ async def run_mstar_pipeline(
             else _timestamp(clock_ns(), "clock_timestamp_invalid")
         )
         logical_times[item.source_sequence] = logical_time
+        intent_timestamp = _timestamp(clock_ns(), "clock_timestamp_invalid")
         await ledger.emit(
             "intent",
             run_id=spec.run_id,
@@ -405,15 +429,19 @@ async def run_mstar_pipeline(
             source_sequence=item.source_sequence,
             source_sha256=item.source_sha256,
             logical_time_ns=logical_time,
+            intent_timestamp_ns=intent_timestamp,
         )
 
     async def set_failure(source: MStarSource, code: str, error: BaseException) -> None:
         if not first_failure:
+            semantic_error_code, upstream_error_class = _semantic_failure_fields(error)
             first_failure.update(
                 {
                     "failed_source_sequence": source.source_sequence,
                     "failure_code": code,
                     "error_class": _qualified_error_class(error),
+                    "semantic_error_code": semantic_error_code,
+                    "upstream_error_class": upstream_error_class,
                 }
             )
         poison.set()
@@ -624,6 +652,8 @@ async def run_mstar_pipeline(
                     "failed_source_sequence": sequence,
                     "failure_code": "PIPELINE_POISONED",
                     "error_class": "paper_eval.s5_mstar_pipeline.MStarPipelineError",
+                    "semantic_error_code": None,
+                    "upstream_error_class": None,
                 }
             )
         await ledger.emit(
@@ -644,6 +674,12 @@ async def run_mstar_pipeline(
         "status": status,
         "mergeable": status == "PASS",
         "failure_code": failure_code,
+        "semantic_error_code": (
+            first_failure.get("semantic_error_code") if first_failure else None
+        ),
+        "upstream_error_class": (
+            first_failure.get("upstream_error_class") if first_failure else None
+        ),
         "events": ledger.events,
         "summary": summary,
     }
@@ -696,6 +732,8 @@ def verify_mstar_pipeline_evidence(
         "status",
         "mergeable",
         "failure_code",
+        "semantic_error_code",
+        "upstream_error_class",
         "events",
         "summary",
     }:
@@ -722,6 +760,11 @@ def verify_mstar_pipeline_evidence(
         raise _fail("mergeability_invalid")
     if (status == "PASS") != (evidence.get("failure_code") is None):
         raise _fail("failure_status_invalid")
+    if status == "PASS" and (
+        evidence.get("semantic_error_code") is not None
+        or evidence.get("upstream_error_class") is not None
+    ):
+        raise _fail("successful_semantic_failure_fields_invalid")
     raw_events = evidence.get("events")
     summary = evidence.get("summary")
     if (
@@ -775,6 +818,7 @@ def verify_mstar_pipeline_evidence(
     }
     for source, intent in intent_by_source.items():
         _timestamp(intent.get("logical_time_ns"), "logical_time_invalid")
+        _timestamp(intent.get("intent_timestamp_ns"), "intent_timestamp_invalid")
         expected_source = next(
             item for item in sources if item.source_sequence == source
         )
@@ -795,9 +839,13 @@ def verify_mstar_pipeline_evidence(
             if event.get("logical_time_ns") != intent_by_source[source].get("logical_time_ns"):
                 raise _fail("logical_time_drift")
             worker = event.get("worker_id")
-            if isinstance(worker, bool) or not isinstance(worker, int) or worker not in {0, 1}:
+            if (
+                isinstance(worker, bool)
+                or not isinstance(worker, int)
+                or worker not in range(expected_spec.prepare_concurrency)
+            ):
                 raise _fail("prepare_worker_invalid")
-            _timestamp(
+            prepare_timestamp = _timestamp(
                 event.get(
                     "prepare_start_timestamp_ns"
                     if event.get("event_type") == "prepare_start"
@@ -805,6 +853,11 @@ def verify_mstar_pipeline_evidence(
                 ),
                 "prepare_timestamp_invalid",
             )
+            if prepare_timestamp < _timestamp(
+                intent_by_source[source].get("intent_timestamp_ns"),
+                "intent_timestamp_invalid",
+            ):
+                raise _fail("prepare_before_intent_invalid")
     prepare_intervals = _intervals(events, "prepare_start", "prepared")
     if any(end < start for start, end, _worker, _source in prepare_intervals):
         raise _fail("prepare_timestamp_order_invalid")
@@ -866,8 +919,10 @@ def verify_mstar_pipeline_evidence(
         if sorted(prepared_sources) != expected_sequences or publications != expected_sequences:
             raise _fail("successful_coverage_invalid")
         if expected_spec.require_prepare_overlap and (
-            summary_expected["observed_prepare_worker_ids"] != [0, 1]
-            or summary_expected["max_active_prepare"] != 2
+            summary_expected["observed_prepare_worker_ids"]
+            != list(range(expected_spec.prepare_concurrency))
+            or summary_expected["max_active_prepare"]
+            != expected_spec.prepare_concurrency
             or summary_expected["prepare_overlap_observed"] is not True
         ):
             raise _fail("prepare_overlap_or_worker_proof_invalid")
@@ -886,6 +941,28 @@ def verify_mstar_pipeline_evidence(
             raise _fail("failure_code_invalid")
         if not isinstance(terminal.get("error_class"), str):
             raise _fail("failure_error_class_invalid")
+        semantic_code = evidence.get("semantic_error_code")
+        upstream_class = evidence.get("upstream_error_class")
+        if (
+            terminal.get("semantic_error_code") != semantic_code
+            or terminal.get("upstream_error_class") != upstream_class
+            or (
+                semantic_code is not None
+                and (
+                    not isinstance(semantic_code, str)
+                    or _STABLE_CODE.fullmatch(semantic_code) is None
+                )
+            )
+            or (
+                upstream_class is not None
+                and (
+                    semantic_code is None
+                    or not isinstance(upstream_class, str)
+                    or _QUALIFIED_CLASS.fullmatch(upstream_class) is None
+                )
+            )
+        ):
+            raise _fail("semantic_failure_binding_invalid")
     return evidence
 
 

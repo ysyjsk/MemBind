@@ -91,6 +91,20 @@ MSTAR_SOURCE_ROLES = frozenset(
         "publication_journal_test",
         "method_smoke_contract",
         "method_smoke_contract_test",
+        "mstar_live_semantic_adapter",
+        "mstar_live_semantic_adapter_test",
+        "mstar_controller",
+        "mstar_controller_test",
+        "mstar_failure_envelope",
+        "mstar_failure_envelope_test",
+        "mstar_post_observation",
+        "mstar_post_observation_test",
+        "mstar_postprocess",
+        "mstar_postprocess_test",
+        "mstar_result_finalizer",
+        "mstar_result_finalizer_test",
+        "native_post_observation",
+        "native_post_observation_test",
     }
 )
 

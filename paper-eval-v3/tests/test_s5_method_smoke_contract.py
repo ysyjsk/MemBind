@@ -120,8 +120,8 @@ def test_mstar_pipeline_projection_reuses_common_smoke_contract() -> None:
         "method": "M*",
         "status": "PASS",
         "events": [
-            {"event_sequence": 0, "event_type": "intent", "source_sequence": 0, "logical_time_ns": 10},
-            {"event_sequence": 1, "event_type": "intent", "source_sequence": 1, "logical_time_ns": 10},
+            {"event_sequence": 0, "event_type": "intent", "source_sequence": 0, "logical_time_ns": 10, "intent_timestamp_ns": 10},
+            {"event_sequence": 1, "event_type": "intent", "source_sequence": 1, "logical_time_ns": 10, "intent_timestamp_ns": 10},
             {"event_sequence": 2, "event_type": "prepare_start", "source_sequence": 0, "worker_id": 0, "prepare_start_timestamp_ns": 11},
             {"event_sequence": 3, "event_type": "prepare_start", "source_sequence": 1, "worker_id": 1, "prepare_start_timestamp_ns": 12},
             {"event_sequence": 4, "event_type": "commit_returned", "source_sequence": 0, "commit_return_timestamp_ns": 30},
@@ -135,6 +135,50 @@ def test_mstar_pipeline_projection_reuses_common_smoke_contract() -> None:
     result = validate_smoke_records("M*", expected_source_sequences=[0, 1], records=records)
     assert result["publication_order"] == [0, 1]
     assert result["direct_invariant_violation_count"] == 0
+
+
+def test_mstar_projection_keeps_epoch_logical_time_out_of_monotonic_telemetry() -> None:
+    epoch_ns = 1_735_000_000_000_000_000
+    evidence = {
+        "method": "M*",
+        "status": "PASS",
+        "events": [
+            {
+                "event_sequence": 0,
+                "event_type": "intent",
+                "source_sequence": 0,
+                "logical_time_ns": epoch_ns,
+                "intent_timestamp_ns": 10,
+            },
+            {
+                "event_sequence": 1,
+                "event_type": "prepare_start",
+                "source_sequence": 0,
+                "worker_id": 0,
+                "prepare_start_timestamp_ns": 11,
+            },
+            {
+                "event_sequence": 2,
+                "event_type": "commit_returned",
+                "source_sequence": 0,
+                "commit_return_timestamp_ns": 20,
+            },
+            {
+                "event_sequence": 3,
+                "event_type": "publication",
+                "source_sequence": 0,
+                "publication_timestamp_ns": 21,
+            },
+            {"event_sequence": 4, "event_type": "terminal_success"},
+        ],
+    }
+
+    records = mstar_pipeline_to_smoke_records(evidence)
+    assert records[0]["arrival_timestamp_ns"] == 10
+    assert records[0]["enqueue_ack_timestamp_ns"] == 10
+    assert validate_smoke_records(
+        "M*", expected_source_sequences=[0], records=records
+    )["status"] == "PASS"
 
 
 def test_mstar_pipeline_projection_fails_closed_on_missing_phase() -> None:

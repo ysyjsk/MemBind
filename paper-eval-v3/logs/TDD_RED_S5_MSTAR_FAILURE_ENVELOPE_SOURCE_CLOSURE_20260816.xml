@@ -1,0 +1,22 @@
+<?xml version="1.0" encoding="utf-8"?><testsuites name="pytest tests"><testsuite name="pytest" errors="0" failures="1" skipped="0" tests="1" time="0.042" timestamp="2026-08-16T15:13:13.068144+08:00" hostname="aces-System-Product-Name"><testcase classname="tests.test_s5_production_identity_qualification" name="test_mstar_source_closure_covers_the_actual_live_and_observation_chain" time="0.000"><failure message="AssertionError: assert False&#10; +  where False = &lt;built-in method issubset of set object at 0x7639dd46a0a0&gt;(frozenset({'adapter', 'adapter_test', 'durable_store', 'durable_store_test', 'graphiti_native', 'graphiti_semantic_api', ...}))&#10; +    where &lt;built-in method issubset of set object at 0x7639dd46a0a0&gt; = {'mstar_controller', 'mstar_controller_test', 'mstar_failure_envelope', 'mstar_failure_envelope_test', 'mstar_live_semantic_adapter', 'mstar_live_semantic_adapter_test', ...}.issubset">def test_mstar_source_closure_covers_the_actual_live_and_observation_chain() -&gt; None:
+&gt;       assert {
+            "mstar_live_semantic_adapter",
+            "mstar_live_semantic_adapter_test",
+            "mstar_controller",
+            "mstar_controller_test",
+            "mstar_failure_envelope",
+            "mstar_failure_envelope_test",
+            "mstar_post_observation",
+            "mstar_post_observation_test",
+            "mstar_postprocess",
+            "mstar_postprocess_test",
+            "mstar_result_finalizer",
+            "mstar_result_finalizer_test",
+            "native_post_observation",
+            "native_post_observation_test",
+        }.issubset(MSTAR_SOURCE_ROLES)
+E       AssertionError: assert False
+E        +  where False = &lt;built-in method issubset of set object at 0x7639dd46a0a0&gt;(frozenset({'adapter', 'adapter_test', 'durable_store', 'durable_store_test', 'graphiti_native', 'graphiti_semantic_api', ...}))
+E        +    where &lt;built-in method issubset of set object at 0x7639dd46a0a0&gt; = {'mstar_controller', 'mstar_controller_test', 'mstar_failure_envelope', 'mstar_failure_envelope_test', 'mstar_live_semantic_adapter', 'mstar_live_semantic_adapter_test', ...}.issubset
+
+tests/test_s5_production_identity_qualification.py:336: AssertionError</failure></testcase></testsuite></testsuites>

@@ -193,9 +193,12 @@ def test_materialized_sources_are_exact_and_use_epoch_not_monotonic_time() -> No
         f"{index + 1:064x}" for index in range(49)
     ]
     assert [source.logical_time_ns for source in sources] == [
-        1_735_000_000_000_000_000 + index for index in range(49)
+        1_735_000_000_000_000_000 + index * 1_000 for index in range(49)
     ]
     assert all(source.logical_time_ns > 1_000_000_000_000_000_000 for source in sources)
+    assert len(
+        {logical_ns_to_datetime(int(source.logical_time_ns)) for source in sources}
+    ) == 49
 
 
 def test_materialization_rejects_monotonic_clock_as_semantic_epoch() -> None:

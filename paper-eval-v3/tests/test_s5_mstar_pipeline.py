@@ -12,6 +12,7 @@ from collections.abc import Mapping
 
 import pytest
 
+from paper_eval.s5_graphiti_mstar_semantics import S5GraphitiMStarSemanticError
 from paper_eval.s5_mstar_pipeline import (
     MStarPipelineError,
     MStarSource,
@@ -110,6 +111,11 @@ async def test_explicit_logical_operation_times_do_not_depend_on_telemetry_clock
         for event in evidence["events"]
         if event["event_type"] == "intent"
     ] == [10_000, 10_001]
+    assert [
+        event["intent_timestamp_ns"]
+        for event in evidence["events"]
+        if event["event_type"] == "intent"
+    ] == [101, 102]
 
 
 @pytest.mark.asyncio
@@ -319,6 +325,8 @@ async def test_bind_failure_keeps_only_durable_published_prefix_and_no_late_even
 
     assert evidence["status"] == "FAIL_CLOSED"
     assert evidence["failure_code"] == "LATEST_STATE_BIND_FAILED"
+    assert evidence["semantic_error_code"] is None
+    assert evidence["upstream_error_class"] is None
     assert evidence["summary"]["published_source_sequences"] == [0]
     assert bind_calls == [0, 1]
     terminal_index = next(
@@ -335,6 +343,51 @@ async def test_bind_failure_keeps_only_durable_published_prefix_and_no_late_even
     verify_mstar_pipeline_evidence(
         evidence, expected_spec=_spec(), expected_sources=_sources()
     )
+
+
+@pytest.mark.asyncio
+async def test_bind_failure_persists_sanitized_semantic_substage_without_message() -> None:
+    sink = DurableSink()
+
+    async def prepare(source: object, _logical_time_ns: int) -> object:
+        return source
+
+    async def bind(*_args: object) -> None:
+        raise S5GraphitiMStarSemanticError(
+            "extract_edges_failed",
+            upstream_error_class="json.decoder.JSONDecodeError",
+        )
+
+    evidence = await run_mstar_pipeline(
+        spec=_spec(),
+        sources=_sources(2),
+        semantic_prepare=prepare,
+        latest_state_bind=bind,
+        persist_event=sink,
+        clock_ns=StepClock(),
+    )
+
+    assert evidence["status"] == "FAIL_CLOSED"
+    assert evidence["semantic_error_code"] == "extract_edges_failed"
+    assert evidence["upstream_error_class"] == "json.decoder.JSONDecodeError"
+    terminal = evidence["events"][-1]
+    assert terminal["semantic_error_code"] == "extract_edges_failed"
+    assert terminal["upstream_error_class"] == "json.decoder.JSONDecodeError"
+    assert "JSONDecodeError" in repr(evidence)
+    assert "PRIVATE" not in repr(evidence)
+    verify_mstar_pipeline_evidence(
+        evidence, expected_spec=_spec(), expected_sources=_sources(2)
+    )
+
+    for field in ("semantic_error_code", "upstream_error_class"):
+        tampered = copy.deepcopy(evidence)
+        tampered["events"][-1][field] = "PRIVATE-TAMPER"
+        with pytest.raises(MStarPipelineError):
+            verify_mstar_pipeline_evidence(
+                tampered,
+                expected_spec=_spec(),
+                expected_sources=_sources(2),
+            )
 
 
 @pytest.mark.asyncio
@@ -465,6 +518,65 @@ def test_spec_and_source_reject_legacy_aliases_or_invalid_identity() -> None:
         MStarSpec("s5-mstar-offline-001", "x", 2)
     with pytest.raises(MStarPipelineError):
         MStarSource(-1, "b" * 64, object())
+
+
+@pytest.mark.parametrize("concurrency", [1, 2, 4, 8])
+def test_spec_accepts_only_protocol_concurrency_grid(concurrency: int) -> None:
+    spec = MStarSpec(
+        "s5-mstar-grid-001",
+        CORE_SHA,
+        concurrency,
+        require_prepare_overlap=concurrency > 1,
+    )
+    assert spec.prepare_concurrency == concurrency
+
+
+def test_spec_rejects_concurrency_outside_protocol_grid() -> None:
+    with pytest.raises(MStarPipelineError, match="prepare_concurrency_invalid"):
+        MStarSpec("s5-mstar-grid-002", CORE_SHA, 3)
+
+
+@pytest.mark.asyncio
+@pytest.mark.parametrize("concurrency", [1, 2, 4, 8])
+async def test_verifier_accepts_every_observed_worker_in_protocol_grid(
+    concurrency: int,
+) -> None:
+    sources = _sources(concurrency)
+    entered = 0
+    release = asyncio.Event()
+
+    async def prepare(source: object, _logical_time_ns: int) -> object:
+        nonlocal entered
+        entered += 1
+        if entered == concurrency:
+            release.set()
+        await asyncio.wait_for(release.wait(), timeout=1)
+        return source
+
+    async def bind(*_args: object) -> None:
+        await asyncio.sleep(0)
+
+    spec = MStarSpec(
+        f"s5-mstar-grid-live-{concurrency}",
+        CORE_SHA,
+        concurrency,
+        require_prepare_overlap=concurrency > 1,
+    )
+    evidence = await run_mstar_pipeline(
+        spec=spec,
+        sources=sources,
+        semantic_prepare=prepare,
+        latest_state_bind=bind,
+        persist_event=DurableSink(),
+        clock_ns=StepClock(),
+    )
+
+    assert evidence["summary"]["observed_prepare_worker_ids"] == list(
+        range(concurrency)
+    )
+    verify_mstar_pipeline_evidence(
+        evidence, expected_spec=spec, expected_sources=sources
+    )
 
 
 @pytest.mark.asyncio

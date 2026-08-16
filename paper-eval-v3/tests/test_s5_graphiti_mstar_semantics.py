@@ -4,6 +4,7 @@ from __future__ import annotations
 
 import asyncio
 from contextlib import contextmanager
+from dataclasses import replace
 from datetime import timezone
 
 import pytest
@@ -281,3 +282,51 @@ def test_conflicting_duplicate_resolved_uuid_fails_before_attribute_or_commit() 
         asyncio.run(runtime.bind(prepared, 1, 0, ()))
     assert "attrs" not in calls
     assert "process" not in calls
+
+
+@pytest.mark.parametrize(
+    ("binding_field", "expected_code", "expected_last_call"),
+    [
+        ("resolve_extracted_nodes", "resolve_nodes_failed", "resolve_nodes_broken"),
+        ("extract_edges", "extract_edges_failed", "extract_edges_broken"),
+        ("resolve_extracted_edges", "resolve_edges_failed", "resolve_edges_broken"),
+        (
+            "extract_attributes_from_nodes",
+            "extract_attributes_failed",
+            "extract_attributes_broken",
+        ),
+        ("process_episode_data", "process_episode_data_failed", "process_broken"),
+    ],
+)
+def test_bind_substage_failure_keeps_only_sanitized_code_and_upstream_class(
+    binding_field: str,
+    expected_code: str,
+    expected_last_call: str,
+) -> None:
+    """Each Native bind substage must remain distinguishable without raw text."""
+
+    calls: list[str] = []
+    base = _binding(calls)
+
+    async def broken(*_args, **_kwargs):
+        calls.append(expected_last_call)
+        raise RuntimeError("PRIVATE-UPSTREAM-DETAIL")
+
+    runtime = S5GraphitiMStarSemanticRuntime(
+        graphiti=type("GraphitiDouble", (), {"clients": object()})(),
+        binding=replace(base, **{binding_field: broken}),
+        latest_state_retriever=lambda _source: asyncio.sleep(0, result=[]),
+    )
+    prepared = asyncio.run(runtime.prepare(_source(), 1))
+
+    with pytest.raises(S5GraphitiMStarSemanticError) as raised:
+        asyncio.run(runtime.bind(prepared, 1, 0, ()))
+
+    error = raised.value
+    assert error.code == expected_code
+    assert error.upstream_error_class == "builtins.RuntimeError"
+    assert str(error) == expected_code
+    assert "PRIVATE-UPSTREAM-DETAIL" not in repr(error)
+    assert calls[-1] == expected_last_call
+    if binding_field != "process_episode_data":
+        assert "process" not in calls

@@ -1,0 +1,40 @@
+<?xml version="1.0" encoding="utf-8"?><testsuites name="pytest tests"><testsuite name="pytest" errors="0" failures="1" skipped="0" tests="15" time="0.280" timestamp="2026-08-16T12:55:25.759727+08:00" hostname="aces-System-Product-Name"><testcase classname="tests.test_s5_mstar_controller" name="test_runtime_composition_binds_exact_workload_and_external_commit_evidence" time="0.001"><failure message="assert [173500000000...00005000, ...] == [173500000000...00000005, ...]&#10;  &#10;  At index 1 diff: 1735000000000001000 != 1735000000000000001&#10;  Use -v to get more diff">def test_runtime_composition_binds_exact_workload_and_external_commit_evidence() -&gt; None:
+        graphiti = object()
+        runtime = SimpleNamespace(graphiti=graphiti)
+        ticks = iter([1_735_000_000_000_000_000] * 49)
+    
+        def projector(_episode: object) -&gt; dict[str, object]:
+            return {}
+    
+        class EpisodeNode:
+            pass
+    
+        async def commit_evidence(*_args: object) -&gt; str:
+            return "f" * 64
+    
+        composition = build_s5_mstar_runtime_composition(
+            runtime=runtime,
+            episodes=_episodes(),
+            namespace=NAMESPACE,
+            semantic_binding=_binding(),
+            graphiti_episode_kwargs=projector,
+            episodic_node_type=EpisodeNode,
+            epoch_clock_ns=lambda: next(ticks),
+            commit_evidence=commit_evidence,
+            telemetry_clock_ns=lambda: 123,
+        )
+    
+        assert len(composition.sources) == 49
+        assert [source.source_sequence for source in composition.sources] == list(range(49))
+        assert [source.source_sha256 for source in composition.sources] == [
+            ref.source_sha256 for ref in _episodes()
+        ]
+&gt;       assert [source.logical_time_ns for source in composition.sources] == [
+            1_735_000_000_000_000_000 + index for index in range(49)
+        ]
+E       assert [173500000000...00005000, ...] == [173500000000...00000005, ...]
+E         
+E         At index 1 diff: 1735000000000001000 != 1735000000000000001
+E         Use -v to get more diff
+
+tests/test_s5_mstar_controller.py:329: AssertionError</failure></testcase><testcase classname="tests.test_s5_mstar_controller" name="test_runtime_composition_rejects_drift_before_adapter_construction[episodes0-pev3-s5-mstar-20260816-101-&lt;lambda&gt;-workload]" time="0.000" /><testcase classname="tests.test_s5_mstar_controller" name="test_runtime_composition_rejects_drift_before_adapter_construction[episodes1-pev3-s5-mstar-20260816-101-&lt;lambda&gt;-namespace]" time="0.000" /><testcase classname="tests.test_s5_mstar_controller" name="test_runtime_composition_rejects_drift_before_adapter_construction[episodes2-pev3-s5-mstar-20260816-101-None-commit_evidence]" time="0.000" /><testcase classname="tests.test_s5_mstar_controller" name="test_controller_builds_runtime_and_promotes_only_bound_runner_pass" time="0.030" /><testcase classname="tests.test_s5_mstar_controller" name="test_identity_drift_fails_before_runtime_or_controller_artifacts" time="0.001" /><testcase classname="tests.test_s5_mstar_controller" name="test_post_start_failures_are_sanitized_and_nonmergeable[runtime-runtime_construction-trace0]" time="0.013" /><testcase classname="tests.test_s5_mstar_controller" name="test_post_start_failures_are_sanitized_and_nonmergeable[readiness-runtime_readiness-trace1]" time="0.016" /><testcase classname="tests.test_s5_mstar_controller" name="test_post_start_failures_are_sanitized_and_nonmergeable[composition-runtime_composition-trace2]" time="0.018" /><testcase classname="tests.test_s5_mstar_controller" name="test_post_start_failures_are_sanitized_and_nonmergeable[runner_factory-runner_construction-trace3]" time="0.022" /><testcase classname="tests.test_s5_mstar_controller" name="test_post_start_failures_are_sanitized_and_nonmergeable[runner-mstar_execution-trace4]" time="0.025" /><testcase classname="tests.test_s5_mstar_controller" name="test_post_start_failures_are_sanitized_and_nonmergeable[close-runtime_close-trace5]" time="0.025" /><testcase classname="tests.test_s5_mstar_controller" name="test_incomplete_runner_is_not_promoted" time="0.027" /><testcase classname="tests.test_s5_mstar_controller" name="test_controller_is_single_use_before_runtime" time="0.028" /><testcase classname="tests.test_s5_mstar_live_chain" name="test_mstar_controller_exposes_production_entrypoint" time="0.000" /></testsuite></testsuites>

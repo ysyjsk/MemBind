@@ -1,0 +1,128 @@
+<?xml version="1.0" encoding="utf-8"?><testsuites name="pytest tests"><testsuite name="pytest" errors="0" failures="2" skipped="0" tests="13" time="0.684" timestamp="2026-08-16T14:51:23.090532+08:00" hostname="aces-System-Product-Name"><testcase classname="tests.test_llm_instrumentation.LLMInstrumentationTests" name="test_context_overflow_error_yields_the_server_context_window" time="0.000" /><testcase classname="tests.test_llm_instrumentation.LLMInstrumentationTests" name="test_graphiti_internal_token_request_is_clamped_to_frozen_protocol_limit" time="0.000" /><testcase classname="tests.test_llm_instrumentation.LLMInstrumentationTests" name="test_single_episode_schema_forces_the_only_valid_episode_index" time="0.000" /><testcase classname="tests.test_llm_instrumentation.LLMInstrumentationTests" name="test_structured_request_evidence_hashes_but_never_persists_messages" time="0.000" /><testcase classname="tests.test_llm_instrumentation.LLMInstrumentationTests" name="test_structured_retry_budget_is_bounded_and_deterministic" time="0.000" /><testcase classname="tests.test_llm_instrumentation.LLMInstrumentationTests" name="test_token_usage_normalizes_openai_objects_and_none" time="0.000" /><testcase classname="tests.test_llm_instrumentation.QwenFailureCaptureTests" name="test_context_error_is_propagated_without_project_probe" time="0.005"><failure message="AttributeError: 'Client' object has no attribute 'transport_call_envelopes'">self = &lt;test_llm_instrumentation.QwenFailureCaptureTests testMethod=test_context_error_is_propagated_without_project_probe&gt;
+
+    async def test_context_error_is_propagated_without_project_probe(self):
+        class ResponseModel(BaseModel):
+            ok: bool
+    
+        error = RuntimeError(
+            "maximum context length is 32768 tokens; requested 2048 output tokens; "
+            "prompt contains at least 30721 input tokens"
+        )
+        client = QwenVLLMClient(
+            config=LLMConfig(api_key="test", model="m", small_model="m", base_url="http://127.0.0.1:1/v1", temperature=0.0, max_tokens=2048),
+            client=SimpleNamespace(
+                chat=SimpleNamespace(
+                    completions=SimpleNamespace(create=AsyncMock(side_effect=error))
+                )
+            ),
+            max_tokens=2048,
+            structured_output_mode="json_schema",
+        )
+        create = client.client.chat.completions._inner.create
+    
+        with self.assertRaisesRegex(RuntimeError, "maximum context length is 32768"):
+            await client._generate_response(
+                [SimpleNamespace(role="user", content="return json")],
+                response_model=ResponseModel,
+                max_tokens=16_384,
+            )
+    
+        self.assertEqual(len(create.await_args_list), 1)
+        self.assertEqual(create.await_args.kwargs["max_tokens"], 16_384)
+        self.assertEqual(client.structured_request_count, 1)
+        self.assertEqual(client.transport_error_count, 1)
+        self.assertEqual(client.structured_response_failure_count, 0)
+        self.assertEqual(
+&gt;           client.transport_call_envelopes,
+            ^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^
+            [
+                {
+                    "request_ordinal": 0,
+                    "source_sequence": None,
+                    "response_format_type": "json_schema",
+                    "json_schema_name": "ResponseModel",
+                    "json_schema_sha256": client.transport_call_envelopes[0][
+                        "json_schema_sha256"
+                    ],
+                    "requested_max_tokens": 16_384,
+                    "prompt_tokens": None,
+                    "completion_tokens": None,
+                    "total_tokens": None,
+                    "finish_reason": None,
+                    "transport_outcome": "transport_error",
+                    "http_status": None,
+                    "error_class": "builtins.RuntimeError",
+                }
+            ],
+        )
+E       AttributeError: 'Client' object has no attribute 'transport_call_envelopes'
+
+tests/test_llm_instrumentation.py:375: AttributeError</failure></testcase><testcase classname="tests.test_llm_instrumentation.QwenFailureCaptureTests" name="test_invalid_structured_response_uses_one_upstream_attempt" time="0.002"><failure message="AttributeError: 'Client' object has no attribute 'transport_call_envelopes'">self = &lt;test_llm_instrumentation.QwenFailureCaptureTests testMethod=test_invalid_structured_response_uses_one_upstream_attempt&gt;
+
+    async def test_invalid_structured_response_uses_one_upstream_attempt(self):
+        class ResponseModel(BaseModel):
+            ok: bool
+    
+        response = SimpleNamespace(
+            usage=SimpleNamespace(prompt_tokens=10, completion_tokens=2048, total_tokens=2058),
+            choices=[
+                SimpleNamespace(
+                    finish_reason="length",
+                    message=SimpleNamespace(content='{"ok": "unterminated'),
+                )
+            ],
+        )
+        create = AsyncMock(return_value=response)
+        client = QwenVLLMClient(
+            config=LLMConfig(
+                api_key="test",
+                model="test-model",
+                small_model="test-model",
+                base_url="http://127.0.0.1:1/v1",
+                temperature=0.0,
+                max_tokens=2048,
+            ),
+            client=SimpleNamespace(
+                chat=SimpleNamespace(completions=SimpleNamespace(create=create))
+            ),
+            max_tokens=2048,
+            structured_output_mode="json_schema",
+        )
+        messages = [SimpleNamespace(role="user", content="return json")]
+    
+        with self.assertRaises(json.JSONDecodeError):
+            await client._generate_response(
+                messages,
+                response_model=ResponseModel,
+                max_tokens=16_384,
+            )
+    
+        self.assertEqual(len(create.await_args_list), 1)
+        self.assertEqual(create.await_args.kwargs["max_tokens"], 16_384)
+        self.assertEqual(client.failure_events, [])
+        self.assertEqual(
+&gt;           client.transport_call_envelopes,
+            ^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^
+            [
+                {
+                    "request_ordinal": 0,
+                    "source_sequence": None,
+                    "response_format_type": "json_schema",
+                    "json_schema_name": "ResponseModel",
+                    "json_schema_sha256": client.transport_call_envelopes[0][
+                        "json_schema_sha256"
+                    ],
+                    "requested_max_tokens": 16_384,
+                    "prompt_tokens": 10,
+                    "completion_tokens": 2048,
+                    "total_tokens": 2058,
+                    "finish_reason": "length",
+                    "transport_outcome": "response_received",
+                    "http_status": None,
+                    "error_class": None,
+                }
+            ],
+        )
+E       AttributeError: 'Client' object has no attribute 'transport_call_envelopes'
+
+tests/test_llm_instrumentation.py:268: AttributeError</failure></testcase><testcase classname="tests.test_llm_instrumentation.QwenFailureCaptureTests" name="test_json_object_retains_upstream_raw_schema_injection" time="0.002" /><testcase classname="tests.test_llm_instrumentation.QwenFailureCaptureTests" name="test_llm_metrics_unwraps_cache_and_returns_stable_shape" time="0.001" /><testcase classname="tests.test_llm_instrumentation.QwenFailureCaptureTests" name="test_noisy_structured_response_is_rejected_by_upstream_parser" time="0.001" /><testcase classname="tests.test_llm_instrumentation.QwenFailureCaptureTests" name="test_prompt_cache_wrapper_uses_frozen_revision_and_decoding_config" time="0.001" /><testcase classname="tests.test_llm_instrumentation.QwenFailureCaptureTests" name="test_qwen_vllm_client_keeps_vllm_specific_chat_options" time="0.001" /></testsuite></testsuites>

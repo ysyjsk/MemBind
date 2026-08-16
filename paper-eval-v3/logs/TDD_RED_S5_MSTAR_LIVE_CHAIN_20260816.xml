@@ -1,0 +1,105 @@
+<?xml version="1.0" encoding="utf-8"?><testsuites name="pytest tests"><testsuite name="pytest" errors="0" failures="6" skipped="0" tests="17" time="0.305" timestamp="2026-08-16T12:41:41.771908+08:00" hostname="aces-System-Product-Name"><testcase classname="tests.test_s5_mstar_pipeline" name="test_explicit_logical_operation_times_do_not_depend_on_telemetry_clock" time="0.002" /><testcase classname="tests.test_s5_mstar_pipeline" name="test_publication_journal_failure_recovers_after_commit_without_rebinding" time="0.001" /><testcase classname="tests.test_s5_mstar_pipeline" name="test_parallel_prepare_binds_and_publishes_in_source_order" time="0.002" /><testcase classname="tests.test_s5_mstar_pipeline" name="test_prepare_failure_poison_cancels_and_awaits_workers_before_terminal" time="0.001" /><testcase classname="tests.test_s5_mstar_pipeline" name="test_bind_failure_keeps_only_durable_published_prefix_and_no_late_events" time="0.001" /><testcase classname="tests.test_s5_mstar_pipeline" name="test_durable_event_failure_aborts_before_semantic_work" time="0.000" /><testcase classname="tests.test_s5_mstar_pipeline" name="test_prepare_event_failure_does_not_leave_an_unresolved_worker_future" time="0.000" /><testcase classname="tests.test_s5_mstar_pipeline" name="test_verifier_rejects_order_fallback_shape_and_private_drift" time="0.002" /><testcase classname="tests.test_s5_mstar_pipeline" name="test_spec_and_source_reject_legacy_aliases_or_invalid_identity" time="0.000" /><testcase classname="tests.test_s5_mstar_pipeline" name="test_spec_accepts_only_protocol_concurrency_grid[1]" time="0.000"><failure message="paper_eval.s5_mstar_pipeline.MStarPipelineError: prepare_concurrency_must_be_two">concurrency = 1
+
+    @pytest.mark.parametrize("concurrency", [1, 2, 4, 8])
+    def test_spec_accepts_only_protocol_concurrency_grid(concurrency: int) -&gt; None:
+&gt;       spec = MStarSpec(
+            "s5-mstar-grid-001",
+            CORE_SHA,
+            concurrency,
+            require_prepare_overlap=concurrency &gt; 1,
+        )
+
+tests/test_s5_mstar_pipeline.py:472: 
+_ _ _ _ _ _ _ _ _ _ _ _ _ _ _ _ _ _ _ _ _ _ _ _ _ _ _ _ _ _ _ _ _ _ _ _ _ _ _ _ 
+&lt;string&gt;:8: in __init__
+    ???
+_ _ _ _ _ _ _ _ _ _ _ _ _ _ _ _ _ _ _ _ _ _ _ _ _ _ _ _ _ _ _ _ _ _ _ _ _ _ _ _ 
+
+self = MStarSpec(run_id='s5-mstar-grid-001', production_core_identity_sha256='aaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaa', prepare_concurrency=1, method='M*', require_prepare_overlap=False)
+
+    def __post_init__(self) -&gt; None:
+        if not isinstance(self.run_id, str) or _RUN_ID.fullmatch(self.run_id) is None:
+            raise _fail("run_id_invalid")
+        if self.method != MSTAR:
+            raise _fail("legacy_method_identity_forbidden")
+        _sha(self.production_core_identity_sha256, "production_core_identity_invalid")
+        if self.prepare_concurrency != 2:
+&gt;           raise _fail("prepare_concurrency_must_be_two")
+E           paper_eval.s5_mstar_pipeline.MStarPipelineError: prepare_concurrency_must_be_two
+
+src/paper_eval/s5_mstar_pipeline.py:189: MStarPipelineError</failure></testcase><testcase classname="tests.test_s5_mstar_pipeline" name="test_spec_accepts_only_protocol_concurrency_grid[2]" time="0.000" /><testcase classname="tests.test_s5_mstar_pipeline" name="test_spec_accepts_only_protocol_concurrency_grid[4]" time="0.000"><failure message="paper_eval.s5_mstar_pipeline.MStarPipelineError: prepare_concurrency_must_be_two">concurrency = 4
+
+    @pytest.mark.parametrize("concurrency", [1, 2, 4, 8])
+    def test_spec_accepts_only_protocol_concurrency_grid(concurrency: int) -&gt; None:
+&gt;       spec = MStarSpec(
+            "s5-mstar-grid-001",
+            CORE_SHA,
+            concurrency,
+            require_prepare_overlap=concurrency &gt; 1,
+        )
+
+tests/test_s5_mstar_pipeline.py:472: 
+_ _ _ _ _ _ _ _ _ _ _ _ _ _ _ _ _ _ _ _ _ _ _ _ _ _ _ _ _ _ _ _ _ _ _ _ _ _ _ _ 
+&lt;string&gt;:8: in __init__
+    ???
+_ _ _ _ _ _ _ _ _ _ _ _ _ _ _ _ _ _ _ _ _ _ _ _ _ _ _ _ _ _ _ _ _ _ _ _ _ _ _ _ 
+
+self = MStarSpec(run_id='s5-mstar-grid-001', production_core_identity_sha256='aaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaa', prepare_concurrency=4, method='M*', require_prepare_overlap=True)
+
+    def __post_init__(self) -&gt; None:
+        if not isinstance(self.run_id, str) or _RUN_ID.fullmatch(self.run_id) is None:
+            raise _fail("run_id_invalid")
+        if self.method != MSTAR:
+            raise _fail("legacy_method_identity_forbidden")
+        _sha(self.production_core_identity_sha256, "production_core_identity_invalid")
+        if self.prepare_concurrency != 2:
+&gt;           raise _fail("prepare_concurrency_must_be_two")
+E           paper_eval.s5_mstar_pipeline.MStarPipelineError: prepare_concurrency_must_be_two
+
+src/paper_eval/s5_mstar_pipeline.py:189: MStarPipelineError</failure></testcase><testcase classname="tests.test_s5_mstar_pipeline" name="test_spec_accepts_only_protocol_concurrency_grid[8]" time="0.000"><failure message="paper_eval.s5_mstar_pipeline.MStarPipelineError: prepare_concurrency_must_be_two">concurrency = 8
+
+    @pytest.mark.parametrize("concurrency", [1, 2, 4, 8])
+    def test_spec_accepts_only_protocol_concurrency_grid(concurrency: int) -&gt; None:
+&gt;       spec = MStarSpec(
+            "s5-mstar-grid-001",
+            CORE_SHA,
+            concurrency,
+            require_prepare_overlap=concurrency &gt; 1,
+        )
+
+tests/test_s5_mstar_pipeline.py:472: 
+_ _ _ _ _ _ _ _ _ _ _ _ _ _ _ _ _ _ _ _ _ _ _ _ _ _ _ _ _ _ _ _ _ _ _ _ _ _ _ _ 
+&lt;string&gt;:8: in __init__
+    ???
+_ _ _ _ _ _ _ _ _ _ _ _ _ _ _ _ _ _ _ _ _ _ _ _ _ _ _ _ _ _ _ _ _ _ _ _ _ _ _ _ 
+
+self = MStarSpec(run_id='s5-mstar-grid-001', production_core_identity_sha256='aaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaa', prepare_concurrency=8, method='M*', require_prepare_overlap=True)
+
+    def __post_init__(self) -&gt; None:
+        if not isinstance(self.run_id, str) or _RUN_ID.fullmatch(self.run_id) is None:
+            raise _fail("run_id_invalid")
+        if self.method != MSTAR:
+            raise _fail("legacy_method_identity_forbidden")
+        _sha(self.production_core_identity_sha256, "production_core_identity_invalid")
+        if self.prepare_concurrency != 2:
+&gt;           raise _fail("prepare_concurrency_must_be_two")
+E           paper_eval.s5_mstar_pipeline.MStarPipelineError: prepare_concurrency_must_be_two
+
+src/paper_eval/s5_mstar_pipeline.py:189: MStarPipelineError</failure></testcase><testcase classname="tests.test_s5_mstar_pipeline" name="test_spec_rejects_concurrency_outside_protocol_grid" time="0.000"><failure message="AssertionError: Regex pattern did not match.&#10;  Expected regex: 'prepare_concurrency_invalid'&#10;  Actual message: 'prepare_concurrency_must_be_two'">def test_spec_rejects_concurrency_outside_protocol_grid() -&gt; None:
+&gt;       with pytest.raises(MStarPipelineError, match="prepare_concurrency_invalid"):
+E       AssertionError: Regex pattern did not match.
+E         Expected regex: 'prepare_concurrency_invalid'
+E         Actual message: 'prepare_concurrency_must_be_two'
+
+tests/test_s5_mstar_pipeline.py:482: AssertionError</failure></testcase><testcase classname="tests.test_s5_mstar_pipeline" name="test_fx0_single_case_mode_uses_same_core_without_claiming_prepare_overlap" time="0.001" /><testcase classname="tests.test_s5_mstar_live_chain" name="test_mstar_controller_exposes_production_entrypoint" time="0.222"><failure message="ImportError: cannot import name 'execute_s5_mstar_production' from 'paper_eval.s5_mstar_controller' (/data/predator/ly/MemBind/paper-eval-v3/src/paper_eval/s5_mstar_controller.py)">def test_mstar_controller_exposes_production_entrypoint() -&gt; None:
+&gt;       from paper_eval.s5_mstar_controller import execute_s5_mstar_production
+E       ImportError: cannot import name 'execute_s5_mstar_production' from 'paper_eval.s5_mstar_controller' (/data/predator/ly/MemBind/paper-eval-v3/src/paper_eval/s5_mstar_controller.py)
+
+tests/test_s5_mstar_live_chain.py:9: ImportError</failure></testcase><testcase classname="tests.test_s5_mstar_live_chain" name="test_mstar_tmux_launcher_exists" time="0.000"><failure message="AssertionError: assert False&#10; +  where False = is_file()&#10; +    where is_file = PosixPath('/data/predator/ly/MemBind/paper-eval-v3/scripts/run_s5_mstar_tmux.sh').is_file">def test_mstar_tmux_launcher_exists() -&gt; None:
+        launcher = Path(__file__).parents[1] / "scripts" / "run_s5_mstar_tmux.sh"
+&gt;       assert launcher.is_file()
+E       AssertionError: assert False
+E        +  where False = is_file()
+E        +    where is_file = PosixPath('/data/predator/ly/MemBind/paper-eval-v3/scripts/run_s5_mstar_tmux.sh').is_file
+
+tests/test_s5_mstar_live_chain.py:16: AssertionError</failure></testcase></testsuite></testsuites>

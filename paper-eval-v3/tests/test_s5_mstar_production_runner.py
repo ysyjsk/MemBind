@@ -3,12 +3,14 @@
 from __future__ import annotations
 
 import asyncio
+import json
 from pathlib import Path
 
 import pytest
 
 from paper_eval.artifacts import payload_sha256
-from paper_eval.s5_durable_attempt_store import inspect_s5_attempt
+from paper_eval.s5_durable_attempt_store import S5AttemptStore, inspect_s5_attempt
+from paper_eval.s5_graphiti_mstar_semantics import S5GraphitiMStarSemanticError
 from paper_eval.s5_mstar_pipeline import MStarSource, MStarSpec
 from paper_eval.s5_mstar_production_core_identity import (
     build_s5_mstar_production_core_identity,
@@ -16,6 +18,7 @@ from paper_eval.s5_mstar_production_core_identity import (
 from paper_eval.s5_mstar_production_runner import (
     S5MStarProductionRunner,
     S5MStarProductionRunnerError,
+    verify_s5_mstar_runner_failure_evidence,
 )
 from paper_eval.s5_mstar_publication_journal import S5MStarPublicationJournal
 from paper_eval.s5_production_runner import (
@@ -168,6 +171,7 @@ def _runner(
     fx0: dict[str, object],
     latest_state_bind: object,
     commit_evidence: object = _commit_evidence,
+    failure_telemetry_snapshot: object = lambda: (),
     run_id: str = "s5-mstar-production-test",
 ) -> S5MStarProductionRunner:
     return S5MStarProductionRunner(
@@ -181,6 +185,7 @@ def _runner(
         latest_state_bind=latest_state_bind,
         commit_evidence=commit_evidence,
         clock_ns=StepClock(),
+        failure_telemetry_snapshot=failure_telemetry_snapshot,
     )
 
 
@@ -231,6 +236,7 @@ def test_mstar_runner_cross_binds_distinct_identities_and_journals_commit_order(
     assert result["payload"]["status"] == "PASS"
     assert result["production_identity_sha256"] == identity["identity_sha256"]
     assert result["production_core_identity_sha256"] == core["identity_sha256"]
+    assert not (root / "failure_envelope.json").exists()
     assert [item[2:] for item in callback_observations] == [
         (0, ()),
         (1, (0,)),
@@ -382,6 +388,260 @@ def test_mstar_bind_failure_is_incomplete_and_keeps_published_prefix(tmp_path: P
     assert result["payload"]["summary"]["published_source_sequences"] == [0]
     assert result["resume_authorized"] is False
     assert "simulated private bind failure" not in (root / "result.json").read_text()
+
+
+def test_mstar_semantic_failure_writes_hash_bound_envelope_before_finalize(
+    tmp_path: Path,
+    monkeypatch: pytest.MonkeyPatch,
+) -> None:
+    core = _core_identity()
+    identity = _identity(core)
+    fx0 = _fx0_qualification(identity, core)
+    root = tmp_path / "classified-failure"
+    finalized_after_envelope: list[bool] = []
+    original_finalize = S5AttemptStore.finalize
+
+    async def bind(
+        prepared: object,
+        _logical_time: int,
+        _source_sequence: int,
+        _visible_prefix: tuple[int, ...],
+    ) -> None:
+        if prepared["source"] == 1:
+            raise S5GraphitiMStarSemanticError(
+                "extract_edges_failed",
+                upstream_error_class="json.decoder.JSONDecodeError",
+            )
+
+    def observe_finalize(
+        store: S5AttemptStore, evidence: object
+    ) -> dict[str, object]:
+        finalized_after_envelope.append((root / "failure_envelope.json").exists())
+        return original_finalize(store, evidence)
+
+    monkeypatch.setattr(S5AttemptStore, "finalize", observe_finalize)
+    result = asyncio.run(
+        _runner(
+            attempt_root=root,
+            core=core,
+            identity=identity,
+            fx0=fx0,
+            latest_state_bind=bind,
+            failure_telemetry_snapshot=lambda: (
+                {
+                    "request_ordinal": 7,
+                    "source_sequence": 1,
+                    "response_format_type": "json_schema",
+                    "json_schema_name": "ExtractedEdges",
+                    "json_schema_sha256": "a" * 64,
+                    "requested_max_tokens": 16_384,
+                    "prompt_tokens": 19_265,
+                    "completion_tokens": 16_384,
+                    "total_tokens": 35_649,
+                    "finish_reason": "length",
+                    "transport_outcome": "response_received",
+                    "http_status": None,
+                    "error_class": None,
+                },
+            ),
+        ).run()
+    )
+
+    assert finalized_after_envelope == [True]
+    envelope = json.loads(
+        (root / "failure_envelope.json").read_text(encoding="utf-8")
+    )
+    assert envelope["classification"] == "CAP_EXHAUSTED"
+    assert envelope["failed_source_sequence"] == 1
+    assert envelope["semantic_error_code"] == "extract_edges_failed"
+    assert result["payload"]["failure_envelope_payload_sha256"] == envelope[
+        "failure_envelope_sha256"
+    ]
+    assert result["payload"]["failure_envelope_file_sha256"] == result[
+        "failure_envelope_file_sha256"
+    ]
+    assert result["failure_classification"] == "CAP_EXHAUSTED"
+    persisted = root.joinpath("result.json").read_text(encoding="utf-8")
+    assert "PRIVATE" not in persisted
+    assert "messages" not in persisted
+
+
+@pytest.mark.parametrize(
+    ("field", "replacement"),
+    [
+        ("method", "A0"),
+        ("failed_source_sequence", 2),
+        ("failure_code", "SEMANTIC_PREPARE_FAILED"),
+        ("error_class", "builtins.RuntimeError"),
+        ("semantic_error_code", "extract_nodes_failed"),
+        ("upstream_error_class", "pydantic.ValidationError"),
+        ("inner_evidence_schema_version", "unknown.inner.schema.v99"),
+    ],
+)
+def test_runner_failure_verifier_rejects_fields_that_disagree_with_sidecar(
+    tmp_path: Path,
+    field: str,
+    replacement: object,
+) -> None:
+    core = _core_identity()
+    identity = _identity(core)
+
+    async def bind(*_args: object) -> None:
+        raise S5GraphitiMStarSemanticError(
+            "extract_edges_failed",
+            upstream_error_class="json.decoder.JSONDecodeError",
+        )
+
+    root = tmp_path / field
+    result = asyncio.run(
+        _runner(
+            attempt_root=root,
+            core=core,
+            identity=identity,
+            fx0=_fx0_qualification(identity, core),
+            latest_state_bind=bind,
+            failure_telemetry_snapshot=lambda: (),
+        ).run()
+    )
+    tampered = dict(result["payload"])
+    tampered[field] = replacement
+
+    with pytest.raises(S5MStarProductionRunnerError):
+        verify_s5_mstar_runner_failure_evidence(
+            tampered,
+            failure_envelope_path=root / "failure_envelope.json",
+        )
+
+
+def test_invalid_qualified_exception_class_still_seals_unclassified_sidecar(
+    tmp_path: Path,
+    monkeypatch: pytest.MonkeyPatch,
+) -> None:
+    class LocalFailure(RuntimeError):
+        pass
+
+    core = _core_identity()
+    identity = _identity(core)
+    root = tmp_path / "invalid-qualified-class"
+    finalized_after_envelope: list[bool] = []
+    original_finalize = S5AttemptStore.finalize
+
+    async def bind(*_args: object) -> None:
+        raise LocalFailure("PRIVATE-SENTINEL")
+
+    def observe_finalize(
+        store: S5AttemptStore, evidence: object
+    ) -> dict[str, object]:
+        finalized_after_envelope.append((root / "failure_envelope.json").exists())
+        return original_finalize(store, evidence)
+
+    monkeypatch.setattr(S5AttemptStore, "finalize", observe_finalize)
+    result = asyncio.run(
+        _runner(
+            attempt_root=root,
+            core=core,
+            identity=identity,
+            fx0=_fx0_qualification(identity, core),
+            latest_state_bind=bind,
+        ).run()
+    )
+
+    envelope = json.loads(
+        (root / "failure_envelope.json").read_text(encoding="utf-8")
+    )
+    assert finalized_after_envelope == [True]
+    assert envelope["classification"] == "UNCLASSIFIED"
+    assert envelope["telemetry_status"] == "SANITIZED_FALLBACK"
+    assert envelope["pipeline_error_class"] == (
+        "paper_eval.s5_mstar_production_runner.UnclassifiedFailure"
+    )
+    assert result["status"] == "incomplete_non_mergeable"
+    assert "PRIVATE-SENTINEL" not in (root / "result.json").read_text()
+
+
+def test_mstar_success_never_reads_or_fabricates_failure_telemetry(
+    tmp_path: Path,
+) -> None:
+    core = _core_identity()
+    identity = _identity(core)
+
+    async def bind(*_args: object) -> None:
+        return None
+
+    def forbidden_snapshot() -> object:
+        raise AssertionError("success must not inspect failure telemetry")
+
+    root = tmp_path / "success-no-envelope"
+    result = asyncio.run(
+        _runner(
+            attempt_root=root,
+            core=core,
+            identity=identity,
+            fx0=_fx0_qualification(identity, core),
+            latest_state_bind=bind,
+            failure_telemetry_snapshot=forbidden_snapshot,
+        ).run()
+    )
+
+    assert result["status"] == "complete"
+    assert not (root / "failure_envelope.json").exists()
+    assert "failure_classification" not in result
+
+
+def test_private_failure_snapshot_is_rejected_without_leaking_or_guessing(
+    tmp_path: Path,
+) -> None:
+    core = _core_identity()
+    identity = _identity(core)
+
+    async def bind(*_args: object) -> None:
+        raise S5GraphitiMStarSemanticError(
+            "extract_edges_failed",
+            upstream_error_class="json.decoder.JSONDecodeError",
+        )
+
+    event = {
+        "request_ordinal": 0,
+        "source_sequence": 0,
+        "response_format_type": "json_schema",
+        "json_schema_name": "ExtractedEdges",
+        "json_schema_sha256": "a" * 64,
+        "requested_max_tokens": 16_384,
+        "prompt_tokens": 10,
+        "completion_tokens": 16_384,
+        "total_tokens": 16_394,
+        "finish_reason": "length",
+        "transport_outcome": "response_received",
+        "http_status": None,
+        "error_class": None,
+        "raw_response": "PRIVATE-RESPONSE-SENTINEL",
+    }
+    root = tmp_path / "private-snapshot"
+    result = asyncio.run(
+        _runner(
+            attempt_root=root,
+            core=core,
+            identity=identity,
+            fx0=_fx0_qualification(identity, core),
+            latest_state_bind=bind,
+            failure_telemetry_snapshot=lambda: (event,),
+        ).run()
+    )
+
+    envelope = json.loads(
+        (root / "failure_envelope.json").read_text(encoding="utf-8")
+    )
+    assert envelope["telemetry_status"] == "REJECTED_PRIVATE_FIELDS"
+    assert envelope["classification"] == "UNCLASSIFIED"
+    assert envelope["transport_events"] == []
+    assert result["failure_classification"] == "UNCLASSIFIED"
+    persisted = "\n".join(
+        path.read_text(encoding="utf-8")
+        for path in root.iterdir()
+        if path.is_file()
+    )
+    assert "PRIVATE-RESPONSE-SENTINEL" not in persisted
+    assert "raw_response" not in persisted
 
 
 def test_invalid_commit_evidence_fails_closed_without_publication(tmp_path: Path) -> None:

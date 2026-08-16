@@ -201,9 +201,10 @@ def mstar_pipeline_to_smoke_records(
     """Project verified M* pipeline events into the common smoke schema.
 
     The projection is intentionally lossless for the smoke-level accounting:
-    intent is the arrival/ack watermark, commit return is caller return, and
-    the prepare worker identifies the source's execution worker.  It never
-    includes episode bodies or provider output.
+    the monotonic intent timestamp is the arrival/ack watermark, commit return
+    is caller return, and the prepare worker identifies the source's execution
+    worker.  Graphiti's epoch logical time is deliberately not telemetry.  The
+    projection never includes episode bodies or provider output.
     """
 
     if not isinstance(evidence, Mapping):
@@ -226,17 +227,21 @@ def mstar_pipeline_to_smoke_records(
         event_type = raw.get("event_type")
         if event_type == "intent":
             source = raw.get("source_sequence")
-            logical = raw.get("logical_time_ns")
+            timestamp = raw.get("intent_timestamp_ns")
             if isinstance(source, bool) or not isinstance(source, int) or source < 0:
                 raise S5SmokeContractError("M* source identity is invalid")
-            if isinstance(logical, bool) or not isinstance(logical, int) or logical < 0:
+            if (
+                isinstance(timestamp, bool)
+                or not isinstance(timestamp, int)
+                or timestamp < 0
+            ):
                 raise S5SmokeContractError("M* intent timestamp is invalid")
             rows[source] = {
                 "method": "M*",
                 "source_sequence": source,
                 "worker_id": 0,
-                "arrival_timestamp_ns": logical,
-                "enqueue_ack_timestamp_ns": logical,
+                "arrival_timestamp_ns": timestamp,
+                "enqueue_ack_timestamp_ns": timestamp,
                 "status": "success",
                 "error_class": None,
                 "fallback": False,

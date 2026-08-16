@@ -3,6 +3,7 @@
 from __future__ import annotations
 
 import asyncio
+from contextlib import contextmanager
 from dataclasses import dataclass
 from pathlib import Path
 from types import SimpleNamespace
@@ -202,6 +203,7 @@ def _composition() -> S5MStarRuntimeComposition:
         latest_state_bind=bind,
         commit_evidence=commit,
         telemetry_clock_ns=lambda: 1,
+        failure_telemetry_snapshot=lambda: (),
     )
 
 
@@ -258,6 +260,8 @@ def _execute(
         assert kwargs["production_core_identity"] == core
         assert kwargs["fx0_qualification"] == fx0
         assert kwargs["sources"] == _composition().sources
+        assert callable(kwargs["failure_telemetry_snapshot"])
+        assert kwargs["failure_telemetry_snapshot"]() == ()
         if failure == "runner_factory":
             raise RuntimeError("private runner factory detail")
         selected_outcome = outcome or {
@@ -295,9 +299,33 @@ def _execute(
     return result, trace, paths, core
 
 
-def test_runtime_composition_binds_exact_workload_and_external_commit_evidence() -> None:
+def test_runtime_composition_binds_exact_workload_and_external_commit_evidence(
+    monkeypatch: pytest.MonkeyPatch,
+) -> None:
     graphiti = object()
-    runtime = SimpleNamespace(graphiti=graphiti)
+    runtime = SimpleNamespace(
+        graphiti=graphiti,
+        llm_client=SimpleNamespace(
+            call_events=[
+                {
+                    "episode_key": (NAMESPACE, 0),
+                    "token_usage": {
+                        "prompt_tokens": 19_265,
+                        "completion_tokens": 16_384,
+                        "total_tokens": 35_649,
+                    },
+                    "max_tokens": 16_384,
+                    "finish_reason": "length",
+                },
+                {
+                    "episode_key": None,
+                    "token_usage": {},
+                    "max_tokens": 16_384,
+                    "finish_reason": None,
+                },
+            ]
+        ),
+    )
     ticks = iter([1_735_000_000_000_000_000] * 49)
 
     def projector(_episode: object) -> dict[str, object]:
@@ -309,6 +337,39 @@ def test_runtime_composition_binds_exact_workload_and_external_commit_evidence()
     async def commit_evidence(*_args: object) -> str:
         return "f" * 64
 
+    scope_events: list[tuple[str, int, str]] = []
+
+    class AdapterDouble:
+        def __init__(self, **_kwargs: object) -> None:
+            pass
+
+        async def prepare(self, source: object, _logical_time: int) -> object:
+            scope_events.append((NAMESPACE, source.source_sequence, "prepare"))
+            return source
+
+        async def bind(
+            self,
+            _prepared: object,
+            _logical_time: int,
+            source_sequence: int,
+            _visible_prefix: tuple[int, ...],
+        ) -> object:
+            scope_events.append((NAMESPACE, source_sequence, "bind"))
+            return None
+
+    monkeypatch.setattr(
+        "paper_eval.s5_mstar_controller.S5MStarLiveSemanticAdapter",
+        AdapterDouble,
+    )
+
+    @contextmanager
+    def telemetry_scope(run_id: str, source_sequence: int):
+        scope_events.append((run_id, source_sequence, "enter"))
+        try:
+            yield
+        finally:
+            scope_events.append((run_id, source_sequence, "exit"))
+
     composition = build_s5_mstar_runtime_composition(
         runtime=runtime,
         episodes=_episodes(),
@@ -319,6 +380,7 @@ def test_runtime_composition_binds_exact_workload_and_external_commit_evidence()
         epoch_clock_ns=lambda: next(ticks),
         commit_evidence=commit_evidence,
         telemetry_clock_ns=lambda: 123,
+        telemetry_scope=telemetry_scope,
     )
 
     assert len(composition.sources) == 49
@@ -327,12 +389,58 @@ def test_runtime_composition_binds_exact_workload_and_external_commit_evidence()
         ref.source_sha256 for ref in _episodes()
     ]
     assert [source.logical_time_ns for source in composition.sources] == [
-        1_735_000_000_000_000_000 + index for index in range(49)
+        1_735_000_000_000_000_000 + index * 1_000 for index in range(49)
     ]
     assert composition.commit_evidence is commit_evidence
     assert composition.telemetry_clock_ns() == 123
     assert callable(composition.semantic_prepare)
     assert callable(composition.latest_state_bind)
+    assert callable(composition.failure_telemetry_snapshot)
+    assert composition.failure_telemetry_snapshot() == (
+        {
+            "request_ordinal": 0,
+            "source_sequence": 0,
+            "response_format_type": None,
+            "json_schema_name": None,
+            "json_schema_sha256": None,
+            "requested_max_tokens": 16_384,
+            "prompt_tokens": 19_265,
+            "completion_tokens": 16_384,
+            "total_tokens": 35_649,
+            "finish_reason": "length",
+            "transport_outcome": "response_received",
+            "http_status": None,
+            "error_class": None,
+        },
+        {
+            "request_ordinal": 1,
+            "source_sequence": None,
+            "response_format_type": None,
+            "json_schema_name": None,
+            "json_schema_sha256": None,
+            "requested_max_tokens": 16_384,
+            "prompt_tokens": None,
+            "completion_tokens": None,
+            "total_tokens": None,
+            "finish_reason": None,
+            "transport_outcome": "response_received",
+            "http_status": None,
+            "error_class": None,
+        },
+    )
+
+    prepared = asyncio.run(
+        composition.semantic_prepare(composition.sources[0].opaque_source, 1)
+    )
+    asyncio.run(composition.latest_state_bind(prepared, 1, 0, ()))
+    assert scope_events == [
+        (NAMESPACE, 0, "enter"),
+        (NAMESPACE, 0, "prepare"),
+        (NAMESPACE, 0, "exit"),
+        (NAMESPACE, 0, "enter"),
+        (NAMESPACE, 0, "bind"),
+        (NAMESPACE, 0, "exit"),
+    ]
 
 
 @pytest.mark.parametrize(
@@ -472,9 +580,15 @@ def test_incomplete_runner_is_not_promoted(tmp_path: Path) -> None:
         "resume_authorized": False,
         "production_identity_sha256": identity["identity_sha256"],
         "production_core_identity_sha256": core["identity_sha256"],
+        "failure_envelope_file_sha256": "d" * 64,
+        "failure_envelope_payload_sha256": "e" * 64,
+        "failure_classification": "CAP_EXHAUSTED",
         "payload": {
             "status": "FAIL_CLOSED",
             "events": [{"error_class": "httpx.ConnectError"}],
+            "failure_envelope_file_sha256": "d" * 64,
+            "failure_envelope_payload_sha256": "e" * 64,
+            "failure_classification": "CAP_EXHAUSTED",
         },
     }
     result, _trace, paths, _core = _execute(tmp_path, outcome=outcome)
@@ -483,6 +597,12 @@ def test_incomplete_runner_is_not_promoted(tmp_path: Path) -> None:
     assert result["failure_stage"] == "mstar_execution"
     assert result["error_class"] == "httpx.ConnectError"
     assert result["scientific_outcome_candidate"] is False
+    assert result["failure_envelope_file_sha256"] == "d" * 64
+    assert result["failure_envelope_payload_sha256"] == "e" * 64
+    assert result["failure_classification"] == "CAP_EXHAUSTED"
+    inspected = inspect_s5_mstar_controller_attempt(paths.controller_root)
+    assert inspected["checkpoint"]["failure_envelope_file_sha256"] == "d" * 64
+    assert inspected["checkpoint"]["failure_envelope_payload_sha256"] == "e" * 64
     assert inspect_s5_mstar_controller_attempt(paths.controller_root)["checkpoint"][
         "status"
     ] == "incomplete_non_mergeable"

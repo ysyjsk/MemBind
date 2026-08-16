@@ -26,9 +26,31 @@ from .artifacts import canonical_bytes
 class S5GraphitiMStarSemanticError(ValueError):
     """Sanitized semantic callback or upstream API failure."""
 
+    def __init__(
+        self,
+        code: str,
+        *,
+        upstream_error_class: str | None = None,
+    ) -> None:
+        self.code = code
+        self.upstream_error_class = upstream_error_class
+        super().__init__(code)
 
-def _fail(code: str) -> S5GraphitiMStarSemanticError:
-    return S5GraphitiMStarSemanticError(code)
+
+def _qualified_error_class(error: BaseException) -> str:
+    kind = type(error)
+    return f"{kind.__module__}.{kind.__qualname__}"
+
+
+def _fail(
+    code: str,
+    *,
+    upstream_error_class: str | None = None,
+) -> S5GraphitiMStarSemanticError:
+    return S5GraphitiMStarSemanticError(
+        code,
+        upstream_error_class=upstream_error_class,
+    )
 
 
 def _node_uuid(node: object) -> str:
@@ -223,13 +245,16 @@ class S5GraphitiMStarSemanticRuntime:
 
     async def _await(self, value: object, code: str) -> object:
         if not inspect.isawaitable(value):
-            raise _fail(code)
+            raise _fail(code, upstream_error_class="builtins.TypeError")
         try:
             return await value
         except S5GraphitiMStarSemanticError:
             raise
-        except Exception:
-            raise _fail(code) from None
+        except Exception as error:
+            raise _fail(
+                code,
+                upstream_error_class=_qualified_error_class(error),
+            ) from None
 
     def _provider_context(self, providers: object | None) -> AbstractContextManager[object]:
         if providers is None:

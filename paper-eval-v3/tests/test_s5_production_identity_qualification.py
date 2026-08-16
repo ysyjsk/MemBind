@@ -332,6 +332,25 @@ def test_mstar_requires_and_binds_the_matching_fx0_gate(tmp_path: Path) -> None:
         build_s5_production_identity_qualification(**mismatch)
 
 
+def test_mstar_source_closure_covers_the_actual_live_and_observation_chain() -> None:
+    assert {
+        "mstar_live_semantic_adapter",
+        "mstar_live_semantic_adapter_test",
+        "mstar_controller",
+        "mstar_controller_test",
+        "mstar_failure_envelope",
+        "mstar_failure_envelope_test",
+        "mstar_post_observation",
+        "mstar_post_observation_test",
+        "mstar_postprocess",
+        "mstar_postprocess_test",
+        "mstar_result_finalizer",
+        "mstar_result_finalizer_test",
+        "native_post_observation",
+        "native_post_observation_test",
+    }.issubset(MSTAR_SOURCE_ROLES)
+
+
 def test_qualification_is_hash_sealed_private_safe_and_exclusive(
     tmp_path: Path,
 ) -> None:

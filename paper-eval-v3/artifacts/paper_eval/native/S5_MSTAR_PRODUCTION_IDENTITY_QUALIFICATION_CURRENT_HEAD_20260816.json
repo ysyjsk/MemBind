@@ -1,0 +1,101 @@
+{
+  "git_commit": "5b8b1dac5941c253f364908f84bf65a730132707",
+  "payload": {
+    "authority": {
+      "construction_models_get_authorized": true,
+      "construction_version_get_authorized": true,
+      "current_stage_pointer_update_authorized": false,
+      "embedding_generation_authorized": false,
+      "embedding_models_get_authorized": true,
+      "formal_execution_authorized": false,
+      "model_generation_authorized": false,
+      "neo4j_connectivity_check_authorized": true,
+      "neo4j_exact_namespace_count_authorized": true,
+      "neo4j_mutation_authorized": false,
+      "pilot_execution_authorized": false,
+      "preflight_scope": "SINGLE_BOUNDED_READ_ONLY_PREFLIGHT",
+      "s5_live_execution_authorized": false,
+      "s5_read_only_preflight_authorized": true
+    },
+    "current_stage_pointer": {
+      "current_stage": "S3_CONFIGURATION_FROZEN",
+      "file_sha256": "3cb7edad4bab3ac6fe961a3d9e8768cbb962cf61cf946cb7e0015d74c0edc26d",
+      "payload_sha256": "da17c5dae889d0a0d0e51b2f5bbd478e7a79d50ccf33450ca43f32c34b6dcdcc",
+      "run_id": "s3-native-v2-current-pointer-20260814-001"
+    },
+    "full_regression": {
+      "errors": 0,
+      "failures": 0,
+      "junit_file_sha256": "ea444e7f52398d94b5ddd5162c07bcfbeab0a5310ffef9443481905faa78d11f",
+      "skipped": 0,
+      "tests": 1420
+    },
+    "method": "M*",
+    "mstar_fx0": {
+      "fx0_artifact_payload_sha256": "77e8f5c56bd1a14a60a1f7ee982fb8f6bcf3532bc43f8900529e256e66361476",
+      "fx0_fixture_manifest_sha256": "f40981830d02db7c13adf17064ce24ee47e1b2349c4674618cb5c1ff6d4b8a9d",
+      "production_core_identity_file_sha256": "ac1074a922ab443f711d64cda70c2e08161d94e42ba2f948f897cee86b4723bb",
+      "production_core_identity_sha256": "8dba5844cb9ef21243946c19f4d58a802bc570ef30a9b8f38dbc24c3d7af9e37",
+      "qualification_file_sha256": "1da969d53c0a6ada51e007d8c1d8b29d9cc08d45e2c9782be0fc29827ccf6c9f",
+      "qualification_payload_sha256": "92874d04c136822c058734644dd0008155243d4ae2d62f38801b5857402df1d7",
+      "verdict": "PRODUCTION_PATH_EXACT_PARITY_PASS"
+    },
+    "native_baseline_freeze": {
+      "baseline_id": "native-graphiti-u0-reader-v2",
+      "file_sha256": "3e935af2cb353fb59c4cf58ddec7e44a73387f88410d805324636b76daf2d5e6",
+      "payload_sha256": "b05720b834e53f2ab8172249b445afddc37ac8356f19674625e1129823c19da7"
+    },
+    "production_identity_file_sha256": "cc499c8b994f0d0ca7939a02df832c7e5eeb911302412ffa1d63e9ed76401c73",
+    "production_identity_sha256": "091a9946d9945f468ffc2f29243cc677e38d5508d5c0f1b70f8ba742933035ff",
+    "qualification_status": "PRODUCTION_IDENTITY_OFFLINE_QUALIFIED",
+    "raw_identity_qualification_status": "IDENTITY_ONLY_UNQUALIFIED",
+    "s5_plan": {
+      "file_sha256": "1ae543b6067d04402c623edcc2c067e21126159ae5c21af9732bb7f9bc0a248e",
+      "payload_sha256": "ae7e9d7d379d04461cf0a098af853e42de9ff7c7130f6c64454a5bfebc6404c6",
+      "run_id": "s5-method-qualification-plan-20260815-001",
+      "status": "OFFLINE_DESIGN_ONLY"
+    },
+    "s5_workplan_file_sha256": "47a9c1121fe6bbb59be44a9a18563fc7ba3c9fc75fa7e199ef151f00f0578dab",
+    "schema_version": "membind.paper-eval-v3.s5-production-identity-qualification.v1",
+    "source_closure_digest": "5f3ab650cd8cdbf3e33d21feca7907dd43acf9dfbae71eb2dac4a3f1430fba09",
+    "source_closure_sha256": {
+      "adapter": "a0c8d4d1f227b9f9a319f1462540360f25f23ad3f339f24612bae17b818de57a",
+      "adapter_test": "d0a965908a231e364ca0326f46e078a20b8a4f39846b2a86eb15e3c75e54c5f6",
+      "durable_store": "fa20e889fab25e7aa462c7451d9ee50410928030ee123d8d624912b1d6947b35",
+      "durable_store_test": "74919ee538354c1931d1b0a568e021e0b06353dfa99160573434569a45048879",
+      "graphiti_native": "f25141000494a8899a40b87f2bf5fb5e5cb519ab2d480d72973aeaf9e0d9c8cc",
+      "graphiti_semantic_api": "06909217defc448d7dd380f051b6b282fbb9a8a021c337f998c395fc9bb196fa",
+      "method_smoke_contract": "f2d396736e13e1af4a4efdcbc968bb10313665a636e32bbf02392fe17a572adb",
+      "method_smoke_contract_test": "054f4a29e5729cb76baa8a034f81de42206fddb81cd2ea0cec958ceea4543855",
+      "mstar_controller": "aecc84b5cd3f24ff1436928fc3d21fefb780f627660f9fe54683281ae79f141a",
+      "mstar_controller_test": "51b441cc2082ca9960d1372b479c2a835899de40af1d1378c25fa1cc6c460b9d",
+      "mstar_live_semantic_adapter": "ee2d06d6896162f72e9c9e1bb449a9c5c523fc0a850ef35e92c1d7399d4bdfa7",
+      "mstar_live_semantic_adapter_test": "4db317d9ecbefcee716e51c0310c95cf2e10723ba00901d5a977910c039db0d7",
+      "mstar_post_observation": "bf6f1030e9208ea89a81dd89d66b0ebe88e9b8a89474d36b55283b280ad61bbc",
+      "mstar_post_observation_test": "db28452e249e6665134e4a805a2916b74f1aab444ea74790956fc4612992fa49",
+      "mstar_postprocess": "513230ff3e3096992e3386c7a88cd81745a9b43911759b5b8c8f1de109fb39ea",
+      "mstar_postprocess_test": "954bb42d3490abb224889240cf8c1bc6fff14d3098a0e4ada9d66935697800ae",
+      "mstar_production_runner": "f0b126ec9543585b9d534f49f26786e836f34703b9fbd39bebd6bec2960bd749",
+      "mstar_production_runner_test": "3a911cc143634df82ca2867859b9a7b5b5f8e486e70a2cdc2626c368411c4e66",
+      "mstar_result_finalizer": "3c8f85be53e64fb8fac3bca50ab46ea8f0949af9c62732d77855bbbac2fbd7d0",
+      "mstar_result_finalizer_test": "80744bf41ff271ee0084c57507a07ad10d53759d6e8edc866244210868fafd82",
+      "native_post_observation": "c4c2de2a43a20645d4a3cf21ae522a29df8cbc11eeaf125bfe19fa903021351d",
+      "native_post_observation_test": "7c02e5d8a2bba7f38082638ad6e8aecdc6c77ba04effbeccacfa2ab5a7511d31",
+      "pipeline": "7cd216a0ac169c4970a0b2e51484d129d1d502118fff5f36309becdd099ad7d8",
+      "pipeline_test": "58bf3dea2eb4a856eb284ddfcc36e13841a37e24c742c486c57bf7fbe612ac50",
+      "publication_journal": "c1b7dfed0cc004e069671973e5c05b14d8e6646b0912da9e78a5db0639d220ce",
+      "publication_journal_test": "27fdecf0ef1378df996c361251d85cbb87cb218d41e7b08d9f1b15c3dd6d99e0",
+      "runtime_config": "55c7114c07da91ca52cadc38abb590fce07f1ed10fbf9a56a82f2ecb0e3581b2",
+      "runtime_factory": "4d6bad43289d7cbf9557aed05571601bdfa560855ed1403b0e4a72770ae57ca1",
+      "semantic_binding": "5702d6c5b40754c2487a4a6120c37c63fbeb2315aff594f9217935fa5351c63a",
+      "semantic_binding_test": "ed18affce6446ad98a4124348ee7076fdb7ad0645c5046b38815699553793541",
+      "semantic_runtime": "e7b699c5a720d27b61addf91f30a7fc5a287aa8c2882f2a2ee008f884fa5b977",
+      "semantic_runtime_test": "afd17115b224c22a61b04bb2da86ea126705d73095e2ed1dbed8974a8867b6ca"
+    },
+    "stage": "S5_PRODUCTION_IDENTITY_QUALIFICATION"
+  },
+  "payload_sha256": "680f6e6aae520bb66e46ce5115c0cb9bb101f2ed5c5bff405fe252721747b490",
+  "protocol_version": "paper-eval-v3",
+  "run_id": "s5-mstar-production-identity-qualification-20260816-002",
+  "status": "finalized"
+}

@@ -1,0 +1,189 @@
+{
+  "git_commit": "5b8b1dac5941c253f364908f84bf65a730132707",
+  "payload": {
+    "authority": {
+      "current_stage_pointer_update_authorized": false,
+      "formal_execution_authorized": false,
+      "pilot_execution_authorized": false,
+      "s5_live_authority_creation_authorized": true,
+      "s5_live_execution_authorized": false
+    },
+    "current_stage_pointer": {
+      "current_stage": "S3_CONFIGURATION_FROZEN",
+      "file_sha256": "3cb7edad4bab3ac6fe961a3d9e8768cbb962cf61cf946cb7e0015d74c0edc26d",
+      "native_baseline_freeze_file_sha256": "3e935af2cb353fb59c4cf58ddec7e44a73387f88410d805324636b76daf2d5e6",
+      "native_baseline_freeze_payload_sha256": "b05720b834e53f2ab8172249b445afddc37ac8356f19674625e1129823c19da7",
+      "payload_sha256": "da17c5dae889d0a0d0e51b2f5bbd478e7a79d50ccf33450ca43f32c34b6dcdcc",
+      "run_id": "s3-native-v2-current-pointer-20260814-001"
+    },
+    "evaluation": {
+      "authority": {
+        "current_stage_pointer_update_authorized": false,
+        "formal_execution_authorized": false,
+        "pilot_execution_authorized": false,
+        "s5_live_authority_creation_authorized": true,
+        "s5_live_execution_authorized": false
+      },
+      "construction": {
+        "max_model_len": 65536,
+        "served_model_id": "qwen3-32b-fp8",
+        "vllm_version": "0.26.0"
+      },
+      "current_stage_pointer": {
+        "current_stage": "S3_CONFIGURATION_FROZEN",
+        "file_sha256": "3cb7edad4bab3ac6fe961a3d9e8768cbb962cf61cf946cb7e0015d74c0edc26d",
+        "native_baseline_freeze_file_sha256": "3e935af2cb353fb59c4cf58ddec7e44a73387f88410d805324636b76daf2d5e6",
+        "native_baseline_freeze_payload_sha256": "b05720b834e53f2ab8172249b445afddc37ac8356f19674625e1129823c19da7",
+        "payload_sha256": "da17c5dae889d0a0d0e51b2f5bbd478e7a79d50ccf33450ca43f32c34b6dcdcc",
+        "run_id": "s3-native-v2-current-pointer-20260814-001"
+      },
+      "embedding": {
+        "served_model_id": "qwen3-embedding-0.6b"
+      },
+      "failures": [],
+      "fx0_qualification": {
+        "fx0_artifact_payload_sha256": "50924ae5558945cc77fafb7c153577a95197e5071824dc214e9072f04bd091b5",
+        "qualification_payload_sha256": "3ffd05e2b8cbef348ac5ee9d4e4fc48fa0945e2b6e918bbe04f35c33bf5fa272",
+        "run_id": "s5-mstar-fx0-production-parity-20260816-003-qualification",
+        "verdict": "PRODUCTION_PATH_EXACT_PARITY_PASS"
+      },
+      "method": "M*",
+      "namespace": "pev3-s5-mstar-20260816-002",
+      "namespace_check": {
+        "empty": true,
+        "state_sha256": "10c4780e55cd3a573f7240da30a5cb051957ffd51c21635890b809ebce35f541"
+      },
+      "neo4j_connectivity": "PASS",
+      "predecessor": {
+        "artifact_sha256": "3cb2c27902ec2825fc9894d8855cc79e601f3518188593ed7d1a990092576df5",
+        "method": "P*",
+        "verdict": "SCIENTIFIC_OUTCOME_COMPLETE"
+      },
+      "production_identity_qualification": {
+        "current_stage_pointer": {
+          "current_stage": "S3_CONFIGURATION_FROZEN",
+          "file_sha256": "3cb7edad4bab3ac6fe961a3d9e8768cbb962cf61cf946cb7e0015d74c0edc26d",
+          "payload_sha256": "da17c5dae889d0a0d0e51b2f5bbd478e7a79d50ccf33450ca43f32c34b6dcdcc",
+          "run_id": "s3-native-v2-current-pointer-20260814-001"
+        },
+        "full_regression": {
+          "errors": 0,
+          "failures": 0,
+          "junit_file_sha256": "68e90aac5cab3d852b4138f21a36b2c3be97f3d1b79b198d2ccce65bad034848",
+          "skipped": 0,
+          "tests": 1442
+        },
+        "method": "M*",
+        "mstar_fx0": {
+          "fx0_artifact_payload_sha256": "50924ae5558945cc77fafb7c153577a95197e5071824dc214e9072f04bd091b5",
+          "fx0_fixture_manifest_sha256": "f40981830d02db7c13adf17064ce24ee47e1b2349c4674618cb5c1ff6d4b8a9d",
+          "production_core_identity_file_sha256": "c4f934c49224ea51ea22fc7d66dd6040b1c52b520053c2be147003628dbb2475",
+          "production_core_identity_sha256": "49be353d60a6851f762a12dd5c6aadd7ddffb13cad32add212553ed4c5038f00",
+          "qualification_file_sha256": "124d261a648760a3840202bb74d2030147cd817bb6f96269d06c6190b84cecc2",
+          "qualification_payload_sha256": "3ffd05e2b8cbef348ac5ee9d4e4fc48fa0945e2b6e918bbe04f35c33bf5fa272",
+          "verdict": "PRODUCTION_PATH_EXACT_PARITY_PASS"
+        },
+        "native_baseline_freeze": {
+          "baseline_id": "native-graphiti-u0-reader-v2",
+          "file_sha256": "3e935af2cb353fb59c4cf58ddec7e44a73387f88410d805324636b76daf2d5e6",
+          "payload_sha256": "b05720b834e53f2ab8172249b445afddc37ac8356f19674625e1129823c19da7"
+        },
+        "production_identity_file_sha256": "d9c5a6c72d94fdb91743e8424830edbcb0f4dcead03d0cbb78e3a5370665cdfd",
+        "production_identity_sha256": "9fac15005ea521863882b72a46bec6c2aae9ceb611f9f68842ae04232b9d433c",
+        "qualification_file_sha256": "982db73e4a9eb3cdfe593f0c94576dee8378799774858b8710856a4542b1fb91",
+        "qualification_payload_sha256": "cfd997c721bbf4ce406e6b3f11f23d075b4d5c11b78acbd0a7aab1872e13aa68",
+        "s5_plan": {
+          "file_sha256": "1ae543b6067d04402c623edcc2c067e21126159ae5c21af9732bb7f9bc0a248e",
+          "payload_sha256": "ae7e9d7d379d04461cf0a098af853e42de9ff7c7130f6c64454a5bfebc6404c6",
+          "run_id": "s5-method-qualification-plan-20260815-001",
+          "status": "OFFLINE_DESIGN_ONLY"
+        },
+        "s5_workplan_file_sha256": "47a9c1121fe6bbb59be44a9a18563fc7ba3c9fc75fa7e199ef151f00f0578dab",
+        "source_closure_digest": "0ded2f6c6559153f7305bd49ccc26cc4fa18abe886285bff86e1ccc33a6436ab"
+      },
+      "run_id": "s5-mstar-20260816-002",
+      "schema_version": "membind.paper-eval-v3.s5-live-preflight-evaluation.v1",
+      "verdict": "PASS",
+      "workload": {
+        "episode_count": 49,
+        "history_id": "07741c45",
+        "source_manifest_sha256": "9de10ac1f3e559c9dc3f6e518410307f401de99004a26f70cbd33dcc189ba08b"
+      }
+    },
+    "evaluation_sha256": "e2329f0df93c45ca7ad3d06c52a00d2d486b66612cc1726aba857d7c843a0d64",
+    "fx0_qualification": {
+      "fx0_artifact_payload_sha256": "50924ae5558945cc77fafb7c153577a95197e5071824dc214e9072f04bd091b5",
+      "qualification_payload_sha256": "3ffd05e2b8cbef348ac5ee9d4e4fc48fa0945e2b6e918bbe04f35c33bf5fa272",
+      "run_id": "s5-mstar-fx0-production-parity-20260816-003-qualification",
+      "verdict": "PRODUCTION_PATH_EXACT_PARITY_PASS"
+    },
+    "method": "M*",
+    "namespace": "pev3-s5-mstar-20260816-002",
+    "predecessor": {
+      "artifact_sha256": "3cb2c27902ec2825fc9894d8855cc79e601f3518188593ed7d1a990092576df5",
+      "method": "P*",
+      "verdict": "SCIENTIFIC_OUTCOME_COMPLETE"
+    },
+    "production_identity_qualification": {
+      "current_stage_pointer": {
+        "current_stage": "S3_CONFIGURATION_FROZEN",
+        "file_sha256": "3cb7edad4bab3ac6fe961a3d9e8768cbb962cf61cf946cb7e0015d74c0edc26d",
+        "payload_sha256": "da17c5dae889d0a0d0e51b2f5bbd478e7a79d50ccf33450ca43f32c34b6dcdcc",
+        "run_id": "s3-native-v2-current-pointer-20260814-001"
+      },
+      "full_regression": {
+        "errors": 0,
+        "failures": 0,
+        "junit_file_sha256": "68e90aac5cab3d852b4138f21a36b2c3be97f3d1b79b198d2ccce65bad034848",
+        "skipped": 0,
+        "tests": 1442
+      },
+      "method": "M*",
+      "mstar_fx0": {
+        "fx0_artifact_payload_sha256": "50924ae5558945cc77fafb7c153577a95197e5071824dc214e9072f04bd091b5",
+        "fx0_fixture_manifest_sha256": "f40981830d02db7c13adf17064ce24ee47e1b2349c4674618cb5c1ff6d4b8a9d",
+        "production_core_identity_file_sha256": "c4f934c49224ea51ea22fc7d66dd6040b1c52b520053c2be147003628dbb2475",
+        "production_core_identity_sha256": "49be353d60a6851f762a12dd5c6aadd7ddffb13cad32add212553ed4c5038f00",
+        "qualification_file_sha256": "124d261a648760a3840202bb74d2030147cd817bb6f96269d06c6190b84cecc2",
+        "qualification_payload_sha256": "3ffd05e2b8cbef348ac5ee9d4e4fc48fa0945e2b6e918bbe04f35c33bf5fa272",
+        "verdict": "PRODUCTION_PATH_EXACT_PARITY_PASS"
+      },
+      "native_baseline_freeze": {
+        "baseline_id": "native-graphiti-u0-reader-v2",
+        "file_sha256": "3e935af2cb353fb59c4cf58ddec7e44a73387f88410d805324636b76daf2d5e6",
+        "payload_sha256": "b05720b834e53f2ab8172249b445afddc37ac8356f19674625e1129823c19da7"
+      },
+      "production_identity_file_sha256": "d9c5a6c72d94fdb91743e8424830edbcb0f4dcead03d0cbb78e3a5370665cdfd",
+      "production_identity_sha256": "9fac15005ea521863882b72a46bec6c2aae9ceb611f9f68842ae04232b9d433c",
+      "qualification_file_sha256": "982db73e4a9eb3cdfe593f0c94576dee8378799774858b8710856a4542b1fb91",
+      "qualification_payload_sha256": "cfd997c721bbf4ce406e6b3f11f23d075b4d5c11b78acbd0a7aab1872e13aa68",
+      "s5_plan": {
+        "file_sha256": "1ae543b6067d04402c623edcc2c067e21126159ae5c21af9732bb7f9bc0a248e",
+        "payload_sha256": "ae7e9d7d379d04461cf0a098af853e42de9ff7c7130f6c64454a5bfebc6404c6",
+        "run_id": "s5-method-qualification-plan-20260815-001",
+        "status": "OFFLINE_DESIGN_ONLY"
+      },
+      "s5_workplan_file_sha256": "47a9c1121fe6bbb59be44a9a18563fc7ba3c9fc75fa7e199ef151f00f0578dab",
+      "source_closure_digest": "0ded2f6c6559153f7305bd49ccc26cc4fa18abe886285bff86e1ccc33a6436ab"
+    },
+    "run_id": "s5-mstar-20260816-002",
+    "schema_version": "membind.paper-eval-v3.s5-live-preflight-artifact.v1",
+    "source_sha256": {
+      "contract": "6d32a7eb5d65656c2073f69cd75b70709d93963d2b7e2b97e943d0b494206b48",
+      "contract_test": "b1f5ac17f0c9fbc7b1f7e5401510f4af5cbc4a775254f578dad62a4a09aca858",
+      "production": "38a992b38e59b67334f539e0c3810723d090e212823bb4b6b3135bbe2749b8c6",
+      "production_test": "8e21e5d192659fbb3f7877a74c378e08e55553f4326ad8fc5f674373281a104d"
+    },
+    "stage": "S5_LIVE_PREFLIGHT",
+    "verdict": "PASS",
+    "workload": {
+      "episode_count": 49,
+      "history_id": "07741c45",
+      "source_manifest_sha256": "9de10ac1f3e559c9dc3f6e518410307f401de99004a26f70cbd33dcc189ba08b"
+    }
+  },
+  "payload_sha256": "cd58916222bc0658c48df5bf907e77b0f98a7152c074208dbb24f782a78d33d9",
+  "protocol_version": "paper-eval-v3",
+  "run_id": "s5-mstar-20260816-002",
+  "status": "finalized"
+}

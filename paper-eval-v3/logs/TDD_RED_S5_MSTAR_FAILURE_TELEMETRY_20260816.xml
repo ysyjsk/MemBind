@@ -1,0 +1,979 @@
+<?xml version="1.0" encoding="utf-8"?><testsuites name="pytest tests"><testsuite name="pytest" errors="0" failures="19" skipped="0" tests="61" time="0.445" timestamp="2026-08-16T14:51:07.113652+08:00" hostname="aces-System-Product-Name"><testcase classname="tests.test_s5_graphiti_mstar_semantics" name="test_prepare_then_bind_uses_native_order_and_same_logical_time" time="0.001" /><testcase classname="tests.test_s5_graphiti_mstar_semantics" name="test_default_edge_type_map_matches_pinned_native_graphiti" time="0.000" /><testcase classname="tests.test_s5_graphiti_mstar_semantics" name="test_logical_time_conversion_is_utc_and_invalid_values_fail_closed" time="0.000" /><testcase classname="tests.test_s5_graphiti_mstar_semantics" name="test_prepare_and_bind_reject_malformed_inputs_without_fallback" time="0.000" /><testcase classname="tests.test_s5_graphiti_mstar_semantics" name="test_upstream_failure_is_sanitized_and_does_not_commit" time="0.000" /><testcase classname="tests.test_s5_graphiti_mstar_semantics" name="test_semantic_runtime_rejects_nonsequence_upstream_shapes" time="0.000" /><testcase classname="tests.test_s5_graphiti_mstar_semantics" name="test_fx0_controlled_providers_require_and_enter_explicit_scope" time="0.000" /><testcase classname="tests.test_s5_graphiti_mstar_semantics" name="test_compatible_duplicate_resolved_uuid_is_deterministically_coalesced" time="0.000" /><testcase classname="tests.test_s5_graphiti_mstar_semantics" name="test_conflicting_duplicate_resolved_uuid_fails_before_attribute_or_commit" time="0.000" /><testcase classname="tests.test_s5_graphiti_mstar_semantics" name="test_bind_substage_failure_keeps_only_sanitized_code_and_upstream_class[resolve_extracted_nodes-resolve_nodes_failed-resolve_nodes_broken]" time="0.000"><failure message="AttributeError: 'S5GraphitiMStarSemanticError' object has no attribute 'code'">binding_field = 'resolve_extracted_nodes'
+expected_code = 'resolve_nodes_failed'
+expected_last_call = 'resolve_nodes_broken'
+
+    @pytest.mark.parametrize(
+        ("binding_field", "expected_code", "expected_last_call"),
+        [
+            ("resolve_extracted_nodes", "resolve_nodes_failed", "resolve_nodes_broken"),
+            ("extract_edges", "extract_edges_failed", "extract_edges_broken"),
+            ("resolve_extracted_edges", "resolve_edges_failed", "resolve_edges_broken"),
+            (
+                "extract_attributes_from_nodes",
+                "extract_attributes_failed",
+                "extract_attributes_broken",
+            ),
+            ("process_episode_data", "process_episode_data_failed", "process_broken"),
+        ],
+    )
+    def test_bind_substage_failure_keeps_only_sanitized_code_and_upstream_class(
+        binding_field: str,
+        expected_code: str,
+        expected_last_call: str,
+    ) -&gt; None:
+        """Each Native bind substage must remain distinguishable without raw text."""
+    
+        calls: list[str] = []
+        base = _binding(calls)
+    
+        async def broken(*_args, **_kwargs):
+            calls.append(expected_last_call)
+            raise RuntimeError("PRIVATE-UPSTREAM-DETAIL")
+    
+        runtime = S5GraphitiMStarSemanticRuntime(
+            graphiti=type("GraphitiDouble", (), {"clients": object()})(),
+            binding=replace(base, **{binding_field: broken}),
+            latest_state_retriever=lambda _source: asyncio.sleep(0, result=[]),
+        )
+        prepared = asyncio.run(runtime.prepare(_source(), 1))
+    
+        with pytest.raises(S5GraphitiMStarSemanticError) as raised:
+            asyncio.run(runtime.bind(prepared, 1, 0, ()))
+    
+        error = raised.value
+&gt;       assert error.code == expected_code
+               ^^^^^^^^^^
+E       AttributeError: 'S5GraphitiMStarSemanticError' object has no attribute 'code'
+
+tests/test_s5_graphiti_mstar_semantics.py:326: AttributeError</failure></testcase><testcase classname="tests.test_s5_graphiti_mstar_semantics" name="test_bind_substage_failure_keeps_only_sanitized_code_and_upstream_class[extract_edges-extract_edges_failed-extract_edges_broken]" time="0.001"><failure message="AttributeError: 'S5GraphitiMStarSemanticError' object has no attribute 'code'">binding_field = 'extract_edges', expected_code = 'extract_edges_failed'
+expected_last_call = 'extract_edges_broken'
+
+    @pytest.mark.parametrize(
+        ("binding_field", "expected_code", "expected_last_call"),
+        [
+            ("resolve_extracted_nodes", "resolve_nodes_failed", "resolve_nodes_broken"),
+            ("extract_edges", "extract_edges_failed", "extract_edges_broken"),
+            ("resolve_extracted_edges", "resolve_edges_failed", "resolve_edges_broken"),
+            (
+                "extract_attributes_from_nodes",
+                "extract_attributes_failed",
+                "extract_attributes_broken",
+            ),
+            ("process_episode_data", "process_episode_data_failed", "process_broken"),
+        ],
+    )
+    def test_bind_substage_failure_keeps_only_sanitized_code_and_upstream_class(
+        binding_field: str,
+        expected_code: str,
+        expected_last_call: str,
+    ) -&gt; None:
+        """Each Native bind substage must remain distinguishable without raw text."""
+    
+        calls: list[str] = []
+        base = _binding(calls)
+    
+        async def broken(*_args, **_kwargs):
+            calls.append(expected_last_call)
+            raise RuntimeError("PRIVATE-UPSTREAM-DETAIL")
+    
+        runtime = S5GraphitiMStarSemanticRuntime(
+            graphiti=type("GraphitiDouble", (), {"clients": object()})(),
+            binding=replace(base, **{binding_field: broken}),
+            latest_state_retriever=lambda _source: asyncio.sleep(0, result=[]),
+        )
+        prepared = asyncio.run(runtime.prepare(_source(), 1))
+    
+        with pytest.raises(S5GraphitiMStarSemanticError) as raised:
+            asyncio.run(runtime.bind(prepared, 1, 0, ()))
+    
+        error = raised.value
+&gt;       assert error.code == expected_code
+               ^^^^^^^^^^
+E       AttributeError: 'S5GraphitiMStarSemanticError' object has no attribute 'code'
+
+tests/test_s5_graphiti_mstar_semantics.py:326: AttributeError</failure></testcase><testcase classname="tests.test_s5_graphiti_mstar_semantics" name="test_bind_substage_failure_keeps_only_sanitized_code_and_upstream_class[resolve_extracted_edges-resolve_edges_failed-resolve_edges_broken]" time="0.001"><failure message="AttributeError: 'S5GraphitiMStarSemanticError' object has no attribute 'code'">binding_field = 'resolve_extracted_edges'
+expected_code = 'resolve_edges_failed'
+expected_last_call = 'resolve_edges_broken'
+
+    @pytest.mark.parametrize(
+        ("binding_field", "expected_code", "expected_last_call"),
+        [
+            ("resolve_extracted_nodes", "resolve_nodes_failed", "resolve_nodes_broken"),
+            ("extract_edges", "extract_edges_failed", "extract_edges_broken"),
+            ("resolve_extracted_edges", "resolve_edges_failed", "resolve_edges_broken"),
+            (
+                "extract_attributes_from_nodes",
+                "extract_attributes_failed",
+                "extract_attributes_broken",
+            ),
+            ("process_episode_data", "process_episode_data_failed", "process_broken"),
+        ],
+    )
+    def test_bind_substage_failure_keeps_only_sanitized_code_and_upstream_class(
+        binding_field: str,
+        expected_code: str,
+        expected_last_call: str,
+    ) -&gt; None:
+        """Each Native bind substage must remain distinguishable without raw text."""
+    
+        calls: list[str] = []
+        base = _binding(calls)
+    
+        async def broken(*_args, **_kwargs):
+            calls.append(expected_last_call)
+            raise RuntimeError("PRIVATE-UPSTREAM-DETAIL")
+    
+        runtime = S5GraphitiMStarSemanticRuntime(
+            graphiti=type("GraphitiDouble", (), {"clients": object()})(),
+            binding=replace(base, **{binding_field: broken}),
+            latest_state_retriever=lambda _source: asyncio.sleep(0, result=[]),
+        )
+        prepared = asyncio.run(runtime.prepare(_source(), 1))
+    
+        with pytest.raises(S5GraphitiMStarSemanticError) as raised:
+            asyncio.run(runtime.bind(prepared, 1, 0, ()))
+    
+        error = raised.value
+&gt;       assert error.code == expected_code
+               ^^^^^^^^^^
+E       AttributeError: 'S5GraphitiMStarSemanticError' object has no attribute 'code'
+
+tests/test_s5_graphiti_mstar_semantics.py:326: AttributeError</failure></testcase><testcase classname="tests.test_s5_graphiti_mstar_semantics" name="test_bind_substage_failure_keeps_only_sanitized_code_and_upstream_class[extract_attributes_from_nodes-extract_attributes_failed-extract_attributes_broken]" time="0.000"><failure message="AttributeError: 'S5GraphitiMStarSemanticError' object has no attribute 'code'">binding_field = 'extract_attributes_from_nodes'
+expected_code = 'extract_attributes_failed'
+expected_last_call = 'extract_attributes_broken'
+
+    @pytest.mark.parametrize(
+        ("binding_field", "expected_code", "expected_last_call"),
+        [
+            ("resolve_extracted_nodes", "resolve_nodes_failed", "resolve_nodes_broken"),
+            ("extract_edges", "extract_edges_failed", "extract_edges_broken"),
+            ("resolve_extracted_edges", "resolve_edges_failed", "resolve_edges_broken"),
+            (
+                "extract_attributes_from_nodes",
+                "extract_attributes_failed",
+                "extract_attributes_broken",
+            ),
+            ("process_episode_data", "process_episode_data_failed", "process_broken"),
+        ],
+    )
+    def test_bind_substage_failure_keeps_only_sanitized_code_and_upstream_class(
+        binding_field: str,
+        expected_code: str,
+        expected_last_call: str,
+    ) -&gt; None:
+        """Each Native bind substage must remain distinguishable without raw text."""
+    
+        calls: list[str] = []
+        base = _binding(calls)
+    
+        async def broken(*_args, **_kwargs):
+            calls.append(expected_last_call)
+            raise RuntimeError("PRIVATE-UPSTREAM-DETAIL")
+    
+        runtime = S5GraphitiMStarSemanticRuntime(
+            graphiti=type("GraphitiDouble", (), {"clients": object()})(),
+            binding=replace(base, **{binding_field: broken}),
+            latest_state_retriever=lambda _source: asyncio.sleep(0, result=[]),
+        )
+        prepared = asyncio.run(runtime.prepare(_source(), 1))
+    
+        with pytest.raises(S5GraphitiMStarSemanticError) as raised:
+            asyncio.run(runtime.bind(prepared, 1, 0, ()))
+    
+        error = raised.value
+&gt;       assert error.code == expected_code
+               ^^^^^^^^^^
+E       AttributeError: 'S5GraphitiMStarSemanticError' object has no attribute 'code'
+
+tests/test_s5_graphiti_mstar_semantics.py:326: AttributeError</failure></testcase><testcase classname="tests.test_s5_graphiti_mstar_semantics" name="test_bind_substage_failure_keeps_only_sanitized_code_and_upstream_class[process_episode_data-process_episode_data_failed-process_broken]" time="0.000"><failure message="AttributeError: 'S5GraphitiMStarSemanticError' object has no attribute 'code'">binding_field = 'process_episode_data'
+expected_code = 'process_episode_data_failed'
+expected_last_call = 'process_broken'
+
+    @pytest.mark.parametrize(
+        ("binding_field", "expected_code", "expected_last_call"),
+        [
+            ("resolve_extracted_nodes", "resolve_nodes_failed", "resolve_nodes_broken"),
+            ("extract_edges", "extract_edges_failed", "extract_edges_broken"),
+            ("resolve_extracted_edges", "resolve_edges_failed", "resolve_edges_broken"),
+            (
+                "extract_attributes_from_nodes",
+                "extract_attributes_failed",
+                "extract_attributes_broken",
+            ),
+            ("process_episode_data", "process_episode_data_failed", "process_broken"),
+        ],
+    )
+    def test_bind_substage_failure_keeps_only_sanitized_code_and_upstream_class(
+        binding_field: str,
+        expected_code: str,
+        expected_last_call: str,
+    ) -&gt; None:
+        """Each Native bind substage must remain distinguishable without raw text."""
+    
+        calls: list[str] = []
+        base = _binding(calls)
+    
+        async def broken(*_args, **_kwargs):
+            calls.append(expected_last_call)
+            raise RuntimeError("PRIVATE-UPSTREAM-DETAIL")
+    
+        runtime = S5GraphitiMStarSemanticRuntime(
+            graphiti=type("GraphitiDouble", (), {"clients": object()})(),
+            binding=replace(base, **{binding_field: broken}),
+            latest_state_retriever=lambda _source: asyncio.sleep(0, result=[]),
+        )
+        prepared = asyncio.run(runtime.prepare(_source(), 1))
+    
+        with pytest.raises(S5GraphitiMStarSemanticError) as raised:
+            asyncio.run(runtime.bind(prepared, 1, 0, ()))
+    
+        error = raised.value
+&gt;       assert error.code == expected_code
+               ^^^^^^^^^^
+E       AttributeError: 'S5GraphitiMStarSemanticError' object has no attribute 'code'
+
+tests/test_s5_graphiti_mstar_semantics.py:326: AttributeError</failure></testcase><testcase classname="tests.test_s5_mstar_pipeline" name="test_explicit_logical_operation_times_do_not_depend_on_telemetry_clock" time="0.001" /><testcase classname="tests.test_s5_mstar_pipeline" name="test_publication_journal_failure_recovers_after_commit_without_rebinding" time="0.001" /><testcase classname="tests.test_s5_mstar_pipeline" name="test_parallel_prepare_binds_and_publishes_in_source_order" time="0.002" /><testcase classname="tests.test_s5_mstar_pipeline" name="test_prepare_failure_poison_cancels_and_awaits_workers_before_terminal" time="0.001" /><testcase classname="tests.test_s5_mstar_pipeline" name="test_bind_failure_keeps_only_durable_published_prefix_and_no_late_events" time="0.001"><failure message="KeyError: 'semantic_error_code'">@pytest.mark.asyncio
+    async def test_bind_failure_keeps_only_durable_published_prefix_and_no_late_events() -&gt; None:
+        sink = DurableSink()
+        bind_calls: list[int] = []
+    
+        async def prepare(source: object, _logical_time_ns: int) -&gt; object:
+            await asyncio.sleep(0)
+            return int(source["source"])
+    
+        async def bind(
+            prepared: object,
+            _logical_time_ns: int,
+            source_sequence: int,
+            visible_publication_prefix: tuple[int, ...],
+        ) -&gt; None:
+            assert prepared == source_sequence
+            assert visible_publication_prefix == tuple(range(source_sequence))
+            bind_calls.append(source_sequence)
+            if source_sequence == 1:
+                raise LookupError("private database detail")
+    
+        evidence = await run_mstar_pipeline(
+            spec=_spec(),
+            sources=_sources(),
+            semantic_prepare=prepare,
+            latest_state_bind=bind,
+            persist_event=sink,
+            clock_ns=StepClock(),
+        )
+    
+        assert evidence["status"] == "FAIL_CLOSED"
+        assert evidence["failure_code"] == "LATEST_STATE_BIND_FAILED"
+&gt;       assert evidence["semantic_error_code"] is None
+               ^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^
+E       KeyError: 'semantic_error_code'
+
+tests/test_s5_mstar_pipeline.py:328: KeyError</failure></testcase><testcase classname="tests.test_s5_mstar_pipeline" name="test_bind_failure_persists_sanitized_semantic_substage_without_message" time="0.001"><failure message="KeyError: 'semantic_error_code'">@pytest.mark.asyncio
+    async def test_bind_failure_persists_sanitized_semantic_substage_without_message() -&gt; None:
+        sink = DurableSink()
+    
+        async def prepare(source: object, _logical_time_ns: int) -&gt; object:
+            return source
+    
+        async def bind(*_args: object) -&gt; None:
+            raise S5GraphitiMStarSemanticError(
+                "extract_edges_failed",
+                upstream_error_class="json.decoder.JSONDecodeError",
+            )
+    
+        evidence = await run_mstar_pipeline(
+            spec=_spec(),
+            sources=_sources(2),
+            semantic_prepare=prepare,
+            latest_state_bind=bind,
+            persist_event=sink,
+            clock_ns=StepClock(),
+        )
+    
+        assert evidence["status"] == "FAIL_CLOSED"
+&gt;       assert evidence["semantic_error_code"] == "extract_edges_failed"
+               ^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^
+E       KeyError: 'semantic_error_code'
+
+tests/test_s5_mstar_pipeline.py:371: KeyError</failure></testcase><testcase classname="tests.test_s5_mstar_pipeline" name="test_durable_event_failure_aborts_before_semantic_work" time="0.000" /><testcase classname="tests.test_s5_mstar_pipeline" name="test_prepare_event_failure_does_not_leave_an_unresolved_worker_future" time="0.000" /><testcase classname="tests.test_s5_mstar_pipeline" name="test_verifier_rejects_order_fallback_shape_and_private_drift" time="0.002" /><testcase classname="tests.test_s5_mstar_pipeline" name="test_spec_and_source_reject_legacy_aliases_or_invalid_identity" time="0.000" /><testcase classname="tests.test_s5_mstar_pipeline" name="test_spec_accepts_only_protocol_concurrency_grid[1]" time="0.000" /><testcase classname="tests.test_s5_mstar_pipeline" name="test_spec_accepts_only_protocol_concurrency_grid[2]" time="0.000" /><testcase classname="tests.test_s5_mstar_pipeline" name="test_spec_accepts_only_protocol_concurrency_grid[4]" time="0.000" /><testcase classname="tests.test_s5_mstar_pipeline" name="test_spec_accepts_only_protocol_concurrency_grid[8]" time="0.000" /><testcase classname="tests.test_s5_mstar_pipeline" name="test_spec_rejects_concurrency_outside_protocol_grid" time="0.000" /><testcase classname="tests.test_s5_mstar_pipeline" name="test_verifier_accepts_every_observed_worker_in_protocol_grid[1]" time="0.001" /><testcase classname="tests.test_s5_mstar_pipeline" name="test_verifier_accepts_every_observed_worker_in_protocol_grid[2]" time="0.001" /><testcase classname="tests.test_s5_mstar_pipeline" name="test_verifier_accepts_every_observed_worker_in_protocol_grid[4]" time="0.002" /><testcase classname="tests.test_s5_mstar_pipeline" name="test_verifier_accepts_every_observed_worker_in_protocol_grid[8]" time="0.003" /><testcase classname="tests.test_s5_mstar_pipeline" name="test_fx0_single_case_mode_uses_same_core_without_claiming_prepare_overlap" time="0.001" /><testcase classname="tests.test_s5_mstar_production_runner" name="test_mstar_runner_cross_binds_distinct_identities_and_journals_commit_order" time="0.001"><failure message="TypeError: S5MStarProductionRunner.__init__() got an unexpected keyword argument 'failure_telemetry_snapshot'">tmp_path = PosixPath('/tmp/pytest-of-ly/pytest-459/test_mstar_runner_cross_binds_0')
+
+    def test_mstar_runner_cross_binds_distinct_identities_and_journals_commit_order(
+        tmp_path: Path,
+    ) -&gt; None:
+        core = _core_identity()
+        identity = _identity(core)
+        fx0 = _fx0_qualification(identity, core)
+        callback_observations: list[tuple[object, int, int, tuple[int, ...]]] = []
+    
+        async def bind(
+            prepared: object,
+            logical_time: int,
+            source_sequence: int,
+            visible_prefix: tuple[int, ...],
+        ) -&gt; object:
+            assert prepared["source"] == source_sequence
+            assert prepared["logical_time"] == logical_time
+            assert visible_prefix == tuple(range(source_sequence))
+            return {"bound_source": source_sequence}
+    
+        async def commit_evidence(
+            bind_result: object,
+            logical_time: int,
+            source_sequence: int,
+            visible_prefix: tuple[int, ...],
+        ) -&gt; str:
+            callback_observations.append(
+                (bind_result, logical_time, source_sequence, visible_prefix)
+            )
+            return f"{source_sequence + 30:064x}"
+    
+        root = tmp_path / "mstar"
+        result = asyncio.run(
+&gt;           _runner(
+                attempt_root=root,
+                core=core,
+                identity=identity,
+                fx0=fx0,
+                latest_state_bind=bind,
+                commit_evidence=commit_evidence,
+            ).run()
+        )
+
+tests/test_s5_mstar_production_runner.py:223: 
+_ _ _ _ _ _ _ _ _ _ _ _ _ _ _ _ _ _ _ _ _ _ _ _ _ _ _ _ _ _ _ _ _ _ _ _ _ _ _ _ 
+
+attempt_root = PosixPath('/tmp/pytest-of-ly/pytest-459/test_mstar_runner_cross_binds_0/mstar')
+core = {'schema_version': 'membind.paper-eval-v3.s5-mstar-production-core-identity.v1', 'status': 'FROZEN', 'method': 'M*', 'graphiti_version': '0.29.3', ...}
+identity = {'schema_version': 'membind.paper-eval-v3.s5-production-identity.v1', 'status': 'FROZEN', 'method': 'M*', 'graphiti_version': '0.29.3', ...}
+fx0 = {'git_commit': 'aaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaa', 'payload': {'schema_version': 'membind.paper-eval-v3.s5-gra..._sha256': '6b1b26d9e1a55ba219f467ca8cee3a1c26570aebca87e42fc910c86c539cc75d', 'protocol_version': 'paper-eval-v3', ...}
+latest_state_bind = &lt;function test_mstar_runner_cross_binds_distinct_identities_and_journals_commit_order.&lt;locals&gt;.bind at 0x73ecde0a4d60&gt;
+commit_evidence = &lt;function test_mstar_runner_cross_binds_distinct_identities_and_journals_commit_order.&lt;locals&gt;.commit_evidence at 0x73ecde0a5bc0&gt;
+failure_telemetry_snapshot = &lt;function &lt;lambda&gt; at 0x73ecde231bc0&gt;
+run_id = 's5-mstar-production-test'
+
+    def _runner(
+        *,
+        attempt_root: Path,
+        core: dict[str, object],
+        identity: dict[str, object],
+        fx0: dict[str, object],
+        latest_state_bind: object,
+        commit_evidence: object = _commit_evidence,
+        failure_telemetry_snapshot: object = lambda: (),
+        run_id: str = "s5-mstar-production-test",
+    ) -&gt; S5MStarProductionRunner:
+&gt;       return S5MStarProductionRunner(
+            attempt_root=attempt_root,
+            spec=_spec(core, run_id=run_id),
+            identity=identity,
+            production_core_identity=core,
+            fx0_qualification=fx0,
+            sources=_sources(),
+            semantic_prepare=_prepare,
+            latest_state_bind=latest_state_bind,
+            commit_evidence=commit_evidence,
+            clock_ns=StepClock(),
+            failure_telemetry_snapshot=failure_telemetry_snapshot,
+        )
+E       TypeError: S5MStarProductionRunner.__init__() got an unexpected keyword argument 'failure_telemetry_snapshot'
+
+tests/test_s5_mstar_production_runner.py:176: TypeError</failure></testcase><testcase classname="tests.test_s5_mstar_production_runner" name="test_mstar_runner_rejects_identity_cross_binding_drift[spec_core-production_core_identity_mismatch]" time="0.001" /><testcase classname="tests.test_s5_mstar_production_runner" name="test_mstar_runner_rejects_identity_cross_binding_drift[fx0_core-fx0_core_identity_mismatch]" time="0.001" /><testcase classname="tests.test_s5_mstar_production_runner" name="test_mstar_runner_rejects_identity_cross_binding_drift[fx0_artifact-fx0_artifact_identity_mismatch]" time="0.001" /><testcase classname="tests.test_s5_mstar_production_runner" name="test_mstar_runner_rejects_identity_cross_binding_drift[fx0_runtime-fx0_runtime_config_mismatch]" time="0.001" /><testcase classname="tests.test_s5_mstar_production_runner" name="test_mstar_runner_rejects_identity_cross_binding_drift[generic_source-production_core_source_binding_mismatch]" time="0.001" /><testcase classname="tests.test_s5_mstar_production_runner" name="test_mstar_runner_rejects_tampered_fx0_qualification_seal" time="0.001"><failure message="TypeError: S5MStarProductionRunner.__init__() got an unexpected keyword argument 'failure_telemetry_snapshot'">tmp_path = PosixPath('/tmp/pytest-of-ly/pytest-459/test_mstar_runner_rejects_tamp0')
+
+    def test_mstar_runner_rejects_tampered_fx0_qualification_seal(
+        tmp_path: Path,
+    ) -&gt; None:
+        core = _core_identity()
+        identity = _identity(core)
+        fx0 = _fx0_qualification(identity, core)
+        fx0["payload"]["verdict"] = "PRODUCTION_PATH_EXACT_PARITY_FAIL"
+    
+        async def bind(*_args: object) -&gt; None:
+            return None
+    
+        with pytest.raises(S5MStarProductionRunnerError, match="fx0_qualification_hash_invalid"):
+&gt;           _runner(
+                attempt_root=tmp_path / "tampered",
+                core=core,
+                identity=identity,
+                fx0=fx0,
+                latest_state_bind=bind,
+            )
+
+tests/test_s5_mstar_production_runner.py:352: 
+_ _ _ _ _ _ _ _ _ _ _ _ _ _ _ _ _ _ _ _ _ _ _ _ _ _ _ _ _ _ _ _ _ _ _ _ _ _ _ _ 
+
+attempt_root = PosixPath('/tmp/pytest-of-ly/pytest-459/test_mstar_runner_rejects_tamp0/tampered')
+core = {'schema_version': 'membind.paper-eval-v3.s5-mstar-production-core-identity.v1', 'status': 'FROZEN', 'method': 'M*', 'graphiti_version': '0.29.3', ...}
+identity = {'schema_version': 'membind.paper-eval-v3.s5-production-identity.v1', 'status': 'FROZEN', 'method': 'M*', 'graphiti_version': '0.29.3', ...}
+fx0 = {'git_commit': 'aaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaa', 'payload': {'schema_version': 'membind.paper-eval-v3.s5-gra..._sha256': '6b1b26d9e1a55ba219f467ca8cee3a1c26570aebca87e42fc910c86c539cc75d', 'protocol_version': 'paper-eval-v3', ...}
+latest_state_bind = &lt;function test_mstar_runner_rejects_tampered_fx0_qualification_seal.&lt;locals&gt;.bind at 0x73ecde0a6c00&gt;
+commit_evidence = &lt;function _commit_evidence at 0x73ecde231b20&gt;
+failure_telemetry_snapshot = &lt;function &lt;lambda&gt; at 0x73ecde231bc0&gt;
+run_id = 's5-mstar-production-test'
+
+    def _runner(
+        *,
+        attempt_root: Path,
+        core: dict[str, object],
+        identity: dict[str, object],
+        fx0: dict[str, object],
+        latest_state_bind: object,
+        commit_evidence: object = _commit_evidence,
+        failure_telemetry_snapshot: object = lambda: (),
+        run_id: str = "s5-mstar-production-test",
+    ) -&gt; S5MStarProductionRunner:
+&gt;       return S5MStarProductionRunner(
+            attempt_root=attempt_root,
+            spec=_spec(core, run_id=run_id),
+            identity=identity,
+            production_core_identity=core,
+            fx0_qualification=fx0,
+            sources=_sources(),
+            semantic_prepare=_prepare,
+            latest_state_bind=latest_state_bind,
+            commit_evidence=commit_evidence,
+            clock_ns=StepClock(),
+            failure_telemetry_snapshot=failure_telemetry_snapshot,
+        )
+E       TypeError: S5MStarProductionRunner.__init__() got an unexpected keyword argument 'failure_telemetry_snapshot'
+
+tests/test_s5_mstar_production_runner.py:176: TypeError</failure></testcase><testcase classname="tests.test_s5_mstar_production_runner" name="test_mstar_bind_failure_is_incomplete_and_keeps_published_prefix" time="0.001"><failure message="TypeError: S5MStarProductionRunner.__init__() got an unexpected keyword argument 'failure_telemetry_snapshot'">tmp_path = PosixPath('/tmp/pytest-of-ly/pytest-459/test_mstar_bind_failure_is_inc0')
+
+    def test_mstar_bind_failure_is_incomplete_and_keeps_published_prefix(tmp_path: Path) -&gt; None:
+        core = _core_identity()
+        identity = _identity(core)
+        fx0 = _fx0_qualification(identity, core)
+    
+        async def bind(
+            prepared: object,
+            _logical_time: int,
+            _source_sequence: int,
+            _visible_prefix: tuple[int, ...],
+        ) -&gt; None:
+            if prepared["source"] == 1:
+                raise RuntimeError("simulated private bind failure")
+    
+        root = tmp_path / "failed"
+        result = asyncio.run(
+&gt;           _runner(
+                attempt_root=root,
+                core=core,
+                identity=identity,
+                fx0=fx0,
+                latest_state_bind=bind,
+            ).run()
+        )
+
+tests/test_s5_mstar_production_runner.py:377: 
+_ _ _ _ _ _ _ _ _ _ _ _ _ _ _ _ _ _ _ _ _ _ _ _ _ _ _ _ _ _ _ _ _ _ _ _ _ _ _ _ 
+
+attempt_root = PosixPath('/tmp/pytest-of-ly/pytest-459/test_mstar_bind_failure_is_inc0/failed')
+core = {'schema_version': 'membind.paper-eval-v3.s5-mstar-production-core-identity.v1', 'status': 'FROZEN', 'method': 'M*', 'graphiti_version': '0.29.3', ...}
+identity = {'schema_version': 'membind.paper-eval-v3.s5-production-identity.v1', 'status': 'FROZEN', 'method': 'M*', 'graphiti_version': '0.29.3', ...}
+fx0 = {'git_commit': 'aaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaa', 'payload': {'schema_version': 'membind.paper-eval-v3.s5-gra..._sha256': '6b1b26d9e1a55ba219f467ca8cee3a1c26570aebca87e42fc910c86c539cc75d', 'protocol_version': 'paper-eval-v3', ...}
+latest_state_bind = &lt;function test_mstar_bind_failure_is_incomplete_and_keeps_published_prefix.&lt;locals&gt;.bind at 0x73ecde077060&gt;
+commit_evidence = &lt;function _commit_evidence at 0x73ecde231b20&gt;
+failure_telemetry_snapshot = &lt;function &lt;lambda&gt; at 0x73ecde231bc0&gt;
+run_id = 's5-mstar-production-test'
+
+    def _runner(
+        *,
+        attempt_root: Path,
+        core: dict[str, object],
+        identity: dict[str, object],
+        fx0: dict[str, object],
+        latest_state_bind: object,
+        commit_evidence: object = _commit_evidence,
+        failure_telemetry_snapshot: object = lambda: (),
+        run_id: str = "s5-mstar-production-test",
+    ) -&gt; S5MStarProductionRunner:
+&gt;       return S5MStarProductionRunner(
+            attempt_root=attempt_root,
+            spec=_spec(core, run_id=run_id),
+            identity=identity,
+            production_core_identity=core,
+            fx0_qualification=fx0,
+            sources=_sources(),
+            semantic_prepare=_prepare,
+            latest_state_bind=latest_state_bind,
+            commit_evidence=commit_evidence,
+            clock_ns=StepClock(),
+            failure_telemetry_snapshot=failure_telemetry_snapshot,
+        )
+E       TypeError: S5MStarProductionRunner.__init__() got an unexpected keyword argument 'failure_telemetry_snapshot'
+
+tests/test_s5_mstar_production_runner.py:176: TypeError</failure></testcase><testcase classname="tests.test_s5_mstar_production_runner" name="test_mstar_semantic_failure_writes_hash_bound_envelope_before_finalize" time="0.001"><failure message="TypeError: S5MStarProductionRunner.__init__() got an unexpected keyword argument 'failure_telemetry_snapshot'">tmp_path = PosixPath('/tmp/pytest-of-ly/pytest-459/test_mstar_semantic_failure_wr0')
+monkeypatch = &lt;_pytest.monkeypatch.MonkeyPatch object at 0x73ecde0a16d0&gt;
+
+    def test_mstar_semantic_failure_writes_hash_bound_envelope_before_finalize(
+        tmp_path: Path,
+        monkeypatch: pytest.MonkeyPatch,
+    ) -&gt; None:
+        core = _core_identity()
+        identity = _identity(core)
+        fx0 = _fx0_qualification(identity, core)
+        root = tmp_path / "classified-failure"
+        finalized_after_envelope: list[bool] = []
+        original_finalize = S5AttemptStore.finalize
+    
+        async def bind(
+            prepared: object,
+            _logical_time: int,
+            _source_sequence: int,
+            _visible_prefix: tuple[int, ...],
+        ) -&gt; None:
+            if prepared["source"] == 1:
+                raise S5GraphitiMStarSemanticError(
+                    "extract_edges_failed",
+                    upstream_error_class="json.decoder.JSONDecodeError",
+                )
+    
+        def observe_finalize(
+            store: S5AttemptStore, evidence: object
+        ) -&gt; dict[str, object]:
+            finalized_after_envelope.append((root / "failure_envelope.json").exists())
+            return original_finalize(store, evidence)
+    
+        monkeypatch.setattr(S5AttemptStore, "finalize", observe_finalize)
+        result = asyncio.run(
+&gt;           _runner(
+                attempt_root=root,
+                core=core,
+                identity=identity,
+                fx0=fx0,
+                latest_state_bind=bind,
+                failure_telemetry_snapshot=lambda: (
+                    {
+                        "request_ordinal": 7,
+                        "source_sequence": 1,
+                        "response_format_type": "json_schema",
+                        "json_schema_name": "ExtractedEdges",
+                        "json_schema_sha256": "a" * 64,
+                        "requested_max_tokens": 16_384,
+                        "prompt_tokens": 19_265,
+                        "completion_tokens": 16_384,
+                        "total_tokens": 35_649,
+                        "finish_reason": "length",
+                        "transport_outcome": "response_received",
+                        "http_status": None,
+                        "error_class": None,
+                    },
+                ),
+            ).run()
+        )
+
+tests/test_s5_mstar_production_runner.py:423: 
+_ _ _ _ _ _ _ _ _ _ _ _ _ _ _ _ _ _ _ _ _ _ _ _ _ _ _ _ _ _ _ _ _ _ _ _ _ _ _ _ 
+
+attempt_root = PosixPath('/tmp/pytest-of-ly/pytest-459/test_mstar_semantic_failure_wr0/classified-failure')
+core = {'schema_version': 'membind.paper-eval-v3.s5-mstar-production-core-identity.v1', 'status': 'FROZEN', 'method': 'M*', 'graphiti_version': '0.29.3', ...}
+identity = {'schema_version': 'membind.paper-eval-v3.s5-production-identity.v1', 'status': 'FROZEN', 'method': 'M*', 'graphiti_version': '0.29.3', ...}
+fx0 = {'git_commit': 'aaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaa', 'payload': {'schema_version': 'membind.paper-eval-v3.s5-gra..._sha256': '6b1b26d9e1a55ba219f467ca8cee3a1c26570aebca87e42fc910c86c539cc75d', 'protocol_version': 'paper-eval-v3', ...}
+latest_state_bind = &lt;function test_mstar_semantic_failure_writes_hash_bound_envelope_before_finalize.&lt;locals&gt;.bind at 0x73ecde077600&gt;
+commit_evidence = &lt;function _commit_evidence at 0x73ecde231b20&gt;
+failure_telemetry_snapshot = &lt;function test_mstar_semantic_failure_writes_hash_bound_envelope_before_finalize.&lt;locals&gt;.&lt;lambda&gt; at 0x73ecde076980&gt;
+run_id = 's5-mstar-production-test'
+
+    def _runner(
+        *,
+        attempt_root: Path,
+        core: dict[str, object],
+        identity: dict[str, object],
+        fx0: dict[str, object],
+        latest_state_bind: object,
+        commit_evidence: object = _commit_evidence,
+        failure_telemetry_snapshot: object = lambda: (),
+        run_id: str = "s5-mstar-production-test",
+    ) -&gt; S5MStarProductionRunner:
+&gt;       return S5MStarProductionRunner(
+            attempt_root=attempt_root,
+            spec=_spec(core, run_id=run_id),
+            identity=identity,
+            production_core_identity=core,
+            fx0_qualification=fx0,
+            sources=_sources(),
+            semantic_prepare=_prepare,
+            latest_state_bind=latest_state_bind,
+            commit_evidence=commit_evidence,
+            clock_ns=StepClock(),
+            failure_telemetry_snapshot=failure_telemetry_snapshot,
+        )
+E       TypeError: S5MStarProductionRunner.__init__() got an unexpected keyword argument 'failure_telemetry_snapshot'
+
+tests/test_s5_mstar_production_runner.py:176: TypeError</failure></testcase><testcase classname="tests.test_s5_mstar_production_runner" name="test_invalid_commit_evidence_fails_closed_without_publication" time="0.001"><failure message="TypeError: S5MStarProductionRunner.__init__() got an unexpected keyword argument 'failure_telemetry_snapshot'">tmp_path = PosixPath('/tmp/pytest-of-ly/pytest-459/test_invalid_commit_evidence_f0')
+
+    def test_invalid_commit_evidence_fails_closed_without_publication(tmp_path: Path) -&gt; None:
+        core = _core_identity()
+        identity = _identity(core)
+        fx0 = _fx0_qualification(identity, core)
+    
+        async def bind(*_args: object) -&gt; object:
+            return {"private": "bind return"}
+    
+        async def invalid_commit(*_args: object) -&gt; str:
+            return "not-a-commit-digest"
+    
+        root = tmp_path / "invalid-commit"
+        result = asyncio.run(
+&gt;           _runner(
+                attempt_root=root,
+                core=core,
+                identity=identity,
+                fx0=fx0,
+                latest_state_bind=bind,
+                commit_evidence=invalid_commit,
+                run_id="s5-mstar-invalid-commit-test",
+            ).run()
+        )
+
+tests/test_s5_mstar_production_runner.py:481: 
+_ _ _ _ _ _ _ _ _ _ _ _ _ _ _ _ _ _ _ _ _ _ _ _ _ _ _ _ _ _ _ _ _ _ _ _ _ _ _ _ 
+
+attempt_root = PosixPath('/tmp/pytest-of-ly/pytest-459/test_invalid_commit_evidence_f0/invalid-commit')
+core = {'schema_version': 'membind.paper-eval-v3.s5-mstar-production-core-identity.v1', 'status': 'FROZEN', 'method': 'M*', 'graphiti_version': '0.29.3', ...}
+identity = {'schema_version': 'membind.paper-eval-v3.s5-production-identity.v1', 'status': 'FROZEN', 'method': 'M*', 'graphiti_version': '0.29.3', ...}
+fx0 = {'git_commit': 'aaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaa', 'payload': {'schema_version': 'membind.paper-eval-v3.s5-gra..._sha256': '6b1b26d9e1a55ba219f467ca8cee3a1c26570aebca87e42fc910c86c539cc75d', 'protocol_version': 'paper-eval-v3', ...}
+latest_state_bind = &lt;function test_invalid_commit_evidence_fails_closed_without_publication.&lt;locals&gt;.bind at 0x73ecde0767a0&gt;
+commit_evidence = &lt;function test_invalid_commit_evidence_fails_closed_without_publication.&lt;locals&gt;.invalid_commit at 0x73ecde076de0&gt;
+failure_telemetry_snapshot = &lt;function &lt;lambda&gt; at 0x73ecde231bc0&gt;
+run_id = 's5-mstar-invalid-commit-test'
+
+    def _runner(
+        *,
+        attempt_root: Path,
+        core: dict[str, object],
+        identity: dict[str, object],
+        fx0: dict[str, object],
+        latest_state_bind: object,
+        commit_evidence: object = _commit_evidence,
+        failure_telemetry_snapshot: object = lambda: (),
+        run_id: str = "s5-mstar-production-test",
+    ) -&gt; S5MStarProductionRunner:
+&gt;       return S5MStarProductionRunner(
+            attempt_root=attempt_root,
+            spec=_spec(core, run_id=run_id),
+            identity=identity,
+            production_core_identity=core,
+            fx0_qualification=fx0,
+            sources=_sources(),
+            semantic_prepare=_prepare,
+            latest_state_bind=latest_state_bind,
+            commit_evidence=commit_evidence,
+            clock_ns=StepClock(),
+            failure_telemetry_snapshot=failure_telemetry_snapshot,
+        )
+E       TypeError: S5MStarProductionRunner.__init__() got an unexpected keyword argument 'failure_telemetry_snapshot'
+
+tests/test_s5_mstar_production_runner.py:176: TypeError</failure></testcase><testcase classname="tests.test_s5_mstar_production_runner" name="test_journal_exception_terminalizes_and_preserves_durable_published_prefix" time="0.001"><failure message="TypeError: S5MStarProductionRunner.__init__() got an unexpected keyword argument 'failure_telemetry_snapshot'">tmp_path = PosixPath('/tmp/pytest-of-ly/pytest-459/test_journal_exception_termina0')
+monkeypatch = &lt;_pytest.monkeypatch.MonkeyPatch object at 0x73ecde0669c0&gt;
+
+    def test_journal_exception_terminalizes_and_preserves_durable_published_prefix(
+        tmp_path: Path, monkeypatch: pytest.MonkeyPatch
+    ) -&gt; None:
+        core = _core_identity()
+        identity = _identity(core)
+        fx0 = _fx0_qualification(identity, core)
+    
+        async def bind(*_args: object) -&gt; object:
+            return {"committed": True}
+    
+        def fail_publication(
+            _self: S5MStarPublicationJournal,
+            _operation_id: str,
+            *,
+            recovered: bool = False,
+        ) -&gt; str:
+            del recovered
+            raise OSError("raw journal failure with private material")
+    
+        monkeypatch.setattr(
+            S5MStarPublicationJournal, "record_publication", fail_publication
+        )
+        root = tmp_path / "journal-failed"
+        result = asyncio.run(
+&gt;           _runner(
+                attempt_root=root,
+                core=core,
+                identity=identity,
+                fx0=fx0,
+                latest_state_bind=bind,
+                run_id="s5-mstar-journal-failure-test",
+            ).run()
+        )
+
+tests/test_s5_mstar_production_runner.py:527: 
+_ _ _ _ _ _ _ _ _ _ _ _ _ _ _ _ _ _ _ _ _ _ _ _ _ _ _ _ _ _ _ _ _ _ _ _ _ _ _ _ 
+
+attempt_root = PosixPath('/tmp/pytest-of-ly/pytest-459/test_journal_exception_termina0/journal-failed')
+core = {'schema_version': 'membind.paper-eval-v3.s5-mstar-production-core-identity.v1', 'status': 'FROZEN', 'method': 'M*', 'graphiti_version': '0.29.3', ...}
+identity = {'schema_version': 'membind.paper-eval-v3.s5-production-identity.v1', 'status': 'FROZEN', 'method': 'M*', 'graphiti_version': '0.29.3', ...}
+fx0 = {'git_commit': 'aaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaa', 'payload': {'schema_version': 'membind.paper-eval-v3.s5-gra..._sha256': '6b1b26d9e1a55ba219f467ca8cee3a1c26570aebca87e42fc910c86c539cc75d', 'protocol_version': 'paper-eval-v3', ...}
+latest_state_bind = &lt;function test_journal_exception_terminalizes_and_preserves_durable_published_prefix.&lt;locals&gt;.bind at 0x73ecde075580&gt;
+commit_evidence = &lt;function _commit_evidence at 0x73ecde231b20&gt;
+failure_telemetry_snapshot = &lt;function &lt;lambda&gt; at 0x73ecde231bc0&gt;
+run_id = 's5-mstar-journal-failure-test'
+
+    def _runner(
+        *,
+        attempt_root: Path,
+        core: dict[str, object],
+        identity: dict[str, object],
+        fx0: dict[str, object],
+        latest_state_bind: object,
+        commit_evidence: object = _commit_evidence,
+        failure_telemetry_snapshot: object = lambda: (),
+        run_id: str = "s5-mstar-production-test",
+    ) -&gt; S5MStarProductionRunner:
+&gt;       return S5MStarProductionRunner(
+            attempt_root=attempt_root,
+            spec=_spec(core, run_id=run_id),
+            identity=identity,
+            production_core_identity=core,
+            fx0_qualification=fx0,
+            sources=_sources(),
+            semantic_prepare=_prepare,
+            latest_state_bind=latest_state_bind,
+            commit_evidence=commit_evidence,
+            clock_ns=StepClock(),
+            failure_telemetry_snapshot=failure_telemetry_snapshot,
+        )
+E       TypeError: S5MStarProductionRunner.__init__() got an unexpected keyword argument 'failure_telemetry_snapshot'
+
+tests/test_s5_mstar_production_runner.py:176: TypeError</failure></testcase><testcase classname="tests.test_s5_mstar_production_runner" name="test_pipeline_exception_terminalizes_empty_attempt" time="0.031" /><testcase classname="tests.test_s5_mstar_production_runner" name="test_mstar_runner_rejects_missing_fx0_identity_or_single_source" time="0.001" /><testcase classname="tests.test_s5_mstar_controller" name="test_runtime_composition_binds_exact_workload_and_external_commit_evidence" time="0.000"><failure message="TypeError: build_s5_mstar_runtime_composition() got an unexpected keyword argument 'telemetry_scope'">monkeypatch = &lt;_pytest.monkeypatch.MonkeyPatch object at 0x73ecde066480&gt;
+
+    def test_runtime_composition_binds_exact_workload_and_external_commit_evidence(
+        monkeypatch: pytest.MonkeyPatch,
+    ) -&gt; None:
+        graphiti = object()
+        runtime = SimpleNamespace(graphiti=graphiti)
+        ticks = iter([1_735_000_000_000_000_000] * 49)
+    
+        def projector(_episode: object) -&gt; dict[str, object]:
+            return {}
+    
+        class EpisodeNode:
+            pass
+    
+        async def commit_evidence(*_args: object) -&gt; str:
+            return "f" * 64
+    
+        scope_events: list[tuple[str, int, str]] = []
+    
+        class AdapterDouble:
+            def __init__(self, **_kwargs: object) -&gt; None:
+                pass
+    
+            async def prepare(self, source: object, _logical_time: int) -&gt; object:
+                scope_events.append((NAMESPACE, source.source_sequence, "prepare"))
+                return source
+    
+            async def bind(
+                self,
+                _prepared: object,
+                _logical_time: int,
+                source_sequence: int,
+                _visible_prefix: tuple[int, ...],
+            ) -&gt; object:
+                scope_events.append((NAMESPACE, source_sequence, "bind"))
+                return None
+    
+        monkeypatch.setattr(
+            "paper_eval.s5_mstar_controller.S5MStarLiveSemanticAdapter",
+            AdapterDouble,
+        )
+    
+        @contextmanager
+        def telemetry_scope(run_id: str, source_sequence: int):
+            scope_events.append((run_id, source_sequence, "enter"))
+            try:
+                yield
+            finally:
+                scope_events.append((run_id, source_sequence, "exit"))
+    
+&gt;       composition = build_s5_mstar_runtime_composition(
+            runtime=runtime,
+            episodes=_episodes(),
+            namespace=NAMESPACE,
+            semantic_binding=_binding(),
+            graphiti_episode_kwargs=projector,
+            episodic_node_type=EpisodeNode,
+            epoch_clock_ns=lambda: next(ticks),
+            commit_evidence=commit_evidence,
+            telemetry_clock_ns=lambda: 123,
+            telemetry_scope=telemetry_scope,
+        )
+E       TypeError: build_s5_mstar_runtime_composition() got an unexpected keyword argument 'telemetry_scope'
+
+tests/test_s5_mstar_controller.py:351: TypeError</failure></testcase><testcase classname="tests.test_s5_mstar_controller" name="test_runtime_composition_rejects_drift_before_adapter_construction[episodes0-pev3-s5-mstar-20260816-101-&lt;lambda&gt;-workload]" time="0.000" /><testcase classname="tests.test_s5_mstar_controller" name="test_runtime_composition_rejects_drift_before_adapter_construction[episodes1-pev3-s5-mstar-20260816-101-&lt;lambda&gt;-namespace]" time="0.000" /><testcase classname="tests.test_s5_mstar_controller" name="test_runtime_composition_rejects_drift_before_adapter_construction[episodes2-pev3-s5-mstar-20260816-101-None-commit_evidence]" time="0.000" /><testcase classname="tests.test_s5_mstar_controller" name="test_controller_builds_runtime_and_promotes_only_bound_runner_pass" time="0.019"><failure message="AssertionError: assert ['runtime', '...ion', 'close'] == ['runtime', '...run', 'close']&#10;  &#10;  At index 3 diff: 'close' != 'runner'&#10;  Right contains 2 more items, first extra item: 'run'&#10;  Use -v to get more diff">tmp_path = PosixPath('/tmp/pytest-of-ly/pytest-459/test_controller_builds_runtime0')
+
+    def test_controller_builds_runtime_and_promotes_only_bound_runner_pass(
+        tmp_path: Path,
+    ) -&gt; None:
+        result, trace, paths, core = _execute(tmp_path)
+    
+&gt;       assert trace == ["runtime", "readiness", "composition", "runner", "run", "close"]
+E       AssertionError: assert ['runtime', '...ion', 'close'] == ['runtime', '...run', 'close']
+E         
+E         At index 3 diff: 'close' != 'runner'
+E         Right contains 2 more items, first extra item: 'run'
+E         Use -v to get more diff
+
+tests/test_s5_mstar_controller.py:425: AssertionError</failure></testcase><testcase classname="tests.test_s5_mstar_controller" name="test_identity_drift_fails_before_runtime_or_controller_artifacts" time="0.001" /><testcase classname="tests.test_s5_mstar_controller" name="test_post_start_failures_are_sanitized_and_nonmergeable[runtime-runtime_construction-trace0]" time="0.013" /><testcase classname="tests.test_s5_mstar_controller" name="test_post_start_failures_are_sanitized_and_nonmergeable[readiness-runtime_readiness-trace1]" time="0.016" /><testcase classname="tests.test_s5_mstar_controller" name="test_post_start_failures_are_sanitized_and_nonmergeable[composition-runtime_composition-trace2]" time="0.018" /><testcase classname="tests.test_s5_mstar_controller" name="test_post_start_failures_are_sanitized_and_nonmergeable[runner_factory-runner_construction-trace3]" time="0.019"><failure message="AssertionError: assert ['runtime', '...ion', 'close'] == ['runtime', '...ner', 'close']&#10;  &#10;  At index 3 diff: 'close' != 'runner'&#10;  Right contains one more item: 'close'&#10;  Use -v to get more diff">tmp_path = PosixPath('/tmp/pytest-of-ly/pytest-459/test_post_start_failures_are_s3')
+failure = 'runner_factory', stage = 'runner_construction'
+trace = ['runtime', 'readiness', 'composition', 'runner', 'close']
+
+    @pytest.mark.parametrize(
+        ("failure", "stage", "trace"),
+        [
+            ("runtime", "runtime_construction", ["runtime"]),
+            ("readiness", "runtime_readiness", ["runtime", "readiness", "close"]),
+            (
+                "composition",
+                "runtime_composition",
+                ["runtime", "readiness", "composition", "close"],
+            ),
+            (
+                "runner_factory",
+                "runner_construction",
+                ["runtime", "readiness", "composition", "runner", "close"],
+            ),
+            (
+                "runner",
+                "mstar_execution",
+                ["runtime", "readiness", "composition", "runner", "run", "close"],
+            ),
+            (
+                "close",
+                "runtime_close",
+                ["runtime", "readiness", "composition", "runner", "run", "close"],
+            ),
+        ],
+    )
+    def test_post_start_failures_are_sanitized_and_nonmergeable(
+        tmp_path: Path, failure: str, stage: str, trace: list[str]
+    ) -&gt; None:
+        result, observed, paths, _core = _execute(tmp_path, failure=failure)
+    
+&gt;       assert observed == trace
+E       AssertionError: assert ['runtime', '...ion', 'close'] == ['runtime', '...ner', 'close']
+E         
+E         At index 3 diff: 'close' != 'runner'
+E         Right contains one more item: 'close'
+E         Use -v to get more diff
+
+tests/test_s5_mstar_controller.py:509: AssertionError</failure></testcase><testcase classname="tests.test_s5_mstar_controller" name="test_post_start_failures_are_sanitized_and_nonmergeable[runner-mstar_execution-trace4]" time="0.019"><failure message="AssertionError: assert ['runtime', '...ion', 'close'] == ['runtime', '...run', 'close']&#10;  &#10;  At index 3 diff: 'close' != 'runner'&#10;  Right contains 2 more items, first extra item: 'run'&#10;  Use -v to get more diff">tmp_path = PosixPath('/tmp/pytest-of-ly/pytest-459/test_post_start_failures_are_s4')
+failure = 'runner', stage = 'mstar_execution'
+trace = ['runtime', 'readiness', 'composition', 'runner', 'run', 'close']
+
+    @pytest.mark.parametrize(
+        ("failure", "stage", "trace"),
+        [
+            ("runtime", "runtime_construction", ["runtime"]),
+            ("readiness", "runtime_readiness", ["runtime", "readiness", "close"]),
+            (
+                "composition",
+                "runtime_composition",
+                ["runtime", "readiness", "composition", "close"],
+            ),
+            (
+                "runner_factory",
+                "runner_construction",
+                ["runtime", "readiness", "composition", "runner", "close"],
+            ),
+            (
+                "runner",
+                "mstar_execution",
+                ["runtime", "readiness", "composition", "runner", "run", "close"],
+            ),
+            (
+                "close",
+                "runtime_close",
+                ["runtime", "readiness", "composition", "runner", "run", "close"],
+            ),
+        ],
+    )
+    def test_post_start_failures_are_sanitized_and_nonmergeable(
+        tmp_path: Path, failure: str, stage: str, trace: list[str]
+    ) -&gt; None:
+        result, observed, paths, _core = _execute(tmp_path, failure=failure)
+    
+&gt;       assert observed == trace
+E       AssertionError: assert ['runtime', '...ion', 'close'] == ['runtime', '...run', 'close']
+E         
+E         At index 3 diff: 'close' != 'runner'
+E         Right contains 2 more items, first extra item: 'run'
+E         Use -v to get more diff
+
+tests/test_s5_mstar_controller.py:509: AssertionError</failure></testcase><testcase classname="tests.test_s5_mstar_controller" name="test_post_start_failures_are_sanitized_and_nonmergeable[close-runtime_close-trace5]" time="0.019"><failure message="AssertionError: assert ['runtime', '...ion', 'close'] == ['runtime', '...run', 'close']&#10;  &#10;  At index 3 diff: 'close' != 'runner'&#10;  Right contains 2 more items, first extra item: 'run'&#10;  Use -v to get more diff">tmp_path = PosixPath('/tmp/pytest-of-ly/pytest-459/test_post_start_failures_are_s5')
+failure = 'close', stage = 'runtime_close'
+trace = ['runtime', 'readiness', 'composition', 'runner', 'run', 'close']
+
+    @pytest.mark.parametrize(
+        ("failure", "stage", "trace"),
+        [
+            ("runtime", "runtime_construction", ["runtime"]),
+            ("readiness", "runtime_readiness", ["runtime", "readiness", "close"]),
+            (
+                "composition",
+                "runtime_composition",
+                ["runtime", "readiness", "composition", "close"],
+            ),
+            (
+                "runner_factory",
+                "runner_construction",
+                ["runtime", "readiness", "composition", "runner", "close"],
+            ),
+            (
+                "runner",
+                "mstar_execution",
+                ["runtime", "readiness", "composition", "runner", "run", "close"],
+            ),
+            (
+                "close",
+                "runtime_close",
+                ["runtime", "readiness", "composition", "runner", "run", "close"],
+            ),
+        ],
+    )
+    def test_post_start_failures_are_sanitized_and_nonmergeable(
+        tmp_path: Path, failure: str, stage: str, trace: list[str]
+    ) -&gt; None:
+        result, observed, paths, _core = _execute(tmp_path, failure=failure)
+    
+&gt;       assert observed == trace
+E       AssertionError: assert ['runtime', '...ion', 'close'] == ['runtime', '...run', 'close']
+E         
+E         At index 3 diff: 'close' != 'runner'
+E         Right contains 2 more items, first extra item: 'run'
+E         Use -v to get more diff
+
+tests/test_s5_mstar_controller.py:509: AssertionError</failure></testcase><testcase classname="tests.test_s5_mstar_controller" name="test_incomplete_runner_is_not_promoted" time="0.019"><failure message="AssertionError: assert 'runtime_composition' == 'mstar_execution'&#10;  &#10;  - mstar_execution&#10;  + runtime_composition">tmp_path = PosixPath('/tmp/pytest-of-ly/pytest-459/test_incomplete_runner_is_not_0')
+
+    def test_incomplete_runner_is_not_promoted(tmp_path: Path) -&gt; None:
+        core = _core_identity()
+        identity = _identity(core)
+        outcome = {
+            "status": "incomplete_non_mergeable",
+            "resume_authorized": False,
+            "production_identity_sha256": identity["identity_sha256"],
+            "production_core_identity_sha256": core["identity_sha256"],
+            "failure_envelope_file_sha256": "d" * 64,
+            "failure_envelope_payload_sha256": "e" * 64,
+            "failure_classification": "CAP_EXHAUSTED",
+            "payload": {
+                "status": "FAIL_CLOSED",
+                "events": [{"error_class": "httpx.ConnectError"}],
+                "failure_envelope_file_sha256": "d" * 64,
+                "failure_envelope_payload_sha256": "e" * 64,
+            },
+        }
+        result, _trace, paths, _core = _execute(tmp_path, outcome=outcome)
+    
+        assert result["status"] == "incomplete_non_mergeable"
+&gt;       assert result["failure_stage"] == "mstar_execution"
+E       AssertionError: assert 'runtime_composition' == 'mstar_execution'
+E         
+E         - mstar_execution
+E         + runtime_composition
+
+tests/test_s5_mstar_controller.py:543: AssertionError</failure></testcase><testcase classname="tests.test_s5_mstar_controller" name="test_controller_is_single_use_before_runtime" time="0.019" /></testsuite></testsuites>

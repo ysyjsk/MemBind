@@ -10,7 +10,18 @@ from pathlib import Path
 
 from .artifacts import payload_sha256
 from .s5_durable_attempt_store import S5AttemptStore, inspect_s5_attempt
-from .s5_mstar_pipeline import MStarSource, MStarSpec, run_mstar_pipeline
+from .s5_mstar_failure_envelope import (
+    S5MStarFailureEnvelopeError,
+    build_s5_mstar_failure_envelope,
+    verify_s5_mstar_failure_envelope,
+    write_s5_mstar_failure_envelope,
+)
+from .s5_mstar_pipeline import (
+    SCHEMA as MSTAR_PIPELINE_SCHEMA,
+    MStarSource,
+    MStarSpec,
+    run_mstar_pipeline,
+)
 from .s5_mstar_production_core_identity import (
     S5MStarProductionCoreIdentityError,
     verify_s5_mstar_production_core_identity,
@@ -54,10 +65,27 @@ _FX0_AUTHORITY = {
     "s5_live_execution_authorized": False,
     "current_stage_pointer_update_authorized": False,
 }
+_RUNNER_FAILURE_SCHEMA = "membind.paper-eval-v3.s5-mstar-runner-failure.v2"
+_RUNNER_TERMINAL_FAILURE_SCHEMA = (
+    "membind.paper-eval-v3.s5-mstar-runner-terminal-failure.v1"
+)
+_KNOWN_INNER_FAILURE_SCHEMAS = {
+    MSTAR_PIPELINE_SCHEMA,
+    _RUNNER_TERMINAL_FAILURE_SCHEMA,
+}
+_FAILURE_CLASSIFICATIONS = {
+    "CAP_EXHAUSTED",
+    "STRUCTURED_INVALID",
+    "UNCLASSIFIED",
+}
 
 
 class S5MStarProductionRunnerError(ValueError):
     """M* runner composition or identity failure."""
+
+
+class UnclassifiedFailure(RuntimeError):
+    """Stable content-free marker used only for fail-closed evidence fallback."""
 
 
 def _fail(code: str) -> S5MStarProductionRunnerError:
@@ -132,6 +160,124 @@ CommitEvidence = Callable[
     [object, int, int, tuple[int, ...]], Awaitable[str] | str
 ]
 ClockNs = Callable[[], int]
+FailureTelemetrySnapshot = Callable[[], Sequence[Mapping[str, object]]]
+
+
+def _empty_failure_telemetry_snapshot() -> tuple[()]:
+    return ()
+
+
+def _failure_terminal_fields(
+    evidence: Mapping[str, object],
+) -> tuple[int | None, str, str | None, str | None]:
+    events = evidence.get("events")
+    terminal: Mapping[str, object] | None = None
+    if isinstance(events, Sequence) and not isinstance(events, (str, bytes)):
+        for event in reversed(events):
+            if isinstance(event, Mapping) and event.get("event_type") == "terminal_failure":
+                terminal = event
+                break
+    source = terminal.get("failed_source_sequence") if terminal else None
+    if isinstance(source, bool) or not isinstance(source, int) or source < 0:
+        source = None
+    error_class = terminal.get("error_class") if terminal else evidence.get("error_class")
+    if not isinstance(error_class, str):
+        error_class = "paper_eval.s5_mstar_production_runner.UnclassifiedFailure"
+    semantic_code = evidence.get("semantic_error_code")
+    if not isinstance(semantic_code, str):
+        semantic_code = None
+    upstream_class = evidence.get("upstream_error_class")
+    if not isinstance(upstream_class, str):
+        upstream_class = None
+    return source, error_class, semantic_code, upstream_class
+
+
+def verify_s5_mstar_runner_failure_evidence(
+    value: Mapping[str, object],
+    *,
+    failure_envelope_path: Path | None = None,
+) -> dict[str, object]:
+    """Verify the runner wrapper and, when available, its persisted sidecar."""
+
+    if not isinstance(value, Mapping):
+        raise _fail("runner_failure_not_mapping")
+    evidence = deepcopy(dict(value))
+    required = {
+        "schema_version",
+        "inner_evidence_schema_version",
+        "run_id",
+        "method",
+        "production_core_identity_sha256",
+        "status",
+        "mergeable",
+        "failure_code",
+        "error_class",
+        "failed_source_sequence",
+        "semantic_error_code",
+        "upstream_error_class",
+        "events",
+        "summary",
+        "failure_envelope_payload_sha256",
+        "failure_envelope_file_sha256",
+        "failure_classification",
+    }
+    if set(evidence) != required:
+        raise _fail("runner_failure_shape_invalid")
+    if (
+        evidence.get("schema_version") != _RUNNER_FAILURE_SCHEMA
+        or evidence.get("inner_evidence_schema_version")
+        not in _KNOWN_INNER_FAILURE_SCHEMAS
+        or evidence.get("method") != "M*"
+        or evidence.get("status") != "FAIL_CLOSED"
+        or evidence.get("mergeable") is not False
+        or not isinstance(evidence.get("failure_code"), str)
+        or not isinstance(evidence.get("error_class"), str)
+        or evidence.get("failure_classification") not in _FAILURE_CLASSIFICATIONS
+    ):
+        raise _fail("runner_failure_binding_invalid")
+    for field in (
+        "production_core_identity_sha256",
+        "failure_envelope_payload_sha256",
+        "failure_envelope_file_sha256",
+    ):
+        _sha(evidence.get(field), "runner_failure_hash_invalid")
+    if failure_envelope_path is not None:
+        path = Path(failure_envelope_path)
+        try:
+            import json
+
+            raw = json.loads(path.read_text(encoding="utf-8"))
+        except (OSError, UnicodeError, json.JSONDecodeError):
+            raise _fail("failure_envelope_unreadable") from None
+        try:
+            envelope = verify_s5_mstar_failure_envelope(raw)
+        except S5MStarFailureEnvelopeError as error:
+            raise _fail(str(error)) from None
+        from .artifacts import sha256_file
+
+        if (
+            envelope.get("run_id") != evidence.get("run_id")
+            or envelope.get("method") != evidence.get("method")
+            or envelope.get("production_core_identity_sha256")
+            != evidence.get("production_core_identity_sha256")
+            or envelope.get("failed_source_sequence")
+            != evidence.get("failed_source_sequence")
+            or envelope.get("pipeline_failure_code")
+            != evidence.get("failure_code")
+            or envelope.get("pipeline_error_class")
+            != evidence.get("error_class")
+            or envelope.get("semantic_error_code")
+            != evidence.get("semantic_error_code")
+            or envelope.get("upstream_error_class")
+            != evidence.get("upstream_error_class")
+            or envelope.get("failure_envelope_sha256")
+            != evidence.get("failure_envelope_payload_sha256")
+            or sha256_file(path) != evidence.get("failure_envelope_file_sha256")
+            or envelope.get("classification")
+            != evidence.get("failure_classification")
+        ):
+            raise _fail("failure_envelope_binding_invalid")
+    return evidence
 
 
 def verify_s5_mstar_production_bindings(
@@ -224,6 +370,9 @@ class S5MStarProductionRunner:
         latest_state_bind: LatestStateBind,
         commit_evidence: CommitEvidence,
         clock_ns: ClockNs,
+        failure_telemetry_snapshot: FailureTelemetrySnapshot = (
+            _empty_failure_telemetry_snapshot
+        ),
     ) -> None:
         bindings = verify_s5_mstar_production_bindings(
             spec=spec,
@@ -248,6 +397,8 @@ class S5MStarProductionRunner:
             raise _fail("commit_evidence_callback_invalid")
         if not callable(clock_ns):
             raise _fail("clock_invalid")
+        if not callable(failure_telemetry_snapshot):
+            raise _fail("failure_telemetry_snapshot_invalid")
         root = Path(attempt_root)
         if root.exists():
             raise _fail("attempt_exists")
@@ -261,6 +412,7 @@ class S5MStarProductionRunner:
         self.latest_state_bind = latest_state_bind
         self.commit_evidence = commit_evidence
         self.clock_ns = clock_ns
+        self.failure_telemetry_snapshot = failure_telemetry_snapshot
         self._operation_ids = {
             source.source_sequence: payload_sha256(
                 {
@@ -278,9 +430,7 @@ class S5MStarProductionRunner:
         published = inspected["checkpoint"]["published_source_sequences"]
         error_type = type(error)
         return {
-            "schema_version": (
-                "membind.paper-eval-v3.s5-mstar-runner-failure.v1"
-            ),
+            "schema_version": _RUNNER_TERMINAL_FAILURE_SCHEMA,
             "run_id": self.spec.run_id,
             "method": "M*",
             "production_core_identity_sha256": self.production_core_identity[
@@ -290,12 +440,116 @@ class S5MStarProductionRunner:
             "mergeable": False,
             "failure_code": "PIPELINE_OR_JOURNAL_EXCEPTION",
             "error_class": f"{error_type.__module__}.{error_type.__qualname__}",
+            "semantic_error_code": None,
+            "upstream_error_class": None,
             "events": events,
             "summary": {
                 "event_count": len(events),
                 "published_source_sequences": published,
             },
         }
+
+    def _seal_failure_evidence(
+        self, evidence: Mapping[str, object]
+    ) -> tuple[dict[str, object], dict[str, str]]:
+        source, error_class, semantic_code, upstream_class = (
+            _failure_terminal_fields(evidence)
+        )
+        failure_code = evidence.get("failure_code")
+        if not isinstance(failure_code, str):
+            raise _fail("failure_code_missing")
+        telemetry_status: str | None = None
+        try:
+            snapshot = self.failure_telemetry_snapshot()
+            if isinstance(snapshot, (str, bytes)) or not isinstance(
+                snapshot, Sequence
+            ):
+                raise S5MStarFailureEnvelopeError("snapshot_shape_invalid")
+            selected_snapshot = tuple(
+                event
+                for event in snapshot
+                if not isinstance(event, Mapping)
+                or source is None
+                or event.get("source_sequence") == source
+            )
+        except S5MStarFailureEnvelopeError:
+            selected_snapshot = ()
+            telemetry_status = "REJECTED_PRIVATE_FIELDS"
+        except Exception:
+            selected_snapshot = ()
+            telemetry_status = "SNAPSHOT_ERROR"
+
+        envelope_arguments = {
+            "run_id": self.spec.run_id,
+            "production_core_identity_sha256": self.production_core_identity[
+                "identity_sha256"
+            ],
+            "failed_source_sequence": source,
+            "pipeline_failure_code": failure_code,
+            "pipeline_error_class": error_class,
+            "semantic_error_code": semantic_code,
+            "upstream_error_class": upstream_class,
+        }
+        try:
+            envelope = build_s5_mstar_failure_envelope(
+                **envelope_arguments,
+                transport_events=selected_snapshot,
+                telemetry_status=telemetry_status,
+            )
+        except S5MStarFailureEnvelopeError:
+            try:
+                envelope = build_s5_mstar_failure_envelope(
+                    **envelope_arguments,
+                    transport_events=(),
+                    telemetry_status="REJECTED_PRIVATE_FIELDS",
+                )
+            except S5MStarFailureEnvelopeError:
+                fallback_type = UnclassifiedFailure
+                envelope = build_s5_mstar_failure_envelope(
+                    run_id=self.spec.run_id,
+                    production_core_identity_sha256=self.production_core_identity[
+                        "identity_sha256"
+                    ],
+                    failed_source_sequence=source,
+                    pipeline_failure_code="PIPELINE_OR_JOURNAL_EXCEPTION",
+                    pipeline_error_class=(
+                        f"{fallback_type.__module__}.{fallback_type.__qualname__}"
+                    ),
+                    semantic_error_code=None,
+                    upstream_error_class=None,
+                    transport_events=(),
+                    telemetry_status="SANITIZED_FALLBACK",
+                )
+        binding = write_s5_mstar_failure_envelope(
+            self.attempt_root / "failure_envelope.json",
+            envelope,
+        )
+        wrapped = {
+            "schema_version": _RUNNER_FAILURE_SCHEMA,
+            "inner_evidence_schema_version": evidence.get("schema_version"),
+            "run_id": self.spec.run_id,
+            "method": "M*",
+            "production_core_identity_sha256": self.production_core_identity[
+                "identity_sha256"
+            ],
+            "status": "FAIL_CLOSED",
+            "mergeable": False,
+            "failure_code": envelope["pipeline_failure_code"],
+            "error_class": envelope["pipeline_error_class"],
+            "failed_source_sequence": envelope["failed_source_sequence"],
+            "semantic_error_code": envelope["semantic_error_code"],
+            "upstream_error_class": envelope["upstream_error_class"],
+            "events": deepcopy(evidence.get("events")),
+            "summary": deepcopy(evidence.get("summary")),
+            **binding,
+        }
+        return (
+            verify_s5_mstar_runner_failure_evidence(
+                wrapped,
+                failure_envelope_path=self.attempt_root / "failure_envelope.json",
+            ),
+            binding,
+        )
 
     async def run(self) -> dict[str, object]:
         core_sha = str(self.production_core_identity["identity_sha256"])
@@ -362,17 +616,24 @@ class S5MStarProductionRunner:
         except Exception as error:
             evidence = self._terminal_evidence(error)
 
+        failure_binding: dict[str, str] | None = None
+        if evidence.get("status") == "FAIL_CLOSED":
+            evidence, failure_binding = self._seal_failure_evidence(evidence)
         finalized = store.finalize(evidence)
-        return {
+        result = {
             **finalized,
             "payload": evidence,
             "production_identity_sha256": self.identity["identity_sha256"],
             "production_core_identity_sha256": core_sha,
         }
+        if failure_binding is not None:
+            result.update(failure_binding)
+        return result
 
 
 __all__ = [
     "S5MStarProductionRunner",
     "S5MStarProductionRunnerError",
+    "verify_s5_mstar_runner_failure_evidence",
     "verify_s5_mstar_production_bindings",
 ]

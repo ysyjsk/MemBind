@@ -1,0 +1,47 @@
+<?xml version="1.0" encoding="utf-8"?><testsuites name="pytest tests"><testsuite name="pytest" errors="0" failures="1" skipped="0" tests="21" time="0.042" timestamp="2026-08-16T17:06:20.560667+08:00" hostname="aces-System-Product-Name"><testcase classname="tests.test_s6_calibration_contract" name="test_matrix_is_exactly_four_histories_two_methods_and_four_concurrencies" time="0.001" /><testcase classname="tests.test_s6_calibration_contract" name="test_matrix_verifier_recomputes_inventory_and_rejects_drift[&lt;lambda&gt;0]" time="0.001" /><testcase classname="tests.test_s6_calibration_contract" name="test_matrix_verifier_recomputes_inventory_and_rejects_drift[&lt;lambda&gt;1]" time="0.000" /><testcase classname="tests.test_s6_calibration_contract" name="test_matrix_verifier_recomputes_inventory_and_rejects_drift[&lt;lambda&gt;2]" time="0.000" /><testcase classname="tests.test_s6_calibration_contract" name="test_matrix_verifier_recomputes_inventory_and_rejects_drift[&lt;lambda&gt;3]" time="0.000" /><testcase classname="tests.test_s6_calibration_contract" name="test_matrix_verifier_recomputes_inventory_and_rejects_drift[&lt;lambda&gt;4]" time="0.000" /><testcase classname="tests.test_s6_calibration_contract" name="test_matrix_verifier_recomputes_inventory_and_rejects_drift[&lt;lambda&gt;5]" time="0.000" /><testcase classname="tests.test_s6_calibration_contract" name="test_matrix_verifier_recomputes_inventory_and_rejects_drift[&lt;lambda&gt;6]" time="0.000" /><testcase classname="tests.test_s6_calibration_contract" name="test_p95_uses_frozen_nearest_rank_convention[values0-10]" time="0.000" /><testcase classname="tests.test_s6_calibration_contract" name="test_p95_uses_frozen_nearest_rank_convention[values1-9]" time="0.000" /><testcase classname="tests.test_s6_calibration_contract" name="test_p95_uses_frozen_nearest_rank_convention[values2-19]" time="0.000" /><testcase classname="tests.test_s6_calibration_contract" name="test_p95_uses_frozen_nearest_rank_convention[values3-19]" time="0.000" /><testcase classname="tests.test_s6_calibration_contract" name="test_p95_uses_frozen_nearest_rank_convention[values4-40]" time="0.000" /><testcase classname="tests.test_s6_calibration_contract" name="test_block_metrics_use_first_service_and_last_terminal_or_publication" time="0.000" /><testcase classname="tests.test_s6_calibration_contract" name="test_complete_treatment_failure_keeps_zero_goodput_and_unstarted_censoring" time="0.000"><failure message="paper_eval.s6_calibration_contract.S6CalibrationContractError: service_start_invalid">def test_complete_treatment_failure_keeps_zero_goodput_and_unstarted_censoring() -&gt; None:
+&gt;       metrics = compute_s6_block_metrics(
+            expected_source_count=3,
+            source_outcomes=[
+                {
+                    "source_sequence": 0,
+                    "status": "FAILED",
+                    "arrival_timestamp_ns": 10,
+                    "service_start_timestamp_ns": 20,
+                    "publication_timestamp_ns": None,
+                    "terminal_timestamp_ns": 120,
+                },
+                {
+                    "source_sequence": 1,
+                    "status": "CENSORED",
+                    "arrival_timestamp_ns": 11,
+                    "service_start_timestamp_ns": None,
+                    "publication_timestamp_ns": None,
+                    "terminal_timestamp_ns": None,
+                },
+                {
+                    "source_sequence": 2,
+                    "status": "CENSORED",
+                    "arrival_timestamp_ns": 12,
+                    "service_start_timestamp_ns": None,
+                    "publication_timestamp_ns": None,
+                    "terminal_timestamp_ns": None,
+                },
+            ],
+        )
+
+tests/test_s6_calibration_contract.py:153: 
+_ _ _ _ _ _ _ _ _ _ _ _ _ _ _ _ _ _ _ _ _ _ _ _ _ _ _ _ _ _ _ _ _ _ _ _ _ _ _ _ 
+src/paper_eval/s6_calibration_contract.py:267: in compute_s6_block_metrics
+    _validate_outcome(item, expected_sequence=index)
+src/paper_eval/s6_calibration_contract.py:230: in _validate_outcome
+    service = _nonnegative_int(
+_ _ _ _ _ _ _ _ _ _ _ _ _ _ _ _ _ _ _ _ _ _ _ _ _ _ _ _ _ _ _ _ _ _ _ _ _ _ _ _ 
+
+value = None, code = 'service_start_invalid'
+
+    def _nonnegative_int(value: object, code: str) -&gt; int:
+        if isinstance(value, bool) or not isinstance(value, int) or value &lt; 0:
+&gt;           raise _fail(code)
+E           paper_eval.s6_calibration_contract.S6CalibrationContractError: service_start_invalid
+
+src/paper_eval/s6_calibration_contract.py:96: S6CalibrationContractError</failure></testcase><testcase classname="tests.test_s6_calibration_contract" name="test_block_metrics_fail_closed_on_incomplete_or_incoherent_terminal_state[outcomes0]" time="0.000" /><testcase classname="tests.test_s6_calibration_contract" name="test_block_metrics_fail_closed_on_incomplete_or_incoherent_terminal_state[outcomes1]" time="0.000" /><testcase classname="tests.test_s6_calibration_contract" name="test_block_metrics_fail_closed_on_incomplete_or_incoherent_terminal_state[outcomes2]" time="0.000" /><testcase classname="tests.test_s6_calibration_contract" name="test_block_metrics_fail_closed_on_incomplete_or_incoherent_terminal_state[outcomes3]" time="0.000" /><testcase classname="tests.test_s6_calibration_contract" name="test_block_metrics_fail_closed_on_incomplete_or_incoherent_terminal_state[outcomes4]" time="0.000" /><testcase classname="tests.test_s6_calibration_contract" name="test_p95_rejects_empty_boolean_or_negative_samples" time="0.000" /></testsuite></testsuites>

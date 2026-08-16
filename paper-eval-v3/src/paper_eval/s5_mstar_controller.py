@@ -1,24 +1,50 @@
-"""Minimal offline-qualified runtime composition and controller for S5 M*.
+"""Authority-bound production composition and controller for S5 M*.
 
-The module contains no environment loader, live authority consumer, or CLI.
-Those remain separate gates.  A future live wrapper may call this controller
-only after it has verified and consumed method-specific authority.
+The inner controller remains dependency-injected for service-free tests.  The
+production wrapper closes the single-use authority chain before constructing a
+runtime, then binds the exact frozen workload to Graphiti's semantic adapter.
 """
 
 from __future__ import annotations
 
+import argparse
+import asyncio
+import importlib
 import inspect
 import json
 import re
+import sys
 import time
-from collections.abc import Awaitable, Callable, Mapping, Sequence
+from collections.abc import (
+    Awaitable,
+    Callable,
+    Mapping,
+    Sequence,
+)
+from contextlib import AbstractContextManager, nullcontext
 from copy import deepcopy
-from dataclasses import dataclass
+from dataclasses import asdict, dataclass, replace
 from pathlib import Path
 from typing import Any
 
-from .artifacts import append_jsonl_durable, atomic_write_json, payload_sha256
-from .s5_graphiti_semantic_binding import S5GraphitiSemanticBinding
+from .artifacts import (
+    append_jsonl_durable,
+    atomic_write_json,
+    payload_sha256,
+    sha256_file,
+)
+from .s5_graphiti_mstar_semantics import GraphitiBindObservation
+from .s5_graphiti_native_binding import load_graphiti_native_binding
+from .s5_graphiti_semantic_binding import (
+    S5GraphitiSemanticBinding,
+    load_graphiti_semantic_binding,
+)
+from .s5_live_authority import (
+    consume_s5_live_authority,
+    verify_s5_live_authority,
+    verify_s5_live_authority_consumption,
+)
+from .s5_live_preflight import verify_s5_live_preflight
 from .s5_mstar_live_semantic_adapter import (
     S5MStarLiveSemanticAdapter,
     materialize_s5_mstar_sources,
@@ -29,13 +55,30 @@ from .s5_mstar_production_runner import (
     S5MStarProductionRunnerError,
     verify_s5_mstar_production_bindings,
 )
+from .s5_mstar_production_core_identity import (
+    verify_s5_mstar_production_core_identity,
+)
 from .s5_native_method_adapters import S5EpisodeRef
+from .s5_production_identity_qualification import (
+    bind_s5_production_identity_qualification,
+    verify_s5_production_identity_qualification,
+)
+from .s5_production_runner import verify_s5_production_identity
+from .s5_pstar_result_finalizer import verify_s5_pstar_result
 
 
-EVENT_SCHEMA = "membind.paper-eval-v3.s5-mstar-controller-event.v1"
-CHECKPOINT_SCHEMA = "membind.paper-eval-v3.s5-mstar-controller-checkpoint.v1"
+EVENT_SCHEMA = "membind.paper-eval-v3.s5-mstar-controller-event.v2"
+CHECKPOINT_SCHEMA = "membind.paper-eval-v3.s5-mstar-controller-checkpoint.v2"
 EXPECTED_SOURCE_COUNT = 49
 _RUN_ID = re.compile(r"^s5-mstar-[0-9]{8}-[0-9]{3}$")
+_PROJECT = Path(__file__).resolve().parents[2]
+_ROOT = _PROJECT.parent
+_LEGACY = _ROOT / "membind-validation"
+_LEGACY_SRC = _LEGACY / "src"
+_DATASET = Path(
+    "/data/predator/ly/Mem/data/raw/longmemeval-cleaned/longmemeval_s_cleaned.json"
+)
+_RESULT_VERIFIER = Path(__file__).with_name("s5_mstar_result_finalizer.py")
 _PRIVATE_FIELDS = {
     "api_key",
     "authorization",
@@ -126,12 +169,43 @@ class S5MStarControllerPaths:
     attempt_root: Path
 
 
+@dataclass(frozen=True)
+class S5MStarLivePaths:
+    """Immutable inputs and single-use outputs for one live M* authority."""
+
+    production_identity: Path
+    production_identity_qualification: Path
+    production_core_identity: Path
+    fx0_qualification: Path
+    current_stage_pointer: Path
+    preflight: Path
+    authority: Path
+    predecessor: Path
+    consumption: Path
+    controller_root: Path
+    attempt_root: Path
+
+
+@dataclass(frozen=True)
+class S5MStarProductionPaths:
+    """Production files needed to materialize the frozen 49-episode smoke."""
+
+    live: S5MStarLivePaths
+    env_file: Path
+    dataset: Path = _DATASET
+    frozen_split: Path = _LEGACY / "artifacts/dataset/frozen_split_v1_3.json"
+    dataset_builder: Path = _LEGACY_SRC / "dataset.py"
+    legacy_src: Path = _LEGACY_SRC
+
+
 SemanticPrepare = Callable[[object, int], Awaitable[object]]
 LatestStateBind = Callable[[object, int, int, tuple[int, ...]], Awaitable[object]]
 CommitEvidence = Callable[
     [object, int, int, tuple[int, ...]], Awaitable[str] | str
 ]
 ClockNs = Callable[[], int]
+FailureTelemetrySnapshot = Callable[[], Sequence[Mapping[str, object]]]
+TelemetryScope = Callable[[str, int], AbstractContextManager[object]]
 
 
 @dataclass(frozen=True)
@@ -143,6 +217,7 @@ class S5MStarRuntimeComposition:
     latest_state_bind: LatestStateBind
     commit_evidence: CommitEvidence
     telemetry_clock_ns: ClockNs
+    failure_telemetry_snapshot: FailureTelemetrySnapshot
 
     def __post_init__(self) -> None:
         if (
@@ -159,6 +234,10 @@ class S5MStarRuntimeComposition:
             (self.latest_state_bind, "latest_state_bind_invalid"),
             (self.commit_evidence, "commit_evidence_invalid"),
             (self.telemetry_clock_ns, "telemetry_clock_invalid"),
+            (
+                self.failure_telemetry_snapshot,
+                "failure_telemetry_snapshot_invalid",
+            ),
         ):
             if not callable(callback):
                 raise _fail(code)
@@ -175,6 +254,7 @@ def build_s5_mstar_runtime_composition(
     epoch_clock_ns: ClockNs,
     commit_evidence: CommitEvidence,
     telemetry_clock_ns: ClockNs = time.monotonic_ns,
+    telemetry_scope: TelemetryScope | None = None,
 ) -> S5MStarRuntimeComposition:
     """Bind the frozen workload to the pinned Graphiti M* semantic adapter."""
 
@@ -183,6 +263,8 @@ def build_s5_mstar_runtime_composition(
         raise _fail("commit_evidence_invalid")
     if not callable(epoch_clock_ns) or not callable(telemetry_clock_ns):
         raise _fail("clock_invalid")
+    if telemetry_scope is not None and not callable(telemetry_scope):
+        raise _fail("telemetry_scope_invalid")
     graphiti = getattr(runtime, "graphiti", None)
     if graphiti is None:
         raise _fail("runtime_graphiti_missing")
@@ -206,12 +288,109 @@ def build_s5_mstar_runtime_composition(
         item.source_sha256 for item in selected
     ]:
         raise _fail("runtime_source_identity_drift")
+
+    selected_scope: TelemetryScope = telemetry_scope or (
+        lambda _run_id, _source_sequence: nullcontext()
+    )
+
+    async def scoped_prepare(source: object, logical_time_ns: int) -> object:
+        source_sequence = getattr(source, "source_sequence", None)
+        if (
+            isinstance(source_sequence, bool)
+            or not isinstance(source_sequence, int)
+            or source_sequence < 0
+        ):
+            raise _fail("telemetry_source_sequence_invalid")
+        with selected_scope(namespace, source_sequence):
+            return await adapter.prepare(source, logical_time_ns)
+
+    async def scoped_bind(
+        prepared: object,
+        logical_time_ns: int,
+        source_sequence: int,
+        visible_publication_prefix: tuple[int, ...],
+    ) -> object:
+        with selected_scope(namespace, source_sequence):
+            return await adapter.bind(
+                prepared,
+                logical_time_ns,
+                source_sequence,
+                visible_publication_prefix,
+            )
+
+    llm_client = getattr(runtime, "llm_client", None)
+    if llm_client is None:
+        llm_client = getattr(graphiti, "llm_client", None)
+
+    def failure_telemetry_snapshot() -> tuple[Mapping[str, object], ...]:
+        raw = getattr(llm_client, "call_events", ())
+        if isinstance(raw, (str, bytes)) or not isinstance(raw, Sequence):
+            return ()
+        projected: list[dict[str, object]] = []
+        for ordinal, item in enumerate(raw):
+            if not isinstance(item, Mapping):
+                return ()
+            episode_key = item.get("episode_key")
+            source_sequence = None
+            if (
+                isinstance(episode_key, (tuple, list))
+                and len(episode_key) == 2
+                and isinstance(episode_key[1], int)
+                and not isinstance(episode_key[1], bool)
+                and episode_key[1] >= 0
+            ):
+                source_sequence = int(episode_key[1])
+            usage = item.get("token_usage")
+            if not isinstance(usage, Mapping):
+                usage = {}
+
+            def token(name: str) -> int | None:
+                value = usage.get(name)
+                return (
+                    int(value)
+                    if isinstance(value, int)
+                    and not isinstance(value, bool)
+                    and value >= 0
+                    else None
+                )
+
+            max_tokens = item.get("max_tokens")
+            max_tokens = (
+                int(max_tokens)
+                if isinstance(max_tokens, int)
+                and not isinstance(max_tokens, bool)
+                and max_tokens > 0
+                else 0
+            )
+            finish_reason = item.get("finish_reason")
+            projected.append(
+                {
+                    "request_ordinal": ordinal,
+                    "source_sequence": source_sequence,
+                    "response_format_type": None,
+                    "json_schema_name": None,
+                    "json_schema_sha256": None,
+                    "requested_max_tokens": max_tokens,
+                    "prompt_tokens": token("prompt_tokens"),
+                    "completion_tokens": token("completion_tokens"),
+                    "total_tokens": token("total_tokens"),
+                    "finish_reason": (
+                        finish_reason if isinstance(finish_reason, str) else None
+                    ),
+                    "transport_outcome": "response_received",
+                    "http_status": None,
+                    "error_class": None,
+                }
+            )
+        return tuple(projected)
+
     return S5MStarRuntimeComposition(
         sources=sources,
-        semantic_prepare=adapter.prepare,
-        latest_state_bind=adapter.bind,
+        semantic_prepare=scoped_prepare,
+        latest_state_bind=scoped_bind,
         commit_evidence=commit_evidence,
         telemetry_clock_ns=telemetry_clock_ns,
+        failure_telemetry_snapshot=failure_telemetry_snapshot,
     )
 
 
@@ -253,8 +432,13 @@ class _ControllerEvidence:
         atomic_write_json(self.checkpoint_path, checkpoint)
 
 
-def _failure(stage: str, error_class: str) -> dict[str, object]:
-    return {
+def _failure(
+    stage: str,
+    error_class: str,
+    *,
+    failure_binding: Mapping[str, str] | None = None,
+) -> dict[str, object]:
+    result: dict[str, object] = {
         "status": "incomplete_non_mergeable",
         "failure_stage": stage,
         "error_class": error_class,
@@ -265,6 +449,40 @@ def _failure(stage: str, error_class: str) -> dict[str, object]:
         "next_method_authorized": False,
         "current_stage_pointer_update_authorized": False,
     }
+    if failure_binding is not None:
+        result.update(dict(failure_binding))
+    return result
+
+
+def _runner_failure_binding(value: Mapping[str, object]) -> dict[str, str]:
+    payload = value.get("payload")
+    if not isinstance(payload, Mapping):
+        raise _fail("runner_failure_payload_invalid")
+    result: dict[str, str] = {}
+    for field in (
+        "failure_envelope_file_sha256",
+        "failure_envelope_payload_sha256",
+    ):
+        selected = value.get(field)
+        if (
+            not isinstance(selected, str)
+            or re.fullmatch(r"[0-9a-f]{64}", selected) is None
+            or payload.get(field) != selected
+        ):
+            raise _fail("runner_failure_envelope_binding_invalid")
+        result[field] = selected
+    classification = value.get("failure_classification")
+    if (
+        classification not in {
+            "CAP_EXHAUSTED",
+            "STRUCTURED_INVALID",
+            "UNCLASSIFIED",
+        }
+        or payload.get("failure_classification") != classification
+    ):
+        raise _fail("runner_failure_classification_invalid")
+    result["failure_classification"] = str(classification)
+    return result
 
 
 def _runner_failure_class(value: Mapping[str, object]) -> str:
@@ -384,6 +602,7 @@ async def execute_s5_mstar_controller(
             latest_state_bind=composition.latest_state_bind,
             commit_evidence=composition.commit_evidence,
             clock_ns=composition.telemetry_clock_ns,
+            failure_telemetry_snapshot=composition.failure_telemetry_snapshot,
         )
         evidence.append("mstar_runner_started", method="M*")
         stage = "mstar_execution"
@@ -410,11 +629,25 @@ async def execute_s5_mstar_controller(
                 if isinstance(result, Mapping)
                 else "paper_eval.s5_mstar_controller.MStarAttemptInvalid"
             )
-            failure = _failure("mstar_execution", error_class)
+            failure_binding: dict[str, str] | None = None
+            if isinstance(result, Mapping):
+                try:
+                    failure_binding = _runner_failure_binding(result)
+                except S5MStarControllerError:
+                    error_class = (
+                        "paper_eval.s5_mstar_controller."
+                        "MStarAttemptInvalid"
+                    )
+            failure = _failure(
+                "mstar_execution",
+                error_class,
+                failure_binding=failure_binding,
+            )
             evidence.append(
                 "mstar_attempt_incomplete",
                 method="M*",
                 error_class=error_class,
+                **(failure_binding or {}),
             )
             evidence.checkpoint(**failure)
             return failure
@@ -453,6 +686,342 @@ async def execute_s5_mstar_controller(
                 await _await(close_runtime(runtime))
             except Exception:
                 pass
+
+
+def _import_exact(module_name: str, path: Path) -> object:
+    source_root = str(Path(path).resolve().parent)
+    if source_root not in sys.path:
+        sys.path.insert(0, source_root)
+    module = importlib.import_module(module_name)
+    if Path(str(getattr(module, "__file__", ""))).resolve() != Path(path).resolve():
+        raise _fail(f"{module_name}_source_drift")
+    return module
+
+
+def _production_episodes(
+    paths: S5MStarProductionPaths, namespace: str
+) -> tuple[S5EpisodeRef, ...]:
+    from .s1_live import load_fixed_history
+
+    history = load_fixed_history(paths.dataset, paths.frozen_split)
+    builder_module = _import_exact("dataset", paths.dataset_builder)
+    builder = getattr(builder_module, "build_episodes", None)
+    if not callable(builder):
+        raise _fail("dataset_builder_missing")
+    native = tuple(builder(dict(history)))
+    refs: list[S5EpisodeRef] = []
+    for index, episode in enumerate(native):
+        try:
+            rebound = replace(episode, group_id=namespace)
+        except (TypeError, ValueError):
+            raise _fail("frozen_episode_rebind_failed") from None
+        refs.append(
+            S5EpisodeRef(
+                index,
+                str(getattr(rebound, "source_hash", "")),
+                rebound,
+            )
+        )
+    _validate_workload(refs, namespace)
+    return tuple(refs)
+
+
+def _preconsume_production(
+    *,
+    paths: S5MStarLivePaths,
+    episodes: Sequence[S5EpisodeRef],
+    git_commit: str,
+) -> tuple[
+    dict[str, object],
+    dict[str, object],
+    dict[str, object],
+    dict[str, Any],
+    str,
+]:
+    """Verify the complete immutable chain before the first live side effect."""
+
+    if not isinstance(paths, S5MStarLivePaths):
+        raise _fail("live_paths_invalid")
+    if any(
+        selected.exists()
+        for selected in (
+            paths.consumption,
+            paths.controller_root,
+            paths.attempt_root,
+        )
+    ):
+        raise _fail("single_use_output_exists")
+    try:
+        identity = verify_s5_production_identity(
+            _read_json(paths.production_identity, "production_identity_invalid")
+        )
+        qualification = verify_s5_production_identity_qualification(
+            _read_json(
+                paths.production_identity_qualification,
+                "production_identity_qualification_invalid",
+            )
+        )
+        qualification_binding = bind_s5_production_identity_qualification(
+            qualification,
+            file_sha256=sha256_file(paths.production_identity_qualification),
+        )
+        core = verify_s5_mstar_production_core_identity(
+            _read_json(paths.production_core_identity, "production_core_identity_invalid")
+        )
+        fx0 = _read_json(paths.fx0_qualification, "fx0_qualification_invalid")
+        preflight = verify_s5_live_preflight(
+            _read_json(paths.preflight, "preflight_invalid")
+        )
+        authority = verify_s5_live_authority(
+            _read_json(paths.authority, "authority_invalid")
+        )
+        predecessor = verify_s5_pstar_result(
+            _read_json(paths.predecessor, "predecessor_invalid")
+        )
+    except Exception:
+        raise _fail("qualified_chain_invalid") from None
+
+    pointer = _read_json(paths.current_stage_pointer, "pointer_invalid")
+    pointer_payload = pointer.get("payload")
+    run = authority["payload"].get("run")
+    if not isinstance(run, Mapping):
+        raise _fail("authority_run_invalid")
+    run_id = str(run.get("run_id", ""))
+    namespace = str(run.get("namespace", ""))
+    spec = MStarSpec(
+        run_id=run_id,
+        production_core_identity_sha256=str(core.get("identity_sha256", "")),
+        prepare_concurrency=2,
+    )
+    try:
+        verify_s5_mstar_production_bindings(
+            spec=spec,
+            identity=identity,
+            production_core_identity=core,
+            fx0_qualification=fx0,
+        )
+    except Exception:
+        raise _fail("production_binding_invalid") from None
+
+    predecessor_payload = predecessor.get("payload")
+    authority_predecessor = authority["payload"].get("predecessor")
+    authority_fx0 = authority["payload"].get("fx0_qualification")
+    qualified_fx0 = qualification_binding.get("mstar_fx0")
+    source_binding = authority["payload"].get("source_sha256")
+    if (
+        identity.get("method") != "M*"
+        or qualification_binding.get("method") != "M*"
+        or qualification_binding.get("production_identity_sha256")
+        != identity.get("identity_sha256")
+        or qualification_binding.get("production_identity_file_sha256")
+        != sha256_file(paths.production_identity)
+        or not isinstance(pointer_payload, Mapping)
+        or pointer.get("payload_sha256") != payload_sha256(pointer_payload)
+        or pointer_payload.get("current_stage") != "S3_CONFIGURATION_FROZEN"
+        or qualification_binding.get("current_stage_pointer", {}).get("file_sha256")
+        != sha256_file(paths.current_stage_pointer)
+        or preflight["payload"].get("method") != "M*"
+        or preflight["payload"].get("production_identity_qualification")
+        != qualification_binding
+        or authority.get("git_commit") != git_commit
+        or authority["payload"].get("method") != "M*"
+        or authority["payload"].get("production_identity_qualification")
+        != qualification_binding
+        or authority["payload"].get("preflight_file_sha256")
+        != sha256_file(paths.preflight)
+        or authority["payload"].get("preflight_payload_sha256")
+        != preflight.get("payload_sha256")
+        or run.get("method") != "M*"
+        or run.get("configured_concurrency") != 2
+        or _RUN_ID.fullmatch(run_id) is None
+        or namespace != f"pev3-{run_id}"
+        or run.get("source_manifest_sha256") != _source_manifest(episodes)
+        or not isinstance(predecessor_payload, Mapping)
+        or predecessor_payload.get("method") != "P*"
+        or predecessor_payload.get("verdict") != "SCIENTIFIC_OUTCOME_COMPLETE"
+        or not isinstance(authority_predecessor, Mapping)
+        or authority_predecessor.get("method") != "P*"
+        or authority_predecessor.get("verdict") != "SCIENTIFIC_OUTCOME_COMPLETE"
+        or authority_predecessor.get("result_file_sha256")
+        != sha256_file(paths.predecessor)
+        or authority_predecessor.get("result_payload_sha256")
+        != predecessor.get("payload_sha256")
+        or not isinstance(qualified_fx0, Mapping)
+        or not isinstance(authority_fx0, Mapping)
+        or authority_fx0.get("qualification_file_sha256")
+        != sha256_file(paths.fx0_qualification)
+        or authority_fx0.get("qualification_payload_sha256")
+        != fx0.get("payload_sha256")
+        or authority_fx0.get("production_parity_payload_sha256")
+        != qualified_fx0.get("fx0_artifact_payload_sha256")
+        or not isinstance(source_binding, Mapping)
+        or source_binding.get("controller") != sha256_file(Path(__file__))
+        or source_binding.get("result_verifier") != sha256_file(_RESULT_VERIFIER)
+    ):
+        raise _fail("qualified_chain_binding_invalid")
+    _validate_workload(episodes, namespace)
+    return identity, core, fx0, authority, sha256_file(paths.authority)
+
+
+def _consumed_checker(
+    paths: S5MStarLivePaths, authority: Mapping[str, Any]
+) -> Callable[[object], object]:
+    authority_file_sha = sha256_file(paths.authority)
+
+    def check(action: object) -> object:
+        if getattr(action, "value", action) != "native_characterization_c0":
+            raise _fail("runtime_live_action_invalid")
+        try:
+            consumption = verify_s5_live_authority_consumption(
+                _read_json(paths.consumption, "authority_consumption_invalid")
+            )
+        except Exception:
+            raise _fail("authority_consumption_invalid") from None
+        payload = consumption["payload"]
+        if (
+            payload.get("method") != "M*"
+            or payload.get("run") != authority["payload"].get("run")
+            or payload.get("authority_file_sha256") != authority_file_sha
+            or payload.get("authority_payload_sha256")
+            != authority.get("payload_sha256")
+        ):
+            raise _fail("authority_consumption_binding_invalid")
+        return {"status": "S5_AUTHORITY_CONSUMED"}
+
+    return check
+
+
+def _commit_evidence(
+    result: object,
+    logical_time_ns: int,
+    source_sequence: int,
+    visible_prefix: tuple[int, ...],
+) -> str:
+    if (
+        not isinstance(result, GraphitiBindObservation)
+        or result.source_sequence != source_sequence
+        or result.logical_time_ns != logical_time_ns
+        or visible_prefix != tuple(range(source_sequence))
+    ):
+        raise _fail("commit_observation_binding_invalid")
+    return payload_sha256(
+        {
+            "observation": asdict(result),
+            "source_sequence": source_sequence,
+            "logical_time_ns": logical_time_ns,
+            "visible_publication_prefix": list(visible_prefix),
+        }
+    )
+
+
+async def execute_s5_mstar_production(
+    *, paths: S5MStarProductionPaths, git_commit: str
+) -> dict[str, object]:
+    """Consume one M*(C=2) authority, then execute the exact production path."""
+
+    if not isinstance(paths, S5MStarProductionPaths):
+        raise _fail("production_paths_invalid")
+    raw_authority = verify_s5_live_authority(
+        _read_json(paths.live.authority, "authority_invalid")
+    )
+    run = raw_authority["payload"].get("run")
+    if not isinstance(run, Mapping):
+        raise _fail("authority_run_invalid")
+    episodes = _production_episodes(paths, str(run.get("namespace", "")))
+    identity, core, fx0, authority, authority_file_sha = _preconsume_production(
+        paths=paths.live,
+        episodes=episodes,
+        git_commit=git_commit,
+    )
+    run_id = str(run["run_id"])
+    try:
+        consume_s5_live_authority(
+            authority=authority,
+            authority_file_sha256=authority_file_sha,
+            output_path=paths.live.consumption,
+            git_commit=git_commit,
+            run_id=f"{run_id}-authority-consumption",
+        )
+    except Exception:
+        raise _fail("authority_consumption_failed") from None
+
+    def runtime_factory() -> object:
+        graphiti_native = _import_exact(
+            "graphiti_native", paths.legacy_src / "graphiti_native.py"
+        )
+        loader = getattr(graphiti_native, "load_env_file", None)
+        if not callable(loader) or not isinstance(loader(paths.env_file), Mapping):
+            raise _fail("environment_invalid")
+        runtime_module = _import_exact(
+            "native_characterization_runtime",
+            paths.legacy_src / "native_characterization_runtime.py",
+        )
+        builder = getattr(runtime_module, "build_u0_graphiti_from_env", None)
+        if not callable(builder):
+            raise _fail("runtime_builder_missing")
+        return builder(
+            authorization_checker=_consumed_checker(paths.live, authority),
+            live_action="native_characterization_c0",
+            env_loader=lambda: None,
+            structured_output_mode="json_schema",
+        )
+
+    async def readiness(runtime: object) -> None:
+        from .s5_a0_controller import ensure_s5_a0_runtime_ready
+
+        await ensure_s5_a0_runtime_ready(runtime)
+
+    def composition_factory(
+        runtime: object,
+        selected: tuple[S5EpisodeRef, ...],
+        namespace: str,
+    ) -> S5MStarRuntimeComposition:
+        native_binding = load_graphiti_native_binding()
+        semantic_binding = load_graphiti_semantic_binding()
+        graphiti_native = _import_exact(
+            "graphiti_native", paths.legacy_src / "graphiti_native.py"
+        )
+        telemetry_scope = getattr(graphiti_native, "episode_scope", None)
+        if not callable(telemetry_scope):
+            raise _fail("telemetry_scope_missing")
+        try:
+            from graphiti_core.nodes import EpisodicNode
+        except Exception:
+            raise _fail("episodic_node_type_missing") from None
+        return build_s5_mstar_runtime_composition(
+            runtime=runtime,
+            episodes=selected,
+            namespace=namespace,
+            semantic_binding=semantic_binding,
+            graphiti_episode_kwargs=native_binding.graphiti_episode_kwargs,
+            episodic_node_type=EpisodicNode,
+            epoch_clock_ns=time.time_ns,
+            commit_evidence=_commit_evidence,
+            telemetry_clock_ns=time.monotonic_ns,
+            telemetry_scope=telemetry_scope,
+        )
+
+    async def close_runtime(runtime: object) -> None:
+        from .s5_a0_controller import close_s5_a0_runtime
+
+        await close_s5_a0_runtime(runtime)
+
+    return await execute_s5_mstar_controller(
+        paths=S5MStarControllerPaths(
+            controller_root=paths.live.controller_root,
+            attempt_root=paths.live.attempt_root,
+        ),
+        run_id=run_id,
+        namespace=str(run["namespace"]),
+        episodes=episodes,
+        identity=identity,
+        production_core_identity=core,
+        fx0_qualification=fx0,
+        runtime_factory=runtime_factory,
+        readiness=readiness,
+        composition_factory=composition_factory,
+        close_runtime=close_runtime,
+    )
 
 
 def _read_json(path: Path, code: str) -> dict[str, object]:
@@ -510,12 +1079,81 @@ def inspect_s5_mstar_controller_attempt(root: Path) -> dict[str, object]:
     return {"events": events, "checkpoint": checkpoint}
 
 
+def build_parser() -> argparse.ArgumentParser:
+    parser = argparse.ArgumentParser(
+        description="Execute one qualified S5 M*(C=2) smoke"
+    )
+    for name in (
+        "production-identity",
+        "production-identity-qualification",
+        "production-core-identity",
+        "fx0-qualification",
+        "preflight",
+        "authority",
+        "predecessor",
+        "run-root",
+    ):
+        parser.add_argument(f"--{name}", type=Path, required=True)
+    parser.add_argument("--git-commit", required=True)
+    parser.add_argument(
+        "--current-stage-pointer",
+        type=Path,
+        default=_PROJECT / "runtime/CURRENT_STAGE_STATUS.json",
+    )
+    parser.add_argument("--env-file", type=Path, default=_LEGACY / ".env")
+    return parser
+
+
+def main(argv: Sequence[str] | None = None) -> int:
+    args = build_parser().parse_args(argv)
+    root = Path(args.run_root)
+    live = S5MStarLivePaths(
+        production_identity=args.production_identity,
+        production_identity_qualification=args.production_identity_qualification,
+        production_core_identity=args.production_core_identity,
+        fx0_qualification=args.fx0_qualification,
+        current_stage_pointer=args.current_stage_pointer,
+        preflight=args.preflight,
+        authority=args.authority,
+        predecessor=args.predecessor,
+        consumption=root / "authority_consumption.json",
+        controller_root=root / "controller",
+        attempt_root=root / "attempt",
+    )
+    try:
+        result = asyncio.run(
+            execute_s5_mstar_production(
+                paths=S5MStarProductionPaths(live=live, env_file=args.env_file),
+                git_commit=str(args.git_commit),
+            )
+        )
+    except Exception as error:
+        print(
+            json.dumps(
+                {"status": "error", "error_class": type(error).__name__},
+                sort_keys=True,
+            ),
+            file=sys.stderr,
+        )
+        return 1
+    print(json.dumps(result, sort_keys=True))
+    return 0 if result.get("status") == "controller_complete_evidence_only" else 2
+
+
 __all__ = [
     "EXPECTED_SOURCE_COUNT",
     "S5MStarControllerError",
     "S5MStarControllerPaths",
+    "S5MStarLivePaths",
+    "S5MStarProductionPaths",
     "S5MStarRuntimeComposition",
     "build_s5_mstar_runtime_composition",
     "execute_s5_mstar_controller",
+    "execute_s5_mstar_production",
     "inspect_s5_mstar_controller_attempt",
+    "main",
 ]
+
+
+if __name__ == "__main__":
+    raise SystemExit(main())

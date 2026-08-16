@@ -28,6 +28,7 @@ from .s5_mstar_pipeline import MStarSource
 RELEVANT_SCHEMA_LIMIT = 10
 EXPECTED_SOURCE_COUNT = 49
 MIN_EPOCH_NS = 1_000_000_000_000_000_000
+MIN_LOGICAL_STEP_NS = 1_000
 _SHA256 = re.compile(r"^[0-9a-f]{64}$")
 _NAMESPACE = re.compile(r"^pev3-s5-mstar-[0-9]{8}-[0-9]{3}$")
 _EPISODE_KWARGS = {
@@ -93,7 +94,9 @@ def materialize_s5_mstar_sources(
             or tick < MIN_EPOCH_NS
         ):
             raise _fail("epoch_clock_invalid")
-        logical_time = max(tick, prior_logical_time + 1)
+        # Graphiti materializes this value as a microsecond-resolution datetime.
+        # Keep operation times distinct after that conversion.
+        logical_time = max(tick, prior_logical_time + MIN_LOGICAL_STEP_NS)
         prior_logical_time = logical_time
         result.append(
             MStarSource(
@@ -265,6 +268,7 @@ class S5MStarLiveSemanticAdapter:
 __all__ = [
     "EXPECTED_SOURCE_COUNT",
     "MIN_EPOCH_NS",
+    "MIN_LOGICAL_STEP_NS",
     "RELEVANT_SCHEMA_LIMIT",
     "S5MStarLiveSemanticAdapter",
     "S5MStarLiveSemanticAdapterError",
