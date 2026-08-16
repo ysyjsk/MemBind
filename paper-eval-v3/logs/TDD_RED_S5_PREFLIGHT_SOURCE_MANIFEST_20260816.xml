@@ -1,0 +1,15 @@
+<?xml version="1.0" encoding="utf-8"?><testsuites name="pytest tests"><testsuite name="pytest" errors="0" failures="1" skipped="0" tests="1" time="0.032" timestamp="2026-08-16T00:39:06.717708+08:00" hostname="aces-System-Product-Name"><testcase classname="tests.test_s5_live_preflight" name="test_preflight_binds_the_exact_49_source_workload_manifest" time="0.001"><failure message="TypeError: evaluate_s5_live_preflight() got an unexpected keyword argument 'episode_source_sha256s'">def test_preflight_binds_the_exact_49_source_workload_manifest() -&gt; None:
+        namespace = "pev3-s5-a0-source-manifest-test"
+&gt;       result = evaluate_s5_live_preflight(
+            method="A0",
+            run_id="s5-a0-source-manifest-test",
+            namespace=namespace,
+            episode_source_sha256s=SOURCE_SHA256S,
+            observations=_observations(namespace),
+            production_identity=_identity("A0"),
+            current_stage_pointer=_pointer(),
+            current_stage_pointer_file_sha256=POINTER_FILE_SHA256,
+        )
+E       TypeError: evaluate_s5_live_preflight() got an unexpected keyword argument 'episode_source_sha256s'
+
+tests/test_s5_live_preflight.py:176: TypeError</failure></testcase></testsuite></testsuites>

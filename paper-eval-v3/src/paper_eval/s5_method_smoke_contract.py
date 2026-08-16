@@ -46,6 +46,155 @@ class S5SmokeContractError(ValueError):
     """Future S5 smoke telemetry is incomplete, contradictory, or unsafe."""
 
 
+def native_method_to_smoke_records(
+    evidence: Mapping[str, Any],
+    *,
+    direct_invariant_violations: Mapping[int, int] | None = None,
+) -> list[dict[str, Any]]:
+    """Project verified A0/P* scheduler evidence into the common schema."""
+
+    if not isinstance(evidence, Mapping):
+        raise S5SmokeContractError("Native evidence must be a mapping")
+    _reject_private(evidence)
+    method = evidence.get("method")
+    if method not in {"A0", "P*"}:
+        raise S5SmokeContractError("Native evidence method drift")
+    if evidence.get("status") != "PASS":
+        raise S5SmokeContractError("Native evidence is not a successful block")
+    events = evidence.get("events")
+    if isinstance(events, (str, bytes)) or not isinstance(events, Sequence):
+        raise S5SmokeContractError("Native evidence events are invalid")
+    if (
+        not events
+        or not isinstance(events[-1], Mapping)
+        or events[-1].get("event_type") != "terminal_success"
+    ):
+        raise S5SmokeContractError("Native terminal success is missing")
+
+    rows: dict[int, dict[str, Any]] = {}
+    for index, raw in enumerate(events):
+        if not isinstance(raw, Mapping) or raw.get("event_sequence") != index:
+            raise S5SmokeContractError("Native event sequence is invalid")
+        event_type = raw.get("event_type")
+        if event_type == "intent":
+            source = raw.get("source_sequence")
+            timestamp = raw.get("intent_timestamp_ns")
+            if (
+                isinstance(source, bool)
+                or not isinstance(source, int)
+                or source < 0
+                or source in rows
+                or isinstance(timestamp, bool)
+                or not isinstance(timestamp, int)
+                or timestamp < 0
+            ):
+                raise S5SmokeContractError("Native intent accounting is invalid")
+            rows[source] = {
+                "method": method,
+                "source_sequence": source,
+                "arrival_timestamp_ns": timestamp,
+                "enqueue_ack_timestamp_ns": timestamp,
+                "status": "success",
+                "error_class": None,
+                "fallback": False,
+                "intent_written": True,
+                "publication_written": False,
+                "direct_invariant_violation_count": 0,
+            }
+        elif event_type == "caller_return":
+            source = raw.get("source_sequence")
+            ack = raw.get("durable_enqueue_ack_timestamp_ns")
+            returned = raw.get("caller_return_timestamp_ns")
+            if (
+                method != "A0"
+                or isinstance(source, bool)
+                or not isinstance(source, int)
+                or source not in rows
+                or "caller_return_timestamp_ns" in rows[source]
+                or isinstance(ack, bool)
+                or not isinstance(ack, int)
+                or isinstance(returned, bool)
+                or not isinstance(returned, int)
+                or ack < rows[source]["arrival_timestamp_ns"]
+                or returned != ack
+            ):
+                raise S5SmokeContractError(
+                    "Native durable caller-return accounting is invalid"
+                )
+            rows[source]["enqueue_ack_timestamp_ns"] = ack
+            rows[source]["caller_return_timestamp_ns"] = returned
+        elif event_type == "publication":
+            source = raw.get("source_sequence")
+            worker = raw.get("worker_id")
+            start = raw.get("service_start_timestamp_ns")
+            published = raw.get("publish_timestamp_ns")
+            returned = raw.get("caller_return_timestamp_ns")
+            if (
+                isinstance(source, bool)
+                or not isinstance(source, int)
+                or source not in rows
+                or rows[source]["publication_written"] is True
+                or isinstance(worker, bool)
+                or not isinstance(worker, int)
+                or worker < 0
+                or isinstance(start, bool)
+                or not isinstance(start, int)
+                or start < 0
+                or isinstance(published, bool)
+                or not isinstance(published, int)
+                or published < start
+                or isinstance(returned, bool)
+                or not isinstance(returned, int)
+            ):
+                raise S5SmokeContractError("Native publication accounting is invalid")
+            if method == "P*":
+                rows[source]["caller_return_timestamp_ns"] = returned
+            elif rows[source].get("caller_return_timestamp_ns") != returned:
+                raise S5SmokeContractError("A0 caller-return binding is invalid")
+            rows[source].update(
+                {
+                    "worker_id": worker,
+                    "service_start_timestamp_ns": start,
+                    "publish_timestamp_ns": published,
+                    "publication_written": True,
+                }
+            )
+        elif event_type in {"terminal_success", "treatment_failure"}:
+            continue
+
+    expected_count = events[-1].get("expected_episode_count")
+    expected_sources = list(range(len(rows)))
+    if (
+        isinstance(expected_count, bool)
+        or not isinstance(expected_count, int)
+        or expected_count != len(rows)
+        or sorted(rows) != expected_sources
+    ):
+        raise S5SmokeContractError("Native source coverage is incomplete")
+    required = {
+        "worker_id",
+        "service_start_timestamp_ns",
+        "caller_return_timestamp_ns",
+        "publish_timestamp_ns",
+    }
+    if any(
+        not required.issubset(row) or row["publication_written"] is not True
+        for row in rows.values()
+    ):
+        raise S5SmokeContractError("Native telemetry is incomplete")
+
+    if direct_invariant_violations is None:
+        raise S5SmokeContractError("Native invariant coverage is incomplete")
+    violations = dict(direct_invariant_violations)
+    if set(violations) != set(rows):
+        raise S5SmokeContractError("Native invariant coverage is incomplete")
+    for source, count in violations.items():
+        if isinstance(count, bool) or not isinstance(count, int) or count < 0:
+            raise S5SmokeContractError("Native invariant observation is invalid")
+        rows[source]["direct_invariant_violation_count"] = count
+    return [rows[source] for source in sorted(rows)]
+
+
 def mstar_pipeline_to_smoke_records(
     evidence: Mapping[str, Any],
 ) -> list[dict[str, Any]]:
@@ -253,6 +402,10 @@ def validate_smoke_records(
             or not arrival <= start <= publish
         ):
             raise S5SmokeContractError("smoke telemetry or publication accounting failed")
+        if method == "A0" and caller_return >= publish:
+            raise S5SmokeContractError(
+                "A0 caller-return/publication timestamp separation failed"
+            )
         normalized.append(
             {
                 **row,

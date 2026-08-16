@@ -1,0 +1,683 @@
+<?xml version="1.0" encoding="utf-8"?><testsuites name="pytest tests"><testsuite name="pytest" errors="0" failures="12" skipped="0" tests="12" time="0.099" timestamp="2026-08-16T02:43:49.980907+08:00" hostname="aces-System-Product-Name"><testcase classname="tests.test_s5_mstar_production_runner" name="test_mstar_runner_cross_binds_distinct_identities_and_journals_commit_order" time="0.001"><failure message="TypeError: S5MStarProductionRunner.__init__() got an unexpected keyword argument 'production_core_identity'">tmp_path = PosixPath('/tmp/pytest-of-ly/pytest-398/test_mstar_runner_cross_binds_0')
+
+    def test_mstar_runner_cross_binds_distinct_identities_and_journals_commit_order(
+        tmp_path: Path,
+    ) -&gt; None:
+        core = _core_identity()
+        identity = _identity(core)
+        fx0 = _fx0_qualification(identity, core)
+        callback_observations: list[tuple[object, int, int, tuple[int, ...]]] = []
+    
+        async def bind(
+            prepared: object,
+            logical_time: int,
+            source_sequence: int,
+            visible_prefix: tuple[int, ...],
+        ) -&gt; object:
+            assert prepared["source"] == source_sequence
+            assert prepared["logical_time"] == logical_time
+            assert visible_prefix == tuple(range(source_sequence))
+            return {"bound_source": source_sequence}
+    
+        async def commit_evidence(
+            bind_result: object,
+            logical_time: int,
+            source_sequence: int,
+            visible_prefix: tuple[int, ...],
+        ) -&gt; str:
+            callback_observations.append(
+                (bind_result, logical_time, source_sequence, visible_prefix)
+            )
+            return f"{source_sequence + 30:064x}"
+    
+        root = tmp_path / "mstar"
+        result = asyncio.run(
+&gt;           _runner(
+                attempt_root=root,
+                core=core,
+                identity=identity,
+                fx0=fx0,
+                latest_state_bind=bind,
+                commit_evidence=commit_evidence,
+            ).run()
+        )
+
+tests/test_s5_mstar_production_runner.py:219: 
+_ _ _ _ _ _ _ _ _ _ _ _ _ _ _ _ _ _ _ _ _ _ _ _ _ _ _ _ _ _ _ _ _ _ _ _ _ _ _ _ 
+
+attempt_root = PosixPath('/tmp/pytest-of-ly/pytest-398/test_mstar_runner_cross_binds_0/mstar')
+core = {'schema_version': 'membind.paper-eval-v3.s5-mstar-production-core-identity.v1', 'status': 'FROZEN', 'method': 'M*', 'graphiti_version': '0.29.3', ...}
+identity = {'schema_version': 'membind.paper-eval-v3.s5-production-identity.v1', 'status': 'FROZEN', 'method': 'M*', 'graphiti_version': '0.29.3', ...}
+fx0 = {'git_commit': 'aaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaa', 'payload': {'schema_version': 'membind.paper-eval-v3.s5-gra..._sha256': '6b1b26d9e1a55ba219f467ca8cee3a1c26570aebca87e42fc910c86c539cc75d', 'protocol_version': 'paper-eval-v3', ...}
+latest_state_bind = &lt;function test_mstar_runner_cross_binds_distinct_identities_and_journals_commit_order.&lt;locals&gt;.bind at 0x78aeb9ff7740&gt;
+commit_evidence = &lt;function test_mstar_runner_cross_binds_distinct_identities_and_journals_commit_order.&lt;locals&gt;.commit_evidence at 0x78aeb9ff6c00&gt;
+run_id = 's5-mstar-production-test'
+
+    def _runner(
+        *,
+        attempt_root: Path,
+        core: dict[str, object],
+        identity: dict[str, object],
+        fx0: dict[str, object],
+        latest_state_bind: object,
+        commit_evidence: object = _commit_evidence,
+        run_id: str = "s5-mstar-production-test",
+    ) -&gt; S5MStarProductionRunner:
+&gt;       return S5MStarProductionRunner(
+            attempt_root=attempt_root,
+            spec=_spec(core, run_id=run_id),
+            identity=identity,
+            production_core_identity=core,
+            fx0_qualification=fx0,
+            sources=_sources(),
+            semantic_prepare=_prepare,
+            latest_state_bind=latest_state_bind,
+            commit_evidence=commit_evidence,
+            clock_ns=StepClock(),
+        )
+E       TypeError: S5MStarProductionRunner.__init__() got an unexpected keyword argument 'production_core_identity'
+
+tests/test_s5_mstar_production_runner.py:173: TypeError</failure></testcase><testcase classname="tests.test_s5_mstar_production_runner" name="test_mstar_runner_rejects_identity_cross_binding_drift[spec_core-production_core_identity_mismatch]" time="0.001"><failure message="TypeError: S5MStarProductionRunner.__init__() got an unexpected keyword argument 'production_core_identity'">tmp_path = PosixPath('/tmp/pytest-of-ly/pytest-398/test_mstar_runner_rejects_iden0')
+case = 'spec_core', expected_code = 'production_core_identity_mismatch'
+
+    @pytest.mark.parametrize(
+        ("case", "expected_code"),
+        [
+            ("spec_core", "production_core_identity_mismatch"),
+            ("fx0_core", "fx0_core_identity_mismatch"),
+            ("fx0_artifact", "fx0_artifact_identity_mismatch"),
+            ("fx0_runtime", "fx0_runtime_config_mismatch"),
+            ("generic_source", "production_core_source_binding_mismatch"),
+        ],
+    )
+    def test_mstar_runner_rejects_identity_cross_binding_drift(
+        tmp_path: Path, case: str, expected_code: str
+    ) -&gt; None:
+        core = _core_identity()
+        identity = _identity(core)
+        fx0 = _fx0_qualification(identity, core)
+        spec = _spec(core)
+        if case == "spec_core":
+            spec = MStarSpec(
+                run_id=spec.run_id,
+                production_core_identity_sha256="f" * 64,
+                prepare_concurrency=2,
+            )
+        elif case == "fx0_core":
+            fx0 = _fx0_qualification(
+                identity, core, production_core_identity_sha256="f" * 64
+            )
+        elif case == "fx0_artifact":
+            fx0 = _fx0_qualification(
+                identity, core, fx0_artifact_payload_sha256="f" * 64
+            )
+        elif case == "fx0_runtime":
+            fx0 = _fx0_qualification(identity, core, runtime_config_sha256="f" * 64)
+        elif case == "generic_source":
+            identity = _identity(core, scheduler_source_sha256="f" * 64)
+    
+        async def bind(*_args: object) -&gt; None:
+            return None
+    
+        with pytest.raises(S5MStarProductionRunnerError, match=expected_code):
+&gt;           S5MStarProductionRunner(
+                attempt_root=tmp_path / case,
+                spec=spec,
+                identity=identity,
+                production_core_identity=core,
+                fx0_qualification=fx0,
+                sources=_sources(),
+                semantic_prepare=_prepare,
+                latest_state_bind=bind,
+                commit_evidence=_commit_evidence,
+                clock_ns=StepClock(),
+            )
+E           TypeError: S5MStarProductionRunner.__init__() got an unexpected keyword argument 'production_core_identity'
+
+tests/test_s5_mstar_production_runner.py:321: TypeError</failure></testcase><testcase classname="tests.test_s5_mstar_production_runner" name="test_mstar_runner_rejects_identity_cross_binding_drift[fx0_core-fx0_core_identity_mismatch]" time="0.001"><failure message="TypeError: S5MStarProductionRunner.__init__() got an unexpected keyword argument 'production_core_identity'">tmp_path = PosixPath('/tmp/pytest-of-ly/pytest-398/test_mstar_runner_rejects_iden1')
+case = 'fx0_core', expected_code = 'fx0_core_identity_mismatch'
+
+    @pytest.mark.parametrize(
+        ("case", "expected_code"),
+        [
+            ("spec_core", "production_core_identity_mismatch"),
+            ("fx0_core", "fx0_core_identity_mismatch"),
+            ("fx0_artifact", "fx0_artifact_identity_mismatch"),
+            ("fx0_runtime", "fx0_runtime_config_mismatch"),
+            ("generic_source", "production_core_source_binding_mismatch"),
+        ],
+    )
+    def test_mstar_runner_rejects_identity_cross_binding_drift(
+        tmp_path: Path, case: str, expected_code: str
+    ) -&gt; None:
+        core = _core_identity()
+        identity = _identity(core)
+        fx0 = _fx0_qualification(identity, core)
+        spec = _spec(core)
+        if case == "spec_core":
+            spec = MStarSpec(
+                run_id=spec.run_id,
+                production_core_identity_sha256="f" * 64,
+                prepare_concurrency=2,
+            )
+        elif case == "fx0_core":
+            fx0 = _fx0_qualification(
+                identity, core, production_core_identity_sha256="f" * 64
+            )
+        elif case == "fx0_artifact":
+            fx0 = _fx0_qualification(
+                identity, core, fx0_artifact_payload_sha256="f" * 64
+            )
+        elif case == "fx0_runtime":
+            fx0 = _fx0_qualification(identity, core, runtime_config_sha256="f" * 64)
+        elif case == "generic_source":
+            identity = _identity(core, scheduler_source_sha256="f" * 64)
+    
+        async def bind(*_args: object) -&gt; None:
+            return None
+    
+        with pytest.raises(S5MStarProductionRunnerError, match=expected_code):
+&gt;           S5MStarProductionRunner(
+                attempt_root=tmp_path / case,
+                spec=spec,
+                identity=identity,
+                production_core_identity=core,
+                fx0_qualification=fx0,
+                sources=_sources(),
+                semantic_prepare=_prepare,
+                latest_state_bind=bind,
+                commit_evidence=_commit_evidence,
+                clock_ns=StepClock(),
+            )
+E           TypeError: S5MStarProductionRunner.__init__() got an unexpected keyword argument 'production_core_identity'
+
+tests/test_s5_mstar_production_runner.py:321: TypeError</failure></testcase><testcase classname="tests.test_s5_mstar_production_runner" name="test_mstar_runner_rejects_identity_cross_binding_drift[fx0_artifact-fx0_artifact_identity_mismatch]" time="0.001"><failure message="TypeError: S5MStarProductionRunner.__init__() got an unexpected keyword argument 'production_core_identity'">tmp_path = PosixPath('/tmp/pytest-of-ly/pytest-398/test_mstar_runner_rejects_iden2')
+case = 'fx0_artifact', expected_code = 'fx0_artifact_identity_mismatch'
+
+    @pytest.mark.parametrize(
+        ("case", "expected_code"),
+        [
+            ("spec_core", "production_core_identity_mismatch"),
+            ("fx0_core", "fx0_core_identity_mismatch"),
+            ("fx0_artifact", "fx0_artifact_identity_mismatch"),
+            ("fx0_runtime", "fx0_runtime_config_mismatch"),
+            ("generic_source", "production_core_source_binding_mismatch"),
+        ],
+    )
+    def test_mstar_runner_rejects_identity_cross_binding_drift(
+        tmp_path: Path, case: str, expected_code: str
+    ) -&gt; None:
+        core = _core_identity()
+        identity = _identity(core)
+        fx0 = _fx0_qualification(identity, core)
+        spec = _spec(core)
+        if case == "spec_core":
+            spec = MStarSpec(
+                run_id=spec.run_id,
+                production_core_identity_sha256="f" * 64,
+                prepare_concurrency=2,
+            )
+        elif case == "fx0_core":
+            fx0 = _fx0_qualification(
+                identity, core, production_core_identity_sha256="f" * 64
+            )
+        elif case == "fx0_artifact":
+            fx0 = _fx0_qualification(
+                identity, core, fx0_artifact_payload_sha256="f" * 64
+            )
+        elif case == "fx0_runtime":
+            fx0 = _fx0_qualification(identity, core, runtime_config_sha256="f" * 64)
+        elif case == "generic_source":
+            identity = _identity(core, scheduler_source_sha256="f" * 64)
+    
+        async def bind(*_args: object) -&gt; None:
+            return None
+    
+        with pytest.raises(S5MStarProductionRunnerError, match=expected_code):
+&gt;           S5MStarProductionRunner(
+                attempt_root=tmp_path / case,
+                spec=spec,
+                identity=identity,
+                production_core_identity=core,
+                fx0_qualification=fx0,
+                sources=_sources(),
+                semantic_prepare=_prepare,
+                latest_state_bind=bind,
+                commit_evidence=_commit_evidence,
+                clock_ns=StepClock(),
+            )
+E           TypeError: S5MStarProductionRunner.__init__() got an unexpected keyword argument 'production_core_identity'
+
+tests/test_s5_mstar_production_runner.py:321: TypeError</failure></testcase><testcase classname="tests.test_s5_mstar_production_runner" name="test_mstar_runner_rejects_identity_cross_binding_drift[fx0_runtime-fx0_runtime_config_mismatch]" time="0.001"><failure message="TypeError: S5MStarProductionRunner.__init__() got an unexpected keyword argument 'production_core_identity'">tmp_path = PosixPath('/tmp/pytest-of-ly/pytest-398/test_mstar_runner_rejects_iden3')
+case = 'fx0_runtime', expected_code = 'fx0_runtime_config_mismatch'
+
+    @pytest.mark.parametrize(
+        ("case", "expected_code"),
+        [
+            ("spec_core", "production_core_identity_mismatch"),
+            ("fx0_core", "fx0_core_identity_mismatch"),
+            ("fx0_artifact", "fx0_artifact_identity_mismatch"),
+            ("fx0_runtime", "fx0_runtime_config_mismatch"),
+            ("generic_source", "production_core_source_binding_mismatch"),
+        ],
+    )
+    def test_mstar_runner_rejects_identity_cross_binding_drift(
+        tmp_path: Path, case: str, expected_code: str
+    ) -&gt; None:
+        core = _core_identity()
+        identity = _identity(core)
+        fx0 = _fx0_qualification(identity, core)
+        spec = _spec(core)
+        if case == "spec_core":
+            spec = MStarSpec(
+                run_id=spec.run_id,
+                production_core_identity_sha256="f" * 64,
+                prepare_concurrency=2,
+            )
+        elif case == "fx0_core":
+            fx0 = _fx0_qualification(
+                identity, core, production_core_identity_sha256="f" * 64
+            )
+        elif case == "fx0_artifact":
+            fx0 = _fx0_qualification(
+                identity, core, fx0_artifact_payload_sha256="f" * 64
+            )
+        elif case == "fx0_runtime":
+            fx0 = _fx0_qualification(identity, core, runtime_config_sha256="f" * 64)
+        elif case == "generic_source":
+            identity = _identity(core, scheduler_source_sha256="f" * 64)
+    
+        async def bind(*_args: object) -&gt; None:
+            return None
+    
+        with pytest.raises(S5MStarProductionRunnerError, match=expected_code):
+&gt;           S5MStarProductionRunner(
+                attempt_root=tmp_path / case,
+                spec=spec,
+                identity=identity,
+                production_core_identity=core,
+                fx0_qualification=fx0,
+                sources=_sources(),
+                semantic_prepare=_prepare,
+                latest_state_bind=bind,
+                commit_evidence=_commit_evidence,
+                clock_ns=StepClock(),
+            )
+E           TypeError: S5MStarProductionRunner.__init__() got an unexpected keyword argument 'production_core_identity'
+
+tests/test_s5_mstar_production_runner.py:321: TypeError</failure></testcase><testcase classname="tests.test_s5_mstar_production_runner" name="test_mstar_runner_rejects_identity_cross_binding_drift[generic_source-production_core_source_binding_mismatch]" time="0.001"><failure message="TypeError: S5MStarProductionRunner.__init__() got an unexpected keyword argument 'production_core_identity'">tmp_path = PosixPath('/tmp/pytest-of-ly/pytest-398/test_mstar_runner_rejects_iden4')
+case = 'generic_source'
+expected_code = 'production_core_source_binding_mismatch'
+
+    @pytest.mark.parametrize(
+        ("case", "expected_code"),
+        [
+            ("spec_core", "production_core_identity_mismatch"),
+            ("fx0_core", "fx0_core_identity_mismatch"),
+            ("fx0_artifact", "fx0_artifact_identity_mismatch"),
+            ("fx0_runtime", "fx0_runtime_config_mismatch"),
+            ("generic_source", "production_core_source_binding_mismatch"),
+        ],
+    )
+    def test_mstar_runner_rejects_identity_cross_binding_drift(
+        tmp_path: Path, case: str, expected_code: str
+    ) -&gt; None:
+        core = _core_identity()
+        identity = _identity(core)
+        fx0 = _fx0_qualification(identity, core)
+        spec = _spec(core)
+        if case == "spec_core":
+            spec = MStarSpec(
+                run_id=spec.run_id,
+                production_core_identity_sha256="f" * 64,
+                prepare_concurrency=2,
+            )
+        elif case == "fx0_core":
+            fx0 = _fx0_qualification(
+                identity, core, production_core_identity_sha256="f" * 64
+            )
+        elif case == "fx0_artifact":
+            fx0 = _fx0_qualification(
+                identity, core, fx0_artifact_payload_sha256="f" * 64
+            )
+        elif case == "fx0_runtime":
+            fx0 = _fx0_qualification(identity, core, runtime_config_sha256="f" * 64)
+        elif case == "generic_source":
+            identity = _identity(core, scheduler_source_sha256="f" * 64)
+    
+        async def bind(*_args: object) -&gt; None:
+            return None
+    
+        with pytest.raises(S5MStarProductionRunnerError, match=expected_code):
+&gt;           S5MStarProductionRunner(
+                attempt_root=tmp_path / case,
+                spec=spec,
+                identity=identity,
+                production_core_identity=core,
+                fx0_qualification=fx0,
+                sources=_sources(),
+                semantic_prepare=_prepare,
+                latest_state_bind=bind,
+                commit_evidence=_commit_evidence,
+                clock_ns=StepClock(),
+            )
+E           TypeError: S5MStarProductionRunner.__init__() got an unexpected keyword argument 'production_core_identity'
+
+tests/test_s5_mstar_production_runner.py:321: TypeError</failure></testcase><testcase classname="tests.test_s5_mstar_production_runner" name="test_mstar_runner_rejects_tampered_fx0_qualification_seal" time="0.001"><failure message="TypeError: S5MStarProductionRunner.__init__() got an unexpected keyword argument 'production_core_identity'">tmp_path = PosixPath('/tmp/pytest-of-ly/pytest-398/test_mstar_runner_rejects_tamp0')
+
+    def test_mstar_runner_rejects_tampered_fx0_qualification_seal(
+        tmp_path: Path,
+    ) -&gt; None:
+        core = _core_identity()
+        identity = _identity(core)
+        fx0 = _fx0_qualification(identity, core)
+        fx0["payload"]["verdict"] = "PRODUCTION_PATH_EXACT_PARITY_FAIL"
+    
+        async def bind(*_args: object) -&gt; None:
+            return None
+    
+        with pytest.raises(S5MStarProductionRunnerError, match="fx0_qualification_hash_invalid"):
+&gt;           _runner(
+                attempt_root=tmp_path / "tampered",
+                core=core,
+                identity=identity,
+                fx0=fx0,
+                latest_state_bind=bind,
+            )
+
+tests/test_s5_mstar_production_runner.py:347: 
+_ _ _ _ _ _ _ _ _ _ _ _ _ _ _ _ _ _ _ _ _ _ _ _ _ _ _ _ _ _ _ _ _ _ _ _ _ _ _ _ 
+
+attempt_root = PosixPath('/tmp/pytest-of-ly/pytest-398/test_mstar_runner_rejects_tamp0/tampered')
+core = {'schema_version': 'membind.paper-eval-v3.s5-mstar-production-core-identity.v1', 'status': 'FROZEN', 'method': 'M*', 'graphiti_version': '0.29.3', ...}
+identity = {'schema_version': 'membind.paper-eval-v3.s5-production-identity.v1', 'status': 'FROZEN', 'method': 'M*', 'graphiti_version': '0.29.3', ...}
+fx0 = {'git_commit': 'aaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaa', 'payload': {'schema_version': 'membind.paper-eval-v3.s5-gra..._sha256': '6b1b26d9e1a55ba219f467ca8cee3a1c26570aebca87e42fc910c86c539cc75d', 'protocol_version': 'paper-eval-v3', ...}
+latest_state_bind = &lt;function test_mstar_runner_rejects_tampered_fx0_qualification_seal.&lt;locals&gt;.bind at 0x78aeb9f05b20&gt;
+commit_evidence = &lt;function _commit_evidence at 0x78aeb9ff5b20&gt;
+run_id = 's5-mstar-production-test'
+
+    def _runner(
+        *,
+        attempt_root: Path,
+        core: dict[str, object],
+        identity: dict[str, object],
+        fx0: dict[str, object],
+        latest_state_bind: object,
+        commit_evidence: object = _commit_evidence,
+        run_id: str = "s5-mstar-production-test",
+    ) -&gt; S5MStarProductionRunner:
+&gt;       return S5MStarProductionRunner(
+            attempt_root=attempt_root,
+            spec=_spec(core, run_id=run_id),
+            identity=identity,
+            production_core_identity=core,
+            fx0_qualification=fx0,
+            sources=_sources(),
+            semantic_prepare=_prepare,
+            latest_state_bind=latest_state_bind,
+            commit_evidence=commit_evidence,
+            clock_ns=StepClock(),
+        )
+E       TypeError: S5MStarProductionRunner.__init__() got an unexpected keyword argument 'production_core_identity'
+
+tests/test_s5_mstar_production_runner.py:173: TypeError</failure></testcase><testcase classname="tests.test_s5_mstar_production_runner" name="test_mstar_bind_failure_is_incomplete_and_keeps_published_prefix" time="0.001"><failure message="TypeError: S5MStarProductionRunner.__init__() got an unexpected keyword argument 'production_core_identity'">tmp_path = PosixPath('/tmp/pytest-of-ly/pytest-398/test_mstar_bind_failure_is_inc0')
+
+    def test_mstar_bind_failure_is_incomplete_and_keeps_published_prefix(tmp_path: Path) -&gt; None:
+        core = _core_identity()
+        identity = _identity(core)
+        fx0 = _fx0_qualification(identity, core)
+    
+        async def bind(
+            prepared: object,
+            _logical_time: int,
+            _source_sequence: int,
+            _visible_prefix: tuple[int, ...],
+        ) -&gt; None:
+            if prepared["source"] == 1:
+                raise RuntimeError("simulated private bind failure")
+    
+        root = tmp_path / "failed"
+        result = asyncio.run(
+&gt;           _runner(
+                attempt_root=root,
+                core=core,
+                identity=identity,
+                fx0=fx0,
+                latest_state_bind=bind,
+            ).run()
+        )
+
+tests/test_s5_mstar_production_runner.py:372: 
+_ _ _ _ _ _ _ _ _ _ _ _ _ _ _ _ _ _ _ _ _ _ _ _ _ _ _ _ _ _ _ _ _ _ _ _ _ _ _ _ 
+
+attempt_root = PosixPath('/tmp/pytest-of-ly/pytest-398/test_mstar_bind_failure_is_inc0/failed')
+core = {'schema_version': 'membind.paper-eval-v3.s5-mstar-production-core-identity.v1', 'status': 'FROZEN', 'method': 'M*', 'graphiti_version': '0.29.3', ...}
+identity = {'schema_version': 'membind.paper-eval-v3.s5-production-identity.v1', 'status': 'FROZEN', 'method': 'M*', 'graphiti_version': '0.29.3', ...}
+fx0 = {'git_commit': 'aaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaa', 'payload': {'schema_version': 'membind.paper-eval-v3.s5-gra..._sha256': '6b1b26d9e1a55ba219f467ca8cee3a1c26570aebca87e42fc910c86c539cc75d', 'protocol_version': 'paper-eval-v3', ...}
+latest_state_bind = &lt;function test_mstar_bind_failure_is_incomplete_and_keeps_published_prefix.&lt;locals&gt;.bind at 0x78aeb9f060c0&gt;
+commit_evidence = &lt;function _commit_evidence at 0x78aeb9ff5b20&gt;
+run_id = 's5-mstar-production-test'
+
+    def _runner(
+        *,
+        attempt_root: Path,
+        core: dict[str, object],
+        identity: dict[str, object],
+        fx0: dict[str, object],
+        latest_state_bind: object,
+        commit_evidence: object = _commit_evidence,
+        run_id: str = "s5-mstar-production-test",
+    ) -&gt; S5MStarProductionRunner:
+&gt;       return S5MStarProductionRunner(
+            attempt_root=attempt_root,
+            spec=_spec(core, run_id=run_id),
+            identity=identity,
+            production_core_identity=core,
+            fx0_qualification=fx0,
+            sources=_sources(),
+            semantic_prepare=_prepare,
+            latest_state_bind=latest_state_bind,
+            commit_evidence=commit_evidence,
+            clock_ns=StepClock(),
+        )
+E       TypeError: S5MStarProductionRunner.__init__() got an unexpected keyword argument 'production_core_identity'
+
+tests/test_s5_mstar_production_runner.py:173: TypeError</failure></testcase><testcase classname="tests.test_s5_mstar_production_runner" name="test_invalid_commit_evidence_fails_closed_without_publication" time="0.001"><failure message="TypeError: S5MStarProductionRunner.__init__() got an unexpected keyword argument 'production_core_identity'">tmp_path = PosixPath('/tmp/pytest-of-ly/pytest-398/test_invalid_commit_evidence_f0')
+
+    def test_invalid_commit_evidence_fails_closed_without_publication(tmp_path: Path) -&gt; None:
+        core = _core_identity()
+        identity = _identity(core)
+        fx0 = _fx0_qualification(identity, core)
+    
+        async def bind(*_args: object) -&gt; object:
+            return {"private": "bind return"}
+    
+        async def invalid_commit(*_args: object) -&gt; str:
+            return "not-a-commit-digest"
+    
+        root = tmp_path / "invalid-commit"
+        result = asyncio.run(
+&gt;           _runner(
+                attempt_root=root,
+                core=core,
+                identity=identity,
+                fx0=fx0,
+                latest_state_bind=bind,
+                commit_evidence=invalid_commit,
+                run_id="s5-mstar-invalid-commit-test",
+            ).run()
+        )
+
+tests/test_s5_mstar_production_runner.py:400: 
+_ _ _ _ _ _ _ _ _ _ _ _ _ _ _ _ _ _ _ _ _ _ _ _ _ _ _ _ _ _ _ _ _ _ _ _ _ _ _ _ 
+
+attempt_root = PosixPath('/tmp/pytest-of-ly/pytest-398/test_invalid_commit_evidence_f0/invalid-commit')
+core = {'schema_version': 'membind.paper-eval-v3.s5-mstar-production-core-identity.v1', 'status': 'FROZEN', 'method': 'M*', 'graphiti_version': '0.29.3', ...}
+identity = {'schema_version': 'membind.paper-eval-v3.s5-production-identity.v1', 'status': 'FROZEN', 'method': 'M*', 'graphiti_version': '0.29.3', ...}
+fx0 = {'git_commit': 'aaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaa', 'payload': {'schema_version': 'membind.paper-eval-v3.s5-gra..._sha256': '6b1b26d9e1a55ba219f467ca8cee3a1c26570aebca87e42fc910c86c539cc75d', 'protocol_version': 'paper-eval-v3', ...}
+latest_state_bind = &lt;function test_invalid_commit_evidence_fails_closed_without_publication.&lt;locals&gt;.bind at 0x78aeb9f067a0&gt;
+commit_evidence = &lt;function test_invalid_commit_evidence_fails_closed_without_publication.&lt;locals&gt;.invalid_commit at 0x78aeb9f06200&gt;
+run_id = 's5-mstar-invalid-commit-test'
+
+    def _runner(
+        *,
+        attempt_root: Path,
+        core: dict[str, object],
+        identity: dict[str, object],
+        fx0: dict[str, object],
+        latest_state_bind: object,
+        commit_evidence: object = _commit_evidence,
+        run_id: str = "s5-mstar-production-test",
+    ) -&gt; S5MStarProductionRunner:
+&gt;       return S5MStarProductionRunner(
+            attempt_root=attempt_root,
+            spec=_spec(core, run_id=run_id),
+            identity=identity,
+            production_core_identity=core,
+            fx0_qualification=fx0,
+            sources=_sources(),
+            semantic_prepare=_prepare,
+            latest_state_bind=latest_state_bind,
+            commit_evidence=commit_evidence,
+            clock_ns=StepClock(),
+        )
+E       TypeError: S5MStarProductionRunner.__init__() got an unexpected keyword argument 'production_core_identity'
+
+tests/test_s5_mstar_production_runner.py:173: TypeError</failure></testcase><testcase classname="tests.test_s5_mstar_production_runner" name="test_journal_exception_terminalizes_and_preserves_durable_published_prefix" time="0.001"><failure message="TypeError: S5MStarProductionRunner.__init__() got an unexpected keyword argument 'production_core_identity'">tmp_path = PosixPath('/tmp/pytest-of-ly/pytest-398/test_journal_exception_termina0')
+monkeypatch = &lt;_pytest.monkeypatch.MonkeyPatch object at 0x78aeb9f648f0&gt;
+
+    def test_journal_exception_terminalizes_and_preserves_durable_published_prefix(
+        tmp_path: Path, monkeypatch: pytest.MonkeyPatch
+    ) -&gt; None:
+        core = _core_identity()
+        identity = _identity(core)
+        fx0 = _fx0_qualification(identity, core)
+    
+        async def bind(*_args: object) -&gt; object:
+            return {"committed": True}
+    
+        def fail_publication(
+            _self: S5MStarPublicationJournal,
+            _operation_id: str,
+            *,
+            recovered: bool = False,
+        ) -&gt; str:
+            del recovered
+            raise OSError("raw journal failure with private material")
+    
+        monkeypatch.setattr(
+            S5MStarPublicationJournal, "record_publication", fail_publication
+        )
+        root = tmp_path / "journal-failed"
+        result = asyncio.run(
+&gt;           _runner(
+                attempt_root=root,
+                core=core,
+                identity=identity,
+                fx0=fx0,
+                latest_state_bind=bind,
+                run_id="s5-mstar-journal-failure-test",
+            ).run()
+        )
+
+tests/test_s5_mstar_production_runner.py:446: 
+_ _ _ _ _ _ _ _ _ _ _ _ _ _ _ _ _ _ _ _ _ _ _ _ _ _ _ _ _ _ _ _ _ _ _ _ _ _ _ _ 
+
+attempt_root = PosixPath('/tmp/pytest-of-ly/pytest-398/test_journal_exception_termina0/journal-failed')
+core = {'schema_version': 'membind.paper-eval-v3.s5-mstar-production-core-identity.v1', 'status': 'FROZEN', 'method': 'M*', 'graphiti_version': '0.29.3', ...}
+identity = {'schema_version': 'membind.paper-eval-v3.s5-production-identity.v1', 'status': 'FROZEN', 'method': 'M*', 'graphiti_version': '0.29.3', ...}
+fx0 = {'git_commit': 'aaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaa', 'payload': {'schema_version': 'membind.paper-eval-v3.s5-gra..._sha256': '6b1b26d9e1a55ba219f467ca8cee3a1c26570aebca87e42fc910c86c539cc75d', 'protocol_version': 'paper-eval-v3', ...}
+latest_state_bind = &lt;function test_journal_exception_terminalizes_and_preserves_durable_published_prefix.&lt;locals&gt;.bind at 0x78aeb9f06f20&gt;
+commit_evidence = &lt;function _commit_evidence at 0x78aeb9ff5b20&gt;
+run_id = 's5-mstar-journal-failure-test'
+
+    def _runner(
+        *,
+        attempt_root: Path,
+        core: dict[str, object],
+        identity: dict[str, object],
+        fx0: dict[str, object],
+        latest_state_bind: object,
+        commit_evidence: object = _commit_evidence,
+        run_id: str = "s5-mstar-production-test",
+    ) -&gt; S5MStarProductionRunner:
+&gt;       return S5MStarProductionRunner(
+            attempt_root=attempt_root,
+            spec=_spec(core, run_id=run_id),
+            identity=identity,
+            production_core_identity=core,
+            fx0_qualification=fx0,
+            sources=_sources(),
+            semantic_prepare=_prepare,
+            latest_state_bind=latest_state_bind,
+            commit_evidence=commit_evidence,
+            clock_ns=StepClock(),
+        )
+E       TypeError: S5MStarProductionRunner.__init__() got an unexpected keyword argument 'production_core_identity'
+
+tests/test_s5_mstar_production_runner.py:173: TypeError</failure></testcase><testcase classname="tests.test_s5_mstar_production_runner" name="test_pipeline_exception_terminalizes_empty_attempt" time="0.001"><failure message="TypeError: S5MStarProductionRunner.__init__() got an unexpected keyword argument 'production_core_identity'">tmp_path = PosixPath('/tmp/pytest-of-ly/pytest-398/test_pipeline_exception_termin0')
+
+    def test_pipeline_exception_terminalizes_empty_attempt(tmp_path: Path) -&gt; None:
+        core = _core_identity()
+        identity = _identity(core)
+        fx0 = _fx0_qualification(identity, core)
+    
+        async def bind(*_args: object) -&gt; None:
+            return None
+    
+        root = tmp_path / "pipeline-failed"
+&gt;       runner = S5MStarProductionRunner(
+            attempt_root=root,
+            spec=_spec(core, run_id="s5-mstar-pipeline-failure-test"),
+            identity=identity,
+            production_core_identity=core,
+            fx0_qualification=fx0,
+            sources=_sources(),
+            semantic_prepare=_prepare,
+            latest_state_bind=bind,
+            commit_evidence=_commit_evidence,
+            clock_ns=lambda: -1,
+        )
+E       TypeError: S5MStarProductionRunner.__init__() got an unexpected keyword argument 'production_core_identity'
+
+tests/test_s5_mstar_production_runner.py:478: TypeError</failure></testcase><testcase classname="tests.test_s5_mstar_production_runner" name="test_mstar_runner_rejects_missing_fx0_identity_or_single_source" time="0.001"><failure message="TypeError: S5MStarProductionRunner.__init__() got an unexpected keyword argument 'production_core_identity'">tmp_path = PosixPath('/tmp/pytest-of-ly/pytest-398/test_mstar_runner_rejects_miss0')
+
+    def test_mstar_runner_rejects_missing_fx0_identity_or_single_source(tmp_path: Path) -&gt; None:
+        core = _core_identity()
+        with pytest.raises(S5ProductionIdentityError, match="fx0"):
+            identity = build_s5_production_identity(
+                method="M*",
+                graphiti_version=GRAPHITI_VERSION,
+                graphiti_commit=GRAPHITI_COMMIT,
+                graphiti_native_source_sha256="a" * 64,
+                graphiti_semantic_api_sha256="b" * 64,
+                runtime_factory_entrypoint=(
+                    "native_characterization_runtime.build_u0_graphiti_from_env"
+                ),
+                runtime_factory_source_sha256="c" * 64,
+                scheduler_source_sha256="d" * 64,
+                scheduler_test_source_sha256="e" * 64,
+                durable_store_source_sha256="f" * 64,
+                durable_store_test_source_sha256="1" * 64,
+                runtime_config_sha256="2" * 64,
+            )
+            del identity  # build itself must fail closed before runner construction
+    
+        identity = _identity(core)
+        fx0 = _fx0_qualification(identity, core)
+        with pytest.raises(S5MStarProductionRunnerError, match="sources"):
+&gt;           S5MStarProductionRunner(
+                attempt_root=tmp_path / "one",
+                spec=_spec(core),
+                identity=identity,
+                production_core_identity=core,
+                fx0_qualification=fx0,
+                sources=_sources(1),
+                semantic_prepare=_prepare,
+                latest_state_bind=_prepare,
+                commit_evidence=_commit_evidence,
+                clock_ns=StepClock(),
+            )
+E           TypeError: S5MStarProductionRunner.__init__() got an unexpected keyword argument 'production_core_identity'
+
+tests/test_s5_mstar_production_runner.py:523: TypeError</failure></testcase></testsuite></testsuites>

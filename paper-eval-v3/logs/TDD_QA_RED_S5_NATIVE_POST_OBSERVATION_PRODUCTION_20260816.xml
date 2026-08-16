@@ -1,0 +1,86 @@
+<?xml version="1.0" encoding="utf-8"?><testsuites name="pytest tests"><testsuite name="pytest" errors="0" failures="3" skipped="0" tests="3" time="0.041" timestamp="2026-08-16T01:32:17.030871+08:00" hostname="aces-System-Product-Name"><testcase classname="tests.test_s5_native_post_observation" name="test_graphiti_query_adapter_maps_exact_episode_name_without_db_source_fields" time="0.001"><failure message="AssertionError: assert 'EXISTS' in '\n            MATCH (entity:Entity)\n            WHERE entity.group_id = $namespace\n            RETURN entity.uuid AS record_id,\n                   entity.group_id AS group_id\n            '">def test_graphiti_query_adapter_maps_exact_episode_name_without_db_source_fields() -&gt; None:
+        class Driver:
+            def __init__(self) -&gt; None:
+                self.calls: list[tuple[str, dict[str, object]]] = []
+    
+            async def execute_query(
+                self, query: str, *, params: dict[str, object]
+            ) -&gt; list[dict[str, object]]:
+                self.calls.append((query, dict(params)))
+                if "MATCH (source:Entity)-[relation:RELATES_TO]" in query:
+                    return [
+                        {
+                            "record_id": "private-relation",
+                            "group_id": NAMESPACE,
+                            "source_entity_id": "private-entity-a",
+                            "target_entity_id": "private-entity-b",
+                            "provenance_episode_ids": ["private-episode-0"],
+                            "resolved_provenance": [
+                                {
+                                    "episode_id": "private-episode-0",
+                                    "group_id": NAMESPACE,
+                                }
+                            ],
+                            "valid_at": "2026-01-01T00:00:00Z",
+                            "invalid_at": None,
+                            "expired_at": "2020-01-01T00:00:00Z",
+                            "reference_time": "2030-01-01T00:00:00Z",
+                        }
+                    ]
+                if "MATCH (episode:Episodic)" in query:
+                    return [
+                        {
+                            "record_id": f"private-episode-{index}",
+                            "name": f"07741c45::episode::{index:04d}",
+                            "group_id": NAMESPACE,
+                        }
+                        for index in range(49)
+                    ]
+                if "MATCH (entity:Entity)" in query:
+                    return [
+                        {"record_id": "private-entity-a", "group_id": NAMESPACE},
+                        {"record_id": "private-entity-b", "group_id": NAMESPACE},
+                    ]
+                raise AssertionError("unexpected query")
+    
+        driver = Driver()
+        executor = S5GraphitiPostQueryExecutor(expected_sources=_sources())
+        artifact = asyncio.run(
+            observe_s5_native_post_namespace(
+                driver=driver,
+                method="A0",
+                run_id=RUN_ID,
+                namespace=NAMESPACE,
+                expected_sources=_sources(),
+                durable_publication_events=_publications(),
+                query_executor=executor,
+            )
+        )
+    
+        assert artifact["status"] == "PASS"
+        assert len(driver.calls) == 3
+        assert all(params == {"namespace": NAMESPACE} for _query, params in driver.calls)
+        entity_query = next(query for query, _params in driver.calls if "MATCH (entity:Entity)" in query)
+&gt;       assert "EXISTS" in entity_query
+E       AssertionError: assert 'EXISTS' in '\n            MATCH (entity:Entity)\n            WHERE entity.group_id = $namespace\n            RETURN entity.uuid AS record_id,\n                   entity.group_id AS group_id\n            '
+
+tests/test_s5_native_post_observation.py:248: AssertionError</failure></testcase><testcase classname="tests.test_s5_native_post_observation" name="test_cross_namespace_episodic_cannot_satisfy_exact_source_coverage" time="0.001"><failure message="Failed: DID NOT RAISE S5PostObservationError">def test_cross_namespace_episodic_cannot_satisfy_exact_source_coverage() -&gt; None:
+        rows = _rows()
+        rows[EPISODIC_OBSERVATION][0]["group_id"] = "foreign-group"
+    
+&gt;       with pytest.raises(S5PostObservationError, match="episodic_source_coverage_invalid"):
+E       Failed: DID NOT RAISE S5PostObservationError
+
+tests/test_s5_native_post_observation.py:315: Failed</failure></testcase><testcase classname="tests.test_s5_native_post_observation" name="test_relation_without_provenance_is_classified_as_dangling" time="0.001"><failure message="AssertionError: assert 'PASS' == 'INVARIANT_VI...IONS_OBSERVED'&#10;  &#10;  - INVARIANT_VIOLATIONS_OBSERVED&#10;  + PASS">def test_relation_without_provenance_is_classified_as_dangling() -&gt; None:
+        rows = _rows()
+        rows[RELATES_TO_OBSERVATION][0]["provenance"] = []
+    
+        artifact, _executor = _observe(rows=rows)
+    
+&gt;       assert artifact["status"] == "INVARIANT_VIOLATIONS_OBSERVED"
+E       AssertionError: assert 'PASS' == 'INVARIANT_VI...IONS_OBSERVED'
+E         
+E         - INVARIANT_VIOLATIONS_OBSERVED
+E         + PASS
+
+tests/test_s5_native_post_observation.py:325: AssertionError</failure></testcase></testsuite></testsuites>

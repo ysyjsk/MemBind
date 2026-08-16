@@ -1,0 +1,147 @@
+<?xml version="1.0" encoding="utf-8"?><testsuites name="pytest tests"><testsuite name="pytest" errors="0" failures="1" skipped="0" tests="18" time="0.059" timestamp="2026-08-16T01:33:58.013001+08:00" hostname="aces-System-Product-Name"><testcase classname="tests.test_s5_native_post_observation" name="test_exact_49_source_observation_is_sanitized_and_hash_sealed" time="0.002" /><testcase classname="tests.test_s5_native_post_observation" name="test_graphiti_query_adapter_maps_exact_episode_name_without_db_source_fields" time="0.001"><failure message="paper_eval.s5_native_post_observation.S5PostObservationError: query_execution_failed">def test_graphiti_query_adapter_maps_exact_episode_name_without_db_source_fields() -&gt; None:
+        class Driver:
+            def __init__(self) -&gt; None:
+                self.calls: list[tuple[str, dict[str, object], str]] = []
+    
+            async def execute_query(
+                self,
+                query: str,
+                *,
+                parameters_: dict[str, object],
+                database_: str,
+            ) -&gt; list[dict[str, object]]:
+                self.calls.append((query, dict(parameters_), database_))
+                if "MATCH (source:Entity)-[relation:RELATES_TO]" in query:
+                    return [
+                        {
+                            "record_id": "private-relation",
+                            "group_id": NAMESPACE,
+                            "source_entity_id": "private-entity-a",
+                            "target_entity_id": "private-entity-b",
+                            "provenance_episode_ids": ["private-episode-0"],
+                            "resolved_provenance": [
+                                {
+                                    "episode_id": "private-episode-0",
+                                    "group_id": NAMESPACE,
+                                }
+                            ],
+                            "valid_at": "2026-01-01T00:00:00Z",
+                            "invalid_at": None,
+                            "expired_at": "2020-01-01T00:00:00Z",
+                            "reference_time": "2030-01-01T00:00:00Z",
+                        }
+                    ]
+                if "MATCH (episode:Episodic)" in query:
+                    return [
+                        {
+                            "record_id": f"private-episode-{index}",
+                            "name": f"07741c45::episode::{index:04d}",
+                            "group_id": NAMESPACE,
+                        }
+                        for index in range(49)
+                    ]
+                if "MATCH (entity:Entity)" in query:
+                    return [
+                        {"record_id": "private-entity-a", "group_id": NAMESPACE},
+                        {"record_id": "private-entity-b", "group_id": NAMESPACE},
+                    ]
+                raise AssertionError("unexpected query")
+    
+        driver = Driver()
+        executor = S5GraphitiPostQueryExecutor(expected_sources=_sources())
+&gt;       artifact = asyncio.run(
+            observe_s5_native_post_namespace(
+                driver=driver,
+                method="A0",
+                run_id=RUN_ID,
+                namespace=NAMESPACE,
+                expected_sources=_sources(),
+                durable_publication_events=_publications(),
+                query_executor=executor,
+            )
+        )
+
+tests/test_s5_native_post_observation.py:236: 
+_ _ _ _ _ _ _ _ _ _ _ _ _ _ _ _ _ _ _ _ _ _ _ _ _ _ _ _ _ _ _ _ _ _ _ _ _ _ _ _ 
+/usr/lib/python3.12/asyncio/runners.py:194: in run
+    return runner.run(main)
+           ^^^^^^^^^^^^^^^^
+/usr/lib/python3.12/asyncio/runners.py:118: in run
+    return self._loop.run_until_complete(task)
+           ^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^
+/usr/lib/python3.12/asyncio/base_events.py:687: in run_until_complete
+    return future.result()
+           ^^^^^^^^^^^^^^^
+src/paper_eval/s5_native_post_observation.py:378: in observe_s5_native_post_namespace
+    value = await query_executor(driver, observation, namespace)
+            ^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^
+_ _ _ _ _ _ _ _ _ _ _ _ _ _ _ _ _ _ _ _ _ _ _ _ _ _ _ _ _ _ _ _ _ _ _ _ _ _ _ _ 
+
+self = &lt;paper_eval.s5_native_post_observation.S5GraphitiPostQueryExecutor object at 0x75b34daaeae0&gt;
+driver = &lt;test_s5_native_post_observation.test_graphiti_query_adapter_maps_exact_episode_name_without_db_source_fields.&lt;locals&gt;.Driver object at 0x75b34daaf1d0&gt;
+observation = 'EPISODIC', namespace = 'pev3-s5-a0-20260816-001'
+
+    async def __call__(
+        self, driver: object, observation: str, namespace: str
+    ) -&gt; list[dict[str, object]]:
+        execute_query = getattr(driver, "execute_query", None)
+        if not callable(execute_query):
+            raise _fail("query_driver_invalid")
+        if observation == EPISODIC_OBSERVATION:
+            query = """
+            MATCH (episode:Episodic)
+            WHERE episode.group_id = $namespace
+               OR episode.name STARTS WITH '07741c45::episode::'
+            RETURN episode.uuid AS record_id,
+                   episode.name AS name,
+                   episode.group_id AS group_id
+            """
+        elif observation == ENTITY_OBSERVATION:
+            query = """
+            MATCH (entity:Entity)
+            WHERE entity.group_id = $namespace
+               OR EXISTS {
+                   MATCH (left:Entity)-[relation:RELATES_TO]-&gt;(right:Entity)
+                   WHERE (left = entity OR right = entity)
+                     AND (relation.group_id = $namespace
+                          OR left.group_id = $namespace
+                          OR right.group_id = $namespace)
+               }
+            RETURN entity.uuid AS record_id,
+                   entity.group_id AS group_id
+            """
+        elif observation == RELATES_TO_OBSERVATION:
+            query = """
+            MATCH (source:Entity)-[relation:RELATES_TO]-&gt;(target:Entity)
+            WHERE relation.group_id = $namespace
+               OR source.group_id = $namespace
+               OR target.group_id = $namespace
+            OPTIONAL MATCH (episode:Episodic)
+            WHERE episode.uuid IN coalesce(relation.episodes, [])
+            WITH source, relation, target,
+                 [item IN collect(episode) WHERE item IS NOT NULL |
+                    {episode_id: item.uuid, group_id: item.group_id}]
+                    AS resolved_provenance
+            RETURN relation.uuid AS record_id,
+                   relation.group_id AS group_id,
+                   source.uuid AS source_entity_id,
+                   target.uuid AS target_entity_id,
+                   coalesce(relation.episodes, []) AS provenance_episode_ids,
+                   resolved_provenance,
+                   relation.valid_at AS valid_at,
+                   relation.invalid_at AS invalid_at,
+                   relation.expired_at AS expired_at
+            """
+        else:
+            raise _fail("observation_type_invalid")
+        try:
+            rows = _records(
+                await execute_query(query, params={"namespace": namespace})
+            )
+        except S5PostObservationError:
+            raise
+        except Exception:
+&gt;           raise _fail("query_execution_failed") from None
+E           paper_eval.s5_native_post_observation.S5PostObservationError: query_execution_failed
+
+src/paper_eval/s5_native_post_observation.py:274: S5PostObservationError</failure></testcase><testcase classname="tests.test_s5_native_post_observation" name="test_expected_source_inventory_must_be_exactly_49[-1]" time="0.001" /><testcase classname="tests.test_s5_native_post_observation" name="test_expected_source_inventory_must_be_exactly_49[1]" time="0.000" /><testcase classname="tests.test_s5_native_post_observation" name="test_durable_publication_coverage_fails_closed[lost]" time="0.001" /><testcase classname="tests.test_s5_native_post_observation" name="test_durable_publication_coverage_fails_closed[duplicate]" time="0.001" /><testcase classname="tests.test_s5_native_post_observation" name="test_durable_publication_coverage_fails_closed[unexpected]" time="0.001" /><testcase classname="tests.test_s5_native_post_observation" name="test_durable_publication_coverage_fails_closed[hash]" time="0.001" /><testcase classname="tests.test_s5_native_post_observation" name="test_persisted_episodic_coverage_fails_closed[lost]" time="0.001" /><testcase classname="tests.test_s5_native_post_observation" name="test_persisted_episodic_coverage_fails_closed[duplicate]" time="0.001" /><testcase classname="tests.test_s5_native_post_observation" name="test_persisted_episodic_coverage_fails_closed[unexpected]" time="0.001" /><testcase classname="tests.test_s5_native_post_observation" name="test_persisted_episodic_coverage_fails_closed[hash]" time="0.001" /><testcase classname="tests.test_s5_native_post_observation" name="test_cross_namespace_episodic_cannot_satisfy_exact_source_coverage" time="0.001" /><testcase classname="tests.test_s5_native_post_observation" name="test_relation_without_provenance_is_classified_as_dangling" time="0.001" /><testcase classname="tests.test_s5_native_post_observation" name="test_graph_escape_provenance_and_temporal_violations_are_counted" time="0.001" /><testcase classname="tests.test_s5_native_post_observation" name="test_expired_at_is_not_compared_with_reference_time" time="0.001" /><testcase classname="tests.test_s5_native_post_observation" name="test_query_failure_is_sanitized" time="0.000" /><testcase classname="tests.test_s5_native_post_observation" name="test_artifact_digest_or_public_shape_tampering_fails_closed" time="0.001" /></testsuite></testsuites>

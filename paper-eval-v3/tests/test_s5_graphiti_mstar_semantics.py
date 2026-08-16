@@ -103,6 +103,26 @@ def test_prepare_then_bind_uses_native_order_and_same_logical_time() -> None:
     assert observation.commit_result_type == "dict"
 
 
+def test_default_edge_type_map_matches_pinned_native_graphiti() -> None:
+    """No custom edge schema must retain Graphiti.add_episode's default map."""
+
+    runtime = S5GraphitiMStarSemanticRuntime(
+        graphiti=type("GraphitiDouble", (), {"clients": object()})(),
+        binding=_binding([]),
+        latest_state_retriever=lambda _source: asyncio.sleep(0, result=[]),
+    )
+    source = GraphitiEpisodeInput(
+        episode_node=object(),
+        previous_episodes=(),
+        group_id="test-group",
+    )
+
+    prepared = asyncio.run(runtime.prepare(source, 1))
+    asyncio.run(runtime.bind(prepared, 1, 0, ()))
+
+    assert runtime.last_edge_type_map == {("Entity", "Entity"): []}
+
+
 def test_logical_time_conversion_is_utc_and_invalid_values_fail_closed() -> None:
     value = logical_ns_to_datetime(1_000_000_000)
     assert value.tzinfo == timezone.utc

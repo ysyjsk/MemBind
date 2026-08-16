@@ -1,0 +1,72 @@
+<?xml version="1.0" encoding="utf-8"?><testsuites name="pytest tests"><testsuite name="pytest" errors="0" failures="1" skipped="0" tests="1" time="3.332" timestamp="2026-08-16T01:30:12.365057+08:00" hostname="aces-System-Product-Name"><testcase classname="tests.test_s5_a0_real_qualification_integration" name="test_real_materialization_qualifies_with_semantic_artifact_digests" time="3.292"><failure message="paper_eval.s5_production_identity_qualification.S5ProductionIdentityQualificationError: source_binding_identity_mismatch">tmp_path = PosixPath('/tmp/pytest-of-ly/pytest-349/test_real_materialization_qual0')
+
+    def test_real_materialization_qualifies_with_semantic_artifact_digests(
+        tmp_path: Path,
+    ) -&gt; None:
+        materialization_paths = _paths()
+        bundle = _materialize(materialization_paths)
+        runtime_config = tmp_path / "S5_A0_RUNTIME_CONFIG.json"
+        production_identity = tmp_path / "S5_A0_PRODUCTION_IDENTITY.json"
+        materialization = tmp_path / "S5_A0_IDENTITY_MATERIALIZATION.json"
+        write_s5_a0_production_identity_materialization_exclusive(
+            bundle=bundle,
+            runtime_config_path=runtime_config,
+            production_identity_path=production_identity,
+            materialization_path=materialization,
+            paths=materialization_paths,
+        )
+    
+        source_paths = {
+            "graphiti_native": materialization_paths.graphiti_native,
+            "graphiti_semantic_api": materialization_paths.graphiti_semantic_identity,
+            "runtime_factory": materialization_paths.runtime_factory,
+            "scheduler": materialization_paths.scheduler,
+            "scheduler_test": materialization_paths.scheduler_test,
+            "durable_store": materialization_paths.durable_store,
+            "durable_store_test": materialization_paths.durable_store_test,
+            "runtime_config": runtime_config,
+            "native_binding": PROJECT / "src/paper_eval/s5_graphiti_native_binding.py",
+            "native_binding_test": PROJECT / "tests/test_s5_graphiti_native_binding.py",
+            "production_runner": PROJECT / "src/paper_eval/s5_production_runner.py",
+            "production_runner_test": PROJECT / "tests/test_s5_production_runner.py",
+            "method_smoke_contract": PROJECT / "src/paper_eval/s5_method_smoke_contract.py",
+            "method_smoke_contract_test": PROJECT / "tests/test_s5_method_smoke_contract.py",
+        }
+        assert set(source_paths) == AP_SOURCE_ROLES
+    
+&gt;       qualification = build_s5_production_identity_qualification(
+            method="A0",
+            production_identity_path=production_identity,
+            native_baseline_freeze_path=(NATIVE / "NATIVE_BASELINE_V2_FREEZE.json"),
+            current_stage_pointer_path=PROJECT / "runtime/CURRENT_STAGE_STATUS.json",
+            s5_plan_path=NATIVE / "S5_METHOD_QUALIFICATION_PLAN.json",
+            s5_workplan_path=(
+                PROJECT / "S5_PRODUCTION_METHOD_QUALIFICATION_WORKPLAN_v1.0.md"
+            ),
+            source_paths=source_paths,
+            full_regression_junit_path=_green_junit(tmp_path / "full.xml"),
+            expected_full_test_count=1,
+            git_commit="568afb26053a5f8fb133e29f0583eaa524dad1bd",
+            run_id="s5-a0-production-identity-qualification-20260816-001",
+        )
+
+tests/test_s5_a0_real_qualification_integration.py:74: 
+_ _ _ _ _ _ _ _ _ _ _ _ _ _ _ _ _ _ _ _ _ _ _ _ _ _ _ _ _ _ _ _ _ _ _ _ _ _ _ _ 
+src/paper_eval/s5_production_identity_qualification.py:485: in build_s5_production_identity_qualification
+    _check_ap_identity_sources(identity, closure)
+_ _ _ _ _ _ _ _ _ _ _ _ _ _ _ _ _ _ _ _ _ _ _ _ _ _ _ _ _ _ _ _ _ _ _ _ _ _ _ _ 
+
+identity = {'durable_store_source_sha256': 'fa20e889fab25e7aa462c7451d9ee50410928030ee123d8d624912b1d6947b35', 'durable_store_tes...e_non_mergeable', 'fresh_attempt_required': True, 'resume_authorized': False}, 'fx0_parity_artifact_sha256': None, ...}
+closure = {'durable_store': 'fa20e889fab25e7aa462c7451d9ee50410928030ee123d8d624912b1d6947b35', 'durable_store_test': '74919ee53...d72973aeaf9e0d9c8cc', 'graphiti_semantic_api': '8a7d6e5b2b9280bf4cf809d8cc724324153ca5a7c0cabad35d9a7eca7f81adb1', ...}
+
+    def _check_ap_identity_sources(
+        identity: Mapping[str, object], closure: Mapping[str, str]
+    ) -&gt; None:
+        if any(
+            identity.get(field) != closure[role]
+            for role, field in _AP_IDENTITY_SOURCE_FIELDS.items()
+        ):
+&gt;           raise _fail("source_binding_identity_mismatch")
+E           paper_eval.s5_production_identity_qualification.S5ProductionIdentityQualificationError: source_binding_identity_mismatch
+
+src/paper_eval/s5_production_identity_qualification.py:268: S5ProductionIdentityQualificationError</failure></testcase></testsuite></testsuites>

@@ -23,6 +23,11 @@ RESULT_SCHEMA = "membind.paper-eval-v3.s5-attempt-result.v1"
 _SHA256 = re.compile(r"^[0-9a-f]{64}$")
 _RUN_ID = re.compile(r"^s5-(?:a0|p-star|mstar)-[a-z0-9][a-z0-9-]{2,127}$")
 _METHODS = {"A0", "P*", "M*"}
+_RESULT_STATUS_BY_EVIDENCE_STATUS = {
+    "PASS": "complete",
+    "FAIL_CLOSED": "incomplete_non_mergeable",
+    "SCIENTIFIC_OUTCOME_COMPLETE": "scientific_outcome_complete",
+}
 _PRIVATE_FIELDS = {
     "api_key",
     "authority",
@@ -97,6 +102,22 @@ def _fsync_empty_file(path: Path) -> None:
         os.fsync(directory)
     finally:
         os.close(directory)
+
+
+def _published_source_sequences(
+    events: Sequence[Mapping[str, object]],
+) -> list[int]:
+    published: list[int] = []
+    for event in events:
+        if event.get("event_type") != "publication":
+            continue
+        source = event.get("source_sequence")
+        if isinstance(source, bool) or not isinstance(source, int) or source < 0:
+            raise _fail("publication_source_invalid")
+        if source in published:
+            raise _fail("duplicate_publication")
+        published.append(source)
+    return published
 
 
 class S5AttemptStore:
@@ -209,6 +230,20 @@ class S5AttemptStore:
         }
         append_jsonl_durable(self.events_path, record)
         self._next_event_sequence += 1
+        events = self._current_events()
+        checkpoint = _sealed_payload(
+            {
+                "schema_version": CHECKPOINT_SCHEMA,
+                "run_id": self.run_id,
+                "status": "running",
+                "event_count": len(events),
+                "published_source_sequences": _published_source_sequences(events),
+                "result_payload_sha256": None,
+                "resume_authorized": False,
+            },
+            seal_field="checkpoint_sha256",
+        )
+        atomic_write_json(self.checkpoint_path, checkpoint)
 
     def _current_events(self) -> list[dict[str, object]]:
         try:
@@ -247,11 +282,16 @@ class S5AttemptStore:
         events = candidate.get("events")
         if not isinstance(events, list) or events != self._current_events():
             raise _fail("result_event_binding_invalid")
-        if candidate.get("status") not in {"PASS", "FAIL_CLOSED"}:
+        evidence_status = candidate.get("status")
+        if evidence_status not in _RESULT_STATUS_BY_EVIDENCE_STATUS:
+            raise _fail("result_status_invalid")
+        if evidence_status == "SCIENTIFIC_OUTCOME_COMPLETE" and (
+            self.method != "P*" or candidate.get("mergeable") is not True
+        ):
             raise _fail("result_status_invalid")
         if self.result_path.exists():
             raise _fail("result_exists")
-        result_status = "complete" if candidate["status"] == "PASS" else "incomplete_non_mergeable"
+        result_status = _RESULT_STATUS_BY_EVIDENCE_STATUS[str(evidence_status)]
         result = _sealed_payload(
             {
                 "schema_version": RESULT_SCHEMA,
@@ -264,10 +304,7 @@ class S5AttemptStore:
         )
         _assert_public(result)
         atomic_write_json(self.result_path, result)
-        summary = candidate.get("summary")
-        published = summary.get("published_source_sequences", []) if isinstance(summary, Mapping) else []
-        if not isinstance(published, list):
-            raise _fail("result_summary_invalid")
+        published = _published_source_sequences(events)
         checkpoint = _sealed_payload(
             {
                 "schema_version": CHECKPOINT_SCHEMA,
@@ -294,9 +331,33 @@ def inspect_s5_attempt(root: Path) -> dict[str, object]:
     root = Path(root)
     manifest = _read_json(root / "manifest.json", "manifest_unreadable")
     if (
-        manifest.get("schema_version") != MANIFEST_SCHEMA
+        set(manifest)
+        != {
+            "schema_version",
+            "run_id",
+            "method",
+            "production_core_identity_sha256",
+            "source_sha256s",
+            "status",
+            "resume_authorized",
+            "manifest_sha256",
+        }
+        or manifest.get("schema_version") != MANIFEST_SCHEMA
         or manifest.get("manifest_sha256")
         != payload_sha256({key: value for key, value in manifest.items() if key != "manifest_sha256"})
+        or not isinstance(manifest.get("run_id"), str)
+        or _RUN_ID.fullmatch(str(manifest.get("run_id"))) is None
+        or manifest.get("method") not in _METHODS
+        or not isinstance(manifest.get("production_core_identity_sha256"), str)
+        or _SHA256.fullmatch(str(manifest.get("production_core_identity_sha256")))
+        is None
+        or not isinstance(manifest.get("source_sha256s"), list)
+        or not manifest["source_sha256s"]
+        or any(
+            not isinstance(value, str) or _SHA256.fullmatch(value) is None
+            for value in manifest["source_sha256s"]
+        )
+        or manifest.get("status") != "planned"
         or manifest.get("resume_authorized") is not False
     ):
         raise _fail("manifest_invalid")
@@ -318,6 +379,24 @@ def inspect_s5_attempt(root: Path) -> dict[str, object]:
         if not isinstance(event, dict) or record.get("event_sha256") != payload_sha256(event):
             raise _fail("event_hash_invalid")
         _assert_public(event)
+        source = event.get("source_sequence")
+        if (
+            event.get("run_id") != manifest["run_id"]
+            or event.get("method") != manifest["method"]
+            or (
+                source is not None
+                and (
+                    isinstance(source, bool)
+                    or not isinstance(source, int)
+                    or source < 0
+                    or source >= len(manifest["source_sha256s"])
+                    or event.get("source_sha256")
+                    != manifest["source_sha256s"][source]
+                )
+            )
+            or (source is None and "source_sha256" in event)
+        ):
+            raise _fail("event_manifest_binding_invalid")
         events.append(event)
     if [event.get("event_sequence") for event in events] != list(range(len(events))):
         raise _fail("event_sequence_invalid")
@@ -330,12 +409,27 @@ def inspect_s5_attempt(root: Path) -> dict[str, object]:
         or checkpoint.get("resume_authorized") is not False
     ):
         raise _fail("checkpoint_invalid")
+    if (
+        checkpoint.get("event_count") != len(events)
+        or checkpoint.get("published_source_sequences")
+        != _published_source_sequences(events)
+    ):
+        raise _fail("checkpoint_event_binding_invalid")
     result: dict[str, object] | None = None
     result_path = root / "result.json"
     if result_path.exists():
         result = _read_json(result_path, "result_unreadable")
         if (
-            result.get("schema_version") != RESULT_SCHEMA
+            set(result)
+            != {
+                "schema_version",
+                "run_id",
+                "status",
+                "resume_authorized",
+                "payload",
+                "result_sha256",
+            }
+            or result.get("schema_version") != RESULT_SCHEMA
             or result.get("result_sha256")
             != payload_sha256({key: value for key, value in result.items() if key != "result_sha256"})
             or result.get("run_id") != manifest.get("run_id")
@@ -343,6 +437,43 @@ def inspect_s5_attempt(root: Path) -> dict[str, object]:
         ):
             raise _fail("result_invalid")
         _assert_public(result)
+        payload = result.get("payload")
+        if not isinstance(payload, Mapping):
+            raise _fail("result_invalid")
+        evidence_status = payload.get("status")
+        expected_result_status = _RESULT_STATUS_BY_EVIDENCE_STATUS.get(
+            str(evidence_status)
+        )
+        if (
+            expected_result_status is None
+            or payload.get("run_id") != manifest.get("run_id")
+            or payload.get("method") != manifest.get("method")
+            or payload.get("production_core_identity_sha256")
+            != manifest.get("production_core_identity_sha256")
+            or payload.get("events") != events
+            or (
+                evidence_status == "SCIENTIFIC_OUTCOME_COMPLETE"
+                and (
+                    manifest.get("method") != "P*"
+                    or payload.get("mergeable") is not True
+                )
+            )
+        ):
+            raise _fail("result_manifest_binding_invalid")
+        if (
+            expected_result_status is None
+            or result.get("status") != expected_result_status
+            or checkpoint.get("status") != expected_result_status
+            or checkpoint.get("result_payload_sha256") != payload_sha256(payload)
+        ):
+            raise _fail("checkpoint_result_binding_invalid")
+    elif (
+        checkpoint.get("status") not in {"planned", "running"}
+        or checkpoint.get("result_payload_sha256") is not None
+        or (checkpoint.get("status") == "planned" and events)
+        or (checkpoint.get("status") == "running" and not events)
+    ):
+        raise _fail("checkpoint_result_binding_invalid")
     return {
         "manifest": manifest,
         "events": events,

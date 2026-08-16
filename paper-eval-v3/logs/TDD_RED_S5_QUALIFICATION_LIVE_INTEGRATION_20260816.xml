@@ -1,0 +1,39 @@
+<?xml version="1.0" encoding="utf-8"?><testsuites name="pytest tests"><testsuite name="pytest" errors="0" failures="2" skipped="0" tests="2" time="0.044" timestamp="2026-08-16T00:57:17.703846+08:00" hostname="aces-System-Product-Name"><testcase classname="tests.test_s5_live_preflight" name="test_pass_preflight_requires_sealed_identity_qualification" time="0.001"><failure message="TypeError: evaluate_s5_live_preflight() got an unexpected keyword argument 'production_identity_qualification'">def test_pass_preflight_requires_sealed_identity_qualification() -&gt; None:
+        namespace = "pev3-s5-a0-qualified-preflight-test"
+&gt;       result = evaluate_s5_live_preflight(
+            method="A0",
+            run_id="s5-a0-qualified-preflight-test",
+            namespace=namespace,
+            episode_source_sha256s=SOURCE_SHA256S,
+            observations=_observations(namespace),
+            production_identity_qualification=_qualification("A0"),
+            production_identity_qualification_file_sha256=QUALIFICATION_FILE_SHA256,
+            current_stage_pointer=_pointer(),
+            current_stage_pointer_file_sha256=POINTER_FILE_SHA256,
+        )
+E       TypeError: evaluate_s5_live_preflight() got an unexpected keyword argument 'production_identity_qualification'
+
+tests/test_s5_live_preflight.py:134: TypeError</failure></testcase><testcase classname="tests.test_s5_live_authority" name="test_live_authority_requires_the_exact_preflight_qualification" time="0.001"><failure message="NameError: name 'POINTER_FILE_SHA256' is not defined">def test_live_authority_requires_the_exact_preflight_qualification() -&gt; None:
+        identity = _identity("A0")
+        qualification = _qualification("A0")
+        authority = build_s5_live_authority(
+            method="A0",
+            run=_run("A0"),
+            production_identity_qualification=qualification,
+            production_identity_qualification_file_sha256=QUALIFICATION_FILE_SHA256,
+            preflight=_preflight("A0", identity),
+            preflight_file_sha256="3" * 64,
+&gt;           current_stage_pointer_sha256=POINTER_FILE_SHA256,
+                                         ^^^^^^^^^^^^^^^^^^^
+            predecessor=None,
+            fx0_qualification=None,
+            source_sha256={
+                "authority": "6" * 64,
+                "controller": "7" * 64,
+                "result_verifier": "8" * 64,
+                "test": "9" * 64,
+            },
+        )
+E       NameError: name 'POINTER_FILE_SHA256' is not defined
+
+tests/test_s5_live_authority.py:59: NameError</failure></testcase></testsuite></testsuites>

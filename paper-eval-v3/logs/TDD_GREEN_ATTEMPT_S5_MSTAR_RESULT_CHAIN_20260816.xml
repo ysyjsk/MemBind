@@ -1,0 +1,185 @@
+<?xml version="1.0" encoding="utf-8"?><testsuites name="pytest tests"><testsuite name="pytest" errors="0" failures="3" skipped="0" tests="12" time="0.140" timestamp="2026-08-16T04:05:58.483082+08:00" hostname="aces-System-Product-Name"><testcase classname="tests.test_s5_mstar_post_observation" name="test_exact_three_way_publication_binding_is_sealed_and_sanitized" time="0.002"><failure message="paper_eval.s5_mstar_post_observation.S5MStarPostObservationError: native_observation_invalid">def test_exact_three_way_publication_binding_is_sealed_and_sanitized() -&gt; None:
+        checked = verify_s5_mstar_post_observation(
+&gt;           _build(), expected_run_id=RUN_ID
+            ^^^^^^^^
+        )
+
+tests/test_s5_mstar_post_observation.py:132: 
+_ _ _ _ _ _ _ _ _ _ _ _ _ _ _ _ _ _ _ _ _ _ _ _ _ _ _ _ _ _ _ _ _ _ _ _ _ _ _ _ 
+tests/test_s5_mstar_post_observation.py:121: in _build
+    return build_s5_mstar_post_observation(
+src/paper_eval/s5_mstar_post_observation.py:261: in build_s5_mstar_post_observation
+    return verify_s5_mstar_post_observation(value, expected_run_id=run_id)
+           ^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^
+_ _ _ _ _ _ _ _ _ _ _ _ _ _ _ _ _ _ _ _ _ _ _ _ _ _ _ _ _ _ _ _ _ _ _ _ _ _ _ _ 
+
+value = {'schema_version': 'membind.paper-eval-v3.s5-mstar-post-observation.v1', 'method': 'M*', 'status': 'PASS', 'run_id_sha256': 'ab098b0057828475313d5f98307786efda0e513d40d0bb8eb44bea1bb87f9bd4', ...}
+expected_run_id = 's5-mstar-20260816-201'
+
+    def verify_s5_mstar_post_observation(
+        value: Mapping[str, object], *, expected_run_id: str | None = None
+    ) -&gt; dict[str, object]:
+        """Verify the public artifact; optionally rebind deterministic operation IDs."""
+    
+        if not isinstance(value, Mapping) or set(value) != _FIELDS:
+            raise _fail("post_observation_invalid")
+        artifact = deepcopy(dict(value))
+        seal = artifact.pop("post_observation_sha256", None)
+        if (
+            artifact.get("schema_version") != SCHEMA
+            or artifact.get("method") != "M*"
+            or artifact.get("status")
+            not in {"PASS", "DIRECT_INVARIANT_VIOLATION_OBSERVED"}
+            or not isinstance(seal, str)
+            or seal != payload_sha256(artifact)
+        ):
+            raise _fail("post_observation_invalid")
+        for field in (
+            "run_id_sha256",
+            "source_manifest_sha256",
+            "attempt_publication_manifest_sha256",
+            "operation_manifest_sha256",
+            "journal_events_sha256",
+            "native_observation_sha256",
+        ):
+            _sha(artifact.get(field), "post_observation_identity_invalid")
+        try:
+            native = verify_s5_native_post_observation(
+                artifact.get("native_observation", {}),
+                **(
+                    {
+                        "expected_method": "M*",
+                        "expected_run_id": expected_run_id,
+                        "expected_namespace": f"pev3-{expected_run_id}",
+                    }
+                    if expected_run_id is not None
+                    else {}
+                ),
+            )
+        except Exception:
+&gt;           raise _fail("native_observation_invalid") from None
+E           paper_eval.s5_mstar_post_observation.S5MStarPostObservationError: native_observation_invalid
+
+src/paper_eval/s5_mstar_post_observation.py:305: S5MStarPostObservationError</failure></testcase><testcase classname="tests.test_s5_mstar_post_observation" name="test_incomplete_or_conflicting_journal_fails_closed[missing_commit]" time="0.001" /><testcase classname="tests.test_s5_mstar_post_observation" name="test_incomplete_or_conflicting_journal_fails_closed[source_conflict]" time="0.001" /><testcase classname="tests.test_s5_mstar_post_observation" name="test_direct_invariant_observation_is_retained_not_relabelled_pass" time="0.002"><failure message="paper_eval.s5_mstar_post_observation.S5MStarPostObservationError: native_observation_invalid">def test_direct_invariant_observation_is_retained_not_relabelled_pass() -&gt; None:
+        checked = verify_s5_mstar_post_observation(
+&gt;           _build(violations=2), expected_run_id=RUN_ID
+            ^^^^^^^^^^^^^^^^^^^^
+        )
+
+tests/test_s5_mstar_post_observation.py:173: 
+_ _ _ _ _ _ _ _ _ _ _ _ _ _ _ _ _ _ _ _ _ _ _ _ _ _ _ _ _ _ _ _ _ _ _ _ _ _ _ _ 
+tests/test_s5_mstar_post_observation.py:121: in _build
+    return build_s5_mstar_post_observation(
+src/paper_eval/s5_mstar_post_observation.py:261: in build_s5_mstar_post_observation
+    return verify_s5_mstar_post_observation(value, expected_run_id=run_id)
+           ^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^
+_ _ _ _ _ _ _ _ _ _ _ _ _ _ _ _ _ _ _ _ _ _ _ _ _ _ _ _ _ _ _ _ _ _ _ _ _ _ _ _ 
+
+value = {'schema_version': 'membind.paper-eval-v3.s5-mstar-post-observation.v1', 'method': 'M*', 'status': 'DIRECT_INVARIANT_VIOLATION_OBSERVED', 'run_id_sha256': 'ab098b0057828475313d5f98307786efda0e513d40d0bb8eb44bea1bb87f9bd4', ...}
+expected_run_id = 's5-mstar-20260816-201'
+
+    def verify_s5_mstar_post_observation(
+        value: Mapping[str, object], *, expected_run_id: str | None = None
+    ) -&gt; dict[str, object]:
+        """Verify the public artifact; optionally rebind deterministic operation IDs."""
+    
+        if not isinstance(value, Mapping) or set(value) != _FIELDS:
+            raise _fail("post_observation_invalid")
+        artifact = deepcopy(dict(value))
+        seal = artifact.pop("post_observation_sha256", None)
+        if (
+            artifact.get("schema_version") != SCHEMA
+            or artifact.get("method") != "M*"
+            or artifact.get("status")
+            not in {"PASS", "DIRECT_INVARIANT_VIOLATION_OBSERVED"}
+            or not isinstance(seal, str)
+            or seal != payload_sha256(artifact)
+        ):
+            raise _fail("post_observation_invalid")
+        for field in (
+            "run_id_sha256",
+            "source_manifest_sha256",
+            "attempt_publication_manifest_sha256",
+            "operation_manifest_sha256",
+            "journal_events_sha256",
+            "native_observation_sha256",
+        ):
+            _sha(artifact.get(field), "post_observation_identity_invalid")
+        try:
+            native = verify_s5_native_post_observation(
+                artifact.get("native_observation", {}),
+                **(
+                    {
+                        "expected_method": "M*",
+                        "expected_run_id": expected_run_id,
+                        "expected_namespace": f"pev3-{expected_run_id}",
+                    }
+                    if expected_run_id is not None
+                    else {}
+                ),
+            )
+        except Exception:
+&gt;           raise _fail("native_observation_invalid") from None
+E           paper_eval.s5_mstar_post_observation.S5MStarPostObservationError: native_observation_invalid
+
+src/paper_eval/s5_mstar_post_observation.py:305: S5MStarPostObservationError</failure></testcase><testcase classname="tests.test_s5_mstar_post_observation" name="test_resealed_operation_manifest_cannot_cross_bind_to_another_run" time="0.002"><failure message="paper_eval.s5_mstar_post_observation.S5MStarPostObservationError: native_observation_invalid">def test_resealed_operation_manifest_cannot_cross_bind_to_another_run() -&gt; None:
+&gt;       artifact = _build()
+                   ^^^^^^^^
+
+tests/test_s5_mstar_post_observation.py:180: 
+_ _ _ _ _ _ _ _ _ _ _ _ _ _ _ _ _ _ _ _ _ _ _ _ _ _ _ _ _ _ _ _ _ _ _ _ _ _ _ _ 
+tests/test_s5_mstar_post_observation.py:121: in _build
+    return build_s5_mstar_post_observation(
+src/paper_eval/s5_mstar_post_observation.py:261: in build_s5_mstar_post_observation
+    return verify_s5_mstar_post_observation(value, expected_run_id=run_id)
+           ^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^
+_ _ _ _ _ _ _ _ _ _ _ _ _ _ _ _ _ _ _ _ _ _ _ _ _ _ _ _ _ _ _ _ _ _ _ _ _ _ _ _ 
+
+value = {'schema_version': 'membind.paper-eval-v3.s5-mstar-post-observation.v1', 'method': 'M*', 'status': 'PASS', 'run_id_sha256': 'ab098b0057828475313d5f98307786efda0e513d40d0bb8eb44bea1bb87f9bd4', ...}
+expected_run_id = 's5-mstar-20260816-201'
+
+    def verify_s5_mstar_post_observation(
+        value: Mapping[str, object], *, expected_run_id: str | None = None
+    ) -&gt; dict[str, object]:
+        """Verify the public artifact; optionally rebind deterministic operation IDs."""
+    
+        if not isinstance(value, Mapping) or set(value) != _FIELDS:
+            raise _fail("post_observation_invalid")
+        artifact = deepcopy(dict(value))
+        seal = artifact.pop("post_observation_sha256", None)
+        if (
+            artifact.get("schema_version") != SCHEMA
+            or artifact.get("method") != "M*"
+            or artifact.get("status")
+            not in {"PASS", "DIRECT_INVARIANT_VIOLATION_OBSERVED"}
+            or not isinstance(seal, str)
+            or seal != payload_sha256(artifact)
+        ):
+            raise _fail("post_observation_invalid")
+        for field in (
+            "run_id_sha256",
+            "source_manifest_sha256",
+            "attempt_publication_manifest_sha256",
+            "operation_manifest_sha256",
+            "journal_events_sha256",
+            "native_observation_sha256",
+        ):
+            _sha(artifact.get(field), "post_observation_identity_invalid")
+        try:
+            native = verify_s5_native_post_observation(
+                artifact.get("native_observation", {}),
+                **(
+                    {
+                        "expected_method": "M*",
+                        "expected_run_id": expected_run_id,
+                        "expected_namespace": f"pev3-{expected_run_id}",
+                    }
+                    if expected_run_id is not None
+                    else {}
+                ),
+            )
+        except Exception:
+&gt;           raise _fail("native_observation_invalid") from None
+E           paper_eval.s5_mstar_post_observation.S5MStarPostObservationError: native_observation_invalid
+
+src/paper_eval/s5_mstar_post_observation.py:305: S5MStarPostObservationError</failure></testcase><testcase classname="tests.test_s5_mstar_result_finalizer" name="test_pass_result_requires_complete_publication_and_zero_invariants" time="0.001" /><testcase classname="tests.test_s5_mstar_result_finalizer" name="test_valid_invariant_counterexample_is_terminal_but_never_pass_authority" time="0.000" /><testcase classname="tests.test_s5_mstar_result_finalizer" name="test_result_verifier_rejects_resealed_publication_or_summary_drift" time="0.000" /><testcase classname="tests.test_s5_mstar_result_finalizer" name="test_final_write_is_exclusive" time="0.005" /><testcase classname="tests.test_s5_mstar_progress" name="test_not_started_projection_is_fixed_and_never_authorizes_resume" time="0.000" /><testcase classname="tests.test_s5_mstar_progress" name="test_running_prefix_reports_attempt_and_journal_without_private_identity" time="0.053" /><testcase classname="tests.test_s5_mstar_progress" name="test_corrupt_journal_is_sanitized_and_cannot_authorize_resume" time="0.000" /></testsuite></testsuites>

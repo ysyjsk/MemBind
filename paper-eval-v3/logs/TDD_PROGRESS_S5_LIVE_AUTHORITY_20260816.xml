@@ -1,0 +1,724 @@
+<?xml version="1.0" encoding="utf-8"?><testsuites name="pytest tests"><testsuite name="pytest" errors="0" failures="11" skipped="0" tests="11" time="0.099" timestamp="2026-08-16T00:26:20.856937+08:00" hostname="aces-System-Product-Name"><testcase classname="tests.test_s5_live_authority" name="test_authority_is_method_scoped_single_use_and_preformal[A0]" time="0.001"><failure message="paper_eval.s5_live_preflight.S5LivePreflightError: artifact_identity_invalid">method = 'A0'
+
+    @pytest.mark.parametrize("method", ["A0", "P*", "M*"])
+    def test_authority_is_method_scoped_single_use_and_preformal(method: str) -&gt; None:
+&gt;       artifact = verify_s5_live_authority(_build(method))
+                                            ^^^^^^^^^^^^^^
+
+tests/test_s5_live_authority.py:165: 
+_ _ _ _ _ _ _ _ _ _ _ _ _ _ _ _ _ _ _ _ _ _ _ _ _ _ _ _ _ _ _ _ _ _ _ _ _ _ _ _ 
+tests/test_s5_live_authority.py:134: in _build
+    preflight = _preflight(method, identity)
+                ^^^^^^^^^^^^^^^^^^^^^^^^^^^^
+tests/test_s5_live_authority.py:110: in _preflight
+    return verify_s5_live_preflight(
+_ _ _ _ _ _ _ _ _ _ _ _ _ _ _ _ _ _ _ _ _ _ _ _ _ _ _ _ _ _ _ _ _ _ _ _ _ _ _ _ 
+
+value = {'protocol_version': 'paper-eval-v3', 'git_commit': 'deadbeef', 'run_id': 's5-a0-20260816-001-preflight', 'status': 'finalized', ...}
+
+    def verify_s5_live_preflight(value: Mapping[str, Any]) -&gt; dict[str, Any]:
+        """Verify one sanitized, exclusive PASS preflight artifact."""
+    
+        artifact = _mapping(value, "artifact_invalid")
+        if set(artifact) != {
+            "protocol_version",
+            "git_commit",
+            "run_id",
+            "status",
+            "payload",
+            "payload_sha256",
+        }:
+            raise _fail("artifact_shape_invalid")
+        payload = _mapping(artifact.get("payload"), "artifact_payload_invalid")
+        if (
+            artifact.get("protocol_version") != PROTOCOL_VERSION
+            or artifact.get("status") != "finalized"
+            or artifact.get("payload_sha256") != payload_sha256(payload)
+            or set(payload)
+            != {
+                "schema_version",
+                "stage",
+                "verdict",
+                "method",
+                "run_id",
+                "namespace",
+                "history",
+                "production_identity_sha256",
+                "current_stage_pointer",
+                "predecessor",
+                "fx0_qualification",
+                "evaluation",
+                "evaluation_sha256",
+                "source_sha256",
+                "authority",
+            }
+            or payload.get("schema_version") != ARTIFACT_SCHEMA
+            or payload.get("stage") != "S5_LIVE_PREFLIGHT"
+            or payload.get("verdict") != "PASS"
+        ):
+&gt;           raise _fail("artifact_identity_invalid")
+E           paper_eval.s5_live_preflight.S5LivePreflightError: artifact_identity_invalid
+
+src/paper_eval/s5_live_preflight.py:541: S5LivePreflightError</failure></testcase><testcase classname="tests.test_s5_live_authority" name="test_authority_is_method_scoped_single_use_and_preformal[P*]" time="0.000"><failure message="paper_eval.s5_live_preflight.S5LivePreflightError: artifact_identity_invalid">method = 'P*'
+
+    @pytest.mark.parametrize("method", ["A0", "P*", "M*"])
+    def test_authority_is_method_scoped_single_use_and_preformal(method: str) -&gt; None:
+&gt;       artifact = verify_s5_live_authority(_build(method))
+                                            ^^^^^^^^^^^^^^
+
+tests/test_s5_live_authority.py:165: 
+_ _ _ _ _ _ _ _ _ _ _ _ _ _ _ _ _ _ _ _ _ _ _ _ _ _ _ _ _ _ _ _ _ _ _ _ _ _ _ _ 
+tests/test_s5_live_authority.py:134: in _build
+    preflight = _preflight(method, identity)
+                ^^^^^^^^^^^^^^^^^^^^^^^^^^^^
+tests/test_s5_live_authority.py:110: in _preflight
+    return verify_s5_live_preflight(
+_ _ _ _ _ _ _ _ _ _ _ _ _ _ _ _ _ _ _ _ _ _ _ _ _ _ _ _ _ _ _ _ _ _ _ _ _ _ _ _ 
+
+value = {'protocol_version': 'paper-eval-v3', 'git_commit': 'deadbeef', 'run_id': 's5-p-star-20260816-001-preflight', 'status': 'finalized', ...}
+
+    def verify_s5_live_preflight(value: Mapping[str, Any]) -&gt; dict[str, Any]:
+        """Verify one sanitized, exclusive PASS preflight artifact."""
+    
+        artifact = _mapping(value, "artifact_invalid")
+        if set(artifact) != {
+            "protocol_version",
+            "git_commit",
+            "run_id",
+            "status",
+            "payload",
+            "payload_sha256",
+        }:
+            raise _fail("artifact_shape_invalid")
+        payload = _mapping(artifact.get("payload"), "artifact_payload_invalid")
+        if (
+            artifact.get("protocol_version") != PROTOCOL_VERSION
+            or artifact.get("status") != "finalized"
+            or artifact.get("payload_sha256") != payload_sha256(payload)
+            or set(payload)
+            != {
+                "schema_version",
+                "stage",
+                "verdict",
+                "method",
+                "run_id",
+                "namespace",
+                "history",
+                "production_identity_sha256",
+                "current_stage_pointer",
+                "predecessor",
+                "fx0_qualification",
+                "evaluation",
+                "evaluation_sha256",
+                "source_sha256",
+                "authority",
+            }
+            or payload.get("schema_version") != ARTIFACT_SCHEMA
+            or payload.get("stage") != "S5_LIVE_PREFLIGHT"
+            or payload.get("verdict") != "PASS"
+        ):
+&gt;           raise _fail("artifact_identity_invalid")
+E           paper_eval.s5_live_preflight.S5LivePreflightError: artifact_identity_invalid
+
+src/paper_eval/s5_live_preflight.py:541: S5LivePreflightError</failure></testcase><testcase classname="tests.test_s5_live_authority" name="test_authority_is_method_scoped_single_use_and_preformal[M*]" time="0.000"><failure message="paper_eval.s5_live_preflight.S5LivePreflightError: artifact_identity_invalid">method = 'M*'
+
+    @pytest.mark.parametrize("method", ["A0", "P*", "M*"])
+    def test_authority_is_method_scoped_single_use_and_preformal(method: str) -&gt; None:
+&gt;       artifact = verify_s5_live_authority(_build(method))
+                                            ^^^^^^^^^^^^^^
+
+tests/test_s5_live_authority.py:165: 
+_ _ _ _ _ _ _ _ _ _ _ _ _ _ _ _ _ _ _ _ _ _ _ _ _ _ _ _ _ _ _ _ _ _ _ _ _ _ _ _ 
+tests/test_s5_live_authority.py:134: in _build
+    preflight = _preflight(method, identity)
+                ^^^^^^^^^^^^^^^^^^^^^^^^^^^^
+tests/test_s5_live_authority.py:110: in _preflight
+    return verify_s5_live_preflight(
+_ _ _ _ _ _ _ _ _ _ _ _ _ _ _ _ _ _ _ _ _ _ _ _ _ _ _ _ _ _ _ _ _ _ _ _ _ _ _ _ 
+
+value = {'protocol_version': 'paper-eval-v3', 'git_commit': 'deadbeef', 'run_id': 's5-mstar-20260816-001-preflight', 'status': 'finalized', ...}
+
+    def verify_s5_live_preflight(value: Mapping[str, Any]) -&gt; dict[str, Any]:
+        """Verify one sanitized, exclusive PASS preflight artifact."""
+    
+        artifact = _mapping(value, "artifact_invalid")
+        if set(artifact) != {
+            "protocol_version",
+            "git_commit",
+            "run_id",
+            "status",
+            "payload",
+            "payload_sha256",
+        }:
+            raise _fail("artifact_shape_invalid")
+        payload = _mapping(artifact.get("payload"), "artifact_payload_invalid")
+        if (
+            artifact.get("protocol_version") != PROTOCOL_VERSION
+            or artifact.get("status") != "finalized"
+            or artifact.get("payload_sha256") != payload_sha256(payload)
+            or set(payload)
+            != {
+                "schema_version",
+                "stage",
+                "verdict",
+                "method",
+                "run_id",
+                "namespace",
+                "history",
+                "production_identity_sha256",
+                "current_stage_pointer",
+                "predecessor",
+                "fx0_qualification",
+                "evaluation",
+                "evaluation_sha256",
+                "source_sha256",
+                "authority",
+            }
+            or payload.get("schema_version") != ARTIFACT_SCHEMA
+            or payload.get("stage") != "S5_LIVE_PREFLIGHT"
+            or payload.get("verdict") != "PASS"
+        ):
+&gt;           raise _fail("artifact_identity_invalid")
+E           paper_eval.s5_live_preflight.S5LivePreflightError: artifact_identity_invalid
+
+src/paper_eval/s5_live_preflight.py:541: S5LivePreflightError</failure></testcase><testcase classname="tests.test_s5_live_authority" name="test_authority_rejects_method_order_scope_and_fx0_drift[A0-&lt;lambda&gt;0]" time="0.000"><failure message="paper_eval.s5_live_preflight.S5LivePreflightError: artifact_identity_invalid">method = 'A0', mutation = &lt;function &lt;lambda&gt; at 0x704001ab7f60&gt;
+
+    @pytest.mark.parametrize(
+        ("method", "mutation"),
+        [
+            ("A0", lambda value: value["run"].update(configured_concurrency=2)),
+            ("A0", lambda value: value["run"].update(history_id="different")),
+            ("P*", lambda value: value.update(predecessor=None)),
+            ("M*", lambda value: value.update(fx0_qualification=None)),
+            ("M*", lambda value: value["run"].update(namespace="pev3-s5-a0-wrong")),
+        ],
+    )
+    def test_authority_rejects_method_order_scope_and_fx0_drift(
+        method: str, mutation
+    ) -&gt; None:
+&gt;       artifact = _build(method)
+                   ^^^^^^^^^^^^^^
+
+tests/test_s5_live_authority.py:198: 
+_ _ _ _ _ _ _ _ _ _ _ _ _ _ _ _ _ _ _ _ _ _ _ _ _ _ _ _ _ _ _ _ _ _ _ _ _ _ _ _ 
+tests/test_s5_live_authority.py:134: in _build
+    preflight = _preflight(method, identity)
+                ^^^^^^^^^^^^^^^^^^^^^^^^^^^^
+tests/test_s5_live_authority.py:110: in _preflight
+    return verify_s5_live_preflight(
+_ _ _ _ _ _ _ _ _ _ _ _ _ _ _ _ _ _ _ _ _ _ _ _ _ _ _ _ _ _ _ _ _ _ _ _ _ _ _ _ 
+
+value = {'protocol_version': 'paper-eval-v3', 'git_commit': 'deadbeef', 'run_id': 's5-a0-20260816-001-preflight', 'status': 'finalized', ...}
+
+    def verify_s5_live_preflight(value: Mapping[str, Any]) -&gt; dict[str, Any]:
+        """Verify one sanitized, exclusive PASS preflight artifact."""
+    
+        artifact = _mapping(value, "artifact_invalid")
+        if set(artifact) != {
+            "protocol_version",
+            "git_commit",
+            "run_id",
+            "status",
+            "payload",
+            "payload_sha256",
+        }:
+            raise _fail("artifact_shape_invalid")
+        payload = _mapping(artifact.get("payload"), "artifact_payload_invalid")
+        if (
+            artifact.get("protocol_version") != PROTOCOL_VERSION
+            or artifact.get("status") != "finalized"
+            or artifact.get("payload_sha256") != payload_sha256(payload)
+            or set(payload)
+            != {
+                "schema_version",
+                "stage",
+                "verdict",
+                "method",
+                "run_id",
+                "namespace",
+                "history",
+                "production_identity_sha256",
+                "current_stage_pointer",
+                "predecessor",
+                "fx0_qualification",
+                "evaluation",
+                "evaluation_sha256",
+                "source_sha256",
+                "authority",
+            }
+            or payload.get("schema_version") != ARTIFACT_SCHEMA
+            or payload.get("stage") != "S5_LIVE_PREFLIGHT"
+            or payload.get("verdict") != "PASS"
+        ):
+&gt;           raise _fail("artifact_identity_invalid")
+E           paper_eval.s5_live_preflight.S5LivePreflightError: artifact_identity_invalid
+
+src/paper_eval/s5_live_preflight.py:541: S5LivePreflightError</failure></testcase><testcase classname="tests.test_s5_live_authority" name="test_authority_rejects_method_order_scope_and_fx0_drift[A0-&lt;lambda&gt;1]" time="0.000"><failure message="paper_eval.s5_live_preflight.S5LivePreflightError: artifact_identity_invalid">method = 'A0', mutation = &lt;function &lt;lambda&gt; at 0x704001ad0040&gt;
+
+    @pytest.mark.parametrize(
+        ("method", "mutation"),
+        [
+            ("A0", lambda value: value["run"].update(configured_concurrency=2)),
+            ("A0", lambda value: value["run"].update(history_id="different")),
+            ("P*", lambda value: value.update(predecessor=None)),
+            ("M*", lambda value: value.update(fx0_qualification=None)),
+            ("M*", lambda value: value["run"].update(namespace="pev3-s5-a0-wrong")),
+        ],
+    )
+    def test_authority_rejects_method_order_scope_and_fx0_drift(
+        method: str, mutation
+    ) -&gt; None:
+&gt;       artifact = _build(method)
+                   ^^^^^^^^^^^^^^
+
+tests/test_s5_live_authority.py:198: 
+_ _ _ _ _ _ _ _ _ _ _ _ _ _ _ _ _ _ _ _ _ _ _ _ _ _ _ _ _ _ _ _ _ _ _ _ _ _ _ _ 
+tests/test_s5_live_authority.py:134: in _build
+    preflight = _preflight(method, identity)
+                ^^^^^^^^^^^^^^^^^^^^^^^^^^^^
+tests/test_s5_live_authority.py:110: in _preflight
+    return verify_s5_live_preflight(
+_ _ _ _ _ _ _ _ _ _ _ _ _ _ _ _ _ _ _ _ _ _ _ _ _ _ _ _ _ _ _ _ _ _ _ _ _ _ _ _ 
+
+value = {'protocol_version': 'paper-eval-v3', 'git_commit': 'deadbeef', 'run_id': 's5-a0-20260816-001-preflight', 'status': 'finalized', ...}
+
+    def verify_s5_live_preflight(value: Mapping[str, Any]) -&gt; dict[str, Any]:
+        """Verify one sanitized, exclusive PASS preflight artifact."""
+    
+        artifact = _mapping(value, "artifact_invalid")
+        if set(artifact) != {
+            "protocol_version",
+            "git_commit",
+            "run_id",
+            "status",
+            "payload",
+            "payload_sha256",
+        }:
+            raise _fail("artifact_shape_invalid")
+        payload = _mapping(artifact.get("payload"), "artifact_payload_invalid")
+        if (
+            artifact.get("protocol_version") != PROTOCOL_VERSION
+            or artifact.get("status") != "finalized"
+            or artifact.get("payload_sha256") != payload_sha256(payload)
+            or set(payload)
+            != {
+                "schema_version",
+                "stage",
+                "verdict",
+                "method",
+                "run_id",
+                "namespace",
+                "history",
+                "production_identity_sha256",
+                "current_stage_pointer",
+                "predecessor",
+                "fx0_qualification",
+                "evaluation",
+                "evaluation_sha256",
+                "source_sha256",
+                "authority",
+            }
+            or payload.get("schema_version") != ARTIFACT_SCHEMA
+            or payload.get("stage") != "S5_LIVE_PREFLIGHT"
+            or payload.get("verdict") != "PASS"
+        ):
+&gt;           raise _fail("artifact_identity_invalid")
+E           paper_eval.s5_live_preflight.S5LivePreflightError: artifact_identity_invalid
+
+src/paper_eval/s5_live_preflight.py:541: S5LivePreflightError</failure></testcase><testcase classname="tests.test_s5_live_authority" name="test_authority_rejects_method_order_scope_and_fx0_drift[P*-&lt;lambda&gt;]" time="0.000"><failure message="paper_eval.s5_live_preflight.S5LivePreflightError: artifact_identity_invalid">method = 'P*', mutation = &lt;function &lt;lambda&gt; at 0x704001ad00e0&gt;
+
+    @pytest.mark.parametrize(
+        ("method", "mutation"),
+        [
+            ("A0", lambda value: value["run"].update(configured_concurrency=2)),
+            ("A0", lambda value: value["run"].update(history_id="different")),
+            ("P*", lambda value: value.update(predecessor=None)),
+            ("M*", lambda value: value.update(fx0_qualification=None)),
+            ("M*", lambda value: value["run"].update(namespace="pev3-s5-a0-wrong")),
+        ],
+    )
+    def test_authority_rejects_method_order_scope_and_fx0_drift(
+        method: str, mutation
+    ) -&gt; None:
+&gt;       artifact = _build(method)
+                   ^^^^^^^^^^^^^^
+
+tests/test_s5_live_authority.py:198: 
+_ _ _ _ _ _ _ _ _ _ _ _ _ _ _ _ _ _ _ _ _ _ _ _ _ _ _ _ _ _ _ _ _ _ _ _ _ _ _ _ 
+tests/test_s5_live_authority.py:134: in _build
+    preflight = _preflight(method, identity)
+                ^^^^^^^^^^^^^^^^^^^^^^^^^^^^
+tests/test_s5_live_authority.py:110: in _preflight
+    return verify_s5_live_preflight(
+_ _ _ _ _ _ _ _ _ _ _ _ _ _ _ _ _ _ _ _ _ _ _ _ _ _ _ _ _ _ _ _ _ _ _ _ _ _ _ _ 
+
+value = {'protocol_version': 'paper-eval-v3', 'git_commit': 'deadbeef', 'run_id': 's5-p-star-20260816-001-preflight', 'status': 'finalized', ...}
+
+    def verify_s5_live_preflight(value: Mapping[str, Any]) -&gt; dict[str, Any]:
+        """Verify one sanitized, exclusive PASS preflight artifact."""
+    
+        artifact = _mapping(value, "artifact_invalid")
+        if set(artifact) != {
+            "protocol_version",
+            "git_commit",
+            "run_id",
+            "status",
+            "payload",
+            "payload_sha256",
+        }:
+            raise _fail("artifact_shape_invalid")
+        payload = _mapping(artifact.get("payload"), "artifact_payload_invalid")
+        if (
+            artifact.get("protocol_version") != PROTOCOL_VERSION
+            or artifact.get("status") != "finalized"
+            or artifact.get("payload_sha256") != payload_sha256(payload)
+            or set(payload)
+            != {
+                "schema_version",
+                "stage",
+                "verdict",
+                "method",
+                "run_id",
+                "namespace",
+                "history",
+                "production_identity_sha256",
+                "current_stage_pointer",
+                "predecessor",
+                "fx0_qualification",
+                "evaluation",
+                "evaluation_sha256",
+                "source_sha256",
+                "authority",
+            }
+            or payload.get("schema_version") != ARTIFACT_SCHEMA
+            or payload.get("stage") != "S5_LIVE_PREFLIGHT"
+            or payload.get("verdict") != "PASS"
+        ):
+&gt;           raise _fail("artifact_identity_invalid")
+E           paper_eval.s5_live_preflight.S5LivePreflightError: artifact_identity_invalid
+
+src/paper_eval/s5_live_preflight.py:541: S5LivePreflightError</failure></testcase><testcase classname="tests.test_s5_live_authority" name="test_authority_rejects_method_order_scope_and_fx0_drift[M*-&lt;lambda&gt;0]" time="0.000"><failure message="paper_eval.s5_live_preflight.S5LivePreflightError: artifact_identity_invalid">method = 'M*', mutation = &lt;function &lt;lambda&gt; at 0x704001ad0180&gt;
+
+    @pytest.mark.parametrize(
+        ("method", "mutation"),
+        [
+            ("A0", lambda value: value["run"].update(configured_concurrency=2)),
+            ("A0", lambda value: value["run"].update(history_id="different")),
+            ("P*", lambda value: value.update(predecessor=None)),
+            ("M*", lambda value: value.update(fx0_qualification=None)),
+            ("M*", lambda value: value["run"].update(namespace="pev3-s5-a0-wrong")),
+        ],
+    )
+    def test_authority_rejects_method_order_scope_and_fx0_drift(
+        method: str, mutation
+    ) -&gt; None:
+&gt;       artifact = _build(method)
+                   ^^^^^^^^^^^^^^
+
+tests/test_s5_live_authority.py:198: 
+_ _ _ _ _ _ _ _ _ _ _ _ _ _ _ _ _ _ _ _ _ _ _ _ _ _ _ _ _ _ _ _ _ _ _ _ _ _ _ _ 
+tests/test_s5_live_authority.py:134: in _build
+    preflight = _preflight(method, identity)
+                ^^^^^^^^^^^^^^^^^^^^^^^^^^^^
+tests/test_s5_live_authority.py:110: in _preflight
+    return verify_s5_live_preflight(
+_ _ _ _ _ _ _ _ _ _ _ _ _ _ _ _ _ _ _ _ _ _ _ _ _ _ _ _ _ _ _ _ _ _ _ _ _ _ _ _ 
+
+value = {'protocol_version': 'paper-eval-v3', 'git_commit': 'deadbeef', 'run_id': 's5-mstar-20260816-001-preflight', 'status': 'finalized', ...}
+
+    def verify_s5_live_preflight(value: Mapping[str, Any]) -&gt; dict[str, Any]:
+        """Verify one sanitized, exclusive PASS preflight artifact."""
+    
+        artifact = _mapping(value, "artifact_invalid")
+        if set(artifact) != {
+            "protocol_version",
+            "git_commit",
+            "run_id",
+            "status",
+            "payload",
+            "payload_sha256",
+        }:
+            raise _fail("artifact_shape_invalid")
+        payload = _mapping(artifact.get("payload"), "artifact_payload_invalid")
+        if (
+            artifact.get("protocol_version") != PROTOCOL_VERSION
+            or artifact.get("status") != "finalized"
+            or artifact.get("payload_sha256") != payload_sha256(payload)
+            or set(payload)
+            != {
+                "schema_version",
+                "stage",
+                "verdict",
+                "method",
+                "run_id",
+                "namespace",
+                "history",
+                "production_identity_sha256",
+                "current_stage_pointer",
+                "predecessor",
+                "fx0_qualification",
+                "evaluation",
+                "evaluation_sha256",
+                "source_sha256",
+                "authority",
+            }
+            or payload.get("schema_version") != ARTIFACT_SCHEMA
+            or payload.get("stage") != "S5_LIVE_PREFLIGHT"
+            or payload.get("verdict") != "PASS"
+        ):
+&gt;           raise _fail("artifact_identity_invalid")
+E           paper_eval.s5_live_preflight.S5LivePreflightError: artifact_identity_invalid
+
+src/paper_eval/s5_live_preflight.py:541: S5LivePreflightError</failure></testcase><testcase classname="tests.test_s5_live_authority" name="test_authority_rejects_method_order_scope_and_fx0_drift[M*-&lt;lambda&gt;1]" time="0.000"><failure message="paper_eval.s5_live_preflight.S5LivePreflightError: artifact_identity_invalid">method = 'M*', mutation = &lt;function &lt;lambda&gt; at 0x704001ad0220&gt;
+
+    @pytest.mark.parametrize(
+        ("method", "mutation"),
+        [
+            ("A0", lambda value: value["run"].update(configured_concurrency=2)),
+            ("A0", lambda value: value["run"].update(history_id="different")),
+            ("P*", lambda value: value.update(predecessor=None)),
+            ("M*", lambda value: value.update(fx0_qualification=None)),
+            ("M*", lambda value: value["run"].update(namespace="pev3-s5-a0-wrong")),
+        ],
+    )
+    def test_authority_rejects_method_order_scope_and_fx0_drift(
+        method: str, mutation
+    ) -&gt; None:
+&gt;       artifact = _build(method)
+                   ^^^^^^^^^^^^^^
+
+tests/test_s5_live_authority.py:198: 
+_ _ _ _ _ _ _ _ _ _ _ _ _ _ _ _ _ _ _ _ _ _ _ _ _ _ _ _ _ _ _ _ _ _ _ _ _ _ _ _ 
+tests/test_s5_live_authority.py:134: in _build
+    preflight = _preflight(method, identity)
+                ^^^^^^^^^^^^^^^^^^^^^^^^^^^^
+tests/test_s5_live_authority.py:110: in _preflight
+    return verify_s5_live_preflight(
+_ _ _ _ _ _ _ _ _ _ _ _ _ _ _ _ _ _ _ _ _ _ _ _ _ _ _ _ _ _ _ _ _ _ _ _ _ _ _ _ 
+
+value = {'protocol_version': 'paper-eval-v3', 'git_commit': 'deadbeef', 'run_id': 's5-mstar-20260816-001-preflight', 'status': 'finalized', ...}
+
+    def verify_s5_live_preflight(value: Mapping[str, Any]) -&gt; dict[str, Any]:
+        """Verify one sanitized, exclusive PASS preflight artifact."""
+    
+        artifact = _mapping(value, "artifact_invalid")
+        if set(artifact) != {
+            "protocol_version",
+            "git_commit",
+            "run_id",
+            "status",
+            "payload",
+            "payload_sha256",
+        }:
+            raise _fail("artifact_shape_invalid")
+        payload = _mapping(artifact.get("payload"), "artifact_payload_invalid")
+        if (
+            artifact.get("protocol_version") != PROTOCOL_VERSION
+            or artifact.get("status") != "finalized"
+            or artifact.get("payload_sha256") != payload_sha256(payload)
+            or set(payload)
+            != {
+                "schema_version",
+                "stage",
+                "verdict",
+                "method",
+                "run_id",
+                "namespace",
+                "history",
+                "production_identity_sha256",
+                "current_stage_pointer",
+                "predecessor",
+                "fx0_qualification",
+                "evaluation",
+                "evaluation_sha256",
+                "source_sha256",
+                "authority",
+            }
+            or payload.get("schema_version") != ARTIFACT_SCHEMA
+            or payload.get("stage") != "S5_LIVE_PREFLIGHT"
+            or payload.get("verdict") != "PASS"
+        ):
+&gt;           raise _fail("artifact_identity_invalid")
+E           paper_eval.s5_live_preflight.S5LivePreflightError: artifact_identity_invalid
+
+src/paper_eval/s5_live_preflight.py:541: S5LivePreflightError</failure></testcase><testcase classname="tests.test_s5_live_authority" name="test_authority_rejects_preflight_identity_and_pointer_drift" time="0.000"><failure message="paper_eval.s5_live_preflight.S5LivePreflightError: artifact_identity_invalid">def test_authority_rejects_preflight_identity_and_pointer_drift() -&gt; None:
+        identity = _identity("A0")
+&gt;       preflight = _preflight("A0", identity)
+                    ^^^^^^^^^^^^^^^^^^^^^^^^^^
+
+tests/test_s5_live_authority.py:206: 
+_ _ _ _ _ _ _ _ _ _ _ _ _ _ _ _ _ _ _ _ _ _ _ _ _ _ _ _ _ _ _ _ _ _ _ _ _ _ _ _ 
+tests/test_s5_live_authority.py:110: in _preflight
+    return verify_s5_live_preflight(
+_ _ _ _ _ _ _ _ _ _ _ _ _ _ _ _ _ _ _ _ _ _ _ _ _ _ _ _ _ _ _ _ _ _ _ _ _ _ _ _ 
+
+value = {'protocol_version': 'paper-eval-v3', 'git_commit': 'deadbeef', 'run_id': 's5-a0-20260816-001-preflight', 'status': 'finalized', ...}
+
+    def verify_s5_live_preflight(value: Mapping[str, Any]) -&gt; dict[str, Any]:
+        """Verify one sanitized, exclusive PASS preflight artifact."""
+    
+        artifact = _mapping(value, "artifact_invalid")
+        if set(artifact) != {
+            "protocol_version",
+            "git_commit",
+            "run_id",
+            "status",
+            "payload",
+            "payload_sha256",
+        }:
+            raise _fail("artifact_shape_invalid")
+        payload = _mapping(artifact.get("payload"), "artifact_payload_invalid")
+        if (
+            artifact.get("protocol_version") != PROTOCOL_VERSION
+            or artifact.get("status") != "finalized"
+            or artifact.get("payload_sha256") != payload_sha256(payload)
+            or set(payload)
+            != {
+                "schema_version",
+                "stage",
+                "verdict",
+                "method",
+                "run_id",
+                "namespace",
+                "history",
+                "production_identity_sha256",
+                "current_stage_pointer",
+                "predecessor",
+                "fx0_qualification",
+                "evaluation",
+                "evaluation_sha256",
+                "source_sha256",
+                "authority",
+            }
+            or payload.get("schema_version") != ARTIFACT_SCHEMA
+            or payload.get("stage") != "S5_LIVE_PREFLIGHT"
+            or payload.get("verdict") != "PASS"
+        ):
+&gt;           raise _fail("artifact_identity_invalid")
+E           paper_eval.s5_live_preflight.S5LivePreflightError: artifact_identity_invalid
+
+src/paper_eval/s5_live_preflight.py:541: S5LivePreflightError</failure></testcase><testcase classname="tests.test_s5_live_authority" name="test_finalization_and_consumption_are_exclusive" time="0.001"><failure message="paper_eval.s5_live_preflight.S5LivePreflightError: artifact_identity_invalid">tmp_path = PosixPath('/tmp/pytest-of-ly/pytest-318/test_finalization_and_consumpt0')
+
+    def test_finalization_and_consumption_are_exclusive(tmp_path: Path) -&gt; None:
+        authority_path = tmp_path / "S5_A0_AUTHORIZATION.json"
+        authority = finalize_s5_live_authority(
+            output_path=authority_path,
+&gt;           authority=_build("A0")["payload"],
+                      ^^^^^^^^^^^^
+            git_commit="deadbeef",
+            run_id="s5-a0-20260816-001-authority",
+        )
+
+tests/test_s5_live_authority.py:232: 
+_ _ _ _ _ _ _ _ _ _ _ _ _ _ _ _ _ _ _ _ _ _ _ _ _ _ _ _ _ _ _ _ _ _ _ _ _ _ _ _ 
+tests/test_s5_live_authority.py:134: in _build
+    preflight = _preflight(method, identity)
+                ^^^^^^^^^^^^^^^^^^^^^^^^^^^^
+tests/test_s5_live_authority.py:110: in _preflight
+    return verify_s5_live_preflight(
+_ _ _ _ _ _ _ _ _ _ _ _ _ _ _ _ _ _ _ _ _ _ _ _ _ _ _ _ _ _ _ _ _ _ _ _ _ _ _ _ 
+
+value = {'protocol_version': 'paper-eval-v3', 'git_commit': 'deadbeef', 'run_id': 's5-a0-20260816-001-preflight', 'status': 'finalized', ...}
+
+    def verify_s5_live_preflight(value: Mapping[str, Any]) -&gt; dict[str, Any]:
+        """Verify one sanitized, exclusive PASS preflight artifact."""
+    
+        artifact = _mapping(value, "artifact_invalid")
+        if set(artifact) != {
+            "protocol_version",
+            "git_commit",
+            "run_id",
+            "status",
+            "payload",
+            "payload_sha256",
+        }:
+            raise _fail("artifact_shape_invalid")
+        payload = _mapping(artifact.get("payload"), "artifact_payload_invalid")
+        if (
+            artifact.get("protocol_version") != PROTOCOL_VERSION
+            or artifact.get("status") != "finalized"
+            or artifact.get("payload_sha256") != payload_sha256(payload)
+            or set(payload)
+            != {
+                "schema_version",
+                "stage",
+                "verdict",
+                "method",
+                "run_id",
+                "namespace",
+                "history",
+                "production_identity_sha256",
+                "current_stage_pointer",
+                "predecessor",
+                "fx0_qualification",
+                "evaluation",
+                "evaluation_sha256",
+                "source_sha256",
+                "authority",
+            }
+            or payload.get("schema_version") != ARTIFACT_SCHEMA
+            or payload.get("stage") != "S5_LIVE_PREFLIGHT"
+            or payload.get("verdict") != "PASS"
+        ):
+&gt;           raise _fail("artifact_identity_invalid")
+E           paper_eval.s5_live_preflight.S5LivePreflightError: artifact_identity_invalid
+
+src/paper_eval/s5_live_preflight.py:541: S5LivePreflightError</failure></testcase><testcase classname="tests.test_s5_live_authority" name="test_verifier_rejects_scope_hash_and_private_field_tamper" time="0.000"><failure message="paper_eval.s5_live_preflight.S5LivePreflightError: artifact_identity_invalid">def test_verifier_rejects_scope_hash_and_private_field_tamper() -&gt; None:
+&gt;       authority = _build("A0")
+                    ^^^^^^^^^^^^
+
+tests/test_s5_live_authority.py:266: 
+_ _ _ _ _ _ _ _ _ _ _ _ _ _ _ _ _ _ _ _ _ _ _ _ _ _ _ _ _ _ _ _ _ _ _ _ _ _ _ _ 
+tests/test_s5_live_authority.py:134: in _build
+    preflight = _preflight(method, identity)
+                ^^^^^^^^^^^^^^^^^^^^^^^^^^^^
+tests/test_s5_live_authority.py:110: in _preflight
+    return verify_s5_live_preflight(
+_ _ _ _ _ _ _ _ _ _ _ _ _ _ _ _ _ _ _ _ _ _ _ _ _ _ _ _ _ _ _ _ _ _ _ _ _ _ _ _ 
+
+value = {'protocol_version': 'paper-eval-v3', 'git_commit': 'deadbeef', 'run_id': 's5-a0-20260816-001-preflight', 'status': 'finalized', ...}
+
+    def verify_s5_live_preflight(value: Mapping[str, Any]) -&gt; dict[str, Any]:
+        """Verify one sanitized, exclusive PASS preflight artifact."""
+    
+        artifact = _mapping(value, "artifact_invalid")
+        if set(artifact) != {
+            "protocol_version",
+            "git_commit",
+            "run_id",
+            "status",
+            "payload",
+            "payload_sha256",
+        }:
+            raise _fail("artifact_shape_invalid")
+        payload = _mapping(artifact.get("payload"), "artifact_payload_invalid")
+        if (
+            artifact.get("protocol_version") != PROTOCOL_VERSION
+            or artifact.get("status") != "finalized"
+            or artifact.get("payload_sha256") != payload_sha256(payload)
+            or set(payload)
+            != {
+                "schema_version",
+                "stage",
+                "verdict",
+                "method",
+                "run_id",
+                "namespace",
+                "history",
+                "production_identity_sha256",
+                "current_stage_pointer",
+                "predecessor",
+                "fx0_qualification",
+                "evaluation",
+                "evaluation_sha256",
+                "source_sha256",
+                "authority",
+            }
+            or payload.get("schema_version") != ARTIFACT_SCHEMA
+            or payload.get("stage") != "S5_LIVE_PREFLIGHT"
+            or payload.get("verdict") != "PASS"
+        ):
+&gt;           raise _fail("artifact_identity_invalid")
+E           paper_eval.s5_live_preflight.S5LivePreflightError: artifact_identity_invalid
+
+src/paper_eval/s5_live_preflight.py:541: S5LivePreflightError</failure></testcase></testsuite></testsuites>

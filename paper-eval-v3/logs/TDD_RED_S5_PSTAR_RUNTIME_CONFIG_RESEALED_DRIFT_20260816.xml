@@ -1,0 +1,20 @@
+<?xml version="1.0" encoding="utf-8"?><testsuites name="pytest tests"><testsuite name="pytest" errors="0" failures="1" skipped="0" tests="1" time="0.040" timestamp="2026-08-16T03:34:30.688795+08:00" hostname="aces-System-Product-Name"><testcase classname="tests.test_s5_pstar_production_identity_materializer" name="test_runtime_config_tamper_and_source_drift_fail_closed" time="0.002"><failure message="Failed: DID NOT RAISE S5PStarMaterializationError">tmp_path = PosixPath('/tmp/pytest-of-ly/pytest-434/test_runtime_config_tamper_and0')
+
+    def test_runtime_config_tamper_and_source_drift_fail_closed(tmp_path: Path) -&gt; None:
+        bundle = materialize_s5_pstar_production_identity(
+            paths=_paths(),
+            git_commit="568afb26053a5f8fb133e29f0583eaa524dad1bd",
+            run_id="s5-p-star-production-identity-20260816-001",
+        )
+        tampered = copy.deepcopy(bundle.runtime_config)
+        tampered["payload"]["method_policy"]["configured_concurrency"] = 3
+        with pytest.raises(S5PStarMaterializationError):
+            verify_s5_pstar_runtime_config(tampered)
+    
+        resealed_drift = copy.deepcopy(bundle.runtime_config)
+        resealed_drift["payload"]["construction"]["max_model_len"] = 131072
+        resealed_drift["payload_sha256"] = payload_sha256(resealed_drift["payload"])
+&gt;       with pytest.raises(S5PStarMaterializationError, match="execution_envelope"):
+E       Failed: DID NOT RAISE S5PStarMaterializationError
+
+tests/test_s5_pstar_production_identity_materializer.py:94: Failed</failure></testcase></testsuite></testsuites>

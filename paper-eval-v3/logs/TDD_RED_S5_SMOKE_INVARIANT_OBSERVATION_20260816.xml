@@ -1,0 +1,51 @@
+<?xml version="1.0" encoding="utf-8"?><testsuites name="pytest tests"><testsuite name="pytest" errors="0" failures="2" skipped="0" tests="18" time="0.034" timestamp="2026-08-16T01:11:04.527897+08:00" hostname="aces-System-Product-Name"><testcase classname="tests.test_s5_method_smoke_contract" name="test_a0_requires_fifo_single_worker_and_separates_return_from_publish" time="0.000" /><testcase classname="tests.test_s5_method_smoke_contract" name="test_p_requires_real_overlap_but_retains_direct_violation_as_observation" time="0.000" /><testcase classname="tests.test_s5_method_smoke_contract" name="test_m_requires_source_order_no_fallback_and_zero_direct_violations" time="0.000" /><testcase classname="tests.test_s5_method_smoke_contract" name="test_smoke_contract_fails_closed_on_loss_duplicate_or_bad_telemetry[&lt;lambda&gt;0]" time="0.000" /><testcase classname="tests.test_s5_method_smoke_contract" name="test_smoke_contract_fails_closed_on_loss_duplicate_or_bad_telemetry[&lt;lambda&gt;1]" time="0.000" /><testcase classname="tests.test_s5_method_smoke_contract" name="test_smoke_contract_fails_closed_on_loss_duplicate_or_bad_telemetry[&lt;lambda&gt;2]" time="0.000" /><testcase classname="tests.test_s5_method_smoke_contract" name="test_smoke_contract_fails_closed_on_loss_duplicate_or_bad_telemetry[&lt;lambda&gt;3]" time="0.000" /><testcase classname="tests.test_s5_method_smoke_contract" name="test_smoke_contract_fails_closed_on_loss_duplicate_or_bad_telemetry[&lt;lambda&gt;4]" time="0.000" /><testcase classname="tests.test_s5_method_smoke_contract" name="test_smoke_contract_fails_closed_on_loss_duplicate_or_bad_telemetry[&lt;lambda&gt;5]" time="0.000" /><testcase classname="tests.test_s5_method_smoke_contract" name="test_p_rejects_no_overlap_and_m_rejects_fallback_or_direct_violation" time="0.000" /><testcase classname="tests.test_s5_method_smoke_contract" name="test_contract_rejects_legacy_method_ids_and_private_fields" time="0.000" /><testcase classname="tests.test_s5_method_smoke_contract" name="test_mstar_pipeline_projection_reuses_common_smoke_contract" time="0.000" /><testcase classname="tests.test_s5_method_smoke_contract" name="test_mstar_pipeline_projection_fails_closed_on_missing_phase" time="0.000" /><testcase classname="tests.test_s5_method_smoke_contract" name="test_native_a0_evidence_projects_into_the_common_smoke_contract" time="0.000" /><testcase classname="tests.test_s5_method_smoke_contract" name="test_native_p_projection_binds_explicit_invariant_observations" time="0.000" /><testcase classname="tests.test_s5_method_smoke_contract" name="test_native_projection_rejects_missing_durable_or_publication_event" time="0.000" /><testcase classname="tests.test_s5_method_smoke_contract" name="test_native_projection_requires_explicit_complete_invariant_observation" time="0.000"><failure message="Failed: DID NOT RAISE S5SmokeContractError">def test_native_projection_requires_explicit_complete_invariant_observation() -&gt; None:
+        evidence = {
+            "method": "A0",
+            "status": "PASS",
+            "events": [
+                {
+                    "event_sequence": 0,
+                    "event_type": "intent",
+                    "source_sequence": 0,
+                    "intent_timestamp_ns": 10,
+                },
+                {
+                    "event_sequence": 1,
+                    "event_type": "caller_return",
+                    "source_sequence": 0,
+                    "durable_enqueue_ack_timestamp_ns": 11,
+                    "caller_return_timestamp_ns": 11,
+                },
+                {
+                    "event_sequence": 2,
+                    "event_type": "publication",
+                    "source_sequence": 0,
+                    "worker_id": 0,
+                    "service_start_timestamp_ns": 12,
+                    "publish_timestamp_ns": 20,
+                    "caller_return_timestamp_ns": 11,
+                },
+                {
+                    "event_sequence": 3,
+                    "event_type": "terminal_success",
+                    "expected_episode_count": 1,
+                },
+            ],
+        }
+    
+&gt;       with pytest.raises(S5SmokeContractError, match="invariant coverage"):
+E       Failed: DID NOT RAISE S5SmokeContractError
+
+tests/test_s5_method_smoke_contract.py:312: Failed</failure></testcase><testcase classname="tests.test_s5_method_smoke_contract" name="test_a0_requires_caller_return_to_precede_publication_strictly" time="0.000"><failure message="Failed: DID NOT RAISE S5SmokeContractError">def test_a0_requires_caller_return_to_precede_publication_strictly() -&gt; None:
+        record = _record(
+            0,
+            method="A0",
+            worker=0,
+            caller_return=20,
+            publish=20,
+        )
+    
+&gt;       with pytest.raises(S5SmokeContractError, match="timestamp separation"):
+E       Failed: DID NOT RAISE S5SmokeContractError
+
+tests/test_s5_method_smoke_contract.py:329: Failed</failure></testcase></testsuite></testsuites>

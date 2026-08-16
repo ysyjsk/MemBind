@@ -1,0 +1,809 @@
+<?xml version="1.0" encoding="utf-8"?><testsuites name="pytest tests"><testsuite name="pytest" errors="0" failures="4" skipped="0" tests="11" time="38.835" timestamp="2026-08-16T02:50:47.242215+08:00" hostname="aces-System-Product-Name"><testcase classname="tests.test_s5_pstar_post_observation" name="test_full_publication_retains_direct_invariant_violation" time="0.003" /><testcase classname="tests.test_s5_pstar_post_observation" name="test_partial_treatment_failure_observes_exact_published_subset" time="0.002" /><testcase classname="tests.test_s5_pstar_post_observation" name="test_incomplete_or_mismatched_partial_evidence_fails_closed[missing_terminal]" time="0.001" /><testcase classname="tests.test_s5_pstar_post_observation" name="test_incomplete_or_mismatched_partial_evidence_fails_closed[extra_episode]" time="0.001" /><testcase classname="tests.test_s5_pstar_post_observation" name="test_incomplete_or_mismatched_partial_evidence_fails_closed[missing_episode]" time="0.001" /><testcase classname="tests.test_s5_pstar_post_observation" name="test_per_source_violation_coverage_must_match_published_sources" time="0.001" /><testcase classname="tests.test_s5_pstar_result_finalizer" name="test_full_publication_is_independently_finalized_without_erasing_violations[0-PASS]" time="7.803"><failure message="paper_eval.s5_pstar_result_finalizer.S5PStarFinalizerError: scientific_evidence_invalid">tmp_path = PosixPath('/tmp/pytest-of-ly/pytest-404/test_full_publication_is_indep0')
+global_violations = 0, expected_outcome = 'PASS'
+
+    @pytest.mark.parametrize(
+        ("global_violations", "expected_outcome"),
+        [
+            (0, "PASS"),
+            (2, "DIRECT_INVARIANT_VIOLATION_OBSERVED"),
+        ],
+    )
+    def test_full_publication_is_independently_finalized_without_erasing_violations(
+        tmp_path: Path,
+        global_violations: int,
+        expected_outcome: str,
+    ) -&gt; None:
+        paths = _completed_chain(tmp_path, global_violations=global_violations)
+    
+&gt;       artifact = finalize_s5_pstar_result(paths=paths, git_commit="deadbeef")
+                   ^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^
+
+tests/test_s5_pstar_result_finalizer.py:145: 
+_ _ _ _ _ _ _ _ _ _ _ _ _ _ _ _ _ _ _ _ _ _ _ _ _ _ _ _ _ _ _ _ _ _ _ _ _ _ _ _ 
+src/paper_eval/s5_pstar_result_finalizer.py:477: in finalize_s5_pstar_result
+    verified = _verify_chain(paths)
+               ^^^^^^^^^^^^^^^^^^^^
+_ _ _ _ _ _ _ _ _ _ _ _ _ _ _ _ _ _ _ _ _ _ _ _ _ _ _ _ _ _ _ _ _ _ _ _ _ _ _ _ 
+
+paths = S5PStarFinalizerPaths(production_identity=PosixPath('/tmp/pytest-of-ly/pytest-404/test_full_publication_is_indep0/iden...xPath('/tmp/pytest-of-ly/pytest-404/test_full_publication_is_indep0/runs/s5-p-star-20260816-101/S5_PSTAR_RESULT.json'))
+
+    def _verify_chain(paths: S5PStarFinalizerPaths) -&gt; dict[str, object]:
+        if not isinstance(paths, S5PStarFinalizerPaths):
+            raise _fail("finalizer_paths_invalid")
+        if Path(paths.result).exists():
+            raise _fail("result_exists")
+        try:
+            identity = verify_s5_production_identity(
+                _load(paths.production_identity, "production_identity_invalid")
+            )
+            qualification = verify_s5_production_identity_qualification(
+                _load(
+                    paths.production_identity_qualification,
+                    "production_identity_qualification_invalid",
+                )
+            )
+            qualification_binding = bind_s5_production_identity_qualification(
+                qualification,
+                file_sha256=_file_sha(
+                    paths.production_identity_qualification,
+                    "production_identity_qualification_invalid",
+                ),
+            )
+        except Exception:
+            raise _fail("production_identity_chain_invalid") from None
+        identity_file_sha = _file_sha(
+            paths.production_identity, "production_identity_invalid"
+        )
+        if (
+            identity.get("method") != P_STAR
+            or qualification_binding.get("method") != P_STAR
+            or qualification_binding.get("production_identity_sha256")
+            != identity.get("identity_sha256")
+            or qualification_binding.get("production_identity_file_sha256")
+            != identity_file_sha
+        ):
+            raise _fail("production_identity_binding_mismatch")
+    
+        pointer, pointer_file_sha = _pointer(paths.current_stage_pointer)
+        if qualification_binding.get("current_stage_pointer") != {
+            "file_sha256": pointer_file_sha,
+            "payload_sha256": pointer.get("payload_sha256"),
+            "run_id": pointer.get("run_id"),
+            "current_stage": "S3_CONFIGURATION_FROZEN",
+        }:
+            raise _fail("qualification_pointer_binding_mismatch")
+        try:
+            preflight = verify_s5_live_preflight(
+                _load(paths.preflight, "preflight_invalid")
+            )
+            authority = verify_s5_live_authority(
+                _load(paths.authority, "authority_invalid")
+            )
+            consumption = verify_s5_live_authority_consumption(
+                _load(paths.consumption, "consumption_invalid")
+            )
+            predecessor = verify_s5_a0_result(
+                _load(paths.predecessor, "predecessor_invalid")
+            )
+        except Exception:
+            raise _fail("authority_chain_invalid") from None
+        authority_payload = authority["payload"]
+        run = authority_payload.get("run")
+        authority_predecessor = authority_payload.get("predecessor")
+        if (
+            preflight["payload"].get("method") != P_STAR
+            or preflight["payload"].get("production_identity_qualification")
+            != qualification_binding
+            or authority_payload.get("method") != P_STAR
+            or authority_payload.get("production_identity_qualification")
+            != qualification_binding
+            or authority_payload.get("preflight_file_sha256")
+            != _file_sha(paths.preflight, "preflight_invalid")
+            or authority_payload.get("preflight_payload_sha256")
+            != preflight.get("payload_sha256")
+            or authority_payload.get("current_stage_pointer_sha256")
+            != pointer_file_sha
+            or not isinstance(run, Mapping)
+            or run.get("method") != P_STAR
+            or run.get("configured_concurrency") != 2
+            or not isinstance(authority_predecessor, Mapping)
+            or authority_predecessor.get("method") != "A0"
+            or authority_predecessor.get("verdict") != "PASS"
+            or authority_predecessor.get("result_file_sha256")
+            != _file_sha(paths.predecessor, "predecessor_invalid")
+            or authority_predecessor.get("result_payload_sha256")
+            != predecessor.get("payload_sha256")
+            or predecessor["payload"].get("verdict") != "PASS"
+            or consumption["payload"].get("method") != P_STAR
+            or consumption["payload"].get("run") != run
+            or consumption["payload"].get("authority_file_sha256")
+            != _file_sha(paths.authority, "authority_invalid")
+            or consumption["payload"].get("authority_payload_sha256")
+            != authority.get("payload_sha256")
+            or consumption["payload"].get("production_identity_sha256")
+            != identity.get("identity_sha256")
+        ):
+            raise _fail("authority_chain_binding_mismatch")
+        source_binding = authority_payload.get("source_sha256")
+        if (
+            not isinstance(source_binding, Mapping)
+            or source_binding.get("result_verifier")
+            != _file_sha(_RESULT_SOURCE, "result_verifier_source_missing")
+        ):
+            raise _fail("result_verifier_source_binding_mismatch")
+    
+        try:
+            controller = inspect_s5_pstar_controller_attempt(paths.controller_root)
+            attempt = inspect_s5_attempt(paths.attempt_root)
+        except Exception:
+            raise _fail("execution_evidence_invalid") from None
+        controller_events = controller["events"]
+        if (
+            controller["checkpoint"].get("run_id") != run.get("run_id")
+            or controller["checkpoint"].get("status")
+            != "controller_complete_evidence_only"
+            or [event.get("event_type") for event in controller_events]
+            != [
+                "authority_consumed",
+                "runtime_constructed",
+                "runtime_ready",
+                "native_runner_started",
+                "runtime_closed",
+                "raw_runner_evidence_complete",
+            ]
+        ):
+            raise _fail("controller_attempt_incomplete")
+    
+        manifest = attempt["manifest"]
+        native_result = attempt.get("result")
+        native_payload = (
+            native_result.get("payload") if isinstance(native_result, Mapping) else None
+        )
+        source_hashes = manifest.get("source_sha256s")
+        if (
+            manifest.get("run_id") != run.get("run_id")
+            or manifest.get("method") != P_STAR
+            or manifest.get("production_core_identity_sha256")
+            != identity.get("identity_sha256")
+            or not isinstance(source_hashes, list)
+            or len(source_hashes) != 49
+            or not isinstance(native_result, Mapping)
+            or native_result.get("status")
+            not in {"complete", "scientific_outcome_complete"}
+            or not isinstance(native_payload, Mapping)
+            or native_payload.get("status")
+            not in {"PASS", "SCIENTIFIC_OUTCOME_COMPLETE"}
+        ):
+            raise _fail("native_attempt_incomplete")
+        source_manifest = payload_sha256(
+            [
+                {"source_sequence": index, "source_sha256": digest}
+                for index, digest in enumerate(source_hashes)
+            ]
+        )
+        if source_manifest != run.get("source_manifest_sha256"):
+            raise _fail("native_source_manifest_mismatch")
+        spec = S5MethodSpec(
+            run_id=str(run["run_id"]),
+            method=P_STAR,
+            native_path_identity_sha256=str(identity["graphiti_native_source_sha256"]),
+        )
+        episodes = tuple(
+            S5EpisodeRef(index, str(digest), object())
+            for index, digest in enumerate(source_hashes)
+        )
+        try:
+            verified_native = verify_s5_native_method_evidence(
+                native_payload,
+                expected_spec=spec,
+                expected_episodes=episodes,
+            )
+            post = verify_s5_pstar_post_observation(
+                _load(paths.post_observation, "post_observation_invalid")
+            )
+        except Exception:
+&gt;           raise _fail("scientific_evidence_invalid") from None
+E           paper_eval.s5_pstar_result_finalizer.S5PStarFinalizerError: scientific_evidence_invalid
+
+src/paper_eval/s5_pstar_result_finalizer.py:387: S5PStarFinalizerError</failure></testcase><testcase classname="tests.test_s5_pstar_result_finalizer" name="test_full_publication_is_independently_finalized_without_erasing_violations[2-DIRECT_INVARIANT_VIOLATION_OBSERVED]" time="5.870"><failure message="paper_eval.s5_pstar_result_finalizer.S5PStarFinalizerError: scientific_evidence_invalid">tmp_path = PosixPath('/tmp/pytest-of-ly/pytest-404/test_full_publication_is_indep1')
+global_violations = 2, expected_outcome = 'DIRECT_INVARIANT_VIOLATION_OBSERVED'
+
+    @pytest.mark.parametrize(
+        ("global_violations", "expected_outcome"),
+        [
+            (0, "PASS"),
+            (2, "DIRECT_INVARIANT_VIOLATION_OBSERVED"),
+        ],
+    )
+    def test_full_publication_is_independently_finalized_without_erasing_violations(
+        tmp_path: Path,
+        global_violations: int,
+        expected_outcome: str,
+    ) -&gt; None:
+        paths = _completed_chain(tmp_path, global_violations=global_violations)
+    
+&gt;       artifact = finalize_s5_pstar_result(paths=paths, git_commit="deadbeef")
+                   ^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^
+
+tests/test_s5_pstar_result_finalizer.py:145: 
+_ _ _ _ _ _ _ _ _ _ _ _ _ _ _ _ _ _ _ _ _ _ _ _ _ _ _ _ _ _ _ _ _ _ _ _ _ _ _ _ 
+src/paper_eval/s5_pstar_result_finalizer.py:477: in finalize_s5_pstar_result
+    verified = _verify_chain(paths)
+               ^^^^^^^^^^^^^^^^^^^^
+_ _ _ _ _ _ _ _ _ _ _ _ _ _ _ _ _ _ _ _ _ _ _ _ _ _ _ _ _ _ _ _ _ _ _ _ _ _ _ _ 
+
+paths = S5PStarFinalizerPaths(production_identity=PosixPath('/tmp/pytest-of-ly/pytest-404/test_full_publication_is_indep1/iden...xPath('/tmp/pytest-of-ly/pytest-404/test_full_publication_is_indep1/runs/s5-p-star-20260816-101/S5_PSTAR_RESULT.json'))
+
+    def _verify_chain(paths: S5PStarFinalizerPaths) -&gt; dict[str, object]:
+        if not isinstance(paths, S5PStarFinalizerPaths):
+            raise _fail("finalizer_paths_invalid")
+        if Path(paths.result).exists():
+            raise _fail("result_exists")
+        try:
+            identity = verify_s5_production_identity(
+                _load(paths.production_identity, "production_identity_invalid")
+            )
+            qualification = verify_s5_production_identity_qualification(
+                _load(
+                    paths.production_identity_qualification,
+                    "production_identity_qualification_invalid",
+                )
+            )
+            qualification_binding = bind_s5_production_identity_qualification(
+                qualification,
+                file_sha256=_file_sha(
+                    paths.production_identity_qualification,
+                    "production_identity_qualification_invalid",
+                ),
+            )
+        except Exception:
+            raise _fail("production_identity_chain_invalid") from None
+        identity_file_sha = _file_sha(
+            paths.production_identity, "production_identity_invalid"
+        )
+        if (
+            identity.get("method") != P_STAR
+            or qualification_binding.get("method") != P_STAR
+            or qualification_binding.get("production_identity_sha256")
+            != identity.get("identity_sha256")
+            or qualification_binding.get("production_identity_file_sha256")
+            != identity_file_sha
+        ):
+            raise _fail("production_identity_binding_mismatch")
+    
+        pointer, pointer_file_sha = _pointer(paths.current_stage_pointer)
+        if qualification_binding.get("current_stage_pointer") != {
+            "file_sha256": pointer_file_sha,
+            "payload_sha256": pointer.get("payload_sha256"),
+            "run_id": pointer.get("run_id"),
+            "current_stage": "S3_CONFIGURATION_FROZEN",
+        }:
+            raise _fail("qualification_pointer_binding_mismatch")
+        try:
+            preflight = verify_s5_live_preflight(
+                _load(paths.preflight, "preflight_invalid")
+            )
+            authority = verify_s5_live_authority(
+                _load(paths.authority, "authority_invalid")
+            )
+            consumption = verify_s5_live_authority_consumption(
+                _load(paths.consumption, "consumption_invalid")
+            )
+            predecessor = verify_s5_a0_result(
+                _load(paths.predecessor, "predecessor_invalid")
+            )
+        except Exception:
+            raise _fail("authority_chain_invalid") from None
+        authority_payload = authority["payload"]
+        run = authority_payload.get("run")
+        authority_predecessor = authority_payload.get("predecessor")
+        if (
+            preflight["payload"].get("method") != P_STAR
+            or preflight["payload"].get("production_identity_qualification")
+            != qualification_binding
+            or authority_payload.get("method") != P_STAR
+            or authority_payload.get("production_identity_qualification")
+            != qualification_binding
+            or authority_payload.get("preflight_file_sha256")
+            != _file_sha(paths.preflight, "preflight_invalid")
+            or authority_payload.get("preflight_payload_sha256")
+            != preflight.get("payload_sha256")
+            or authority_payload.get("current_stage_pointer_sha256")
+            != pointer_file_sha
+            or not isinstance(run, Mapping)
+            or run.get("method") != P_STAR
+            or run.get("configured_concurrency") != 2
+            or not isinstance(authority_predecessor, Mapping)
+            or authority_predecessor.get("method") != "A0"
+            or authority_predecessor.get("verdict") != "PASS"
+            or authority_predecessor.get("result_file_sha256")
+            != _file_sha(paths.predecessor, "predecessor_invalid")
+            or authority_predecessor.get("result_payload_sha256")
+            != predecessor.get("payload_sha256")
+            or predecessor["payload"].get("verdict") != "PASS"
+            or consumption["payload"].get("method") != P_STAR
+            or consumption["payload"].get("run") != run
+            or consumption["payload"].get("authority_file_sha256")
+            != _file_sha(paths.authority, "authority_invalid")
+            or consumption["payload"].get("authority_payload_sha256")
+            != authority.get("payload_sha256")
+            or consumption["payload"].get("production_identity_sha256")
+            != identity.get("identity_sha256")
+        ):
+            raise _fail("authority_chain_binding_mismatch")
+        source_binding = authority_payload.get("source_sha256")
+        if (
+            not isinstance(source_binding, Mapping)
+            or source_binding.get("result_verifier")
+            != _file_sha(_RESULT_SOURCE, "result_verifier_source_missing")
+        ):
+            raise _fail("result_verifier_source_binding_mismatch")
+    
+        try:
+            controller = inspect_s5_pstar_controller_attempt(paths.controller_root)
+            attempt = inspect_s5_attempt(paths.attempt_root)
+        except Exception:
+            raise _fail("execution_evidence_invalid") from None
+        controller_events = controller["events"]
+        if (
+            controller["checkpoint"].get("run_id") != run.get("run_id")
+            or controller["checkpoint"].get("status")
+            != "controller_complete_evidence_only"
+            or [event.get("event_type") for event in controller_events]
+            != [
+                "authority_consumed",
+                "runtime_constructed",
+                "runtime_ready",
+                "native_runner_started",
+                "runtime_closed",
+                "raw_runner_evidence_complete",
+            ]
+        ):
+            raise _fail("controller_attempt_incomplete")
+    
+        manifest = attempt["manifest"]
+        native_result = attempt.get("result")
+        native_payload = (
+            native_result.get("payload") if isinstance(native_result, Mapping) else None
+        )
+        source_hashes = manifest.get("source_sha256s")
+        if (
+            manifest.get("run_id") != run.get("run_id")
+            or manifest.get("method") != P_STAR
+            or manifest.get("production_core_identity_sha256")
+            != identity.get("identity_sha256")
+            or not isinstance(source_hashes, list)
+            or len(source_hashes) != 49
+            or not isinstance(native_result, Mapping)
+            or native_result.get("status")
+            not in {"complete", "scientific_outcome_complete"}
+            or not isinstance(native_payload, Mapping)
+            or native_payload.get("status")
+            not in {"PASS", "SCIENTIFIC_OUTCOME_COMPLETE"}
+        ):
+            raise _fail("native_attempt_incomplete")
+        source_manifest = payload_sha256(
+            [
+                {"source_sequence": index, "source_sha256": digest}
+                for index, digest in enumerate(source_hashes)
+            ]
+        )
+        if source_manifest != run.get("source_manifest_sha256"):
+            raise _fail("native_source_manifest_mismatch")
+        spec = S5MethodSpec(
+            run_id=str(run["run_id"]),
+            method=P_STAR,
+            native_path_identity_sha256=str(identity["graphiti_native_source_sha256"]),
+        )
+        episodes = tuple(
+            S5EpisodeRef(index, str(digest), object())
+            for index, digest in enumerate(source_hashes)
+        )
+        try:
+            verified_native = verify_s5_native_method_evidence(
+                native_payload,
+                expected_spec=spec,
+                expected_episodes=episodes,
+            )
+            post = verify_s5_pstar_post_observation(
+                _load(paths.post_observation, "post_observation_invalid")
+            )
+        except Exception:
+&gt;           raise _fail("scientific_evidence_invalid") from None
+E           paper_eval.s5_pstar_result_finalizer.S5PStarFinalizerError: scientific_evidence_invalid
+
+src/paper_eval/s5_pstar_result_finalizer.py:387: S5PStarFinalizerError</failure></testcase><testcase classname="tests.test_s5_pstar_result_finalizer" name="test_treatment_failure_is_a_complete_scientific_outcome_with_exact_accounting" time="7.761"><failure message="paper_eval.s5_pstar_result_finalizer.S5PStarFinalizerError: scientific_evidence_invalid">tmp_path = PosixPath('/tmp/pytest-of-ly/pytest-404/test_treatment_failure_is_a_co0')
+
+    def test_treatment_failure_is_a_complete_scientific_outcome_with_exact_accounting(
+        tmp_path: Path,
+    ) -&gt; None:
+        paths = _completed_chain(tmp_path, fail_source=1)
+    
+        checked = verify_s5_pstar_result(
+&gt;           finalize_s5_pstar_result(paths=paths, git_commit="deadbeef")
+        )
+
+tests/test_s5_pstar_result_finalizer.py:169: 
+_ _ _ _ _ _ _ _ _ _ _ _ _ _ _ _ _ _ _ _ _ _ _ _ _ _ _ _ _ _ _ _ _ _ _ _ _ _ _ _ 
+src/paper_eval/s5_pstar_result_finalizer.py:477: in finalize_s5_pstar_result
+    verified = _verify_chain(paths)
+               ^^^^^^^^^^^^^^^^^^^^
+_ _ _ _ _ _ _ _ _ _ _ _ _ _ _ _ _ _ _ _ _ _ _ _ _ _ _ _ _ _ _ _ _ _ _ _ _ _ _ _ 
+
+paths = S5PStarFinalizerPaths(production_identity=PosixPath('/tmp/pytest-of-ly/pytest-404/test_treatment_failure_is_a_co0/iden...xPath('/tmp/pytest-of-ly/pytest-404/test_treatment_failure_is_a_co0/runs/s5-p-star-20260816-101/S5_PSTAR_RESULT.json'))
+
+    def _verify_chain(paths: S5PStarFinalizerPaths) -&gt; dict[str, object]:
+        if not isinstance(paths, S5PStarFinalizerPaths):
+            raise _fail("finalizer_paths_invalid")
+        if Path(paths.result).exists():
+            raise _fail("result_exists")
+        try:
+            identity = verify_s5_production_identity(
+                _load(paths.production_identity, "production_identity_invalid")
+            )
+            qualification = verify_s5_production_identity_qualification(
+                _load(
+                    paths.production_identity_qualification,
+                    "production_identity_qualification_invalid",
+                )
+            )
+            qualification_binding = bind_s5_production_identity_qualification(
+                qualification,
+                file_sha256=_file_sha(
+                    paths.production_identity_qualification,
+                    "production_identity_qualification_invalid",
+                ),
+            )
+        except Exception:
+            raise _fail("production_identity_chain_invalid") from None
+        identity_file_sha = _file_sha(
+            paths.production_identity, "production_identity_invalid"
+        )
+        if (
+            identity.get("method") != P_STAR
+            or qualification_binding.get("method") != P_STAR
+            or qualification_binding.get("production_identity_sha256")
+            != identity.get("identity_sha256")
+            or qualification_binding.get("production_identity_file_sha256")
+            != identity_file_sha
+        ):
+            raise _fail("production_identity_binding_mismatch")
+    
+        pointer, pointer_file_sha = _pointer(paths.current_stage_pointer)
+        if qualification_binding.get("current_stage_pointer") != {
+            "file_sha256": pointer_file_sha,
+            "payload_sha256": pointer.get("payload_sha256"),
+            "run_id": pointer.get("run_id"),
+            "current_stage": "S3_CONFIGURATION_FROZEN",
+        }:
+            raise _fail("qualification_pointer_binding_mismatch")
+        try:
+            preflight = verify_s5_live_preflight(
+                _load(paths.preflight, "preflight_invalid")
+            )
+            authority = verify_s5_live_authority(
+                _load(paths.authority, "authority_invalid")
+            )
+            consumption = verify_s5_live_authority_consumption(
+                _load(paths.consumption, "consumption_invalid")
+            )
+            predecessor = verify_s5_a0_result(
+                _load(paths.predecessor, "predecessor_invalid")
+            )
+        except Exception:
+            raise _fail("authority_chain_invalid") from None
+        authority_payload = authority["payload"]
+        run = authority_payload.get("run")
+        authority_predecessor = authority_payload.get("predecessor")
+        if (
+            preflight["payload"].get("method") != P_STAR
+            or preflight["payload"].get("production_identity_qualification")
+            != qualification_binding
+            or authority_payload.get("method") != P_STAR
+            or authority_payload.get("production_identity_qualification")
+            != qualification_binding
+            or authority_payload.get("preflight_file_sha256")
+            != _file_sha(paths.preflight, "preflight_invalid")
+            or authority_payload.get("preflight_payload_sha256")
+            != preflight.get("payload_sha256")
+            or authority_payload.get("current_stage_pointer_sha256")
+            != pointer_file_sha
+            or not isinstance(run, Mapping)
+            or run.get("method") != P_STAR
+            or run.get("configured_concurrency") != 2
+            or not isinstance(authority_predecessor, Mapping)
+            or authority_predecessor.get("method") != "A0"
+            or authority_predecessor.get("verdict") != "PASS"
+            or authority_predecessor.get("result_file_sha256")
+            != _file_sha(paths.predecessor, "predecessor_invalid")
+            or authority_predecessor.get("result_payload_sha256")
+            != predecessor.get("payload_sha256")
+            or predecessor["payload"].get("verdict") != "PASS"
+            or consumption["payload"].get("method") != P_STAR
+            or consumption["payload"].get("run") != run
+            or consumption["payload"].get("authority_file_sha256")
+            != _file_sha(paths.authority, "authority_invalid")
+            or consumption["payload"].get("authority_payload_sha256")
+            != authority.get("payload_sha256")
+            or consumption["payload"].get("production_identity_sha256")
+            != identity.get("identity_sha256")
+        ):
+            raise _fail("authority_chain_binding_mismatch")
+        source_binding = authority_payload.get("source_sha256")
+        if (
+            not isinstance(source_binding, Mapping)
+            or source_binding.get("result_verifier")
+            != _file_sha(_RESULT_SOURCE, "result_verifier_source_missing")
+        ):
+            raise _fail("result_verifier_source_binding_mismatch")
+    
+        try:
+            controller = inspect_s5_pstar_controller_attempt(paths.controller_root)
+            attempt = inspect_s5_attempt(paths.attempt_root)
+        except Exception:
+            raise _fail("execution_evidence_invalid") from None
+        controller_events = controller["events"]
+        if (
+            controller["checkpoint"].get("run_id") != run.get("run_id")
+            or controller["checkpoint"].get("status")
+            != "controller_complete_evidence_only"
+            or [event.get("event_type") for event in controller_events]
+            != [
+                "authority_consumed",
+                "runtime_constructed",
+                "runtime_ready",
+                "native_runner_started",
+                "runtime_closed",
+                "raw_runner_evidence_complete",
+            ]
+        ):
+            raise _fail("controller_attempt_incomplete")
+    
+        manifest = attempt["manifest"]
+        native_result = attempt.get("result")
+        native_payload = (
+            native_result.get("payload") if isinstance(native_result, Mapping) else None
+        )
+        source_hashes = manifest.get("source_sha256s")
+        if (
+            manifest.get("run_id") != run.get("run_id")
+            or manifest.get("method") != P_STAR
+            or manifest.get("production_core_identity_sha256")
+            != identity.get("identity_sha256")
+            or not isinstance(source_hashes, list)
+            or len(source_hashes) != 49
+            or not isinstance(native_result, Mapping)
+            or native_result.get("status")
+            not in {"complete", "scientific_outcome_complete"}
+            or not isinstance(native_payload, Mapping)
+            or native_payload.get("status")
+            not in {"PASS", "SCIENTIFIC_OUTCOME_COMPLETE"}
+        ):
+            raise _fail("native_attempt_incomplete")
+        source_manifest = payload_sha256(
+            [
+                {"source_sequence": index, "source_sha256": digest}
+                for index, digest in enumerate(source_hashes)
+            ]
+        )
+        if source_manifest != run.get("source_manifest_sha256"):
+            raise _fail("native_source_manifest_mismatch")
+        spec = S5MethodSpec(
+            run_id=str(run["run_id"]),
+            method=P_STAR,
+            native_path_identity_sha256=str(identity["graphiti_native_source_sha256"]),
+        )
+        episodes = tuple(
+            S5EpisodeRef(index, str(digest), object())
+            for index, digest in enumerate(source_hashes)
+        )
+        try:
+            verified_native = verify_s5_native_method_evidence(
+                native_payload,
+                expected_spec=spec,
+                expected_episodes=episodes,
+            )
+            post = verify_s5_pstar_post_observation(
+                _load(paths.post_observation, "post_observation_invalid")
+            )
+        except Exception:
+&gt;           raise _fail("scientific_evidence_invalid") from None
+E           paper_eval.s5_pstar_result_finalizer.S5PStarFinalizerError: scientific_evidence_invalid
+
+src/paper_eval/s5_pstar_result_finalizer.py:387: S5PStarFinalizerError</failure></testcase><testcase classname="tests.test_s5_pstar_result_finalizer" name="test_finalizer_rejects_post_observation_or_predecessor_drift" time="6.709" /><testcase classname="tests.test_s5_pstar_result_finalizer" name="test_result_write_is_exclusive_and_standalone_tampering_fails" time="10.501"><failure message="paper_eval.s5_pstar_result_finalizer.S5PStarFinalizerError: scientific_evidence_invalid">tmp_path = PosixPath('/tmp/pytest-of-ly/pytest-404/test_result_write_is_exclusive0')
+
+    def test_result_write_is_exclusive_and_standalone_tampering_fails(
+        tmp_path: Path,
+    ) -&gt; None:
+        paths = _completed_chain(tmp_path)
+&gt;       artifact = finalize_s5_pstar_result(paths=paths, git_commit="deadbeef")
+                   ^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^
+
+tests/test_s5_pstar_result_finalizer.py:204: 
+_ _ _ _ _ _ _ _ _ _ _ _ _ _ _ _ _ _ _ _ _ _ _ _ _ _ _ _ _ _ _ _ _ _ _ _ _ _ _ _ 
+src/paper_eval/s5_pstar_result_finalizer.py:477: in finalize_s5_pstar_result
+    verified = _verify_chain(paths)
+               ^^^^^^^^^^^^^^^^^^^^
+_ _ _ _ _ _ _ _ _ _ _ _ _ _ _ _ _ _ _ _ _ _ _ _ _ _ _ _ _ _ _ _ _ _ _ _ _ _ _ _ 
+
+paths = S5PStarFinalizerPaths(production_identity=PosixPath('/tmp/pytest-of-ly/pytest-404/test_result_write_is_exclusive0/iden...xPath('/tmp/pytest-of-ly/pytest-404/test_result_write_is_exclusive0/runs/s5-p-star-20260816-101/S5_PSTAR_RESULT.json'))
+
+    def _verify_chain(paths: S5PStarFinalizerPaths) -&gt; dict[str, object]:
+        if not isinstance(paths, S5PStarFinalizerPaths):
+            raise _fail("finalizer_paths_invalid")
+        if Path(paths.result).exists():
+            raise _fail("result_exists")
+        try:
+            identity = verify_s5_production_identity(
+                _load(paths.production_identity, "production_identity_invalid")
+            )
+            qualification = verify_s5_production_identity_qualification(
+                _load(
+                    paths.production_identity_qualification,
+                    "production_identity_qualification_invalid",
+                )
+            )
+            qualification_binding = bind_s5_production_identity_qualification(
+                qualification,
+                file_sha256=_file_sha(
+                    paths.production_identity_qualification,
+                    "production_identity_qualification_invalid",
+                ),
+            )
+        except Exception:
+            raise _fail("production_identity_chain_invalid") from None
+        identity_file_sha = _file_sha(
+            paths.production_identity, "production_identity_invalid"
+        )
+        if (
+            identity.get("method") != P_STAR
+            or qualification_binding.get("method") != P_STAR
+            or qualification_binding.get("production_identity_sha256")
+            != identity.get("identity_sha256")
+            or qualification_binding.get("production_identity_file_sha256")
+            != identity_file_sha
+        ):
+            raise _fail("production_identity_binding_mismatch")
+    
+        pointer, pointer_file_sha = _pointer(paths.current_stage_pointer)
+        if qualification_binding.get("current_stage_pointer") != {
+            "file_sha256": pointer_file_sha,
+            "payload_sha256": pointer.get("payload_sha256"),
+            "run_id": pointer.get("run_id"),
+            "current_stage": "S3_CONFIGURATION_FROZEN",
+        }:
+            raise _fail("qualification_pointer_binding_mismatch")
+        try:
+            preflight = verify_s5_live_preflight(
+                _load(paths.preflight, "preflight_invalid")
+            )
+            authority = verify_s5_live_authority(
+                _load(paths.authority, "authority_invalid")
+            )
+            consumption = verify_s5_live_authority_consumption(
+                _load(paths.consumption, "consumption_invalid")
+            )
+            predecessor = verify_s5_a0_result(
+                _load(paths.predecessor, "predecessor_invalid")
+            )
+        except Exception:
+            raise _fail("authority_chain_invalid") from None
+        authority_payload = authority["payload"]
+        run = authority_payload.get("run")
+        authority_predecessor = authority_payload.get("predecessor")
+        if (
+            preflight["payload"].get("method") != P_STAR
+            or preflight["payload"].get("production_identity_qualification")
+            != qualification_binding
+            or authority_payload.get("method") != P_STAR
+            or authority_payload.get("production_identity_qualification")
+            != qualification_binding
+            or authority_payload.get("preflight_file_sha256")
+            != _file_sha(paths.preflight, "preflight_invalid")
+            or authority_payload.get("preflight_payload_sha256")
+            != preflight.get("payload_sha256")
+            or authority_payload.get("current_stage_pointer_sha256")
+            != pointer_file_sha
+            or not isinstance(run, Mapping)
+            or run.get("method") != P_STAR
+            or run.get("configured_concurrency") != 2
+            or not isinstance(authority_predecessor, Mapping)
+            or authority_predecessor.get("method") != "A0"
+            or authority_predecessor.get("verdict") != "PASS"
+            or authority_predecessor.get("result_file_sha256")
+            != _file_sha(paths.predecessor, "predecessor_invalid")
+            or authority_predecessor.get("result_payload_sha256")
+            != predecessor.get("payload_sha256")
+            or predecessor["payload"].get("verdict") != "PASS"
+            or consumption["payload"].get("method") != P_STAR
+            or consumption["payload"].get("run") != run
+            or consumption["payload"].get("authority_file_sha256")
+            != _file_sha(paths.authority, "authority_invalid")
+            or consumption["payload"].get("authority_payload_sha256")
+            != authority.get("payload_sha256")
+            or consumption["payload"].get("production_identity_sha256")
+            != identity.get("identity_sha256")
+        ):
+            raise _fail("authority_chain_binding_mismatch")
+        source_binding = authority_payload.get("source_sha256")
+        if (
+            not isinstance(source_binding, Mapping)
+            or source_binding.get("result_verifier")
+            != _file_sha(_RESULT_SOURCE, "result_verifier_source_missing")
+        ):
+            raise _fail("result_verifier_source_binding_mismatch")
+    
+        try:
+            controller = inspect_s5_pstar_controller_attempt(paths.controller_root)
+            attempt = inspect_s5_attempt(paths.attempt_root)
+        except Exception:
+            raise _fail("execution_evidence_invalid") from None
+        controller_events = controller["events"]
+        if (
+            controller["checkpoint"].get("run_id") != run.get("run_id")
+            or controller["checkpoint"].get("status")
+            != "controller_complete_evidence_only"
+            or [event.get("event_type") for event in controller_events]
+            != [
+                "authority_consumed",
+                "runtime_constructed",
+                "runtime_ready",
+                "native_runner_started",
+                "runtime_closed",
+                "raw_runner_evidence_complete",
+            ]
+        ):
+            raise _fail("controller_attempt_incomplete")
+    
+        manifest = attempt["manifest"]
+        native_result = attempt.get("result")
+        native_payload = (
+            native_result.get("payload") if isinstance(native_result, Mapping) else None
+        )
+        source_hashes = manifest.get("source_sha256s")
+        if (
+            manifest.get("run_id") != run.get("run_id")
+            or manifest.get("method") != P_STAR
+            or manifest.get("production_core_identity_sha256")
+            != identity.get("identity_sha256")
+            or not isinstance(source_hashes, list)
+            or len(source_hashes) != 49
+            or not isinstance(native_result, Mapping)
+            or native_result.get("status")
+            not in {"complete", "scientific_outcome_complete"}
+            or not isinstance(native_payload, Mapping)
+            or native_payload.get("status")
+            not in {"PASS", "SCIENTIFIC_OUTCOME_COMPLETE"}
+        ):
+            raise _fail("native_attempt_incomplete")
+        source_manifest = payload_sha256(
+            [
+                {"source_sequence": index, "source_sha256": digest}
+                for index, digest in enumerate(source_hashes)
+            ]
+        )
+        if source_manifest != run.get("source_manifest_sha256"):
+            raise _fail("native_source_manifest_mismatch")
+        spec = S5MethodSpec(
+            run_id=str(run["run_id"]),
+            method=P_STAR,
+            native_path_identity_sha256=str(identity["graphiti_native_source_sha256"]),
+        )
+        episodes = tuple(
+            S5EpisodeRef(index, str(digest), object())
+            for index, digest in enumerate(source_hashes)
+        )
+        try:
+            verified_native = verify_s5_native_method_evidence(
+                native_payload,
+                expected_spec=spec,
+                expected_episodes=episodes,
+            )
+            post = verify_s5_pstar_post_observation(
+                _load(paths.post_observation, "post_observation_invalid")
+            )
+        except Exception:
+&gt;           raise _fail("scientific_evidence_invalid") from None
+E           paper_eval.s5_pstar_result_finalizer.S5PStarFinalizerError: scientific_evidence_invalid
+
+src/paper_eval/s5_pstar_result_finalizer.py:387: S5PStarFinalizerError</failure></testcase></testsuite></testsuites>

@@ -9,6 +9,7 @@ import pytest
 from paper_eval.s5_method_smoke_contract import (
     S5SmokeContractError,
     mstar_pipeline_to_smoke_records,
+    native_method_to_smoke_records,
     validate_smoke_records,
 )
 
@@ -144,4 +145,188 @@ def test_mstar_pipeline_projection_fails_closed_on_missing_phase() -> None:
                 "status": "PASS",
                 "events": [{"event_type": "intent", "source_sequence": 0, "logical_time_ns": 1}],
             }
+        )
+
+
+def test_native_a0_evidence_projects_into_the_common_smoke_contract() -> None:
+    evidence = {
+        "method": "A0",
+        "status": "PASS",
+        "events": [
+            {
+                "event_sequence": 0,
+                "event_type": "intent",
+                "source_sequence": 0,
+                "intent_timestamp_ns": 10,
+            },
+            {
+                "event_sequence": 1,
+                "event_type": "caller_return",
+                "source_sequence": 0,
+                "durable_enqueue_ack_timestamp_ns": 11,
+                "caller_return_timestamp_ns": 11,
+            },
+            {
+                "event_sequence": 2,
+                "event_type": "publication",
+                "source_sequence": 0,
+                "worker_id": 0,
+                "service_start_timestamp_ns": 12,
+                "publish_timestamp_ns": 20,
+                "caller_return_timestamp_ns": 11,
+            },
+            {
+                "event_sequence": 3,
+                "event_type": "terminal_success",
+                "expected_episode_count": 1,
+            },
+        ],
+    }
+
+    records = native_method_to_smoke_records(
+        evidence, direct_invariant_violations={0: 0}
+    )
+    result = validate_smoke_records(
+        "A0", expected_source_sequences=[0], records=records
+    )
+
+    assert result["status"] == "PASS"
+    assert result["post_return_stale_window_ns"] == [9]
+    assert records[0]["intent_written"] is True
+    assert records[0]["publication_written"] is True
+
+
+def test_native_p_projection_binds_explicit_invariant_observations() -> None:
+    evidence = {
+        "method": "P*",
+        "status": "PASS",
+        "events": [
+            {
+                "event_sequence": 0,
+                "event_type": "intent",
+                "source_sequence": 0,
+                "intent_timestamp_ns": 10,
+            },
+            {
+                "event_sequence": 1,
+                "event_type": "intent",
+                "source_sequence": 1,
+                "intent_timestamp_ns": 11,
+            },
+            {
+                "event_sequence": 2,
+                "event_type": "publication",
+                "source_sequence": 1,
+                "worker_id": 1,
+                "service_start_timestamp_ns": 12,
+                "publish_timestamp_ns": 20,
+                "caller_return_timestamp_ns": 20,
+            },
+            {
+                "event_sequence": 3,
+                "event_type": "publication",
+                "source_sequence": 0,
+                "worker_id": 0,
+                "service_start_timestamp_ns": 12,
+                "publish_timestamp_ns": 30,
+                "caller_return_timestamp_ns": 30,
+            },
+            {
+                "event_sequence": 4,
+                "event_type": "terminal_success",
+                "expected_episode_count": 2,
+            },
+        ],
+    }
+
+    records = native_method_to_smoke_records(
+        evidence, direct_invariant_violations={0: 1, 1: 0}
+    )
+    result = validate_smoke_records(
+        "P*", expected_source_sequences=[0, 1], records=records
+    )
+
+    assert result["whole_update_overlap_observed"] is True
+    assert result["direct_invariant_violation_count"] == 1
+
+
+def test_native_projection_rejects_missing_durable_or_publication_event() -> None:
+    with pytest.raises(S5SmokeContractError, match="incomplete"):
+        native_method_to_smoke_records(
+            {
+                "method": "A0",
+                "status": "PASS",
+                "events": [
+                    {
+                        "event_sequence": 0,
+                        "event_type": "intent",
+                        "source_sequence": 0,
+                        "intent_timestamp_ns": 10,
+                    },
+                    {
+                        "event_sequence": 1,
+                        "event_type": "terminal_success",
+                        "expected_episode_count": 1,
+                    },
+                ],
+            },
+            direct_invariant_violations={0: 0},
+        )
+
+
+def test_native_projection_requires_explicit_complete_invariant_observation() -> None:
+    evidence = {
+        "method": "A0",
+        "status": "PASS",
+        "events": [
+            {
+                "event_sequence": 0,
+                "event_type": "intent",
+                "source_sequence": 0,
+                "intent_timestamp_ns": 10,
+            },
+            {
+                "event_sequence": 1,
+                "event_type": "caller_return",
+                "source_sequence": 0,
+                "durable_enqueue_ack_timestamp_ns": 11,
+                "caller_return_timestamp_ns": 11,
+            },
+            {
+                "event_sequence": 2,
+                "event_type": "publication",
+                "source_sequence": 0,
+                "worker_id": 0,
+                "service_start_timestamp_ns": 12,
+                "publish_timestamp_ns": 20,
+                "caller_return_timestamp_ns": 11,
+            },
+            {
+                "event_sequence": 3,
+                "event_type": "terminal_success",
+                "expected_episode_count": 1,
+            },
+        ],
+    }
+
+    with pytest.raises(S5SmokeContractError, match="invariant coverage"):
+        native_method_to_smoke_records(evidence)
+    with pytest.raises(S5SmokeContractError, match="invariant coverage"):
+        native_method_to_smoke_records(
+            evidence, direct_invariant_violations={}
+        )
+
+
+def test_a0_requires_caller_return_to_precede_publication_strictly() -> None:
+    record = _record(
+        0,
+        method="A0",
+        worker=0,
+        caller_return=20,
+        publish=20,
+    )
+
+    with pytest.raises(S5SmokeContractError, match="timestamp separation"):
+        validate_smoke_records(
+            "A0", expected_source_sequences=[0], records=[record]
         )

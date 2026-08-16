@@ -1,0 +1,95 @@
+{
+  "git_commit": "568afb26053a5f8fb133e29f0583eaa524dad1bd",
+  "payload": {
+    "authority": {
+      "current_stage_pointer_update_authorized": false,
+      "embedding_call_authorized": false,
+      "formal_execution_authorized": false,
+      "model_call_authorized": false,
+      "neo4j_mutation_authorized": false,
+      "neo4j_read_authorized": false,
+      "pilot_execution_authorized": false,
+      "s5_live_execution_authorized": false,
+      "s5_read_only_preflight_authorized": false
+    },
+    "baseline_id": "native-graphiti-u0-reader-v2",
+    "construction": {
+      "dtype": "bfloat16",
+      "enable_thinking": false,
+      "max_model_len": 65536,
+      "quantization": "fp8",
+      "repository_revision": "aa55da1ecc13d006e8b8e4f54579b1ea8c3db2df",
+      "requested_max_tokens": 16384,
+      "rope_parameters": {
+        "factor": 2.0,
+        "original_max_position_embeddings": 32768,
+        "rope_theta": 1000000,
+        "rope_type": "yarn"
+      },
+      "served_model_id": "qwen3-32b-fp8",
+      "structured_output_mode": "json_schema",
+      "vllm_version": "0.26.0"
+    },
+    "current_stage_pointer_file_sha256": "3cb7edad4bab3ac6fe961a3d9e8768cbb962cf61cf946cb7e0015d74c0edc26d",
+    "current_stage_pointer_payload_sha256": "da17c5dae889d0a0d0e51b2f5bbd478e7a79d50ccf33450ca43f32c34b6dcdcc",
+    "derived_from_a0": {
+      "file_sha256": "2e92e4e88152ed113b6c923335fd863689f19ffc5c3e01e1cd549379e99f1591",
+      "payload_sha256": "94a6b89a13e2e6cdf34c8175d177737646a90a9166821df773285a05f99cbd3a"
+    },
+    "embedding": {
+      "deployment_fingerprint": "5f5a8400eeaa2f07d167d8b5b7e63d615945a8f54f506e02342840cd4e3fe626",
+      "dimension": 1024,
+      "dtype": "bfloat16",
+      "instruction_policy": "none",
+      "normalization": "l2",
+      "pooling": "last_token",
+      "served_model_id": "qwen3-embedding-0.6b"
+    },
+    "episode_count": 49,
+    "failure_policy": {
+      "db_commit_idempotence_claimed": false,
+      "failed_attempt_status": "incomplete_non_mergeable",
+      "fresh_attempt_required": true,
+      "resume_authorized": false
+    },
+    "graphiti": {
+      "repository_commit": "021d3a57d511f21b10adaf7fa923bd5c1fce5e9d",
+      "version": "0.29.3"
+    },
+    "graphiti_semantic_api_sha256": "06909217defc448d7dd380f051b6b282fbb9a8a021c337f998c395fc9bb196fa",
+    "graphiti_semantic_identity_file_sha256": "8a7d6e5b2b9280bf4cf809d8cc724324153ca5a7c0cabad35d9a7eca7f81adb1",
+    "history_id": "07741c45",
+    "method": "P*",
+    "method_policy": {
+      "configured_concurrency": 2,
+      "scheduler": "WHOLE_UPDATE_TWO_WORKERS",
+      "serial_source_order": false,
+      "whole_update_parallel": true
+    },
+    "native_baseline_freeze_file_sha256": "3e935af2cb353fb59c4cf58ddec7e44a73387f88410d805324636b76daf2d5e6",
+    "native_baseline_freeze_payload_sha256": "b05720b834e53f2ab8172249b445afddc37ac8356f19674625e1129823c19da7",
+    "neo4j": {
+      "deployment": "local_non_docker_community",
+      "live_readiness_checked_by_s0": false,
+      "uri": "bolt://localhost:7687",
+      "version": "5.26.0"
+    },
+    "runtime_factory_entrypoint": "native_characterization_runtime.build_u0_graphiti_from_env",
+    "schema_version": "membind.paper-eval-v3.s5-pstar-runtime-config.v1",
+    "source_closure_sha256": {
+      "dataset_builder": "0dc97963f4e6143b555853d6061967b6e7606d36e0cba66acc70e27ba0a4d163",
+      "durable_store": "fa20e889fab25e7aa462c7451d9ee50410928030ee123d8d624912b1d6947b35",
+      "durable_store_test": "74919ee538354c1931d1b0a568e021e0b06353dfa99160573434569a45048879",
+      "graphiti_native": "f25141000494a8899a40b87f2bf5fb5e5cb519ab2d480d72973aeaf9e0d9c8cc",
+      "runtime_factory": "4d6bad43289d7cbf9557aed05571601bdfa560855ed1403b0e4a72770ae57ca1",
+      "scheduler": "e5e563e1ce157831ffbf38a5cb80e7fa1d4531bbc0f642a8769fb07cc3701bce",
+      "scheduler_test": "b2f09aa5fb572642f2d52c28436d8dc327a2f7df27d63a89ee3fb2806a125b1b"
+    },
+    "stage": "S5",
+    "status": "FROZEN_IDENTITY_ONLY"
+  },
+  "payload_sha256": "ac98a4890bef9785c0821e9153f2003cbb5b6a0b9d3e020394a003eca54fab6f",
+  "protocol_version": "paper-eval-v3",
+  "run_id": "s5-p-star-production-identity-formal-chain-fresh-20260816-001-runtime-config",
+  "status": "finalized"
+}

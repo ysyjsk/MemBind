@@ -1,0 +1,6 @@
+<?xml version="1.0" encoding="utf-8"?><testsuites name="pytest tests"><testsuite name="pytest" errors="0" failures="1" skipped="0" tests="1" time="0.032" timestamp="2026-08-16T02:27:56.738783+08:00" hostname="aces-System-Product-Name"><testcase classname="tests.test_s5_mstar_live_semantic_adapter" name="test_materialization_rejects_monotonic_clock_as_semantic_epoch" time="0.000"><failure message="Failed: DID NOT RAISE S5MStarLiveSemanticAdapterError">def test_materialization_rejects_monotonic_clock_as_semantic_epoch() -&gt; None:
+        episodes = tuple(_episode(index) for index in range(49))
+&gt;       with pytest.raises(S5MStarLiveSemanticAdapterError, match="epoch_clock"):
+E       Failed: DID NOT RAISE S5MStarLiveSemanticAdapterError
+
+tests/test_s5_mstar_live_semantic_adapter.py:203: Failed</failure></testcase></testsuite></testsuites>

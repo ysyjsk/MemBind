@@ -8,6 +8,7 @@ live method smoke; those actions remain behind the future authority layer.
 from __future__ import annotations
 
 import asyncio
+import json
 from pathlib import Path
 
 import pytest
@@ -22,7 +23,7 @@ from paper_eval.s5_production_runner import (
     verify_s5_production_identity,
 )
 from paper_eval.s5_native_method_adapters import S5EpisodeRef, S5MethodSpec
-from paper_eval.s5_durable_attempt_store import inspect_s5_attempt
+from paper_eval.s5_durable_attempt_store import S5StoreError, inspect_s5_attempt
 
 
 SHA = "a" * 64
@@ -246,6 +247,54 @@ def test_native_failure_is_persisted_as_incomplete_and_never_resumable(tmp_path:
     inspected = inspect_s5_attempt(tmp_path / "failed")
     assert inspected["result"]["status"] == "incomplete_non_mergeable"
     assert inspected["checkpoint"]["resume_authorized"] is False
+
+
+def test_p_treatment_failure_is_sealed_as_complete_scientific_outcome(
+    tmp_path: Path,
+) -> None:
+    spec = S5MethodSpec(
+        run_id="s5-p-star-treatment-run",
+        method="P*",
+        native_path_identity_sha256=SHA,
+    )
+    runner = S5ProductionRunner(
+        attempt_root=tmp_path / "p-treatment",
+        spec=spec,
+        identity=_identity("P*"),
+        graphiti=object(),
+        binding=_failing_binding(),
+        episodes=_episodes(4),
+    )
+
+    result = asyncio.run(runner.run())
+
+    assert result["status"] == "scientific_outcome_complete"
+    assert result["resume_authorized"] is False
+    assert result["payload"]["status"] == "SCIENTIFIC_OUTCOME_COMPLETE"
+    assert result["payload"]["mergeable"] is True
+    inspected = inspect_s5_attempt(tmp_path / "p-treatment")
+    assert inspected["result"]["status"] == "scientific_outcome_complete"
+    assert inspected["checkpoint"]["status"] == "scientific_outcome_complete"
+    assert inspected["checkpoint"]["result_payload_sha256"] == result[
+        "result_payload_sha256"
+    ]
+    assert inspected["resume_authorized"] is False
+
+    checkpoint_path = tmp_path / "p-treatment" / "checkpoint.json"
+    checkpoint = json.loads(checkpoint_path.read_text(encoding="utf-8"))
+    checkpoint["status"] = "complete"
+    from paper_eval.artifacts import payload_sha256
+
+    checkpoint["checkpoint_sha256"] = payload_sha256(
+        {
+            key: value
+            for key, value in checkpoint.items()
+            if key != "checkpoint_sha256"
+        }
+    )
+    checkpoint_path.write_text(json.dumps(checkpoint) + "\n", encoding="utf-8")
+    with pytest.raises(S5StoreError, match="checkpoint_result_binding_invalid"):
+        inspect_s5_attempt(tmp_path / "p-treatment")
 
 
 def test_runner_rejects_private_identity_fields(tmp_path: Path) -> None:

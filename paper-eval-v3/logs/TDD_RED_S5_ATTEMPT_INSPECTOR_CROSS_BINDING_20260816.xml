@@ -1,0 +1,188 @@
+<?xml version="1.0" encoding="utf-8"?><testsuites name="pytest tests"><testsuite name="pytest" errors="0" failures="7" skipped="0" tests="17" time="0.635" timestamp="2026-08-16T01:08:36.633960+08:00" hostname="aces-System-Product-Name"><testcase classname="tests.test_s5_durable_attempt_store" name="test_manifest_first_append_hashes_events_and_rejects_duplicate_attempt" time="0.037" /><testcase classname="tests.test_s5_durable_attempt_store" name="test_each_durable_event_advances_atomic_nonresumable_checkpoint" time="0.033" /><testcase classname="tests.test_s5_durable_attempt_store" name="test_append_is_contiguous_and_sanitized" time="0.025" /><testcase classname="tests.test_s5_durable_attempt_store" name="test_tampered_event_hash_fails_closed" time="0.024" /><testcase classname="tests.test_s5_durable_attempt_store" name="test_rehashed_private_event_still_fails_closed" time="0.028" /><testcase classname="tests.test_s5_durable_attempt_store" name="test_finalize_binds_result_and_writes_atomic_checkpoint" time="0.048" /><testcase classname="tests.test_s5_durable_attempt_store" name="test_finalize_derives_published_sources_from_durable_events_not_summary" time="0.054" /><testcase classname="tests.test_s5_durable_attempt_store" name="test_inspection_rejects_checkpoint_event_count_or_publication_drift" time="0.027" /><testcase classname="tests.test_s5_durable_attempt_store" name="test_finalize_rejects_event_or_identity_mismatch" time="0.024" /><testcase classname="tests.test_s5_durable_attempt_store" name="test_failed_evidence_is_terminal_non_mergeable_and_not_resumable" time="0.045" /><testcase classname="tests.test_s5_durable_attempt_store" name="test_inspection_rejects_rehashed_event_manifest_binding_drift[run_id-s5-mstar-different-001]" time="0.025"><failure message="Failed: DID NOT RAISE S5StoreError">tmp_path = PosixPath('/tmp/pytest-of-ly/pytest-336/test_inspection_rejects_rehash0')
+field = 'run_id', value = 's5-mstar-different-001'
+
+    @pytest.mark.parametrize(
+        ("field", "value"),
+        [
+            ("run_id", "s5-mstar-different-001"),
+            ("method", "A0"),
+            ("source_sha256", "f" * 64),
+        ],
+    )
+    def test_inspection_rejects_rehashed_event_manifest_binding_drift(
+        tmp_path: Path, field: str, value: object
+    ) -&gt; None:
+        store = _create(tmp_path)
+        store.append_event(_event(0, 0))
+        record = json.loads(store.events_path.read_text(encoding="utf-8"))
+        record["event"][field] = value
+        record["event_sha256"] = payload_sha256(record["event"])
+        store.events_path.write_text(json.dumps(record) + "\n", encoding="utf-8")
+    
+&gt;       with pytest.raises(S5StoreError, match="event_manifest_binding_invalid"):
+E       Failed: DID NOT RAISE S5StoreError
+
+tests/test_s5_durable_attempt_store.py:256: Failed</failure></testcase><testcase classname="tests.test_s5_durable_attempt_store" name="test_inspection_rejects_rehashed_event_manifest_binding_drift[method-A0]" time="0.024"><failure message="Failed: DID NOT RAISE S5StoreError">tmp_path = PosixPath('/tmp/pytest-of-ly/pytest-336/test_inspection_rejects_rehash1')
+field = 'method', value = 'A0'
+
+    @pytest.mark.parametrize(
+        ("field", "value"),
+        [
+            ("run_id", "s5-mstar-different-001"),
+            ("method", "A0"),
+            ("source_sha256", "f" * 64),
+        ],
+    )
+    def test_inspection_rejects_rehashed_event_manifest_binding_drift(
+        tmp_path: Path, field: str, value: object
+    ) -&gt; None:
+        store = _create(tmp_path)
+        store.append_event(_event(0, 0))
+        record = json.loads(store.events_path.read_text(encoding="utf-8"))
+        record["event"][field] = value
+        record["event_sha256"] = payload_sha256(record["event"])
+        store.events_path.write_text(json.dumps(record) + "\n", encoding="utf-8")
+    
+&gt;       with pytest.raises(S5StoreError, match="event_manifest_binding_invalid"):
+E       Failed: DID NOT RAISE S5StoreError
+
+tests/test_s5_durable_attempt_store.py:256: Failed</failure></testcase><testcase classname="tests.test_s5_durable_attempt_store" name="test_inspection_rejects_rehashed_event_manifest_binding_drift[source_sha256-ffffffffffffffffffffffffffffffffffffffffffffffffffffffffffffffff]" time="0.028"><failure message="Failed: DID NOT RAISE S5StoreError">tmp_path = PosixPath('/tmp/pytest-of-ly/pytest-336/test_inspection_rejects_rehash2')
+field = 'source_sha256'
+value = 'ffffffffffffffffffffffffffffffffffffffffffffffffffffffffffffffff'
+
+    @pytest.mark.parametrize(
+        ("field", "value"),
+        [
+            ("run_id", "s5-mstar-different-001"),
+            ("method", "A0"),
+            ("source_sha256", "f" * 64),
+        ],
+    )
+    def test_inspection_rejects_rehashed_event_manifest_binding_drift(
+        tmp_path: Path, field: str, value: object
+    ) -&gt; None:
+        store = _create(tmp_path)
+        store.append_event(_event(0, 0))
+        record = json.loads(store.events_path.read_text(encoding="utf-8"))
+        record["event"][field] = value
+        record["event_sha256"] = payload_sha256(record["event"])
+        store.events_path.write_text(json.dumps(record) + "\n", encoding="utf-8")
+    
+&gt;       with pytest.raises(S5StoreError, match="event_manifest_binding_invalid"):
+E       Failed: DID NOT RAISE S5StoreError
+
+tests/test_s5_durable_attempt_store.py:256: Failed</failure></testcase><testcase classname="tests.test_s5_durable_attempt_store" name="test_inspection_rejects_resealed_result_payload_cross_binding_drift[&lt;lambda&gt;0]" time="0.046"><failure message="Failed: DID NOT RAISE S5StoreError">tmp_path = PosixPath('/tmp/pytest-of-ly/pytest-336/test_inspection_rejects_reseal0')
+mutation = &lt;function &lt;lambda&gt; at 0x7ff927e49120&gt;
+
+    @pytest.mark.parametrize(
+        "mutation",
+        [
+            lambda payload: payload.update(production_core_identity_sha256="f" * 64),
+            lambda payload: payload["events"][0].update(source_sha256="f" * 64),
+            lambda payload: payload["events"].append(_event(2, 0)),
+        ],
+    )
+    def test_inspection_rejects_resealed_result_payload_cross_binding_drift(
+        tmp_path: Path, mutation
+    ) -&gt; None:
+        store = _create(tmp_path)
+        events = [_event(0, 0), _event(1, 1)]
+        for event in events:
+            store.append_event(event)
+        store.finalize(_evidence(events))
+    
+        result = json.loads(store.result_path.read_text(encoding="utf-8"))
+        mutation(result["payload"])
+        _reseal(result, "result_sha256")
+        store.result_path.write_text(json.dumps(result) + "\n", encoding="utf-8")
+    
+        checkpoint = json.loads(store.checkpoint_path.read_text(encoding="utf-8"))
+        checkpoint["result_payload_sha256"] = payload_sha256(result["payload"])
+        _reseal(checkpoint, "checkpoint_sha256")
+        store.checkpoint_path.write_text(json.dumps(checkpoint) + "\n", encoding="utf-8")
+    
+&gt;       with pytest.raises(S5StoreError, match="result_manifest_binding_invalid"):
+E       Failed: DID NOT RAISE S5StoreError
+
+tests/test_s5_durable_attempt_store.py:287: Failed</failure></testcase><testcase classname="tests.test_s5_durable_attempt_store" name="test_inspection_rejects_resealed_result_payload_cross_binding_drift[&lt;lambda&gt;1]" time="0.045"><failure message="Failed: DID NOT RAISE S5StoreError">tmp_path = PosixPath('/tmp/pytest-of-ly/pytest-336/test_inspection_rejects_reseal1')
+mutation = &lt;function &lt;lambda&gt; at 0x7ff927e491c0&gt;
+
+    @pytest.mark.parametrize(
+        "mutation",
+        [
+            lambda payload: payload.update(production_core_identity_sha256="f" * 64),
+            lambda payload: payload["events"][0].update(source_sha256="f" * 64),
+            lambda payload: payload["events"].append(_event(2, 0)),
+        ],
+    )
+    def test_inspection_rejects_resealed_result_payload_cross_binding_drift(
+        tmp_path: Path, mutation
+    ) -&gt; None:
+        store = _create(tmp_path)
+        events = [_event(0, 0), _event(1, 1)]
+        for event in events:
+            store.append_event(event)
+        store.finalize(_evidence(events))
+    
+        result = json.loads(store.result_path.read_text(encoding="utf-8"))
+        mutation(result["payload"])
+        _reseal(result, "result_sha256")
+        store.result_path.write_text(json.dumps(result) + "\n", encoding="utf-8")
+    
+        checkpoint = json.loads(store.checkpoint_path.read_text(encoding="utf-8"))
+        checkpoint["result_payload_sha256"] = payload_sha256(result["payload"])
+        _reseal(checkpoint, "checkpoint_sha256")
+        store.checkpoint_path.write_text(json.dumps(checkpoint) + "\n", encoding="utf-8")
+    
+&gt;       with pytest.raises(S5StoreError, match="result_manifest_binding_invalid"):
+E       Failed: DID NOT RAISE S5StoreError
+
+tests/test_s5_durable_attempt_store.py:287: Failed</failure></testcase><testcase classname="tests.test_s5_durable_attempt_store" name="test_inspection_rejects_resealed_result_payload_cross_binding_drift[&lt;lambda&gt;2]" time="0.049"><failure message="Failed: DID NOT RAISE S5StoreError">tmp_path = PosixPath('/tmp/pytest-of-ly/pytest-336/test_inspection_rejects_reseal2')
+mutation = &lt;function &lt;lambda&gt; at 0x7ff927e49260&gt;
+
+    @pytest.mark.parametrize(
+        "mutation",
+        [
+            lambda payload: payload.update(production_core_identity_sha256="f" * 64),
+            lambda payload: payload["events"][0].update(source_sha256="f" * 64),
+            lambda payload: payload["events"].append(_event(2, 0)),
+        ],
+    )
+    def test_inspection_rejects_resealed_result_payload_cross_binding_drift(
+        tmp_path: Path, mutation
+    ) -&gt; None:
+        store = _create(tmp_path)
+        events = [_event(0, 0), _event(1, 1)]
+        for event in events:
+            store.append_event(event)
+        store.finalize(_evidence(events))
+    
+        result = json.loads(store.result_path.read_text(encoding="utf-8"))
+        mutation(result["payload"])
+        _reseal(result, "result_sha256")
+        store.result_path.write_text(json.dumps(result) + "\n", encoding="utf-8")
+    
+        checkpoint = json.loads(store.checkpoint_path.read_text(encoding="utf-8"))
+        checkpoint["result_payload_sha256"] = payload_sha256(result["payload"])
+        _reseal(checkpoint, "checkpoint_sha256")
+        store.checkpoint_path.write_text(json.dumps(checkpoint) + "\n", encoding="utf-8")
+    
+&gt;       with pytest.raises(S5StoreError, match="result_manifest_binding_invalid"):
+E       Failed: DID NOT RAISE S5StoreError
+
+tests/test_s5_durable_attempt_store.py:287: Failed</failure></testcase><testcase classname="tests.test_s5_durable_attempt_store" name="test_inspection_rejects_resealed_manifest_source_inventory_drift" time="0.024"><failure message="Failed: DID NOT RAISE S5StoreError">tmp_path = PosixPath('/tmp/pytest-of-ly/pytest-336/test_inspection_rejects_reseal3')
+
+    def test_inspection_rejects_resealed_manifest_source_inventory_drift(
+        tmp_path: Path,
+    ) -&gt; None:
+        store = _create(tmp_path)
+        store.append_event(_event(0, 0))
+        manifest = json.loads(store.manifest_path.read_text(encoding="utf-8"))
+        manifest["source_sha256s"][0] = "f" * 64
+        _reseal(manifest, "manifest_sha256")
+        store.manifest_path.write_text(json.dumps(manifest) + "\n", encoding="utf-8")
+    
+&gt;       with pytest.raises(S5StoreError, match="event_manifest_binding_invalid"):
+E       Failed: DID NOT RAISE S5StoreError
+
+tests/test_s5_durable_attempt_store.py:301: Failed</failure></testcase></testsuite></testsuites>

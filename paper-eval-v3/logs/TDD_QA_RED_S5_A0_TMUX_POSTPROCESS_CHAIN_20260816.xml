@@ -1,0 +1,131 @@
+<?xml version="1.0" encoding="utf-8"?><testsuites name="pytest tests"><testsuite name="pytest" errors="0" failures="5" skipped="0" tests="16" time="0.175" timestamp="2026-08-16T01:55:56.044560+08:00" hostname="aces-System-Product-Name"><testcase classname="tests.test_s5_a0_tmux_launcher" name="test_launcher_uses_verified_authority_and_explicit_detached_command" time="0.000"><failure message="assert 'S5_A0_POSTPROCESS_MODULE' in '#!/usr/bin/env bash\n# Launch exactly one authority-bound S5 A0 smoke in detached tmux.\nset -euo pipefail\n\nPROJECT...' 2&gt;&amp;1 | tee -a \'$LOG\'&quot;\n\necho &quot;session=$SESSION&quot;\necho &quot;log=$LOG&quot;\necho &quot;inspect=tmux capture-pane -pt $SESSION&quot;\n'">def test_launcher_uses_verified_authority_and_explicit_detached_command() -&gt; None:
+        source = LAUNCHER.read_text(encoding="utf-8")
+    
+        assert "verify_s5_live_authority" in source
+        assert "jq" not in source
+        assert "S5_A0_CONTROLLER_MODULE" in source
+        assert "paper_eval.s5_a0_controller" in source
+&gt;       assert "S5_A0_POSTPROCESS_MODULE" in source
+E       assert 'S5_A0_POSTPROCESS_MODULE' in '#!/usr/bin/env bash\n# Launch exactly one authority-bound S5 A0 smoke in detached tmux.\nset -euo pipefail\n\nPROJECT...' 2&gt;&amp;1 | tee -a \'$LOG\'"\n\necho "session=$SESSION"\necho "log=$LOG"\necho "inspect=tmux capture-pane -pt $SESSION"\n'
+
+tests/test_s5_a0_tmux_launcher.py:97: AssertionError</failure></testcase><testcase classname="tests.test_s5_a0_tmux_launcher" name="test_launcher_required_options_match_final_controller_parser" time="0.000" /><testcase classname="tests.test_s5_a0_tmux_launcher" name="test_launcher_derives_identity_and_starts_exactly_one_detached_session" time="0.011"><failure message="assert 'qualified.custom_a0_postprocess' in &quot;new-session -d -s membind-pev3-s5-a0-20260816-001 -c /data/predator/ly/MemBind/paper-eval-v3 set -o pipefail; env PYT...5555555555' 2&gt;&amp;1 | tee -a '/tmp/pytest-of-ly/pytest-383/test_launcher_derives_identity0/logs/s5-a0-20260816-001.log'\n&quot;">tmp_path = PosixPath('/tmp/pytest-of-ly/pytest-383/test_launcher_derives_identity0')
+
+    def test_launcher_derives_identity_and_starts_exactly_one_detached_session(
+        tmp_path: Path,
+    ) -&gt; None:
+        authority, env, runs, tmux_log = _fixture(tmp_path)
+        env["S5_A0_CONTROLLER_MODULE"] = "qualified.custom_a0_controller"
+        env["S5_A0_POSTPROCESS_MODULE"] = "qualified.custom_a0_postprocess"
+    
+        completed = _run(authority, env)
+    
+        assert completed.returncode == 0, completed.stderr
+        assert completed.stderr == ""
+        assert f"namespace={NAMESPACE}" not in completed.stdout
+        assert NAMESPACE not in completed.stdout.splitlines()
+        assert "secret" not in completed.stdout.casefold()
+        tmux_args = tmux_log.read_text(encoding="utf-8")
+        session = f"membind-pev3-{RUN_ID}"
+        run_root = runs / RUN_ID
+        assert f"new-session -d -s {session}" in tmux_args
+        assert "qualified.custom_a0_controller" in tmux_args
+&gt;       assert "qualified.custom_a0_postprocess" in tmux_args
+E       assert 'qualified.custom_a0_postprocess' in "new-session -d -s membind-pev3-s5-a0-20260816-001 -c /data/predator/ly/MemBind/paper-eval-v3 set -o pipefail; env PYT...5555555555' 2&gt;&amp;1 | tee -a '/tmp/pytest-of-ly/pytest-383/test_launcher_derives_identity0/logs/s5-a0-20260816-001.log'\n"
+
+tests/test_s5_a0_tmux_launcher.py:182: AssertionError</failure></testcase><testcase classname="tests.test_s5_a0_tmux_launcher" name="test_launcher_rejects_every_existing_single_use_output[authority_consumption.json]" time="0.007" /><testcase classname="tests.test_s5_a0_tmux_launcher" name="test_launcher_rejects_every_existing_single_use_output[controller]" time="0.007" /><testcase classname="tests.test_s5_a0_tmux_launcher" name="test_launcher_rejects_every_existing_single_use_output[attempt]" time="0.007" /><testcase classname="tests.test_s5_a0_tmux_launcher" name="test_launcher_rejects_every_existing_single_use_output[attempt/result.json]" time="0.007" /><testcase classname="tests.test_s5_a0_tmux_launcher" name="test_launcher_rejects_every_existing_single_use_output[post_observation.json]" time="0.011"><failure message="AssertionError: assert 0 != 0&#10; +  where 0 = CompletedProcess(args=['bash', '/data/predator/ly/MemBind/paper-eval-v3/scripts/run_s5_a0_tmux.sh', '/tmp/pytest-of-ly...cts_every_ex4/logs/s5-a0-20260816-001.log\ninspect=tmux capture-pane -pt membind-pev3-s5-a0-20260816-001\n', stderr='').returncode">tmp_path = PosixPath('/tmp/pytest-of-ly/pytest-383/test_launcher_rejects_every_ex4')
+existing = 'post_observation.json'
+
+    @pytest.mark.parametrize(
+        "existing",
+        [
+            "authority_consumption.json",
+            "controller",
+            "attempt",
+            "attempt/result.json",
+            "post_observation.json",
+            "S5_A0_RESULT.json",
+            "postprocess/checkpoint.json",
+        ],
+    )
+    def test_launcher_rejects_every_existing_single_use_output(
+        tmp_path: Path, existing: str
+    ) -&gt; None:
+        authority, env, runs, tmux_log = _fixture(tmp_path)
+        selected = runs / RUN_ID / existing
+        selected.parent.mkdir(parents=True, exist_ok=True)
+        if selected.suffix:
+            selected.write_text("existing\n", encoding="utf-8")
+        else:
+            selected.mkdir()
+    
+        completed = _run(authority, env)
+    
+&gt;       assert completed.returncode != 0
+E       AssertionError: assert 0 != 0
+E        +  where 0 = CompletedProcess(args=['bash', '/data/predator/ly/MemBind/paper-eval-v3/scripts/run_s5_a0_tmux.sh', '/tmp/pytest-of-ly...cts_every_ex4/logs/s5-a0-20260816-001.log\ninspect=tmux capture-pane -pt membind-pev3-s5-a0-20260816-001\n', stderr='').returncode
+
+tests/test_s5_a0_tmux_launcher.py:233: AssertionError</failure></testcase><testcase classname="tests.test_s5_a0_tmux_launcher" name="test_launcher_rejects_every_existing_single_use_output[S5_A0_RESULT.json]" time="0.011"><failure message="AssertionError: assert 0 != 0&#10; +  where 0 = CompletedProcess(args=['bash', '/data/predator/ly/MemBind/paper-eval-v3/scripts/run_s5_a0_tmux.sh', '/tmp/pytest-of-ly...cts_every_ex5/logs/s5-a0-20260816-001.log\ninspect=tmux capture-pane -pt membind-pev3-s5-a0-20260816-001\n', stderr='').returncode">tmp_path = PosixPath('/tmp/pytest-of-ly/pytest-383/test_launcher_rejects_every_ex5')
+existing = 'S5_A0_RESULT.json'
+
+    @pytest.mark.parametrize(
+        "existing",
+        [
+            "authority_consumption.json",
+            "controller",
+            "attempt",
+            "attempt/result.json",
+            "post_observation.json",
+            "S5_A0_RESULT.json",
+            "postprocess/checkpoint.json",
+        ],
+    )
+    def test_launcher_rejects_every_existing_single_use_output(
+        tmp_path: Path, existing: str
+    ) -&gt; None:
+        authority, env, runs, tmux_log = _fixture(tmp_path)
+        selected = runs / RUN_ID / existing
+        selected.parent.mkdir(parents=True, exist_ok=True)
+        if selected.suffix:
+            selected.write_text("existing\n", encoding="utf-8")
+        else:
+            selected.mkdir()
+    
+        completed = _run(authority, env)
+    
+&gt;       assert completed.returncode != 0
+E       AssertionError: assert 0 != 0
+E        +  where 0 = CompletedProcess(args=['bash', '/data/predator/ly/MemBind/paper-eval-v3/scripts/run_s5_a0_tmux.sh', '/tmp/pytest-of-ly...cts_every_ex5/logs/s5-a0-20260816-001.log\ninspect=tmux capture-pane -pt membind-pev3-s5-a0-20260816-001\n', stderr='').returncode
+
+tests/test_s5_a0_tmux_launcher.py:233: AssertionError</failure></testcase><testcase classname="tests.test_s5_a0_tmux_launcher" name="test_launcher_rejects_every_existing_single_use_output[postprocess/checkpoint.json]" time="0.010"><failure message="AssertionError: assert 0 != 0&#10; +  where 0 = CompletedProcess(args=['bash', '/data/predator/ly/MemBind/paper-eval-v3/scripts/run_s5_a0_tmux.sh', '/tmp/pytest-of-ly...cts_every_ex6/logs/s5-a0-20260816-001.log\ninspect=tmux capture-pane -pt membind-pev3-s5-a0-20260816-001\n', stderr='').returncode">tmp_path = PosixPath('/tmp/pytest-of-ly/pytest-383/test_launcher_rejects_every_ex6')
+existing = 'postprocess/checkpoint.json'
+
+    @pytest.mark.parametrize(
+        "existing",
+        [
+            "authority_consumption.json",
+            "controller",
+            "attempt",
+            "attempt/result.json",
+            "post_observation.json",
+            "S5_A0_RESULT.json",
+            "postprocess/checkpoint.json",
+        ],
+    )
+    def test_launcher_rejects_every_existing_single_use_output(
+        tmp_path: Path, existing: str
+    ) -&gt; None:
+        authority, env, runs, tmux_log = _fixture(tmp_path)
+        selected = runs / RUN_ID / existing
+        selected.parent.mkdir(parents=True, exist_ok=True)
+        if selected.suffix:
+            selected.write_text("existing\n", encoding="utf-8")
+        else:
+            selected.mkdir()
+    
+        completed = _run(authority, env)
+    
+&gt;       assert completed.returncode != 0
+E       AssertionError: assert 0 != 0
+E        +  where 0 = CompletedProcess(args=['bash', '/data/predator/ly/MemBind/paper-eval-v3/scripts/run_s5_a0_tmux.sh', '/tmp/pytest-of-ly...cts_every_ex6/logs/s5-a0-20260816-001.log\ninspect=tmux capture-pane -pt membind-pev3-s5-a0-20260816-001\n', stderr='').returncode
+
+tests/test_s5_a0_tmux_launcher.py:233: AssertionError</failure></testcase><testcase classname="tests.test_s5_a0_tmux_launcher" name="test_launcher_rejects_existing_tmux_session" time="0.008" /><testcase classname="tests.test_s5_a0_tmux_launcher" name="test_launcher_rejects_invalid_verified_identity[FAKE_RUN_ID-../escape]" time="0.006" /><testcase classname="tests.test_s5_a0_tmux_launcher" name="test_launcher_rejects_invalid_verified_identity[FAKE_RUN_ID-s5-p-star-20260816-001]" time="0.007" /><testcase classname="tests.test_s5_a0_tmux_launcher" name="test_launcher_rejects_invalid_verified_identity[FAKE_NAMESPACE-pev3-wrong-run]" time="0.007" /><testcase classname="tests.test_s5_a0_tmux_launcher" name="test_launcher_propagates_authority_reader_failure_without_starting_tmux" time="0.007" /><testcase classname="tests.test_s5_a0_tmux_launcher" name="test_launcher_rejects_missing_controller_input_before_starting_tmux" time="0.007" /></testsuite></testsuites>

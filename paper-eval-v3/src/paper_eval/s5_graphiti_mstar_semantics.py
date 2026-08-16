@@ -207,9 +207,9 @@ class S5GraphitiMStarSemanticRuntime:
     def _edge_type_map(source: GraphitiEpisodeInput) -> dict[tuple[str, str], list[str]]:
         if source.edge_type_map is not None:
             return {key: list(value) for key, value in source.edge_type_map.items()}
-        if source.edge_types:
+        if source.edge_types is not None:
             return {("Entity", "Entity"): list(source.edge_types.keys())}
-        return {}
+        return {("Entity", "Entity"): []}
 
     @staticmethod
     def _validate_native_commit_result(value: object) -> None:

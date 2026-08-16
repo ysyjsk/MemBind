@@ -1,0 +1,88 @@
+<?xml version="1.0" encoding="utf-8"?><testsuites name="pytest tests"><testsuite name="pytest" errors="0" failures="2" skipped="0" tests="9" time="1.136" timestamp="2026-08-16T01:49:15.012568+08:00" hostname="aces-System-Product-Name"><testcase classname="tests.test_s5_a0_controller_production" name="test_production_entry_consumes_before_env_and_rebinds_exact_workload" time="0.373" /><testcase classname="tests.test_s5_a0_controller_production" name="test_production_env_failure_is_after_consumption_and_sanitized" time="0.280" /><testcase classname="tests.test_s5_a0_controller_production" name="test_runtime_readiness_and_close_use_graphiti_lifecycle" time="0.000" /><testcase classname="tests.test_s5_a0_controller_production" name="test_invalid_runtime_and_missing_close_fail_closed" time="0.000" /><testcase classname="tests.test_s5_a0_controller_production" name="test_result_verifier_source_drift_stops_before_consumption" time="0.098" /><testcase classname="tests.test_s5_a0_controller_production" name="test_runtime_close_failure_is_single_call_and_has_its_own_stage" time="0.331" /><testcase classname="tests.test_s5_a0_controller_production" name="test_cli_builds_run_scoped_paths_without_executing_live" time="0.001" /><testcase classname="tests.test_s5_a0_controller_production" name="test_cli_returns_nonzero_for_incomplete_controller_result" time="0.001"><failure message="assert 0 != 0">tmp_path = PosixPath('/tmp/pytest-of-ly/pytest-377/test_cli_returns_nonzero_for_i0')
+monkeypatch = &lt;_pytest.monkeypatch.MonkeyPatch object at 0x73ed03b09610&gt;
+capsys = &lt;_pytest.capture.CaptureFixture object at 0x73ed03b08b30&gt;
+
+    def test_cli_returns_nonzero_for_incomplete_controller_result(
+        tmp_path: Path, monkeypatch: pytest.MonkeyPatch, capsys
+    ) -&gt; None:
+        async def fake_execute(**_kwargs):
+            return {
+                "status": "incomplete_non_mergeable",
+                "failure_stage": "native_execution",
+                "error_class": "httpx.ConnectError",
+            }
+    
+        monkeypatch.setattr(
+            "paper_eval.s5_a0_controller.execute_s5_a0_production", fake_execute
+        )
+    
+        code = main(
+            [
+                "--production-identity",
+                str(tmp_path / "identity.json"),
+                "--production-identity-qualification",
+                str(tmp_path / "qualification.json"),
+                "--preflight",
+                str(tmp_path / "preflight.json"),
+                "--authority",
+                str(tmp_path / "authority.json"),
+                "--runtime-config",
+                str(tmp_path / "runtime.json"),
+                "--identity-materialization",
+                str(tmp_path / "materialization.json"),
+                "--run-root",
+                str(tmp_path / "run"),
+                "--git-commit",
+                "deadbeef",
+            ]
+        )
+    
+&gt;       assert code != 0
+E       assert 0 != 0
+
+tests/test_s5_a0_controller_production.py:343: AssertionError</failure></testcase><testcase classname="tests.test_s5_a0_controller_production" name="test_cli_does_not_print_unknown_exception_messages" time="0.001"><failure message="assert 'private credential' not in '{&quot;code&quot;: &quot;p...: &quot;error&quot;}\n'&#10;  &#10;  'private credential' is contained here:&#10;    {&quot;code&quot;: &quot;private credential and endpoint detail&quot;, &quot;error_class&quot;: &quot;RuntimeError&quot;, &quot;status&quot;: &quot;error&quot;}&#10;  ?           ++++++++++++++++++">tmp_path = PosixPath('/tmp/pytest-of-ly/pytest-377/test_cli_does_not_print_unknow0')
+monkeypatch = &lt;_pytest.monkeypatch.MonkeyPatch object at 0x73ed03b0ac90&gt;
+capsys = &lt;_pytest.capture.CaptureFixture object at 0x73ed03b09940&gt;
+
+    def test_cli_does_not_print_unknown_exception_messages(
+        tmp_path: Path, monkeypatch: pytest.MonkeyPatch, capsys
+    ) -&gt; None:
+        async def fake_execute(**_kwargs):
+            raise RuntimeError("private credential and endpoint detail")
+    
+        monkeypatch.setattr(
+            "paper_eval.s5_a0_controller.execute_s5_a0_production", fake_execute
+        )
+    
+        code = main(
+            [
+                "--production-identity",
+                str(tmp_path / "identity.json"),
+                "--production-identity-qualification",
+                str(tmp_path / "qualification.json"),
+                "--preflight",
+                str(tmp_path / "preflight.json"),
+                "--authority",
+                str(tmp_path / "authority.json"),
+                "--runtime-config",
+                str(tmp_path / "runtime.json"),
+                "--identity-materialization",
+                str(tmp_path / "materialization.json"),
+                "--run-root",
+                str(tmp_path / "run"),
+                "--git-commit",
+                "deadbeef",
+            ]
+        )
+    
+        captured = capsys.readouterr()
+        assert code != 0
+        assert "RuntimeError" in captured.err
+&gt;       assert "private credential" not in captured.err
+E       assert 'private credential' not in '{"code": "p...: "error"}\n'
+E         
+E         'private credential' is contained here:
+E           {"code": "private credential and endpoint detail", "error_class": "RuntimeError", "status": "error"}
+E         ?           ++++++++++++++++++
+
+tests/test_s5_a0_controller_production.py:381: AssertionError</failure></testcase></testsuite></testsuites>

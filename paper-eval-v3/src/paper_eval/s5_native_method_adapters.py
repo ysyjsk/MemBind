@@ -91,6 +91,19 @@ _EVENT_FIELDS = {
         "caller_return_timestamp_ns",
         "transaction_status",
     },
+    "source_terminal": {
+        "event_sequence",
+        "event_type",
+        "run_id",
+        "method",
+        "source_sequence",
+        "source_sha256",
+        "terminal_classification",
+        "worker_id",
+        "error_class",
+        "service_start_timestamp_ns",
+        "terminal_timestamp_ns",
+    },
     "terminal_success": {
         "event_sequence",
         "event_type",
@@ -104,11 +117,18 @@ _EVENT_FIELDS = {
         "event_type",
         "run_id",
         "method",
+        "expected_episode_count",
         "failed_source_sequence",
         "failure_code",
         "error_class",
         *_SUMMARY_FIELDS,
     },
+}
+
+_P_STAR_SOURCE_TERMINALS = {
+    "PUBLISHED",
+    "TREATMENT_FAILED",
+    "CENSORED_NOT_STARTED_AFTER_TREATMENT_FAILURE",
 }
 
 NativeAddEpisode = Callable[[object], Awaitable[object]]
@@ -303,7 +323,7 @@ def _result(
         "method": spec.method,
         "native_path_identity_sha256": spec.native_path_identity_sha256,
         "status": status,
-        "mergeable": status == "PASS",
+        "mergeable": status in {"PASS", "SCIENTIFIC_OUTCOME_COMPLETE"},
         "failure_code": failure_code,
         "events": ledger.events,
         "summary": dict(summary),
@@ -429,6 +449,7 @@ async def run_a0(
                 "event_type": "treatment_failure",
                 "run_id": spec.run_id,
                 "method": spec.method,
+                "expected_episode_count": len(selected),
                 "failed_source_sequence": episode.source_sequence,
                 "failure_code": "NATIVE_ADD_EPISODE_FAILED",
                 "error_class": _qualified_error_class(error),
@@ -501,6 +522,10 @@ async def run_p_c2(
     failure_lock = asyncio.Lock()
     stop = asyncio.Event()
     failure: tuple[S5EpisodeRef, int, BaseException] | None = None
+    source_terminals: dict[
+        int,
+        tuple[str, int | None, str | None, int | None, int | None],
+    ] = {}
 
     async def worker(worker_id: int) -> None:
         nonlocal publication_count, failure
@@ -526,6 +551,13 @@ async def run_p_c2(
                 (service_start, service_end, worker_id, episode.source_sequence)
             )
             if error is not None:
+                source_terminals[episode.source_sequence] = (
+                    "TREATMENT_FAILED",
+                    worker_id,
+                    _qualified_error_class(error),
+                    service_start,
+                    service_end,
+                )
                 async with failure_lock:
                     if failure is None:
                         failure = (episode, worker_id, error)
@@ -548,6 +580,13 @@ async def run_p_c2(
             )
             async with publication_lock:
                 publication_count += 1
+            source_terminals[episode.source_sequence] = (
+                "PUBLISHED",
+                worker_id,
+                None,
+                service_start,
+                service_end,
+            )
             queue.task_done()
 
     workers = [
@@ -555,6 +594,42 @@ async def run_p_c2(
         for worker_id in range(P_STAR_CONCURRENCY)
     ]
     await asyncio.gather(*workers)
+    if failure is not None:
+        for episode in selected:
+            source_terminals.setdefault(
+                episode.source_sequence,
+                (
+                    "CENSORED_NOT_STARTED_AFTER_TREATMENT_FAILURE",
+                    None,
+                    None,
+                    None,
+                    None,
+                ),
+            )
+    if set(source_terminals) != {episode.source_sequence for episode in selected}:
+        raise _fail("terminal_source_accounting_invalid")
+    for episode in selected:
+        (
+            classification,
+            worker_id,
+            terminal_error_class,
+            service_start,
+            terminal_timestamp,
+        ) = source_terminals[episode.source_sequence]
+        await ledger.emit(
+            {
+                "event_type": "source_terminal",
+                "run_id": spec.run_id,
+                "method": spec.method,
+                "source_sequence": episode.source_sequence,
+                "source_sha256": episode.source_sha256,
+                "terminal_classification": classification,
+                "worker_id": worker_id,
+                "error_class": terminal_error_class,
+                "service_start_timestamp_ns": service_start,
+                "terminal_timestamp_ns": terminal_timestamp,
+            }
+        )
     summary = _summary(
         worker_count=P_STAR_CONCURRENCY,
         attempted_workers=attempted_workers,
@@ -585,6 +660,7 @@ async def run_p_c2(
                 "event_type": "treatment_failure",
                 "run_id": spec.run_id,
                 "method": spec.method,
+                "expected_episode_count": len(selected),
                 "failed_source_sequence": failed_source_sequence,
                 "failure_code": failure_code,
                 "error_class": error_class,
@@ -594,7 +670,11 @@ async def run_p_c2(
         evidence = _result(
             spec=spec,
             ledger=ledger,
-            status="FAIL_CLOSED",
+            status=(
+                "SCIENTIFIC_OUTCOME_COMPLETE"
+                if failure_code == "NATIVE_ADD_EPISODE_FAILED"
+                else "FAIL_CLOSED"
+            ),
             failure_code=failure_code,
             summary=summary,
         )
@@ -669,12 +749,16 @@ def verify_s5_native_method_evidence(
         raise _fail("evidence_identity_invalid")
     status = evidence.get("status")
     failure_code = evidence.get("failure_code")
-    if status not in {"PASS", "FAIL_CLOSED"}:
+    if status not in {"PASS", "FAIL_CLOSED", "SCIENTIFIC_OUTCOME_COMPLETE"}:
         raise _fail("status_invalid")
-    if evidence.get("mergeable") is not (status == "PASS"):
+    if evidence.get("mergeable") is not (
+        status in {"PASS", "SCIENTIFIC_OUTCOME_COMPLETE"}
+    ):
         raise _fail("mergeability_invalid")
     if (status == "PASS") != (failure_code is None):
         raise _fail("failure_status_invalid")
+    if status == "SCIENTIFIC_OUTCOME_COMPLETE" and expected_spec.method != P_STAR:
+        raise _fail("scientific_outcome_method_invalid")
 
     raw_events = evidence.get("events")
     summary = evidence.get("summary")
@@ -717,6 +801,7 @@ def verify_s5_native_method_evidence(
     intents = _event_sources(events, "intent")
     caller_returns = _event_sources(events, "caller_return")
     publications = _event_sources(events, "publication")
+    source_terminals = _event_sources(events, "source_terminal")
     if intents != expected_sequences or len(publications) != len(set(publications)):
         raise _fail("episode_accounting_invalid")
     if any(source not in expected_hashes for source in publications):
@@ -728,13 +813,98 @@ def verify_s5_native_method_evidence(
     }
     for event in events:
         event_type = event.get("event_type")
-        if event_type in {"intent", "caller_return", "publication"}:
+        if event_type in {"intent", "caller_return", "publication", "source_terminal"}:
             source = event.get("source_sequence")
             if (
                 not isinstance(source, int)
                 or event.get("source_sha256") != expected_hashes.get(source)
             ):
                 raise _fail("event_source_identity_invalid")
+
+    source_terminal_rows = [
+        event for event in events if event.get("event_type") == "source_terminal"
+    ]
+    if expected_spec.method == A0:
+        if source_terminal_rows:
+            raise _fail("a0_source_terminal_forbidden")
+    else:
+        if (
+            source_terminals != expected_sequences
+            or len(source_terminals) != len(set(source_terminals))
+        ):
+            raise _fail("terminal_source_accounting_invalid")
+        publication_set = set(publications)
+        publication_by_source = {
+            int(event["source_sequence"]): event
+            for event in events
+            if event.get("event_type") == "publication"
+        }
+        treatment_failed_sources: set[int] = set()
+        for event in source_terminal_rows:
+            source = int(event["source_sequence"])
+            classification = event.get("terminal_classification")
+            worker_id = event.get("worker_id")
+            terminal_error = event.get("error_class")
+            service_start = event.get("service_start_timestamp_ns")
+            terminal_timestamp = event.get("terminal_timestamp_ns")
+            if classification not in _P_STAR_SOURCE_TERMINALS:
+                raise _fail("terminal_source_classification_invalid")
+            if classification == "PUBLISHED":
+                publication = publication_by_source.get(source, {})
+                if (
+                    source not in publication_set
+                    or isinstance(worker_id, bool)
+                    or not isinstance(worker_id, int)
+                    or worker_id not in {0, 1}
+                    or terminal_error is not None
+                    or worker_id != publication.get("worker_id")
+                    or service_start
+                    != publication.get("service_start_timestamp_ns")
+                    or terminal_timestamp != publication.get("publish_timestamp_ns")
+                ):
+                    raise _fail("published_source_terminal_invalid")
+            elif classification == "TREATMENT_FAILED":
+                if (
+                    source in publication_set
+                    or isinstance(worker_id, bool)
+                    or not isinstance(worker_id, int)
+                    or worker_id not in {0, 1}
+                    or not isinstance(terminal_error, str)
+                    or not terminal_error
+                    or isinstance(service_start, bool)
+                    or not isinstance(service_start, int)
+                    or service_start < 0
+                    or isinstance(terminal_timestamp, bool)
+                    or not isinstance(terminal_timestamp, int)
+                    or terminal_timestamp < service_start
+                ):
+                    raise _fail("failed_source_terminal_invalid")
+                treatment_failed_sources.add(source)
+            elif (
+                source in publication_set
+                or worker_id is not None
+                or terminal_error is not None
+                or service_start is not None
+                or terminal_timestamp is not None
+            ):
+                raise _fail("censored_source_terminal_invalid")
+        published_terminals = {
+            int(event["source_sequence"])
+            for event in source_terminal_rows
+            if event.get("terminal_classification") == "PUBLISHED"
+        }
+        if published_terminals != publication_set:
+            raise _fail("terminal_publication_accounting_invalid")
+        if status == "SCIENTIFIC_OUTCOME_COMPLETE":
+            if (
+                failure_code != "NATIVE_ADD_EPISODE_FAILED"
+                or not treatment_failed_sources
+                or events[-1].get("failed_source_sequence")
+                not in treatment_failed_sources
+            ):
+                raise _fail("scientific_outcome_terminal_invalid")
+        elif treatment_failed_sources:
+            raise _fail("treatment_failure_status_invalid")
 
     publication_rows = [
         event for event in events if event.get("event_type") == "publication"
@@ -843,6 +1013,8 @@ def verify_s5_native_method_evidence(
                 raise _fail("p_c2_overlap_or_worker_proof_invalid")
     else:
         terminal = events[-1]
+        if terminal.get("expected_episode_count") != len(episodes):
+            raise _fail("terminal_episode_count_invalid")
         if terminal.get("failure_code") != failure_code:
             raise _fail("terminal_failure_code_invalid")
         if failure_code not in {

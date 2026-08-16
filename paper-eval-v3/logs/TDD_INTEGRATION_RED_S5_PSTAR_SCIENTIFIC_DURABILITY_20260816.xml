@@ -1,0 +1,59 @@
+<?xml version="1.0" encoding="utf-8"?><testsuites name="pytest tests"><testsuite name="pytest" errors="0" failures="1" skipped="0" tests="1" time="0.150" timestamp="2026-08-16T00:58:36.110347+08:00" hostname="aces-System-Product-Name"><testcase classname="tests.test_s5_production_runner" name="test_p_treatment_failure_is_sealed_as_complete_scientific_outcome" time="0.103"><failure message="paper_eval.s5_durable_attempt_store.S5StoreError: result_status_invalid">tmp_path = PosixPath('/tmp/pytest-of-ly/pytest-332/test_p_treatment_failure_is_se0')
+
+    def test_p_treatment_failure_is_sealed_as_complete_scientific_outcome(
+        tmp_path: Path,
+    ) -&gt; None:
+        spec = S5MethodSpec(
+            run_id="s5-p-star-treatment-run",
+            method="P*",
+            native_path_identity_sha256=SHA,
+        )
+        runner = S5ProductionRunner(
+            attempt_root=tmp_path / "p-treatment",
+            spec=spec,
+            identity=_identity("P*"),
+            graphiti=object(),
+            binding=_failing_binding(),
+            episodes=_episodes(4),
+        )
+    
+&gt;       result = asyncio.run(runner.run())
+                 ^^^^^^^^^^^^^^^^^^^^^^^^^
+
+tests/test_s5_production_runner.py:268: 
+_ _ _ _ _ _ _ _ _ _ _ _ _ _ _ _ _ _ _ _ _ _ _ _ _ _ _ _ _ _ _ _ _ _ _ _ _ _ _ _ 
+/usr/lib/python3.12/asyncio/runners.py:194: in run
+    return runner.run(main)
+           ^^^^^^^^^^^^^^^^
+/usr/lib/python3.12/asyncio/runners.py:118: in run
+    return self._loop.run_until_complete(task)
+           ^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^
+/usr/lib/python3.12/asyncio/base_events.py:687: in run_until_complete
+    return future.result()
+           ^^^^^^^^^^^^^^^
+src/paper_eval/s5_production_runner.py:363: in run
+    finalized = store.finalize(evidence)
+                ^^^^^^^^^^^^^^^^^^^^^^^^
+_ _ _ _ _ _ _ _ _ _ _ _ _ _ _ _ _ _ _ _ _ _ _ _ _ _ _ _ _ _ _ _ _ _ _ _ _ _ _ _ 
+
+self = &lt;paper_eval.s5_durable_attempt_store.S5AttemptStore object at 0x7e802226cce0&gt;
+evidence = {'schema_version': 'membind.paper-eval-v3.s5-native-method-evidence.v1', 'run_id': 's5-p-star-treatment-run', 'method': 'P*', 'native_path_identity_sha256': 'aaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaa', ...}
+
+    def finalize(self, evidence: Mapping[str, object]) -&gt; dict[str, object]:
+        candidate = deepcopy(dict(evidence))
+        _assert_public(candidate)
+        if (
+            candidate.get("run_id") != self.run_id
+            or candidate.get("method") != self.method
+            or candidate.get("production_core_identity_sha256")
+            != self.production_core_identity_sha256
+        ):
+            raise _fail("result_identity_invalid")
+        events = candidate.get("events")
+        if not isinstance(events, list) or events != self._current_events():
+            raise _fail("result_event_binding_invalid")
+        if candidate.get("status") not in {"PASS", "FAIL_CLOSED"}:
+&gt;           raise _fail("result_status_invalid")
+E           paper_eval.s5_durable_attempt_store.S5StoreError: result_status_invalid
+
+src/paper_eval/s5_durable_attempt_store.py:281: S5StoreError</failure></testcase></testsuite></testsuites>

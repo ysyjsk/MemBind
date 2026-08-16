@@ -1,0 +1,147 @@
+<?xml version="1.0" encoding="utf-8"?><testsuites name="pytest tests"><testsuite name="pytest" errors="0" failures="1" skipped="0" tests="43" time="9.760" timestamp="2026-08-16T01:45:26.078177+08:00" hostname="aces-System-Product-Name"><testcase classname="tests.test_s5_a0_controller" name="test_complete_sealed_chain_is_validated_before_authority_consumption" time="0.012" /><testcase classname="tests.test_s5_a0_controller" name="test_consumption_is_exclusive_and_precedes_env_runtime_graphiti_and_readiness" time="0.043" /><testcase classname="tests.test_s5_a0_controller" name="test_post_consumption_failures_are_sanitized_incomplete_and_non_resumable[runtime-runtime_construction-expected_trace0]" time="0.032" /><testcase classname="tests.test_s5_a0_controller" name="test_post_consumption_failures_are_sanitized_incomplete_and_non_resumable[readiness-runtime_readiness-expected_trace1]" time="0.034" /><testcase classname="tests.test_s5_a0_controller" name="test_post_consumption_failures_are_sanitized_incomplete_and_non_resumable[native-native_execution-expected_trace2]" time="0.047" /><testcase classname="tests.test_s5_a0_controller" name="test_native_incomplete_result_is_not_promoted_to_controller_or_scientific_pass" time="0.043" /><testcase classname="tests.test_s5_a0_controller" name="test_raw_unqualified_identity_cannot_substitute_for_qualification" time="0.009" /><testcase classname="tests.test_s5_a0_controller_production" name="test_production_entry_consumes_before_env_and_rebinds_exact_workload" time="0.044" /><testcase classname="tests.test_s5_a0_controller_production" name="test_production_env_failure_is_after_consumption_and_sanitized" time="0.031" /><testcase classname="tests.test_s5_a0_controller_production" name="test_runtime_readiness_and_close_use_graphiti_lifecycle" time="0.000" /><testcase classname="tests.test_s5_a0_controller_production" name="test_invalid_runtime_and_missing_close_fail_closed" time="0.000" /><testcase classname="tests.test_s5_a0_controller_production" name="test_result_verifier_source_drift_stops_before_consumption" time="0.015" /><testcase classname="tests.test_s5_a0_controller_production" name="test_runtime_close_failure_is_single_call_and_has_its_own_stage" time="0.040" /><testcase classname="tests.test_s5_a0_controller_production" name="test_cli_builds_run_scoped_paths_without_executing_live" time="0.001" /><testcase classname="tests.test_s5_a0_progress" name="test_not_started_projection_is_stable_and_has_no_resume_authority" time="0.000" /><testcase classname="tests.test_s5_a0_progress" name="test_controller_failure_reports_only_sanitized_checkpoint_state" time="0.031" /><testcase classname="tests.test_s5_a0_progress" name="test_complete_chain_reports_counts_without_execution_identity" time="1.509" /><testcase classname="tests.test_s5_a0_progress" name="test_corrupt_evidence_is_classified_without_leaking_parser_details" time="0.001" /><testcase classname="tests.test_s5_a0_result_finalizer" name="test_complete_cross_bound_chain_is_the_only_path_to_scientific_pass" time="1.521" /><testcase classname="tests.test_s5_a0_result_finalizer" name="test_missing_observation_never_defaults_direct_invariants_to_zero" time="1.502" /><testcase classname="tests.test_s5_a0_result_finalizer" name="test_observed_direct_invariant_violation_blocks_a0_pass" time="1.487" /><testcase classname="tests.test_s5_a0_result_finalizer" name="test_authority_must_bind_the_executed_result_verifier_source" time="0.010"><failure message="paper_eval.s5_a0_controller.S5A0ControllerError: authority_result_verifier_source_drift">tmp_path = PosixPath('/tmp/pytest-of-ly/pytest-369/test_authority_must_bind_the_e0')
+
+    def test_authority_must_bind_the_executed_result_verifier_source(
+        tmp_path: Path,
+    ) -&gt; None:
+&gt;       paths = _completed_chain(tmp_path, correct_verifier_binding=False)
+                ^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^
+
+tests/test_s5_a0_result_finalizer.py:255: 
+_ _ _ _ _ _ _ _ _ _ _ _ _ _ _ _ _ _ _ _ _ _ _ _ _ _ _ _ _ _ _ _ _ _ _ _ _ _ _ _ 
+tests/test_s5_a0_result_finalizer.py:150: in _completed_chain
+    controller_result = asyncio.run(
+/usr/lib/python3.12/asyncio/runners.py:194: in run
+    return runner.run(main)
+           ^^^^^^^^^^^^^^^^
+/usr/lib/python3.12/asyncio/runners.py:118: in run
+    return self._loop.run_until_complete(task)
+           ^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^
+/usr/lib/python3.12/asyncio/base_events.py:687: in run_until_complete
+    return future.result()
+           ^^^^^^^^^^^^^^^
+src/paper_eval/s5_a0_controller.py:574: in execute_s5_a0_controller
+    _preconsume_chain(paths=paths, episodes=episodes)
+_ _ _ _ _ _ _ _ _ _ _ _ _ _ _ _ _ _ _ _ _ _ _ _ _ _ _ _ _ _ _ _ _ _ _ _ _ _ _ _ 
+
+paths = S5A0ControllerPaths(production_identity=PosixPath('/tmp/pytest-of-ly/pytest-369/test_authority_must_bind_the_e0/S5_A0_...attempt_root=PosixPath('/tmp/pytest-of-ly/pytest-369/test_authority_must_bind_the_e0/runs/s5-a0-20260816-101/attempt'))
+episodes = (S5EpisodeRef(source_sequence=0, source_sha256='0000000000000000000000000000000000000000000000000000000000000001', nat...0000000000000000000000006', native_episode=_NativeEpisode(group_id='pev3-s5-a0-20260816-101', source_sequence=5)), ...)
+
+    def _preconsume_chain(
+        *, paths: S5A0ControllerPaths, episodes: Sequence[S5EpisodeRef]
+    ) -&gt; tuple[
+        dict[str, object],
+        dict[str, object],
+        dict[str, Any],
+        dict[str, Any],
+        str,
+    ]:
+        if not isinstance(paths, S5A0ControllerPaths):
+            raise _fail("controller_paths_invalid")
+        if Path(paths.consumption).exists():
+            raise _fail("authority_consumption_exists")
+        if Path(paths.controller_root).exists() or Path(paths.attempt_root).exists():
+            raise _fail("controller_or_native_attempt_exists")
+        try:
+            identity = verify_s5_production_identity(
+                _read_json(paths.production_identity, "production_identity_invalid")
+            )
+        except (S5ProductionIdentityError, ValueError):
+            raise _fail("production_identity_invalid") from None
+        if identity.get("method") != A0:
+            raise _fail("production_identity_method_invalid")
+        identity_file_sha = sha256_file(paths.production_identity)
+        if identity_file_sha == "missing":
+            raise _fail("production_identity_missing")
+    
+        try:
+            qualification = verify_s5_production_identity_qualification(
+                _read_json(
+                    paths.production_identity_qualification,
+                    "production_identity_qualification_invalid",
+                )
+            )
+            qualification_file_sha = sha256_file(
+                paths.production_identity_qualification
+            )
+            qualification_binding = bind_s5_production_identity_qualification(
+                qualification, file_sha256=qualification_file_sha
+            )
+        except (S5ProductionIdentityQualificationError, ValueError):
+            raise _fail("production_identity_qualification_invalid") from None
+        if (
+            qualification_binding.get("method") != A0
+            or qualification_binding.get("production_identity_sha256")
+            != identity["identity_sha256"]
+            or qualification_binding.get("production_identity_file_sha256")
+            != identity_file_sha
+        ):
+            raise _fail("production_identity_qualification_binding_invalid")
+    
+        pointer = _read_json(paths.current_stage_pointer, "current_pointer_invalid")
+        pointer_file_sha = sha256_file(paths.current_stage_pointer)
+        pointer_payload = pointer.get("payload")
+        if (
+            pointer_file_sha == "missing"
+            or not isinstance(pointer_payload, Mapping)
+            or pointer.get("payload_sha256") != payload_sha256(pointer_payload)
+            or pointer_payload.get("current_stage") != "S3_CONFIGURATION_FROZEN"
+            or qualification_binding["current_stage_pointer"]["file_sha256"]
+            != pointer_file_sha
+            or qualification_binding["current_stage_pointer"]["payload_sha256"]
+            != pointer.get("payload_sha256")
+        ):
+            raise _fail("current_pointer_binding_invalid")
+    
+        try:
+            preflight = verify_s5_live_preflight(
+                _read_json(paths.preflight, "preflight_invalid")
+            )
+            authority = verify_s5_live_authority(
+                _read_json(paths.authority, "authority_invalid")
+            )
+        except (S5LivePreflightError, S5LiveAuthorityError, ValueError):
+            raise _fail("preflight_or_authority_invalid") from None
+        authority_file_sha = sha256_file(paths.authority)
+        preflight_file_sha = sha256_file(paths.preflight)
+        run = authority["payload"]["run"]
+        source_manifest = _source_manifest(episodes)
+        if (
+            not isinstance(run, Mapping)
+            or run.get("method") != A0
+            or authority["payload"].get("preflight_file_sha256")
+            != preflight_file_sha
+            or authority["payload"].get("preflight_payload_sha256")
+            != preflight.get("payload_sha256")
+            or authority["payload"].get("current_stage_pointer_sha256")
+            != pointer_file_sha
+            or authority["payload"].get("production_identity_qualification")
+            != qualification_binding
+            or run.get("source_manifest_sha256") != source_manifest
+            or preflight["payload"].get("workload", {}).get(
+                "source_manifest_sha256"
+            )
+            != source_manifest
+            or authority_file_sha == "missing"
+        ):
+            raise _fail("authority_chain_binding_invalid")
+        run_id = str(run.get("run_id", ""))
+        namespace = str(run.get("namespace", ""))
+        if _RUN_ID.fullmatch(run_id) is None or namespace != f"pev3-{run_id}":
+            raise _fail("run_identity_invalid")
+        for item in episodes:
+            if getattr(item.native_episode, "group_id", None) != namespace:
+                raise _fail("episode_namespace_binding_invalid")
+    
+        authority_sources = authority["payload"].get("source_sha256", {})
+        if (
+            not isinstance(authority_sources, Mapping)
+            or authority_sources.get("controller") != sha256_file(Path(__file__))
+        ):
+            raise _fail("authority_controller_source_drift")
+        if authority_sources.get("result_verifier") != sha256_file(
+            _RESULT_VERIFIER_SOURCE
+        ):
+&gt;           raise _fail("authority_result_verifier_source_drift")
+E           paper_eval.s5_a0_controller.S5A0ControllerError: authority_result_verifier_source_drift
+
+src/paper_eval/s5_a0_controller.py:336: S5A0ControllerError</failure></testcase><testcase classname="tests.test_s5_a0_result_finalizer" name="test_native_or_observation_tampering_fails_before_result_write" time="1.481" /><testcase classname="tests.test_s5_a0_result_finalizer" name="test_final_result_is_exclusive_and_standalone_tampering_is_rejected" time="1.744" /><testcase classname="tests.test_s5_native_post_observation" name="test_exact_49_source_observation_is_sanitized_and_hash_sealed" time="0.002" /><testcase classname="tests.test_s5_native_post_observation" name="test_observation_verifier_accepts_canonical_sorted_json_round_trip" time="0.001" /><testcase classname="tests.test_s5_native_post_observation" name="test_graphiti_query_adapter_maps_exact_episode_name_without_db_source_fields" time="0.001" /><testcase classname="tests.test_s5_native_post_observation" name="test_expected_source_inventory_must_be_exactly_49[-1]" time="0.001" /><testcase classname="tests.test_s5_native_post_observation" name="test_expected_source_inventory_must_be_exactly_49[1]" time="0.000" /><testcase classname="tests.test_s5_native_post_observation" name="test_durable_publication_coverage_fails_closed[lost]" time="0.001" /><testcase classname="tests.test_s5_native_post_observation" name="test_durable_publication_coverage_fails_closed[duplicate]" time="0.001" /><testcase classname="tests.test_s5_native_post_observation" name="test_durable_publication_coverage_fails_closed[unexpected]" time="0.001" /><testcase classname="tests.test_s5_native_post_observation" name="test_durable_publication_coverage_fails_closed[hash]" time="0.001" /><testcase classname="tests.test_s5_native_post_observation" name="test_persisted_episodic_coverage_fails_closed[lost]" time="0.001" /><testcase classname="tests.test_s5_native_post_observation" name="test_persisted_episodic_coverage_fails_closed[duplicate]" time="0.001" /><testcase classname="tests.test_s5_native_post_observation" name="test_persisted_episodic_coverage_fails_closed[unexpected]" time="0.001" /><testcase classname="tests.test_s5_native_post_observation" name="test_persisted_episodic_coverage_fails_closed[hash]" time="0.001" /><testcase classname="tests.test_s5_native_post_observation" name="test_cross_namespace_episodic_cannot_satisfy_exact_source_coverage" time="0.001" /><testcase classname="tests.test_s5_native_post_observation" name="test_relation_without_provenance_is_classified_as_dangling" time="0.001" /><testcase classname="tests.test_s5_native_post_observation" name="test_graph_escape_provenance_and_temporal_violations_are_counted" time="0.001" /><testcase classname="tests.test_s5_native_post_observation" name="test_expired_at_is_not_compared_with_reference_time" time="0.001" /><testcase classname="tests.test_s5_native_post_observation" name="test_query_failure_is_sanitized" time="0.000" /><testcase classname="tests.test_s5_native_post_observation" name="test_artifact_digest_or_public_shape_tampering_fails_closed" time="0.001" /></testsuite></testsuites>

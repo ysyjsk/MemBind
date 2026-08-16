@@ -1,0 +1,66 @@
+<?xml version="1.0" encoding="utf-8"?><testsuites name="pytest tests"><testsuite name="pytest" errors="0" failures="1" skipped="0" tests="5" time="0.031" timestamp="2026-08-16T02:26:45.474478+08:00" hostname="aces-System-Product-Name"><testcase classname="tests.test_s5_mstar_live_semantic_adapter" name="test_live_adapter_matches_native_snapshot_and_latest_retrieval_arguments" time="0.001"><failure message="assert datetime.datetime(2025, 1, 2, 3, 4, 5, 123456, tzinfo=datetime.timezone.utc) == datetime.datetime(2025, 1, 2, 3, 4, 5, 123457, tzinfo=datetime.timezone.utc)&#10; +  where datetime.datetime(2025, 1, 2, 3, 4, 5, 123456, tzinfo=datetime.timezone.utc) = &lt;test_s5_mstar_live_semantic_adapter._EpisodeNode object at 0x78012bd9e7e0&gt;.created_at&#10; +  and   datetime.datetime(2025, 1, 2, 3, 4, 5, 123457, tzinfo=datetime.timezone.utc) = &lt;built-in method fromtimestamp of type object at 0xa50d20&gt;((1735787045123456789 / 1000000000), tz=datetime.timezone.utc)&#10; +    where &lt;built-in method fromtimestamp of type object at 0xa50d20&gt; = datetime.fromtimestamp&#10; +    and   datetime.timezone.utc = timezone.utc">def test_live_adapter_matches_native_snapshot_and_latest_retrieval_arguments() -&gt; None:
+        observed: dict[str, object] = {}
+        retrievals: list[dict[str, object]] = []
+        driver = _Driver("neo4j")
+    
+        class GraphitiDouble:
+            def __init__(self) -&gt; None:
+                self.driver = driver
+                self.clients = SimpleNamespace(driver=driver)
+    
+            async def retrieve_episodes(self, reference_time, **kwargs):
+                retrievals.append(
+                    {
+                        "reference_time": reference_time,
+                        "last_n": kwargs.get("last_n"),
+                        "group_ids": kwargs.get("group_ids"),
+                        "source": kwargs.get("source"),
+                        "database": self.driver._database,
+                    }
+                )
+                return ["prepare-snapshot"] if len(retrievals) == 1 else ["bind-latest"]
+    
+        graphiti = GraphitiDouble()
+        adapter = S5MStarLiveSemanticAdapter(
+            graphiti=graphiti,
+            semantic_binding=_binding(observed),
+            graphiti_episode_kwargs=_episode_kwargs,
+            episodic_node_type=_EpisodeNode,
+        )
+        logical_time_ns = 1_735_787_045_123_456_789
+    
+        prepared = asyncio.run(adapter.prepare(_episode(), logical_time_ns))
+        result = asyncio.run(adapter.bind(prepared, logical_time_ns, 0, ()))
+    
+        assert len(retrievals) == 2
+        assert retrievals == [
+            {
+                "reference_time": datetime(2025, 1, 2, 3, 4, 5, tzinfo=timezone.utc),
+                "last_n": RELEVANT_SCHEMA_LIMIT,
+                "group_ids": [NAMESPACE],
+                "source": "message",
+                "database": NAMESPACE,
+            },
+            {
+                "reference_time": datetime(2025, 1, 2, 3, 4, 5, tzinfo=timezone.utc),
+                "last_n": RELEVANT_SCHEMA_LIMIT,
+                "group_ids": [NAMESPACE],
+                "source": "message",
+                "database": NAMESPACE,
+            },
+        ]
+        assert observed["extract_previous"] == ["prepare-snapshot"]
+        assert observed["resolve_previous"] == ["bind-latest"]
+        assert observed["commit_group_id"] == NAMESPACE
+        episode_node = observed["committed_episode"]
+        assert episode_node.created_at == observed["commit_now"]
+&gt;       assert episode_node.created_at == datetime.fromtimestamp(
+            logical_time_ns / 1_000_000_000, tz=timezone.utc
+        )
+E       assert datetime.datetime(2025, 1, 2, 3, 4, 5, 123456, tzinfo=datetime.timezone.utc) == datetime.datetime(2025, 1, 2, 3, 4, 5, 123457, tzinfo=datetime.timezone.utc)
+E        +  where datetime.datetime(2025, 1, 2, 3, 4, 5, 123456, tzinfo=datetime.timezone.utc) = &lt;test_s5_mstar_live_semantic_adapter._EpisodeNode object at 0x78012bd9e7e0&gt;.created_at
+E        +  and   datetime.datetime(2025, 1, 2, 3, 4, 5, 123457, tzinfo=datetime.timezone.utc) = &lt;built-in method fromtimestamp of type object at 0xa50d20&gt;((1735787045123456789 / 1000000000), tz=datetime.timezone.utc)
+E        +    where &lt;built-in method fromtimestamp of type object at 0xa50d20&gt; = datetime.fromtimestamp
+E        +    and   datetime.timezone.utc = timezone.utc
+
+tests/test_s5_mstar_live_semantic_adapter.py:175: AssertionError</failure></testcase><testcase classname="tests.test_s5_mstar_live_semantic_adapter" name="test_materialized_sources_are_exact_and_use_epoch_not_monotonic_time" time="0.000" /><testcase classname="tests.test_s5_mstar_live_semantic_adapter" name="test_materialization_fails_closed_on_workload_or_namespace_drift[&lt;lambda&gt;-source_count]" time="0.000" /><testcase classname="tests.test_s5_mstar_live_semantic_adapter" name="test_materialization_fails_closed_on_workload_or_namespace_drift[&lt;lambda&gt;-namespace]" time="0.000" /><testcase classname="tests.test_s5_mstar_live_semantic_adapter" name="test_adapter_rejects_non_utc_reference_time_before_model_or_db_work" time="0.000" /></testsuite></testsuites>

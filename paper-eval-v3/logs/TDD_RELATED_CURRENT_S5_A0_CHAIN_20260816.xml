@@ -1,0 +1,430 @@
+<?xml version="1.0" encoding="utf-8"?><testsuites name="pytest tests"><testsuite name="pytest" errors="0" failures="3" skipped="0" tests="98" time="10.460" timestamp="2026-08-16T01:36:19.346051+08:00" hostname="aces-System-Product-Name"><testcase classname="tests.test_s5_a0_result_finalizer" name="test_complete_cross_bound_chain_is_the_only_path_to_scientific_pass" time="1.473"><failure message="paper_eval.s5_a0_result_finalizer.S5A0FinalizerError: post_observation_invalid">tmp_path = PosixPath('/tmp/pytest-of-ly/pytest-356/test_complete_cross_bound_chai0')
+
+    def test_complete_cross_bound_chain_is_the_only_path_to_scientific_pass(
+        tmp_path: Path,
+    ) -&gt; None:
+        paths = _completed_chain(tmp_path)
+    
+&gt;       artifact = finalize_s5_a0_result(paths=paths, git_commit="deadbeef")
+                   ^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^
+
+tests/test_s5_a0_result_finalizer.py:213: 
+_ _ _ _ _ _ _ _ _ _ _ _ _ _ _ _ _ _ _ _ _ _ _ _ _ _ _ _ _ _ _ _ _ _ _ _ _ _ _ _ 
+src/paper_eval/s5_a0_result_finalizer.py:456: in finalize_s5_a0_result
+    verified = _verify_chain(paths)
+               ^^^^^^^^^^^^^^^^^^^^
+_ _ _ _ _ _ _ _ _ _ _ _ _ _ _ _ _ _ _ _ _ _ _ _ _ _ _ _ _ _ _ _ _ _ _ _ _ _ _ _ 
+
+paths = S5A0FinalizerPaths(production_identity=PosixPath('/tmp/pytest-of-ly/pytest-356/test_complete_cross_bound_chai0/S5_A0_P...lt=PosixPath('/tmp/pytest-of-ly/pytest-356/test_complete_cross_bound_chai0/runs/s5-a0-20260816-101/S5_A0_RESULT.json'))
+
+    def _verify_chain(paths: S5A0FinalizerPaths) -&gt; dict[str, object]:
+        if not isinstance(paths, S5A0FinalizerPaths):
+            raise _fail("finalizer_paths_invalid")
+        if Path(paths.result).exists():
+            raise _fail("result_exists")
+    
+        try:
+            identity = verify_s5_production_identity(
+                _load(paths.production_identity, "production_identity_invalid")
+            )
+        except Exception:
+            raise _fail("production_identity_invalid") from None
+        identity_file_sha = _file_sha(
+            paths.production_identity, "production_identity_invalid"
+        )
+        if identity.get("method") != "A0":
+            raise _fail("production_identity_method_mismatch")
+    
+        try:
+            qualification = verify_s5_production_identity_qualification(
+                _load(
+                    paths.production_identity_qualification,
+                    "production_identity_qualification_invalid",
+                )
+            )
+            qualification_file_sha = _file_sha(
+                paths.production_identity_qualification,
+                "production_identity_qualification_invalid",
+            )
+            qualification_binding = bind_s5_production_identity_qualification(
+                qualification,
+                file_sha256=qualification_file_sha,
+            )
+        except Exception:
+            raise _fail("production_identity_qualification_invalid") from None
+        if (
+            qualification_binding.get("method") != "A0"
+            or qualification_binding.get("production_identity_sha256")
+            != identity.get("identity_sha256")
+            or qualification_binding.get("production_identity_file_sha256")
+            != identity_file_sha
+        ):
+            raise _fail("production_identity_qualification_binding_mismatch")
+    
+        pointer, pointer_file_sha = _sealed_pointer(paths.current_stage_pointer)
+        qualified_pointer = qualification_binding.get("current_stage_pointer")
+        if (
+            not isinstance(qualified_pointer, Mapping)
+            or qualified_pointer.get("file_sha256") != pointer_file_sha
+            or qualified_pointer.get("payload_sha256")
+            != pointer.get("payload_sha256")
+            or qualified_pointer.get("run_id") != pointer.get("run_id")
+        ):
+            raise _fail("qualification_pointer_binding_mismatch")
+    
+        try:
+            preflight = verify_s5_live_preflight(
+                _load(paths.preflight, "preflight_invalid")
+            )
+        except Exception:
+            raise _fail("preflight_invalid") from None
+        preflight_file_sha = _file_sha(paths.preflight, "preflight_invalid")
+        preflight_payload = preflight["payload"]
+        if (
+            preflight_payload.get("method") != "A0"
+            or preflight_payload.get("production_identity_qualification")
+            != qualification_binding
+            or preflight_payload.get("current_stage_pointer", {}).get("file_sha256")
+            != pointer_file_sha
+            or preflight_payload.get("current_stage_pointer", {}).get(
+                "payload_sha256"
+            )
+            != pointer.get("payload_sha256")
+        ):
+            raise _fail("preflight_chain_mismatch")
+    
+        try:
+            authority = verify_s5_live_authority(
+                _load(paths.authority, "authority_invalid")
+            )
+        except Exception:
+            raise _fail("authority_invalid") from None
+        authority_file_sha = _file_sha(paths.authority, "authority_invalid")
+        authority_payload = authority["payload"]
+        run = authority_payload.get("run")
+        source_binding = authority_payload.get("source_sha256")
+        if (
+            authority_payload.get("method") != "A0"
+            or not isinstance(run, Mapping)
+            or authority_payload.get("production_identity_qualification")
+            != qualification_binding
+            or authority_payload.get("preflight_file_sha256") != preflight_file_sha
+            or authority_payload.get("preflight_payload_sha256")
+            != preflight.get("payload_sha256")
+            or authority_payload.get("current_stage_pointer_sha256")
+            != pointer_file_sha
+        ):
+            raise _fail("authority_chain_mismatch")
+        if (
+            not isinstance(source_binding, Mapping)
+            or source_binding.get("result_verifier")
+            != _file_sha(_RESULT_SOURCE, "result_verifier_source_missing")
+        ):
+            raise _fail("result_verifier_source_binding_mismatch")
+    
+        try:
+            consumption = verify_s5_live_authority_consumption(
+                _load(paths.consumption, "consumption_invalid")
+            )
+        except Exception:
+            raise _fail("consumption_invalid") from None
+        consumption_payload = consumption["payload"]
+        if (
+            consumption_payload.get("method") != "A0"
+            or consumption_payload.get("run") != run
+            or consumption_payload.get("authority_file_sha256")
+            != authority_file_sha
+            or consumption_payload.get("authority_payload_sha256")
+            != authority.get("payload_sha256")
+            or consumption_payload.get("production_identity_sha256")
+            != identity.get("identity_sha256")
+            or consumption_payload.get(
+                "production_identity_qualification_payload_sha256"
+            )
+            != qualification.get("payload_sha256")
+        ):
+            raise _fail("consumption_chain_mismatch")
+    
+        try:
+            controller = inspect_s5_a0_controller_attempt(paths.controller_root)
+        except Exception:
+            raise _fail("controller_attempt_invalid") from None
+        controller_checkpoint = controller["checkpoint"]
+        controller_events = controller["events"]
+        expected_controller_events = [
+            "authority_consumed",
+            "runtime_constructed",
+            "runtime_ready",
+            "native_runner_started",
+            "runtime_closed",
+            "raw_runner_evidence_complete",
+        ]
+        if (
+            controller_checkpoint.get("run_id") != run.get("run_id")
+            or controller_checkpoint.get("status")
+            != "controller_complete_evidence_only"
+            or [event.get("event_type") for event in controller_events]
+            != expected_controller_events
+        ):
+            raise _fail("controller_attempt_incomplete")
+    
+        try:
+            attempt = inspect_s5_attempt(paths.attempt_root)
+        except Exception:
+            raise _fail("native_attempt_invalid") from None
+        manifest = attempt["manifest"]
+        native_result = attempt.get("result")
+        native_payload = (
+            native_result.get("payload") if isinstance(native_result, Mapping) else None
+        )
+        source_sha256s = manifest.get("source_sha256s")
+        if (
+            manifest.get("run_id") != run.get("run_id")
+            or manifest.get("method") != "A0"
+            or manifest.get("production_core_identity_sha256")
+            != identity.get("identity_sha256")
+            or not isinstance(source_sha256s, list)
+            or len(source_sha256s) != 49
+            or not isinstance(native_result, Mapping)
+            or native_result.get("status") != "complete"
+            or not isinstance(native_payload, Mapping)
+            or native_payload.get("status") != "PASS"
+        ):
+            raise _fail("native_attempt_incomplete")
+        source_manifest = payload_sha256(
+            [
+                {"source_sequence": index, "source_sha256": digest}
+                for index, digest in enumerate(source_sha256s)
+            ]
+        )
+        if source_manifest != run.get("source_manifest_sha256"):
+            raise _fail("native_source_manifest_mismatch")
+    
+        try:
+            post = verify_s5_native_post_observation(
+                _load(paths.post_observation, "post_observation_invalid")
+            )
+        except Exception:
+&gt;           raise _fail("post_observation_invalid") from None
+E           paper_eval.s5_a0_result_finalizer.S5A0FinalizerError: post_observation_invalid
+
+src/paper_eval/s5_a0_result_finalizer.py:391: S5A0FinalizerError</failure></testcase><testcase classname="tests.test_s5_a0_result_finalizer" name="test_missing_observation_never_defaults_direct_invariants_to_zero" time="1.490" /><testcase classname="tests.test_s5_a0_result_finalizer" name="test_observed_direct_invariant_violation_blocks_a0_pass" time="1.508"><failure message="AssertionError: Regex pattern did not match.&#10;  Expected regex: 'direct_invariant'&#10;  Actual message: 'post_observation_invalid'">tmp_path = PosixPath('/tmp/pytest-of-ly/pytest-356/test_observed_direct_invariant0')
+
+    def test_observed_direct_invariant_violation_blocks_a0_pass(tmp_path: Path) -&gt; None:
+        paths = _completed_chain(tmp_path, observation_violation=True)
+    
+&gt;       with pytest.raises(S5A0FinalizerError, match="direct_invariant"):
+E       AssertionError: Regex pattern did not match.
+E         Expected regex: 'direct_invariant'
+E         Actual message: 'post_observation_invalid'
+
+tests/test_s5_a0_result_finalizer.py:247: AssertionError</failure></testcase><testcase classname="tests.test_s5_a0_result_finalizer" name="test_authority_must_bind_the_executed_result_verifier_source" time="1.487" /><testcase classname="tests.test_s5_a0_result_finalizer" name="test_native_or_observation_tampering_fails_before_result_write" time="1.492" /><testcase classname="tests.test_s5_a0_result_finalizer" name="test_final_result_is_exclusive_and_standalone_tampering_is_rejected" time="1.475"><failure message="paper_eval.s5_a0_result_finalizer.S5A0FinalizerError: post_observation_invalid">tmp_path = PosixPath('/tmp/pytest-of-ly/pytest-356/test_final_result_is_exclusive0')
+
+    def test_final_result_is_exclusive_and_standalone_tampering_is_rejected(
+        tmp_path: Path,
+    ) -&gt; None:
+        paths = _completed_chain(tmp_path)
+&gt;       artifact = finalize_s5_a0_result(paths=paths, git_commit="deadbeef")
+                   ^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^
+
+tests/test_s5_a0_result_finalizer.py:280: 
+_ _ _ _ _ _ _ _ _ _ _ _ _ _ _ _ _ _ _ _ _ _ _ _ _ _ _ _ _ _ _ _ _ _ _ _ _ _ _ _ 
+src/paper_eval/s5_a0_result_finalizer.py:456: in finalize_s5_a0_result
+    verified = _verify_chain(paths)
+               ^^^^^^^^^^^^^^^^^^^^
+_ _ _ _ _ _ _ _ _ _ _ _ _ _ _ _ _ _ _ _ _ _ _ _ _ _ _ _ _ _ _ _ _ _ _ _ _ _ _ _ 
+
+paths = S5A0FinalizerPaths(production_identity=PosixPath('/tmp/pytest-of-ly/pytest-356/test_final_result_is_exclusive0/S5_A0_P...lt=PosixPath('/tmp/pytest-of-ly/pytest-356/test_final_result_is_exclusive0/runs/s5-a0-20260816-101/S5_A0_RESULT.json'))
+
+    def _verify_chain(paths: S5A0FinalizerPaths) -&gt; dict[str, object]:
+        if not isinstance(paths, S5A0FinalizerPaths):
+            raise _fail("finalizer_paths_invalid")
+        if Path(paths.result).exists():
+            raise _fail("result_exists")
+    
+        try:
+            identity = verify_s5_production_identity(
+                _load(paths.production_identity, "production_identity_invalid")
+            )
+        except Exception:
+            raise _fail("production_identity_invalid") from None
+        identity_file_sha = _file_sha(
+            paths.production_identity, "production_identity_invalid"
+        )
+        if identity.get("method") != "A0":
+            raise _fail("production_identity_method_mismatch")
+    
+        try:
+            qualification = verify_s5_production_identity_qualification(
+                _load(
+                    paths.production_identity_qualification,
+                    "production_identity_qualification_invalid",
+                )
+            )
+            qualification_file_sha = _file_sha(
+                paths.production_identity_qualification,
+                "production_identity_qualification_invalid",
+            )
+            qualification_binding = bind_s5_production_identity_qualification(
+                qualification,
+                file_sha256=qualification_file_sha,
+            )
+        except Exception:
+            raise _fail("production_identity_qualification_invalid") from None
+        if (
+            qualification_binding.get("method") != "A0"
+            or qualification_binding.get("production_identity_sha256")
+            != identity.get("identity_sha256")
+            or qualification_binding.get("production_identity_file_sha256")
+            != identity_file_sha
+        ):
+            raise _fail("production_identity_qualification_binding_mismatch")
+    
+        pointer, pointer_file_sha = _sealed_pointer(paths.current_stage_pointer)
+        qualified_pointer = qualification_binding.get("current_stage_pointer")
+        if (
+            not isinstance(qualified_pointer, Mapping)
+            or qualified_pointer.get("file_sha256") != pointer_file_sha
+            or qualified_pointer.get("payload_sha256")
+            != pointer.get("payload_sha256")
+            or qualified_pointer.get("run_id") != pointer.get("run_id")
+        ):
+            raise _fail("qualification_pointer_binding_mismatch")
+    
+        try:
+            preflight = verify_s5_live_preflight(
+                _load(paths.preflight, "preflight_invalid")
+            )
+        except Exception:
+            raise _fail("preflight_invalid") from None
+        preflight_file_sha = _file_sha(paths.preflight, "preflight_invalid")
+        preflight_payload = preflight["payload"]
+        if (
+            preflight_payload.get("method") != "A0"
+            or preflight_payload.get("production_identity_qualification")
+            != qualification_binding
+            or preflight_payload.get("current_stage_pointer", {}).get("file_sha256")
+            != pointer_file_sha
+            or preflight_payload.get("current_stage_pointer", {}).get(
+                "payload_sha256"
+            )
+            != pointer.get("payload_sha256")
+        ):
+            raise _fail("preflight_chain_mismatch")
+    
+        try:
+            authority = verify_s5_live_authority(
+                _load(paths.authority, "authority_invalid")
+            )
+        except Exception:
+            raise _fail("authority_invalid") from None
+        authority_file_sha = _file_sha(paths.authority, "authority_invalid")
+        authority_payload = authority["payload"]
+        run = authority_payload.get("run")
+        source_binding = authority_payload.get("source_sha256")
+        if (
+            authority_payload.get("method") != "A0"
+            or not isinstance(run, Mapping)
+            or authority_payload.get("production_identity_qualification")
+            != qualification_binding
+            or authority_payload.get("preflight_file_sha256") != preflight_file_sha
+            or authority_payload.get("preflight_payload_sha256")
+            != preflight.get("payload_sha256")
+            or authority_payload.get("current_stage_pointer_sha256")
+            != pointer_file_sha
+        ):
+            raise _fail("authority_chain_mismatch")
+        if (
+            not isinstance(source_binding, Mapping)
+            or source_binding.get("result_verifier")
+            != _file_sha(_RESULT_SOURCE, "result_verifier_source_missing")
+        ):
+            raise _fail("result_verifier_source_binding_mismatch")
+    
+        try:
+            consumption = verify_s5_live_authority_consumption(
+                _load(paths.consumption, "consumption_invalid")
+            )
+        except Exception:
+            raise _fail("consumption_invalid") from None
+        consumption_payload = consumption["payload"]
+        if (
+            consumption_payload.get("method") != "A0"
+            or consumption_payload.get("run") != run
+            or consumption_payload.get("authority_file_sha256")
+            != authority_file_sha
+            or consumption_payload.get("authority_payload_sha256")
+            != authority.get("payload_sha256")
+            or consumption_payload.get("production_identity_sha256")
+            != identity.get("identity_sha256")
+            or consumption_payload.get(
+                "production_identity_qualification_payload_sha256"
+            )
+            != qualification.get("payload_sha256")
+        ):
+            raise _fail("consumption_chain_mismatch")
+    
+        try:
+            controller = inspect_s5_a0_controller_attempt(paths.controller_root)
+        except Exception:
+            raise _fail("controller_attempt_invalid") from None
+        controller_checkpoint = controller["checkpoint"]
+        controller_events = controller["events"]
+        expected_controller_events = [
+            "authority_consumed",
+            "runtime_constructed",
+            "runtime_ready",
+            "native_runner_started",
+            "runtime_closed",
+            "raw_runner_evidence_complete",
+        ]
+        if (
+            controller_checkpoint.get("run_id") != run.get("run_id")
+            or controller_checkpoint.get("status")
+            != "controller_complete_evidence_only"
+            or [event.get("event_type") for event in controller_events]
+            != expected_controller_events
+        ):
+            raise _fail("controller_attempt_incomplete")
+    
+        try:
+            attempt = inspect_s5_attempt(paths.attempt_root)
+        except Exception:
+            raise _fail("native_attempt_invalid") from None
+        manifest = attempt["manifest"]
+        native_result = attempt.get("result")
+        native_payload = (
+            native_result.get("payload") if isinstance(native_result, Mapping) else None
+        )
+        source_sha256s = manifest.get("source_sha256s")
+        if (
+            manifest.get("run_id") != run.get("run_id")
+            or manifest.get("method") != "A0"
+            or manifest.get("production_core_identity_sha256")
+            != identity.get("identity_sha256")
+            or not isinstance(source_sha256s, list)
+            or len(source_sha256s) != 49
+            or not isinstance(native_result, Mapping)
+            or native_result.get("status") != "complete"
+            or not isinstance(native_payload, Mapping)
+            or native_payload.get("status") != "PASS"
+        ):
+            raise _fail("native_attempt_incomplete")
+        source_manifest = payload_sha256(
+            [
+                {"source_sequence": index, "source_sha256": digest}
+                for index, digest in enumerate(source_sha256s)
+            ]
+        )
+        if source_manifest != run.get("source_manifest_sha256"):
+            raise _fail("native_source_manifest_mismatch")
+    
+        try:
+            post = verify_s5_native_post_observation(
+                _load(paths.post_observation, "post_observation_invalid")
+            )
+        except Exception:
+&gt;           raise _fail("post_observation_invalid") from None
+E           paper_eval.s5_a0_result_finalizer.S5A0FinalizerError: post_observation_invalid
+
+src/paper_eval/s5_a0_result_finalizer.py:391: S5A0FinalizerError</failure></testcase><testcase classname="tests.test_s5_a0_controller" name="test_complete_sealed_chain_is_validated_before_authority_consumption" time="0.009" /><testcase classname="tests.test_s5_a0_controller" name="test_consumption_is_exclusive_and_precedes_env_runtime_graphiti_and_readiness" time="0.042" /><testcase classname="tests.test_s5_a0_controller" name="test_post_consumption_failures_are_sanitized_incomplete_and_non_resumable[runtime-runtime_construction-expected_trace0]" time="0.031" /><testcase classname="tests.test_s5_a0_controller" name="test_post_consumption_failures_are_sanitized_incomplete_and_non_resumable[readiness-runtime_readiness-expected_trace1]" time="0.037" /><testcase classname="tests.test_s5_a0_controller" name="test_post_consumption_failures_are_sanitized_incomplete_and_non_resumable[native-native_execution-expected_trace2]" time="0.040" /><testcase classname="tests.test_s5_a0_controller" name="test_native_incomplete_result_is_not_promoted_to_controller_or_scientific_pass" time="0.042" /><testcase classname="tests.test_s5_a0_controller" name="test_raw_unqualified_identity_cannot_substitute_for_qualification" time="0.009" /><testcase classname="tests.test_s5_native_post_observation" name="test_exact_49_source_observation_is_sanitized_and_hash_sealed" time="0.002" /><testcase classname="tests.test_s5_native_post_observation" name="test_graphiti_query_adapter_maps_exact_episode_name_without_db_source_fields" time="0.001" /><testcase classname="tests.test_s5_native_post_observation" name="test_expected_source_inventory_must_be_exactly_49[-1]" time="0.000" /><testcase classname="tests.test_s5_native_post_observation" name="test_expected_source_inventory_must_be_exactly_49[1]" time="0.000" /><testcase classname="tests.test_s5_native_post_observation" name="test_durable_publication_coverage_fails_closed[lost]" time="0.001" /><testcase classname="tests.test_s5_native_post_observation" name="test_durable_publication_coverage_fails_closed[duplicate]" time="0.001" /><testcase classname="tests.test_s5_native_post_observation" name="test_durable_publication_coverage_fails_closed[unexpected]" time="0.001" /><testcase classname="tests.test_s5_native_post_observation" name="test_durable_publication_coverage_fails_closed[hash]" time="0.001" /><testcase classname="tests.test_s5_native_post_observation" name="test_persisted_episodic_coverage_fails_closed[lost]" time="0.001" /><testcase classname="tests.test_s5_native_post_observation" name="test_persisted_episodic_coverage_fails_closed[duplicate]" time="0.001" /><testcase classname="tests.test_s5_native_post_observation" name="test_persisted_episodic_coverage_fails_closed[unexpected]" time="0.001" /><testcase classname="tests.test_s5_native_post_observation" name="test_persisted_episodic_coverage_fails_closed[hash]" time="0.001" /><testcase classname="tests.test_s5_native_post_observation" name="test_cross_namespace_episodic_cannot_satisfy_exact_source_coverage" time="0.001" /><testcase classname="tests.test_s5_native_post_observation" name="test_relation_without_provenance_is_classified_as_dangling" time="0.001" /><testcase classname="tests.test_s5_native_post_observation" name="test_graph_escape_provenance_and_temporal_violations_are_counted" time="0.001" /><testcase classname="tests.test_s5_native_post_observation" name="test_expired_at_is_not_compared_with_reference_time" time="0.001" /><testcase classname="tests.test_s5_native_post_observation" name="test_query_failure_is_sanitized" time="0.000" /><testcase classname="tests.test_s5_native_post_observation" name="test_artifact_digest_or_public_shape_tampering_fails_closed" time="0.001" /><testcase classname="tests.test_s5_durable_attempt_store" name="test_manifest_first_append_hashes_events_and_rejects_duplicate_attempt" time="0.036" /><testcase classname="tests.test_s5_durable_attempt_store" name="test_each_durable_event_advances_atomic_nonresumable_checkpoint" time="0.033" /><testcase classname="tests.test_s5_durable_attempt_store" name="test_append_is_contiguous_and_sanitized" time="0.024" /><testcase classname="tests.test_s5_durable_attempt_store" name="test_tampered_event_hash_fails_closed" time="0.024" /><testcase classname="tests.test_s5_durable_attempt_store" name="test_rehashed_private_event_still_fails_closed" time="0.024" /><testcase classname="tests.test_s5_durable_attempt_store" name="test_finalize_binds_result_and_writes_atomic_checkpoint" time="0.045" /><testcase classname="tests.test_s5_durable_attempt_store" name="test_finalize_derives_published_sources_from_durable_events_not_summary" time="0.054" /><testcase classname="tests.test_s5_durable_attempt_store" name="test_inspection_rejects_checkpoint_event_count_or_publication_drift" time="0.024" /><testcase classname="tests.test_s5_durable_attempt_store" name="test_finalize_rejects_event_or_identity_mismatch" time="0.024" /><testcase classname="tests.test_s5_durable_attempt_store" name="test_failed_evidence_is_terminal_non_mergeable_and_not_resumable" time="0.045" /><testcase classname="tests.test_s5_durable_attempt_store" name="test_inspection_rejects_rehashed_event_manifest_binding_drift[run_id-s5-mstar-different-001]" time="0.024" /><testcase classname="tests.test_s5_durable_attempt_store" name="test_inspection_rejects_rehashed_event_manifest_binding_drift[method-A0]" time="0.024" /><testcase classname="tests.test_s5_durable_attempt_store" name="test_inspection_rejects_rehashed_event_manifest_binding_drift[source_sha256-ffffffffffffffffffffffffffffffffffffffffffffffffffffffffffffffff]" time="0.024" /><testcase classname="tests.test_s5_durable_attempt_store" name="test_inspection_rejects_resealed_result_payload_cross_binding_drift[&lt;lambda&gt;0]" time="0.045" /><testcase classname="tests.test_s5_durable_attempt_store" name="test_inspection_rejects_resealed_result_payload_cross_binding_drift[&lt;lambda&gt;1]" time="0.045" /><testcase classname="tests.test_s5_durable_attempt_store" name="test_inspection_rejects_resealed_result_payload_cross_binding_drift[&lt;lambda&gt;2]" time="0.046" /><testcase classname="tests.test_s5_durable_attempt_store" name="test_inspection_rejects_resealed_manifest_source_inventory_drift" time="0.025" /><testcase classname="tests.test_s5_method_smoke_contract" name="test_a0_requires_fifo_single_worker_and_separates_return_from_publish" time="0.000" /><testcase classname="tests.test_s5_method_smoke_contract" name="test_p_requires_real_overlap_but_retains_direct_violation_as_observation" time="0.000" /><testcase classname="tests.test_s5_method_smoke_contract" name="test_m_requires_source_order_no_fallback_and_zero_direct_violations" time="0.000" /><testcase classname="tests.test_s5_method_smoke_contract" name="test_smoke_contract_fails_closed_on_loss_duplicate_or_bad_telemetry[&lt;lambda&gt;0]" time="0.000" /><testcase classname="tests.test_s5_method_smoke_contract" name="test_smoke_contract_fails_closed_on_loss_duplicate_or_bad_telemetry[&lt;lambda&gt;1]" time="0.000" /><testcase classname="tests.test_s5_method_smoke_contract" name="test_smoke_contract_fails_closed_on_loss_duplicate_or_bad_telemetry[&lt;lambda&gt;2]" time="0.000" /><testcase classname="tests.test_s5_method_smoke_contract" name="test_smoke_contract_fails_closed_on_loss_duplicate_or_bad_telemetry[&lt;lambda&gt;3]" time="0.000" /><testcase classname="tests.test_s5_method_smoke_contract" name="test_smoke_contract_fails_closed_on_loss_duplicate_or_bad_telemetry[&lt;lambda&gt;4]" time="0.000" /><testcase classname="tests.test_s5_method_smoke_contract" name="test_smoke_contract_fails_closed_on_loss_duplicate_or_bad_telemetry[&lt;lambda&gt;5]" time="0.000" /><testcase classname="tests.test_s5_method_smoke_contract" name="test_p_rejects_no_overlap_and_m_rejects_fallback_or_direct_violation" time="0.000" /><testcase classname="tests.test_s5_method_smoke_contract" name="test_contract_rejects_legacy_method_ids_and_private_fields" time="0.000" /><testcase classname="tests.test_s5_method_smoke_contract" name="test_mstar_pipeline_projection_reuses_common_smoke_contract" time="0.000" /><testcase classname="tests.test_s5_method_smoke_contract" name="test_mstar_pipeline_projection_fails_closed_on_missing_phase" time="0.000" /><testcase classname="tests.test_s5_method_smoke_contract" name="test_native_a0_evidence_projects_into_the_common_smoke_contract" time="0.000" /><testcase classname="tests.test_s5_method_smoke_contract" name="test_native_p_projection_binds_explicit_invariant_observations" time="0.000" /><testcase classname="tests.test_s5_method_smoke_contract" name="test_native_projection_rejects_missing_durable_or_publication_event" time="0.000" /><testcase classname="tests.test_s5_method_smoke_contract" name="test_native_projection_requires_explicit_complete_invariant_observation" time="0.000" /><testcase classname="tests.test_s5_method_smoke_contract" name="test_a0_requires_caller_return_to_precede_publication_strictly" time="0.000" /><testcase classname="tests.test_s5_native_method_adapters" name="test_a0_is_fifo_single_worker_and_returns_after_durable_enqueue_ack" time="0.001" /><testcase classname="tests.test_s5_native_method_adapters" name="test_a0_never_starts_native_service_before_intent_is_durable" time="0.001" /><testcase classname="tests.test_s5_native_method_adapters" name="test_p_c2_uses_exactly_two_workers_and_observes_whole_update_overlap" time="0.001" /><testcase classname="tests.test_s5_native_method_adapters" name="test_p_c2_fails_closed_when_two_real_intervals_do_not_overlap" time="0.001" /><testcase classname="tests.test_s5_native_method_adapters" name="test_p_c2_treatment_failure_classifies_every_scheduled_source" time="0.004" /><testcase classname="tests.test_s5_native_method_adapters" name="test_p_c2_scientific_outcome_fails_closed_on_terminal_accounting_loss" time="0.001" /><testcase classname="tests.test_s5_native_method_adapters" name="test_p_c2_does_not_return_scientific_outcome_without_durable_classification" time="0.001" /><testcase classname="tests.test_s5_native_method_adapters" name="test_native_treatment_failure_is_sanitized_and_durably_classified[A0]" time="0.001" /><testcase classname="tests.test_s5_native_method_adapters" name="test_native_treatment_failure_is_sanitized_and_durably_classified[P*]" time="0.001" /><testcase classname="tests.test_s5_native_method_adapters" name="test_spec_has_no_legacy_authority_or_namespace_input_surface" time="0.000" /><testcase classname="tests.test_s5_native_method_adapters" name="test_public_evidence_private_or_legacy_fields_fail_closed[namespace]" time="0.000" /><testcase classname="tests.test_s5_native_method_adapters" name="test_public_evidence_private_or_legacy_fields_fail_closed[authority]" time="0.000" /><testcase classname="tests.test_s5_native_method_adapters" name="test_public_evidence_private_or_legacy_fields_fail_closed[api_key]" time="0.000" /><testcase classname="tests.test_s5_native_method_adapters" name="test_public_evidence_private_or_legacy_fields_fail_closed[password]" time="0.000" /><testcase classname="tests.test_s5_native_method_adapters" name="test_public_evidence_private_or_legacy_fields_fail_closed[prompt]" time="0.000" /><testcase classname="tests.test_s5_native_method_adapters" name="test_public_evidence_private_or_legacy_fields_fail_closed[raw_response]" time="0.000" /><testcase classname="tests.test_s5_native_method_adapters" name="test_invalid_method_binding_and_episode_identity_fail_before_native_call" time="0.000" /><testcase classname="tests.test_s5_native_method_adapters" name="test_durable_sink_failure_stops_before_native_construction" time="0.000" /><testcase classname="tests.test_s5_native_method_adapters" name="test_verifier_rejects_safe_looking_shape_and_terminal_summary_drift" time="0.001" /><testcase classname="tests.test_s5_native_method_adapters" name="test_verifier_recomputes_a0_and_p_timestamp_semantics" time="0.001" /><testcase classname="tests.test_s5_production_runner" name="test_identity_is_hash_sealed_to_pinned_graphiti_and_method" time="0.000" /><testcase classname="tests.test_s5_production_runner" name="test_identity_drift_fails_closed[&lt;lambda&gt;0]" time="0.000" /><testcase classname="tests.test_s5_production_runner" name="test_identity_drift_fails_closed[&lt;lambda&gt;1]" time="0.000" /><testcase classname="tests.test_s5_production_runner" name="test_identity_drift_fails_closed[&lt;lambda&gt;2]" time="0.000" /><testcase classname="tests.test_s5_production_runner" name="test_identity_drift_fails_closed[&lt;lambda&gt;3]" time="0.000" /><testcase classname="tests.test_s5_production_runner" name="test_mstar_identity_requires_sealed_fx0_parity_artifact" time="0.000" /><testcase classname="tests.test_s5_production_runner" name="test_a0_runner_uses_exact_native_binding_and_seals_attempt" time="0.126" /><testcase classname="tests.test_s5_production_runner" name="test_runner_refuses_identity_method_or_existing_attempt" time="0.119" /><testcase classname="tests.test_s5_production_runner" name="test_p_c2_runner_requires_real_two_worker_overlap" time="0.148" /><testcase classname="tests.test_s5_production_runner" name="test_native_failure_is_persisted_as_incomplete_and_never_resumable" time="0.091" /><testcase classname="tests.test_s5_production_runner" name="test_p_treatment_failure_is_sealed_as_complete_scientific_outcome" time="0.109" /><testcase classname="tests.test_s5_production_runner" name="test_runner_rejects_private_identity_fields" time="0.000" /></testsuite></testsuites>

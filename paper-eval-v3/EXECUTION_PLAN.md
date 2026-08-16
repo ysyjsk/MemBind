@@ -675,3 +675,29 @@ The production FX0 validator requires an explicit detector, but no artifact is
 sealed yet: all transition rows must still be assembled and independently
 verified together. No live service, namespace, authority bit, or current
 stage pointer was changed.
+
+## S5 production FX0 qualification result (2026-08-16)
+
+The offline production FX0 gate is now complete. A strict source decoder,
+case-independent provider factory, seven-provider production hash projection,
+single-owner controlled environment, spec-derived fixture bindings, and an
+exclusive finalizer were implemented under RED/GREEN tests. The complete
+11-row inventory passes exact status/state/history parity through the directly
+bound pinned Graphiti 0.29.3 semantic runtime.
+
+Final evidence:
+
+```text
+verdict                    PRODUCTION_PATH_EXACT_PARITY_PASS
+fixture rows               11
+full offline regression    1151 passed, 0 failed/errors/skips
+artifact payload SHA256    196ac96bcec7e97fe4ba29bc7ce600fc169bad7f4b825ef7791f12dc1e622722
+fixture manifest SHA256    f40981830d02db7c13adf17064ce24ee47e1b2349c4674618cb5c1ff6d4b8a9d
+live service calls         0
+```
+
+The detailed result is
+`S5_GRAPHITI_FX0_PRODUCTION_QUALIFICATION_RESULT_20260816.md`; sealed artifacts
+are under `artifacts/paper_eval/native/` with the `20260816` suffix. The
+historical non-executed status artifact and current-stage pointer remain
+unchanged. This does not issue live authority or bypass the A0/P* smoke order.

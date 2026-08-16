@@ -1,0 +1,26 @@
+<?xml version="1.0" encoding="utf-8"?><testsuites name="pytest tests"><testsuite name="pytest" errors="0" failures="1" skipped="0" tests="4" time="7.669" timestamp="2026-08-16T02:17:23.129806+08:00" hostname="aces-System-Product-Name"><testcase classname="tests.test_s5_pstar_controller" name="test_pass_and_complete_scientific_outcome_are_both_controller_complete" time="3.079" /><testcase classname="tests.test_s5_pstar_controller" name="test_infrastructure_or_telemetry_failure_remains_incomplete_non_mergeable" time="1.520" /><testcase classname="tests.test_s5_pstar_controller" name="test_controller_binds_a0_predecessor_file_and_payload" time="1.496" /><testcase classname="tests.test_s5_pstar_controller" name="test_self_sealed_minimal_a0_pass_is_not_a_valid_predecessor" time="1.527"><failure message="AssertionError: minimal self-sealed A0 label must fail closed">tmp_path = PosixPath('/tmp/pytest-of-ly/pytest-390/test_self_sealed_minimal_a0_pa0')
+
+    def test_self_sealed_minimal_a0_pass_is_not_a_valid_predecessor(tmp_path: Path):
+        paths, episodes = _chain(tmp_path)
+        fake = finalize_envelope(
+            payload={"method": "A0", "verdict": "PASS"},
+            protocol_version="paper-eval-v3", git_commit="deadbeef",
+            run_id="s5-a0-fake-result",
+        )
+        _write(paths.predecessor, fake)
+        authority = json.loads(paths.authority.read_text())
+        authority["payload"]["predecessor"]["result_file_sha256"] = sha256_file(paths.predecessor)
+        authority["payload"]["predecessor"]["result_payload_sha256"] = fake["payload_sha256"]
+        _write(paths.authority, finalize_envelope(
+            payload=authority["payload"], protocol_version="paper-eval-v3",
+            git_commit="deadbeef", run_id=authority["run_id"],
+        ))
+        try:
+            _execute(paths, episodes, {"status": "complete", "payload": {"status": "PASS"}})
+        except Exception as error:
+            assert "predecessor" in str(error)
+        else:
+&gt;           raise AssertionError("minimal self-sealed A0 label must fail closed")
+E           AssertionError: minimal self-sealed A0 label must fail closed
+
+tests/test_s5_pstar_controller.py:297: AssertionError</failure></testcase></testsuite></testsuites>

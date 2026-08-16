@@ -1,0 +1,53 @@
+<?xml version="1.0" encoding="utf-8"?><testsuites name="pytest tests"><testsuite name="pytest" errors="0" failures="1" skipped="0" tests="1" time="0.052" timestamp="2026-08-16T02:56:41.834046+08:00" hostname="aces-System-Product-Name"><testcase classname="tests.test_s5_native_post_observation" name="test_neo4j_datetime_values_use_the_driver_native_conversion" time="0.001"><failure message="paper_eval.s5_native_post_observation.S5PostObservationError: temporal_value_invalid">def test_neo4j_datetime_values_use_the_driver_native_conversion() -&gt; None:
+        class Neo4jDateTime:
+            def __init__(self, value: datetime) -&gt; None:
+                self.value = value
+    
+            def to_native(self) -&gt; datetime:
+                return self.value
+    
+        Neo4jDateTime.__module__ = "neo4j.time"
+        Neo4jDateTime.__qualname__ = "DateTime"
+    
+        rows = _rows()
+        relation = rows[RELATES_TO_OBSERVATION][0]
+        relation["valid_at"] = Neo4jDateTime(
+            datetime(2026, 2, 1, tzinfo=timezone.utc)
+        )
+        relation["invalid_at"] = Neo4jDateTime(
+            datetime(2026, 3, 1, tzinfo=timezone.utc)
+        )
+    
+&gt;       artifact, _executor = _observe(rows=rows)
+                              ^^^^^^^^^^^^^^^^^^^
+
+tests/test_s5_native_post_observation.py:442: 
+_ _ _ _ _ _ _ _ _ _ _ _ _ _ _ _ _ _ _ _ _ _ _ _ _ _ _ _ _ _ _ _ _ _ _ _ _ _ _ _ 
+tests/test_s5_native_post_observation.py:118: in _observe
+    artifact = asyncio.run(
+/usr/lib/python3.12/asyncio/runners.py:194: in run
+    return runner.run(main)
+           ^^^^^^^^^^^^^^^^
+/usr/lib/python3.12/asyncio/runners.py:118: in run
+    return self._loop.run_until_complete(task)
+           ^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^
+/usr/lib/python3.12/asyncio/base_events.py:687: in run_until_complete
+    return future.result()
+           ^^^^^^^^^^^^^^^
+src/paper_eval/s5_native_post_observation.py:468: in observe_s5_native_post_namespace
+    valid_at = _time(row.get("valid_at"))
+               ^^^^^^^^^^^^^^^^^^^^^^^^^^
+_ _ _ _ _ _ _ _ _ _ _ _ _ _ _ _ _ _ _ _ _ _ _ _ _ _ _ _ _ _ _ _ _ _ _ _ _ _ _ _ 
+
+value = &lt;neo4j.time.DateTime object at 0x7f1413baa630&gt;
+
+    def _time(value: object) -&gt; datetime | None:
+        if value is None:
+            return None
+        if isinstance(value, datetime):
+            return value
+        if not isinstance(value, str) or not value:
+&gt;           raise _fail("temporal_value_invalid")
+E           paper_eval.s5_native_post_observation.S5PostObservationError: temporal_value_invalid
+
+src/paper_eval/s5_native_post_observation.py:323: S5PostObservationError</failure></testcase></testsuite></testsuites>

@@ -1,0 +1,62 @@
+<?xml version="1.0" encoding="utf-8"?><testsuites name="pytest tests"><testsuite name="pytest" errors="0" failures="3" skipped="0" tests="10" time="0.267" timestamp="2026-08-16T00:24:31.157234+08:00" hostname="aces-System-Product-Name"><testcase classname="tests.test_s5_durable_attempt_store" name="test_manifest_first_append_hashes_events_and_rejects_duplicate_attempt" time="0.025" /><testcase classname="tests.test_s5_durable_attempt_store" name="test_each_durable_event_advances_atomic_nonresumable_checkpoint" time="0.018"><failure message="AssertionError: assert 'planned' == 'running'&#10;  &#10;  - running&#10;  + planned">tmp_path = PosixPath('/tmp/pytest-of-ly/pytest-314/test_each_durable_event_advanc0')
+
+    def test_each_durable_event_advances_atomic_nonresumable_checkpoint(
+        tmp_path: Path,
+    ) -&gt; None:
+        store = _create(tmp_path)
+    
+        store.append_event(_event(0, 0))
+        after_intent = inspect_s5_attempt(store.root)["checkpoint"]
+&gt;       assert after_intent["status"] == "running"
+E       AssertionError: assert 'planned' == 'running'
+E         
+E         - running
+E         + planned
+
+tests/test_s5_durable_attempt_store.py:101: AssertionError</failure></testcase><testcase classname="tests.test_s5_durable_attempt_store" name="test_append_is_contiguous_and_sanitized" time="0.018" /><testcase classname="tests.test_s5_durable_attempt_store" name="test_tampered_event_hash_fails_closed" time="0.018" /><testcase classname="tests.test_s5_durable_attempt_store" name="test_rehashed_private_event_still_fails_closed" time="0.019" /><testcase classname="tests.test_s5_durable_attempt_store" name="test_finalize_binds_result_and_writes_atomic_checkpoint" time="0.035" /><testcase classname="tests.test_s5_durable_attempt_store" name="test_finalize_derives_published_sources_from_durable_events_not_summary" time="0.036"><failure message="assert [] == [0]&#10;  &#10;  Right contains one more item: 0&#10;  Use -v to get more diff">tmp_path = PosixPath('/tmp/pytest-of-ly/pytest-314/test_finalize_derives_publishe0')
+
+    def test_finalize_derives_published_sources_from_durable_events_not_summary(
+        tmp_path: Path,
+    ) -&gt; None:
+        store = _create(tmp_path)
+        events = [_event(0, 0), _publication(1, 0), _event(2, 1)]
+        for event in events:
+            store.append_event(event)
+        evidence = _evidence(events)
+        # Deliberately omit the publication prefix from the producer summary.  The
+        # durable store owns this accounting and must rederive it from JSONL.
+        evidence["summary"].pop("published_source_sequences")
+    
+        store.finalize(evidence)
+    
+        checkpoint = inspect_s5_attempt(store.root)["checkpoint"]
+&gt;       assert checkpoint["published_source_sequences"] == [0]
+E       assert [] == [0]
+E         
+E         Right contains one more item: 0
+E         Use -v to get more diff
+
+tests/test_s5_durable_attempt_store.py:181: AssertionError</failure></testcase><testcase classname="tests.test_s5_durable_attempt_store" name="test_inspection_rejects_checkpoint_event_count_or_publication_drift" time="0.018"><failure message="Failed: DID NOT RAISE S5StoreError">tmp_path = PosixPath('/tmp/pytest-of-ly/pytest-314/test_inspection_rejects_checkp0')
+
+    def test_inspection_rejects_checkpoint_event_count_or_publication_drift(
+        tmp_path: Path,
+    ) -&gt; None:
+        store = _create(tmp_path)
+        store.append_event(_event(0, 0))
+        checkpoint = json.loads(store.checkpoint_path.read_text(encoding="utf-8"))
+        checkpoint["event_count"] = 0
+        from paper_eval.artifacts import payload_sha256
+    
+        checkpoint["checkpoint_sha256"] = payload_sha256(
+            {
+                key: value
+                for key, value in checkpoint.items()
+                if key != "checkpoint_sha256"
+            }
+        )
+        store.checkpoint_path.write_text(json.dumps(checkpoint) + "\n", encoding="utf-8")
+    
+&gt;       with pytest.raises(S5StoreError, match="checkpoint_event_binding_invalid"):
+E       Failed: DID NOT RAISE S5StoreError
+
+tests/test_s5_durable_attempt_store.py:202: Failed</failure></testcase><testcase classname="tests.test_s5_durable_attempt_store" name="test_finalize_rejects_event_or_identity_mismatch" time="0.018" /><testcase classname="tests.test_s5_durable_attempt_store" name="test_failed_evidence_is_terminal_non_mergeable_and_not_resumable" time="0.033" /></testsuite></testsuites>

@@ -1100,3 +1100,113 @@ paper-eval-v3/logs/TDD_FULL_OFFLINE_GREEN_S5_GRAPHITI_PUBLICATION_FAULTS_FINAL_2
 This is still bounded offline evidence. The production FX0 artifact remains
 absent until all transition rows are assembled and verified together; no live
 service, namespace, current pointer, or authority bit was changed.
+
+## S5 production FX0 exact-parity qualification (2026-08-16)
+
+The complete production-path Graphiti FX0 inventory is now sealed and
+independently verified. Eleven rows execute through one generic controlled
+environment and the same directly bound pinned Graphiti semantic runtime:
+seven registered PASS rows, one conflicting-duplicate fail-closed row, and
+three independently detected publication-fault rows. Compatible duplicate
+resolution records an explicit `2 -> 1` coalescing witness; the conflicting
+case records `pre=2/post=None` and reaches neither commit nor publication.
+Two-source cases prove prepare overlap, source-order publication, and a real
+prepare-to-bind latest-state advance. Retry idempotence is based on two real
+transaction callback attempts with equal durable projections and one logical
+publication.
+
+The final full offline regression is `1151 passed`, with zero failures,
+errors, or skips and one upstream Graphiti/Pydantic warning. `compileall` and
+`git diff --check` pass. The sealed production artifact verdict is
+`PRODUCTION_PATH_EXACT_PARITY_PASS`; its payload SHA256 is
+`196ac96bcec7e97fe4ba29bc7ce600fc169bad7f4b825ef7791f12dc1e622722`.
+The fixture manifest SHA256 is
+`f40981830d02db7c13adf17064ce24ee47e1b2349c4674618cb5c1ff6d4b8a9d`.
+
+Detailed results and artifact paths are in:
+
+```text
+paper-eval-v3/S5_GRAPHITI_FX0_PRODUCTION_QUALIFICATION_RESULT_20260816.md
+paper-eval-v3/artifacts/paper_eval/native/S5_MSTAR_FX0_RUNTIME_CONFIG_20260816.json
+paper-eval-v3/artifacts/paper_eval/native/S5_MSTAR_PRODUCTION_CORE_IDENTITY_20260816.json
+paper-eval-v3/artifacts/paper_eval/native/S5_MSTAR_FX0_PRODUCTION_PARITY_20260816.json
+paper-eval-v3/artifacts/paper_eval/native/S5_MSTAR_FX0_QUALIFICATION_20260816.json
+paper-eval-v3/logs/TDD_FULL_OFFLINE_GREEN_S5_GRAPHITI_FX0_FINAL_20260816.xml
+```
+
+No vLLM, embedding service, Neo4j, namespace, or live runner was touched. The
+current pointer and historical non-executed status artifact remain
+byte-identical. All live/model/DB/pointer authority remains false. This clears
+only the offline FX0 gate; A0/P* smoke prerequisites and a separate single-use
+M* live authority are still required.
+
+## 25. S5 Native A0 formal method-smoke result (2026-08-16)
+
+Fresh isolated attempt `s5-a0-20260816-004` completed the complete A0
+production chain. The Native attempt durably published all `49/49` episodes in
+source order and finalized with `148` events and status `PASS`. Independent
+post-run observation found exactly 49 Episodic nodes, 246 Entity nodes, and 183
+`RELATES_TO` relationships. Lost, duplicate, unexpected, namespace-escape,
+endpoint-escape, dangling/cross-namespace provenance, and temporal-reversal
+counts were all zero.
+
+The exclusive `S5_A0_RESULT.json` verifier returns `PASS` with
+`scientific_pass_authorized=true` and `next_method_authorized=true`.
+Cleanup, resume, current-pointer update, pilot, and formal execution remain
+false. Attempts `001`, `002`, and `003` remain incomplete/non-mergeable and
+were not reused or promoted. This result is a bounded correctness/predecessor
+qualification, not a performance or failure-rate measurement.
+
+The complete result, interpretation, file hashes, and evidence paths are in:
+
+```text
+MemBind_NATIVE_BASELINE_FORMAL_RUN_RESULT_20260816.md
+paper-eval-v3/artifacts/paper_eval/native/runs/s5-a0-20260816-004/
+paper-eval-v3/logs/s5-a0-20260816-004.log
+```
+
+## 26. S5 M* offline result-chain TDD checkpoint (2026-08-16)
+
+The M* offline result path now has a three-way attempt/publication-journal/
+Native-observation binder, a sealed exclusive result format, and a sanitized
+read-only progress inspector. The TDD sequence recorded 3 expected RED
+collection errors, then `12` focused and `107` related passing tests. The final
+paper-eval-v3 offline regression passed `1405` tests with one existing upstream
+Graphiti/Pydantic warning; `compileall` and `git diff --check` passed.
+
+This closes only the offline result-surface gap. It does not create M* live
+identity, preflight, authority, consumption, namespace, or scientific result.
+
+## 27. S5 P*(C=2) Native whole-update baseline result (2026-08-16)
+
+The fresh single-use run `s5-p-star-20260816-001` completed its complete
+production and post-observation chain. The runtime observed both configured
+workers, `max_active_calls=2`, and real whole-update interval overlap. All
+`49/49` episodes published, with `148` durable attempt events, 49 `PUBLISHED`
+terminal rows, zero treatment failures, and zero censored sources.
+
+Independent namespace observation found 49 Episodic nodes, 278 Entity nodes,
+and 205 `RELATES_TO` relationships. Lost/duplicate Episodic rows, entity or
+relationship namespace escapes, endpoint escapes, dangling provenance, and
+cross-namespace provenance were all zero. The sealed post-observation status
+is `PASS`; the final envelope verdict is `SCIENTIFIC_OUTCOME_COMPLETE` with
+scientific outcome `PASS` and `next_method_authorized=true`.
+
+This is correctly interpreted as
+`NO_NAIVE_PARALLEL_INSUFFICIENCY_OBSERVED` for one bounded screening run, not
+as proof that naive whole-update parallelism is generally sufficient. P* did
+publish out of source order, and its graph size differs from the separate A0
+execution, but neither observation alone establishes a semantic violation or
+concurrency causality. No performance or population claim is authorized.
+
+Complete interpretation, evidence hashes, and paths are in:
+
+```text
+MemBind_NATIVE_BASELINE_FORMAL_RUN_RESULT_20260816.md
+paper-eval-v3/artifacts/paper_eval/native/runs/s5-p-star-20260816-001/
+paper-eval-v3/logs/s5-p-star-20260816-001.log
+```
+
+The P* namespace remains immutable because cleanup authority is false. The
+current pointer, PILOT authority, and formal-evaluation authority remain
+unchanged and false.

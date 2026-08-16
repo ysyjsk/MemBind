@@ -1,0 +1,126 @@
+<?xml version="1.0" encoding="utf-8"?><testsuites name="pytest tests"><testsuite name="pytest" errors="0" failures="1" skipped="0" tests="1" time="0.038" timestamp="2026-08-16T00:30:50.839805+08:00" hostname="aces-System-Product-Name"><testcase classname="tests.test_s5_live_authority" name="test_authority_consumes_exact_canonical_preflight_finalizer_artifact" time="0.007"><failure message="paper_eval.s5_live_authority.S5LiveAuthorityError: preflight_binding_mismatch">tmp_path = PosixPath('/tmp/pytest-of-ly/pytest-323/test_authority_consumes_exact_0')
+
+    def test_authority_consumes_exact_canonical_preflight_finalizer_artifact(
+        tmp_path: Path,
+    ) -&gt; None:
+        identity = _identity("A0")
+        pointer_payload = {
+            "schema_version": "membind.paper-eval-v3.current-stage-pointer.v2",
+            "current_stage": "S3_CONFIGURATION_FROZEN",
+            "live_preflight_required": True,
+        }
+        pointer = finalize_envelope(
+            payload=pointer_payload,
+            protocol_version="paper-eval-v3",
+            git_commit="deadbeef",
+            run_id="s3-pointer-test",
+        )
+        run = _run("A0")
+        evaluation = evaluate_s5_live_preflight(
+            method="A0",
+            run_id=str(run["run_id"]),
+            namespace=str(run["namespace"]),
+            observations={
+                "construction": {
+                    "served_model_id": "qwen3-32b-fp8",
+                    "vllm_version": "0.26.0",
+                    "max_model_len": 65536,
+                },
+                "embedding": {"served_model_id": "qwen3-embedding-0.6b"},
+                "neo4j_connectivity": True,
+                "namespace": run["namespace"],
+                "namespace_state": {"node_count": 0, "relationship_count": 0},
+            },
+            production_identity=identity,
+            current_stage_pointer=pointer,
+            current_stage_pointer_file_sha256="b" * 64,
+        )
+        preflight_path = tmp_path / "S5_A0_PREFLIGHT.json"
+        preflight = finalize_s5_live_preflight(
+            output_path=preflight_path,
+            evaluation=evaluation,
+            source_sha256={
+                "contract": "1" * 64,
+                "production": "2" * 64,
+                "contract_test": "3" * 64,
+                "production_test": "4" * 64,
+            },
+            git_commit="deadbeef",
+        )
+    
+&gt;       authority = build_s5_live_authority(
+            method="A0",
+            run=run,
+            production_identity=identity,
+            production_identity_file_sha256="2" * 64,
+            preflight=preflight,
+            preflight_file_sha256=sha256_file(preflight_path),
+            current_stage_pointer_sha256="b" * 64,
+            predecessor=None,
+            fx0_qualification=None,
+            source_sha256={
+                "authority": "6" * 64,
+                "controller": "7" * 64,
+                "result_verifier": "8" * 64,
+                "test": "9" * 64,
+            },
+        )
+
+tests/test_s5_live_authority.py:280: 
+_ _ _ _ _ _ _ _ _ _ _ _ _ _ _ _ _ _ _ _ _ _ _ _ _ _ _ _ _ _ _ _ _ _ _ _ _ _ _ _ 
+
+method = 'A0'
+run = {'method': 'A0', 'run_id': 's5-a0-20260816-001', 'namespace': 'pev3-s5-a0-20260816-001', 'history_id': '07741c45', ...}
+production_identity = {'schema_version': 'membind.paper-eval-v3.s5-production-identity.v1', 'status': 'FROZEN', 'method': 'A0', 'graphiti_version': '0.29.3', ...}
+production_identity_file_sha256 = '2222222222222222222222222222222222222222222222222222222222222222'
+preflight = {'protocol_version': 'paper-eval-v3', 'git_commit': 'deadbeef', 'run_id': 's5-a0-20260816-001', 'status': 'finalized', ...}
+preflight_file_sha256 = '2e60f190bbc774c549fa8103bdb643452ebd98402c90f6bde86678fde652c047'
+current_stage_pointer_sha256 = 'bbbbbbbbbbbbbbbbbbbbbbbbbbbbbbbbbbbbbbbbbbbbbbbbbbbbbbbbbbbbbbbb'
+predecessor = None, fx0_qualification = None
+source_sha256 = {'authority': '6666666666666666666666666666666666666666666666666666666666666666', 'controller': '777777777777777777777...88888888888888888888888888888888888888888', 'test': '9999999999999999999999999999999999999999999999999999999999999999'}
+
+    def build_s5_live_authority(
+        *,
+        method: str,
+        run: Mapping[str, object],
+        production_identity: Mapping[str, object],
+        production_identity_file_sha256: str,
+        preflight: Mapping[str, Any],
+        preflight_file_sha256: str,
+        current_stage_pointer_sha256: str,
+        predecessor: Mapping[str, object] | None,
+        fx0_qualification: Mapping[str, object] | None,
+        source_sha256: Mapping[str, str],
+    ) -&gt; dict[str, Any]:
+        """Build a service-free authority draft from one sealed PASS preflight."""
+    
+        if method not in _METHODS:
+            raise _fail("method_invalid")
+        selected_run = _run(run, method)
+        identity = verify_s5_production_identity(production_identity)
+        if identity.get("method") != method:
+            raise _fail("production_identity_method_mismatch")
+        identity_file = _sha(
+            production_identity_file_sha256, "production_identity_file_invalid"
+        )
+        pointer = _sha(current_stage_pointer_sha256, "current_pointer_invalid")
+        try:
+            selected_preflight = verify_s5_live_preflight(preflight)
+        except Exception:
+            raise _fail("preflight_invalid") from None
+        preflight_payload = selected_preflight["payload"]
+        if (
+            preflight_payload.get("method") != method
+            or preflight_payload.get("run") != selected_run
+            or preflight_payload.get("production_identity_sha256")
+            != identity.get("identity_sha256")
+            or preflight_payload.get("current_stage_pointer_sha256") != pointer
+            or preflight_payload.get("authority", {}).get(
+                "s5_live_authority_creation_authorized"
+            )
+            is not True
+        ):
+&gt;           raise _fail("preflight_binding_mismatch")
+E           paper_eval.s5_live_authority.S5LiveAuthorityError: preflight_binding_mismatch
+
+src/paper_eval/s5_live_authority.py:249: S5LiveAuthorityError</failure></testcase></testsuite></testsuites>

@@ -1,0 +1,89 @@
+<?xml version="1.0" encoding="utf-8"?><testsuites name="pytest tests"><testsuite name="pytest" errors="0" failures="2" skipped="0" tests="2" time="0.036" timestamp="2026-08-16T01:28:43.116525+08:00" hostname="aces-System-Product-Name"><testcase classname="tests.test_s5_native_post_observation" name="test_exact_49_source_observation_is_sanitized_and_hash_sealed" time="0.001"><failure message="TypeError: verify_s5_native_post_observation() got an unexpected keyword argument 'expected_method'">def test_exact_49_source_observation_is_sanitized_and_hash_sealed() -&gt; None:
+        artifact, executor = _observe()
+    
+&gt;       verified = verify_s5_native_post_observation(
+            artifact,
+            expected_method="A0",
+            expected_run_id=RUN_ID,
+            expected_namespace=NAMESPACE,
+        )
+E       TypeError: verify_s5_native_post_observation() got an unexpected keyword argument 'expected_method'
+
+tests/test_s5_native_post_observation.py:133: TypeError</failure></testcase><testcase classname="tests.test_s5_native_post_observation" name="test_graphiti_query_adapter_maps_exact_episode_name_without_db_source_fields" time="0.001"><failure message="TypeError: verify_s5_native_post_observation() got an unexpected keyword argument 'expected_method'">def test_graphiti_query_adapter_maps_exact_episode_name_without_db_source_fields() -&gt; None:
+        class Driver:
+            def __init__(self) -&gt; None:
+                self.calls: list[tuple[str, dict[str, object]]] = []
+    
+            async def execute_query(
+                self, query: str, *, params: dict[str, object]
+            ) -&gt; list[dict[str, object]]:
+                self.calls.append((query, dict(params)))
+                if "MATCH (source:Entity)-[relation:RELATES_TO]" in query:
+                    return [
+                        {
+                            "record_id": "private-relation",
+                            "group_id": NAMESPACE,
+                            "source_entity_id": "private-entity-a",
+                            "target_entity_id": "private-entity-b",
+                            "provenance_episode_ids": ["private-episode-0"],
+                            "resolved_provenance": [
+                                {
+                                    "episode_id": "private-episode-0",
+                                    "group_id": NAMESPACE,
+                                }
+                            ],
+                            "valid_at": "2026-01-01T00:00:00Z",
+                            "invalid_at": None,
+                            "expired_at": "2020-01-01T00:00:00Z",
+                            "reference_time": "2030-01-01T00:00:00Z",
+                        }
+                    ]
+                if "MATCH (episode:Episodic)" in query:
+                    return [
+                        {
+                            "record_id": f"private-episode-{index}",
+                            "name": f"07741c45::episode::{index:04d}",
+                            "group_id": NAMESPACE,
+                        }
+                        for index in range(49)
+                    ]
+                if "MATCH (entity:Entity)" in query:
+                    return [
+                        {"record_id": "private-entity-a", "group_id": NAMESPACE},
+                        {"record_id": "private-entity-b", "group_id": NAMESPACE},
+                    ]
+                raise AssertionError("unexpected query")
+    
+        driver = Driver()
+        executor = S5GraphitiPostQueryExecutor(expected_sources=_sources())
+        artifact = asyncio.run(
+            observe_s5_native_post_namespace(
+                driver=driver,
+                method="A0",
+                run_id=RUN_ID,
+                namespace=NAMESPACE,
+                expected_sources=_sources(),
+                durable_publication_events=_publications(),
+                query_executor=executor,
+            )
+        )
+    
+        assert artifact["status"] == "PASS"
+        assert len(driver.calls) == 3
+        assert all(params == {"namespace": NAMESPACE} for _query, params in driver.calls)
+        rendered = repr(artifact)
+        assert "07741c45::episode" not in rendered
+        assert "private-episode" not in rendered
+        assert "private-entity" not in rendered
+        assert "private-relation" not in rendered
+    
+        with pytest.raises(S5PostObservationError, match="artifact_identity_invalid"):
+&gt;           verify_s5_native_post_observation(
+                artifact,
+                expected_method="A0",
+                expected_run_id="s5-a0-20260816-002",
+                expected_namespace=NAMESPACE,
+            )
+E           TypeError: verify_s5_native_post_observation() got an unexpected keyword argument 'expected_method'
+
+tests/test_s5_native_post_observation.py:254: TypeError</failure></testcase></testsuite></testsuites>

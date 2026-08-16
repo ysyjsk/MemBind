@@ -1,0 +1,191 @@
+<?xml version="1.0" encoding="utf-8"?><testsuites name="pytest tests"><testsuite name="pytest" errors="0" failures="8" skipped="0" tests="12" time="0.121" timestamp="2026-08-16T01:47:43.648212+08:00" hostname="aces-System-Product-Name"><testcase classname="tests.test_s5_a0_tmux_launcher" name="test_launcher_uses_verified_authority_and_explicit_detached_command" time="0.000"><failure message="assert '--production-identity' in '#!/usr/bin/env bash\n# Launch exactly one authority-bound S5 A0 smoke in detached tmux.\nset -euo pipefail\n\nPROJECT...' 2&gt;&amp;1 | tee -a \'$LOG\'&quot;\n\necho &quot;session=$SESSION&quot;\necho &quot;log=$LOG&quot;\necho &quot;inspect=tmux capture-pane -pt $SESSION&quot;\n'">def test_launcher_uses_verified_authority_and_explicit_detached_command() -&gt; None:
+        source = LAUNCHER.read_text(encoding="utf-8")
+    
+        assert "verify_s5_live_authority" in source
+        assert "jq" not in source
+        assert "S5_A0_CONTROLLER_MODULE" in source
+        assert "paper_eval.s5_a0_controller" in source
+        assert "tmux" in source and "new-session" in source and "-d" in source
+        assert "PYTHONUNBUFFERED=1" in source
+        assert " -u -m " in source
+        assert "tee -a" in source
+        for option in (
+            "--production-identity",
+            "--production-identity-qualification",
+            "--preflight",
+            "--authority",
+            "--runtime-config",
+            "--identity-materialization",
+            "--current-stage-pointer",
+            "--env-file",
+            "--run-root",
+            "--git-commit",
+        ):
+&gt;           assert option in source
+E           assert '--production-identity' in '#!/usr/bin/env bash\n# Launch exactly one authority-bound S5 A0 smoke in detached tmux.\nset -euo pipefail\n\nPROJECT...' 2&gt;&amp;1 | tee -a \'$LOG\'"\n\necho "session=$SESSION"\necho "log=$LOG"\necho "inspect=tmux capture-pane -pt $SESSION"\n'
+
+tests/test_s5_a0_tmux_launcher.py:110: AssertionError</failure></testcase><testcase classname="tests.test_s5_a0_tmux_launcher" name="test_launcher_derives_identity_and_starts_exactly_one_detached_session" time="0.008"><failure message="AssertionError: verified A0 authority identity is invalid&#10;  &#10;assert 2 == 0&#10; +  where 2 = CompletedProcess(args=['bash', '/data/predator/ly/MemBind/paper-eval-v3/scripts/run_s5_a0_tmux.sh', '/tmp/pytest-of-ly...cher_derives_identity0/authority.json'], returncode=2, stdout='', stderr='verified A0 authority identity is invalid\n').returncode">tmp_path = PosixPath('/tmp/pytest-of-ly/pytest-373/test_launcher_derives_identity0')
+
+    def test_launcher_derives_identity_and_starts_exactly_one_detached_session(
+        tmp_path: Path,
+    ) -&gt; None:
+        authority, env, runs, tmux_log = _fixture(tmp_path)
+        env["S5_A0_CONTROLLER_MODULE"] = "qualified.custom_a0_controller"
+    
+        completed = _run(authority, env)
+    
+&gt;       assert completed.returncode == 0, completed.stderr
+E       AssertionError: verified A0 authority identity is invalid
+E         
+E       assert 2 == 0
+E        +  where 2 = CompletedProcess(args=['bash', '/data/predator/ly/MemBind/paper-eval-v3/scripts/run_s5_a0_tmux.sh', '/tmp/pytest-of-ly...cher_derives_identity0/authority.json'], returncode=2, stdout='', stderr='verified A0 authority identity is invalid\n').returncode
+
+tests/test_s5_a0_tmux_launcher.py:127: AssertionError</failure></testcase><testcase classname="tests.test_s5_a0_tmux_launcher" name="test_launcher_rejects_every_existing_single_use_output[authority_consumption.json]" time="0.007"><failure message="AssertionError: assert 'already exists' in 'verified A0 authority identity is invalid\n'&#10; +  where 'verified A0 authority identity is invalid\n' = CompletedProcess(args=['bash', '/data/predator/ly/MemBind/paper-eval-v3/scripts/run_s5_a0_tmux.sh', '/tmp/pytest-of-ly...cher_rejects_every_ex0/authority.json'], returncode=2, stdout='', stderr='verified A0 authority identity is invalid\n').stderr">tmp_path = PosixPath('/tmp/pytest-of-ly/pytest-373/test_launcher_rejects_every_ex0')
+existing = 'authority_consumption.json'
+
+    @pytest.mark.parametrize(
+        "existing",
+        [
+            "authority_consumption.json",
+            "controller",
+            "attempt",
+            "attempt/result.json",
+        ],
+    )
+    def test_launcher_rejects_every_existing_single_use_output(
+        tmp_path: Path, existing: str
+    ) -&gt; None:
+        authority, env, runs, tmux_log = _fixture(tmp_path)
+        selected = runs / RUN_ID / existing
+        selected.parent.mkdir(parents=True, exist_ok=True)
+        if selected.suffix:
+            selected.write_text("existing\n", encoding="utf-8")
+        else:
+            selected.mkdir()
+    
+        completed = _run(authority, env)
+    
+        assert completed.returncode != 0
+&gt;       assert "already exists" in completed.stderr
+E       AssertionError: assert 'already exists' in 'verified A0 authority identity is invalid\n'
+E        +  where 'verified A0 authority identity is invalid\n' = CompletedProcess(args=['bash', '/data/predator/ly/MemBind/paper-eval-v3/scripts/run_s5_a0_tmux.sh', '/tmp/pytest-of-ly...cher_rejects_every_ex0/authority.json'], returncode=2, stdout='', stderr='verified A0 authority identity is invalid\n').stderr
+
+tests/test_s5_a0_tmux_launcher.py:184: AssertionError</failure></testcase><testcase classname="tests.test_s5_a0_tmux_launcher" name="test_launcher_rejects_every_existing_single_use_output[controller]" time="0.007"><failure message="AssertionError: assert 'already exists' in 'verified A0 authority identity is invalid\n'&#10; +  where 'verified A0 authority identity is invalid\n' = CompletedProcess(args=['bash', '/data/predator/ly/MemBind/paper-eval-v3/scripts/run_s5_a0_tmux.sh', '/tmp/pytest-of-ly...cher_rejects_every_ex1/authority.json'], returncode=2, stdout='', stderr='verified A0 authority identity is invalid\n').stderr">tmp_path = PosixPath('/tmp/pytest-of-ly/pytest-373/test_launcher_rejects_every_ex1')
+existing = 'controller'
+
+    @pytest.mark.parametrize(
+        "existing",
+        [
+            "authority_consumption.json",
+            "controller",
+            "attempt",
+            "attempt/result.json",
+        ],
+    )
+    def test_launcher_rejects_every_existing_single_use_output(
+        tmp_path: Path, existing: str
+    ) -&gt; None:
+        authority, env, runs, tmux_log = _fixture(tmp_path)
+        selected = runs / RUN_ID / existing
+        selected.parent.mkdir(parents=True, exist_ok=True)
+        if selected.suffix:
+            selected.write_text("existing\n", encoding="utf-8")
+        else:
+            selected.mkdir()
+    
+        completed = _run(authority, env)
+    
+        assert completed.returncode != 0
+&gt;       assert "already exists" in completed.stderr
+E       AssertionError: assert 'already exists' in 'verified A0 authority identity is invalid\n'
+E        +  where 'verified A0 authority identity is invalid\n' = CompletedProcess(args=['bash', '/data/predator/ly/MemBind/paper-eval-v3/scripts/run_s5_a0_tmux.sh', '/tmp/pytest-of-ly...cher_rejects_every_ex1/authority.json'], returncode=2, stdout='', stderr='verified A0 authority identity is invalid\n').stderr
+
+tests/test_s5_a0_tmux_launcher.py:184: AssertionError</failure></testcase><testcase classname="tests.test_s5_a0_tmux_launcher" name="test_launcher_rejects_every_existing_single_use_output[attempt]" time="0.006"><failure message="AssertionError: assert 'already exists' in 'verified A0 authority identity is invalid\n'&#10; +  where 'verified A0 authority identity is invalid\n' = CompletedProcess(args=['bash', '/data/predator/ly/MemBind/paper-eval-v3/scripts/run_s5_a0_tmux.sh', '/tmp/pytest-of-ly...cher_rejects_every_ex2/authority.json'], returncode=2, stdout='', stderr='verified A0 authority identity is invalid\n').stderr">tmp_path = PosixPath('/tmp/pytest-of-ly/pytest-373/test_launcher_rejects_every_ex2')
+existing = 'attempt'
+
+    @pytest.mark.parametrize(
+        "existing",
+        [
+            "authority_consumption.json",
+            "controller",
+            "attempt",
+            "attempt/result.json",
+        ],
+    )
+    def test_launcher_rejects_every_existing_single_use_output(
+        tmp_path: Path, existing: str
+    ) -&gt; None:
+        authority, env, runs, tmux_log = _fixture(tmp_path)
+        selected = runs / RUN_ID / existing
+        selected.parent.mkdir(parents=True, exist_ok=True)
+        if selected.suffix:
+            selected.write_text("existing\n", encoding="utf-8")
+        else:
+            selected.mkdir()
+    
+        completed = _run(authority, env)
+    
+        assert completed.returncode != 0
+&gt;       assert "already exists" in completed.stderr
+E       AssertionError: assert 'already exists' in 'verified A0 authority identity is invalid\n'
+E        +  where 'verified A0 authority identity is invalid\n' = CompletedProcess(args=['bash', '/data/predator/ly/MemBind/paper-eval-v3/scripts/run_s5_a0_tmux.sh', '/tmp/pytest-of-ly...cher_rejects_every_ex2/authority.json'], returncode=2, stdout='', stderr='verified A0 authority identity is invalid\n').stderr
+
+tests/test_s5_a0_tmux_launcher.py:184: AssertionError</failure></testcase><testcase classname="tests.test_s5_a0_tmux_launcher" name="test_launcher_rejects_every_existing_single_use_output[attempt/result.json]" time="0.006"><failure message="AssertionError: assert 'already exists' in 'verified A0 authority identity is invalid\n'&#10; +  where 'verified A0 authority identity is invalid\n' = CompletedProcess(args=['bash', '/data/predator/ly/MemBind/paper-eval-v3/scripts/run_s5_a0_tmux.sh', '/tmp/pytest-of-ly...cher_rejects_every_ex3/authority.json'], returncode=2, stdout='', stderr='verified A0 authority identity is invalid\n').stderr">tmp_path = PosixPath('/tmp/pytest-of-ly/pytest-373/test_launcher_rejects_every_ex3')
+existing = 'attempt/result.json'
+
+    @pytest.mark.parametrize(
+        "existing",
+        [
+            "authority_consumption.json",
+            "controller",
+            "attempt",
+            "attempt/result.json",
+        ],
+    )
+    def test_launcher_rejects_every_existing_single_use_output(
+        tmp_path: Path, existing: str
+    ) -&gt; None:
+        authority, env, runs, tmux_log = _fixture(tmp_path)
+        selected = runs / RUN_ID / existing
+        selected.parent.mkdir(parents=True, exist_ok=True)
+        if selected.suffix:
+            selected.write_text("existing\n", encoding="utf-8")
+        else:
+            selected.mkdir()
+    
+        completed = _run(authority, env)
+    
+        assert completed.returncode != 0
+&gt;       assert "already exists" in completed.stderr
+E       AssertionError: assert 'already exists' in 'verified A0 authority identity is invalid\n'
+E        +  where 'verified A0 authority identity is invalid\n' = CompletedProcess(args=['bash', '/data/predator/ly/MemBind/paper-eval-v3/scripts/run_s5_a0_tmux.sh', '/tmp/pytest-of-ly...cher_rejects_every_ex3/authority.json'], returncode=2, stdout='', stderr='verified A0 authority identity is invalid\n').stderr
+
+tests/test_s5_a0_tmux_launcher.py:184: AssertionError</failure></testcase><testcase classname="tests.test_s5_a0_tmux_launcher" name="test_launcher_rejects_existing_tmux_session" time="0.006"><failure message="AssertionError: assert 'session already exists' in 'verified A0 authority identity is invalid\n'&#10; +  where 'verified A0 authority identity is invalid\n' = CompletedProcess(args=['bash', '/data/predator/ly/MemBind/paper-eval-v3/scripts/run_s5_a0_tmux.sh', '/tmp/pytest-of-ly...cher_rejects_existing0/authority.json'], returncode=2, stdout='', stderr='verified A0 authority identity is invalid\n').stderr">tmp_path = PosixPath('/tmp/pytest-of-ly/pytest-373/test_launcher_rejects_existing0')
+
+    def test_launcher_rejects_existing_tmux_session(tmp_path: Path) -&gt; None:
+        authority, env, _runs, tmux_log = _fixture(tmp_path)
+        env["FAKE_HAS_SESSION"] = "1"
+    
+        completed = _run(authority, env)
+    
+        assert completed.returncode != 0
+&gt;       assert "session already exists" in completed.stderr
+E       AssertionError: assert 'session already exists' in 'verified A0 authority identity is invalid\n'
+E        +  where 'verified A0 authority identity is invalid\n' = CompletedProcess(args=['bash', '/data/predator/ly/MemBind/paper-eval-v3/scripts/run_s5_a0_tmux.sh', '/tmp/pytest-of-ly...cher_rejects_existing0/authority.json'], returncode=2, stdout='', stderr='verified A0 authority identity is invalid\n').stderr
+
+tests/test_s5_a0_tmux_launcher.py:195: AssertionError</failure></testcase><testcase classname="tests.test_s5_a0_tmux_launcher" name="test_launcher_rejects_invalid_verified_identity[FAKE_RUN_ID-../escape]" time="0.006" /><testcase classname="tests.test_s5_a0_tmux_launcher" name="test_launcher_rejects_invalid_verified_identity[FAKE_RUN_ID-s5-p-star-20260816-001]" time="0.007" /><testcase classname="tests.test_s5_a0_tmux_launcher" name="test_launcher_rejects_invalid_verified_identity[FAKE_NAMESPACE-pev3-wrong-run]" time="0.006" /><testcase classname="tests.test_s5_a0_tmux_launcher" name="test_launcher_propagates_authority_reader_failure_without_starting_tmux" time="0.006" /><testcase classname="tests.test_s5_a0_tmux_launcher" name="test_launcher_rejects_missing_controller_input_before_starting_tmux" time="0.007"><failure message="AssertionError: assert 'controller input is unavailable' in 'verified A0 authority identity is invalid\n'&#10; +  where 'verified A0 authority identity is invalid\n' = CompletedProcess(args=['bash', '/data/predator/ly/MemBind/paper-eval-v3/scripts/run_s5_a0_tmux.sh', '/tmp/pytest-of-ly...cher_rejects_missing_0/authority.json'], returncode=2, stdout='', stderr='verified A0 authority identity is invalid\n').stderr">tmp_path = PosixPath('/tmp/pytest-of-ly/pytest-373/test_launcher_rejects_missing_0')
+
+    def test_launcher_rejects_missing_controller_input_before_starting_tmux(
+        tmp_path: Path,
+    ) -&gt; None:
+        authority, env, _runs, tmux_log = _fixture(tmp_path)
+        Path(env["S5_A0_PRODUCTION_IDENTITY_QUALIFICATION"]).unlink()
+    
+        completed = _run(authority, env)
+    
+        assert completed.returncode != 0
+&gt;       assert "controller input is unavailable" in completed.stderr
+E       AssertionError: assert 'controller input is unavailable' in 'verified A0 authority identity is invalid\n'
+E        +  where 'verified A0 authority identity is invalid\n' = CompletedProcess(args=['bash', '/data/predator/ly/MemBind/paper-eval-v3/scripts/run_s5_a0_tmux.sh', '/tmp/pytest-of-ly...cher_rejects_missing_0/authority.json'], returncode=2, stdout='', stderr='verified A0 authority identity is invalid\n').stderr
+
+tests/test_s5_a0_tmux_launcher.py:242: AssertionError</failure></testcase></testsuite></testsuites>

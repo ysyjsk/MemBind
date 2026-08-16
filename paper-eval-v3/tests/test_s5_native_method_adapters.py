@@ -198,9 +198,154 @@ async def test_p_c2_fails_closed_when_two_real_intervals_do_not_overlap():
     )
 
 
+@pytest.mark.asyncio
+async def test_p_c2_treatment_failure_classifies_every_scheduled_source():
+    """A stopped queue is censored explicitly, never mistaken for lost work."""
+
+    both_initial_workers_entered = asyncio.Event()
+    failure_released = asyncio.Event()
+    entered: list[int] = []
+
+    async def one_worker_fails(native_episode: object) -> None:
+        source = int(native_episode["opaque_episode"])
+        entered.append(source)
+        if len(entered) == 2:
+            both_initial_workers_entered.set()
+        await asyncio.wait_for(both_initial_workers_entered.wait(), timeout=1)
+        if source == 0:
+            failure_released.set()
+            raise RuntimeError("private treatment failure")
+        await failure_released.wait()
+        # Let worker 0 durably establish the stop condition before this worker
+        # can take another queued source.
+        await asyncio.sleep(0)
+
+    selected = episodes(49)
+    evidence = await run_p_c2(
+        spec=spec(P_STAR),
+        episodes=selected,
+        native_add_episode=one_worker_fails,
+        persist_event=DurableSink(),
+        clock_ns=StepClock(),
+    )
+
+    verified = verify_s5_native_method_evidence(
+        evidence, expected_spec=spec(P_STAR), expected_episodes=selected
+    )
+    terminals = [
+        event for event in verified["events"] if event["event_type"] == "source_terminal"
+    ]
+    by_source = {event["source_sequence"]: event for event in terminals}
+
+    assert entered == [0, 1]
+    assert verified["status"] == "SCIENTIFIC_OUTCOME_COMPLETE"
+    assert verified["mergeable"] is True
+    assert len(terminals) == 49
+    assert sorted(by_source) == list(range(49))
+    assert by_source[0]["terminal_classification"] == "TREATMENT_FAILED"
+    assert isinstance(by_source[0]["service_start_timestamp_ns"], int)
+    assert (
+        by_source[0]["terminal_timestamp_ns"]
+        >= by_source[0]["service_start_timestamp_ns"]
+    )
+    assert by_source[1]["terminal_classification"] == "PUBLISHED"
+    assert {
+        by_source[source]["terminal_classification"] for source in range(2, 49)
+    } == {"CENSORED_NOT_STARTED_AFTER_TREATMENT_FAILURE"}
+    assert all(
+        by_source[source]["service_start_timestamp_ns"] is None
+        and by_source[source]["terminal_timestamp_ns"] is None
+        for source in range(2, 49)
+    )
+    assert "private treatment failure" not in repr(verified)
+
+
+@pytest.mark.asyncio
+async def test_p_c2_scientific_outcome_fails_closed_on_terminal_accounting_loss():
+    ready = asyncio.Event()
+
+    async def one_worker_fails(native_episode: object) -> None:
+        source = int(native_episode["opaque_episode"])
+        if source == 1:
+            ready.set()
+        await ready.wait()
+        if source == 0:
+            raise RuntimeError("private treatment failure")
+        await asyncio.sleep(0)
+
+    selected = episodes(5)
+    evidence = await run_p_c2(
+        spec=spec(P_STAR),
+        episodes=selected,
+        native_add_episode=one_worker_fails,
+        persist_event=DurableSink(),
+        clock_ns=StepClock(),
+    )
+    incomplete = {**evidence, "events": [dict(event) for event in evidence["events"]]}
+    incomplete["events"] = [
+        event
+        for event in incomplete["events"]
+        if not (
+            event["event_type"] == "source_terminal"
+            and event["source_sequence"] == 4
+        )
+    ]
+    for sequence, event in enumerate(incomplete["events"]):
+        event["event_sequence"] = sequence
+
+    with pytest.raises(S5AdapterError, match="terminal_source_accounting_invalid"):
+        verify_s5_native_method_evidence(
+            incomplete, expected_spec=spec(P_STAR), expected_episodes=selected
+        )
+
+    missing_failure_interval = {
+        **evidence,
+        "events": [dict(event) for event in evidence["events"]],
+    }
+    failed = next(
+        event
+        for event in missing_failure_interval["events"]
+        if event.get("terminal_classification") == "TREATMENT_FAILED"
+    )
+    failed["service_start_timestamp_ns"] = None
+    with pytest.raises(S5AdapterError, match="failed_source_terminal_invalid"):
+        verify_s5_native_method_evidence(
+            missing_failure_interval,
+            expected_spec=spec(P_STAR),
+            expected_episodes=selected,
+        )
+
+
+@pytest.mark.asyncio
+async def test_p_c2_does_not_return_scientific_outcome_without_durable_classification():
+    ready = asyncio.Event()
+
+    async def one_worker_fails(native_episode: object) -> None:
+        source = int(native_episode["opaque_episode"])
+        if source == 1:
+            ready.set()
+        await ready.wait()
+        if source == 0:
+            raise RuntimeError("private treatment failure")
+        await asyncio.sleep(0)
+
+    async def classification_sink_fails(event: Mapping[str, object]) -> None:
+        if event["event_type"] == "source_terminal":
+            raise OSError("private telemetry path")
+
+    with pytest.raises(S5AdapterError, match="durable_evidence_unavailable"):
+        await run_p_c2(
+            spec=spec(P_STAR),
+            episodes=episodes(5),
+            native_add_episode=one_worker_fails,
+            persist_event=classification_sink_fails,
+            clock_ns=StepClock(),
+        )
+
+
 @pytest.mark.parametrize("method", [A0, P_STAR])
 @pytest.mark.asyncio
-async def test_native_treatment_failure_is_sanitized_durable_and_non_mergeable(method: str):
+async def test_native_treatment_failure_is_sanitized_and_durably_classified(method: str):
     async def failing_native_add_episode(_native_episode: object) -> None:
         raise RuntimeError("private provider text and credential-like data")
 
@@ -213,8 +358,10 @@ async def test_native_treatment_failure_is_sanitized_durable_and_non_mergeable(m
         clock_ns=StepClock(),
     )
 
-    assert evidence["status"] == "FAIL_CLOSED"
-    assert evidence["mergeable"] is False
+    assert evidence["status"] == (
+        "FAIL_CLOSED" if method == A0 else "SCIENTIFIC_OUTCOME_COMPLETE"
+    )
+    assert evidence["mergeable"] is (method == P_STAR)
     assert evidence["failure_code"] == "NATIVE_ADD_EPISODE_FAILED"
     terminal = evidence["events"][-1]
     assert terminal["event_type"] == "treatment_failure"
