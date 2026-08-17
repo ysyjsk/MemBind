@@ -35,6 +35,71 @@ def _fail(code: str) -> MemBindV1LiveRuntimeError:
     return MemBindV1LiveRuntimeError(code)
 
 
+class _SaltedCompletions:
+    """New-lane-only cache salt injection around an OpenAI-compatible client."""
+
+    def __init__(self, inner: object, cache_salt: str) -> None:
+        self._inner = inner
+        self._cache_salt = cache_salt
+
+    def __getattr__(self, name: str) -> Any:
+        return getattr(self._inner, name)
+
+    async def create(self, *args: object, **kwargs: object) -> object:
+        request = dict(kwargs)
+        extra_body = dict(request.get("extra_body") or {})
+        extra_body["cache_salt"] = self._cache_salt
+        request["extra_body"] = extra_body
+        result = self._inner.create(*args, **request)
+        if not hasattr(result, "__await__"):
+            raise TypeError("salted completion transport must be async")
+        return await result
+
+
+class _SaltedChat:
+    def __init__(self, inner: object, cache_salt: str) -> None:
+        self._inner = inner
+        self.completions = _SaltedCompletions(
+            getattr(inner, "completions"), cache_salt
+        )
+
+    def __getattr__(self, name: str) -> Any:
+        return getattr(self._inner, name)
+
+
+class _SaltedEmbeddings:
+    def __init__(self, inner: object, cache_salt: str) -> None:
+        self._inner = inner
+        self._cache_salt = cache_salt
+
+    def __getattr__(self, name: str) -> Any:
+        return getattr(self._inner, name)
+
+    async def create(self, *args: object, **kwargs: object) -> object:
+        request = dict(kwargs)
+        extra_body = dict(request.get("extra_body") or {})
+        extra_body["cache_salt"] = self._cache_salt
+        request["extra_body"] = extra_body
+        result = self._inner.create(*args, **request)
+        if not hasattr(result, "__await__"):
+            raise TypeError("salted embedding transport must be async")
+        return await result
+
+
+class _SaltedOpenAITransport:
+    def __init__(self, inner: object, cache_salt: str) -> None:
+        self._inner = inner
+        if hasattr(inner, "chat"):
+            self.chat = _SaltedChat(getattr(inner, "chat"), cache_salt)
+        if hasattr(inner, "embeddings"):
+            self.embeddings = _SaltedEmbeddings(
+                getattr(inner, "embeddings"), cache_salt
+            )
+
+    def __getattr__(self, name: str) -> Any:
+        return getattr(self._inner, name)
+
+
 def _required(env: Mapping[str, str], name: str) -> str:
     value = env.get(name)
     if not isinstance(value, str) or not value:
@@ -213,6 +278,14 @@ def build_membind_v1_runtime(
         max_tokens=REQUESTED_MAX_TOKENS,
         structured_output_mode="json_schema",
     )
+    cache_salt = env.get("CONSTRUCTION_CACHE_SALT")
+    if cache_salt is not None:
+        if not isinstance(cache_salt, str) or not 1 <= len(cache_salt) <= 64:
+            raise _fail("construction cache salt invalid")
+        raw_transport = getattr(raw_llm, "client", None)
+        if raw_transport is None:
+            raise _fail("construction cache salt transport unavailable")
+        raw_llm.client = _SaltedOpenAITransport(raw_transport, cache_salt)
     embedder_config = selected.embedder_config_type(
         api_key=embedding_key,
         base_url=embedding_base_url,
@@ -220,7 +293,18 @@ def build_membind_v1_runtime(
         embedding_dim=embedding_dimension,
     )
     embedder = selected.embedder_type(embedder_config)
-    reranker = selected.reranker_type(llm_config)
+    if cache_salt is not None:
+        embedding_transport = getattr(embedder, "client", None)
+        if embedding_transport is None:
+            raise _fail("embedding cache salt transport unavailable")
+        embedder.client = _SaltedOpenAITransport(embedding_transport, cache_salt)
+    raw_transport = getattr(raw_llm, "client", None)
+    if raw_transport is None:
+        reranker = selected.reranker_type(llm_config)
+    else:
+        # Reuse the Qwen transport so request-level cache_salt applies to
+        # Graphiti reranker calls as well as structured construction calls.
+        reranker = selected.reranker_type(llm_config, client=raw_transport)
     graphiti = selected.graphiti_type(
         uri=neo4j_uri,
         user=neo4j_user,

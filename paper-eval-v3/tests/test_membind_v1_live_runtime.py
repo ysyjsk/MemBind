@@ -13,6 +13,7 @@ from paper_eval.membind_v1.live_runtime import (
     build_membind_v1_runtime,
     project_membind_v1_runtime_identity,
 )
+from paper_eval.membind_v1 import live_runtime as live_runtime_module
 
 
 def _env() -> dict[str, str]:
@@ -126,3 +127,29 @@ def test_runtime_rejects_service_identity_drift_or_non_shared_k2_admission() -> 
             request_id_prefix="aligned-dev-001:U0:07741c45",
             components=_components(),
         )
+
+
+@pytest.mark.asyncio
+async def test_isolated_runtime_cache_salt_is_injected_into_chat_and_embeddings() -> None:
+    calls: list[dict] = []
+
+    class Endpoint:
+        async def create(self, **kwargs):
+            calls.append(kwargs)
+            return {"ok": True}
+
+    inner = SimpleNamespace(
+        chat=SimpleNamespace(completions=Endpoint()),
+        embeddings=Endpoint(),
+    )
+    transport = live_runtime_module._SaltedOpenAITransport(inner, "block-salt")
+    await transport.chat.completions.create(model="m")
+    await transport.embeddings.create(model="e", input=["x"])
+    assert calls == [
+        {"model": "m", "extra_body": {"cache_salt": "block-salt"}},
+        {
+            "model": "e",
+            "input": ["x"],
+            "extra_body": {"cache_salt": "block-salt"},
+        },
+    ]

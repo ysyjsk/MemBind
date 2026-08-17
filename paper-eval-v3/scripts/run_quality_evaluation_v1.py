@@ -43,6 +43,7 @@ for source in (PROJECT / "src", LEGACY / "src"):
         sys.path.insert(0, str(source))
 
 from paper_eval.artifacts import atomic_write_json, payload_sha256
+from paper_eval.apc_quality_targets import verify_apc_quality_target_manifest
 from paper_eval.baseline_suite import DEVELOPMENT_HISTORIES
 from paper_eval.development_graph_quality_input import (
     load_development_graph_quality_records,
@@ -53,6 +54,7 @@ from paper_eval.graph_quality_stages import GraphQualityStageStore
 from paper_eval.graph_quality_suite import (
     GraphQualityTarget,
     discover_graph_quality_targets,
+    verify_target_inventory,
 )
 from paper_eval.graph_quality_transport import GraphQualityTransport
 from paper_eval.quality_evaluation_v1 import (
@@ -80,6 +82,25 @@ from paper_eval.s2_retrieval_probe import (
     _preflight_corpus,
     _read_only_query_guard,
 )
+
+
+def _targets_from_apc_manifest(path: Path) -> tuple[GraphQualityTarget, ...]:
+    try:
+        value = json.loads(Path(path).read_text(encoding="utf-8"))
+    except (OSError, UnicodeError, json.JSONDecodeError):
+        raise ValueError("APC quality target manifest is unreadable") from None
+    manifest = verify_apc_quality_target_manifest(value)
+    targets = tuple(
+        GraphQualityTarget(
+            method=str(row["method"]),
+            history_id=str(row["history_id"]),
+            namespace=str(row["namespace"]),
+            episode_count=int(row["episode_count"]),
+            construction_result_sha256=str(row["construction_result_sha256"]),
+        )
+        for row in manifest["targets"]
+    )
+    return verify_target_inventory(targets)
 
 
 def _partition_targets(
@@ -524,8 +545,9 @@ def _parser() -> argparse.ArgumentParser:
         description="Evaluate sealed U0/A0/P graphs without rerunning construction."
     )
     parser.add_argument("run_id")
-    parser.add_argument("--native-run", required=True)
-    parser.add_argument("--suite-run", required=True)
+    parser.add_argument("--native-run")
+    parser.add_argument("--suite-run")
+    parser.add_argument("--target-manifest", type=Path)
     return parser
 
 
@@ -536,12 +558,21 @@ def main(argv: list[str] | None = None) -> int:
         return 1
     run_root = OUTPUT_ROOT / args.run_id
     try:
-        targets = discover_graph_quality_targets(
-            native_runs_root=NATIVE_RUNS_ROOT,
-            suite_runs_root=SUITE_RUNS_ROOT,
-            native_run_id=args.native_run,
-            suite_run_id=args.suite_run,
-        )
+        if args.target_manifest is not None:
+            if args.native_run is not None or args.suite_run is not None:
+                raise ValueError(
+                    "target manifest cannot be combined with historical discovery"
+                )
+            targets = _targets_from_apc_manifest(args.target_manifest)
+        else:
+            if args.native_run is None or args.suite_run is None:
+                raise ValueError("native and suite run ids are required")
+            targets = discover_graph_quality_targets(
+                native_runs_root=NATIVE_RUNS_ROOT,
+                suite_runs_root=SUITE_RUNS_ROOT,
+                native_run_id=args.native_run,
+                suite_run_id=args.suite_run,
+            )
         records = load_development_graph_quality_records()
         from graphiti_native import load_env_file
 

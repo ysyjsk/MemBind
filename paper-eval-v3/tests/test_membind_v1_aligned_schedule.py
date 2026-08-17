@@ -143,6 +143,7 @@ def test_scheduler_never_leaks_the_opaque_episode_into_public_lifecycle_rows() -
         "service_start_timestamp_ns",
         "publication_timestamp_ns",
         "terminal_timestamp_ns",
+        "caller_return_timestamp_ns",
         "worker_id",
     }
 

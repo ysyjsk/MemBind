@@ -24,6 +24,11 @@ from dataclasses import dataclass
 from pathlib import Path
 
 from paper_eval.artifacts import payload_sha256
+from paper_eval.apc_aligned_baseline import (
+    APC_BASELINE_METHODS,
+    SCHEMA as APC_BASELINE_PLAN_SCHEMA,
+    verify_apc_aligned_baseline_plan,
+)
 from paper_eval.membind_v1.admission import RequestAdmission
 from paper_eval.membind_v1.aligned_artifacts import (
     AlignedBlockArtifactStore,
@@ -35,6 +40,7 @@ from paper_eval.membind_v1.aligned_plan import (
     verify_aligned_development_plan,
 )
 from paper_eval.membind_v1.aligned_schedule import (
+    A0_ALIGNED,
     AlignedEpisodeRef,
     P_C2_ALIGNED,
     U0_ALIGNED,
@@ -89,6 +95,7 @@ RuntimeReady = Callable[[object], Awaitable[object]]
 NamespaceProbe = Callable[[object, str], Awaitable[Mapping[str, object]]]
 NamespaceEpisode = Callable[[object, str], object]
 NativeAddEpisode = Callable[[object, object, SourceRecord], Awaitable[object]]
+SourceVisibilityProbe = Callable[[object, SourceRecord], Awaitable[bool]]
 ReferenceTimeToNs = Callable[[str], int]
 MemBindAdapterFactory = Callable[[object, SourceLog, NodeArtifactIdentity], object]
 CloseRuntime = Callable[[object], Awaitable[object]]
@@ -113,6 +120,7 @@ class AlignedLiveHooks:
     namespace_probe: NamespaceProbe
     namespace_episode: NamespaceEpisode
     native_add_episode: NativeAddEpisode
+    source_visibility_probe: SourceVisibilityProbe
     reference_time_to_ns: ReferenceTimeToNs
     membind_adapter_factory: MemBindAdapterFactory
     close_runtime: CloseRuntime
@@ -131,7 +139,11 @@ def _plan_block(
     verified_plan: Mapping[str, object], block_index: object
 ) -> tuple[dict[str, object], dict[str, object], tuple[str, ...], tuple[int, ...]]:
     try:
-        plan = verify_aligned_development_plan(verified_plan)
+        plan = (
+            verify_apc_aligned_baseline_plan(verified_plan)
+            if verified_plan.get("schema_version") == APC_BASELINE_PLAN_SCHEMA
+            else verify_aligned_development_plan(verified_plan)
+        )
     except (AlignedPlanError, ValueError, TypeError):
         raise _fail("verified plan invalid") from None
     index = _nonnegative_int(block_index, "block index invalid")
@@ -142,7 +154,8 @@ def _plan_block(
     if not isinstance(raw_block, Mapping):
         raise _fail("plan block invalid")
     block = dict(raw_block)
-    if block.get("block_index") != index or block.get("method") not in ALIGNED_METHODS:
+    supported_methods = set(ALIGNED_METHODS) | set(APC_BASELINE_METHODS)
+    if block.get("block_index") != index or block.get("method") not in supported_methods:
         raise _fail("plan block invalid")
     if block.get("global_llm_admission_k") != 2:
         raise _fail("global LLM admission invalid")
@@ -312,22 +325,45 @@ async def _run_native_row(
         for source in source_log.records
     )
 
+    visibility_by_source: dict[int, bool] = {}
+
     async def native_add(native_episode: object) -> object:
         sequence = getattr(native_episode, "source_sequence", None)
         if isinstance(sequence, bool) or not isinstance(sequence, int) or sequence >= source_log.source_count:
             raise _fail("native episode source sequence invalid")
-        return await _await(
+        result = await _await(
             hooks.native_add_episode(runtime, native_episode, source_log.record(sequence)),
             "native add episode must be async",
         )
+        visible = await _await(
+            hooks.source_visibility_probe(runtime, source_log.record(sequence)),
+            "source visibility probe must be async",
+        )
+        if not isinstance(visible, bool):
+            raise _fail("source visibility probe invalid")
+        visibility_by_source[sequence] = visible
+        return result
 
     async def lifecycle(event_type: str, source_sequence: int, timestamp_ns: int) -> None:
+        telemetry: dict[str, object] = {"execution_path": "native-whole-update"}
+        if event_type == "PUBLICATION_DURABLE":
+            if source_sequence not in visibility_by_source:
+                raise _fail("publication visibility observation missing")
+            telemetry["visibility_confirmed"] = visibility_by_source[source_sequence]
+        if event_type == "ENQUEUED" and block["method"] == A0_ALIGNED:
+            telemetry["caller_return_timestamp_ns"] = timestamp_ns
         store.append_lifecycle(
             source_sequence,
             event_type=event_type,
             timestamp_ns=timestamp_ns,
-            telemetry={"execution_path": "native-whole-update"},
+            telemetry=telemetry,
         )
+        if event_type == "PUBLICATION_DURABLE":
+            print(
+                f"CHECKPOINT method={block['method']} history={block['history_id']} "
+                f"source_sequence={source_sequence} visibility={telemetry['visibility_confirmed']}",
+                flush=True,
+            )
 
     return await run_aligned_baseline(
         method=str(block["method"]),
@@ -489,7 +525,7 @@ async def execute_aligned_live_block(
         runner: dict[str, object] | None = None
         attempt_root: Path | None = None
         try:
-            if block["method"] in {U0_ALIGNED, P_C2_ALIGNED}:
+            if block["method"] in {U0_ALIGNED, A0_ALIGNED, P_C2_ALIGNED}:
                 schedule = await _run_native_row(
                     block=block,
                     scoped_episodes=scoped_episodes,
@@ -655,6 +691,34 @@ def production_aligned_live_hooks() -> AlignedLiveHooks:
             raise _fail("native add episode invocation failed") from None
         return await _await(call, "native add episode must be async")
 
+    async def source_visibility_probe(runtime: object, source: SourceRecord) -> bool:
+        graphiti = getattr(runtime, "graphiti", None)
+        driver = getattr(graphiti, "driver", None)
+        execute_query = getattr(driver, "execute_query", None)
+        if not callable(execute_query):
+            raise _fail("source visibility query unavailable")
+        name = source.episode_projection.get("name")
+        if not isinstance(name, str) or not name:
+            raise _fail("source visibility identity invalid")
+        result = await _await(
+            execute_query(
+                """
+                MATCH (episode:Episodic)
+                WHERE episode.group_id = $group_id AND episode.name = $name
+                RETURN count(episode) AS visible_count
+                """,
+                params={"group_id": source.group_id, "name": name},
+            ),
+            "source visibility query must be async",
+        )
+        records = getattr(result, "records", None)
+        if isinstance(records, (str, bytes)) or not isinstance(records, Sequence) or len(records) != 1:
+            raise _fail("source visibility query invalid")
+        getter = getattr(records[0], "get", None)
+        if not callable(getter):
+            raise _fail("source visibility query invalid")
+        return int(getter("visible_count") or 0) == 1
+
     def reference_time_to_ns(value: str) -> int:
         ensure_legacy_imports()
         try:
@@ -706,6 +770,7 @@ def production_aligned_live_hooks() -> AlignedLiveHooks:
         namespace_probe=namespace_probe,
         namespace_episode=namespace_episode,
         native_add_episode=native_add_episode,
+        source_visibility_probe=source_visibility_probe,
         reference_time_to_ns=reference_time_to_ns,
         membind_adapter_factory=membind_adapter_factory,
         close_runtime=close_runtime,

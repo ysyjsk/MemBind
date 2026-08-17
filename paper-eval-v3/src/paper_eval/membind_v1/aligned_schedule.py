@@ -1,4 +1,4 @@
-"""Fresh open-loop scheduling for the aligned U0/P(C=2) benchmark rows.
+"""Fresh open-loop scheduling for aligned U0/A0/P(C=2) benchmark rows.
 
 This is intentionally a small, Graphiti-free bridge.  It takes an immutable
 source inventory plus the already-frozen per-history arrival offsets, and
@@ -19,8 +19,9 @@ from typing import Any
 
 
 U0_ALIGNED = "U0-aligned"
+A0_ALIGNED = "A0-aligned"
 P_C2_ALIGNED = "P(C=2)-aligned"
-_METHODS = {U0_ALIGNED, P_C2_ALIGNED}
+_METHODS = {U0_ALIGNED, A0_ALIGNED, P_C2_ALIGNED}
 _SHA256 = re.compile(r"^[0-9a-f]{64}$")
 
 
@@ -114,9 +115,14 @@ def _row(
     service_start_ns: int,
     publication_ns: int,
     worker_id: int,
+    caller_return_ns: int | None = None,
 ) -> dict[str, int | str]:
     if not arrival_ns <= enqueue_ns <= service_start_ns <= publication_ns:
         raise _fail("lifecycle timestamp order invalid")
+    if caller_return_ns is None:
+        caller_return_ns = publication_ns
+    if not arrival_ns <= caller_return_ns <= publication_ns:
+        raise _fail("caller return timestamp order invalid")
     return {
         "source_sequence": episode.source_sequence,
         "source_sha256": episode.source_sha256,
@@ -125,6 +131,7 @@ def _row(
         "service_start_timestamp_ns": service_start_ns,
         "publication_timestamp_ns": publication_ns,
         "terminal_timestamp_ns": publication_ns,
+        "caller_return_timestamp_ns": caller_return_ns,
         "worker_id": worker_id,
     }
 
@@ -286,6 +293,88 @@ async def _run_p_c2(
     }
 
 
+async def _run_a0(
+    *,
+    episodes: tuple[AlignedEpisodeRef, ...],
+    targets: tuple[int, ...],
+    native_add_episode: NativeAddEpisode,
+    clock_ns: ClockNs,
+    sleep: Sleep,
+    lifecycle_observer: LifecycleObserver | None,
+) -> dict[str, Any]:
+    """Open-loop durable admission feeding exactly one FIFO Native worker."""
+
+    queue: asyncio.Queue[tuple[AlignedEpisodeRef, int, int]] = asyncio.Queue()
+    rows: list[dict[str, int | str]] = []
+    producer_failure: BaseException | None = None
+
+    async def arrive(episode: AlignedEpisodeRef, arrival_ns: int) -> None:
+        await _wait_until(arrival_ns, clock_ns=clock_ns, sleep=sleep)
+        await _observe(lifecycle_observer, "ARRIVAL", episode.source_sequence, arrival_ns)
+        enqueue_ns = _nonnegative_int(clock_ns(), "clock invalid")
+        await _observe(lifecycle_observer, "ENQUEUED", episode.source_sequence, enqueue_ns)
+        await queue.put((episode, arrival_ns, enqueue_ns))
+
+    producers = [
+        asyncio.create_task(arrive(episode, arrival_ns))
+        for episode, arrival_ns in zip(episodes, targets, strict=True)
+    ]
+
+    async def worker() -> None:
+        for _ in episodes:
+            episode, arrival_ns, enqueue_ns = await queue.get()
+            service_start_ns = _nonnegative_int(clock_ns(), "clock invalid")
+            await _observe(
+                lifecycle_observer,
+                "SERVICE_STARTED",
+                episode.source_sequence,
+                service_start_ns,
+            )
+            await _call_native(native_add_episode, episode)
+            publication_ns = _nonnegative_int(clock_ns(), "clock invalid")
+            await _observe(
+                lifecycle_observer,
+                "PUBLICATION_DURABLE",
+                episode.source_sequence,
+                publication_ns,
+            )
+            rows.append(
+                _row(
+                    episode=episode,
+                    arrival_ns=arrival_ns,
+                    enqueue_ns=enqueue_ns,
+                    service_start_ns=service_start_ns,
+                    publication_ns=publication_ns,
+                    caller_return_ns=enqueue_ns,
+                    worker_id=0,
+                )
+            )
+            queue.task_done()
+
+    worker_task = asyncio.create_task(worker())
+    try:
+        producer_results = await asyncio.gather(*producers, return_exceptions=True)
+        producer_failure = next(
+            (value for value in producer_results if isinstance(value, BaseException)),
+            None,
+        )
+        if producer_failure is not None:
+            raise producer_failure
+        await worker_task
+    except BaseException:
+        for task in (*producers, worker_task):
+            if not task.done():
+                task.cancel()
+        await asyncio.gather(*producers, worker_task, return_exceptions=True)
+        raise
+    return {
+        "configured_worker_count": 1,
+        "observed_max_active_updates": 1 if rows else 0,
+        "whole_update_interval_overlap_observed": False,
+        "lifecycle": sorted(rows, key=lambda row: int(row["source_sequence"])),
+    }
+
+
 async def run_aligned_baseline(
     *,
     method: str,
@@ -296,7 +385,7 @@ async def run_aligned_baseline(
     sleep: Sleep = asyncio.sleep,
     lifecycle_observer: LifecycleObserver | None = None,
 ) -> dict[str, Any]:
-    """Run exactly one fresh U0 or naive whole-update P(C=2) row.
+    """Run one fresh U0, Async-Serial, or naive whole-update P(C=2) row.
 
     Arrival timestamps are the frozen logical targets, not the moment a worker
     eventually gets CPU time.  This permits queue delay to be measured fairly
@@ -323,6 +412,15 @@ async def run_aligned_baseline(
             sleep=sleep,
             lifecycle_observer=lifecycle_observer,
         )
+    elif method == A0_ALIGNED:
+        result = await _run_a0(
+            episodes=selected,
+            targets=targets,
+            native_add_episode=native_add_episode,
+            clock_ns=clock_ns,
+            sleep=sleep,
+            lifecycle_observer=lifecycle_observer,
+        )
     else:
         result = await _run_p_c2(
             episodes=selected,
@@ -342,6 +440,7 @@ async def run_aligned_baseline(
 
 
 __all__ = [
+    "A0_ALIGNED",
     "AlignedEpisodeRef",
     "AlignedScheduleError",
     "P_C2_ALIGNED",

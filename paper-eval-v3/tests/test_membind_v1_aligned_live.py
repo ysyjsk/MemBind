@@ -29,6 +29,7 @@ from paper_eval.membind_v1.aligned_plan import (
 from paper_eval.membind_v1.delta import PreparedNodeArtifact
 from paper_eval.membind_v1.graphiti_adapter import NodeArtifactIdentity
 from paper_eval.membind_v1.store import inspect_membind_v1_attempt
+from paper_eval.apc_aligned_baseline import build_apc_aligned_baseline_plan
 
 
 @dataclass(frozen=True)
@@ -80,6 +81,24 @@ def _plan() -> dict[str, object]:
     )
 
 
+def _apc_plan() -> dict[str, object]:
+    sources = {
+        history_id: [
+            f"{history_index + 1:032x}{source_index + 1:032x}"
+            for source_index in range(2)
+        ]
+        for history_index, history_id in enumerate(ALIGNED_DEVELOPMENT_HISTORIES)
+    }
+    return build_apc_aligned_baseline_plan(
+        run_id="apc-baseline-live-test-001",
+        history_source_sha256s=sources,
+        interarrival_ns=0,
+        execution_envelope_sha256="d" * 64,
+        service_reference_ns=0,
+        normalized_offered_load=1.0,
+    )
+
+
 def _episodes(plan: dict[str, object], *, history_id: str) -> tuple[_Episode, ...]:
     raw = plan["history_source_sha256s"]
     assert isinstance(raw, dict)
@@ -110,7 +129,9 @@ def _hooks(state: _State, *, identity: NodeArtifactIdentity) -> AlignedLiveHooks
     def runtime_builder(*, env, admission, request_id_prefix):
         assert env == {"public": "test"}
         assert admission.limit == 2
-        assert request_id_prefix.startswith("aligned-live-test-001:")
+        assert request_id_prefix.startswith(
+            ("aligned-live-test-001:", "apc-baseline-live-test-001:")
+        )
         return _Runtime(
             execution_envelope_sha256=state.envelope,
             graphiti=SimpleNamespace(driver=SimpleNamespace()),
@@ -145,6 +166,12 @@ def _hooks(state: _State, *, identity: NodeArtifactIdentity) -> AlignedLiveHooks
             raise RuntimeError("fake native failure")
         await asyncio.sleep(0)
         state.namespaces.setdefault(episode.group_id, []).append(episode.name)
+
+    async def source_visibility_probe(runtime: _Runtime, source: object) -> bool:
+        del runtime
+        return str(getattr(source, "episode_projection")["name"]) in state.namespaces.get(
+            str(getattr(source, "group_id")), []
+        )
 
     class _Adapter:
         async def prepare(self, compile_input):
@@ -187,6 +214,7 @@ def _hooks(state: _State, *, identity: NodeArtifactIdentity) -> AlignedLiveHooks
         namespace_probe=namespace_probe,
         namespace_episode=namespace_episode,
         native_add_episode=native_add_episode,
+        source_visibility_probe=source_visibility_probe,
         reference_time_to_ns=lambda value: int(value[8:10]) * 1_000_000_000,
         membind_adapter_factory=membind_adapter_factory,
         close_runtime=close_runtime,
@@ -253,6 +281,36 @@ async def test_aligned_p_c2_uses_the_same_frozen_arrival_trace_and_durable_lifec
     assert result["schedule"]["configured_worker_count"] == 2
     assert inspected["checkpoint"]["complete_coverage"] is True
     assert len(state.native_calls) == 2
+
+
+@pytest.mark.asyncio
+async def test_apc_plan_a0_runs_one_fifo_worker_and_persists_visibility(
+    tmp_path: Path,
+) -> None:
+    plan = _apc_plan()
+    state = _State(envelope="d" * 64)
+    result = await execute_aligned_live_block(
+        verified_plan=plan,
+        block_index=1,
+        episodes=_episodes(plan, history_id="07741c45"),
+        env={"public": "test"},
+        block_root=tmp_path / "a0",
+        execution_identity_sha256="e" * 64,
+        hooks=_hooks(state, identity=_identity()),
+    )
+
+    inspected = inspect_aligned_block_artifacts(tmp_path / "a0")
+    assert result["method"] == "A0-aligned"
+    assert result["schedule"]["configured_worker_count"] == 1
+    publications = [
+        event
+        for event in inspected["events"]
+        if event["event_type"] == "PUBLICATION_DURABLE"
+    ]
+    assert [event["telemetry"]["visibility_confirmed"] for event in publications] == [
+        True,
+        True,
+    ]
 
 
 @pytest.mark.asyncio

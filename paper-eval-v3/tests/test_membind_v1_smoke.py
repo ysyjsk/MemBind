@@ -123,6 +123,9 @@ def _hooks(state: _State, *, identity: NodeArtifactIdentity) -> AlignedLiveHooks
     async def native_add_episode(*_args: object) -> None:
         raise AssertionError("smoke must execute only MemBind-v1")
 
+    async def source_visibility_probe(*_args: object) -> bool:
+        raise AssertionError("smoke must execute only MemBind-v1")
+
     class _Adapter:
         async def prepare(self, compile_input):
             state.prepare_calls.append(compile_input.source.source_sequence)
@@ -165,6 +168,7 @@ def _hooks(state: _State, *, identity: NodeArtifactIdentity) -> AlignedLiveHooks
         namespace_probe=namespace_probe,
         namespace_episode=namespace_episode,
         native_add_episode=native_add_episode,
+        source_visibility_probe=source_visibility_probe,
         reference_time_to_ns=lambda value: int(value[8:10]) * 1_000_000_000,
         membind_adapter_factory=membind_adapter_factory,
         close_runtime=close_runtime,
