@@ -1,0 +1,79 @@
+<?xml version="1.0" encoding="utf-8"?><testsuites name="pytest tests"><testsuite name="pytest" errors="0" failures="2" skipped="0" tests="6" time="0.039" timestamp="2026-08-17T16:54:58.302971+08:00" hostname="aces-System-Product-Name"><testcase classname="tests.test_quality_evaluation_v1" name="test_session_metrics_do_not_saturate_at_recall10" time="0.000" /><testcase classname="tests.test_quality_evaluation_v1" name="test_edge_metrics_are_explicit_provenance_proxies" time="0.000" /><testcase classname="tests.test_quality_evaluation_v1" name="test_temporal_diagnostics_identify_stale_and_conflicting_relation_group" time="0.000" /><testcase classname="tests.test_quality_evaluation_v1" name="test_context_pack_is_gold_blind_local_deduplicated_and_chronological" time="0.000"><failure message="assert 3 == 4&#10; +  where 3 = ContextPack(context_json='[{&quot;evidence_type&quot;:&quot;graph_fact&quot;,&quot;expired_at&quot;:null,&quot;invalid_at&quot;:&quot;2023-02-01T00:00:00+00:00&quot;,&quot;r...-01T00:00:00+00:00&quot;,&quot;valid_at&quot;:null}]', evidence_count=5, fact_count=2, session_candidate_count=3, local_round_count=3).local_round_count">def test_context_pack_is_gold_blind_local_deduplicated_and_chronological() -&gt; None:
+        facts = (
+            _fact(
+                1,
+                "The ratio is now 5 ounces.",
+                ("s-new",),
+                valid_at="2023-02-01T00:00:00+00:00",
+            ),
+            _fact(
+                2,
+                "The ratio was 6 ounces.",
+                ("s-old",),
+                valid_at="2023-01-01T00:00:00+00:00",
+                invalid_at="2023-02-01T00:00:00+00:00",
+            ),
+        )
+        episodes = (
+            RetrievedEpisode(1, "episode-new", "s-new"),
+            RetrievedEpisode(2, "episode-old", "s-old"),
+            RetrievedEpisode(3, "episode-noise", "s-noise"),
+        )
+    
+        pack = build_context_pack(
+            record=_record(),
+            question="Did I switch to more water or less water?",
+            facts=facts,
+            episodes=episodes,
+        )
+        decoded = json.loads(pack.context_json)
+    
+        assert pack.session_candidate_count == 3
+        # LongMemEval flat-turn retrieval ranks USER turns globally and expands
+        # each selected USER turn with its immediately following turn.  There are
+        # four eligible USER turns in this fixture, so no per-session best-round
+        # heuristic may silently discard the hiking round.
+&gt;       assert pack.local_round_count == 4
+E       assert 3 == 4
+E        +  where 3 = ContextPack(context_json='[{"evidence_type":"graph_fact","expired_at":null,"invalid_at":"2023-02-01T00:00:00+00:00","r...-01T00:00:00+00:00","valid_at":null}]', evidence_count=5, fact_count=2, session_candidate_count=3, local_round_count=3).local_round_count
+
+paper-eval-v3/tests/test_quality_evaluation_v1.py:177: AssertionError</failure></testcase><testcase classname="tests.test_quality_evaluation_v1" name="test_context_pack_ranks_user_turns_across_all_graphiti_candidate_sessions" time="0.000"><failure message="assert 10 == 11&#10; +  where 10 = ContextPack(context_json='[{&quot;evidence_type&quot;:&quot;source_local_round&quot;,&quot;expired_at&quot;:null,&quot;invalid_at&quot;:null,&quot;raw_evidence&quot;:[{...T00:00:00+00:00&quot;,&quot;valid_at&quot;:null}]', evidence_count=10, fact_count=0, session_candidate_count=10, local_round_count=10).session_candidate_count">def test_context_pack_ranks_user_turns_across_all_graphiti_candidate_sessions() -&gt; None:
+        record = {
+            "answer": "must never affect retrieval",
+            "answer_session_ids": ["s-11"],
+            "haystack_session_ids": [f"s-{index}" for index in range(1, 12)],
+            "haystack_dates": [
+                f"2023-01-{index:02d}T00:00:00+00:00" for index in range(1, 12)
+            ],
+            "haystack_sessions": [
+                [
+                    {
+                        "role": "user",
+                        "content": "needle appears here" if index == 11 else f"noise {index}",
+                    },
+                    {"role": "assistant", "content": f"reply {index}"},
+                ]
+                for index in range(1, 12)
+            ],
+        }
+        episodes = tuple(
+            RetrievedEpisode(index, f"episode-{index}", f"s-{index}")
+            for index in range(1, 12)
+        )
+    
+        pack = build_context_pack(
+            record=record,
+            question="needle",
+            facts=(),
+            episodes=episodes,
+        )
+    
+        # Graphiti supplies the candidate-session boundary; LongMemEval-style
+        # flat-turn BM25 then selects one frozen global Top-10 from every USER turn
+        # in that boundary.  The relevant turn in candidate session 11 must not be
+        # lost by slicing sessions before local ranking.
+&gt;       assert pack.session_candidate_count == 11
+E       assert 10 == 11
+E        +  where 10 = ContextPack(context_json='[{"evidence_type":"source_local_round","expired_at":null,"invalid_at":null,"raw_evidence":[{...T00:00:00+00:00","valid_at":null}]', evidence_count=10, fact_count=0, session_candidate_count=10, local_round_count=10).session_candidate_count
+
+paper-eval-v3/tests/test_quality_evaluation_v1.py:228: AssertionError</failure></testcase><testcase classname="tests.test_quality_evaluation_v1" name="test_context_pack_rejects_duplicate_or_foreign_episode_identity" time="0.000" /></testsuite></testsuites>

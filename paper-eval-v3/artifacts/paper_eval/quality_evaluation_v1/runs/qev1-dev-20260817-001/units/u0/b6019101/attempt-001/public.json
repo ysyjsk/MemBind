@@ -1,0 +1,139 @@
+{
+  "claim_scope": "DEVELOPMENT_DIAGNOSTIC_NOT_PAPER_SIGNIFICANCE",
+  "construction_latency_includes_quality": false,
+  "construction_result_sha256": "2230c5243e6f333275650e1f672e98578f77f9a23281c763f8c3e07a0e560d3e",
+  "context": {
+    "context_policy_sha256": "6c717c5a39af98e17d1b9fe55f0425f54401c13b9b82d9d1aeab5a2db26eef49",
+    "context_sha256": "321783d09ee04dfd5f3107baa784cb7de1576a8d790abc916ae4c5c648afb0b8",
+    "evidence_count": 29,
+    "fact_count": 20,
+    "local_round_count": 10,
+    "session_candidate_count": 20
+  },
+  "context_gold_session_coverage_posthoc": 1.0,
+  "corpus_preflight": {
+    "expected_name_content_map_sha256": "fee6513a089628cacc85ce3b4d2f770705fb5814adac10273bbe418797b05112",
+    "neo4j_read_requests": 1,
+    "observed_episode_count": 49,
+    "observed_name_content_map_sha256": "fee6513a089628cacc85ce3b4d2f770705fb5814adac10273bbe418797b05112",
+    "pass": true
+  },
+  "edge_provenance_metrics": {
+    "edge_gold_source_precision_at_1": 0.0,
+    "edge_gold_source_precision_at_10": 0.1,
+    "edge_gold_source_precision_at_20": 0.25,
+    "edge_gold_source_precision_at_3": 0.0,
+    "edge_gold_source_precision_at_5": 0.0,
+    "gold_fact_labels_available": false,
+    "gold_session_edge_coverage_at_1": 0.0,
+    "gold_session_edge_coverage_at_10": 0.5,
+    "gold_session_edge_coverage_at_20": 0.5,
+    "gold_session_edge_coverage_at_3": 0.0,
+    "gold_session_edge_coverage_at_5": 0.0,
+    "metric_scope": "PROVENANCE_PROXY_NOT_GOLD_FACT_RECALL"
+  },
+  "failure_category": "SUCCESS",
+  "graphiti_search_calls": 1,
+  "headline_eligible": true,
+  "history_id": "b6019101",
+  "judge": {
+    "config_sha256": "97fc7c64f9ce991383e68269054254dcd36790dc493d9795418f58b763d27d6d",
+    "error_class": null,
+    "label": true,
+    "model": "qwen3-32b-fp8",
+    "output_byte_count": 3,
+    "output_character_count": 3,
+    "output_sha256": "8a798890fe93817163b10b5f7bd2ca4d25d84c52739a645a889c173eee7d9d3d",
+    "parse_status": "YES",
+    "prompt_sha256": "a3b22c8a0ba55dc1f5922469403152933ab38c8157857b855f1c179f2bbbd71a",
+    "retry_count": 0,
+    "status": "SUCCESS"
+  },
+  "judge_stage_disposition": "EXECUTED_AND_SEALED",
+  "judge_valid_denominator": 1,
+  "method": "U0",
+  "namespace_sha256": "4afb7cda4cd97dde46c18bcad5203645ee573ab8a85c27fa113f73aede579ad7",
+  "neo4j_read_requests": 3,
+  "overlay_run_id": "qev1-dev-20260817-001",
+  "payload_sha256": "22709096570e6c5e57e87871519786b32734b5bede86393bffec53ecb2f39208",
+  "private_payload_sha256": "11b788937d28eb78ea5622affe4cc5a1e1b429da57ded5ba2ed0b00e72bda5cd",
+  "qa_accuracy": 1.0,
+  "quality_identity": {
+    "context_policy_sha256": "6c717c5a39af98e17d1b9fe55f0425f54401c13b9b82d9d1aeab5a2db26eef49",
+    "judge_config_sha256": "03dca463e760d957054973c56302d259a3e66e4397f26be5da753e0f775479e6",
+    "reader_config_sha256": "e8b78482c28b9096d790ecff789bcf2ae5a023868ee1471b1fa485bbf60412b7",
+    "retrieval_config_sha256": "62535d82129d01d6cbf8c3d5c13f656e60d89d821a9d9b9ca7bc1ed51c53fa7d"
+  },
+  "quality_latency_ns": {
+    "judge": 72616199,
+    "reader": 1609752556,
+    "retrieval": 57641915,
+    "total": 1740010670
+  },
+  "reader": {
+    "completion_tokens": 14,
+    "config_sha256": "e8b78482c28b9096d790ecff789bcf2ae5a023868ee1471b1fa485bbf60412b7",
+    "finish_reason": "stop",
+    "model": "qwen3-32b-fp8",
+    "output_byte_count": 45,
+    "output_character_count": 45,
+    "output_sha256": "c4483373a36b801f72b8740d840fe358652bbcd32ac8ccdd29a4a386ba848f0e",
+    "prompt_byte_count": 29440,
+    "prompt_character_count": 29435,
+    "prompt_sha256": "359475238b88240ff3b9e347100a0777a519ca3a47743499d491f7131750b0fc",
+    "prompt_tokens": 8451,
+    "status": "SUCCESS",
+    "truncation_count": 0
+  },
+  "reader_stage_disposition": "EXECUTED_AND_SEALED",
+  "retrieval_config_sha256": "62535d82129d01d6cbf8c3d5c13f656e60d89d821a9d9b9ca7bc1ed51c53fa7d",
+  "runtime_identity": {
+    "construction_llm": "FORBIDDEN",
+    "cross_encoder": "FORBIDDEN",
+    "database_access": "READ_ONLY_GUARDED_PER_QUERY",
+    "driver_init_task_present": false,
+    "embedding": {
+      "deployment_fingerprint": "5f5a8400eeaa2f07d167d8b5b7e63d615945a8f54f506e02342840cd4e3fe626",
+      "dimension": 1024,
+      "dtype": "bfloat16",
+      "endpoint_identity_sha256": "3aa93603816965e94d45e8a75ba2029c1d4378b689e4bad133f6889eea36d84e",
+      "environment_proxy_trust": false,
+      "evidence_scope": "operator_supplied_deployment_path_hash",
+      "instruction_policy": "none",
+      "max_attempts": 1,
+      "normalization": "l2",
+      "pooling": "last_token",
+      "runtime_observed": false,
+      "sdk_hidden_retries": 0,
+      "served_model_id": "qwen3-embedding-0.6b"
+    },
+    "implementation": "graphiti_read_only_graph_quality_runtime_v1",
+    "schema_initialization": "FORBIDDEN"
+  },
+  "runtime_identity_sha256": "66d5745dbb83843b1dc4b6ebf978e614adb81fdc48f1b2c707539649b8db767e",
+  "schema_version": "membind.paper-eval-v3.quality-v1-public.v1",
+  "session_metrics": {
+    "gold_ranks": [
+      1,
+      2
+    ],
+    "mrr": 1.0,
+    "ndcg_at_10": 1.0,
+    "recall_at_1": 0.5,
+    "recall_at_10": 1.0,
+    "recall_at_3": 1.0,
+    "recall_at_5": 1.0,
+    "relevance_unit": "LONGMEMEVAL_GOLD_SESSION"
+  },
+  "temporal_diagnostics": {
+    "active_fact_count": 20,
+    "conflicting_relation_group_count": 1,
+    "diagnostic_scope": "RETRIEVED_EDGE_TEMPORAL_FIELDS_ONLY",
+    "future_fact_count": 0,
+    "latest_valid_fact_ranks": [
+      9
+    ],
+    "stale_fact_count": 0,
+    "stale_ranked_before_latest_valid_count": 0
+  }
+}

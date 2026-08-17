@@ -1,0 +1,155 @@
+{
+  "construction_latency_includes_quality": false,
+  "construction_rerun": false,
+  "payload_sha256": "305c540a26c3255d84b9a8ff0bb78baca8d093cdce9a6317934010c3c553b286",
+  "quality_identity": {
+    "context_policy_sha256": "6c717c5a39af98e17d1b9fe55f0425f54401c13b9b82d9d1aeab5a2db26eef49",
+    "judge_config_sha256": "03dca463e760d957054973c56302d259a3e66e4397f26be5da753e0f775479e6",
+    "reader_config_sha256": "e8b78482c28b9096d790ecff789bcf2ae5a023868ee1471b1fa485bbf60412b7",
+    "retrieval_config_sha256": "62535d82129d01d6cbf8c3d5c13f656e60d89d821a9d9b9ca7bc1ed51c53fa7d"
+  },
+  "run_id": "qev1-dev-20260817-001",
+  "runtime_identity": {
+    "construction_llm": "FORBIDDEN",
+    "cross_encoder": "FORBIDDEN",
+    "database_access": "READ_ONLY_GUARDED_PER_QUERY",
+    "driver_init_task_present": false,
+    "embedding": {
+      "deployment_fingerprint": "5f5a8400eeaa2f07d167d8b5b7e63d615945a8f54f506e02342840cd4e3fe626",
+      "dimension": 1024,
+      "dtype": "bfloat16",
+      "endpoint_identity_sha256": "3aa93603816965e94d45e8a75ba2029c1d4378b689e4bad133f6889eea36d84e",
+      "environment_proxy_trust": false,
+      "evidence_scope": "operator_supplied_deployment_path_hash",
+      "instruction_policy": "none",
+      "max_attempts": 1,
+      "normalization": "l2",
+      "pooling": "last_token",
+      "runtime_observed": false,
+      "sdk_hidden_retries": 0,
+      "served_model_id": "qwen3-embedding-0.6b"
+    },
+    "implementation": "graphiti_read_only_graph_quality_runtime_v1",
+    "schema_initialization": "FORBIDDEN"
+  },
+  "schema_version": "membind.paper-eval-v3.quality-v1-report.v1",
+  "status": "PASS",
+  "summary": {
+    "by_method": {
+      "A0": {
+        "active_fact_count_macro": 20.0,
+        "conflicting_relation_group_count_macro": 0.25,
+        "future_fact_count_macro": 0.0,
+        "invalid_judge_count": 0,
+        "mrr_macro": 1.0,
+        "ndcg_at_10_macro": 1.0,
+        "qa_accuracy": 0.5,
+        "question_count": 4,
+        "recall_at_10_macro": 1.0,
+        "recall_at_1_macro": 0.5,
+        "recall_at_3_macro": 1.0,
+        "recall_at_5_macro": 1.0,
+        "stale_fact_count_macro": 0.0,
+        "stale_ranked_before_latest_valid_count_macro": 0.0,
+        "valid_judge_count": 4
+      },
+      "P(C=2)": {
+        "active_fact_count_macro": 19.5,
+        "conflicting_relation_group_count_macro": 0.0,
+        "future_fact_count_macro": 0.0,
+        "invalid_judge_count": 0,
+        "mrr_macro": 1.0,
+        "ndcg_at_10_macro": 1.0,
+        "qa_accuracy": 0.5,
+        "question_count": 4,
+        "recall_at_10_macro": 1.0,
+        "recall_at_1_macro": 0.5,
+        "recall_at_3_macro": 1.0,
+        "recall_at_5_macro": 1.0,
+        "stale_fact_count_macro": 0.5,
+        "stale_ranked_before_latest_valid_count_macro": 0.0,
+        "valid_judge_count": 4
+      },
+      "U0": {
+        "active_fact_count_macro": 20.0,
+        "conflicting_relation_group_count_macro": 0.25,
+        "future_fact_count_macro": 0.0,
+        "invalid_judge_count": 0,
+        "mrr_macro": 1.0,
+        "ndcg_at_10_macro": 1.0,
+        "qa_accuracy": 0.5,
+        "question_count": 4,
+        "recall_at_10_macro": 1.0,
+        "recall_at_1_macro": 0.5,
+        "recall_at_3_macro": 1.0,
+        "recall_at_5_macro": 1.0,
+        "stale_fact_count_macro": 0.0,
+        "stale_ranked_before_latest_valid_count_macro": 0.0,
+        "valid_judge_count": 4
+      }
+    },
+    "claim_scope": "DEVELOPMENT_DIAGNOSTIC_NOT_PAPER_SIGNIFICANCE",
+    "edge_metrics_scope": "PROVENANCE_PROXY_NOT_GOLD_FACT_RECALL",
+    "fact_gold_labels_available": false,
+    "methods": [
+      "U0",
+      "A0",
+      "P(C=2)"
+    ],
+    "quality_latency_included_in_construction_metrics": false,
+    "question_count": 12,
+    "schema_version": "membind.paper-eval-v3.quality-v1-summary.v1"
+  },
+  "u0_decision": {
+    "context_policy": {
+      "gold_inputs_allowed_during_selection": false,
+      "graphiti_candidate_session_limit": 20,
+      "graphiti_fact_limit": 20,
+      "local_flat_user_turn_limit": 10,
+      "local_ranker": "rank_bm25.BM25Okapi",
+      "local_tokenization": "str.split(' ')",
+      "longmemeval": {
+        "commit": "9e0b455f4ef0e2ab8f2e582289761153549043fc",
+        "generation_source": "src/generation/run_generation.py",
+        "generation_source_sha256": "4f1eb3c69d7ad40f04065b9c0bc86f6582441018fc6ff751d162d66c95baf672",
+        "repository": "https://github.com/xiaowu0162/LongMemEval",
+        "retrieval_source": "src/retrieval/run_retrieval.py",
+        "retrieval_source_sha256": "efd7fc5969a904717741fadca3c7dc73611ddbb2aaf3ef33117ebb6943b3e346"
+      },
+      "post_selection_order": "CHRONOLOGICAL",
+      "rank_bm25": {
+        "distribution": "rank-bm25",
+        "installed_source_sha256": "2f28cc795415c01e9f3db5a8ed019774f9cba747b272c9c304271589b8081ac6",
+        "upstream_commit": "47aa3ddf8dc1ebeb7ef4e65f2b4536af44594099",
+        "upstream_repository": "https://github.com/dorianbrown/rank_bm25",
+        "upstream_source_sha256": "0de6c46a8d5a9ad63ff7034012cda1b296a12b7000fdee4479101375fdf62968",
+        "version": "0.2.2"
+      },
+      "schema_version": "membind.paper-eval-v3.quality-context-v1",
+      "tie_policy": "STABLE_GRAPHITI_SESSION_THEN_SOURCE_TURN_ORDER",
+      "turn_expansion": "RETRIEVED_USER_TURN_PLUS_IMMEDIATELY_FOLLOWING_TURN",
+      "zep": {
+        "commit": "be263ee23085410185835e0d8508b47fd35e9abb",
+        "repository": "https://github.com/getzep/zep",
+        "source": "benchmarks/longmemeval/zep_longmem_eval.py",
+        "source_sha256": "785eacdfd9a388ea00f636074579f7409e04a48d0c1bf5685022f3830a6b72d4"
+      }
+    },
+    "correct_count": 2,
+    "decision": "FREEZE_QUALITY_EVALUATION_V1",
+    "development_only": true,
+    "payload_sha256": "05d8ae1c11167230d0db69090c99dc366ca34534e361037f1dbea84db6775435",
+    "qa_accuracy": 0.5,
+    "quality_identity": {
+      "context_policy_sha256": "6c717c5a39af98e17d1b9fe55f0425f54401c13b9b82d9d1aeab5a2db26eef49",
+      "judge_config_sha256": "03dca463e760d957054973c56302d259a3e66e4397f26be5da753e0f775479e6",
+      "reader_config_sha256": "e8b78482c28b9096d790ecff789bcf2ae5a023868ee1471b1fa485bbf60412b7",
+      "retrieval_config_sha256": "62535d82129d01d6cbf8c3d5c13f656e60d89d821a9d9b9ca7bc1ed51c53fa7d"
+    },
+    "question_count": 4,
+    "run_id": "qev1-dev-20260817-001",
+    "schema_version": "membind.paper-eval-v3.quality-v1-u0-decision.v1",
+    "threshold_policy": "FREEZE_IF_ALL_4_VALID_AND_CORRECT_COUNT_GTE_2",
+    "valid_denominator": 4
+  }
+}

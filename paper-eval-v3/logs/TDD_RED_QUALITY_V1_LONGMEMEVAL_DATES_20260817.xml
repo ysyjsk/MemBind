@@ -1,0 +1,31 @@
+<?xml version="1.0" encoding="utf-8"?><testsuites name="pytest tests"><testsuite name="pytest" errors="0" failures="1" skipped="0" tests="7" time="0.087" timestamp="2026-08-17T17:06:55.656506+08:00" hostname="aces-System-Product-Name"><testcase classname="tests.test_quality_evaluation_v1" name="test_session_metrics_do_not_saturate_at_recall10" time="0.000" /><testcase classname="tests.test_quality_evaluation_v1" name="test_edge_metrics_are_explicit_provenance_proxies" time="0.001" /><testcase classname="tests.test_quality_evaluation_v1" name="test_temporal_diagnostics_identify_stale_and_conflicting_relation_group" time="0.000" /><testcase classname="tests.test_quality_evaluation_v1" name="test_temporal_diagnostics_accept_longmemeval_native_question_date" time="0.000"><failure message="ValueError: Quality v1 timestamp is invalid">def test_temporal_diagnostics_accept_longmemeval_native_question_date() -&gt; None:
+&gt;       metrics = temporal_diagnostics(
+            (
+                _fact(
+                    1,
+                    "The ratio was 6 ounces.",
+                    ("s-old",),
+                    valid_at="2023-05-01T00:00:00+00:00",
+                    invalid_at="2023-06-01T00:00:00+00:00",
+                ),
+            ),
+            question_date="2023/06/23 (Fri) 07:31",
+        )
+
+tests/test_quality_evaluation_v1.py:144: 
+_ _ _ _ _ _ _ _ _ _ _ _ _ _ _ _ _ _ _ _ _ _ _ _ _ _ _ _ _ _ _ _ _ _ _ _ _ _ _ _ 
+src/paper_eval/quality_evaluation_v1.py:233: in temporal_diagnostics
+    question_time = _datetime(question_date)
+                    ^^^^^^^^^^^^^^^^^^^^^^^^
+_ _ _ _ _ _ _ _ _ _ _ _ _ _ _ _ _ _ _ _ _ _ _ _ _ _ _ _ _ _ _ _ _ _ _ _ _ _ _ _ 
+
+value = '2023/06/23 (Fri) 07:31'
+
+    def _datetime(value: str) -&gt; datetime:
+        try:
+            return datetime.fromisoformat(value.replace("Z", "+00:00"))
+        except ValueError:
+&gt;           raise ValueError("Quality v1 timestamp is invalid") from None
+E           ValueError: Quality v1 timestamp is invalid
+
+src/paper_eval/quality_evaluation_v1.py:218: ValueError</failure></testcase><testcase classname="tests.test_quality_evaluation_v1" name="test_context_pack_is_gold_blind_local_deduplicated_and_chronological" time="0.001" /><testcase classname="tests.test_quality_evaluation_v1" name="test_context_pack_ranks_user_turns_across_all_graphiti_candidate_sessions" time="0.000" /><testcase classname="tests.test_quality_evaluation_v1" name="test_context_pack_rejects_duplicate_or_foreign_episode_identity" time="0.000" /></testsuite></testsuites>

@@ -1,0 +1,29 @@
+<?xml version="1.0" encoding="utf-8"?><testsuites name="pytest tests"><testsuite name="pytest" errors="0" failures="1" skipped="0" tests="1" time="0.084" timestamp="2026-08-17T17:00:04.941962+08:00" hostname="aces-System-Product-Name"><testcase classname="tests.test_quality_evaluation_v1_overlay" name="test_success_emits_metrics_private_answer_and_content_free_public" time="0.001"><failure message="KeyError: 'context_policy_sha256'">@pytest.mark.asyncio
+    async def test_success_emits_metrics_private_answer_and_content_free_public() -&gt; None:
+        reader = _Reader()
+        judge = _Judge()
+    
+        async def retrieve(**_kwargs):
+            return _retrieval()
+    
+        result = await run_quality_v1_question(
+            inputs=_inputs(),
+            graph=object(),
+            episode_uuid_to_session_id={},
+            reader=reader,
+            judge=judge,
+            retrieve=retrieve,
+            runtime_identity_sha256="6" * 64,
+        )
+    
+        assert result.public_artifact["qa_accuracy"] == 1.0
+        assert result.public_artifact["session_metrics"]["recall_at_1"] == 0.0
+        assert result.public_artifact["session_metrics"]["recall_at_3"] == 1.0
+        assert result.public_artifact["failure_category"] == "SUCCESS"
+&gt;       assert result.public_artifact["context"]["context_policy_sha256"] == (
+               ^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^
+            CONTEXT_POLICY_SHA256
+        )
+E       KeyError: 'context_policy_sha256'
+
+tests/test_quality_evaluation_v1_overlay.py:163: KeyError</failure></testcase></testsuite></testsuites>

@@ -1,0 +1,52 @@
+{
+  "context_policy": {
+    "gold_inputs_allowed_during_selection": false,
+    "graphiti_candidate_session_limit": 20,
+    "graphiti_fact_limit": 20,
+    "local_flat_user_turn_limit": 10,
+    "local_ranker": "rank_bm25.BM25Okapi",
+    "local_tokenization": "str.split(' ')",
+    "longmemeval": {
+      "commit": "9e0b455f4ef0e2ab8f2e582289761153549043fc",
+      "generation_source": "src/generation/run_generation.py",
+      "generation_source_sha256": "4f1eb3c69d7ad40f04065b9c0bc86f6582441018fc6ff751d162d66c95baf672",
+      "repository": "https://github.com/xiaowu0162/LongMemEval",
+      "retrieval_source": "src/retrieval/run_retrieval.py",
+      "retrieval_source_sha256": "efd7fc5969a904717741fadca3c7dc73611ddbb2aaf3ef33117ebb6943b3e346"
+    },
+    "post_selection_order": "CHRONOLOGICAL",
+    "rank_bm25": {
+      "distribution": "rank-bm25",
+      "installed_source_sha256": "2f28cc795415c01e9f3db5a8ed019774f9cba747b272c9c304271589b8081ac6",
+      "upstream_commit": "47aa3ddf8dc1ebeb7ef4e65f2b4536af44594099",
+      "upstream_repository": "https://github.com/dorianbrown/rank_bm25",
+      "upstream_source_sha256": "0de6c46a8d5a9ad63ff7034012cda1b296a12b7000fdee4479101375fdf62968",
+      "version": "0.2.2"
+    },
+    "schema_version": "membind.paper-eval-v3.quality-context-v1",
+    "tie_policy": "STABLE_GRAPHITI_SESSION_THEN_SOURCE_TURN_ORDER",
+    "turn_expansion": "RETRIEVED_USER_TURN_PLUS_IMMEDIATELY_FOLLOWING_TURN",
+    "zep": {
+      "commit": "be263ee23085410185835e0d8508b47fd35e9abb",
+      "repository": "https://github.com/getzep/zep",
+      "source": "benchmarks/longmemeval/zep_longmem_eval.py",
+      "source_sha256": "785eacdfd9a388ea00f636074579f7409e04a48d0c1bf5685022f3830a6b72d4"
+    }
+  },
+  "correct_count": 2,
+  "decision": "FREEZE_QUALITY_EVALUATION_V1",
+  "development_only": true,
+  "payload_sha256": "05d8ae1c11167230d0db69090c99dc366ca34534e361037f1dbea84db6775435",
+  "qa_accuracy": 0.5,
+  "quality_identity": {
+    "context_policy_sha256": "6c717c5a39af98e17d1b9fe55f0425f54401c13b9b82d9d1aeab5a2db26eef49",
+    "judge_config_sha256": "03dca463e760d957054973c56302d259a3e66e4397f26be5da753e0f775479e6",
+    "reader_config_sha256": "e8b78482c28b9096d790ecff789bcf2ae5a023868ee1471b1fa485bbf60412b7",
+    "retrieval_config_sha256": "62535d82129d01d6cbf8c3d5c13f656e60d89d821a9d9b9ca7bc1ed51c53fa7d"
+  },
+  "question_count": 4,
+  "run_id": "qev1-dev-20260817-001",
+  "schema_version": "membind.paper-eval-v3.quality-v1-u0-decision.v1",
+  "threshold_policy": "FREEZE_IF_ALL_4_VALID_AND_CORRECT_COUNT_GTE_2",
+  "valid_denominator": 4
+}

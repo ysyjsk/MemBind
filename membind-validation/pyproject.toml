@@ -12,9 +12,11 @@ dependencies = [
   "pandas>=2",
   "pyarrow>=16",
   "matplotlib>=3.8",
+  # Used by the isolated paper-eval Quality v1 overlay to reproduce
+  # LongMemEval's public flat-turn BM25 retrieval before Reader inference.
+  "rank-bm25==0.2.2",
 ]
 
 [tool.pytest.ini_options]
 pythonpath = ["src"]
 testpaths = ["tests"]
-

@@ -1,0 +1,137 @@
+{
+  "claim_scope": "DEVELOPMENT_DIAGNOSTIC_NOT_PAPER_SIGNIFICANCE",
+  "construction_latency_includes_quality": false,
+  "construction_result_sha256": "6343fff8f2b2c43bb50cb8772542efac0af9c59173374103c54fd24b82a05fd7",
+  "context": {
+    "context_policy_sha256": "6c717c5a39af98e17d1b9fe55f0425f54401c13b9b82d9d1aeab5a2db26eef49",
+    "context_sha256": "60280cc75861d62ded894a5959ea5e7a53781354527cef31afaf75cc22f248f0",
+    "evidence_count": 30,
+    "fact_count": 20,
+    "local_round_count": 10,
+    "session_candidate_count": 20
+  },
+  "context_gold_session_coverage_posthoc": 1.0,
+  "corpus_preflight": {
+    "expected_name_content_map_sha256": "112947afa46f7b02fb2d5c562fa222806ee6110957f1a62eabb4761d0a6f5a73",
+    "neo4j_read_requests": 1,
+    "observed_episode_count": 46,
+    "observed_name_content_map_sha256": "112947afa46f7b02fb2d5c562fa222806ee6110957f1a62eabb4761d0a6f5a73",
+    "pass": true
+  },
+  "edge_provenance_metrics": {
+    "edge_gold_source_precision_at_1": 1.0,
+    "edge_gold_source_precision_at_10": 0.4,
+    "edge_gold_source_precision_at_20": 0.25,
+    "edge_gold_source_precision_at_3": 1.0,
+    "edge_gold_source_precision_at_5": 0.8,
+    "gold_fact_labels_available": false,
+    "gold_session_edge_coverage_at_1": 0.5,
+    "gold_session_edge_coverage_at_10": 0.5,
+    "gold_session_edge_coverage_at_20": 1.0,
+    "gold_session_edge_coverage_at_3": 0.5,
+    "gold_session_edge_coverage_at_5": 0.5,
+    "metric_scope": "PROVENANCE_PROXY_NOT_GOLD_FACT_RECALL"
+  },
+  "failure_category": "READER_OR_JUDGE_INCORRECT",
+  "graphiti_search_calls": 1,
+  "headline_eligible": true,
+  "history_id": "6071bd76",
+  "judge": {
+    "config_sha256": "97fc7c64f9ce991383e68269054254dcd36790dc493d9795418f58b763d27d6d",
+    "error_class": null,
+    "label": false,
+    "model": "qwen3-32b-fp8",
+    "output_byte_count": 2,
+    "output_character_count": 2,
+    "output_sha256": "9390298f3fb0c5b160498935d79cb139aef28e1c47358b4bbba61862b9c26e59",
+    "parse_status": "NO",
+    "prompt_sha256": "d8c707b7260f6c1b4f90959d5bf9a0ae1fa178d0799676dc61ef90abe32656f2",
+    "retry_count": 0,
+    "status": "SUCCESS"
+  },
+  "judge_stage_disposition": "EXECUTED_AND_SEALED",
+  "judge_valid_denominator": 1,
+  "method": "A0",
+  "namespace_sha256": "d3e3df28c8bb316db78327489153430008393c42fee934e71641b23cd41519c0",
+  "neo4j_read_requests": 3,
+  "overlay_run_id": "qev1-dev-20260817-001",
+  "payload_sha256": "1e1be94ca1f8148f3def363fa118c25b17c1aa2047cf1218200f5dababd031d4",
+  "private_payload_sha256": "6641066a3ec5213f120a07fac3d6e509c182883d80a8d8becfeac42dec05b694",
+  "qa_accuracy": 0.0,
+  "quality_identity": {
+    "context_policy_sha256": "6c717c5a39af98e17d1b9fe55f0425f54401c13b9b82d9d1aeab5a2db26eef49",
+    "judge_config_sha256": "03dca463e760d957054973c56302d259a3e66e4397f26be5da753e0f775479e6",
+    "reader_config_sha256": "e8b78482c28b9096d790ecff789bcf2ae5a023868ee1471b1fa485bbf60412b7",
+    "retrieval_config_sha256": "62535d82129d01d6cbf8c3d5c13f656e60d89d821a9d9b9ca7bc1ed51c53fa7d"
+  },
+  "quality_latency_ns": {
+    "judge": 75349892,
+    "reader": 2791225895,
+    "retrieval": 58450395,
+    "total": 2925026182
+  },
+  "reader": {
+    "completion_tokens": 41,
+    "config_sha256": "e8b78482c28b9096d790ecff789bcf2ae5a023868ee1471b1fa485bbf60412b7",
+    "finish_reason": "stop",
+    "model": "qwen3-32b-fp8",
+    "output_byte_count": 182,
+    "output_character_count": 182,
+    "output_sha256": "0427cfe73a4391f899ed682020ac2887ecaaa444c0ebdde1c6383cf0f017e09b",
+    "prompt_byte_count": 43640,
+    "prompt_character_count": 43552,
+    "prompt_sha256": "6171709d9ac845269cf822f6eddfdd3d09b79bdf94021c85e66b484893eed142",
+    "prompt_tokens": 11103,
+    "status": "SUCCESS",
+    "truncation_count": 0
+  },
+  "reader_stage_disposition": "EXECUTED_AND_SEALED",
+  "retrieval_config_sha256": "62535d82129d01d6cbf8c3d5c13f656e60d89d821a9d9b9ca7bc1ed51c53fa7d",
+  "runtime_identity": {
+    "construction_llm": "FORBIDDEN",
+    "cross_encoder": "FORBIDDEN",
+    "database_access": "READ_ONLY_GUARDED_PER_QUERY",
+    "driver_init_task_present": false,
+    "embedding": {
+      "deployment_fingerprint": "5f5a8400eeaa2f07d167d8b5b7e63d615945a8f54f506e02342840cd4e3fe626",
+      "dimension": 1024,
+      "dtype": "bfloat16",
+      "endpoint_identity_sha256": "3aa93603816965e94d45e8a75ba2029c1d4378b689e4bad133f6889eea36d84e",
+      "environment_proxy_trust": false,
+      "evidence_scope": "operator_supplied_deployment_path_hash",
+      "instruction_policy": "none",
+      "max_attempts": 1,
+      "normalization": "l2",
+      "pooling": "last_token",
+      "runtime_observed": false,
+      "sdk_hidden_retries": 0,
+      "served_model_id": "qwen3-embedding-0.6b"
+    },
+    "implementation": "graphiti_read_only_graph_quality_runtime_v1",
+    "schema_initialization": "FORBIDDEN"
+  },
+  "runtime_identity_sha256": "66d5745dbb83843b1dc4b6ebf978e614adb81fdc48f1b2c707539649b8db767e",
+  "schema_version": "membind.paper-eval-v3.quality-v1-public.v1",
+  "session_metrics": {
+    "gold_ranks": [
+      1,
+      2
+    ],
+    "mrr": 1.0,
+    "ndcg_at_10": 1.0,
+    "recall_at_1": 0.5,
+    "recall_at_10": 1.0,
+    "recall_at_3": 1.0,
+    "recall_at_5": 1.0,
+    "relevance_unit": "LONGMEMEVAL_GOLD_SESSION"
+  },
+  "temporal_diagnostics": {
+    "active_fact_count": 20,
+    "conflicting_relation_group_count": 0,
+    "diagnostic_scope": "RETRIEVED_EDGE_TEMPORAL_FIELDS_ONLY",
+    "future_fact_count": 0,
+    "latest_valid_fact_ranks": [],
+    "stale_fact_count": 0,
+    "stale_ranked_before_latest_valid_count": 0
+  }
+}
