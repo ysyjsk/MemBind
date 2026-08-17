@@ -500,19 +500,15 @@ def _validated_smoke_gate(
     if not isinstance(manifest_sha256, str) or len(manifest_sha256) != 64:
         raise RunnerError("MemBind-v1 smoke manifest seal missing")
     live_result = result.get("live_result")
-    if not isinstance(live_result, Mapping) or {
-        live_result.get("status"),
-        live_result.get("method"),
-        live_result.get("source_count"),
-        live_result.get("execution_identity_sha256"),
-        live_result.get("shared_execution_envelope_sha256"),
-    } != {
-        "PASS",
-        "MemBind-v1 node-only",
-        3,
-        execution_identity_sha256,
-        plan.get("shared_execution_envelope_sha256"),
-    }:
+    if not isinstance(live_result, Mapping) or (
+        live_result.get("status") != "PASS"
+        or live_result.get("method") != "MemBind-v1 node-only"
+        or live_result.get("source_count") != 3
+        or live_result.get("execution_identity_sha256")
+        != execution_identity_sha256
+        or live_result.get("shared_execution_envelope_sha256")
+        != plan.get("shared_execution_envelope_sha256")
+    ):
         raise RunnerError("MemBind-v1 smoke live-result binding drift")
     body = {
         "schema_version": "membind.paper-eval-v3.membind-v1-smoke-gate.v1",

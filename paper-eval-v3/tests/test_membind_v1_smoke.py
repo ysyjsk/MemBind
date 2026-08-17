@@ -196,6 +196,10 @@ async def test_smoke_runs_only_first_three_sources_in_a_new_namespace_and_persis
     assert result["status"] == "PASS"
     assert result["source_count"] == 3
     assert result["method"] == "MemBind-v1 node-only"
+    assert result["execution_identity_sha256"] == "e" * 64
+    assert result["membind_artifact_identity_sha256"] == inspected["manifest"][
+        "membind_artifact_identity_sha256"
+    ]
     assert result["namespace"].startswith("pev3-aligned-smoke-test-001-mv1-")
     assert inspected["checkpoint"]["status"] == "COMPLETED"
     assert inspected["checkpoint"]["resume_status"] == "NOT_NEEDED_COMPLETE"

@@ -6,7 +6,7 @@ import asyncio
 import hashlib
 import importlib.util
 import json
-from dataclasses import dataclass
+from dataclasses import asdict, dataclass
 from pathlib import Path
 from types import SimpleNamespace
 from typing import Any
@@ -128,28 +128,38 @@ class _World:
         root = kwargs["smoke_root"]
         assert isinstance(root, Path)
         root.mkdir(parents=True, exist_ok=False)
+        plan = kwargs["plan"]
+        assert isinstance(plan, dict)
+        smoke_sources = {
+            history_id: plan["history_source_sha256s"][history_id][:3]
+            for history_id in HISTORIES
+        }
         body = {
             "schema_version": "fake-smoke-result.v1",
             "status": "PASS",
-            "formal_plan_payload_sha256": kwargs["plan"]["payload_sha256"],
+            "formal_plan_payload_sha256": plan["payload_sha256"],
             "execution_identity_sha256": kwargs["execution_identity_sha256"],
-            "membind_artifact_identity_sha256": hashlib.sha256(
-                json.dumps(
-                    {
-                        "operation_identity_sha256": "1" * 64,
-                        "model_identity_sha256": "2" * 64,
-                        "prompt_identity_sha256": "3" * 64,
-                        "schema_identity_sha256": "4" * 64,
-                        "config_identity_sha256": "5" * 64,
-                    },
-                    sort_keys=True,
-                    separators=(",", ":"),
-                ).encode()
-            ).hexdigest(),
+            "membind_artifact_identity_sha256": _payload_sha256(
+                asdict(kwargs["artifact_identity"])
+            ),
             "history_id": "07741c45",
             "method": "MemBind-v1 node-only",
             "source_count": 3,
             "global_llm_admission_k": 2,
+            "shared_execution_envelope_sha256": plan[
+                "shared_execution_envelope_sha256"
+            ],
+            "source_manifest_sha256": _payload_sha256(smoke_sources),
+            "manifest_sha256": "f" * 64,
+            "live_result": {
+                "status": "PASS",
+                "method": "MemBind-v1 node-only",
+                "source_count": 3,
+                "execution_identity_sha256": kwargs["execution_identity_sha256"],
+                "shared_execution_envelope_sha256": plan[
+                    "shared_execution_envelope_sha256"
+                ],
+            },
         }
         return {**body, "payload_sha256": _payload_sha256(body)}
 
@@ -158,28 +168,38 @@ class _World:
         root = kwargs["smoke_root"]
         assert isinstance(root, Path)
         assert root.exists()
+        plan = kwargs["plan"]
+        assert isinstance(plan, dict)
+        smoke_sources = {
+            history_id: plan["history_source_sha256s"][history_id][:3]
+            for history_id in HISTORIES
+        }
         body = {
             "schema_version": "fake-smoke-result.v1",
             "status": "PASS",
-            "formal_plan_payload_sha256": kwargs["plan"]["payload_sha256"],
+            "formal_plan_payload_sha256": plan["payload_sha256"],
             "execution_identity_sha256": kwargs["execution_identity_sha256"],
-            "membind_artifact_identity_sha256": hashlib.sha256(
-                json.dumps(
-                    {
-                        "operation_identity_sha256": "1" * 64,
-                        "model_identity_sha256": "2" * 64,
-                        "prompt_identity_sha256": "3" * 64,
-                        "schema_identity_sha256": "4" * 64,
-                        "config_identity_sha256": "5" * 64,
-                    },
-                    sort_keys=True,
-                    separators=(",", ":"),
-                ).encode()
-            ).hexdigest(),
+            "membind_artifact_identity_sha256": _payload_sha256(
+                asdict(kwargs["artifact_identity"])
+            ),
             "history_id": "07741c45",
             "method": "MemBind-v1 node-only",
             "source_count": 3,
             "global_llm_admission_k": 2,
+            "shared_execution_envelope_sha256": plan[
+                "shared_execution_envelope_sha256"
+            ],
+            "source_manifest_sha256": _payload_sha256(smoke_sources),
+            "manifest_sha256": "f" * 64,
+            "live_result": {
+                "status": "PASS",
+                "method": "MemBind-v1 node-only",
+                "source_count": 3,
+                "execution_identity_sha256": kwargs["execution_identity_sha256"],
+                "shared_execution_envelope_sha256": plan[
+                    "shared_execution_envelope_sha256"
+                ],
+            },
         }
         return {**body, "payload_sha256": _payload_sha256(body)}
 

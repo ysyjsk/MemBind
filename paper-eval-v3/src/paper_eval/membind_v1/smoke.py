@@ -499,6 +499,10 @@ async def run_membind_v1_smoke(
                 "shared_execution_envelope_sha256"
             ],
             "global_llm_admission_k": 2,
+            "execution_identity_sha256": execution_identity,
+            "membind_artifact_identity_sha256": manifest[
+                "membind_artifact_identity_sha256"
+            ],
             "live_result": live_result,
         }
         result = _seal(body, "payload_sha256")

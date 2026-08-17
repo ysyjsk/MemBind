@@ -1,0 +1,32 @@
+<?xml version="1.0" encoding="utf-8"?><testsuites name="pytest tests"><testsuite name="pytest" errors="0" failures="1" skipped="0" tests="6" time="3.721" timestamp="2026-08-17T14:19:10.877852+08:00" hostname="aces-System-Product-Name"><testcase classname="tests.test_membind_v1_smoke" name="test_smoke_runs_only_first_three_sources_in_a_new_namespace_and_persists_result" time="1.990"><failure message="KeyError: 'execution_identity_sha256'">tmp_path = PosixPath('/tmp/pytest-of-ly/pytest-713/test_smoke_runs_only_first_thr0')
+
+    @pytest.mark.asyncio
+    async def test_smoke_runs_only_first_three_sources_in_a_new_namespace_and_persists_result(
+        tmp_path: Path,
+    ) -&gt; None:
+        formal_plan = _formal_plan()
+        state = _State()
+        root = tmp_path / "smoke-attempt"
+    
+        result = await run_membind_v1_smoke(
+            root,
+            smoke_run_id="smoke-test-001",
+            formal_verified_plan=formal_plan,
+            history_id="07741c45",
+            episodes=_episodes(formal_plan, history_id="07741c45"),
+            sample_count=3,
+            env={"public": "smoke-test"},
+            execution_identity_sha256="e" * 64,
+            membind_artifact_identity=_identity(),
+            hooks=_hooks(state, identity=_identity()),
+        )
+    
+        inspected = inspect_membind_v1_smoke(root)
+        assert result["status"] == "PASS"
+        assert result["source_count"] == 3
+        assert result["method"] == "MemBind-v1 node-only"
+&gt;       assert result["execution_identity_sha256"] == "e" * 64
+               ^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^
+E       KeyError: 'execution_identity_sha256'
+
+tests/test_membind_v1_smoke.py:199: KeyError</failure></testcase><testcase classname="tests.test_membind_v1_smoke" name="test_failed_live_smoke_is_durable_non_reusable_and_cannot_retry_in_place" time="1.561" /><testcase classname="tests.test_membind_v1_smoke" name="test_smoke_rejects_out_of_scope_sample_count_before_creating_attempt[0]" time="0.001" /><testcase classname="tests.test_membind_v1_smoke" name="test_smoke_rejects_out_of_scope_sample_count_before_creating_attempt[2]" time="0.001" /><testcase classname="tests.test_membind_v1_smoke" name="test_smoke_rejects_out_of_scope_sample_count_before_creating_attempt[6]" time="0.001" /><testcase classname="tests.test_membind_v1_smoke" name="test_smoke_source_identity_drift_becomes_a_non_reusable_attempt" time="0.121" /></testsuite></testsuites>
