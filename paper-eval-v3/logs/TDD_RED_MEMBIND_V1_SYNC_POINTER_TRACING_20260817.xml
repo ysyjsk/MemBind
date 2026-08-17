@@ -1,0 +1,15 @@
+<?xml version="1.0" encoding="utf-8"?><testsuites name="pytest tests"><testsuite name="pytest" errors="0" failures="1" skipped="0" tests="4" time="0.050" timestamp="2026-08-17T13:05:56.762559+08:00" hostname="aces-System-Product-Name"><testcase classname="tests.test_membind_v1_semantic_trace_binding" name="test_direct_semantic_binding_records_native_phase_names_under_one_episode_root" time="0.001" /><testcase classname="tests.test_membind_v1_semantic_trace_binding" name="test_direct_semantic_binding_preserves_upstream_exception_while_recording_safe_error_class" time="0.000" /><testcase classname="tests.test_membind_v1_semantic_trace_binding" name="test_direct_semantic_binding_preserves_the_sync_pointer_resolution_contract" time="0.000"><failure message="AssertionError: assert &lt;coroutine object _binding.&lt;locals&gt;.pointer_operation at 0x7d55f9ba2940&gt; == 'resolve_edge_pointers'&#10; +  where &lt;coroutine object _binding.&lt;locals&gt;.pointer_operation at 0x7d55f9ba2940&gt; = &lt;function _binding.&lt;locals&gt;.pointer_operation at 0x7d55f9a41ee0&gt;()&#10; +    where &lt;function _binding.&lt;locals&gt;.pointer_operation at 0x7d55f9a41ee0&gt; = S5GraphitiSemanticBinding(extract_nodes=&lt;function _binding.&lt;locals&gt;.operation.&lt;locals&gt;.wrapped at 0x7d55f9a41d00&gt;, res..., process_episode_data=&lt;function _binding.&lt;locals&gt;.operation.&lt;locals&gt;.wrapped at 0x7d55f9a422a0&gt;, loader_verified=True).resolve_edge_pointers">def test_direct_semantic_binding_preserves_the_sync_pointer_resolution_contract() -&gt; None:
+        calls: list[str] = []
+        recorder = TraceRecorder()
+        traced = trace_semantic_binding(
+            _binding(calls, pointer_is_sync=True), recorder
+        )
+    
+        with recorder.episode_scope("run", "episode", 0):
+            with recorder.span("add-episode"):
+&gt;               assert traced.resolve_edge_pointers() == "resolve_edge_pointers"
+E               AssertionError: assert &lt;coroutine object _binding.&lt;locals&gt;.pointer_operation at 0x7d55f9ba2940&gt; == 'resolve_edge_pointers'
+E                +  where &lt;coroutine object _binding.&lt;locals&gt;.pointer_operation at 0x7d55f9ba2940&gt; = &lt;function _binding.&lt;locals&gt;.pointer_operation at 0x7d55f9a41ee0&gt;()
+E                +    where &lt;function _binding.&lt;locals&gt;.pointer_operation at 0x7d55f9a41ee0&gt; = S5GraphitiSemanticBinding(extract_nodes=&lt;function _binding.&lt;locals&gt;.operation.&lt;locals&gt;.wrapped at 0x7d55f9a41d00&gt;, res..., process_episode_data=&lt;function _binding.&lt;locals&gt;.operation.&lt;locals&gt;.wrapped at 0x7d55f9a422a0&gt;, loader_verified=True).resolve_edge_pointers
+
+tests/test_membind_v1_semantic_trace_binding.py:170: AssertionError</failure></testcase><testcase classname="tests.test_membind_v1_semantic_trace_binding" name="test_trace_binding_rejects_invalid_dependencies" time="0.000" /></testsuite></testsuites>

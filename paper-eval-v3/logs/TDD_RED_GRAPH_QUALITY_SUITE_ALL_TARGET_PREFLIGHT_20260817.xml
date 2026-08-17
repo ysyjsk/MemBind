@@ -1,0 +1,232 @@
+<?xml version="1.0" encoding="utf-8"?><testsuites name="pytest tests"><testsuite name="pytest" errors="0" failures="3" skipped="0" tests="3" time="0.502" timestamp="2026-08-17T01:39:51.908980+08:00" hostname="aces-System-Product-Name"><testcase classname="tests.test_graph_quality_suite" name="test_all_existing_attempts_fail_closed_before_any_live_evaluation[5-stale_identity]" time="0.135"><failure message="AssertionError: assert [('U0', '0774..., '07741c45')] == []&#10;  &#10;  Left contains 5 more items, first extra item: ('U0', '07741c45')&#10;  Use -v to get more diff">tmp_path = PosixPath('/tmp/pytest-of-ly/pytest-582/test_all_existing_attempts_fai0')
+target_index = 5, failure_kind = 'stale_identity'
+
+    @pytest.mark.asyncio
+    @pytest.mark.parametrize(
+        ("target_index", "failure_kind"),
+        [(5, "stale_identity"), (11, "corrupt_bundle")],
+    )
+    async def test_all_existing_attempts_fail_closed_before_any_live_evaluation(
+        tmp_path: Path,
+        target_index: int,
+        failure_kind: str,
+    ) -&gt; None:
+        targets = [_target(method, history) for method in METHODS for history in HISTORIES]
+        target = targets[target_index]
+        method_slug = {"U0": "u0", "A0": "a0", "P(C=2)": "pc2"}[target.method]
+        run_root = tmp_path / "gq-preflight-001"
+        attempt_root = (
+            run_root
+            / "units"
+            / method_slug
+            / target.history_id
+            / "attempt-001"
+        )
+        if failure_kind == "stale_identity":
+            stale_runtime = {"implementation": "stale-runtime"}
+            persist_question_bundle(
+                attempt_root,
+                public_artifact=_public(
+                    target.method,
+                    target.history_id,
+                    construction_result_sha256=target.construction_result_sha256,
+                    overlay_run_id="gq-preflight-001",
+                    runtime_identity=stale_runtime,
+                ),
+                private_artifact=_private(),
+            )
+        else:
+            attempt_root.mkdir(parents=True)
+            (attempt_root / "private_bundle.json").write_text(
+                "{corrupt-bundle",
+                encoding="utf-8",
+            )
+    
+        calls: list[tuple[str, str]] = []
+    
+        async def evaluate(
+            current: GraphQualityTarget,
+            _attempt_root: Path,
+        ) -&gt; GraphQualityQuestionResult:
+            calls.append((current.method, current.history_id))
+            return GraphQualityQuestionResult(
+                public_artifact=_public(
+                    current.method,
+                    current.history_id,
+                    construction_result_sha256=current.construction_result_sha256,
+                    overlay_run_id="gq-preflight-001",
+                ),
+                private_artifact=_private(),
+            )
+    
+        with pytest.raises(GraphQualitySuiteError, match="identity|unreadable"):
+            await run_graph_quality_targets(
+                overlay_run_id="gq-preflight-001",
+                targets=targets,
+                run_root=run_root,
+                evaluate=evaluate,
+                runtime_identity=RUNTIME_IDENTITY,
+                quality_identity=QUALITY_IDENTITY,
+            )
+    
+&gt;       assert calls == []
+E       AssertionError: assert [('U0', '0774..., '07741c45')] == []
+E         
+E         Left contains 5 more items, first extra item: ('U0', '07741c45')
+E         Use -v to get more diff
+
+tests/test_graph_quality_suite.py:530: AssertionError</failure></testcase><testcase classname="tests.test_graph_quality_suite" name="test_all_existing_attempts_fail_closed_before_any_live_evaluation[11-corrupt_bundle]" time="0.268"><failure message="AssertionError: assert [('U0', '0774...019101'), ...] == []&#10;  &#10;  Left contains 11 more items, first extra item: ('U0', '07741c45')&#10;  Use -v to get more diff">tmp_path = PosixPath('/tmp/pytest-of-ly/pytest-582/test_all_existing_attempts_fai1')
+target_index = 11, failure_kind = 'corrupt_bundle'
+
+    @pytest.mark.asyncio
+    @pytest.mark.parametrize(
+        ("target_index", "failure_kind"),
+        [(5, "stale_identity"), (11, "corrupt_bundle")],
+    )
+    async def test_all_existing_attempts_fail_closed_before_any_live_evaluation(
+        tmp_path: Path,
+        target_index: int,
+        failure_kind: str,
+    ) -&gt; None:
+        targets = [_target(method, history) for method in METHODS for history in HISTORIES]
+        target = targets[target_index]
+        method_slug = {"U0": "u0", "A0": "a0", "P(C=2)": "pc2"}[target.method]
+        run_root = tmp_path / "gq-preflight-001"
+        attempt_root = (
+            run_root
+            / "units"
+            / method_slug
+            / target.history_id
+            / "attempt-001"
+        )
+        if failure_kind == "stale_identity":
+            stale_runtime = {"implementation": "stale-runtime"}
+            persist_question_bundle(
+                attempt_root,
+                public_artifact=_public(
+                    target.method,
+                    target.history_id,
+                    construction_result_sha256=target.construction_result_sha256,
+                    overlay_run_id="gq-preflight-001",
+                    runtime_identity=stale_runtime,
+                ),
+                private_artifact=_private(),
+            )
+        else:
+            attempt_root.mkdir(parents=True)
+            (attempt_root / "private_bundle.json").write_text(
+                "{corrupt-bundle",
+                encoding="utf-8",
+            )
+    
+        calls: list[tuple[str, str]] = []
+    
+        async def evaluate(
+            current: GraphQualityTarget,
+            _attempt_root: Path,
+        ) -&gt; GraphQualityQuestionResult:
+            calls.append((current.method, current.history_id))
+            return GraphQualityQuestionResult(
+                public_artifact=_public(
+                    current.method,
+                    current.history_id,
+                    construction_result_sha256=current.construction_result_sha256,
+                    overlay_run_id="gq-preflight-001",
+                ),
+                private_artifact=_private(),
+            )
+    
+        with pytest.raises(GraphQualitySuiteError, match="identity|unreadable"):
+            await run_graph_quality_targets(
+                overlay_run_id="gq-preflight-001",
+                targets=targets,
+                run_root=run_root,
+                evaluate=evaluate,
+                runtime_identity=RUNTIME_IDENTITY,
+                quality_identity=QUALITY_IDENTITY,
+            )
+    
+&gt;       assert calls == []
+E       AssertionError: assert [('U0', '0774...019101'), ...] == []
+E         
+E         Left contains 11 more items, first extra item: ('U0', '07741c45')
+E         Use -v to get more diff
+
+tests/test_graph_quality_suite.py:530: AssertionError</failure></testcase><testcase classname="tests.test_graph_quality_suite" name="test_all_recoverable_public_artifacts_are_restored_before_live_evaluation" time="0.031"><failure message="AssertionError: assert False&#10; +  where False = is_file()&#10; +    where is_file = (PosixPath('/tmp/pytest-of-ly/pytest-582/test_all_recoverable_public_ar0/gq-preflight-002/units/pc2/a2f3aa27/attempt-001') / 'public.json').is_file">tmp_path = PosixPath('/tmp/pytest-of-ly/pytest-582/test_all_recoverable_public_ar0')
+
+    @pytest.mark.asyncio
+    async def test_all_recoverable_public_artifacts_are_restored_before_live_evaluation(
+        tmp_path: Path,
+    ) -&gt; None:
+        targets = [_target(method, history) for method in METHODS for history in HISTORIES]
+        recovered_target = targets[-1]
+        run_root = tmp_path / "gq-preflight-002"
+        recovered_attempt = (
+            run_root
+            / "units"
+            / "pc2"
+            / recovered_target.history_id
+            / "attempt-001"
+        )
+        persist_question_bundle(
+            recovered_attempt,
+            public_artifact=_public(
+                recovered_target.method,
+                recovered_target.history_id,
+                construction_result_sha256=(
+                    recovered_target.construction_result_sha256
+                ),
+                overlay_run_id="gq-preflight-002",
+            ),
+            private_artifact=_private(),
+        )
+        (recovered_attempt / "public.json").unlink()
+        calls: list[tuple[str, str]] = []
+    
+        async def evaluate(
+            target: GraphQualityTarget,
+            _attempt_root: Path,
+        ) -&gt; GraphQualityQuestionResult:
+            assert (recovered_attempt / "public.json").is_file()
+            calls.append((target.method, target.history_id))
+            return GraphQualityQuestionResult(
+                public_artifact=_public(
+                    target.method,
+                    target.history_id,
+                    construction_result_sha256=target.construction_result_sha256,
+                    overlay_run_id="gq-preflight-002",
+                ),
+                private_artifact=_private(),
+            )
+    
+&gt;       report = await run_graph_quality_targets(
+            overlay_run_id="gq-preflight-002",
+            targets=targets,
+            run_root=run_root,
+            evaluate=evaluate,
+            runtime_identity=RUNTIME_IDENTITY,
+            quality_identity=QUALITY_IDENTITY,
+        )
+
+tests/test_graph_quality_suite.py:587: 
+_ _ _ _ _ _ _ _ _ _ _ _ _ _ _ _ _ _ _ _ _ _ _ _ _ _ _ _ _ _ _ _ _ _ _ _ _ _ _ _ 
+src/paper_eval/graph_quality_suite.py:823: in run_graph_quality_targets
+    return await _run_graph_quality_targets_unlocked(
+src/paper_eval/graph_quality_suite.py:693: in _run_graph_quality_targets_unlocked
+    result = await evaluate(target, attempt_root)
+             ^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^
+_ _ _ _ _ _ _ _ _ _ _ _ _ _ _ _ _ _ _ _ _ _ _ _ _ _ _ _ _ _ _ _ _ _ _ _ _ _ _ _ 
+
+target = GraphQualityTarget(method='U0', history_id='07741c45', namespace='namespace-U0-07741c45', episode_count=49, construction_result_sha256='0000000000000000000000000000000000000000000000000000000000000001')
+_attempt_root = PosixPath('/tmp/pytest-of-ly/pytest-582/test_all_recoverable_public_ar0/gq-preflight-002/units/u0/07741c45/attempt-001')
+
+    async def evaluate(
+        target: GraphQualityTarget,
+        _attempt_root: Path,
+    ) -&gt; GraphQualityQuestionResult:
+&gt;       assert (recovered_attempt / "public.json").is_file()
+E       AssertionError: assert False
+E        +  where False = is_file()
+E        +    where is_file = (PosixPath('/tmp/pytest-of-ly/pytest-582/test_all_recoverable_public_ar0/gq-preflight-002/units/pc2/a2f3aa27/attempt-001') / 'public.json').is_file
+
+tests/test_graph_quality_suite.py:575: AssertionError</failure></testcase></testsuite></testsuites>

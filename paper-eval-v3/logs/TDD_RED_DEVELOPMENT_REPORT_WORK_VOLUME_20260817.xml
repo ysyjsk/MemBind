@@ -1,0 +1,161 @@
+<?xml version="1.0" encoding="utf-8"?><testsuites name="pytest tests"><testsuite name="pytest" errors="0" failures="10" skipped="0" tests="12" time="0.050" timestamp="2026-08-17T01:39:53.464784+08:00" hostname="aces-System-Product-Name"><testcase classname="tests.test_development_baseline_report" name="test_report_uses_fixed_inventory_and_pooled_distributions" time="0.000" /><testcase classname="tests.test_development_baseline_report" name="test_report_rejects_missing_work_volume_instead_of_fabricating_zero[llm_logical_calls]" time="0.000"><failure message="Failed: DID NOT RAISE DevelopmentBaselineReportError">missing_field = 'llm_logical_calls'
+
+    @pytest.mark.parametrize("missing_field", WORK_FIELDS)
+    def test_report_rejects_missing_work_volume_instead_of_fabricating_zero(
+        missing_field: str,
+    ) -&gt; None:
+        rows = [
+            _row(method, history_id, index)
+            for method in METHODS
+            for index, history_id in enumerate(DEVELOPMENT_HISTORIES)
+        ]
+        del rows[0]["work_volume"][missing_field]  # type: ignore[index]
+    
+&gt;       with pytest.raises(DevelopmentBaselineReportError, match="work volume"):
+E       Failed: DID NOT RAISE DevelopmentBaselineReportError
+
+tests/test_development_baseline_report.py:146: Failed</failure></testcase><testcase classname="tests.test_development_baseline_report" name="test_report_rejects_missing_work_volume_instead_of_fabricating_zero[llm_input_tokens]" time="0.000"><failure message="Failed: DID NOT RAISE DevelopmentBaselineReportError">missing_field = 'llm_input_tokens'
+
+    @pytest.mark.parametrize("missing_field", WORK_FIELDS)
+    def test_report_rejects_missing_work_volume_instead_of_fabricating_zero(
+        missing_field: str,
+    ) -&gt; None:
+        rows = [
+            _row(method, history_id, index)
+            for method in METHODS
+            for index, history_id in enumerate(DEVELOPMENT_HISTORIES)
+        ]
+        del rows[0]["work_volume"][missing_field]  # type: ignore[index]
+    
+&gt;       with pytest.raises(DevelopmentBaselineReportError, match="work volume"):
+E       Failed: DID NOT RAISE DevelopmentBaselineReportError
+
+tests/test_development_baseline_report.py:146: Failed</failure></testcase><testcase classname="tests.test_development_baseline_report" name="test_report_rejects_missing_work_volume_instead_of_fabricating_zero[llm_output_tokens]" time="0.000"><failure message="Failed: DID NOT RAISE DevelopmentBaselineReportError">missing_field = 'llm_output_tokens'
+
+    @pytest.mark.parametrize("missing_field", WORK_FIELDS)
+    def test_report_rejects_missing_work_volume_instead_of_fabricating_zero(
+        missing_field: str,
+    ) -&gt; None:
+        rows = [
+            _row(method, history_id, index)
+            for method in METHODS
+            for index, history_id in enumerate(DEVELOPMENT_HISTORIES)
+        ]
+        del rows[0]["work_volume"][missing_field]  # type: ignore[index]
+    
+&gt;       with pytest.raises(DevelopmentBaselineReportError, match="work volume"):
+E       Failed: DID NOT RAISE DevelopmentBaselineReportError
+
+tests/test_development_baseline_report.py:146: Failed</failure></testcase><testcase classname="tests.test_development_baseline_report" name="test_report_rejects_missing_work_volume_instead_of_fabricating_zero[llm_transport_attempts]" time="0.000"><failure message="Failed: DID NOT RAISE DevelopmentBaselineReportError">missing_field = 'llm_transport_attempts'
+
+    @pytest.mark.parametrize("missing_field", WORK_FIELDS)
+    def test_report_rejects_missing_work_volume_instead_of_fabricating_zero(
+        missing_field: str,
+    ) -&gt; None:
+        rows = [
+            _row(method, history_id, index)
+            for method in METHODS
+            for index, history_id in enumerate(DEVELOPMENT_HISTORIES)
+        ]
+        del rows[0]["work_volume"][missing_field]  # type: ignore[index]
+    
+&gt;       with pytest.raises(DevelopmentBaselineReportError, match="work volume"):
+E       Failed: DID NOT RAISE DevelopmentBaselineReportError
+
+tests/test_development_baseline_report.py:146: Failed</failure></testcase><testcase classname="tests.test_development_baseline_report" name="test_report_rejects_missing_work_volume_instead_of_fabricating_zero[embedding_calls]" time="0.000"><failure message="Failed: DID NOT RAISE DevelopmentBaselineReportError">missing_field = 'embedding_calls'
+
+    @pytest.mark.parametrize("missing_field", WORK_FIELDS)
+    def test_report_rejects_missing_work_volume_instead_of_fabricating_zero(
+        missing_field: str,
+    ) -&gt; None:
+        rows = [
+            _row(method, history_id, index)
+            for method in METHODS
+            for index, history_id in enumerate(DEVELOPMENT_HISTORIES)
+        ]
+        del rows[0]["work_volume"][missing_field]  # type: ignore[index]
+    
+&gt;       with pytest.raises(DevelopmentBaselineReportError, match="work volume"):
+E       Failed: DID NOT RAISE DevelopmentBaselineReportError
+
+tests/test_development_baseline_report.py:146: Failed</failure></testcase><testcase classname="tests.test_development_baseline_report" name="test_report_rejects_missing_work_volume_instead_of_fabricating_zero[embedding_items]" time="0.000"><failure message="Failed: DID NOT RAISE DevelopmentBaselineReportError">missing_field = 'embedding_items'
+
+    @pytest.mark.parametrize("missing_field", WORK_FIELDS)
+    def test_report_rejects_missing_work_volume_instead_of_fabricating_zero(
+        missing_field: str,
+    ) -&gt; None:
+        rows = [
+            _row(method, history_id, index)
+            for method in METHODS
+            for index, history_id in enumerate(DEVELOPMENT_HISTORIES)
+        ]
+        del rows[0]["work_volume"][missing_field]  # type: ignore[index]
+    
+&gt;       with pytest.raises(DevelopmentBaselineReportError, match="work volume"):
+E       Failed: DID NOT RAISE DevelopmentBaselineReportError
+
+tests/test_development_baseline_report.py:146: Failed</failure></testcase><testcase classname="tests.test_development_baseline_report" name="test_report_rejects_missing_work_volume_instead_of_fabricating_zero[db_operations]" time="0.000"><failure message="Failed: DID NOT RAISE DevelopmentBaselineReportError">missing_field = 'db_operations'
+
+    @pytest.mark.parametrize("missing_field", WORK_FIELDS)
+    def test_report_rejects_missing_work_volume_instead_of_fabricating_zero(
+        missing_field: str,
+    ) -&gt; None:
+        rows = [
+            _row(method, history_id, index)
+            for method in METHODS
+            for index, history_id in enumerate(DEVELOPMENT_HISTORIES)
+        ]
+        del rows[0]["work_volume"][missing_field]  # type: ignore[index]
+    
+&gt;       with pytest.raises(DevelopmentBaselineReportError, match="work volume"):
+E       Failed: DID NOT RAISE DevelopmentBaselineReportError
+
+tests/test_development_baseline_report.py:146: Failed</failure></testcase><testcase classname="tests.test_development_baseline_report" name="test_report_rejects_missing_work_volume_instead_of_fabricating_zero[db_transactions]" time="0.000"><failure message="Failed: DID NOT RAISE DevelopmentBaselineReportError">missing_field = 'db_transactions'
+
+    @pytest.mark.parametrize("missing_field", WORK_FIELDS)
+    def test_report_rejects_missing_work_volume_instead_of_fabricating_zero(
+        missing_field: str,
+    ) -&gt; None:
+        rows = [
+            _row(method, history_id, index)
+            for method in METHODS
+            for index, history_id in enumerate(DEVELOPMENT_HISTORIES)
+        ]
+        del rows[0]["work_volume"][missing_field]  # type: ignore[index]
+    
+&gt;       with pytest.raises(DevelopmentBaselineReportError, match="work volume"):
+E       Failed: DID NOT RAISE DevelopmentBaselineReportError
+
+tests/test_development_baseline_report.py:146: Failed</failure></testcase><testcase classname="tests.test_development_baseline_report" name="test_report_rejects_missing_work_volume_instead_of_fabricating_zero[candidate_query_count]" time="0.000"><failure message="Failed: DID NOT RAISE DevelopmentBaselineReportError">missing_field = 'candidate_query_count'
+
+    @pytest.mark.parametrize("missing_field", WORK_FIELDS)
+    def test_report_rejects_missing_work_volume_instead_of_fabricating_zero(
+        missing_field: str,
+    ) -&gt; None:
+        rows = [
+            _row(method, history_id, index)
+            for method in METHODS
+            for index, history_id in enumerate(DEVELOPMENT_HISTORIES)
+        ]
+        del rows[0]["work_volume"][missing_field]  # type: ignore[index]
+    
+&gt;       with pytest.raises(DevelopmentBaselineReportError, match="work volume"):
+E       Failed: DID NOT RAISE DevelopmentBaselineReportError
+
+tests/test_development_baseline_report.py:146: Failed</failure></testcase><testcase classname="tests.test_development_baseline_report" name="test_report_rejects_missing_work_volume_instead_of_fabricating_zero[candidate_count]" time="0.000"><failure message="Failed: DID NOT RAISE DevelopmentBaselineReportError">missing_field = 'candidate_count'
+
+    @pytest.mark.parametrize("missing_field", WORK_FIELDS)
+    def test_report_rejects_missing_work_volume_instead_of_fabricating_zero(
+        missing_field: str,
+    ) -&gt; None:
+        rows = [
+            _row(method, history_id, index)
+            for method in METHODS
+            for index, history_id in enumerate(DEVELOPMENT_HISTORIES)
+        ]
+        del rows[0]["work_volume"][missing_field]  # type: ignore[index]
+    
+&gt;       with pytest.raises(DevelopmentBaselineReportError, match="work volume"):
+E       Failed: DID NOT RAISE DevelopmentBaselineReportError
+
+tests/test_development_baseline_report.py:146: Failed</failure></testcase><testcase classname="tests.test_development_baseline_report" name="test_markdown_keeps_primary_diagnostic_and_claim_limits_explicit" time="0.000" /></testsuite></testsuites>

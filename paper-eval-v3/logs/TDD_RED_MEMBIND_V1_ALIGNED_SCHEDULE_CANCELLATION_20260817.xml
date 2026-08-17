@@ -1,0 +1,110 @@
+<?xml version="1.0" encoding="utf-8"?><testsuites name="pytest tests"><testsuite name="pytest" errors="0" failures="1" skipped="0" tests="1" time="0.049" timestamp="2026-08-17T13:28:47.957061+08:00" hostname="aces-System-Product-Name"><testcase classname="tests.test_membind_v1_aligned_schedule" name="test_p_c2_cancels_and_awaits_running_sibling_before_propagating_failure" time="0.001"><failure message="assert False&#10; +  where False = is_set()&#10; +    where is_set = &lt;asyncio.locks.Event object at 0x77ac3c865e80 [unset]&gt;.is_set">def test_p_c2_cancels_and_awaits_running_sibling_before_propagating_failure() -&gt; None:
+        async def scenario() -&gt; None:
+            sibling_entered = asyncio.Event()
+            sibling_cancelled = asyncio.Event()
+            sibling_unwound = asyncio.Event()
+            release = asyncio.Event()
+            observed: list[tuple[str, int, int]] = []
+    
+            async def native(episode: object) -&gt; None:
+                sequence = int(episode["private"])  # type: ignore[index]
+                if sequence == 0:
+                    sibling_entered.set()
+                    try:
+                        await release.wait()
+                    except asyncio.CancelledError:
+                        sibling_cancelled.set()
+                        # A cancellation handler may itself yield.  The scheduler
+                        # must await it before returning the sibling's failure.
+                        await asyncio.sleep(0)
+                        raise
+                    finally:
+                        sibling_unwound.set()
+                    return
+                await sibling_entered.wait()
+                raise RuntimeError("injected native failure")
+    
+            async def observer(event_type: str, source_sequence: int, timestamp_ns: int) -&gt; None:
+                observed.append((event_type, source_sequence, timestamp_ns))
+    
+            try:
+                with pytest.raises(RuntimeError, match="injected native failure"):
+                    await run_aligned_baseline(
+                        method="P(C=2)-aligned",
+                        episodes=_episodes(2),
+                        arrival_offsets_ns=(0, 0),
+                        native_add_episode=native,
+                        lifecycle_observer=observer,
+                    )
+    
+                assert sibling_cancelled.is_set()
+                assert sibling_unwound.is_set()
+                events_after_failure = list(observed)
+                await asyncio.sleep(0)
+                assert observed == events_after_failure
+            finally:
+                # Keep the RED implementation from leaking its un-cancelled
+                # sibling into the next test, while remaining inert after GREEN.
+                release.set()
+                await asyncio.wait_for(sibling_unwound.wait(), timeout=1)
+                await asyncio.sleep(0)
+    
+&gt;       asyncio.run(scenario())
+
+tests/test_membind_v1_aligned_schedule.py:241: 
+_ _ _ _ _ _ _ _ _ _ _ _ _ _ _ _ _ _ _ _ _ _ _ _ _ _ _ _ _ _ _ _ _ _ _ _ _ _ _ _ 
+/usr/lib/python3.12/asyncio/runners.py:194: in run
+    return runner.run(main)
+           ^^^^^^^^^^^^^^^^
+/usr/lib/python3.12/asyncio/runners.py:118: in run
+    return self._loop.run_until_complete(task)
+           ^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^
+/usr/lib/python3.12/asyncio/base_events.py:687: in run_until_complete
+    return future.result()
+           ^^^^^^^^^^^^^^^
+_ _ _ _ _ _ _ _ _ _ _ _ _ _ _ _ _ _ _ _ _ _ _ _ _ _ _ _ _ _ _ _ _ _ _ _ _ _ _ _ 
+
+    async def scenario() -&gt; None:
+        sibling_entered = asyncio.Event()
+        sibling_cancelled = asyncio.Event()
+        sibling_unwound = asyncio.Event()
+        release = asyncio.Event()
+        observed: list[tuple[str, int, int]] = []
+    
+        async def native(episode: object) -&gt; None:
+            sequence = int(episode["private"])  # type: ignore[index]
+            if sequence == 0:
+                sibling_entered.set()
+                try:
+                    await release.wait()
+                except asyncio.CancelledError:
+                    sibling_cancelled.set()
+                    # A cancellation handler may itself yield.  The scheduler
+                    # must await it before returning the sibling's failure.
+                    await asyncio.sleep(0)
+                    raise
+                finally:
+                    sibling_unwound.set()
+                return
+            await sibling_entered.wait()
+            raise RuntimeError("injected native failure")
+    
+        async def observer(event_type: str, source_sequence: int, timestamp_ns: int) -&gt; None:
+            observed.append((event_type, source_sequence, timestamp_ns))
+    
+        try:
+            with pytest.raises(RuntimeError, match="injected native failure"):
+                await run_aligned_baseline(
+                    method="P(C=2)-aligned",
+                    episodes=_episodes(2),
+                    arrival_offsets_ns=(0, 0),
+                    native_add_episode=native,
+                    lifecycle_observer=observer,
+                )
+    
+&gt;           assert sibling_cancelled.is_set()
+E           assert False
+E            +  where False = is_set()
+E            +    where is_set = &lt;asyncio.locks.Event object at 0x77ac3c865e80 [unset]&gt;.is_set
+
+tests/test_membind_v1_aligned_schedule.py:229: AssertionError</failure></testcase></testsuite></testsuites>

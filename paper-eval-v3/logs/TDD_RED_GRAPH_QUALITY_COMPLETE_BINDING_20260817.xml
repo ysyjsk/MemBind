@@ -1,0 +1,428 @@
+<?xml version="1.0" encoding="utf-8"?><testsuites name="pytest tests"><testsuite name="pytest" errors="0" failures="8" skipped="0" tests="13" time="0.199" timestamp="2026-08-17T01:08:02.211489+08:00" hostname="aces-System-Product-Name"><testcase classname="tests.test_graph_quality_suite" name="test_target_inventory_is_exact_method_major_twelve_units" time="0.000" /><testcase classname="tests.test_graph_quality_suite" name="test_discovery_requires_one_verified_completed_attempt_per_live_block" time="0.003" /><testcase classname="tests.test_graph_quality_suite" name="test_private_bundle_is_written_first_and_public_can_be_restored" time="0.025" /><testcase classname="tests.test_graph_quality_suite" name="test_bundle_rejects_mismatched_private_hash_or_existing_drift" time="0.013" /><testcase classname="tests.test_graph_quality_suite" name="test_summary_excludes_invalid_judge_from_denominator_and_requires_identity" time="0.001" /><testcase classname="tests.test_graph_quality_suite" name="test_runner_checkpoints_each_unit_and_replay_does_not_resample" time="0.001"><failure message="TypeError: run_graph_quality_targets() got an unexpected keyword argument 'runtime_identity'">tmp_path = PosixPath('/tmp/pytest-of-ly/pytest-571/test_runner_checkpoints_each_u0')
+
+    @pytest.mark.asyncio
+    async def test_runner_checkpoints_each_unit_and_replay_does_not_resample(
+        tmp_path: Path,
+    ) -&gt; None:
+        targets = [_target(method, history) for method in METHODS for history in HISTORIES]
+        calls: list[tuple[str, str]] = []
+    
+        async def evaluate(
+            target: GraphQualityTarget, attempt_root: Path
+        ) -&gt; GraphQualityQuestionResult:
+            calls.append((target.method, target.history_id))
+            assert attempt_root.name == "attempt-001"
+            return GraphQualityQuestionResult(
+                public_artifact=_public(
+                    target.method,
+                    target.history_id,
+                    construction_result_sha256=target.construction_result_sha256,
+                ),
+                private_artifact=_private(),
+            )
+    
+&gt;       report = await run_graph_quality_targets(
+            overlay_run_id="gq-dev-001",
+            targets=targets,
+            run_root=tmp_path / "gq-dev-001",
+            evaluate=evaluate,
+            runtime_identity=RUNTIME_IDENTITY,
+            quality_identity=QUALITY_IDENTITY,
+        )
+E       TypeError: run_graph_quality_targets() got an unexpected keyword argument 'runtime_identity'
+
+tests/test_graph_quality_suite.py:354: TypeError</failure></testcase><testcase classname="tests.test_graph_quality_suite" name="test_restored_bundle_requires_complete_run_and_runtime_binding[schema]" time="0.016"><failure message="TypeError: run_graph_quality_targets() got an unexpected keyword argument 'runtime_identity'">tmp_path = PosixPath('/tmp/pytest-of-ly/pytest-571/test_restored_bundle_requires_0')
+drift = 'schema'
+
+    @pytest.mark.asyncio
+    @pytest.mark.parametrize(
+        "drift",
+        ["schema", "overlay", "namespace", "runtime", "quality"],
+    )
+    async def test_restored_bundle_requires_complete_run_and_runtime_binding(
+        tmp_path: Path,
+        drift: str,
+    ) -&gt; None:
+        targets = [_target(method, history) for method in METHODS for history in HISTORIES]
+        target = targets[0]
+        public = _public(
+            target.method,
+            target.history_id,
+            construction_result_sha256=target.construction_result_sha256,
+        )
+        if drift == "schema":
+            public["schema_version"] = "stale.public.v0"
+        elif drift == "overlay":
+            public["overlay_run_id"] = "gq-copied-999"
+        elif drift == "namespace":
+            public["namespace_sha256"] = "9" * 64
+        elif drift == "runtime":
+            stale_runtime = {"implementation": "copied-runtime"}
+            public["runtime_identity"] = stale_runtime
+            public["runtime_identity_sha256"] = payload_sha256(stale_runtime)
+        elif drift == "quality":
+            public["quality_identity"] = {
+                **QUALITY_IDENTITY,
+                "reader_config_sha256": "9" * 64,
+            }
+        public["payload_sha256"] = payload_sha256(
+            {key: value for key, value in public.items() if key != "payload_sha256"}
+        )
+        attempt = (
+            tmp_path
+            / "gq-dev-001"
+            / "units"
+            / "u0"
+            / HISTORIES[0]
+            / "attempt-001"
+        )
+        persist_question_bundle(
+            attempt,
+            public_artifact=public,
+            private_artifact=_private(),
+        )
+    
+        async def forbidden(
+            _target: GraphQualityTarget, _attempt_root: Path
+        ) -&gt; GraphQualityQuestionResult:
+            raise AssertionError("stale bundle reached live evaluation")
+    
+        with pytest.raises(GraphQualitySuiteError, match="identity|schema"):
+&gt;           await run_graph_quality_targets(
+                overlay_run_id="gq-dev-001",
+                targets=targets,
+                run_root=tmp_path / "gq-dev-001",
+                evaluate=forbidden,
+                runtime_identity=RUNTIME_IDENTITY,
+                quality_identity=QUALITY_IDENTITY,
+            )
+E           TypeError: run_graph_quality_targets() got an unexpected keyword argument 'runtime_identity'
+
+tests/test_graph_quality_suite.py:440: TypeError</failure></testcase><testcase classname="tests.test_graph_quality_suite" name="test_restored_bundle_requires_complete_run_and_runtime_binding[overlay]" time="0.015"><failure message="TypeError: run_graph_quality_targets() got an unexpected keyword argument 'runtime_identity'">tmp_path = PosixPath('/tmp/pytest-of-ly/pytest-571/test_restored_bundle_requires_1')
+drift = 'overlay'
+
+    @pytest.mark.asyncio
+    @pytest.mark.parametrize(
+        "drift",
+        ["schema", "overlay", "namespace", "runtime", "quality"],
+    )
+    async def test_restored_bundle_requires_complete_run_and_runtime_binding(
+        tmp_path: Path,
+        drift: str,
+    ) -&gt; None:
+        targets = [_target(method, history) for method in METHODS for history in HISTORIES]
+        target = targets[0]
+        public = _public(
+            target.method,
+            target.history_id,
+            construction_result_sha256=target.construction_result_sha256,
+        )
+        if drift == "schema":
+            public["schema_version"] = "stale.public.v0"
+        elif drift == "overlay":
+            public["overlay_run_id"] = "gq-copied-999"
+        elif drift == "namespace":
+            public["namespace_sha256"] = "9" * 64
+        elif drift == "runtime":
+            stale_runtime = {"implementation": "copied-runtime"}
+            public["runtime_identity"] = stale_runtime
+            public["runtime_identity_sha256"] = payload_sha256(stale_runtime)
+        elif drift == "quality":
+            public["quality_identity"] = {
+                **QUALITY_IDENTITY,
+                "reader_config_sha256": "9" * 64,
+            }
+        public["payload_sha256"] = payload_sha256(
+            {key: value for key, value in public.items() if key != "payload_sha256"}
+        )
+        attempt = (
+            tmp_path
+            / "gq-dev-001"
+            / "units"
+            / "u0"
+            / HISTORIES[0]
+            / "attempt-001"
+        )
+        persist_question_bundle(
+            attempt,
+            public_artifact=public,
+            private_artifact=_private(),
+        )
+    
+        async def forbidden(
+            _target: GraphQualityTarget, _attempt_root: Path
+        ) -&gt; GraphQualityQuestionResult:
+            raise AssertionError("stale bundle reached live evaluation")
+    
+        with pytest.raises(GraphQualitySuiteError, match="identity|schema"):
+&gt;           await run_graph_quality_targets(
+                overlay_run_id="gq-dev-001",
+                targets=targets,
+                run_root=tmp_path / "gq-dev-001",
+                evaluate=forbidden,
+                runtime_identity=RUNTIME_IDENTITY,
+                quality_identity=QUALITY_IDENTITY,
+            )
+E           TypeError: run_graph_quality_targets() got an unexpected keyword argument 'runtime_identity'
+
+tests/test_graph_quality_suite.py:440: TypeError</failure></testcase><testcase classname="tests.test_graph_quality_suite" name="test_restored_bundle_requires_complete_run_and_runtime_binding[namespace]" time="0.015"><failure message="TypeError: run_graph_quality_targets() got an unexpected keyword argument 'runtime_identity'">tmp_path = PosixPath('/tmp/pytest-of-ly/pytest-571/test_restored_bundle_requires_2')
+drift = 'namespace'
+
+    @pytest.mark.asyncio
+    @pytest.mark.parametrize(
+        "drift",
+        ["schema", "overlay", "namespace", "runtime", "quality"],
+    )
+    async def test_restored_bundle_requires_complete_run_and_runtime_binding(
+        tmp_path: Path,
+        drift: str,
+    ) -&gt; None:
+        targets = [_target(method, history) for method in METHODS for history in HISTORIES]
+        target = targets[0]
+        public = _public(
+            target.method,
+            target.history_id,
+            construction_result_sha256=target.construction_result_sha256,
+        )
+        if drift == "schema":
+            public["schema_version"] = "stale.public.v0"
+        elif drift == "overlay":
+            public["overlay_run_id"] = "gq-copied-999"
+        elif drift == "namespace":
+            public["namespace_sha256"] = "9" * 64
+        elif drift == "runtime":
+            stale_runtime = {"implementation": "copied-runtime"}
+            public["runtime_identity"] = stale_runtime
+            public["runtime_identity_sha256"] = payload_sha256(stale_runtime)
+        elif drift == "quality":
+            public["quality_identity"] = {
+                **QUALITY_IDENTITY,
+                "reader_config_sha256": "9" * 64,
+            }
+        public["payload_sha256"] = payload_sha256(
+            {key: value for key, value in public.items() if key != "payload_sha256"}
+        )
+        attempt = (
+            tmp_path
+            / "gq-dev-001"
+            / "units"
+            / "u0"
+            / HISTORIES[0]
+            / "attempt-001"
+        )
+        persist_question_bundle(
+            attempt,
+            public_artifact=public,
+            private_artifact=_private(),
+        )
+    
+        async def forbidden(
+            _target: GraphQualityTarget, _attempt_root: Path
+        ) -&gt; GraphQualityQuestionResult:
+            raise AssertionError("stale bundle reached live evaluation")
+    
+        with pytest.raises(GraphQualitySuiteError, match="identity|schema"):
+&gt;           await run_graph_quality_targets(
+                overlay_run_id="gq-dev-001",
+                targets=targets,
+                run_root=tmp_path / "gq-dev-001",
+                evaluate=forbidden,
+                runtime_identity=RUNTIME_IDENTITY,
+                quality_identity=QUALITY_IDENTITY,
+            )
+E           TypeError: run_graph_quality_targets() got an unexpected keyword argument 'runtime_identity'
+
+tests/test_graph_quality_suite.py:440: TypeError</failure></testcase><testcase classname="tests.test_graph_quality_suite" name="test_restored_bundle_requires_complete_run_and_runtime_binding[runtime]" time="0.013"><failure message="TypeError: run_graph_quality_targets() got an unexpected keyword argument 'runtime_identity'">tmp_path = PosixPath('/tmp/pytest-of-ly/pytest-571/test_restored_bundle_requires_3')
+drift = 'runtime'
+
+    @pytest.mark.asyncio
+    @pytest.mark.parametrize(
+        "drift",
+        ["schema", "overlay", "namespace", "runtime", "quality"],
+    )
+    async def test_restored_bundle_requires_complete_run_and_runtime_binding(
+        tmp_path: Path,
+        drift: str,
+    ) -&gt; None:
+        targets = [_target(method, history) for method in METHODS for history in HISTORIES]
+        target = targets[0]
+        public = _public(
+            target.method,
+            target.history_id,
+            construction_result_sha256=target.construction_result_sha256,
+        )
+        if drift == "schema":
+            public["schema_version"] = "stale.public.v0"
+        elif drift == "overlay":
+            public["overlay_run_id"] = "gq-copied-999"
+        elif drift == "namespace":
+            public["namespace_sha256"] = "9" * 64
+        elif drift == "runtime":
+            stale_runtime = {"implementation": "copied-runtime"}
+            public["runtime_identity"] = stale_runtime
+            public["runtime_identity_sha256"] = payload_sha256(stale_runtime)
+        elif drift == "quality":
+            public["quality_identity"] = {
+                **QUALITY_IDENTITY,
+                "reader_config_sha256": "9" * 64,
+            }
+        public["payload_sha256"] = payload_sha256(
+            {key: value for key, value in public.items() if key != "payload_sha256"}
+        )
+        attempt = (
+            tmp_path
+            / "gq-dev-001"
+            / "units"
+            / "u0"
+            / HISTORIES[0]
+            / "attempt-001"
+        )
+        persist_question_bundle(
+            attempt,
+            public_artifact=public,
+            private_artifact=_private(),
+        )
+    
+        async def forbidden(
+            _target: GraphQualityTarget, _attempt_root: Path
+        ) -&gt; GraphQualityQuestionResult:
+            raise AssertionError("stale bundle reached live evaluation")
+    
+        with pytest.raises(GraphQualitySuiteError, match="identity|schema"):
+&gt;           await run_graph_quality_targets(
+                overlay_run_id="gq-dev-001",
+                targets=targets,
+                run_root=tmp_path / "gq-dev-001",
+                evaluate=forbidden,
+                runtime_identity=RUNTIME_IDENTITY,
+                quality_identity=QUALITY_IDENTITY,
+            )
+E           TypeError: run_graph_quality_targets() got an unexpected keyword argument 'runtime_identity'
+
+tests/test_graph_quality_suite.py:440: TypeError</failure></testcase><testcase classname="tests.test_graph_quality_suite" name="test_restored_bundle_requires_complete_run_and_runtime_binding[quality]" time="0.017"><failure message="TypeError: run_graph_quality_targets() got an unexpected keyword argument 'runtime_identity'">tmp_path = PosixPath('/tmp/pytest-of-ly/pytest-571/test_restored_bundle_requires_4')
+drift = 'quality'
+
+    @pytest.mark.asyncio
+    @pytest.mark.parametrize(
+        "drift",
+        ["schema", "overlay", "namespace", "runtime", "quality"],
+    )
+    async def test_restored_bundle_requires_complete_run_and_runtime_binding(
+        tmp_path: Path,
+        drift: str,
+    ) -&gt; None:
+        targets = [_target(method, history) for method in METHODS for history in HISTORIES]
+        target = targets[0]
+        public = _public(
+            target.method,
+            target.history_id,
+            construction_result_sha256=target.construction_result_sha256,
+        )
+        if drift == "schema":
+            public["schema_version"] = "stale.public.v0"
+        elif drift == "overlay":
+            public["overlay_run_id"] = "gq-copied-999"
+        elif drift == "namespace":
+            public["namespace_sha256"] = "9" * 64
+        elif drift == "runtime":
+            stale_runtime = {"implementation": "copied-runtime"}
+            public["runtime_identity"] = stale_runtime
+            public["runtime_identity_sha256"] = payload_sha256(stale_runtime)
+        elif drift == "quality":
+            public["quality_identity"] = {
+                **QUALITY_IDENTITY,
+                "reader_config_sha256": "9" * 64,
+            }
+        public["payload_sha256"] = payload_sha256(
+            {key: value for key, value in public.items() if key != "payload_sha256"}
+        )
+        attempt = (
+            tmp_path
+            / "gq-dev-001"
+            / "units"
+            / "u0"
+            / HISTORIES[0]
+            / "attempt-001"
+        )
+        persist_question_bundle(
+            attempt,
+            public_artifact=public,
+            private_artifact=_private(),
+        )
+    
+        async def forbidden(
+            _target: GraphQualityTarget, _attempt_root: Path
+        ) -&gt; GraphQualityQuestionResult:
+            raise AssertionError("stale bundle reached live evaluation")
+    
+        with pytest.raises(GraphQualitySuiteError, match="identity|schema"):
+&gt;           await run_graph_quality_targets(
+                overlay_run_id="gq-dev-001",
+                targets=targets,
+                run_root=tmp_path / "gq-dev-001",
+                evaluate=forbidden,
+                runtime_identity=RUNTIME_IDENTITY,
+                quality_identity=QUALITY_IDENTITY,
+            )
+E           TypeError: run_graph_quality_targets() got an unexpected keyword argument 'runtime_identity'
+
+tests/test_graph_quality_suite.py:440: TypeError</failure></testcase><testcase classname="tests.test_graph_quality_suite" name="test_failed_unit_is_nonmergeable_and_retry_uses_new_attempt" time="0.001"><failure message="TypeError: run_graph_quality_targets() got an unexpected keyword argument 'runtime_identity'">tmp_path = PosixPath('/tmp/pytest-of-ly/pytest-571/test_failed_unit_is_nonmergeab0')
+
+    @pytest.mark.asyncio
+    async def test_failed_unit_is_nonmergeable_and_retry_uses_new_attempt(
+        tmp_path: Path,
+    ) -&gt; None:
+        targets = [_target(method, history) for method in METHODS for history in HISTORIES]
+    
+        async def fail(
+            _target: GraphQualityTarget, _attempt_root: Path
+        ) -&gt; GraphQualityQuestionResult:
+            raise ConnectionError("PRIVATE endpoint and secret must not persist")
+    
+        with pytest.raises(ConnectionError):
+&gt;           await run_graph_quality_targets(
+                overlay_run_id="gq-dev-002",
+                targets=targets,
+                run_root=tmp_path / "gq-dev-002",
+                evaluate=fail,
+                runtime_identity=RUNTIME_IDENTITY,
+                quality_identity=QUALITY_IDENTITY,
+            )
+E           TypeError: run_graph_quality_targets() got an unexpected keyword argument 'runtime_identity'
+
+tests/test_graph_quality_suite.py:462: TypeError</failure></testcase><testcase classname="tests.test_graph_quality_suite" name="test_same_overlay_run_cannot_execute_concurrently" time="0.001"><failure message="TypeError: run_graph_quality_targets() got an unexpected keyword argument 'runtime_identity'">tmp_path = PosixPath('/tmp/pytest-of-ly/pytest-571/test_same_overlay_run_cannot_e0')
+
+    @pytest.mark.asyncio
+    async def test_same_overlay_run_cannot_execute_concurrently(tmp_path: Path) -&gt; None:
+        targets = [_target(method, history) for method in METHODS for history in HISTORIES]
+        entered = asyncio.Event()
+        release = asyncio.Event()
+    
+        async def slow(
+            target: GraphQualityTarget, _attempt_root: Path
+        ) -&gt; GraphQualityQuestionResult:
+            entered.set()
+            await release.wait()
+            return GraphQualityQuestionResult(
+                public_artifact=_public(
+                    target.method,
+                    target.history_id,
+                    construction_result_sha256=target.construction_result_sha256,
+                    overlay_run_id="gq-lock-001",
+                ),
+                private_artifact=_private(),
+            )
+    
+        first = asyncio.create_task(
+&gt;           run_graph_quality_targets(
+                overlay_run_id="gq-lock-001",
+                targets=targets,
+                run_root=tmp_path / "gq-lock-001",
+                evaluate=slow,
+                runtime_identity=RUNTIME_IDENTITY,
+                quality_identity=QUALITY_IDENTITY,
+            )
+        )
+E       TypeError: run_graph_quality_targets() got an unexpected keyword argument 'runtime_identity'
+
+tests/test_graph_quality_suite.py:531: TypeError</failure></testcase></testsuite></testsuites>

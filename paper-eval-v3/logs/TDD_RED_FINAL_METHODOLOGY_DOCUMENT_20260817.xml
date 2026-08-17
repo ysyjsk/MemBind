@@ -1,0 +1,74 @@
+<?xml version="1.0" encoding="utf-8"?><testsuites name="pytest tests"><testsuite name="pytest" errors="0" failures="5" skipped="0" tests="5" time="0.042" timestamp="2026-08-17T02:03:28.109717+08:00" hostname="aces-System-Product-Name"><testcase classname="tests.test_final_methodology_document" name="test_methodology_is_bound_to_the_sealed_development_evidence" time="0.000"><failure message="AssertionError: sealed three-baseline development report is required&#10;assert False&#10; +  where False = is_file()&#10; +    where is_file = PosixPath('/data/predator/ly/MemBind/paper-eval-v3/artifacts/paper_eval/development_report/runs/report-dev-20260817-001/REPORT.json').is_file">def test_methodology_is_bound_to_the_sealed_development_evidence() -&gt; None:
+&gt;       report = _load_report()
+                 ^^^^^^^^^^^^^^
+
+tests/test_final_methodology_document.py:39: 
+_ _ _ _ _ _ _ _ _ _ _ _ _ _ _ _ _ _ _ _ _ _ _ _ _ _ _ _ _ _ _ _ _ _ _ _ _ _ _ _ 
+
+    def _load_report() -&gt; dict[str, object]:
+&gt;       assert REPORT.is_file(), "sealed three-baseline development report is required"
+E       AssertionError: sealed three-baseline development report is required
+E       assert False
+E        +  where False = is_file()
+E        +    where is_file = PosixPath('/data/predator/ly/MemBind/paper-eval-v3/artifacts/paper_eval/development_report/runs/report-dev-20260817-001/REPORT.json').is_file
+
+tests/test_final_methodology_document.py:24: AssertionError</failure></testcase><testcase classname="tests.test_final_methodology_document" name="test_methodology_cites_the_actual_three_method_measurements" time="0.000"><failure message="AssertionError: sealed three-baseline development report is required&#10;assert False&#10; +  where False = is_file()&#10; +    where is_file = PosixPath('/data/predator/ly/MemBind/paper-eval-v3/artifacts/paper_eval/development_report/runs/report-dev-20260817-001/REPORT.json').is_file">def test_methodology_cites_the_actual_three_method_measurements() -&gt; None:
+&gt;       report = _load_report()
+                 ^^^^^^^^^^^^^^
+
+tests/test_final_methodology_document.py:60: 
+_ _ _ _ _ _ _ _ _ _ _ _ _ _ _ _ _ _ _ _ _ _ _ _ _ _ _ _ _ _ _ _ _ _ _ _ _ _ _ _ 
+
+    def _load_report() -&gt; dict[str, object]:
+&gt;       assert REPORT.is_file(), "sealed three-baseline development report is required"
+E       AssertionError: sealed three-baseline development report is required
+E       assert False
+E        +  where False = is_file()
+E        +    where is_file = PosixPath('/data/predator/ly/MemBind/paper-eval-v3/artifacts/paper_eval/development_report/runs/report-dev-20260817-001/REPORT.json').is_file
+
+tests/test_final_methodology_document.py:24: AssertionError</failure></testcase><testcase classname="tests.test_final_methodology_document" name="test_methodology_does_not_promote_a_screening_result_to_a_proof" time="0.001"><failure message="AssertionError: assert '当前最终 methodology 冻结为' not in '# MemBind: ...MSPEC\n```\n'&#10;  &#10;  '当前最终 methodology 冻结为' is contained here:&#10;     Binding&#10;    &#10;    当前最终 methodology 冻结为：&#10;    &#10;    ```text...&#10;  &#10;  ...Full output truncated (1176 lines hidden), use '-vv' to show">def test_methodology_does_not_promote_a_screening_result_to_a_proof() -&gt; None:
+        text = _document()
+    
+        for forbidden in (
+            "当前最终 methodology 冻结为",
+            "最终方法已经冻结为",
+            "188-episode characterization 已经足以支持完整 MemBind-v1",
+            "61.28% arrival-ready",
+            "数据库级 atomic publication 已证明",
+        ):
+&gt;           assert forbidden not in text
+E           AssertionError: assert '当前最终 methodology 冻结为' not in '# MemBind: ...MSPEC\n```\n'
+E             
+E             '当前最终 methodology 冻结为' is contained here:
+E                Binding
+E               
+E               当前最终 methodology 冻结为：
+E               
+E               ```text...
+E             
+E             ...Full output truncated (1176 lines hidden), use '-vv' to show
+
+tests/test_final_methodology_document.py:90: AssertionError</failure></testcase><testcase classname="tests.test_final_methodology_document" name="test_methodology_freezes_only_the_minimum_candidate_and_gates_edge_motion" time="0.000"><failure message="AssertionError: assert 'node-only minimum viable compile' in '# membind: algorithm-preserving semantic late binding for stateful agent memory\n\n## 1. research thesis\n\n现有 statef...存在以下状态：\n\n```text\nwaiting_for_dctrl_experiment\nwaiting_for_conflict_oracle\nauto_enter_mco\nauto_enter_mspec\n```\n'&#10; +  where '# membind: algorithm-preserving semantic late binding for stateful agent memory\n\n## 1. research thesis\n\n现有 statef...存在以下状态：\n\n```text\nwaiting_for_dctrl_experiment\nwaiting_for_conflict_oracle\nauto_enter_mco\nauto_enter_mspec\n```\n' = &lt;built-in method casefold of str object at 0x3b089290&gt;()&#10; +    where &lt;built-in method casefold of str object at 0x3b089290&gt; = '# MemBind: Algorithm-Preserving Semantic Late Binding for Stateful Agent Memory\n\n## 1. Research Thesis\n\n现有 statef...存在以下状态：\n\n```text\nWAITING_FOR_DCTRL_EXPERIMENT\nWAITING_FOR_CONFLICT_ORACLE\nAUTO_ENTER_MCO\nAUTO_ENTER_MSPEC\n```\n'.casefold">def test_methodology_freezes_only_the_minimum_candidate_and_gates_edge_motion() -&gt; None:
+        text = _document()
+    
+&gt;       assert "node-only minimum viable compile" in text.casefold()
+E       AssertionError: assert 'node-only minimum viable compile' in '# membind: algorithm-preserving semantic late binding for stateful agent memory\n\n## 1. research thesis\n\n现有 statef...存在以下状态：\n\n```text\nwaiting_for_dctrl_experiment\nwaiting_for_conflict_oracle\nauto_enter_mco\nauto_enter_mspec\n```\n'
+E        +  where '# membind: algorithm-preserving semantic late binding for stateful agent memory\n\n## 1. research thesis\n\n现有 statef...存在以下状态：\n\n```text\nwaiting_for_dctrl_experiment\nwaiting_for_conflict_oracle\nauto_enter_mco\nauto_enter_mspec\n```\n' = &lt;built-in method casefold of str object at 0x3b089290&gt;()
+E        +    where &lt;built-in method casefold of str object at 0x3b089290&gt; = '# MemBind: Algorithm-Preserving Semantic Late Binding for Stateful Agent Memory\n\n## 1. Research Thesis\n\n现有 statef...存在以下状态：\n\n```text\nWAITING_FOR_DCTRL_EXPERIMENT\nWAITING_FOR_CONFLICT_ORACLE\nAUTO_ENTER_MCO\nAUTO_ENTER_MSPEC\n```\n'.casefold
+
+tests/test_final_methodology_document.py:101: AssertionError</failure></testcase><testcase classname="tests.test_final_methodology_document" name="test_methodology_has_falsification_tdd_and_publication_boundaries" time="0.000"><failure message="AssertionError: assert '## 证据驱动的研究裁决' in '# MemBind: Algorithm-Preserving Semantic Late Binding for Stateful Agent Memory\n\n## 1. Research Thesis\n\n现有 statef...存在以下状态：\n\n```text\nWAITING_FOR_DCTRL_EXPERIMENT\nWAITING_FOR_CONFLICT_ORACLE\nAUTO_ENTER_MCO\nAUTO_ENTER_MSPEC\n```\n'">def test_methodology_has_falsification_tdd_and_publication_boundaries() -&gt; None:
+        text = _document()
+    
+        for heading in (
+            "## 证据驱动的研究裁决",
+            "## 候选机制",
+            "## TDD 实现门禁",
+            "## 最小评测矩阵",
+            "## 停止与证伪条件",
+            "## Publication 边界",
+            "## 实现顺序",
+        ):
+&gt;           assert heading in text
+E           AssertionError: assert '## 证据驱动的研究裁决' in '# MemBind: Algorithm-Preserving Semantic Late Binding for Stateful Agent Memory\n\n## 1. Research Thesis\n\n现有 statef...存在以下状态：\n\n```text\nWAITING_FOR_DCTRL_EXPERIMENT\nWAITING_FOR_CONFLICT_ORACLE\nAUTO_ENTER_MCO\nAUTO_ENTER_MSPEC\n```\n'
+
+tests/test_final_methodology_document.py:126: AssertionError</failure></testcase></testsuite></testsuites>

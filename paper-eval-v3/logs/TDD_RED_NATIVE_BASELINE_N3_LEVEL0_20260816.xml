@@ -1,0 +1,50 @@
+<?xml version="1.0" encoding="utf-8"?><testsuites name="pytest tests"><testsuite name="pytest" errors="0" failures="5" skipped="0" tests="12" time="0.079" timestamp="2026-08-16T20:25:39.641331+08:00" hostname="aces-System-Product-Name"><testcase classname="tests.test_native_baseline_n3" name="test_complete_native_screen_recomputes_history_vectors_from_level_zero" time="0.002"><failure message="KeyError: 'work_volume'">def test_complete_native_screen_recomputes_history_vectors_from_level_zero() -&gt; None:
+        report = reduce_native_baseline_n3(run_id=RUN_ID, history_evidence=_complete_pairs())
+    
+        assert report["eligibility"] is True
+        assert report["decision"] == "HEALTHY_FOR_NEXT_BASELINE"
+        assert [row["history_id"] for row in report["per_history"]] == list(
+            DEVELOPMENT_HISTORIES
+        )
+        first = report["per_history"][0]
+        assert first["headline_metrics"] == {
+            "qa_accuracy": 1.0,
+            "evidence_recall_at_10": 0.5,
+            "direct_violations": 0,
+            "p95_freshness_ns": 120,
+            "successful_goodput": pytest.approx(2e9 / 330),
+            "makespan_ns": 330,
+        }
+        # Logical and transport spans both carry token counts. Canonical work
+        # volume counts logical tokens once while retaining attempt count.
+&gt;       assert first["work_volume"]["llm_input_tokens"] == 20
+               ^^^^^^^^^^^^^^^^^^^^
+E       KeyError: 'work_volume'
+
+tests/test_native_baseline_n3.py:289: KeyError</failure></testcase><testcase classname="tests.test_native_baseline_n3" name="test_partial_inputs_are_ineligible_and_do_not_authorize_decision" time="0.003" /><testcase classname="tests.test_native_baseline_n3" name="test_wrong_history_order_and_unsealed_or_tampered_result_fail_closed" time="0.004" /><testcase classname="tests.test_native_baseline_n3" name="test_source_gap_or_duplicate_singleton_row_fails_closed" time="0.002"><failure message="Failed: DID NOT RAISE ValueError">def test_source_gap_or_duplicate_singleton_row_fails_closed() -&gt; None:
+        gap = _complete_pairs()
+        gap[0]["raw_rows"]["per_episode"].pop()
+&gt;       with pytest.raises(ValueError, match="source coverage"):
+E       Failed: DID NOT RAISE ValueError
+
+tests/test_native_baseline_n3.py:345: Failed</failure></testcase><testcase classname="tests.test_native_baseline_n3" name="test_event_queue_timestamp_mismatch_and_graph_discontinuity_fail_closed" time="0.002"><failure message="Failed: DID NOT RAISE ValueError">def test_event_queue_timestamp_mismatch_and_graph_discontinuity_fail_closed() -&gt; None:
+        mismatch = _complete_pairs()
+        mismatch[0]["raw_rows"]["events"][2]["timestamp_ns"] += 1
+&gt;       with pytest.raises(ValueError, match="event/queue timestamp"):
+E       Failed: DID NOT RAISE ValueError
+
+tests/test_native_baseline_n3.py:359: Failed</failure></testcase><testcase classname="tests.test_native_baseline_n3" name="test_content_leak_and_sidecar_projection_drift_fail_closed" time="0.002"><failure message="Failed: DID NOT RAISE ValueError">def test_content_leak_and_sidecar_projection_drift_fail_closed() -&gt; None:
+        leaked = _complete_pairs()
+        leaked[0]["raw_rows"]["spans"][0]["metadata"]["prompt_text"] = "private"
+&gt;       with pytest.raises(ValueError, match="content-bearing"):
+E       Failed: DID NOT RAISE ValueError
+
+tests/test_native_baseline_n3.py:371: Failed</failure></testcase><testcase classname="tests.test_native_baseline_n3" name="test_durable_per_episode_or_history_aggregate_is_only_a_cross_check" time="0.002"><failure message="AssertionError: Regex pattern did not match.&#10;  Expected regex: 'durable per_episode'&#10;  Actual message: 'history result payload hash mismatch'">def test_durable_per_episode_or_history_aggregate_is_only_a_cross_check() -&gt; None:
+        episode_drift = _complete_pairs()
+        episode_drift[0]["raw_rows"]["per_episode"][0]["latency_ns"]["service"] += 1
+&gt;       with pytest.raises(ValueError, match="durable per_episode"):
+E       AssertionError: Regex pattern did not match.
+E         Expected regex: 'durable per_episode'
+E         Actual message: 'history result payload hash mismatch'
+
+tests/test_native_baseline_n3.py:383: AssertionError</failure></testcase><testcase classname="tests.test_native_baseline_n3" name="test_wrong_goodput_unit_or_serial_backlog_contract_fails_closed" time="0.003" /><testcase classname="tests.test_native_baseline_n3" name="test_completed_but_unhealthy_history_yields_diagnose[overrides0-QUALITY_NOT_SUCCESS]" time="0.002" /><testcase classname="tests.test_native_baseline_n3" name="test_completed_but_unhealthy_history_yields_diagnose[overrides1-GRAPH_WORK_EMPTY]" time="0.002" /><testcase classname="tests.test_native_baseline_n3" name="test_completed_but_unhealthy_history_yields_diagnose[overrides2-SYSTEM_WORK_EMPTY]" time="0.002" /><testcase classname="tests.test_native_baseline_n3" name="test_all_zero_quality_signals_yield_diagnose_but_one_zero_history_does_not" time="0.003" /></testsuite></testsuites>

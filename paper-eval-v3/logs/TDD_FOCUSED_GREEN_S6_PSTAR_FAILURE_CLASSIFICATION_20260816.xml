@@ -1,0 +1,34 @@
+<?xml version="1.0" encoding="utf-8"?><testsuites name="pytest tests"><testsuite name="pytest" errors="0" failures="1" skipped="0" tests="13" time="0.048" timestamp="2026-08-16T18:24:44.195253+08:00" hostname="aces-System-Product-Name"><testcase classname="tests.test_s6_pstar_grid" name="test_c1_is_whole_update_serial_not_a0_async_enqueue" time="0.001" /><testcase classname="tests.test_s6_pstar_grid" name="test_c_gt_1_uses_exact_workers_and_proves_real_overlap[2]" time="0.001" /><testcase classname="tests.test_s6_pstar_grid" name="test_c_gt_1_uses_exact_workers_and_proves_real_overlap[4]" time="0.001" /><testcase classname="tests.test_s6_pstar_grid" name="test_c_gt_1_uses_exact_workers_and_proves_real_overlap[8]" time="0.002" /><testcase classname="tests.test_s6_pstar_grid" name="test_all_intents_are_durable_before_any_native_update" time="0.001"><failure message="AssertionError: assert ['intent', 'i...'publication'] == ['intent', 'i...nt', 'intent']&#10;  &#10;  Left contains one more item: 'publication'&#10;  Use -v to get more diff">@pytest.mark.asyncio
+    async def test_all_intents_are_durable_before_any_native_update() -&gt; None:
+        sink = DurableSink()
+        selected = _episodes(4)
+    
+        async def native_add_episode(_native_episode: object) -&gt; None:
+            assert [event["event_type"] for event in sink.events] == ["intent"] * 4
+    
+&gt;       await run_s6_pstar(
+            spec=_spec(1),
+            episodes=selected,
+            native_add_episode=native_add_episode,
+            persist_event=sink,
+            clock_ns=StepClock(),
+        )
+
+tests/test_s6_pstar_grid.py:141: 
+_ _ _ _ _ _ _ _ _ _ _ _ _ _ _ _ _ _ _ _ _ _ _ _ _ _ _ _ _ _ _ _ _ _ _ _ _ _ _ _ 
+src/paper_eval/s6_pstar_grid.py:414: in run_s6_pstar
+    await asyncio.gather(*tasks)
+src/paper_eval/s6_pstar_grid.py:357: in worker
+    await outcome
+_ _ _ _ _ _ _ _ _ _ _ _ _ _ _ _ _ _ _ _ _ _ _ _ _ _ _ _ _ _ _ _ _ _ _ _ _ _ _ _ 
+
+_native_episode = {'opaque_episode': 1}
+
+    async def native_add_episode(_native_episode: object) -&gt; None:
+&gt;       assert [event["event_type"] for event in sink.events] == ["intent"] * 4
+E       AssertionError: assert ['intent', 'i...'publication'] == ['intent', 'i...nt', 'intent']
+E         
+E         Left contains one more item: 'publication'
+E         Use -v to get more diff
+
+tests/test_s6_pstar_grid.py:139: AssertionError</failure></testcase><testcase classname="tests.test_s6_pstar_grid" name="test_treatment_failure_classifies_every_source_without_lost_work" time="0.001" /><testcase classname="tests.test_s6_pstar_grid" name="test_infrastructure_failure_is_not_merged_as_treatment[error0]" time="0.000" /><testcase classname="tests.test_s6_pstar_grid" name="test_infrastructure_failure_is_not_merged_as_treatment[error1]" time="0.000" /><testcase classname="tests.test_s6_pstar_grid" name="test_c_gt_1_without_observed_overlap_is_not_a_calibration_result" time="0.001" /><testcase classname="tests.test_s6_pstar_grid" name="test_spec_rejects_nonmatrix_concurrency[0]" time="0.000" /><testcase classname="tests.test_s6_pstar_grid" name="test_spec_rejects_nonmatrix_concurrency[3]" time="0.000" /><testcase classname="tests.test_s6_pstar_grid" name="test_spec_rejects_nonmatrix_concurrency[16]" time="0.000" /><testcase classname="tests.test_s6_pstar_grid" name="test_verifier_recomputes_terminal_accounting_and_worker_proof" time="0.001" /></testsuite></testsuites>

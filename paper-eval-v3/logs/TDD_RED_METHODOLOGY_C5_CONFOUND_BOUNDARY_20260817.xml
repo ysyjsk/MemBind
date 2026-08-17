@@ -1,0 +1,24 @@
+<?xml version="1.0" encoding="utf-8"?><testsuites name="pytest tests"><testsuite name="pytest" errors="0" failures="1" skipped="0" tests="8" time="0.222" timestamp="2026-08-17T02:56:18.317835+08:00" hostname="aces-System-Product-Name"><testcase classname="tests.test_methodology_decision" name="test_capacity_plus_counterexample_selects_only_a_bounded_candidate" time="0.001"><failure message="KeyError: 'c5_model_nondeterminism_assessment'">def test_capacity_plus_counterexample_selects_only_a_bounded_candidate() -&gt; None:
+        decision = _decision()
+    
+        assert decision["status"] == "PASS"
+        assert decision["decision_run_id"] == "methodology-dev-test"
+        assert decision["actual_decision_matrix_cell"] == (
+            "CAPACITY_SIGNAL_WITH_DIRECT_INVARIANT_COUNTEREXAMPLE"
+        )
+        assert decision["problem_verdict"] == (
+            "PROBLEM_SUPPORTED_FOR_BOUNDED_NODE_ONLY_PROTOTYPE"
+        )
+        assert decision["mechanism_status"] == "NODE_ONLY_CANDIDATE"
+        assert decision["paper_claim_status"] == "NOT_AUTHORIZED_DEVELOPMENT_ONLY"
+        assert decision["live_method_status"] == "NOT_AUTHORIZED"
+        assert decision["observations"]["p_capacity_signal"] is True
+        assert decision["observations"]["p_paired_history_makespan_wins"] == 4
+        assert decision["observations"]["c5_direct_counterexample"] is True
+&gt;       assert decision["observations"]["c5_model_nondeterminism_assessment"] == (
+               ^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^
+            "GRAPH_RETRIEVAL_PARITY_CONFOUNDED_DIRECT_ORDER_EVIDENCE_UNAFFECTED"
+        )
+E       KeyError: 'c5_model_nondeterminism_assessment'
+
+tests/test_methodology_decision.py:166: KeyError</failure></testcase><testcase classname="tests.test_methodology_decision" name="test_no_capacity_signal_stops_even_when_c5_has_a_counterexample" time="0.000" /><testcase classname="tests.test_methodology_decision" name="test_capacity_direction_uses_aggregate_not_an_arbitrary_win_threshold" time="0.000" /><testcase classname="tests.test_methodology_decision" name="test_capacity_without_counterexample_requires_reassessment_not_a_method" time="0.000" /><testcase classname="tests.test_methodology_decision" name="test_invalid_judge_denominator_blocks_the_methodology_decision" time="0.000" /><testcase classname="tests.test_methodology_decision" name="test_tampered_report_or_c5_is_rejected" time="0.000" /><testcase classname="tests.test_methodology_decision" name="test_history_identity_or_parallel_execution_drift_is_rejected" time="0.001" /><testcase classname="tests.test_methodology_decision" name="test_file_backed_finalizer_is_idempotent_and_rejects_output_drift" time="0.179" /></testsuite></testsuites>

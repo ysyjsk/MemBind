@@ -1,0 +1,56 @@
+<?xml version="1.0" encoding="utf-8"?><testsuites name="pytest tests"><testsuite name="pytest" errors="0" failures="2" skipped="0" tests="2" time="0.034" timestamp="2026-08-17T03:00:29.722738+08:00" hostname="aces-System-Product-Name"><testcase classname="tests.test_methodology_decision_tmux_launcher" name="test_launcher_waits_for_report_in_one_secret_free_tmux" time="0.002"><failure message="AssertionError: bash: /data/predator/ly/MemBind/paper-eval-v3/scripts/run_methodology_decision_after_report_tmux.sh: No such file or directory&#10;  &#10;assert 127 == 0&#10; +  where 127 = CompletedProcess(args=['bash', '/data/predator/ly/MemBind/paper-eval-v3/scripts/run_methodology_decision_after_report_.../predator/ly/MemBind/paper-eval-v3/scripts/run_methodology_decision_after_report_tmux.sh: No such file or directory\n').returncode">tmp_path = PosixPath('/tmp/pytest-of-ly/pytest-629/test_launcher_waits_for_report0')
+
+    def test_launcher_waits_for_report_in_one_secret_free_tmux(tmp_path: Path) -&gt; None:
+        bin_dir, ledger = _fake_tmux(tmp_path)
+        env = {
+            **os.environ,
+            "PATH": f"{bin_dir}:{os.environ['PATH']}",
+            "FAKE_TMUX_LEDGER": str(ledger),
+            "OPENAI_API_KEY": "sentinel-secret-must-not-be-printed",
+        }
+        completed = subprocess.run(
+            [
+                "bash",
+                str(LAUNCHER),
+                "methodology-dev-20260817-001",
+                "report-dev-20260817-001",
+            ],
+            cwd=PROJECT,
+            env=env,
+            text=True,
+            capture_output=True,
+            check=False,
+        )
+    
+&gt;       assert completed.returncode == 0, completed.stderr
+E       AssertionError: bash: /data/predator/ly/MemBind/paper-eval-v3/scripts/run_methodology_decision_after_report_tmux.sh: No such file or directory
+E         
+E       assert 127 == 0
+E        +  where 127 = CompletedProcess(args=['bash', '/data/predator/ly/MemBind/paper-eval-v3/scripts/run_methodology_decision_after_report_.../predator/ly/MemBind/paper-eval-v3/scripts/run_methodology_decision_after_report_tmux.sh: No such file or directory\n').returncode
+
+tests/test_methodology_decision_tmux_launcher.py:52: AssertionError</failure></testcase><testcase classname="tests.test_methodology_decision_tmux_launcher" name="test_launcher_rejects_unsafe_identity_before_tmux" time="0.002"><failure message="AssertionError: assert 'invalid' in 'bash: /data/predator/ly/membind/paper-eval-v3/scripts/run_methodology_decision_after_report_tmux.sh: no such file or directory\n'&#10; +  where 'bash: /data/predator/ly/membind/paper-eval-v3/scripts/run_methodology_decision_after_report_tmux.sh: no such file or directory\n' = &lt;built-in method lower of str object at 0x7d56a11d0f50&gt;()&#10; +    where &lt;built-in method lower of str object at 0x7d56a11d0f50&gt; = 'bash: /data/predator/ly/MemBind/paper-eval-v3/scripts/run_methodology_decision_after_report_tmux.sh: No such file or directory\n'.lower&#10; +      where 'bash: /data/predator/ly/MemBind/paper-eval-v3/scripts/run_methodology_decision_after_report_tmux.sh: No such file or directory\n' = CompletedProcess(args=['bash', '/data/predator/ly/MemBind/paper-eval-v3/scripts/run_methodology_decision_after_report_.../predator/ly/MemBind/paper-eval-v3/scripts/run_methodology_decision_after_report_tmux.sh: No such file or directory\n').stderr">tmp_path = PosixPath('/tmp/pytest-of-ly/pytest-629/test_launcher_rejects_unsafe_i0')
+
+    def test_launcher_rejects_unsafe_identity_before_tmux(tmp_path: Path) -&gt; None:
+        bin_dir, ledger = _fake_tmux(tmp_path)
+        env = {
+            **os.environ,
+            "PATH": f"{bin_dir}:{os.environ['PATH']}",
+            "FAKE_TMUX_LEDGER": str(ledger),
+        }
+        completed = subprocess.run(
+            ["bash", str(LAUNCHER), "../unsafe", "report-dev-20260817-001"],
+            cwd=PROJECT,
+            env=env,
+            text=True,
+            capture_output=True,
+            check=False,
+        )
+    
+        assert completed.returncode != 0
+&gt;       assert "invalid" in completed.stderr.lower()
+E       AssertionError: assert 'invalid' in 'bash: /data/predator/ly/membind/paper-eval-v3/scripts/run_methodology_decision_after_report_tmux.sh: no such file or directory\n'
+E        +  where 'bash: /data/predator/ly/membind/paper-eval-v3/scripts/run_methodology_decision_after_report_tmux.sh: no such file or directory\n' = &lt;built-in method lower of str object at 0x7d56a11d0f50&gt;()
+E        +    where &lt;built-in method lower of str object at 0x7d56a11d0f50&gt; = 'bash: /data/predator/ly/MemBind/paper-eval-v3/scripts/run_methodology_decision_after_report_tmux.sh: No such file or directory\n'.lower
+E        +      where 'bash: /data/predator/ly/MemBind/paper-eval-v3/scripts/run_methodology_decision_after_report_tmux.sh: No such file or directory\n' = CompletedProcess(args=['bash', '/data/predator/ly/MemBind/paper-eval-v3/scripts/run_methodology_decision_after_report_.../predator/ly/MemBind/paper-eval-v3/scripts/run_methodology_decision_after_report_tmux.sh: No such file or directory\n').stderr
+
+tests/test_methodology_decision_tmux_launcher.py:87: AssertionError</failure></testcase></testsuite></testsuites>

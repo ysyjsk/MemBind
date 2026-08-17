@@ -1,0 +1,122 @@
+<?xml version="1.0" encoding="utf-8"?><testsuites name="pytest tests"><testsuite name="pytest" errors="0" failures="1" skipped="0" tests="1" time="0.050" timestamp="2026-08-17T00:32:50.496679+08:00" hostname="aces-System-Product-Name"><testcase classname="tests.test_graph_quality_suite" name="test_discovery_requires_one_verified_completed_attempt_per_live_block" time="0.003"><failure message="AssertionError: Regex pattern did not match.&#10;  Expected regex: 'suite report'&#10;  Actual message: 'construction suite is not complete with exactly one verified attempt'">tmp_path = PosixPath('/tmp/pytest-of-ly/pytest-561/test_discovery_requires_one_ve0')
+
+    def test_discovery_requires_one_verified_completed_attempt_per_live_block(
+        tmp_path: Path,
+    ) -&gt; None:
+        native_run = "nb-discovery-001"
+        suite_run = "bs-discovery-001"
+        native_root = tmp_path / "native"
+        suite_root = tmp_path / "suite"
+        u0_rows = [
+            {
+                "history_id": history_id,
+                "episode_count": 40 + index,
+                "history_result_payload_sha256": f"{index + 1:064x}",
+            }
+            for index, history_id in enumerate(HISTORIES)
+        ]
+    
+        def verify_u0(_root: Path, run_id: str) -&gt; dict[str, object]:
+            assert run_id == native_run
+            return {
+                "source_run_id": native_run,
+                "histories": u0_rows,
+                "payload_sha256": "f" * 64,
+            }
+    
+        def inspect_block(root: Path, block: dict[str, object]) -&gt; dict[str, object]:
+            assert root.name == "attempt-001"
+            history_index = HISTORIES.index(str(block["history_id"]))
+            payload = {
+                "run_id": block["namespace"],
+                "method": block["method"],
+                "history_id": block["history_id"],
+                "status": "PASS",
+                "episode_count": 40 + history_index,
+            }
+            return {
+                "block": block,
+                "status": "completed",
+                "artifacts_verified": True,
+                "result": {
+                    "payload": payload,
+                    "result_payload_sha256": (
+                        f"{100 + history_index + (0 if block['method'] == 'A0' else 10):064x}"
+                    ),
+                },
+            }
+    
+        for method_slug in ("a0", "pc2"):
+            for history_id in HISTORIES:
+                (suite_root / suite_run / "blocks" / method_slug / history_id / "attempt-001").mkdir(
+                    parents=True
+                )
+        suite_report: dict[str, object] = {
+            "schema_version": "membind.paper-eval-v3.three-baseline-report.v1",
+            "run_id": suite_run,
+            "status": "PASS",
+            "execution_order": ["U0_REUSED", "A0", "P(C=2)"],
+            "fairness": {"quality_identity_verified": True},
+            "u0": {
+                "source_run_id": native_run,
+                "payload_sha256": "f" * 64,
+            },
+            "blocks": [
+                {
+                    "method": method,
+                    "history_id": history_id,
+                    "episode_count": 40 + HISTORIES.index(history_id),
+                    "result_payload_sha256": (
+                        f"{100 + HISTORIES.index(history_id) + (0 if method == 'A0' else 10):064x}"
+                    ),
+                }
+                for method in ("A0", "P(C=2)")
+                for history_id in HISTORIES
+            ],
+        }
+        suite_report["payload_sha256"] = payload_sha256(suite_report)
+        report_path = suite_root / suite_run / "THREE_BASELINE_RESULTS.json"
+        report_path.write_text(json.dumps(suite_report), encoding="utf-8")
+    
+        targets = discover_graph_quality_targets(
+            native_runs_root=native_root,
+            suite_runs_root=suite_root,
+            native_run_id=native_run,
+            suite_run_id=suite_run,
+            hooks=GraphQualityDiscoveryHooks(
+                verify_u0=verify_u0,
+                inspect_block=inspect_block,
+            ),
+        )
+    
+        assert len(targets) == 12
+        assert [target.method for target in targets[:5]] == [
+            "U0",
+            "U0",
+            "U0",
+            "U0",
+            "A0",
+        ]
+        assert targets[4].namespace.endswith("-a001")
+    
+        missing = suite_root / suite_run / "blocks" / "pc2" / HISTORIES[-1] / "attempt-001"
+        missing.rmdir()
+        with pytest.raises(GraphQualitySuiteError, match="not complete"):
+            discover_graph_quality_targets(
+                native_runs_root=native_root,
+                suite_runs_root=suite_root,
+                native_run_id=native_run,
+                suite_run_id=suite_run,
+                hooks=GraphQualityDiscoveryHooks(
+                    verify_u0=verify_u0,
+                    inspect_block=inspect_block,
+                ),
+            )
+    
+        report_path.unlink()
+&gt;       with pytest.raises(GraphQualitySuiteError, match="suite report"):
+E       AssertionError: Regex pattern did not match.
+E         Expected regex: 'suite report'
+E         Actual message: 'construction suite is not complete with exactly one verified attempt'
+
+tests/test_graph_quality_suite.py:206: AssertionError</failure></testcase></testsuite></testsuites>

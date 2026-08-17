@@ -1,0 +1,15 @@
+<?xml version="1.0" encoding="utf-8"?><testsuites name="pytest tests"><testsuite name="pytest" errors="0" failures="1" skipped="0" tests="12" time="0.434" timestamp="2026-08-16T21:17:38.763096+08:00" hostname="aces-System-Product-Name"><testcase classname="tests.test_baseline_suite_artifacts" name="test_create_is_manifest_first_hash_bound_and_exclusive" time="0.022" /><testcase classname="tests.test_baseline_suite_artifacts" name="test_serial_publications_must_be_a_unique_source_prefix" time="0.028" /><testcase classname="tests.test_baseline_suite_artifacts" name="test_parallel_publications_may_be_unordered_but_not_duplicate" time="0.046" /><testcase classname="tests.test_baseline_suite_artifacts" name="test_quality_pending_requires_full_publication_set_and_remains_nonmergeable" time="0.045" /><testcase classname="tests.test_baseline_suite_artifacts" name="test_complete_requires_quality_pending_full_set_and_seals_result" time="0.056" /><testcase classname="tests.test_baseline_suite_artifacts" name="test_failure_is_sealed_incomplete_nonmergeable_and_never_resumable" time="0.042" /><testcase classname="tests.test_baseline_suite_artifacts" name="test_event_identity_sequence_hash_and_private_fields_fail_closed" time="0.022" /><testcase classname="tests.test_baseline_suite_artifacts" name="test_inspection_rejects_expected_identity_drift_and_rehashed_tampering" time="0.028" /><testcase classname="tests.test_baseline_suite_artifacts" name="test_rehashed_manifest_or_result_private_field_still_fails_closed" time="0.046" /><testcase classname="tests.test_baseline_suite_artifacts" name="test_rehashed_compound_secret_field_and_impossible_phase_fail_closed" time="0.027"><failure message="Failed: DID NOT RAISE BaselineBlockArtifactError">tmp_path = PosixPath('/tmp/pytest-of-ly/pytest-521/test_rehashed_compound_secret_0')
+
+    def test_rehashed_compound_secret_field_and_impossible_phase_fail_closed(
+        tmp_path: Path,
+    ) -&gt; None:
+        store = _create(tmp_path)
+        _publish(store, 0, 0)
+        checkpoint = json.loads(store.checkpoint_path.read_text(encoding="utf-8"))
+        checkpoint["phase"] = "planned"
+        _reseal(checkpoint, "checkpoint_sha256")
+        store.checkpoint_path.write_text(json.dumps(checkpoint) + "\n", encoding="utf-8")
+&gt;       with pytest.raises(BaselineBlockArtifactError, match="phase|checkpoint"):
+E       Failed: DID NOT RAISE BaselineBlockArtifactError
+
+tests/test_baseline_suite_artifacts.py:238: Failed</failure></testcase><testcase classname="tests.test_baseline_suite_artifacts" name="test_result_identity_and_private_content_are_rejected" time="0.035" /><testcase classname="tests.test_baseline_suite_artifacts" name="test_create_rejects_noncanonical_or_unbounded_source_inventory" time="0.001" /></testsuite></testsuites>

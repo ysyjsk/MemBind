@@ -1,0 +1,95 @@
+<?xml version="1.0" encoding="utf-8"?><testsuites name="pytest tests"><testsuite name="pytest" errors="0" failures="3" skipped="0" tests="13" time="0.211" timestamp="2026-08-16T19:01:56.396938+08:00" hostname="aces-System-Product-Name"><testcase classname="tests.test_s6_live_authority" name="test_preflight_binds_exact_matrix_cell_source_manifest_and_empty_namespace" time="0.005" /><testcase classname="tests.test_s6_live_authority" name="test_preflight_records_failure_without_live_authority[construction_status]" time="0.003" /><testcase classname="tests.test_s6_live_authority" name="test_preflight_records_failure_without_live_authority[construction_model]" time="0.003" /><testcase classname="tests.test_s6_live_authority" name="test_preflight_records_failure_without_live_authority[vllm_version]" time="0.003" /><testcase classname="tests.test_s6_live_authority" name="test_preflight_records_failure_without_live_authority[max_model_len]" time="0.003" /><testcase classname="tests.test_s6_live_authority" name="test_preflight_records_failure_without_live_authority[embedding_model]" time="0.003" /><testcase classname="tests.test_s6_live_authority" name="test_preflight_records_failure_without_live_authority[namespace]" time="0.003" /><testcase classname="tests.test_s6_live_authority" name="test_preflight_records_failure_without_live_authority[nonempty]" time="0.003" /><testcase classname="tests.test_s6_live_authority" name="test_authority_is_one_cell_one_namespace_single_use_and_prefinal" time="0.005"><failure message="paper_eval.s6_live_authority.S6LiveAuthorityError: source_inventory_invalid">def test_authority_is_one_cell_one_namespace_single_use_and_prefinal() -&gt; None:
+&gt;       authority = verify_s6_live_authority(_authority())
+                                             ^^^^^^^^^^^^
+
+tests/test_s6_live_authority.py:199: 
+_ _ _ _ _ _ _ _ _ _ _ _ _ _ _ _ _ _ _ _ _ _ _ _ _ _ _ _ _ _ _ _ _ _ _ _ _ _ _ _ 
+tests/test_s6_live_authority.py:125: in _authority
+    return build_s6_live_authority(
+src/paper_eval/s6_live_authority.py:453: in build_s6_live_authority
+    sources = _source_inventory(source_sha256)
+              ^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^
+_ _ _ _ _ _ _ _ _ _ _ _ _ _ _ _ _ _ _ _ _ _ _ _ _ _ _ _ _ _ _ _ _ _ _ _ _ _ _ _ 
+
+value = {'authority': '1111111111111111111111111111111111111111111111111111111111111111', 'calibration_contract': '22222222222...333333333333333333333333333', 'method_runner': '4444444444444444444444444444444444444444444444444444444444444444', ...}
+
+    def _source_inventory(value: object) -&gt; dict[str, str]:
+        selected = _mapping(value, "source_inventory_invalid")
+        if set(selected) != _SOURCE_NAMES:
+&gt;           raise _fail("source_inventory_invalid")
+E           paper_eval.s6_live_authority.S6LiveAuthorityError: source_inventory_invalid
+
+src/paper_eval/s6_live_authority.py:219: S6LiveAuthorityError</failure></testcase><testcase classname="tests.test_s6_live_authority" name="test_authority_rejects_matrix_preflight_and_source_manifest_drift" time="0.022" /><testcase classname="tests.test_s6_live_authority" name="test_authority_rejects_out_of_matrix_cell_and_source_closure_drift" time="0.007" /><testcase classname="tests.test_s6_live_authority" name="test_preflight_authority_and_consumption_are_exclusive" time="0.016"><failure message="paper_eval.s6_live_authority.S6LiveAuthorityError: source_inventory_invalid">tmp_path = PosixPath('/tmp/pytest-of-ly/pytest-499/test_preflight_authority_and_c0')
+
+    def test_preflight_authority_and_consumption_are_exclusive(tmp_path: Path) -&gt; None:
+        preflight_path = tmp_path / "preflight.json"
+        preflight = finalize_s6_live_preflight(
+            output_path=preflight_path,
+            evaluation=_evaluation(),
+            git_commit="d" * 40,
+        )
+        assert verify_s6_live_preflight(preflight) == preflight
+        with pytest.raises(FileExistsError):
+            finalize_s6_live_preflight(
+                output_path=preflight_path,
+                evaluation=_evaluation(),
+                git_commit="d" * 40,
+            )
+    
+&gt;       draft = build_s6_live_authority(
+            matrix_freeze=_matrix_freeze(),
+            matrix_file_sha256=MATRIX_FILE_SHA256,
+            cell_index=0,
+            episode_source_sha256s=SOURCE_SHA256S,
+            preflight=preflight,
+            preflight_file_sha256=sha256_file(preflight_path),
+            execution_identity_sha256="c" * 64,
+            source_sha256=SOURCE_CLOSURE,
+        )
+
+tests/test_s6_live_authority.py:323: 
+_ _ _ _ _ _ _ _ _ _ _ _ _ _ _ _ _ _ _ _ _ _ _ _ _ _ _ _ _ _ _ _ _ _ _ _ _ _ _ _ 
+src/paper_eval/s6_live_authority.py:453: in build_s6_live_authority
+    sources = _source_inventory(source_sha256)
+              ^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^
+_ _ _ _ _ _ _ _ _ _ _ _ _ _ _ _ _ _ _ _ _ _ _ _ _ _ _ _ _ _ _ _ _ _ _ _ _ _ _ _ 
+
+value = {'authority': '1111111111111111111111111111111111111111111111111111111111111111', 'calibration_contract': '22222222222...333333333333333333333333333', 'method_runner': '4444444444444444444444444444444444444444444444444444444444444444', ...}
+
+    def _source_inventory(value: object) -&gt; dict[str, str]:
+        selected = _mapping(value, "source_inventory_invalid")
+        if set(selected) != _SOURCE_NAMES:
+&gt;           raise _fail("source_inventory_invalid")
+E           paper_eval.s6_live_authority.S6LiveAuthorityError: source_inventory_invalid
+
+src/paper_eval/s6_live_authority.py:219: S6LiveAuthorityError</failure></testcase><testcase classname="tests.test_s6_live_authority" name="test_verifiers_reject_hash_scope_cell_and_private_field_tamper" time="0.005"><failure message="paper_eval.s6_live_authority.S6LiveAuthorityError: source_inventory_invalid">def test_verifiers_reject_hash_scope_cell_and_private_field_tamper() -&gt; None:
+        for mutation in (
+            lambda value: value["payload"]["authority"].update(
+                next_cell_authorized=True
+            ),
+            lambda value: value["payload"]["cell"].update(cell_index=1),
+            lambda value: value["payload"]["cell"].update(configured_concurrency=2),
+            lambda value: value["payload"]["cell"].update(namespace="pev3-wrong"),
+            lambda value: value["payload"].update(api_key="secret"),
+        ):
+&gt;           altered = copy.deepcopy(_authority())
+                                    ^^^^^^^^^^^^
+
+tests/test_s6_live_authority.py:388: 
+_ _ _ _ _ _ _ _ _ _ _ _ _ _ _ _ _ _ _ _ _ _ _ _ _ _ _ _ _ _ _ _ _ _ _ _ _ _ _ _ 
+tests/test_s6_live_authority.py:125: in _authority
+    return build_s6_live_authority(
+src/paper_eval/s6_live_authority.py:453: in build_s6_live_authority
+    sources = _source_inventory(source_sha256)
+              ^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^
+_ _ _ _ _ _ _ _ _ _ _ _ _ _ _ _ _ _ _ _ _ _ _ _ _ _ _ _ _ _ _ _ _ _ _ _ _ _ _ _ 
+
+value = {'authority': '1111111111111111111111111111111111111111111111111111111111111111', 'calibration_contract': '22222222222...333333333333333333333333333', 'method_runner': '4444444444444444444444444444444444444444444444444444444444444444', ...}
+
+    def _source_inventory(value: object) -&gt; dict[str, str]:
+        selected = _mapping(value, "source_inventory_invalid")
+        if set(selected) != _SOURCE_NAMES:
+&gt;           raise _fail("source_inventory_invalid")
+E           paper_eval.s6_live_authority.S6LiveAuthorityError: source_inventory_invalid
+
+src/paper_eval/s6_live_authority.py:219: S6LiveAuthorityError</failure></testcase></testsuite></testsuites>

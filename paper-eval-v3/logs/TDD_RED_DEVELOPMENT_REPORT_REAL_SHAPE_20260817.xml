@@ -1,0 +1,109 @@
+<?xml version="1.0" encoding="utf-8"?><testsuites name="pytest tests"><testsuite name="pytest" errors="0" failures="3" skipped="0" tests="3" time="0.072" timestamp="2026-08-17T01:31:33.024554+08:00" hostname="aces-System-Product-Name"><testcase classname="tests.test_development_baseline_report" name="test_report_uses_fixed_inventory_and_pooled_distributions" time="0.000"><failure message="paper_eval.development_baseline_report.DevelopmentBaselineReportError: graph-quality method inventory drift">def test_report_uses_fixed_inventory_and_pooled_distributions() -&gt; None:
+        rows = [
+            _row(method, history_id, index)
+            for method in METHODS
+            for index, history_id in enumerate(DEVELOPMENT_HISTORIES)
+        ]
+    
+&gt;       report = build_development_baseline_report(
+            report_run_id="report-dev-001",
+            native_run_id="nb-dev-001",
+            suite_run_id="bs-dev-001",
+            overlay_run_id="gq-dev-001",
+            baseline_rows=rows,
+            graph_quality_report=_quality(),
+            artifact_paths={
+                "native": "paper-eval-v3/artifacts/native",
+                "suite": "paper-eval-v3/artifacts/suite",
+                "graph_quality": "paper-eval-v3/artifacts/graph-quality",
+            },
+        )
+
+tests/test_development_baseline_report.py:99: 
+_ _ _ _ _ _ _ _ _ _ _ _ _ _ _ _ _ _ _ _ _ _ _ _ _ _ _ _ _ _ _ _ _ _ _ _ _ _ _ _ 
+src/paper_eval/development_baseline_report.py:343: in build_development_baseline_report
+    quality = _quality_summary(graph_quality_report)
+              ^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^
+_ _ _ _ _ _ _ _ _ _ _ _ _ _ _ _ _ _ _ _ _ _ _ _ _ _ _ _ _ _ _ _ _ _ _ _ _ _ _ _ 
+
+report = {'status': 'PASS', 'payload_sha256': 'ffffffffffffffffffffffffffffffffffffffffffffffffffffffffffffffff', 'summary': {'...ccccccccccccccc'}, 'runtime_identity_sha256': 'dddddddddddddddddddddddddddddddddddddddddddddddddddddddddddddddd', ...}}
+
+    def _quality_summary(report: Mapping[str, Any]) -&gt; dict[str, Any]:
+        if not isinstance(report, Mapping) or report.get("status") != "PASS":
+            raise DevelopmentBaselineReportError("graph-quality report is not PASS")
+        summary = report.get("summary")
+        if not isinstance(summary, Mapping):
+            raise DevelopmentBaselineReportError("graph-quality summary is missing")
+        if summary.get("heldout_data_accessed") is not False:
+            raise DevelopmentBaselineReportError("graph-quality held-out policy drift")
+        by_method = summary.get("by_method")
+        if not isinstance(by_method, Mapping) or tuple(by_method) != METHODS:
+&gt;           raise DevelopmentBaselineReportError("graph-quality method inventory drift")
+E           paper_eval.development_baseline_report.DevelopmentBaselineReportError: graph-quality method inventory drift
+
+src/paper_eval/development_baseline_report.py:110: DevelopmentBaselineReportError</failure></testcase><testcase classname="tests.test_development_baseline_report" name="test_markdown_keeps_primary_diagnostic_and_claim_limits_explicit" time="0.000"><failure message="paper_eval.development_baseline_report.DevelopmentBaselineReportError: graph-quality method inventory drift">def test_markdown_keeps_primary_diagnostic_and_claim_limits_explicit() -&gt; None:
+        rows = [
+            _row(method, history_id, index)
+            for method in METHODS
+            for index, history_id in enumerate(DEVELOPMENT_HISTORIES)
+        ]
+&gt;       report = build_development_baseline_report(
+            report_run_id="report-dev-001",
+            native_run_id="nb-dev-001",
+            suite_run_id="bs-dev-001",
+            overlay_run_id="gq-dev-001",
+            baseline_rows=rows,
+            graph_quality_report=_quality(),
+            artifact_paths={"native": "n", "suite": "s", "graph_quality": "g"},
+        )
+
+tests/test_development_baseline_report.py:135: 
+_ _ _ _ _ _ _ _ _ _ _ _ _ _ _ _ _ _ _ _ _ _ _ _ _ _ _ _ _ _ _ _ _ _ _ _ _ _ _ _ 
+src/paper_eval/development_baseline_report.py:343: in build_development_baseline_report
+    quality = _quality_summary(graph_quality_report)
+              ^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^
+_ _ _ _ _ _ _ _ _ _ _ _ _ _ _ _ _ _ _ _ _ _ _ _ _ _ _ _ _ _ _ _ _ _ _ _ _ _ _ _ 
+
+report = {'status': 'PASS', 'payload_sha256': 'ffffffffffffffffffffffffffffffffffffffffffffffffffffffffffffffff', 'summary': {'...ccccccccccccccc'}, 'runtime_identity_sha256': 'dddddddddddddddddddddddddddddddddddddddddddddddddddddddddddddddd', ...}}
+
+    def _quality_summary(report: Mapping[str, Any]) -&gt; dict[str, Any]:
+        if not isinstance(report, Mapping) or report.get("status") != "PASS":
+            raise DevelopmentBaselineReportError("graph-quality report is not PASS")
+        summary = report.get("summary")
+        if not isinstance(summary, Mapping):
+            raise DevelopmentBaselineReportError("graph-quality summary is missing")
+        if summary.get("heldout_data_accessed") is not False:
+            raise DevelopmentBaselineReportError("graph-quality held-out policy drift")
+        by_method = summary.get("by_method")
+        if not isinstance(by_method, Mapping) or tuple(by_method) != METHODS:
+&gt;           raise DevelopmentBaselineReportError("graph-quality method inventory drift")
+E           paper_eval.development_baseline_report.DevelopmentBaselineReportError: graph-quality method inventory drift
+
+src/paper_eval/development_baseline_report.py:110: DevelopmentBaselineReportError</failure></testcase><testcase classname="tests.test_write_three_baseline_development_report" name="test_freshness_projection_uses_the_real_unified_observability_shape" time="0.010"><failure message="write_three_baseline_development_report.ReportInputError: per-episode latency is missing">def test_freshness_projection_uses_the_real_unified_observability_shape() -&gt; None:
+        module = _script_module()
+    
+&gt;       observed = module._freshness_samples(
+            [
+                {"latency_ns": {"freshness": 11}},
+                {"latency_ns": {"freshness": 22}},
+            ],
+            expected_count=2,
+        )
+
+tests/test_write_three_baseline_development_report.py:27: 
+_ _ _ _ _ _ _ _ _ _ _ _ _ _ _ _ _ _ _ _ _ _ _ _ _ _ _ _ _ _ _ _ _ _ _ _ _ _ _ _ 
+
+rows = [{'latency_ns': {'freshness': 11}}, {'latency_ns': {'freshness': 22}}]
+expected_count = 2
+
+    def _freshness_samples(
+        rows: list[Mapping[str, Any]], *, expected_count: int
+    ) -&gt; list[int]:
+        samples: list[int] = []
+        for row in rows:
+            latency = row.get("latency")
+            if not isinstance(latency, Mapping):
+&gt;               raise ReportInputError("per-episode latency is missing")
+E               write_three_baseline_development_report.ReportInputError: per-episode latency is missing
+
+scripts/write_three_baseline_development_report.py:107: ReportInputError</failure></testcase></testsuite></testsuites>

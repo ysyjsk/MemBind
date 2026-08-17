@@ -1,0 +1,11 @@
+<?xml version="1.0" encoding="utf-8"?><testsuites name="pytest tests"><testsuite name="pytest" errors="0" failures="1" skipped="0" tests="6" time="0.183" timestamp="2026-08-16T18:55:23.318516+08:00" hostname="aces-System-Product-Name"><testcase classname="tests.test_s6_matrix" name="test_empty_matrix_selects_exact_first_frozen_cell" time="0.024" /><testcase classname="tests.test_s6_matrix" name="test_finalized_prefix_is_never_rerun_and_next_cell_is_serial" time="0.024" /><testcase classname="tests.test_s6_matrix" name="test_any_started_unfinalized_canonical_root_stops_matrix" time="0.023" /><testcase classname="tests.test_s6_matrix" name="test_corrupt_or_cell_mismatched_final_result_fails_closed" time="0.023" /><testcase classname="tests.test_s6_matrix" name="test_all_32_finalized_blocks_complete_matrix" time="0.031" /><testcase classname="tests.test_s6_matrix" name="test_discovery_rejects_caller_supplied_matrix_file_hash_drift" time="0.023"><failure message="Failed: DID NOT RAISE S6MatrixError">tmp_path = PosixPath('/tmp/pytest-of-ly/pytest-495/test_discovery_rejects_caller_0')
+
+    def test_discovery_rejects_caller_supplied_matrix_file_hash_drift(
+        tmp_path: Path,
+    ) -&gt; None:
+        matrix, _matrix_sha, runs, _blocks = _setup(tmp_path)
+    
+&gt;       with pytest.raises(S6MatrixError, match="matrix_file_identity_mismatch"):
+E       Failed: DID NOT RAISE S6MatrixError
+
+tests/test_s6_matrix.py:138: Failed</failure></testcase></testsuite></testsuites>

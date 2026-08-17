@@ -1,0 +1,153 @@
+<?xml version="1.0" encoding="utf-8"?><testsuites name="pytest tests"><testsuite name="pytest" errors="0" failures="5" skipped="0" tests="5" time="0.041" timestamp="2026-08-16T23:15:28.795677+08:00" hostname="aces-System-Product-Name"><testcase classname="tests.test_recompute_u0_useronly_quality" name="test_summary_is_fixed_four_macro_quality_and_prompt_reduction" time="0.000"><failure message="FileNotFoundError: [Errno 2] No such file or directory: '/data/predator/ly/MemBind/paper-eval-v3/scripts/recompute_u0_useronly_quality.py'">def test_summary_is_fixed_four_macro_quality_and_prompt_reduction() -&gt; None:
+&gt;       module = _module()
+                 ^^^^^^^^^
+
+tests/test_recompute_u0_useronly_quality.py:44: 
+_ _ _ _ _ _ _ _ _ _ _ _ _ _ _ _ _ _ _ _ _ _ _ _ _ _ _ _ _ _ _ _ _ _ _ _ _ _ _ _ 
+tests/test_recompute_u0_useronly_quality.py:20: in _module
+    spec.loader.exec_module(module)
+&lt;frozen importlib._bootstrap_external&gt;:991: in exec_module
+    ???
+&lt;frozen importlib._bootstrap_external&gt;:1128: in get_code
+    ???
+_ _ _ _ _ _ _ _ _ _ _ _ _ _ _ _ _ _ _ _ _ _ _ _ _ _ _ _ _ _ _ _ _ _ _ _ _ _ _ _ 
+
+self = &lt;_frozen_importlib_external.SourceFileLoader object at 0x745aef584d40&gt;
+path = '/data/predator/ly/MemBind/paper-eval-v3/scripts/recompute_u0_useronly_quality.py'
+
+&gt;   ???
+E   FileNotFoundError: [Errno 2] No such file or directory: '/data/predator/ly/MemBind/paper-eval-v3/scripts/recompute_u0_useronly_quality.py'
+
+&lt;frozen importlib._bootstrap_external&gt;:1186: FileNotFoundError</failure></testcase><testcase classname="tests.test_recompute_u0_useronly_quality" name="test_summary_fails_closed_on_inventory_identity_or_judge_drift[&lt;lambda&gt;0]" time="0.000"><failure message="FileNotFoundError: [Errno 2] No such file or directory: '/data/predator/ly/MemBind/paper-eval-v3/scripts/recompute_u0_useronly_quality.py'">mutate = &lt;function &lt;lambda&gt; at 0x745aef5013a0&gt;
+
+    @pytest.mark.parametrize(
+        "mutate",
+        [
+            lambda rows: rows.reverse(),
+            lambda rows: rows[0]["quality_identity"].update(useronly=False),
+            lambda rows: rows[0]["quality_identity"].update(
+                reader_config_sha256="3" * 64
+            ),
+            lambda rows: rows[0]["quality"]["judge"].update(status="INVALID"),
+        ],
+    )
+    def test_summary_fails_closed_on_inventory_identity_or_judge_drift(mutate) -&gt; None:
+&gt;       module = _module()
+                 ^^^^^^^^^
+
+tests/test_recompute_u0_useronly_quality.py:84: 
+_ _ _ _ _ _ _ _ _ _ _ _ _ _ _ _ _ _ _ _ _ _ _ _ _ _ _ _ _ _ _ _ _ _ _ _ _ _ _ _ 
+tests/test_recompute_u0_useronly_quality.py:20: in _module
+    spec.loader.exec_module(module)
+&lt;frozen importlib._bootstrap_external&gt;:991: in exec_module
+    ???
+&lt;frozen importlib._bootstrap_external&gt;:1128: in get_code
+    ???
+_ _ _ _ _ _ _ _ _ _ _ _ _ _ _ _ _ _ _ _ _ _ _ _ _ _ _ _ _ _ _ _ _ _ _ _ _ _ _ _ 
+
+self = &lt;_frozen_importlib_external.SourceFileLoader object at 0x745aef585ca0&gt;
+path = '/data/predator/ly/MemBind/paper-eval-v3/scripts/recompute_u0_useronly_quality.py'
+
+&gt;   ???
+E   FileNotFoundError: [Errno 2] No such file or directory: '/data/predator/ly/MemBind/paper-eval-v3/scripts/recompute_u0_useronly_quality.py'
+
+&lt;frozen importlib._bootstrap_external&gt;:1186: FileNotFoundError</failure></testcase><testcase classname="tests.test_recompute_u0_useronly_quality" name="test_summary_fails_closed_on_inventory_identity_or_judge_drift[&lt;lambda&gt;1]" time="0.000"><failure message="FileNotFoundError: [Errno 2] No such file or directory: '/data/predator/ly/MemBind/paper-eval-v3/scripts/recompute_u0_useronly_quality.py'">mutate = &lt;function &lt;lambda&gt; at 0x745aef501440&gt;
+
+    @pytest.mark.parametrize(
+        "mutate",
+        [
+            lambda rows: rows.reverse(),
+            lambda rows: rows[0]["quality_identity"].update(useronly=False),
+            lambda rows: rows[0]["quality_identity"].update(
+                reader_config_sha256="3" * 64
+            ),
+            lambda rows: rows[0]["quality"]["judge"].update(status="INVALID"),
+        ],
+    )
+    def test_summary_fails_closed_on_inventory_identity_or_judge_drift(mutate) -&gt; None:
+&gt;       module = _module()
+                 ^^^^^^^^^
+
+tests/test_recompute_u0_useronly_quality.py:84: 
+_ _ _ _ _ _ _ _ _ _ _ _ _ _ _ _ _ _ _ _ _ _ _ _ _ _ _ _ _ _ _ _ _ _ _ _ _ _ _ _ 
+tests/test_recompute_u0_useronly_quality.py:20: in _module
+    spec.loader.exec_module(module)
+&lt;frozen importlib._bootstrap_external&gt;:991: in exec_module
+    ???
+&lt;frozen importlib._bootstrap_external&gt;:1128: in get_code
+    ???
+_ _ _ _ _ _ _ _ _ _ _ _ _ _ _ _ _ _ _ _ _ _ _ _ _ _ _ _ _ _ _ _ _ _ _ _ _ _ _ _ 
+
+self = &lt;_frozen_importlib_external.SourceFileLoader object at 0x745aef5860f0&gt;
+path = '/data/predator/ly/MemBind/paper-eval-v3/scripts/recompute_u0_useronly_quality.py'
+
+&gt;   ???
+E   FileNotFoundError: [Errno 2] No such file or directory: '/data/predator/ly/MemBind/paper-eval-v3/scripts/recompute_u0_useronly_quality.py'
+
+&lt;frozen importlib._bootstrap_external&gt;:1186: FileNotFoundError</failure></testcase><testcase classname="tests.test_recompute_u0_useronly_quality" name="test_summary_fails_closed_on_inventory_identity_or_judge_drift[&lt;lambda&gt;2]" time="0.000"><failure message="FileNotFoundError: [Errno 2] No such file or directory: '/data/predator/ly/MemBind/paper-eval-v3/scripts/recompute_u0_useronly_quality.py'">mutate = &lt;function &lt;lambda&gt; at 0x745aef5014e0&gt;
+
+    @pytest.mark.parametrize(
+        "mutate",
+        [
+            lambda rows: rows.reverse(),
+            lambda rows: rows[0]["quality_identity"].update(useronly=False),
+            lambda rows: rows[0]["quality_identity"].update(
+                reader_config_sha256="3" * 64
+            ),
+            lambda rows: rows[0]["quality"]["judge"].update(status="INVALID"),
+        ],
+    )
+    def test_summary_fails_closed_on_inventory_identity_or_judge_drift(mutate) -&gt; None:
+&gt;       module = _module()
+                 ^^^^^^^^^
+
+tests/test_recompute_u0_useronly_quality.py:84: 
+_ _ _ _ _ _ _ _ _ _ _ _ _ _ _ _ _ _ _ _ _ _ _ _ _ _ _ _ _ _ _ _ _ _ _ _ _ _ _ _ 
+tests/test_recompute_u0_useronly_quality.py:20: in _module
+    spec.loader.exec_module(module)
+&lt;frozen importlib._bootstrap_external&gt;:991: in exec_module
+    ???
+&lt;frozen importlib._bootstrap_external&gt;:1128: in get_code
+    ???
+_ _ _ _ _ _ _ _ _ _ _ _ _ _ _ _ _ _ _ _ _ _ _ _ _ _ _ _ _ _ _ _ _ _ _ _ _ _ _ _ 
+
+self = &lt;_frozen_importlib_external.SourceFileLoader object at 0x745aef586de0&gt;
+path = '/data/predator/ly/MemBind/paper-eval-v3/scripts/recompute_u0_useronly_quality.py'
+
+&gt;   ???
+E   FileNotFoundError: [Errno 2] No such file or directory: '/data/predator/ly/MemBind/paper-eval-v3/scripts/recompute_u0_useronly_quality.py'
+
+&lt;frozen importlib._bootstrap_external&gt;:1186: FileNotFoundError</failure></testcase><testcase classname="tests.test_recompute_u0_useronly_quality" name="test_summary_fails_closed_on_inventory_identity_or_judge_drift[&lt;lambda&gt;3]" time="0.000"><failure message="FileNotFoundError: [Errno 2] No such file or directory: '/data/predator/ly/MemBind/paper-eval-v3/scripts/recompute_u0_useronly_quality.py'">mutate = &lt;function &lt;lambda&gt; at 0x745aef501580&gt;
+
+    @pytest.mark.parametrize(
+        "mutate",
+        [
+            lambda rows: rows.reverse(),
+            lambda rows: rows[0]["quality_identity"].update(useronly=False),
+            lambda rows: rows[0]["quality_identity"].update(
+                reader_config_sha256="3" * 64
+            ),
+            lambda rows: rows[0]["quality"]["judge"].update(status="INVALID"),
+        ],
+    )
+    def test_summary_fails_closed_on_inventory_identity_or_judge_drift(mutate) -&gt; None:
+&gt;       module = _module()
+                 ^^^^^^^^^
+
+tests/test_recompute_u0_useronly_quality.py:84: 
+_ _ _ _ _ _ _ _ _ _ _ _ _ _ _ _ _ _ _ _ _ _ _ _ _ _ _ _ _ _ _ _ _ _ _ _ _ _ _ _ 
+tests/test_recompute_u0_useronly_quality.py:20: in _module
+    spec.loader.exec_module(module)
+&lt;frozen importlib._bootstrap_external&gt;:991: in exec_module
+    ???
+&lt;frozen importlib._bootstrap_external&gt;:1128: in get_code
+    ???
+_ _ _ _ _ _ _ _ _ _ _ _ _ _ _ _ _ _ _ _ _ _ _ _ _ _ _ _ _ _ _ _ _ _ _ _ _ _ _ _ 
+
+self = &lt;_frozen_importlib_external.SourceFileLoader object at 0x745aef587c80&gt;
+path = '/data/predator/ly/MemBind/paper-eval-v3/scripts/recompute_u0_useronly_quality.py'
+
+&gt;   ???
+E   FileNotFoundError: [Errno 2] No such file or directory: '/data/predator/ly/MemBind/paper-eval-v3/scripts/recompute_u0_useronly_quality.py'
+
+&lt;frozen importlib._bootstrap_external&gt;:1186: FileNotFoundError</failure></testcase></testsuite></testsuites>

@@ -1,0 +1,27 @@
+<?xml version="1.0" encoding="utf-8"?><testsuites name="pytest tests"><testsuite name="pytest" errors="0" failures="1" skipped="0" tests="5" time="6.676" timestamp="2026-08-17T12:33:33.765015+08:00" hostname="aces-System-Product-Name"><testcase classname="tests.test_membind_v1_aligned_artifacts" name="test_block_artifacts_are_fresh_hash_bound_complete_and_emit_a_main_table_row" time="1.923" /><testcase classname="tests.test_membind_v1_aligned_artifacts" name="test_telemetry_is_append_only_hash_bound_and_rejects_private_content" time="0.516" /><testcase classname="tests.test_membind_v1_aligned_artifacts" name="test_ambiguous_commit_is_non_mergeable_and_cannot_be_resumed" time="0.896" /><testcase classname="tests.test_membind_v1_aligned_artifacts" name="test_public_row_fails_closed_when_a_different_verified_plan_is_supplied" time="1.608" /><testcase classname="tests.test_membind_v1_aligned_artifacts" name="test_public_row_rejects_a_resealed_manifest_hash_not_bound_to_its_plan_block" time="1.692"><failure message="Failed: DID NOT RAISE AlignedArtifactsError">tmp_path = PosixPath('/tmp/pytest-of-ly/pytest-665/test_public_row_rejects_a_rese0')
+
+    def test_public_row_rejects_a_resealed_manifest_hash_not_bound_to_its_plan_block(tmp_path) -&gt; None:
+        plan = _plan()
+        store = AlignedBlockArtifactStore.create(
+            tmp_path / "u0-block",
+            verified_plan=plan,
+            block_index=0,
+            execution_identity_sha256="b" * 64,
+        )
+        _complete(store)
+        row = build_public_aligned_row(
+            tmp_path / "u0-block",
+            verified_plan=plan,
+            block_index=0,
+            metrics=_metrics(),
+            quality_status="NQ_GRAPH_NATIVE_PROTOCOL_DEGENERATE",
+        )
+        row["manifest_sha256"] = "0" * 64
+        row["row_sha256"] = payload_sha256(
+            {key: value for key, value in row.items() if key != "row_sha256"}
+        )
+    
+&gt;       with pytest.raises(AlignedArtifactsError, match="plan block binding"):
+E       Failed: DID NOT RAISE AlignedArtifactsError
+
+tests/test_membind_v1_aligned_artifacts.py:187: Failed</failure></testcase></testsuite></testsuites>

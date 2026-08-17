@@ -1,0 +1,235 @@
+<?xml version="1.0" encoding="utf-8"?><testsuites name="pytest tests"><testsuite name="pytest" errors="0" failures="5" skipped="0" tests="6" time="0.807" timestamp="2026-08-17T01:47:56.400470+08:00" hostname="aces-System-Product-Name"><testcase classname="tests.test_write_three_baseline_development_report" name="test_freshness_projection_uses_the_real_unified_observability_shape" time="0.001" /><testcase classname="tests.test_write_three_baseline_development_report" name="test_graph_report_rejects_targets_hash_drift_before_summary" time="0.148"><failure message="AssertionError: summary ran before target hash verification">tmp_path = PosixPath('/tmp/pytest-of-ly/pytest-596/test_graph_report_rejects_targ0')
+monkeypatch = &lt;_pytest.monkeypatch.MonkeyPatch object at 0x7738cb8feb40&gt;
+
+    def test_graph_report_rejects_targets_hash_drift_before_summary(
+        tmp_path: Path,
+        monkeypatch: pytest.MonkeyPatch,
+    ) -&gt; None:
+        module = _script_module()
+        _prepare_graph_report(
+            module,
+            tmp_path,
+            monkeypatch,
+            drift_targets_sha256=True,
+        )
+        monkeypatch.setattr(
+            module,
+            "summarize_graph_quality_results",
+            lambda _rows: (_ for _ in ()).throw(
+                AssertionError("summary ran before target hash verification")
+            ),
+        )
+    
+        with pytest.raises(module.ReportInputError, match="target.*hash|inventory"):
+&gt;           module._verified_graph_quality_report(
+                overlay_run_id="gq-report-001",
+                native_run_id="nb-test",
+                suite_run_id="bs-test",
+            )
+
+tests/test_write_three_baseline_development_report.py:215: 
+_ _ _ _ _ _ _ _ _ _ _ _ _ _ _ _ _ _ _ _ _ _ _ _ _ _ _ _ _ _ _ _ _ _ _ _ _ _ _ _ 
+scripts/write_three_baseline_development_report.py:332: in _verified_graph_quality_report
+    if summarize_graph_quality_results(public_rows) != report.get("summary"):
+       ^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^
+tests/test_write_three_baseline_development_report.py:209: in &lt;lambda&gt;
+    lambda _rows: (_ for _ in ()).throw(
+_ _ _ _ _ _ _ _ _ _ _ _ _ _ _ _ _ _ _ _ _ _ _ _ _ _ _ _ _ _ _ _ _ _ _ _ _ _ _ _ 
+
+.0 = &lt;tuple_iterator object at 0x7738cb747ca0&gt;
+
+&gt;       lambda _rows: (_ for _ in ()).throw(
+            AssertionError("summary ran before target hash verification")
+        ),
+    )
+E   AssertionError: summary ran before target hash verification
+
+tests/test_write_three_baseline_development_report.py:209: AssertionError</failure></testcase><testcase classname="tests.test_write_three_baseline_development_report" name="test_complete_old_bundles_fail_before_summary[namespace]" time="0.147"><failure message="AssertionError: summary ran before bundle identity verification">tmp_path = PosixPath('/tmp/pytest-of-ly/pytest-596/test_complete_old_bundles_fail0')
+monkeypatch = &lt;_pytest.monkeypatch.MonkeyPatch object at 0x7738cb744a70&gt;
+drift = 'namespace'
+
+    @pytest.mark.parametrize(
+        "drift",
+        ["namespace", "construction", "runtime", "quality"],
+    )
+    def test_complete_old_bundles_fail_before_summary(
+        tmp_path: Path,
+        monkeypatch: pytest.MonkeyPatch,
+        drift: str,
+    ) -&gt; None:
+        module = _script_module()
+        _prepare_graph_report(module, tmp_path, monkeypatch, drift=drift)
+        monkeypatch.setattr(
+            module,
+            "summarize_graph_quality_results",
+            lambda _rows: (_ for _ in ()).throw(
+                AssertionError("summary ran before bundle identity verification")
+            ),
+        )
+    
+        with pytest.raises(module.ReportInputError, match="target.*identity"):
+&gt;           module._verified_graph_quality_report(
+                overlay_run_id="gq-report-001",
+                native_run_id="nb-test",
+                suite_run_id="bs-test",
+            )
+
+tests/test_write_three_baseline_development_report.py:242: 
+_ _ _ _ _ _ _ _ _ _ _ _ _ _ _ _ _ _ _ _ _ _ _ _ _ _ _ _ _ _ _ _ _ _ _ _ _ _ _ _ 
+scripts/write_three_baseline_development_report.py:332: in _verified_graph_quality_report
+    if summarize_graph_quality_results(public_rows) != report.get("summary"):
+       ^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^
+tests/test_write_three_baseline_development_report.py:236: in &lt;lambda&gt;
+    lambda _rows: (_ for _ in ()).throw(
+_ _ _ _ _ _ _ _ _ _ _ _ _ _ _ _ _ _ _ _ _ _ _ _ _ _ _ _ _ _ _ _ _ _ _ _ _ _ _ _ 
+
+.0 = &lt;tuple_iterator object at 0x7738cb747f40&gt;
+
+&gt;       lambda _rows: (_ for _ in ()).throw(
+            AssertionError("summary ran before bundle identity verification")
+        ),
+    )
+E   AssertionError: summary ran before bundle identity verification
+
+tests/test_write_three_baseline_development_report.py:236: AssertionError</failure></testcase><testcase classname="tests.test_write_three_baseline_development_report" name="test_complete_old_bundles_fail_before_summary[construction]" time="0.148"><failure message="AssertionError: summary ran before bundle identity verification">tmp_path = PosixPath('/tmp/pytest-of-ly/pytest-596/test_complete_old_bundles_fail1')
+monkeypatch = &lt;_pytest.monkeypatch.MonkeyPatch object at 0x7738cb745910&gt;
+drift = 'construction'
+
+    @pytest.mark.parametrize(
+        "drift",
+        ["namespace", "construction", "runtime", "quality"],
+    )
+    def test_complete_old_bundles_fail_before_summary(
+        tmp_path: Path,
+        monkeypatch: pytest.MonkeyPatch,
+        drift: str,
+    ) -&gt; None:
+        module = _script_module()
+        _prepare_graph_report(module, tmp_path, monkeypatch, drift=drift)
+        monkeypatch.setattr(
+            module,
+            "summarize_graph_quality_results",
+            lambda _rows: (_ for _ in ()).throw(
+                AssertionError("summary ran before bundle identity verification")
+            ),
+        )
+    
+        with pytest.raises(module.ReportInputError, match="target.*identity"):
+&gt;           module._verified_graph_quality_report(
+                overlay_run_id="gq-report-001",
+                native_run_id="nb-test",
+                suite_run_id="bs-test",
+            )
+
+tests/test_write_three_baseline_development_report.py:242: 
+_ _ _ _ _ _ _ _ _ _ _ _ _ _ _ _ _ _ _ _ _ _ _ _ _ _ _ _ _ _ _ _ _ _ _ _ _ _ _ _ 
+scripts/write_three_baseline_development_report.py:332: in _verified_graph_quality_report
+    if summarize_graph_quality_results(public_rows) != report.get("summary"):
+       ^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^
+tests/test_write_three_baseline_development_report.py:236: in &lt;lambda&gt;
+    lambda _rows: (_ for _ in ()).throw(
+_ _ _ _ _ _ _ _ _ _ _ _ _ _ _ _ _ _ _ _ _ _ _ _ _ _ _ _ _ _ _ _ _ _ _ _ _ _ _ _ 
+
+.0 = &lt;tuple_iterator object at 0x7738cc0d5d50&gt;
+
+&gt;       lambda _rows: (_ for _ in ()).throw(
+            AssertionError("summary ran before bundle identity verification")
+        ),
+    )
+E   AssertionError: summary ran before bundle identity verification
+
+tests/test_write_three_baseline_development_report.py:236: AssertionError</failure></testcase><testcase classname="tests.test_write_three_baseline_development_report" name="test_complete_old_bundles_fail_before_summary[runtime]" time="0.146"><failure message="AssertionError: summary ran before bundle identity verification">tmp_path = PosixPath('/tmp/pytest-of-ly/pytest-596/test_complete_old_bundles_fail2')
+monkeypatch = &lt;_pytest.monkeypatch.MonkeyPatch object at 0x7738cb74e8a0&gt;
+drift = 'runtime'
+
+    @pytest.mark.parametrize(
+        "drift",
+        ["namespace", "construction", "runtime", "quality"],
+    )
+    def test_complete_old_bundles_fail_before_summary(
+        tmp_path: Path,
+        monkeypatch: pytest.MonkeyPatch,
+        drift: str,
+    ) -&gt; None:
+        module = _script_module()
+        _prepare_graph_report(module, tmp_path, monkeypatch, drift=drift)
+        monkeypatch.setattr(
+            module,
+            "summarize_graph_quality_results",
+            lambda _rows: (_ for _ in ()).throw(
+                AssertionError("summary ran before bundle identity verification")
+            ),
+        )
+    
+        with pytest.raises(module.ReportInputError, match="target.*identity"):
+&gt;           module._verified_graph_quality_report(
+                overlay_run_id="gq-report-001",
+                native_run_id="nb-test",
+                suite_run_id="bs-test",
+            )
+
+tests/test_write_three_baseline_development_report.py:242: 
+_ _ _ _ _ _ _ _ _ _ _ _ _ _ _ _ _ _ _ _ _ _ _ _ _ _ _ _ _ _ _ _ _ _ _ _ _ _ _ _ 
+scripts/write_three_baseline_development_report.py:332: in _verified_graph_quality_report
+    if summarize_graph_quality_results(public_rows) != report.get("summary"):
+       ^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^
+tests/test_write_three_baseline_development_report.py:236: in &lt;lambda&gt;
+    lambda _rows: (_ for _ in ()).throw(
+_ _ _ _ _ _ _ _ _ _ _ _ _ _ _ _ _ _ _ _ _ _ _ _ _ _ _ _ _ _ _ _ _ _ _ _ _ _ _ _ 
+
+.0 = &lt;tuple_iterator object at 0x7738cb746aa0&gt;
+
+&gt;       lambda _rows: (_ for _ in ()).throw(
+            AssertionError("summary ran before bundle identity verification")
+        ),
+    )
+E   AssertionError: summary ran before bundle identity verification
+
+tests/test_write_three_baseline_development_report.py:236: AssertionError</failure></testcase><testcase classname="tests.test_write_three_baseline_development_report" name="test_complete_old_bundles_fail_before_summary[quality]" time="0.151"><failure message="AssertionError: summary ran before bundle identity verification">tmp_path = PosixPath('/tmp/pytest-of-ly/pytest-596/test_complete_old_bundles_fail3')
+monkeypatch = &lt;_pytest.monkeypatch.MonkeyPatch object at 0x7738cb745190&gt;
+drift = 'quality'
+
+    @pytest.mark.parametrize(
+        "drift",
+        ["namespace", "construction", "runtime", "quality"],
+    )
+    def test_complete_old_bundles_fail_before_summary(
+        tmp_path: Path,
+        monkeypatch: pytest.MonkeyPatch,
+        drift: str,
+    ) -&gt; None:
+        module = _script_module()
+        _prepare_graph_report(module, tmp_path, monkeypatch, drift=drift)
+        monkeypatch.setattr(
+            module,
+            "summarize_graph_quality_results",
+            lambda _rows: (_ for _ in ()).throw(
+                AssertionError("summary ran before bundle identity verification")
+            ),
+        )
+    
+        with pytest.raises(module.ReportInputError, match="target.*identity"):
+&gt;           module._verified_graph_quality_report(
+                overlay_run_id="gq-report-001",
+                native_run_id="nb-test",
+                suite_run_id="bs-test",
+            )
+
+tests/test_write_three_baseline_development_report.py:242: 
+_ _ _ _ _ _ _ _ _ _ _ _ _ _ _ _ _ _ _ _ _ _ _ _ _ _ _ _ _ _ _ _ _ _ _ _ _ _ _ _ 
+scripts/write_three_baseline_development_report.py:332: in _verified_graph_quality_report
+    if summarize_graph_quality_results(public_rows) != report.get("summary"):
+       ^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^
+tests/test_write_three_baseline_development_report.py:236: in &lt;lambda&gt;
+    lambda _rows: (_ for _ in ()).throw(
+_ _ _ _ _ _ _ _ _ _ _ _ _ _ _ _ _ _ _ _ _ _ _ _ _ _ _ _ _ _ _ _ _ _ _ _ _ _ _ _ 
+
+.0 = &lt;tuple_iterator object at 0x7738cb723e50&gt;
+
+&gt;       lambda _rows: (_ for _ in ()).throw(
+            AssertionError("summary ran before bundle identity verification")
+        ),
+    )
+E   AssertionError: summary ran before bundle identity verification
+
+tests/test_write_three_baseline_development_report.py:236: AssertionError</failure></testcase></testsuite></testsuites>

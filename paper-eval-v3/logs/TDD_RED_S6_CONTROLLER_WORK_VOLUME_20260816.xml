@@ -1,0 +1,179 @@
+<?xml version="1.0" encoding="utf-8"?><testsuites name="pytest tests"><testsuite name="pytest" errors="0" failures="1" skipped="0" tests="5" time="0.332" timestamp="2026-08-16T18:57:54.069000+08:00" hostname="aces-System-Product-Name"><testcase classname="tests.test_s6_block_controller" name="test_authority_is_consumed_before_runtime_and_success_is_checkpointed" time="0.033"><failure message="paper_eval.s6_block_controller.S6BlockControllerError: block_incomplete_non_mergeable:runtime_construction:builtins.TypeError">tmp_path = PosixPath('/tmp/pytest-of-ly/pytest-497/test_authority_is_consumed_bef0')
+
+    @pytest.mark.asyncio
+    async def test_authority_is_consumed_before_runtime_and_success_is_checkpointed(
+        tmp_path: Path,
+    ) -&gt; None:
+        paths, sources, _authority = _chain(tmp_path, cell_index=0)
+        calls: list[str] = []
+    
+        async def native_add_episode(_episode: object) -&gt; None:
+            calls.append("native")
+    
+        async def close() -&gt; None:
+            calls.append("close")
+    
+        def work_volume_snapshot() -&gt; dict[str, int | None]:
+            calls.append("snapshot")
+            return {
+                "llm_call_count": 3,
+                "llm_prompt_tokens": 300,
+                "llm_completion_tokens": 30,
+                "embedding_call_count": 2,
+                "embedding_input_count": 5,
+                "db_query_count": 7,
+                "db_transaction_count": None,
+                "db_write_count": 4,
+            }
+    
+        def runtime_factory(_cell: dict[str, object]) -&gt; S6BlockRuntime:
+            assert paths.consumption.is_file()
+            calls.append("runtime")
+            return S6BlockRuntime(
+                native_add_episode=native_add_episode,
+                work_volume_snapshot=work_volume_snapshot,
+                close=close,
+            )
+    
+&gt;       result = await execute_s6_block_controller(
+            paths=paths,
+            sources=sources,
+            runtime_factory=runtime_factory,
+            git_commit=GIT,
+            clock_ns=StepClock(),
+        )
+
+tests/test_s6_block_controller.py:211: 
+_ _ _ _ _ _ _ _ _ _ _ _ _ _ _ _ _ _ _ _ _ _ _ _ _ _ _ _ _ _ _ _ _ _ _ _ _ _ _ _ 
+
+paths = S6BlockControllerPaths(matrix_freeze=PosixPath('/tmp/pytest-of-ly/pytest-497/test_authority_is_consumed_bef0/S6_MATRIX...t_root=PosixPath('/tmp/pytest-of-ly/pytest-497/test_authority_is_consumed_bef0/runs/s6-07741c45-pstar-c1-001/attempt'))
+sources = (S5EpisodeRef(source_sequence=0, source_sha256='0000000000000000000000000000000000000000000000000000000000000001', nat...nce=2, source_sha256='0000000000000000000000000000000000000000000000000000000000000003', native_episode={'source': 2}))
+runtime_factory = &lt;function test_authority_is_consumed_before_runtime_and_success_is_checkpointed.&lt;locals&gt;.runtime_factory at 0x7ccd58c52fc0&gt;
+git_commit = 'aaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaa'
+clock_ns = &lt;test_s6_block_controller.StepClock object at 0x7ccd58c46000&gt;
+
+    async def execute_s6_block_controller(
+        *,
+        paths: S6BlockControllerPaths,
+        sources: Sequence[S5EpisodeRef] | Sequence[MStarSource],
+        runtime_factory: RuntimeFactory,
+        git_commit: str,
+        clock_ns: Callable[[], int],
+    ) -&gt; dict[str, object]:
+        """Consume once, then construct the runtime and execute exactly one cell."""
+    
+        if not callable(runtime_factory) or not callable(clock_ns):
+            raise _fail("controller_dependency_invalid")
+        authority, consumption, selected_sources, manifest = _preconsume(
+            paths=paths, sources=sources, git_commit=git_commit
+        )
+        payload = authority["payload"]
+        cell = payload["cell"]
+        method = str(cell["method"])
+        evidence = _ControllerEvidence(paths.controller_root, str(cell["run_id"]))
+        evidence.append(
+            "authority_consumed",
+            method=method,
+            cell_index=cell["cell_index"],
+            consumption_payload_sha256=consumption["payload_sha256"],
+        )
+        attempt = _AttemptEvidence(
+            paths.attempt_root,
+            cell=cell,
+            manifest=manifest,
+            execution_identity_sha256=str(payload["execution_identity_sha256"]),
+            consumption=consumption,
+            git_commit=git_commit,
+        )
+        stage = "runtime_construction"
+        runtime: S6BlockRuntime | None = None
+        runner_result: dict[str, object] | None = None
+        failure: BaseException | None = None
+        try:
+            runtime_value = await _await(runtime_factory(deepcopy(dict(cell))))
+            if not isinstance(runtime_value, S6BlockRuntime):
+                raise _fail("runtime_invalid")
+            runtime = runtime_value
+            evidence.append("runtime_constructed", method=method)
+            stage = "method_execution"
+            evidence.append("method_runner_started", method=method)
+            if method == "P*":
+                if not callable(runtime.native_add_episode):
+                    raise _fail("pstar_runtime_invalid")
+                runner_result = await run_s6_pstar(
+                    spec=S6PStarSpec(
+                        run_id=str(cell["run_id"]),
+                        configured_concurrency=int(cell["configured_concurrency"]),
+                        execution_identity_sha256=str(
+                            payload["execution_identity_sha256"]
+                        ),
+                    ),
+                    episodes=selected_sources,
+                    native_add_episode=runtime.native_add_episode,
+                    persist_event=attempt.persist,
+                    clock_ns=clock_ns,
+                )
+            else:
+                if (
+                    not callable(runtime.semantic_prepare)
+                    or not callable(runtime.latest_state_bind)
+                    or not isinstance(runtime.production_core_identity_sha256, str)
+                    or _SHA256.fullmatch(runtime.production_core_identity_sha256) is None
+                ):
+                    raise _fail("mstar_runtime_invalid")
+                runner_result = await run_s6_mstar(
+                    spec=S6MStarSpec(
+                        run_id=str(cell["run_id"]),
+                        configured_concurrency=int(cell["configured_concurrency"]),
+                        production_core_identity_sha256=(
+                            runtime.production_core_identity_sha256
+                        ),
+                        execution_identity_sha256=str(
+                            payload["execution_identity_sha256"]
+                        ),
+                    ),
+                    sources=selected_sources,
+                    semantic_prepare=runtime.semantic_prepare,
+                    latest_state_bind=runtime.latest_state_bind,
+                    persist_event=attempt.persist,
+                    clock_ns=clock_ns,
+                    recover_publication=runtime.recover_publication,
+                )
+            runner_artifact = attempt.finalize(
+                evidence=runner_result, cell=cell, git_commit=git_commit
+            )
+            evidence.append(
+                "method_runner_complete",
+                method=method,
+                runner_status=runner_result["status"],
+                runner_payload_sha256=runner_artifact["payload_sha256"],
+            )
+        except Exception as error:
+            failure = error
+        finally:
+            if runtime is not None and callable(runtime.close):
+                try:
+                    await _await(runtime.close())
+                    evidence.append("runtime_closed", method=method)
+                except Exception as error:
+                    if failure is None:
+                        failure = error
+                        stage = "runtime_close"
+    
+        if failure is not None:
+            checkpoint = evidence.checkpoint(
+                method=method,
+                cell_index=cell["cell_index"],
+                status="incomplete_non_mergeable",
+                failure_stage=stage,
+                error_class=_qualified_error_class(failure),
+                runner_status=None,
+                runner_result_payload_sha256=None,
+                completed_source_count=attempt.completed_source_count,
+            )
+&gt;           raise _fail(
+                f"block_incomplete_non_mergeable:{stage}:{checkpoint['error_class']}"
+            ) from None
+E           paper_eval.s6_block_controller.S6BlockControllerError: block_incomplete_non_mergeable:runtime_construction:builtins.TypeError
+
+src/paper_eval/s6_block_controller.py:462: S6BlockControllerError</failure></testcase><testcase classname="tests.test_s6_block_controller" name="test_source_manifest_drift_fails_before_consumption_or_runtime" time="0.014" /><testcase classname="tests.test_s6_block_controller" name="test_provider_disconnect_marks_only_active_block_incomplete" time="0.059" /><testcase classname="tests.test_s6_block_controller" name="test_explicit_pstar_treatment_failure_is_complete_scientific_evidence" time="0.069" /><testcase classname="tests.test_s6_block_controller" name="test_mstar_c1_uses_same_consumed_controller_lifecycle" time="0.114" /></testsuite></testsuites>

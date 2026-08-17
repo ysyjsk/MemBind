@@ -1,0 +1,82 @@
+<?xml version="1.0" encoding="utf-8"?><testsuites name="pytest tests"><testsuite name="pytest" errors="0" failures="1" skipped="0" tests="3" time="1.697" timestamp="2026-08-17T12:20:51.116058+08:00" hostname="aces-System-Product-Name"><testcase classname="tests.test_membind_v1_runner" name="test_runner_overlaps_one_next_compile_with_current_bind_and_publishes_in_order" time="1.147" /><testcase classname="tests.test_membind_v1_runner" name="test_runner_resumes_verified_prepared_prefix_without_repreparing_it" time="0.390"><failure message="paper_eval.membind_v1.store.MemBindV1StoreError: invalid_state_transition">tmp_path = PosixPath('/tmp/pytest-of-ly/pytest-660/test_runner_resumes_verified_p0')
+
+    def test_runner_resumes_verified_prepared_prefix_without_repreparing_it(tmp_path) -&gt; None:
+        """A recovery binds durable artifacts and prepares only the missing suffix."""
+    
+        compile_inputs, log = _inputs()
+        root = tmp_path / "attempt"
+        initial_store = MemBindV1AttemptStore.create(
+            root,
+            run_id="mv1-runner-test-003",
+            namespace="pev3-mv1-runner-test-003-u0-runner-a001",
+            source_sha256s=tuple(record.source_sha256 for record in log.records),
+            source_manifest_sha256=log.inventory_sha256,
+            execution_identity_sha256="a" * 64,
+        )
+        # Simulate a process failure after two artifact writes but before the first
+        # bind.  `open_existing` verifies the on-disk manifest, event log, and
+        # each artifact before handing the attempt to the runner.
+        for sequence in (0, 1):
+            initial_store.record_intent(sequence)
+            initial_store.record_prepare_started(sequence)
+            initial_store.persist_prepared(_artifact(compile_inputs[sequence]))
+    
+        store = MemBindV1AttemptStore.open_existing(root)
+        adapter = _FakeAdapter([], [])
+    
+&gt;       result = asyncio.run(
+            run_membind_v1(
+                compile_inputs=compile_inputs,
+                logical_time_ns=(1_700_000_000_000_000_000,) * len(compile_inputs),
+                arrival_time_ns=(0, 0, 0),
+                adapter=adapter,
+                store=store,
+            )
+        )
+
+tests/test_membind_v1_runner.py:143: 
+_ _ _ _ _ _ _ _ _ _ _ _ _ _ _ _ _ _ _ _ _ _ _ _ _ _ _ _ _ _ _ _ _ _ _ _ _ _ _ _ 
+/usr/lib/python3.12/asyncio/runners.py:194: in run
+    return runner.run(main)
+           ^^^^^^^^^^^^^^^^
+/usr/lib/python3.12/asyncio/runners.py:118: in run
+    return self._loop.run_until_complete(task)
+           ^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^
+/usr/lib/python3.12/asyncio/base_events.py:687: in run_until_complete
+    return future.result()
+           ^^^^^^^^^^^^^^^
+src/paper_eval/membind_v1/runner.py:182: in run_membind_v1
+    current = await prepare(0)
+              ^^^^^^^^^^^^^^^^
+src/paper_eval/membind_v1/runner.py:159: in prepare
+    store.record_intent(sequence)
+src/paper_eval/membind_v1/store.py:491: in record_intent
+    self._append_transition(source_sequence, "INTENT_DURABLE")
+_ _ _ _ _ _ _ _ _ _ _ _ _ _ _ _ _ _ _ _ _ _ _ _ _ _ _ _ _ _ _ _ _ _ _ _ _ _ _ _ 
+
+self = &lt;paper_eval.membind_v1.store.MemBindV1AttemptStore object at 0x74693248e660&gt;
+source_sequence = 0, state = 'INTENT_DURABLE'
+
+    def _append_transition(self, source_sequence: int, state: str) -&gt; None:
+        if state not in _STATES:
+            raise _fail("event_state_invalid")
+        source = _nonnegative_int(source_sequence, "source_sequence_invalid")
+        source_hashes = list(self.manifest["source_sha256s"])
+        if source &gt;= len(source_hashes):
+            raise _fail("source_sequence_out_of_range")
+        callbacks = {
+            "INTENT_DURABLE": self._frontier.record_intent,
+            "PREPARE_RUNNING": self._frontier.record_prepare_started,
+            "PREPARED_DURABLE": self._frontier.record_prepared,
+            "BIND_RUNNING": self._frontier.record_bind_started,
+            "COMMIT_RETURNED": self._frontier.record_commit_returned,
+            "PUBLICATION_DURABLE": self._frontier.record_publication_durable,
+            "AMBIGUOUS_COMMIT_POISONED": self._frontier.poison_ambiguous_commit,
+        }
+        try:
+            callbacks[state](source)
+        except MemBindV1FrontierError as error:
+&gt;           raise _fail(str(error)) from None
+E           paper_eval.membind_v1.store.MemBindV1StoreError: invalid_state_transition
+
+src/paper_eval/membind_v1/store.py:468: MemBindV1StoreError</failure></testcase><testcase classname="tests.test_membind_v1_runner" name="test_runner_rejects_noncontiguous_compile_inputs_before_mutating_store" time="0.096" /></testsuite></testsuites>

@@ -1,0 +1,47 @@
+<?xml version="1.0" encoding="utf-8"?><testsuites name="pytest tests"><testsuite name="pytest" errors="0" failures="3" skipped="0" tests="5" time="0.031" timestamp="2026-08-17T02:23:01.270171+08:00" hostname="aces-System-Product-Name"><testcase classname="tests.test_final_methodology_document" name="test_methodology_is_bound_to_the_sealed_development_evidence" time="0.000"><failure message="AssertionError: sealed three-baseline development report is required&#10;assert False&#10; +  where False = is_file()&#10; +    where is_file = PosixPath('/data/predator/ly/MemBind/paper-eval-v3/artifacts/paper_eval/development_report/runs/report-dev-20260817-001/REPORT.json').is_file">def test_methodology_is_bound_to_the_sealed_development_evidence() -&gt; None:
+&gt;       report = _load_report()
+                 ^^^^^^^^^^^^^^
+
+tests/test_final_methodology_document.py:39: 
+_ _ _ _ _ _ _ _ _ _ _ _ _ _ _ _ _ _ _ _ _ _ _ _ _ _ _ _ _ _ _ _ _ _ _ _ _ _ _ _ 
+
+    def _load_report() -&gt; dict[str, object]:
+&gt;       assert REPORT.is_file(), "sealed three-baseline development report is required"
+E       AssertionError: sealed three-baseline development report is required
+E       assert False
+E        +  where False = is_file()
+E        +    where is_file = PosixPath('/data/predator/ly/MemBind/paper-eval-v3/artifacts/paper_eval/development_report/runs/report-dev-20260817-001/REPORT.json').is_file
+
+tests/test_final_methodology_document.py:24: AssertionError</failure></testcase><testcase classname="tests.test_final_methodology_document" name="test_methodology_cites_the_actual_three_method_measurements" time="0.000"><failure message="AssertionError: sealed three-baseline development report is required&#10;assert False&#10; +  where False = is_file()&#10; +    where is_file = PosixPath('/data/predator/ly/MemBind/paper-eval-v3/artifacts/paper_eval/development_report/runs/report-dev-20260817-001/REPORT.json').is_file">def test_methodology_cites_the_actual_three_method_measurements() -&gt; None:
+&gt;       report = _load_report()
+                 ^^^^^^^^^^^^^^
+
+tests/test_final_methodology_document.py:60: 
+_ _ _ _ _ _ _ _ _ _ _ _ _ _ _ _ _ _ _ _ _ _ _ _ _ _ _ _ _ _ _ _ _ _ _ _ _ _ _ _ 
+
+    def _load_report() -&gt; dict[str, object]:
+&gt;       assert REPORT.is_file(), "sealed three-baseline development report is required"
+E       AssertionError: sealed three-baseline development report is required
+E       assert False
+E        +  where False = is_file()
+E        +    where is_file = PosixPath('/data/predator/ly/MemBind/paper-eval-v3/artifacts/paper_eval/development_report/runs/report-dev-20260817-001/REPORT.json').is_file
+
+tests/test_final_methodology_document.py:24: AssertionError</failure></testcase><testcase classname="tests.test_final_methodology_document" name="test_methodology_does_not_promote_a_screening_result_to_a_proof" time="0.000"><failure message="AssertionError: assert '不把未测量的 direct violations 解释为 0' in '# MemBind 主 Methodology 设计：Evidence-Bounded Semantic Late Binding\n\n&gt; Status: `EVIDENCE_PENDING`  \n&gt; Revision date:...值、\ngraph-quality denominator、实际 decision-matrix cell，并使\n`tests/test_final_methodology_document.py` 从 RED 转为 GREEN。\n'">def test_methodology_does_not_promote_a_screening_result_to_a_proof() -&gt; None:
+        text = _document()
+    
+        for forbidden in (
+            "当前最终 methodology 冻结为",
+            "最终方法已经冻结为",
+            "188-episode characterization 已经足以支持完整 MemBind-v1",
+            "61.28% arrival-ready",
+            "数据库级 atomic publication 已证明",
+        ):
+            assert forbidden not in text
+    
+        assert "一次 development screening 不能证明" in text
+        assert "capture/replay" in text
+        assert "canonical projection" in text
+&gt;       assert "不把未测量的 direct violations 解释为 0" in text
+E       AssertionError: assert '不把未测量的 direct violations 解释为 0' in '# MemBind 主 Methodology 设计：Evidence-Bounded Semantic Late Binding\n\n&gt; Status: `EVIDENCE_PENDING`  \n&gt; Revision date:...值、\ngraph-quality denominator、实际 decision-matrix cell，并使\n`tests/test_final_methodology_document.py` 从 RED 转为 GREEN。\n'
+
+tests/test_final_methodology_document.py:95: AssertionError</failure></testcase><testcase classname="tests.test_final_methodology_document" name="test_methodology_freezes_only_the_minimum_candidate_and_gates_edge_motion" time="0.000" /><testcase classname="tests.test_final_methodology_document" name="test_methodology_has_falsification_tdd_and_publication_boundaries" time="0.000" /></testsuite></testsuites>

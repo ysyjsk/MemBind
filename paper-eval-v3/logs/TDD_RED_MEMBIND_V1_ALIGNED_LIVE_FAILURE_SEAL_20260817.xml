@@ -1,0 +1,57 @@
+<?xml version="1.0" encoding="utf-8"?><testsuites name="pytest tests"><testsuite name="pytest" errors="0" failures="1" skipped="0" tests="5" time="0.541" timestamp="2026-08-17T13:20:51.010400+08:00" hostname="aces-System-Product-Name"><testcase classname="tests.test_membind_v1_aligned_live" name="test_aligned_u0_creates_only_a_fresh_block_and_keeps_source_record_identity_internal" time="0.092" /><testcase classname="tests.test_membind_v1_aligned_live" name="test_aligned_p_c2_uses_the_same_frozen_arrival_trace_and_durable_lifecycle" time="0.089" /><testcase classname="tests.test_membind_v1_aligned_live" name="test_aligned_membind_creates_a_separate_durable_attempt_and_shared_public_lifecycle" time="0.222" /><testcase classname="tests.test_membind_v1_aligned_live" name="test_live_composition_rejects_envelope_or_fresh_namespace_drift_before_creating_artifacts" time="0.002" /><testcase classname="tests.test_membind_v1_aligned_live" name="test_live_u0_failure_is_durably_sealed_non_mergeable_without_retrying_the_namespace" time="0.071"><failure message="RuntimeError: fake native failure">tmp_path = PosixPath('/tmp/pytest-of-ly/pytest-679/test_live_u0_failure_is_durabl0')
+
+    @pytest.mark.asyncio
+    async def test_live_u0_failure_is_durably_sealed_non_mergeable_without_retrying_the_namespace(
+        tmp_path: Path,
+    ) -&gt; None:
+        plan = _plan()
+        state = _State(envelope="d" * 64)
+        state.fail_native_sequence = 0
+    
+        with pytest.raises(AlignedLiveBlockError, match="execution failed"):
+&gt;           await execute_aligned_live_block(
+                verified_plan=plan,
+                block_index=0,
+                episodes=_episodes(plan, history_id="07741c45"),
+                env={"public": "test"},
+                block_root=tmp_path / "failed-u0",
+                execution_identity_sha256="e" * 64,
+                hooks=_hooks(state, identity=_identity()),
+            )
+
+tests/test_membind_v1_aligned_live.py:332: 
+_ _ _ _ _ _ _ _ _ _ _ _ _ _ _ _ _ _ _ _ _ _ _ _ _ _ _ _ _ _ _ _ _ _ _ _ _ _ _ _ 
+src/paper_eval/membind_v1/aligned_live.py:448: in execute_aligned_live_block
+    schedule = await _run_native_row(
+src/paper_eval/membind_v1/aligned_live.py:288: in _run_native_row
+    return await run_aligned_baseline(
+src/paper_eval/membind_v1/aligned_schedule.py:304: in run_aligned_baseline
+    result = await _run_u0(
+src/paper_eval/membind_v1/aligned_schedule.py:172: in _run_u0
+    await _call_native(native_add_episode, episode)
+src/paper_eval/membind_v1/aligned_schedule.py:136: in _call_native
+    await value
+src/paper_eval/membind_v1/aligned_live.py:275: in native_add
+    return await _await(
+src/paper_eval/membind_v1/aligned_live.py:84: in _await
+    return await value
+           ^^^^^^^^^^^
+_ _ _ _ _ _ _ _ _ _ _ _ _ _ _ _ _ _ _ _ _ _ _ _ _ _ _ _ _ _ _ _ _ _ _ _ _ _ _ _ 
+
+episode = _Episode(source_sequence=0, source_hash='0000000000000000000000000000000100000000000000000000000000000001', reference_time='2026-01-01T00:00:00+00:00', body='private episode 0', group_id='pev3-aligned-live-test-001-u0-07741c45-a001')
+source = SourceRecord(source_sequence=0, episode_uuid='396f97c8-a3da-5d73-a36b-74d7aaeaaa96', group_id='pev3-aligned-live-test-...":"LongMemEval-S haystack session"}', source_sha256='eb8ab6a361addaaa3aa15718da574af9c8f2615f52aadd2d3026f0b3b213e2cf')
+
+    async def native_add_episode(
+        runtime: _Runtime, episode: _Episode, source: object
+    ) -&gt; None:
+        del runtime
+        assert episode.group_id
+        assert episode.group_id == getattr(source, "group_id")
+        state.native_calls.append(
+            (episode.source_sequence, episode.group_id, str(getattr(source, "episode_uuid")))
+        )
+        if state.fail_native_sequence == episode.source_sequence:
+&gt;           raise RuntimeError("fake native failure")
+E           RuntimeError: fake native failure
+
+tests/test_membind_v1_aligned_live.py:145: RuntimeError</failure></testcase></testsuite></testsuites>

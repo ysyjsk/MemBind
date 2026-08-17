@@ -1,0 +1,70 @@
+{
+  "history_id": "a2f3aa27",
+  "payload_sha256": "f48a5dbbbf6168ebefa085cef87bc99fbdfbf8fecc64bc48249026cb37cfeaa4",
+  "quality": {
+    "counters": {
+      "graphiti_search_calls": 1,
+      "judge_requests": 1,
+      "neo4j_read_requests": 2,
+      "reader_requests": 1
+    },
+    "history_id": "a2f3aa27",
+    "judge": {
+      "config_sha256": "97fc7c64f9ce991383e68269054254dcd36790dc493d9795418f58b763d27d6d",
+      "error_class": null,
+      "label": false,
+      "model": "qwen3-32b-fp8",
+      "output_byte_count": 2,
+      "output_character_count": 2,
+      "output_sha256": "9390298f3fb0c5b160498935d79cb139aef28e1c47358b4bbba61862b9c26e59",
+      "parse_status": "NO",
+      "prompt_sha256": "77c1bd07f435675954cadc7bcc27afef798c8d7cfea5cdfa37b3481dbc6d867a",
+      "retry_count": 0,
+      "status": "SUCCESS"
+    },
+    "latency_ns": {
+      "judge": 72862014,
+      "quality_total": 6664482438,
+      "reader": 6584624742,
+      "retrieval": 6995682
+    },
+    "qa_accuracy": 0.0,
+    "reader": {
+      "completion_tokens": 273,
+      "config_sha256": "f1f1d2dec62390b4240566d4e4ebaf916f73aba8560ba0a45df2dcd050608ce9",
+      "model": "qwen3-32b-fp8",
+      "output_byte_count": 1095,
+      "output_character_count": 1095,
+      "output_sha256": "40af6c13217b2dd29dcbb22c4755aadfd476f9f1df91f96e1640db9317ea3466",
+      "prompt_byte_count": 17993,
+      "prompt_character_count": 17993,
+      "prompt_sha256": "d21aa802e6d1ce9ecda3c42db560365470806ad8840b139862b887d9e3b26fd3",
+      "prompt_tokens": 4384,
+      "status": "SUCCESS",
+      "truncation_count": 0
+    },
+    "retrieval": {
+      "evidence_recall_at_10": 1.0,
+      "gold_ranks": [
+        1,
+        2
+      ],
+      "retrieved_count": 10,
+      "retrieved_session_ids_sha256": "6089c441e73f56209162e85418815e77381ec971d2e3a531a9b31adf0d13cee4"
+    },
+    "status": "SUCCESS"
+  },
+  "quality_identity": {
+    "baseline_id": "native-graphiti-u0-reader-v3-useronly",
+    "judge_config_sha256": "bfdef9ccfc25938153473056962e4f91d3a7924e56b6a6f7672dcbdc6877acdd",
+    "parent_baseline_id": "native-graphiti-u0-reader-v2",
+    "parent_reader_config_sha256": "35cda64f27664f1901b2bf129cc95b5d77e8c51cac90abfbbe1c4118dd92737b",
+    "reader_config_sha256": "f1f1d2dec62390b4240566d4e4ebaf916f73aba8560ba0a45df2dcd050608ce9",
+    "selection_basis": "LongMemEval_ICLR2025_section_5.1_session_values_keep_user_utterances",
+    "useronly": true
+  },
+  "schema_version": "membind.paper-eval-v3.u0-quality-useronly.v1",
+  "source_history_result_payload_sha256": "3286411c829c1ad3bef10c5d41ab46ee189d12e8307ea46379fdd5ce98ce392a",
+  "source_run_id": "nb-20260816-001",
+  "status": "PASS"
+}

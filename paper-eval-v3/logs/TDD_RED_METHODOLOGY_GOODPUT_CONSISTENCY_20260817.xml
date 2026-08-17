@@ -1,0 +1,26 @@
+<?xml version="1.0" encoding="utf-8"?><testsuites name="pytest tests"><testsuite name="pytest" errors="0" failures="1" skipped="0" tests="8" time="0.386" timestamp="2026-08-17T02:54:02.808197+08:00" hostname="aces-System-Product-Name"><testcase classname="tests.test_methodology_decision" name="test_capacity_plus_counterexample_selects_only_a_bounded_candidate" time="0.001" /><testcase classname="tests.test_methodology_decision" name="test_no_capacity_signal_stops_even_when_c5_has_a_counterexample" time="0.001" /><testcase classname="tests.test_methodology_decision" name="test_capacity_direction_uses_aggregate_not_an_arbitrary_win_threshold" time="0.001" /><testcase classname="tests.test_methodology_decision" name="test_capacity_without_counterexample_requires_reassessment_not_a_method" time="0.000" /><testcase classname="tests.test_methodology_decision" name="test_invalid_judge_denominator_blocks_the_methodology_decision" time="0.001" /><testcase classname="tests.test_methodology_decision" name="test_tampered_report_or_c5_is_rejected" time="0.001"><failure message="Failed: DID NOT RAISE MethodologyDecisionError">def test_tampered_report_or_c5_is_rejected() -&gt; None:
+        report = _report()
+        report["methods"]["P(C=2)"]["makespan_ns"] = 1
+        with pytest.raises(MethodologyDecisionError, match="report payload"):
+            _decision(report=report)
+    
+        c5 = _c5()
+        c5["overall_interpretation"] = "NO_NAIVE_PARALLEL_INSUFFICIENCY_OBSERVED"
+        with pytest.raises(MethodologyDecisionError, match="C5 payload"):
+            _decision(c5=c5)
+    
+        inconsistent = _report()
+        inconsistent["methods"]["P(C=2)"][
+            "successful_goodput_episodes_per_second"
+        ] = 999.0
+        inconsistent["payload_sha256"] = payload_sha256(
+            {
+                key: value
+                for key, value in inconsistent.items()
+                if key != "payload_sha256"
+            }
+        )
+&gt;       with pytest.raises(MethodologyDecisionError, match="goodput/makespan"):
+E       Failed: DID NOT RAISE MethodologyDecisionError
+
+tests/test_methodology_decision.py:268: Failed</failure></testcase><testcase classname="tests.test_methodology_decision" name="test_history_identity_or_parallel_execution_drift_is_rejected" time="0.001" /><testcase classname="tests.test_methodology_decision" name="test_file_backed_finalizer_is_idempotent_and_rejects_output_drift" time="0.290" /></testsuite></testsuites>

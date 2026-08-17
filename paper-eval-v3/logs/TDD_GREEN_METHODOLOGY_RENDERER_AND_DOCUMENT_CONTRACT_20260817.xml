@@ -1,0 +1,43 @@
+<?xml version="1.0" encoding="utf-8"?><testsuites name="pytest tests"><testsuite name="pytest" errors="0" failures="3" skipped="0" tests="13" time="0.176" timestamp="2026-08-17T03:23:03.518894+08:00" hostname="aces-System-Product-Name"><testcase classname="tests.test_methodology_document" name="test_renderer_binds_exact_rows_hashes_states_and_artifact_index" time="0.001" /><testcase classname="tests.test_methodology_document" name="test_renderer_is_byte_idempotent_for_the_same_sealed_inputs" time="0.001" /><testcase classname="tests.test_methodology_document" name="test_renderer_rejects_report_or_decision_seal_drift" time="0.001" /><testcase classname="tests.test_methodology_document" name="test_renderer_rejects_cross_artifact_identity_drift" time="0.000" /><testcase classname="tests.test_methodology_document" name="test_renderer_rejects_pending_template_or_finalized_document_drift" time="0.001" /><testcase classname="tests.test_methodology_document" name="test_renderer_rejects_a_finalized_document_bound_to_other_evidence" time="0.001" /><testcase classname="tests.test_methodology_document" name="test_cli_is_idempotent_and_refuses_to_overwrite_drift" time="0.098" /><testcase classname="tests.test_final_methodology_document" name="test_methodology_is_bound_to_the_sealed_development_evidence" time="0.000"><failure message="AssertionError: sealed three-baseline development report is required&#10;assert False&#10; +  where False = is_file()&#10; +    where is_file = PosixPath('/data/predator/ly/MemBind/paper-eval-v3/artifacts/paper_eval/development_report/runs/report-dev-20260817-001/REPORT.json').is_file">def test_methodology_is_bound_to_the_sealed_development_evidence() -&gt; None:
+&gt;       report = _load_report()
+                 ^^^^^^^^^^^^^^
+
+tests/test_final_methodology_document.py:83: 
+_ _ _ _ _ _ _ _ _ _ _ _ _ _ _ _ _ _ _ _ _ _ _ _ _ _ _ _ _ _ _ _ _ _ _ _ _ _ _ _ 
+
+    def _load_report() -&gt; dict[str, object]:
+&gt;       assert REPORT.is_file(), "sealed three-baseline development report is required"
+E       AssertionError: sealed three-baseline development report is required
+E       assert False
+E        +  where False = is_file()
+E        +    where is_file = PosixPath('/data/predator/ly/MemBind/paper-eval-v3/artifacts/paper_eval/development_report/runs/report-dev-20260817-001/REPORT.json').is_file
+
+tests/test_final_methodology_document.py:31: AssertionError</failure></testcase><testcase classname="tests.test_final_methodology_document" name="test_methodology_cites_the_actual_three_method_measurements" time="0.000"><failure message="AssertionError: sealed three-baseline development report is required&#10;assert False&#10; +  where False = is_file()&#10; +    where is_file = PosixPath('/data/predator/ly/MemBind/paper-eval-v3/artifacts/paper_eval/development_report/runs/report-dev-20260817-001/REPORT.json').is_file">def test_methodology_cites_the_actual_three_method_measurements() -&gt; None:
+&gt;       report = _load_report()
+                 ^^^^^^^^^^^^^^
+
+tests/test_final_methodology_document.py:120: 
+_ _ _ _ _ _ _ _ _ _ _ _ _ _ _ _ _ _ _ _ _ _ _ _ _ _ _ _ _ _ _ _ _ _ _ _ _ _ _ _ 
+
+    def _load_report() -&gt; dict[str, object]:
+&gt;       assert REPORT.is_file(), "sealed three-baseline development report is required"
+E       AssertionError: sealed three-baseline development report is required
+E       assert False
+E        +  where False = is_file()
+E        +    where is_file = PosixPath('/data/predator/ly/MemBind/paper-eval-v3/artifacts/paper_eval/development_report/runs/report-dev-20260817-001/REPORT.json').is_file
+
+tests/test_final_methodology_document.py:31: AssertionError</failure></testcase><testcase classname="tests.test_final_methodology_document" name="test_methodology_has_no_unresolved_placeholders_after_report" time="0.000"><failure message="AssertionError: sealed three-baseline development report is required&#10;assert False&#10; +  where False = is_file()&#10; +    where is_file = PosixPath('/data/predator/ly/MemBind/paper-eval-v3/artifacts/paper_eval/development_report/runs/report-dev-20260817-001/REPORT.json').is_file">def test_methodology_has_no_unresolved_placeholders_after_report() -&gt; None:
+&gt;       report = _load_report()
+                 ^^^^^^^^^^^^^^
+
+tests/test_final_methodology_document.py:178: 
+_ _ _ _ _ _ _ _ _ _ _ _ _ _ _ _ _ _ _ _ _ _ _ _ _ _ _ _ _ _ _ _ _ _ _ _ _ _ _ _ 
+
+    def _load_report() -&gt; dict[str, object]:
+&gt;       assert REPORT.is_file(), "sealed three-baseline development report is required"
+E       AssertionError: sealed three-baseline development report is required
+E       assert False
+E        +  where False = is_file()
+E        +    where is_file = PosixPath('/data/predator/ly/MemBind/paper-eval-v3/artifacts/paper_eval/development_report/runs/report-dev-20260817-001/REPORT.json').is_file
+
+tests/test_final_methodology_document.py:31: AssertionError</failure></testcase><testcase classname="tests.test_final_methodology_document" name="test_methodology_does_not_promote_a_screening_result_to_a_proof" time="0.000" /><testcase classname="tests.test_final_methodology_document" name="test_methodology_freezes_only_the_minimum_candidate_and_gates_edge_motion" time="0.000" /><testcase classname="tests.test_final_methodology_document" name="test_methodology_has_falsification_tdd_and_publication_boundaries" time="0.000" /></testsuite></testsuites>

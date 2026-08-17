@@ -130,12 +130,21 @@ def common_method_reader_bindings(config_sha256: str) -> dict[str, str]:
 class OfficialConSessionReader:
     """Issue one pinned CoN-style answer request with no retry or note calls."""
 
-    def __init__(self, *, model: str, transport: ReaderV2Transport) -> None:
+    def __init__(
+        self,
+        *,
+        model: str,
+        transport: ReaderV2Transport,
+        useronly: bool = False,
+    ) -> None:
         if not isinstance(model, str) or not model:
             raise ReaderV2Error("Reader-v2 model is invalid")
+        if type(useronly) is not bool:
+            raise ReaderV2Error("Reader-v2 useronly policy is invalid")
         method = resolve_official_reading_method("con")
         self.model = model
         self._transport = transport
+        self.useronly = useronly
         self.public_config = {
             "implementation": "longmemeval_official_con_session_reader_v2",
             "upstream_repository": LONGMEMEVAL_READER_V2_REPOSITORY,
@@ -152,7 +161,7 @@ class OfficialConSessionReader:
             "retriever_type": "flat-session",
             "topk_context": 10,
             "history_format": "json",
-            "useronly": False,
+            "useronly": useronly,
             **method,
             "merge_key_expansion_into_value": "none",
             "session_value_source": "frozen_dataset_haystack_sessions",
@@ -171,7 +180,53 @@ class OfficialConSessionReader:
             "retry_delays_seconds": [],
             "model": model,
         }
+        if useronly:
+            self.public_config["useronly_basis"] = (
+                "LongMemEval_ICLR2025_section_5.1_"
+                "session_values_keep_user_utterances"
+            )
         self.config_sha256 = payload_sha256(self.public_config)
+
+    def common_method_bindings(self) -> dict[str, str]:
+        """Bind the active evaluation overlay to the three compared baselines."""
+
+        return {
+            method: self.config_sha256
+            for method in ("U0", "A0", "P(C=2)")
+        }
+
+    def _project_sessions(
+        self,
+        sessions: Sequence[MaterializedSession],
+        *,
+        question_date: str,
+        question: str,
+    ) -> tuple[MaterializedSession, ...]:
+        if not self.useronly:
+            return tuple(sessions)
+        selected = _validate_prompt_inputs(
+            sessions,
+            question_date=question_date,
+            question=question,
+        )
+        projected: list[MaterializedSession] = []
+        for session in selected:
+            user_turns = tuple(
+                turn for turn in session.turns if turn.get("role") == "user"
+            )
+            if not user_turns:
+                raise ReaderV2Error(
+                    "Reader-v2 useronly session has no user turn"
+                )
+            projected.append(
+                MaterializedSession(
+                    session_id=session.session_id,
+                    session_date=session.session_date,
+                    turns=user_turns,
+                    retrieval_rank=session.retrieval_rank,
+                )
+            )
+        return tuple(projected)
 
     async def answer(
         self,
@@ -181,7 +236,11 @@ class OfficialConSessionReader:
         question: str,
     ) -> SessionReaderResult:
         prompt = render_official_con_session_prompt(
-            sessions,
+            self._project_sessions(
+                sessions,
+                question_date=question_date,
+                question=question,
+            ),
             question_date=question_date,
             question=question,
         )

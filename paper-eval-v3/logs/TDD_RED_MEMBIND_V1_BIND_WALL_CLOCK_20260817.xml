@@ -1,0 +1,37 @@
+<?xml version="1.0" encoding="utf-8"?><testsuites name="pytest tests"><testsuite name="pytest" errors="0" failures="1" skipped="0" tests="6" time="0.940" timestamp="2026-08-17T13:00:25.103488+08:00" hostname="aces-System-Product-Name"><testcase classname="tests.test_membind_v1_runner" name="test_runner_overlaps_one_next_compile_with_current_bind_and_publishes_in_order" time="0.229" /><testcase classname="tests.test_membind_v1_runner" name="test_runner_resumes_verified_prepared_prefix_without_repreparing_it" time="0.235" /><testcase classname="tests.test_membind_v1_runner" name="test_runner_rejects_noncontiguous_compile_inputs_before_mutating_store" time="0.019" /><testcase classname="tests.test_membind_v1_runner" name="test_runner_emits_aligned_durable_lifecycle_events_without_exposing_artifact_content" time="0.168" /><testcase classname="tests.test_membind_v1_runner" name="test_live_runner_samples_native_equivalent_wall_clock_at_each_bind" time="0.016"><failure message="TypeError: run_membind_v1() got an unexpected keyword argument 'logical_clock_ns'">tmp_path = PosixPath('/tmp/pytest-of-ly/pytest-672/test_live_runner_samples_nativ0')
+
+    def test_live_runner_samples_native_equivalent_wall_clock_at_each_bind(tmp_path) -&gt; None:
+        compile_inputs, log = _inputs(2)
+        store = MemBindV1AttemptStore.create(
+            tmp_path / "attempt",
+            run_id="mv1-runner-test-wall-clock",
+            namespace="pev3-mv1-runner-wall-clock-a001",
+            source_sha256s=tuple(record.source_sha256 for record in log.records),
+            source_manifest_sha256=log.inventory_sha256,
+            execution_identity_sha256="a" * 64,
+        )
+        observed: list[int] = []
+    
+        class CapturingAdapter(_FakeAdapter):
+            async def bind(self, compile_input, artifact, *, logical_time_ns: int):
+                observed.append(logical_time_ns)
+                return await super().bind(
+                    compile_input,
+                    artifact,
+                    logical_time_ns=logical_time_ns,
+                )
+    
+        wall_times = iter((1_700_000_000_000_000_101, 1_700_000_000_000_000_202))
+        asyncio.run(
+&gt;           run_membind_v1(
+                compile_inputs=compile_inputs,
+                logical_time_ns=None,
+                logical_clock_ns=lambda: next(wall_times),
+                arrival_time_ns=(0, 0),
+                adapter=CapturingAdapter([], []),
+                store=store,
+            )
+        )
+E       TypeError: run_membind_v1() got an unexpected keyword argument 'logical_clock_ns'
+
+tests/test_membind_v1_runner.py:256: TypeError</failure></testcase><testcase classname="tests.test_membind_v1_runner" name="test_runner_resume_does_not_repeat_arrival_or_enqueue_for_prepared_sources" time="0.219" /></testsuite></testsuites>

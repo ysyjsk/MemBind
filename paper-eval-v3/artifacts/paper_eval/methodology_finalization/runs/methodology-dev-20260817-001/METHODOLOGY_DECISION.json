@@ -1,0 +1,61 @@
+{
+  "actual_decision_matrix_cell": "BLOCKED_QUALITY_PROTOCOL",
+  "classification_policy": {
+    "capacity_signal": "P overlap observed, max active updates >= 2, aggregate makespan < U0, and goodput is therefore directionally higher for the same episode count; paired-history wins are diagnostic",
+    "direct_counterexample": "sealed C5 overall and C=2 block both report a source-order direct invariant violation",
+    "quality_protocol_usable": "for every method: valid_judge_count == 4, invalid_judge_count == 0, graph QA is numeric, and U0 has at least one correct graph-native QA result"
+  },
+  "comparison_boundaries": {
+    "freshness": "NOT_CROSS_METHOD_COMPARABLE_CURRENT_ARRIVAL_SEMANTICS",
+    "makespan_goodput": "DESCRIPTIVE_BURST_DRAIN_DEVELOPMENT_CAPACITY",
+    "resource_comparability": "NOT_ESTABLISHED_UNIFIED_REQUEST_ADMISSION_ABSENT",
+    "semantic_parity": "NOT_AUTHORIZED_LIVE_MODEL_OUTPUTS_NOT_CAPTURE_REPLAY_FIXED",
+    "statistical_claim": "NOT_AUTHORIZED_NO_REPEATS_DEVELOPMENT_ONLY"
+  },
+  "decision_run_id": "methodology-dev-20260817-001",
+  "input_bindings": {
+    "c5_events_file_sha256": "52a69edd8ff94c1eaca5ca00401ccb75e3d4f39dc326364cbdf3e322ead5e849",
+    "c5_file_sha256": "00ebfe67c13758a02fbb2dcbc94a336de92f88dbe25e666b3e069d7737c3594d",
+    "c5_payload_sha256": "73cfc5219c39e9e786e9353868f5c64d942fec1db1188858fa314763ad6f8dc7",
+    "c5_run_id": "c5-e3867c66ba92e7da",
+    "characterization_file_sha256": "a80ca5a8e763c19eea9d2cde1dbe001425200d04c857384cb862cc65ccf1887f",
+    "characterization_payload_sha256": "7adc924db06e33e319d973a9b6ceaf402866bda4ea38a8755d3781f2ca86449f",
+    "native_run_id": "nb-20260816-001",
+    "overlay_run_id": "gq-dev-20260817-001",
+    "report_file_sha256": "664d9b0250abbeba54abe2ba9b1486c1f5a76e1ea235945ddf65bf21aa8a49ca",
+    "report_payload_sha256": "ba060bd48fb933319b522ef5196c003919b2a0c0d2a81c3eb9f00f4b264e9c62",
+    "report_run_id": "report-dev-20260817-001",
+    "suite_run_id": "bs-dev-20260816-001"
+  },
+  "live_method_status": "NOT_AUTHORIZED",
+  "mechanism_status": "NO_METHOD_SELECTED",
+  "observations": {
+    "a0_burst_backlog_observed": true,
+    "c5_direct_counterexample": true,
+    "c5_model_nondeterminism_assessment": "GRAPH_RETRIEVAL_PARITY_CONFOUNDED_DIRECT_ORDER_EVIDENCE_UNAFFECTED",
+    "p_aggregate_makespan_ratio_vs_u0": 0.8652379142527491,
+    "p_capacity_signal": true,
+    "p_paired_history_count": 4,
+    "p_paired_history_makespan_wins": 4,
+    "p_work_volume_ratio_vs_u0": {
+      "candidate_count": 1.0618298616031363,
+      "candidate_query_count": 1.0852055955913522,
+      "db_operations": 1.0769815624406007,
+      "db_transactions": 1.0,
+      "embedding_calls": 1.0759358288770053,
+      "embedding_items": 1.0852055955913522,
+      "llm_input_tokens": 0.9984091629170243,
+      "llm_logical_calls": 1.0626315789473684,
+      "llm_output_tokens": 0.9776240807054022,
+      "llm_transport_attempts": 1.0620725933719095
+    },
+    "quality_protocol_usable": false,
+    "u0_graph_quality_non_degenerate": false
+  },
+  "paper_claim_status": "NOT_AUTHORIZED_DEVELOPMENT_ONLY",
+  "payload_sha256": "50a76d29ff973b67465940af94d3bc9c3814db04bad2774b4ea834b78ed22f4d",
+  "problem_verdict": "BLOCKED_QUALITY_PROTOCOL",
+  "schema_version": "membind.paper-eval-v3.methodology-decision.v1",
+  "scope": "DEVELOPMENT_EXPOSED_DESCRIPTIVE_ONLY",
+  "status": "PASS"
+}

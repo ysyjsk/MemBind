@@ -1,0 +1,99 @@
+<?xml version="1.0" encoding="utf-8"?><testsuites name="pytest tests"><testsuite name="pytest" errors="0" failures="4" skipped="0" tests="4" time="0.048" timestamp="2026-08-16T22:14:54.351506+08:00" hostname="aces-System-Product-Name"><testcase classname="tests.test_run_three_baselines" name="test_runs_only_remaining_a0_then_pc2_histories" time="0.001"><failure message="FileNotFoundError: [Errno 2] No such file or directory: '/data/predator/ly/MemBind/paper-eval-v3/scripts/run_three_baselines.py'">tmp_path = PosixPath('/tmp/pytest-of-ly/pytest-543/test_runs_only_remaining_a0_th0')
+
+    def test_runs_only_remaining_a0_then_pc2_histories(tmp_path: Path) -&gt; None:
+&gt;       module = _module()
+                 ^^^^^^^^^
+
+tests/test_run_three_baselines.py:96: 
+_ _ _ _ _ _ _ _ _ _ _ _ _ _ _ _ _ _ _ _ _ _ _ _ _ _ _ _ _ _ _ _ _ _ _ _ _ _ _ _ 
+tests/test_run_three_baselines.py:22: in _module
+    spec.loader.exec_module(module)
+&lt;frozen importlib._bootstrap_external&gt;:991: in exec_module
+    ???
+&lt;frozen importlib._bootstrap_external&gt;:1128: in get_code
+    ???
+_ _ _ _ _ _ _ _ _ _ _ _ _ _ _ _ _ _ _ _ _ _ _ _ _ _ _ _ _ _ _ _ _ _ _ _ _ _ _ _ 
+
+self = &lt;_frozen_importlib_external.SourceFileLoader object at 0x7de54cc6b9b0&gt;
+path = '/data/predator/ly/MemBind/paper-eval-v3/scripts/run_three_baselines.py'
+
+&gt;   ???
+E   FileNotFoundError: [Errno 2] No such file or directory: '/data/predator/ly/MemBind/paper-eval-v3/scripts/run_three_baselines.py'
+
+&lt;frozen importlib._bootstrap_external&gt;:1186: FileNotFoundError</failure></testcase><testcase classname="tests.test_run_three_baselines" name="test_restart_skips_completed_and_retries_partial_with_fresh_attempt" time="0.000"><failure message="FileNotFoundError: [Errno 2] No such file or directory: '/data/predator/ly/MemBind/paper-eval-v3/scripts/run_three_baselines.py'">tmp_path = PosixPath('/tmp/pytest-of-ly/pytest-543/test_restart_skips_completed_a0')
+
+    def test_restart_skips_completed_and_retries_partial_with_fresh_attempt(
+        tmp_path: Path,
+    ) -&gt; None:
+&gt;       module = _module()
+                 ^^^^^^^^^
+
+tests/test_run_three_baselines.py:123: 
+_ _ _ _ _ _ _ _ _ _ _ _ _ _ _ _ _ _ _ _ _ _ _ _ _ _ _ _ _ _ _ _ _ _ _ _ _ _ _ _ 
+tests/test_run_three_baselines.py:22: in _module
+    spec.loader.exec_module(module)
+&lt;frozen importlib._bootstrap_external&gt;:991: in exec_module
+    ???
+&lt;frozen importlib._bootstrap_external&gt;:1128: in get_code
+    ???
+_ _ _ _ _ _ _ _ _ _ _ _ _ _ _ _ _ _ _ _ _ _ _ _ _ _ _ _ _ _ _ _ _ _ _ _ _ _ _ _ 
+
+self = &lt;_frozen_importlib_external.SourceFileLoader object at 0x7de54cc69250&gt;
+path = '/data/predator/ly/MemBind/paper-eval-v3/scripts/run_three_baselines.py'
+
+&gt;   ???
+E   FileNotFoundError: [Errno 2] No such file or directory: '/data/predator/ly/MemBind/paper-eval-v3/scripts/run_three_baselines.py'
+
+&lt;frozen importlib._bootstrap_external&gt;:1186: FileNotFoundError</failure></testcase><testcase classname="tests.test_run_three_baselines" name="test_live_failure_stops_before_later_blocks_and_keeps_safe_progress" time="0.000"><failure message="FileNotFoundError: [Errno 2] No such file or directory: '/data/predator/ly/MemBind/paper-eval-v3/scripts/run_three_baselines.py'">tmp_path = PosixPath('/tmp/pytest-of-ly/pytest-543/test_live_failure_stops_before0')
+monkeypatch = &lt;_pytest.monkeypatch.MonkeyPatch object at 0x7de54cc92d80&gt;
+
+    def test_live_failure_stops_before_later_blocks_and_keeps_safe_progress(
+        tmp_path: Path,
+        monkeypatch: pytest.MonkeyPatch,
+    ) -&gt; None:
+&gt;       module = _module()
+                 ^^^^^^^^^
+
+tests/test_run_three_baselines.py:162: 
+_ _ _ _ _ _ _ _ _ _ _ _ _ _ _ _ _ _ _ _ _ _ _ _ _ _ _ _ _ _ _ _ _ _ _ _ _ _ _ _ 
+tests/test_run_three_baselines.py:22: in _module
+    spec.loader.exec_module(module)
+&lt;frozen importlib._bootstrap_external&gt;:991: in exec_module
+    ???
+&lt;frozen importlib._bootstrap_external&gt;:1128: in get_code
+    ???
+_ _ _ _ _ _ _ _ _ _ _ _ _ _ _ _ _ _ _ _ _ _ _ _ _ _ _ _ _ _ _ _ _ _ _ _ _ _ _ _ 
+
+self = &lt;_frozen_importlib_external.SourceFileLoader object at 0x7de54cc92cf0&gt;
+path = '/data/predator/ly/MemBind/paper-eval-v3/scripts/run_three_baselines.py'
+
+&gt;   ???
+E   FileNotFoundError: [Errno 2] No such file or directory: '/data/predator/ly/MemBind/paper-eval-v3/scripts/run_three_baselines.py'
+
+&lt;frozen importlib._bootstrap_external&gt;:1186: FileNotFoundError</failure></testcase><testcase classname="tests.test_run_three_baselines" name="test_script_is_one_small_entrypoint_without_canary_or_mstar" time="0.000"><failure message="FileNotFoundError: [Errno 2] No such file or directory: '/data/predator/ly/MemBind/paper-eval-v3/scripts/run_three_baselines.py'">def test_script_is_one_small_entrypoint_without_canary_or_mstar() -&gt; None:
+&gt;       source = SCRIPT.read_text(encoding="utf-8")
+                 ^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^
+
+tests/test_run_three_baselines.py:192: 
+_ _ _ _ _ _ _ _ _ _ _ _ _ _ _ _ _ _ _ _ _ _ _ _ _ _ _ _ _ _ _ _ _ _ _ _ _ _ _ _ 
+/usr/lib/python3.12/pathlib.py:1029: in read_text
+    with self.open(mode='r', encoding=encoding, errors=errors) as f:
+         ^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^
+_ _ _ _ _ _ _ _ _ _ _ _ _ _ _ _ _ _ _ _ _ _ _ _ _ _ _ _ _ _ _ _ _ _ _ _ _ _ _ _ 
+
+self = PosixPath('/data/predator/ly/MemBind/paper-eval-v3/scripts/run_three_baselines.py')
+mode = 'r', buffering = -1, encoding = 'utf-8', errors = None, newline = None
+
+    def open(self, mode='r', buffering=-1, encoding=None,
+             errors=None, newline=None):
+        """
+        Open the file pointed by this path and return a file object, as
+        the built-in open() function does.
+        """
+        if "b" not in mode:
+            encoding = io.text_encoding(encoding)
+&gt;       return io.open(self, mode, buffering, encoding, errors, newline)
+               ^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^
+E       FileNotFoundError: [Errno 2] No such file or directory: '/data/predator/ly/MemBind/paper-eval-v3/scripts/run_three_baselines.py'
+
+/usr/lib/python3.12/pathlib.py:1015: FileNotFoundError</failure></testcase></testsuite></testsuites>

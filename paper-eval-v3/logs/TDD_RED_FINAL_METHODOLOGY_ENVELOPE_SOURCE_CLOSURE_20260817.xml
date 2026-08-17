@@ -1,0 +1,78 @@
+<?xml version="1.0" encoding="utf-8"?><testsuites name="pytest tests"><testsuite name="pytest" errors="0" failures="4" skipped="0" tests="4" time="0.038" timestamp="2026-08-17T10:48:31.629569+08:00" hostname="aces-System-Product-Name"><testcase classname="tests.test_final_methodology_envelope" name="test_envelope_binds_all_sources_and_is_sealed" time="0.001"><failure message="TypeError: build_final_methodology_envelope() got an unexpected keyword argument 'source_code_paths'">tmp_path = PosixPath('/tmp/pytest-of-ly/pytest-649/test_envelope_binds_all_source0')
+
+    def test_envelope_binds_all_sources_and_is_sealed(tmp_path: Path) -&gt; None:
+        paths = _inputs(tmp_path)
+&gt;       envelope = build_final_methodology_envelope(
+            repository_root=tmp_path,
+            baseline_path=paths["baseline"],
+            overlay_path=paths["overlay"],
+            report_path=paths["report"],
+            decision_path=paths["decision"],
+            methodology_path=paths["document"],
+            junit_path=paths["junit"],
+            source_code_paths=(paths["source_code"],),
+        )
+E       TypeError: build_final_methodology_envelope() got an unexpected keyword argument 'source_code_paths'
+
+tests/test_final_methodology_envelope.py:118: TypeError</failure></testcase><testcase classname="tests.test_final_methodology_envelope" name="test_envelope_rejects_source_payload_tamper" time="0.001"><failure message="TypeError: build_final_methodology_envelope() got an unexpected keyword argument 'source_code_paths'">tmp_path = PosixPath('/tmp/pytest-of-ly/pytest-649/test_envelope_rejects_source_p0')
+
+    def test_envelope_rejects_source_payload_tamper(tmp_path: Path) -&gt; None:
+        paths = _inputs(tmp_path)
+        paths["overlay"].write_text(
+            paths["overlay"].read_text(encoding="utf-8").replace('"PASS"', '"FAIL"'),
+            encoding="utf-8",
+        )
+        with pytest.raises(FinalMethodologyEnvelopeError, match="overlay payload seal"):
+&gt;           build_final_methodology_envelope(
+                repository_root=tmp_path,
+                baseline_path=paths["baseline"],
+                overlay_path=paths["overlay"],
+                report_path=paths["report"],
+                decision_path=paths["decision"],
+                methodology_path=paths["document"],
+                junit_path=paths["junit"],
+                source_code_paths=(paths["source_code"],),
+            )
+E           TypeError: build_final_methodology_envelope() got an unexpected keyword argument 'source_code_paths'
+
+tests/test_final_methodology_envelope.py:153: TypeError</failure></testcase><testcase classname="tests.test_final_methodology_envelope" name="test_file_finalizer_is_idempotent_and_rejects_output_drift" time="0.001"><failure message="TypeError: finalize_final_methodology_envelope() got an unexpected keyword argument 'source_code_paths'">tmp_path = PosixPath('/tmp/pytest-of-ly/pytest-649/test_file_finalizer_is_idempot0')
+
+    def test_file_finalizer_is_idempotent_and_rejects_output_drift(tmp_path: Path) -&gt; None:
+        paths = _inputs(tmp_path)
+        output = tmp_path / "FINAL_METHODOLOGY_ENVELOPE.json"
+&gt;       first = finalize_final_methodology_envelope(
+            repository_root=tmp_path,
+            baseline_path=paths["baseline"],
+            overlay_path=paths["overlay"],
+            report_path=paths["report"],
+            decision_path=paths["decision"],
+            methodology_path=paths["document"],
+            junit_path=paths["junit"],
+            source_code_paths=(paths["source_code"],),
+            output_path=output,
+        )
+E       TypeError: finalize_final_methodology_envelope() got an unexpected keyword argument 'source_code_paths'
+
+tests/test_final_methodology_envelope.py:168: TypeError</failure></testcase><testcase classname="tests.test_final_methodology_envelope" name="test_envelope_rejects_failed_junit" time="0.001"><failure message="TypeError: build_final_methodology_envelope() got an unexpected keyword argument 'source_code_paths'">tmp_path = PosixPath('/tmp/pytest-of-ly/pytest-649/test_envelope_rejects_failed_j0')
+
+    def test_envelope_rejects_failed_junit(tmp_path: Path) -&gt; None:
+        paths = _inputs(tmp_path)
+        paths["junit"].write_text(
+            '&lt;?xml version="1.0"?&gt;&lt;testsuites&gt;&lt;testsuite tests="12" '
+            'errors="0" failures="1" skipped="0" /&gt;&lt;/testsuites&gt;\n',
+            encoding="utf-8",
+        )
+        with pytest.raises(FinalMethodologyEnvelopeError, match="JUnit"):
+&gt;           build_final_methodology_envelope(
+                repository_root=tmp_path,
+                baseline_path=paths["baseline"],
+                overlay_path=paths["overlay"],
+                report_path=paths["report"],
+                decision_path=paths["decision"],
+                methodology_path=paths["document"],
+                junit_path=paths["junit"],
+                source_code_paths=(paths["source_code"],),
+            )
+E           TypeError: build_final_methodology_envelope() got an unexpected keyword argument 'source_code_paths'
+
+tests/test_final_methodology_envelope.py:219: TypeError</failure></testcase></testsuite></testsuites>

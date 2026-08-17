@@ -8,6 +8,120 @@ Protocol SHA256: `4b81c89b33d407f04fc20862a81eab6badba16d0d61d98331cbe188d1bb4f4
 
 This is a new, isolated lane. Existing C0-C5 contracts and artifacts remain historical evidence and are not rewritten. v3 forbids C6, so this lane never schedules C6.
 
+## Active baseline-to-methodology finalization overlay (2026-08-17)
+
+This overlay is the current execution priority.  It does not authorize M*, a
+new namespace, PILOT, FINAL_PAPER_TEST, or any held-out access.
+
+```text
+sealed U0 + sealed A0 + running P(C=2)
+  -> THREE_BASELINE_RESULTS.json (8/8 live blocks)
+  -> read-only graph-quality overlay (3 methods x 4 histories)
+  -> sealed development REPORT.json and top-level Markdown report
+  -> deterministic METHODOLOGY_DECISION.json bound to REPORT + C3 + C5
+  -> complete ../主methodology设计.md from the sealed values
+  -> focused and full offline GREEN
+  -> STOP; a later method implementation requires separate TDD authority
+```
+
+Long live stages run only in `tmux` and preserve per-history checkpoints.  A
+vLLM/transport disconnect stops the chain and is reported without changing the
+model, context envelope, completion cap, namespace, or retry policy.
+
+The current development suite has unequal arrival timestamp semantics: U0
+records arrival immediately before each serial call, while A0/P enqueue a
+history burst.  Therefore current P95/P99 freshness is method-local diagnostic
+evidence, not a cross-method delta.  Aggregate makespan/goodput remains a
+descriptive burst-drain capacity direction for the same 188 episodes.  A later
+formal online comparison must use one frozen open-loop arrival trace for every
+method.
+
+Methodology finalization follows RED -> focused GREEN -> related/full GREEN.
+The pure decision policy is implemented in
+`src/paper_eval/methodology_decision.py`; it binds the sealed report and C5
+source-order counterexample and never authorizes a paper claim or live method.
+
+## Active graph-quality overlay (2026-08-17)
+
+The running `U0 -> A0 -> P(C=2)` development suite remains the only
+construction workload.  Its existing Session Evidence Recall@10 and raw-session
+Qwen Reader/Judge result stay immutable and method-common.  The observed U0
+`QA=1/4, R@10=4/4` is a development diagnostic locating the failures after
+session retrieval; it is not an exact published LongMemEval reproduction.
+
+After all 12 construction graphs are sealed, one isolated read-only overlay
+runs in method-major order:
+
+```text
+verified sealed namespace
+  -> fresh Graphiti top-20 edge + top-20 node BM25/cosine RRF
+  -> facts with valid/invalid/expired/reference time + entity summaries
+  -> one fixed Qwen temporal-fact Reader request
+  -> one fixed LongMemEval-rubric Qwen Judge request
+```
+
+The overlay never changes Graphiti construction, scheduling, vLLM parameters,
+or construction metrics.  Construction LLM and cross-encoder calls are
+fail-fast forbidden in its Graphiti runtime; only the frozen Qwen3 embedding is
+available for query-vector retrieval.  Each method/history writes a private
+recoverable bundle before its public projection, so an SSH/process interruption
+does not resample a completed answer.  `INVALID_OUTPUT` is excluded from the QA
+denominator and disclosed.  Until an official GPT-4o Judge or independently
+human-qualified substitute is frozen, the result label is
+`PROTOCOL_RUBRIC_COMPATIBLE_LOCAL_JUDGE_DIAGNOSTIC`.
+
+Implementation and TDD evidence live in:
+
+```text
+src/paper_eval/graph_quality_*.py
+src/paper_eval/graphiti_longmemeval_quality.py
+src/paper_eval/temporal_fact_reader.py
+scripts/run_three_baseline_graph_quality.py
+tests/test_graph_quality_*.py
+logs/TDD_*GRAPH_QUALITY*20260817.xml
+```
+
+## Active baseline-first execution overlay (2026-08-16)
+
+The additive `BASELINE_SUITE_LIGHTWEIGHT_WORKPLAN_v1.0.md` now controls the
+next baseline step. It preserves the in-progress Native N2 run, reuses the
+already verified U0/A0/P(C=2) live-path evidence instead of repeating long
+smokes, and authorizes only a strictly serial development suite
+`U0 -> A0 -> P(C=2)`. `M*`, S6 sweeps, PILOT, and held-out evaluation remain
+outside this lightweight suite. Where the Native-only overlay below says that
+A0/P live work is paused until N3, this newer user-authorized overlay
+supersedes that execution-priority clause only; all frozen identities,
+artifacts, metric definitions, and fail-closed rules remain unchanged.
+
+The current execution order is superseded by the additive
+`NATIVE_BASELINE_FIRST_LIGHTWEIGHT_WORKPLAN_v1.0.md` overlay. The parent v3
+protocol and all finalized historical artifacts remain byte-identical and
+immutable; this is an execution-priority change, not a protocol/hash rewrite.
+
+Until the overlay produces a terminal `NATIVE_BASELINE_DECISION.json`, no new
+live S4/S5/S6/S7-S10 action is authorized. In particular, do not consume S6
+authority, create a calibration namespace, or start the 32-cell matrix.
+
+The only active stages are:
+
+```text
+N0  read-only identity/service/reuse check
+N1  fixed-history U0 gate (reuse S1 unless drift requires one smoke)
+N2  U0 Native-only screen over the exact four exposed histories
+N3  baseline report + HEALTHY_FOR_NEXT_BASELINE / DIAGNOSE_BEFORE_METHODS
+```
+
+N2 is four histories, one serial construction per history, with fresh isolated
+namespaces and durable per-episode checkpoints. It records quality diagnostics
+(QA and unique-session Evidence Recall@10), construction latency and
+goodput, episode terminal accounting, and LLM/embedding/Neo4j work volume.
+Quality has no legacy-paper hard threshold; coverage, artifact integrity, and
+service/path failures remain hard gates. C2 numbers are descriptive references
+only because `C2_U0_REUSE_DECISION.json` records construction revision drift.
+
+Only `HEALTHY_FOR_NEXT_BASELINE` may open a separate, later one-history A0/P*
+or M* decision plan. `DIAGNOSE_BEFORE_METHODS` is terminal for this lane.
+
 ## S4 validation-boundary overlay (2026-08-15)
 
 `S4_VALIDATION_BOUNDARY_AMENDMENT_v2.0.md` is the controlling S4 interpretation overlay.

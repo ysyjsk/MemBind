@@ -1,0 +1,11 @@
+<?xml version="1.0" encoding="utf-8"?><testsuites name="pytest tests"><testsuite name="pytest" errors="0" failures="1" skipped="0" tests="1" time="0.029" timestamp="2026-08-17T01:10:10.664039+08:00" hostname="aces-System-Product-Name"><testcase classname="tests.test_graph_quality_stages" name="test_private_stage_and_atomic_bundle_temps_are_git_ignored" time="0.000"><failure message="AssertionError: assert 'artifacts/paper_eval/graph_quality_overlay/runs/**/runtime/private/' in '.venv/\n__pycache__/\n.pytest_cache/\n*.pyc\n*.log\n.env\nruntime/*.lock\nruntime/private/\n# Raw questions, graph fa...ader prompts, and Judge material stay local.\nartifacts/paper_eval/graph_quality_overlay/runs/**/private_bundle.json\n'">def test_private_stage_and_atomic_bundle_temps_are_git_ignored() -&gt; None:
+        project = Path(__file__).resolve().parents[1]
+        rules = (project / ".gitignore").read_text(encoding="utf-8")
+    
+&gt;       assert (
+            "artifacts/paper_eval/graph_quality_overlay/runs/**/runtime/private/"
+            in rules
+        )
+E       AssertionError: assert 'artifacts/paper_eval/graph_quality_overlay/runs/**/runtime/private/' in '.venv/\n__pycache__/\n.pytest_cache/\n*.pyc\n*.log\n.env\nruntime/*.lock\nruntime/private/\n# Raw questions, graph fa...ader prompts, and Judge material stay local.\nartifacts/paper_eval/graph_quality_overlay/runs/**/private_bundle.json\n'
+
+tests/test_graph_quality_stages.py:113: AssertionError</failure></testcase></testsuite></testsuites>

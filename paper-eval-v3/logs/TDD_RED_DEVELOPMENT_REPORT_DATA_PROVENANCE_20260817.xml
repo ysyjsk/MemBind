@@ -1,0 +1,62 @@
+<?xml version="1.0" encoding="utf-8"?><testsuites name="pytest tests"><testsuite name="pytest" errors="0" failures="2" skipped="0" tests="12" time="0.039" timestamp="2026-08-17T01:56:06.183933+08:00" hostname="aces-System-Product-Name"><testcase classname="tests.test_development_baseline_report" name="test_report_uses_fixed_inventory_and_pooled_distributions" time="0.000"><failure message="KeyError: 'data_access_disclosure'">def test_report_uses_fixed_inventory_and_pooled_distributions() -&gt; None:
+        rows = [
+            _row(method, history_id, index)
+            for method in METHODS
+            for index, history_id in enumerate(DEVELOPMENT_HISTORIES)
+        ]
+    
+        report = build_development_baseline_report(
+            report_run_id="report-dev-001",
+            native_run_id="nb-dev-001",
+            suite_run_id="bs-dev-001",
+            overlay_run_id="gq-dev-001",
+            baseline_rows=rows,
+            graph_quality_report=_quality(),
+            artifact_paths={
+                "native": "paper-eval-v3/artifacts/native",
+                "suite": "paper-eval-v3/artifacts/suite",
+                "graph_quality": "paper-eval-v3/artifacts/graph-quality",
+            },
+        )
+    
+        assert report["status"] == "PASS"
+        assert report["heldout_data_accessed"] is False
+&gt;       assert report["data_access_disclosure"] == {
+               ^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^
+            "evaluated_role": "DEVELOPMENT_EXPOSED",
+            "live_graph_quality_input": "ISOLATED_FOUR_RECORD_ARTIFACT",
+            "live_graph_quality_combined_container_opened": False,
+            "input_materialization_scanned_combined_container": True,
+            "project_lifetime_no_combined_container_scan_claim": False,
+            "pilot_or_final_records_evaluated": False,
+        }
+E       KeyError: 'data_access_disclosure'
+
+tests/test_development_baseline_report.py:121: KeyError</failure></testcase><testcase classname="tests.test_development_baseline_report" name="test_report_rejects_missing_work_volume_instead_of_fabricating_zero[llm_logical_calls]" time="0.000" /><testcase classname="tests.test_development_baseline_report" name="test_report_rejects_missing_work_volume_instead_of_fabricating_zero[llm_input_tokens]" time="0.000" /><testcase classname="tests.test_development_baseline_report" name="test_report_rejects_missing_work_volume_instead_of_fabricating_zero[llm_output_tokens]" time="0.000" /><testcase classname="tests.test_development_baseline_report" name="test_report_rejects_missing_work_volume_instead_of_fabricating_zero[llm_transport_attempts]" time="0.000" /><testcase classname="tests.test_development_baseline_report" name="test_report_rejects_missing_work_volume_instead_of_fabricating_zero[embedding_calls]" time="0.000" /><testcase classname="tests.test_development_baseline_report" name="test_report_rejects_missing_work_volume_instead_of_fabricating_zero[embedding_items]" time="0.000" /><testcase classname="tests.test_development_baseline_report" name="test_report_rejects_missing_work_volume_instead_of_fabricating_zero[db_operations]" time="0.000" /><testcase classname="tests.test_development_baseline_report" name="test_report_rejects_missing_work_volume_instead_of_fabricating_zero[db_transactions]" time="0.000" /><testcase classname="tests.test_development_baseline_report" name="test_report_rejects_missing_work_volume_instead_of_fabricating_zero[candidate_query_count]" time="0.000" /><testcase classname="tests.test_development_baseline_report" name="test_report_rejects_missing_work_volume_instead_of_fabricating_zero[candidate_count]" time="0.000" /><testcase classname="tests.test_development_baseline_report" name="test_markdown_keeps_primary_diagnostic_and_claim_limits_explicit" time="0.000"><failure message="AssertionError: assert '一次性 materialization' in '# MemBind 三基础 Baseline Development 实验报告\n\n本报告汇总 Native U0、Async-Serial A0 与 Whole-Update Parallel P(C=2) 在同一组 develo... 或 Judge 路径，不能表述为 Graphiti 丢失了 gold sessions。\n- Graph-native overlay 是预定义诊断，不替换冻结主指标，也不访问 gold answer 进行 retrieval。\n'">def test_markdown_keeps_primary_diagnostic_and_claim_limits_explicit() -&gt; None:
+        rows = [
+            _row(method, history_id, index)
+            for method in METHODS
+            for index, history_id in enumerate(DEVELOPMENT_HISTORIES)
+        ]
+        report = build_development_baseline_report(
+            report_run_id="report-dev-001",
+            native_run_id="nb-dev-001",
+            suite_run_id="bs-dev-001",
+            overlay_run_id="gq-dev-001",
+            baseline_rows=rows,
+            graph_quality_report=_quality(),
+            artifact_paths={"native": "n", "suite": "s", "graph_quality": "g"},
+        )
+    
+        markdown = render_development_baseline_markdown(report)
+    
+        assert "Native U0、Async-Serial A0 与 Whole-Update Parallel P(C=2)" in markdown
+        assert "Session Evidence Recall@10" in markdown
+        assert "Graph-native QA" in markdown
+        assert "PROTOCOL_ALIGNED_NOT_NUMERICALLY_MATCHED" in markdown
+        assert "development/calibration" in markdown
+        assert "没有访问 PILOT 或 FINAL_PAPER_TEST" in markdown
+&gt;       assert "一次性 materialization" in markdown
+E       AssertionError: assert '一次性 materialization' in '# MemBind 三基础 Baseline Development 实验报告\n\n本报告汇总 Native U0、Async-Serial A0 与 Whole-Update Parallel P(C=2) 在同一组 develo... 或 Judge 路径，不能表述为 Graphiti 丢失了 gold sessions。\n- Graph-native overlay 是预定义诊断，不替换冻结主指标，也不访问 gold answer 进行 retrieval。\n'
+
+tests/test_development_baseline_report.py:190: AssertionError</failure></testcase></testsuite></testsuites>

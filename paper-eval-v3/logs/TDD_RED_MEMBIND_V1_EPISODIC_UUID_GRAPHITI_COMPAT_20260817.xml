@@ -1,0 +1,30 @@
+<?xml version="1.0" encoding="utf-8"?><testsuites name="pytest tests"><testsuite name="pytest" errors="0" failures="1" skipped="0" tests="3" time="0.034" timestamp="2026-08-17T12:58:00.357835+08:00" hostname="aces-System-Product-Name"><testcase classname="tests.test_membind_v1_graphiti_factories" name="test_source_log_hydration_uses_raw_episode_hashes_and_a_fresh_namespace" time="0.000" /><testcase classname="tests.test_membind_v1_graphiti_factories" name="test_source_log_hydration_rejects_noncontiguous_or_invalid_raw_source_identity" time="0.000" /><testcase classname="tests.test_membind_v1_graphiti_factories" name="test_lazy_factories_materialize_expected_episode_and_extracted_entity_shapes" time="0.000"><failure message="AssertionError: assert False&#10; +  where False = isinstance(UUID('d10b3f45-799a-5246-aacb-6a4b77f390fa'), str)">def test_lazy_factories_materialize_expected_episode_and_extracted_entity_shapes() -&gt; None:
+        source_log, _ = build_source_log_from_episodes(
+            _episodes(),
+            namespace="pev3-aligned-mv1-07741c45-a001",
+            reference_time_to_ns=lambda value: int(datetime.fromisoformat(value).timestamp() * 1_000_000_000),
+        )
+    
+        class EpisodicNode:
+            def __init__(self, **kwargs):
+                self.kwargs = kwargs
+    
+        class EntityNode:
+            def __init__(self, **kwargs):
+                self.kwargs = kwargs
+    
+        factories = make_graphiti_node_factories(
+            episodic_node_type=EpisodicNode,
+            entity_node_type=EntityNode,
+            message_source="message-enum",
+        )
+        episode = factories.episode_factory(source_log.record(0))
+        entity = factories.extracted_node_factory(
+            {"uuid": "entity-1", "name": "Alice", "group_id": source_log.record(0).group_id}
+        )
+    
+&gt;       assert isinstance(episode.kwargs["uuid"], str)
+E       AssertionError: assert False
+E        +  where False = isinstance(UUID('d10b3f45-799a-5246-aacb-6a4b77f390fa'), str)
+
+tests/test_membind_v1_graphiti_factories.py:99: AssertionError</failure></testcase></testsuite></testsuites>

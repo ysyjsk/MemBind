@@ -1,0 +1,15 @@
+<?xml version="1.0" encoding="utf-8"?><testsuites name="pytest tests"><testsuite name="pytest" errors="0" failures="1" skipped="0" tests="1" time="0.038" timestamp="2026-08-17T04:15:03.530439+08:00" hostname="aces-System-Product-Name"><testcase classname="tests.test_methodology_decision" name="test_zero_u0_graph_quality_is_a_degenerate_block_not_a_usable_protocol" time="0.001"><failure message="KeyError: 'u0_graph_quality_non_degenerate'">def test_zero_u0_graph_quality_is_a_degenerate_block_not_a_usable_protocol() -&gt; None:
+        report = _report()
+        for method in METHODS:
+            report["methods"][method]["graph_quality_qa_accuracy"] = 0.0
+        report["payload_sha256"] = payload_sha256(
+            {key: value for key, value in report.items() if key != "payload_sha256"}
+        )
+    
+        decision = _decision(report=report)
+    
+&gt;       assert decision["observations"]["u0_graph_quality_non_degenerate"] is False
+               ^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^
+E       KeyError: 'u0_graph_quality_non_degenerate'
+
+tests/test_methodology_decision.py:261: KeyError</failure></testcase></testsuite></testsuites>

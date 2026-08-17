@@ -1,0 +1,5872 @@
+{
+  "episode_count": 49,
+  "episode_metrics": [
+    {
+      "graph_work": {
+        "attribution_status": "SERIAL_PREFIX_DELTA_OBSERVED",
+        "node_delta": 2,
+        "nodes_after": 2,
+        "nodes_before": 0,
+        "relationship_delta": 1,
+        "relationships_after": 1,
+        "relationships_before": 0
+      },
+      "identity": {
+        "episode_id": "b6019101:0",
+        "history_id": "b6019101",
+        "method": "A0",
+        "question_id": "b6019101",
+        "repeat_id": 0,
+        "run_id": "pev3-bs-dev-20260816-001-a0-b6019101-a001",
+        "source_sequence": 0
+      },
+      "latency_ns": {
+        "freshness": 8116323765,
+        "queue_delay": 254839207,
+        "service": 7861484558,
+        "terminal": 8116323765
+      },
+      "phase_metrics": {
+        "add-episode": {
+          "duration_ns": 7822996152,
+          "span_count": 1
+        },
+        "attributes-summary": {
+          "duration_ns": 5647802534,
+          "span_count": 1
+        },
+        "candidate-embedding": {
+          "duration_ns": 16717529,
+          "span_count": 2,
+          "text_count": 1
+        },
+        "candidate-search": {
+          "candidate_count": 0,
+          "candidate_query_count": 1,
+          "duration_ns": 18727882,
+          "span_count": 2
+        },
+        "database": {
+          "duration_ns": 4915411,
+          "span_count": 6
+        },
+        "database-transaction": {
+          "duration_ns": 2365801,
+          "span_count": 1
+        },
+        "edge-extraction": {
+          "duration_ns": 880333763,
+          "span_count": 1
+        },
+        "edge-resolution": {
+          "duration_ns": 61052,
+          "span_count": 1
+        },
+        "embedding": {
+          "duration_ns": 30191632,
+          "span_count": 2,
+          "text_count": 2
+        },
+        "graph-prefix-snapshot": {
+          "duration_ns": 2531,
+          "span_count": 1
+        },
+        "invalidation-update": {
+          "duration_ns": 478,
+          "span_count": 1
+        },
+        "llm": {
+          "duration_ns": 7781773799,
+          "input_tokens": 14242,
+          "output_tokens": 243,
+          "span_count": 3
+        },
+        "llm-transport": {
+          "duration_ns": 7778672012,
+          "input_tokens": 14242,
+          "output_tokens": 243,
+          "span_count": 3
+        },
+        "node-extraction": {
+          "duration_ns": 1267545421,
+          "span_count": 1
+        },
+        "node-resolution": {
+          "duration_ns": 18755326,
+          "span_count": 1
+        },
+        "previous-context": {
+          "duration_ns": 764100,
+          "span_count": 1
+        },
+        "publication": {
+          "duration_ns": 7571774,
+          "span_count": 1
+        }
+      },
+      "queue": {
+        "arrival_ts_ns": 206455755328889,
+        "enqueue_ts_ns": 206455757460686,
+        "publication_ts_ns": 206463871652654,
+        "queue_depth_at_enqueue": 1,
+        "service_start_ts_ns": 206456010168096,
+        "terminal_ts_ns": 206463871652654
+      },
+      "root_span": {
+        "end_ns": 206463846808308,
+        "start_ns": 206456023812156
+      },
+      "schema_version": "membind.paper-eval-v3.unified-observability.v1",
+      "status": "completed"
+    },
+    {
+      "graph_work": {
+        "attribution_status": "SERIAL_PREFIX_DELTA_OBSERVED",
+        "node_delta": 9,
+        "nodes_after": 11,
+        "nodes_before": 2,
+        "relationship_delta": 14,
+        "relationships_after": 15,
+        "relationships_before": 1
+      },
+      "identity": {
+        "episode_id": "b6019101:1",
+        "history_id": "b6019101",
+        "method": "A0",
+        "question_id": "b6019101",
+        "repeat_id": 0,
+        "run_id": "pev3-bs-dev-20260816-001-a0-b6019101-a001",
+        "source_sequence": 1
+      },
+      "latency_ns": {
+        "freshness": 47249137412,
+        "queue_delay": 8115071504,
+        "service": 39134065908,
+        "terminal": 47249137412
+      },
+      "phase_metrics": {
+        "add-episode": {
+          "duration_ns": 39035721610,
+          "span_count": 1
+        },
+        "attributes-summary": {
+          "duration_ns": 2235821066,
+          "span_count": 1
+        },
+        "candidate-embedding": {
+          "duration_ns": 106371883,
+          "span_count": 14,
+          "text_count": 26
+        },
+        "candidate-search": {
+          "candidate_count": 8,
+          "candidate_query_count": 20,
+          "duration_ns": 94464580,
+          "span_count": 13
+        },
+        "database": {
+          "duration_ns": 49228354,
+          "span_count": 43
+        },
+        "database-transaction": {
+          "duration_ns": 13867861,
+          "span_count": 1
+        },
+        "edge-extraction": {
+          "duration_ns": 24102412321,
+          "span_count": 1
+        },
+        "edge-resolution": {
+          "duration_ns": 1054005350,
+          "span_count": 1
+        },
+        "embedding": {
+          "duration_ns": 154772533,
+          "span_count": 16,
+          "text_count": 40
+        },
+        "graph-prefix-snapshot": {
+          "duration_ns": 1283,
+          "span_count": 1
+        },
+        "invalidation-update": {
+          "duration_ns": 6634,
+          "span_count": 6
+        },
+        "llm": {
+          "duration_ns": 38836948667,
+          "input_tokens": 28844,
+          "output_tokens": 1536,
+          "span_count": 10
+        },
+        "llm-transport": {
+          "duration_ns": 38830948705,
+          "input_tokens": 28844,
+          "output_tokens": 1536,
+          "span_count": 10
+        },
+        "node-extraction": {
+          "duration_ns": 4509587747,
+          "span_count": 1
+        },
+        "node-resolution": {
+          "duration_ns": 7113283815,
+          "span_count": 1
+        },
+        "previous-context": {
+          "duration_ns": 665093,
+          "span_count": 1
+        },
+        "publication": {
+          "duration_ns": 19800201,
+          "span_count": 1
+        }
+      },
+      "queue": {
+        "arrival_ts_ns": 206455759183870,
+        "enqueue_ts_ns": 206455760778425,
+        "publication_ts_ns": 206503008321282,
+        "queue_depth_at_enqueue": 2,
+        "service_start_ts_ns": 206463874255374,
+        "terminal_ts_ns": 206503008321282
+      },
+      "root_span": {
+        "end_ns": 206502915276752,
+        "start_ns": 206463879555142
+      },
+      "schema_version": "membind.paper-eval-v3.unified-observability.v1",
+      "status": "completed"
+    },
+    {
+      "graph_work": {
+        "attribution_status": "SERIAL_PREFIX_DELTA_OBSERVED",
+        "node_delta": 9,
+        "nodes_after": 20,
+        "nodes_before": 11,
+        "relationship_delta": 14,
+        "relationships_after": 29,
+        "relationships_before": 15
+      },
+      "identity": {
+        "episode_id": "b6019101:2",
+        "history_id": "b6019101",
+        "method": "A0",
+        "question_id": "b6019101",
+        "repeat_id": 0,
+        "run_id": "pev3-bs-dev-20260816-001-a0-b6019101-a001",
+        "source_sequence": 2
+      },
+      "latency_ns": {
+        "freshness": 95279049062,
+        "queue_delay": 47248515250,
+        "service": 48030533812,
+        "terminal": 95279049062
+      },
+      "phase_metrics": {
+        "add-episode": {
+          "duration_ns": 47920882769,
+          "span_count": 1
+        },
+        "attributes-summary": {
+          "duration_ns": 6949305867,
+          "span_count": 1
+        },
+        "candidate-embedding": {
+          "duration_ns": 315717600,
+          "span_count": 12,
+          "text_count": 24
+        },
+        "candidate-search": {
+          "candidate_count": 111,
+          "candidate_query_count": 19,
+          "duration_ns": 342069500,
+          "span_count": 11
+        },
+        "database": {
+          "duration_ns": 109426205,
+          "span_count": 39
+        },
+        "database-transaction": {
+          "duration_ns": 13613210,
+          "span_count": 1
+        },
+        "edge-extraction": {
+          "duration_ns": 27122027518,
+          "span_count": 1
+        },
+        "edge-resolution": {
+          "duration_ns": 2078572922,
+          "span_count": 1
+        },
+        "embedding": {
+          "duration_ns": 371260129,
+          "span_count": 14,
+          "text_count": 38
+        },
+        "graph-prefix-snapshot": {
+          "duration_ns": 1562,
+          "span_count": 1
+        },
+        "invalidation-update": {
+          "duration_ns": 20269,
+          "span_count": 10
+        },
+        "llm": {
+          "duration_ns": 47451591257,
+          "input_tokens": 38048,
+          "output_tokens": 1960,
+          "span_count": 14
+        },
+        "llm-transport": {
+          "duration_ns": 47445915803,
+          "input_tokens": 38048,
+          "output_tokens": 1960,
+          "span_count": 14
+        },
+        "node-extraction": {
+          "duration_ns": 4661807683,
+          "span_count": 1
+        },
+        "node-resolution": {
+          "duration_ns": 7087481735,
+          "span_count": 1
+        },
+        "previous-context": {
+          "duration_ns": 835593,
+          "span_count": 1
+        },
+        "publication": {
+          "duration_ns": 20693506,
+          "span_count": 1
+        }
+      },
+      "queue": {
+        "arrival_ts_ns": 206455762401140,
+        "enqueue_ts_ns": 206455764115814,
+        "publication_ts_ns": 206551041450202,
+        "queue_depth_at_enqueue": 3,
+        "service_start_ts_ns": 206503010916390,
+        "terminal_ts_ns": 206551041450202
+      },
+      "root_span": {
+        "end_ns": 206550937658865,
+        "start_ns": 206503016776096
+      },
+      "schema_version": "membind.paper-eval-v3.unified-observability.v1",
+      "status": "completed"
+    },
+    {
+      "graph_work": {
+        "attribution_status": "SERIAL_PREFIX_DELTA_OBSERVED",
+        "node_delta": 1,
+        "nodes_after": 21,
+        "nodes_before": 20,
+        "relationship_delta": 1,
+        "relationships_after": 30,
+        "relationships_before": 29
+      },
+      "identity": {
+        "episode_id": "b6019101:3",
+        "history_id": "b6019101",
+        "method": "A0",
+        "question_id": "b6019101",
+        "repeat_id": 0,
+        "run_id": "pev3-bs-dev-20260816-001-a0-b6019101-a001",
+        "source_sequence": 3
+      },
+      "latency_ns": {
+        "freshness": 98998643531,
+        "queue_delay": 95278598262,
+        "service": 3720045269,
+        "terminal": 98998643531
+      },
+      "phase_metrics": {
+        "add-episode": {
+          "duration_ns": 3688029026,
+          "span_count": 1
+        },
+        "attributes-summary": {
+          "duration_ns": 11619321,
+          "span_count": 1
+        },
+        "candidate-embedding": {
+          "duration_ns": 11506662,
+          "span_count": 2,
+          "text_count": 1
+        },
+        "candidate-search": {
+          "candidate_count": 15,
+          "candidate_query_count": 1,
+          "duration_ns": 20911162,
+          "span_count": 2
+        },
+        "database": {
+          "duration_ns": 13600112,
+          "span_count": 6
+        },
+        "database-transaction": {
+          "duration_ns": 3093164,
+          "span_count": 1
+        },
+        "edge-extraction": {
+          "duration_ns": 1608106426,
+          "span_count": 1
+        },
+        "edge-resolution": {
+          "duration_ns": 58131,
+          "span_count": 1
+        },
+        "embedding": {
+          "duration_ns": 23038238,
+          "span_count": 2,
+          "text_count": 2
+        },
+        "graph-prefix-snapshot": {
+          "duration_ns": 1851,
+          "span_count": 1
+        },
+        "invalidation-update": {
+          "duration_ns": 506,
+          "span_count": 1
+        },
+        "llm": {
+          "duration_ns": 3643933368,
+          "input_tokens": 23425,
+          "output_tokens": 27,
+          "span_count": 2
+        },
+        "llm-transport": {
+          "duration_ns": 3640255177,
+          "input_tokens": 23425,
+          "output_tokens": 27,
+          "span_count": 2
+        },
+        "node-extraction": {
+          "duration_ns": 2036374631,
+          "span_count": 1
+        },
+        "node-resolution": {
+          "duration_ns": 23764262,
+          "span_count": 1
+        },
+        "previous-context": {
+          "duration_ns": 1571842,
+          "span_count": 1
+        },
+        "publication": {
+          "duration_ns": 6381885,
+          "span_count": 1
+        }
+      },
+      "queue": {
+        "arrival_ts_ns": 206455765734144,
+        "enqueue_ts_ns": 206455767310941,
+        "publication_ts_ns": 206554764377675,
+        "queue_depth_at_enqueue": 4,
+        "service_start_ts_ns": 206551044332406,
+        "terminal_ts_ns": 206554764377675
+      },
+      "root_span": {
+        "end_ns": 206554738736544,
+        "start_ns": 206551050707518
+      },
+      "schema_version": "membind.paper-eval-v3.unified-observability.v1",
+      "status": "completed"
+    },
+    {
+      "graph_work": {
+        "attribution_status": "SERIAL_PREFIX_DELTA_OBSERVED",
+        "node_delta": 16,
+        "nodes_after": 37,
+        "nodes_before": 21,
+        "relationship_delta": 28,
+        "relationships_after": 58,
+        "relationships_before": 30
+      },
+      "identity": {
+        "episode_id": "b6019101:4",
+        "history_id": "b6019101",
+        "method": "A0",
+        "question_id": "b6019101",
+        "repeat_id": 0,
+        "run_id": "pev3-bs-dev-20260816-001-a0-b6019101-a001",
+        "source_sequence": 4
+      },
+      "latency_ns": {
+        "freshness": 161249911772,
+        "queue_delay": 98936980536,
+        "service": 62312931236,
+        "terminal": 161249911772
+      },
+      "phase_metrics": {
+        "add-episode": {
+          "duration_ns": 62130885986,
+          "span_count": 1
+        },
+        "attributes-summary": {
+          "duration_ns": 10970648570,
+          "span_count": 1
+        },
+        "candidate-embedding": {
+          "duration_ns": 222805625,
+          "span_count": 26,
+          "text_count": 52
+        },
+        "candidate-search": {
+          "candidate_count": 360,
+          "candidate_query_count": 40,
+          "duration_ns": 399974272,
+          "span_count": 25
+        },
+        "database": {
+          "duration_ns": 330353628,
+          "span_count": 81
+        },
+        "database-transaction": {
+          "duration_ns": 25912291,
+          "span_count": 1
+        },
+        "edge-extraction": {
+          "duration_ns": 25467274371,
+          "span_count": 1
+        },
+        "edge-resolution": {
+          "duration_ns": 2959332187,
+          "span_count": 1
+        },
+        "embedding": {
+          "duration_ns": 312793137,
+          "span_count": 28,
+          "text_count": 80
+        },
+        "graph-prefix-snapshot": {
+          "duration_ns": 2071,
+          "span_count": 1
+        },
+        "invalidation-update": {
+          "duration_ns": 33227,
+          "span_count": 24
+        },
+        "llm": {
+          "duration_ns": 61503633852,
+          "input_tokens": 73427,
+          "output_tokens": 2488,
+          "span_count": 26
+        },
+        "llm-transport": {
+          "duration_ns": 61495157422,
+          "input_tokens": 73427,
+          "output_tokens": 2488,
+          "span_count": 26
+        },
+        "node-extraction": {
+          "duration_ns": 8223110512,
+          "span_count": 1
+        },
+        "node-resolution": {
+          "duration_ns": 14474058500,
+          "span_count": 1
+        },
+        "previous-context": {
+          "duration_ns": 1352770,
+          "span_count": 1
+        },
+        "publication": {
+          "duration_ns": 34929561,
+          "span_count": 1
+        }
+      },
+      "queue": {
+        "arrival_ts_ns": 206455830164704,
+        "enqueue_ts_ns": 206455831899405,
+        "publication_ts_ns": 206617080076476,
+        "queue_depth_at_enqueue": 5,
+        "service_start_ts_ns": 206554767145240,
+        "terminal_ts_ns": 206617080076476
+      },
+      "root_span": {
+        "end_ns": 206616903849585,
+        "start_ns": 206554772963599
+      },
+      "schema_version": "membind.paper-eval-v3.unified-observability.v1",
+      "status": "completed"
+    },
+    {
+      "graph_work": {
+        "attribution_status": "SERIAL_PREFIX_DELTA_OBSERVED",
+        "node_delta": 6,
+        "nodes_after": 43,
+        "nodes_before": 37,
+        "relationship_delta": 11,
+        "relationships_after": 69,
+        "relationships_before": 58
+      },
+      "identity": {
+        "episode_id": "b6019101:5",
+        "history_id": "b6019101",
+        "method": "A0",
+        "question_id": "b6019101",
+        "repeat_id": 0,
+        "run_id": "pev3-bs-dev-20260816-001-a0-b6019101-a001",
+        "source_sequence": 5
+      },
+      "latency_ns": {
+        "freshness": 187855207413,
+        "queue_delay": 161249141335,
+        "service": 26606066078,
+        "terminal": 187855207413
+      },
+      "phase_metrics": {
+        "add-episode": {
+          "duration_ns": 26513489313,
+          "span_count": 1
+        },
+        "attributes-summary": {
+          "duration_ns": 11256921,
+          "span_count": 1
+        },
+        "candidate-embedding": {
+          "duration_ns": 104125819,
+          "span_count": 12,
+          "text_count": 21
+        },
+        "candidate-search": {
+          "candidate_count": 140,
+          "candidate_query_count": 16,
+          "duration_ns": 201490109,
+          "span_count": 11
+        },
+        "database": {
+          "duration_ns": 163329847,
+          "span_count": 36
+        },
+        "database-transaction": {
+          "duration_ns": 11543789,
+          "span_count": 1
+        },
+        "edge-extraction": {
+          "duration_ns": 11327033157,
+          "span_count": 1
+        },
+        "edge-resolution": {
+          "duration_ns": 2056114894,
+          "span_count": 1
+        },
+        "embedding": {
+          "duration_ns": 131980352,
+          "span_count": 14,
+          "text_count": 32
+        },
+        "graph-prefix-snapshot": {
+          "duration_ns": 1212,
+          "span_count": 1
+        },
+        "invalidation-update": {
+          "duration_ns": 13928,
+          "span_count": 10
+        },
+        "llm": {
+          "duration_ns": 26219160270,
+          "input_tokens": 60902,
+          "output_tokens": 988,
+          "span_count": 13
+        },
+        "llm-transport": {
+          "duration_ns": 26211578578,
+          "input_tokens": 60902,
+          "output_tokens": 988,
+          "span_count": 13
+        },
+        "node-extraction": {
+          "duration_ns": 6147443401,
+          "span_count": 1
+        },
+        "node-resolution": {
+          "duration_ns": 6952273394,
+          "span_count": 1
+        },
+        "previous-context": {
+          "duration_ns": 1224341,
+          "span_count": 1
+        },
+        "publication": {
+          "duration_ns": 17995069,
+          "span_count": 1
+        }
+      },
+      "queue": {
+        "arrival_ts_ns": 206455833622791,
+        "enqueue_ts_ns": 206455835343975,
+        "publication_ts_ns": 206643688830204,
+        "queue_depth_at_enqueue": 6,
+        "service_start_ts_ns": 206617082764126,
+        "terminal_ts_ns": 206643688830204
+      },
+      "root_span": {
+        "end_ns": 206643601988340,
+        "start_ns": 206617088499027
+      },
+      "schema_version": "membind.paper-eval-v3.unified-observability.v1",
+      "status": "completed"
+    },
+    {
+      "graph_work": {
+        "attribution_status": "SERIAL_PREFIX_DELTA_OBSERVED",
+        "node_delta": 7,
+        "nodes_after": 50,
+        "nodes_before": 43,
+        "relationship_delta": 16,
+        "relationships_after": 85,
+        "relationships_before": 69
+      },
+      "identity": {
+        "episode_id": "b6019101:6",
+        "history_id": "b6019101",
+        "method": "A0",
+        "question_id": "b6019101",
+        "repeat_id": 0,
+        "run_id": "pev3-bs-dev-20260816-001-a0-b6019101-a001",
+        "source_sequence": 6
+      },
+      "latency_ns": {
+        "freshness": 234101729788,
+        "queue_delay": 187854540705,
+        "service": 46247189083,
+        "terminal": 234101729788
+      },
+      "phase_metrics": {
+        "add-episode": {
+          "duration_ns": 46093420103,
+          "span_count": 1
+        },
+        "attributes-summary": {
+          "duration_ns": 6159572356,
+          "span_count": 1
+        },
+        "candidate-embedding": {
+          "duration_ns": 109863918,
+          "span_count": 22,
+          "text_count": 36
+        },
+        "candidate-search": {
+          "candidate_count": 190,
+          "candidate_query_count": 26,
+          "duration_ns": 336407197,
+          "span_count": 21
+        },
+        "database": {
+          "duration_ns": 303574421,
+          "span_count": 61
+        },
+        "database-transaction": {
+          "duration_ns": 15816632,
+          "span_count": 1
+        },
+        "edge-extraction": {
+          "duration_ns": 26167497619,
+          "span_count": 1
+        },
+        "edge-resolution": {
+          "duration_ns": 2260813939,
+          "span_count": 1
+        },
+        "embedding": {
+          "duration_ns": 153945019,
+          "span_count": 24,
+          "text_count": 52
+        },
+        "graph-prefix-snapshot": {
+          "duration_ns": 1492,
+          "span_count": 1
+        },
+        "invalidation-update": {
+          "duration_ns": 24500,
+          "span_count": 20
+        },
+        "llm": {
+          "duration_ns": 45643193042,
+          "input_tokens": 93909,
+          "output_tokens": 1697,
+          "span_count": 24
+        },
+        "llm-transport": {
+          "duration_ns": 45632454359,
+          "input_tokens": 93909,
+          "output_tokens": 1697,
+          "span_count": 24
+        },
+        "node-extraction": {
+          "duration_ns": 4551680214,
+          "span_count": 1
+        },
+        "node-resolution": {
+          "duration_ns": 6929456659,
+          "span_count": 1
+        },
+        "previous-context": {
+          "duration_ns": 1467338,
+          "span_count": 1
+        },
+        "publication": {
+          "duration_ns": 22757430,
+          "span_count": 1
+        }
+      },
+      "queue": {
+        "arrival_ts_ns": 206455836979647,
+        "enqueue_ts_ns": 206455838634321,
+        "publication_ts_ns": 206689938709435,
+        "queue_depth_at_enqueue": 7,
+        "service_start_ts_ns": 206643691520352,
+        "terminal_ts_ns": 206689938709435
+      },
+      "root_span": {
+        "end_ns": 206689790915591,
+        "start_ns": 206643697495488
+      },
+      "schema_version": "membind.paper-eval-v3.unified-observability.v1",
+      "status": "completed"
+    },
+    {
+      "graph_work": {
+        "attribution_status": "SERIAL_PREFIX_DELTA_OBSERVED",
+        "node_delta": 11,
+        "nodes_after": 61,
+        "nodes_before": 50,
+        "relationship_delta": 18,
+        "relationships_after": 103,
+        "relationships_before": 85
+      },
+      "identity": {
+        "episode_id": "b6019101:7",
+        "history_id": "b6019101",
+        "method": "A0",
+        "question_id": "b6019101",
+        "repeat_id": 0,
+        "run_id": "pev3-bs-dev-20260816-001-a0-b6019101-a001",
+        "source_sequence": 7
+      },
+      "latency_ns": {
+        "freshness": 279855652149,
+        "queue_delay": 234101172168,
+        "service": 45754479981,
+        "terminal": 279855652149
+      },
+      "phase_metrics": {
+        "add-episode": {
+          "duration_ns": 45613861176,
+          "span_count": 1
+        },
+        "attributes-summary": {
+          "duration_ns": 4992403278,
+          "span_count": 1
+        },
+        "candidate-embedding": {
+          "duration_ns": 91447818,
+          "span_count": 18,
+          "text_count": 34
+        },
+        "candidate-search": {
+          "candidate_count": 230,
+          "candidate_query_count": 26,
+          "duration_ns": 273331550,
+          "span_count": 17
+        },
+        "database": {
+          "duration_ns": 253645975,
+          "span_count": 55
+        },
+        "database-transaction": {
+          "duration_ns": 17124429,
+          "span_count": 1
+        },
+        "edge-extraction": {
+          "duration_ns": 18697043647,
+          "span_count": 1
+        },
+        "edge-resolution": {
+          "duration_ns": 2931777184,
+          "span_count": 1
+        },
+        "embedding": {
+          "duration_ns": 138407370,
+          "span_count": 20,
+          "text_count": 52
+        },
+        "graph-prefix-snapshot": {
+          "duration_ns": 1345,
+          "span_count": 1
+        },
+        "invalidation-update": {
+          "duration_ns": 21186,
+          "span_count": 16
+        },
+        "llm": {
+          "duration_ns": 45212299529,
+          "input_tokens": 99413,
+          "output_tokens": 1666,
+          "span_count": 20
+        },
+        "llm-transport": {
+          "duration_ns": 45200692247,
+          "input_tokens": 99413,
+          "output_tokens": 1666,
+          "span_count": 20
+        },
+        "node-extraction": {
+          "duration_ns": 8856549644,
+          "span_count": 1
+        },
+        "node-resolution": {
+          "duration_ns": 10110400544,
+          "span_count": 1
+        },
+        "previous-context": {
+          "duration_ns": 1413082,
+          "span_count": 1
+        },
+        "publication": {
+          "duration_ns": 24107332,
+          "span_count": 1
+        }
+      },
+      "queue": {
+        "arrival_ts_ns": 206455840289391,
+        "enqueue_ts_ns": 206455841915342,
+        "publication_ts_ns": 206735695941540,
+        "queue_depth_at_enqueue": 8,
+        "service_start_ts_ns": 206689941461559,
+        "terminal_ts_ns": 206735695941540
+      },
+      "root_span": {
+        "end_ns": 206735561132378,
+        "start_ns": 206689947271202
+      },
+      "schema_version": "membind.paper-eval-v3.unified-observability.v1",
+      "status": "completed"
+    },
+    {
+      "graph_work": {
+        "attribution_status": "SERIAL_PREFIX_DELTA_OBSERVED",
+        "node_delta": 8,
+        "nodes_after": 69,
+        "nodes_before": 61,
+        "relationship_delta": 18,
+        "relationships_after": 121,
+        "relationships_before": 103
+      },
+      "identity": {
+        "episode_id": "b6019101:8",
+        "history_id": "b6019101",
+        "method": "A0",
+        "question_id": "b6019101",
+        "repeat_id": 0,
+        "run_id": "pev3-bs-dev-20260816-001-a0-b6019101-a001",
+        "source_sequence": 8
+      },
+      "latency_ns": {
+        "freshness": 322314985386,
+        "queue_delay": 279855247454,
+        "service": 42459737932,
+        "terminal": 322314985386
+      },
+      "phase_metrics": {
+        "add-episode": {
+          "duration_ns": 42291806688,
+          "span_count": 1
+        },
+        "attributes-summary": {
+          "duration_ns": 11897442,
+          "span_count": 1
+        },
+        "candidate-embedding": {
+          "duration_ns": 107802764,
+          "span_count": 24,
+          "text_count": 40
+        },
+        "candidate-search": {
+          "candidate_count": 215,
+          "candidate_query_count": 29,
+          "duration_ns": 357650122,
+          "span_count": 23
+        },
+        "database": {
+          "duration_ns": 342948702,
+          "span_count": 67
+        },
+        "database-transaction": {
+          "duration_ns": 16803698,
+          "span_count": 1
+        },
+        "edge-extraction": {
+          "duration_ns": 27623273476,
+          "span_count": 1
+        },
+        "edge-resolution": {
+          "duration_ns": 2525564464,
+          "span_count": 1
+        },
+        "embedding": {
+          "duration_ns": 142462624,
+          "span_count": 26,
+          "text_count": 58
+        },
+        "graph-prefix-snapshot": {
+          "duration_ns": 1550,
+          "span_count": 1
+        },
+        "invalidation-update": {
+          "duration_ns": 27837,
+          "span_count": 22
+        },
+        "llm": {
+          "duration_ns": 41817030094,
+          "input_tokens": 84782,
+          "output_tokens": 1714,
+          "span_count": 25
+        },
+        "llm-transport": {
+          "duration_ns": 41807833881,
+          "input_tokens": 84782,
+          "output_tokens": 1714,
+          "span_count": 25
+        },
+        "node-extraction": {
+          "duration_ns": 4585194328,
+          "span_count": 1
+        },
+        "node-resolution": {
+          "duration_ns": 7512671255,
+          "span_count": 1
+        },
+        "previous-context": {
+          "duration_ns": 8865728,
+          "span_count": 1
+        },
+        "publication": {
+          "duration_ns": 24162261,
+          "span_count": 1
+        }
+      },
+      "queue": {
+        "arrival_ts_ns": 206455843523776,
+        "enqueue_ts_ns": 206455845218505,
+        "publication_ts_ns": 206778158509162,
+        "queue_depth_at_enqueue": 9,
+        "service_start_ts_ns": 206735698771230,
+        "terminal_ts_ns": 206778158509162
+      },
+      "root_span": {
+        "end_ns": 206777996369614,
+        "start_ns": 206735704562926
+      },
+      "schema_version": "membind.paper-eval-v3.unified-observability.v1",
+      "status": "completed"
+    },
+    {
+      "graph_work": {
+        "attribution_status": "SERIAL_PREFIX_DELTA_OBSERVED",
+        "node_delta": 3,
+        "nodes_after": 72,
+        "nodes_before": 69,
+        "relationship_delta": 5,
+        "relationships_after": 126,
+        "relationships_before": 121
+      },
+      "identity": {
+        "episode_id": "b6019101:9",
+        "history_id": "b6019101",
+        "method": "A0",
+        "question_id": "b6019101",
+        "repeat_id": 0,
+        "run_id": "pev3-bs-dev-20260816-001-a0-b6019101-a001",
+        "source_sequence": 9
+      },
+      "latency_ns": {
+        "freshness": 335413329419,
+        "queue_delay": 322314629306,
+        "service": 13098700113,
+        "terminal": 335413329419
+      },
+      "phase_metrics": {
+        "add-episode": {
+          "duration_ns": 13041722616,
+          "span_count": 1
+        },
+        "attributes-summary": {
+          "duration_ns": 14004763,
+          "span_count": 1
+        },
+        "candidate-embedding": {
+          "duration_ns": 63151060,
+          "span_count": 6,
+          "text_count": 9
+        },
+        "candidate-search": {
+          "candidate_count": 65,
+          "candidate_query_count": 7,
+          "duration_ns": 100701816,
+          "span_count": 5
+        },
+        "database": {
+          "duration_ns": 77353948,
+          "span_count": 18
+        },
+        "database-transaction": {
+          "duration_ns": 5727235,
+          "span_count": 1
+        },
+        "edge-extraction": {
+          "duration_ns": 5164720491,
+          "span_count": 1
+        },
+        "edge-resolution": {
+          "duration_ns": 1692580446,
+          "span_count": 1
+        },
+        "embedding": {
+          "duration_ns": 94332620,
+          "span_count": 8,
+          "text_count": 14
+        },
+        "graph-prefix-snapshot": {
+          "duration_ns": 1342,
+          "span_count": 1
+        },
+        "invalidation-update": {
+          "duration_ns": 7385,
+          "span_count": 4
+        },
+        "llm": {
+          "duration_ns": 12869539411,
+          "input_tokens": 80433,
+          "output_tokens": 349,
+          "span_count": 7
+        },
+        "llm-transport": {
+          "duration_ns": 12859328676,
+          "input_tokens": 80433,
+          "output_tokens": 349,
+          "span_count": 7
+        },
+        "node-extraction": {
+          "duration_ns": 3024502639,
+          "span_count": 1
+        },
+        "node-resolution": {
+          "duration_ns": 3132129144,
+          "span_count": 1
+        },
+        "previous-context": {
+          "duration_ns": 1810163,
+          "span_count": 1
+        },
+        "publication": {
+          "duration_ns": 11829682,
+          "span_count": 1
+        }
+      },
+      "queue": {
+        "arrival_ts_ns": 206455846857736,
+        "enqueue_ts_ns": 206455848535336,
+        "publication_ts_ns": 206791260187155,
+        "queue_depth_at_enqueue": 10,
+        "service_start_ts_ns": 206778161487042,
+        "terminal_ts_ns": 206791260187155
+      },
+      "root_span": {
+        "end_ns": 206791209570558,
+        "start_ns": 206778167847942
+      },
+      "schema_version": "membind.paper-eval-v3.unified-observability.v1",
+      "status": "completed"
+    },
+    {
+      "graph_work": {
+        "attribution_status": "SERIAL_PREFIX_DELTA_OBSERVED",
+        "node_delta": 9,
+        "nodes_after": 81,
+        "nodes_before": 72,
+        "relationship_delta": 16,
+        "relationships_after": 142,
+        "relationships_before": 126
+      },
+      "identity": {
+        "episode_id": "b6019101:10",
+        "history_id": "b6019101",
+        "method": "A0",
+        "question_id": "b6019101",
+        "repeat_id": 0,
+        "run_id": "pev3-bs-dev-20260816-001-a0-b6019101-a001",
+        "source_sequence": 10
+      },
+      "latency_ns": {
+        "freshness": 369386826485,
+        "queue_delay": 335412701926,
+        "service": 33974124559,
+        "terminal": 369386826485
+      },
+      "phase_metrics": {
+        "add-episode": {
+          "duration_ns": 33850394541,
+          "span_count": 1
+        },
+        "attributes-summary": {
+          "duration_ns": 6308453855,
+          "span_count": 1
+        },
+        "candidate-embedding": {
+          "duration_ns": 103179379,
+          "span_count": 16,
+          "text_count": 30
+        },
+        "candidate-search": {
+          "candidate_count": 205,
+          "candidate_query_count": 23,
+          "duration_ns": 268920151,
+          "span_count": 15
+        },
+        "database": {
+          "duration_ns": 254546294,
+          "span_count": 49
+        },
+        "database-transaction": {
+          "duration_ns": 15002800,
+          "span_count": 1
+        },
+        "edge-extraction": {
+          "duration_ns": 12692934208,
+          "span_count": 1
+        },
+        "edge-resolution": {
+          "duration_ns": 2310878797,
+          "span_count": 1
+        },
+        "embedding": {
+          "duration_ns": 145127035,
+          "span_count": 18,
+          "text_count": 46
+        },
+        "graph-prefix-snapshot": {
+          "duration_ns": 1675,
+          "span_count": 1
+        },
+        "invalidation-update": {
+          "duration_ns": 19520,
+          "span_count": 14
+        },
+        "llm": {
+          "duration_ns": 33466131036,
+          "input_tokens": 102564,
+          "output_tokens": 1314,
+          "span_count": 18
+        },
+        "llm-transport": {
+          "duration_ns": 33451427449,
+          "input_tokens": 102564,
+          "output_tokens": 1314,
+          "span_count": 18
+        },
+        "node-extraction": {
+          "duration_ns": 4794909551,
+          "span_count": 1
+        },
+        "node-resolution": {
+          "duration_ns": 7718185620,
+          "span_count": 1
+        },
+        "previous-context": {
+          "duration_ns": 2144322,
+          "span_count": 1
+        },
+        "publication": {
+          "duration_ns": 22722926,
+          "span_count": 1
+        }
+      },
+      "queue": {
+        "arrival_ts_ns": 206455850224280,
+        "enqueue_ts_ns": 206455851947965,
+        "publication_ts_ns": 206825237050765,
+        "queue_depth_at_enqueue": 11,
+        "service_start_ts_ns": 206791262926206,
+        "terminal_ts_ns": 206825237050765
+      },
+      "root_span": {
+        "end_ns": 206825119070954,
+        "start_ns": 206791268676413
+      },
+      "schema_version": "membind.paper-eval-v3.unified-observability.v1",
+      "status": "completed"
+    },
+    {
+      "graph_work": {
+        "attribution_status": "SERIAL_PREFIX_DELTA_OBSERVED",
+        "node_delta": 2,
+        "nodes_after": 83,
+        "nodes_before": 81,
+        "relationship_delta": 1,
+        "relationships_after": 143,
+        "relationships_before": 142
+      },
+      "identity": {
+        "episode_id": "b6019101:11",
+        "history_id": "b6019101",
+        "method": "A0",
+        "question_id": "b6019101",
+        "repeat_id": 0,
+        "run_id": "pev3-bs-dev-20260816-001-a0-b6019101-a001",
+        "source_sequence": 11
+      },
+      "latency_ns": {
+        "freshness": 395787693140,
+        "queue_delay": 369386232378,
+        "service": 26401460762,
+        "terminal": 395787693140
+      },
+      "phase_metrics": {
+        "add-episode": {
+          "duration_ns": 26369726629,
+          "span_count": 1
+        },
+        "attributes-summary": {
+          "duration_ns": 7987711834,
+          "span_count": 1
+        },
+        "candidate-embedding": {
+          "duration_ns": 9310097,
+          "span_count": 2,
+          "text_count": 1
+        },
+        "candidate-search": {
+          "candidate_count": 15,
+          "candidate_query_count": 1,
+          "duration_ns": 19414543,
+          "span_count": 2
+        },
+        "database": {
+          "duration_ns": 14206197,
+          "span_count": 6
+        },
+        "database-transaction": {
+          "duration_ns": 2819686,
+          "span_count": 1
+        },
+        "edge-extraction": {
+          "duration_ns": 5730565674,
+          "span_count": 1
+        },
+        "edge-resolution": {
+          "duration_ns": 60008,
+          "span_count": 1
+        },
+        "embedding": {
+          "duration_ns": 25355957,
+          "span_count": 2,
+          "text_count": 2
+        },
+        "graph-prefix-snapshot": {
+          "duration_ns": 1433,
+          "span_count": 1
+        },
+        "invalidation-update": {
+          "duration_ns": 622,
+          "span_count": 1
+        },
+        "llm": {
+          "duration_ns": 26318928253,
+          "input_tokens": 97852,
+          "output_tokens": 157,
+          "span_count": 4
+        },
+        "llm-transport": {
+          "duration_ns": 26306652189,
+          "input_tokens": 97852,
+          "output_tokens": 157,
+          "span_count": 4
+        },
+        "node-extraction": {
+          "duration_ns": 6254184978,
+          "span_count": 1
+        },
+        "node-resolution": {
+          "duration_ns": 6388493835,
+          "span_count": 1
+        },
+        "previous-context": {
+          "duration_ns": 1757560,
+          "span_count": 1
+        },
+        "publication": {
+          "duration_ns": 6797952,
+          "span_count": 1
+        }
+      },
+      "queue": {
+        "arrival_ts_ns": 206455853717580,
+        "enqueue_ts_ns": 206455855573219,
+        "publication_ts_ns": 206851641410720,
+        "queue_depth_at_enqueue": 12,
+        "service_start_ts_ns": 206825239949958,
+        "terminal_ts_ns": 206851641410720
+      },
+      "root_span": {
+        "end_ns": 206851615708605,
+        "start_ns": 206825245981976
+      },
+      "schema_version": "membind.paper-eval-v3.unified-observability.v1",
+      "status": "completed"
+    },
+    {
+      "graph_work": {
+        "attribution_status": "SERIAL_PREFIX_DELTA_OBSERVED",
+        "node_delta": 11,
+        "nodes_after": 94,
+        "nodes_before": 83,
+        "relationship_delta": 20,
+        "relationships_after": 163,
+        "relationships_before": 143
+      },
+      "identity": {
+        "episode_id": "b6019101:12",
+        "history_id": "b6019101",
+        "method": "A0",
+        "question_id": "b6019101",
+        "repeat_id": 0,
+        "run_id": "pev3-bs-dev-20260816-001-a0-b6019101-a001",
+        "source_sequence": 12
+      },
+      "latency_ns": {
+        "freshness": 453966846656,
+        "queue_delay": 395787039545,
+        "service": 58179807111,
+        "terminal": 453966846656
+      },
+      "phase_metrics": {
+        "add-episode": {
+          "duration_ns": 58040175663,
+          "span_count": 1
+        },
+        "attributes-summary": {
+          "duration_ns": 13173849,
+          "span_count": 1
+        },
+        "candidate-embedding": {
+          "duration_ns": 117820597,
+          "span_count": 22,
+          "text_count": 40
+        },
+        "candidate-search": {
+          "candidate_count": 250,
+          "candidate_query_count": 30,
+          "duration_ns": 424191175,
+          "span_count": 21
+        },
+        "database": {
+          "duration_ns": 404554106,
+          "span_count": 65
+        },
+        "database-transaction": {
+          "duration_ns": 21141514,
+          "span_count": 1
+        },
+        "edge-extraction": {
+          "duration_ns": 31377475090,
+          "span_count": 1
+        },
+        "edge-resolution": {
+          "duration_ns": 1821388288,
+          "span_count": 1
+        },
+        "embedding": {
+          "duration_ns": 148791974,
+          "span_count": 24,
+          "text_count": 60
+        },
+        "graph-prefix-snapshot": {
+          "duration_ns": 1161,
+          "span_count": 1
+        },
+        "invalidation-update": {
+          "duration_ns": 30578,
+          "span_count": 20
+        },
+        "llm": {
+          "duration_ns": 57501300200,
+          "input_tokens": 78070,
+          "output_tokens": 1700,
+          "span_count": 13
+        },
+        "llm-transport": {
+          "duration_ns": 57492050847,
+          "input_tokens": 78070,
+          "output_tokens": 1700,
+          "span_count": 13
+        },
+        "node-extraction": {
+          "duration_ns": 11348753002,
+          "span_count": 1
+        },
+        "node-resolution": {
+          "duration_ns": 13446654269,
+          "span_count": 1
+        },
+        "previous-context": {
+          "duration_ns": 1762026,
+          "span_count": 1
+        },
+        "publication": {
+          "duration_ns": 30802819,
+          "span_count": 1
+        }
+      },
+      "queue": {
+        "arrival_ts_ns": 206455857298149,
+        "enqueue_ts_ns": 206455859017229,
+        "publication_ts_ns": 206909824144805,
+        "queue_depth_at_enqueue": 13,
+        "service_start_ts_ns": 206851644337694,
+        "terminal_ts_ns": 206909824144805
+      },
+      "root_span": {
+        "end_ns": 206909690230670,
+        "start_ns": 206851650055007
+      },
+      "schema_version": "membind.paper-eval-v3.unified-observability.v1",
+      "status": "completed"
+    },
+    {
+      "graph_work": {
+        "attribution_status": "SERIAL_PREFIX_DELTA_OBSERVED",
+        "node_delta": 16,
+        "nodes_after": 110,
+        "nodes_before": 94,
+        "relationship_delta": 29,
+        "relationships_after": 192,
+        "relationships_before": 163
+      },
+      "identity": {
+        "episode_id": "b6019101:13",
+        "history_id": "b6019101",
+        "method": "A0",
+        "question_id": "b6019101",
+        "repeat_id": 0,
+        "run_id": "pev3-bs-dev-20260816-001-a0-b6019101-a001",
+        "source_sequence": 13
+      },
+      "latency_ns": {
+        "freshness": 519048716199,
+        "queue_delay": 453966187078,
+        "service": 65082529121,
+        "terminal": 519048716199
+      },
+      "phase_metrics": {
+        "add-episode": {
+          "duration_ns": 64876443629,
+          "span_count": 1
+        },
+        "attributes-summary": {
+          "duration_ns": 19112339,
+          "span_count": 1
+        },
+        "candidate-embedding": {
+          "duration_ns": 147611683,
+          "span_count": 30,
+          "text_count": 57
+        },
+        "candidate-search": {
+          "candidate_count": 365,
+          "candidate_query_count": 43,
+          "duration_ns": 572177237,
+          "span_count": 29
+        },
+        "database": {
+          "duration_ns": 536215240,
+          "span_count": 90
+        },
+        "database-transaction": {
+          "duration_ns": 27250878,
+          "span_count": 1
+        },
+        "edge-extraction": {
+          "duration_ns": 28196207631,
+          "span_count": 1
+        },
+        "edge-resolution": {
+          "duration_ns": 3371945465,
+          "span_count": 1
+        },
+        "embedding": {
+          "duration_ns": 191362446,
+          "span_count": 32,
+          "text_count": 86
+        },
+        "graph-prefix-snapshot": {
+          "duration_ns": 1303,
+          "span_count": 1
+        },
+        "invalidation-update": {
+          "duration_ns": 41211,
+          "span_count": 28
+        },
+        "llm": {
+          "duration_ns": 64146487385,
+          "input_tokens": 91020,
+          "output_tokens": 2387,
+          "span_count": 31
+        },
+        "llm-transport": {
+          "duration_ns": 64136599665,
+          "input_tokens": 91020,
+          "output_tokens": 2387,
+          "span_count": 31
+        },
+        "node-extraction": {
+          "duration_ns": 14796361069,
+          "span_count": 1
+        },
+        "node-resolution": {
+          "duration_ns": 18454815661,
+          "span_count": 1
+        },
+        "previous-context": {
+          "duration_ns": 1690633,
+          "span_count": 1
+        },
+        "publication": {
+          "duration_ns": 36120967,
+          "span_count": 1
+        }
+      },
+      "queue": {
+        "arrival_ts_ns": 206455860782122,
+        "enqueue_ts_ns": 206455862804717,
+        "publication_ts_ns": 206974909498321,
+        "queue_depth_at_enqueue": 14,
+        "service_start_ts_ns": 206909826969200,
+        "terminal_ts_ns": 206974909498321
+      },
+      "root_span": {
+        "end_ns": 206974709309785,
+        "start_ns": 206909832866156
+      },
+      "schema_version": "membind.paper-eval-v3.unified-observability.v1",
+      "status": "completed"
+    },
+    {
+      "graph_work": {
+        "attribution_status": "SERIAL_PREFIX_DELTA_OBSERVED",
+        "node_delta": 3,
+        "nodes_after": 113,
+        "nodes_before": 110,
+        "relationship_delta": 3,
+        "relationships_after": 195,
+        "relationships_before": 192
+      },
+      "identity": {
+        "episode_id": "b6019101:14",
+        "history_id": "b6019101",
+        "method": "A0",
+        "question_id": "b6019101",
+        "repeat_id": 0,
+        "run_id": "pev3-bs-dev-20260816-001-a0-b6019101-a001",
+        "source_sequence": 14
+      },
+      "latency_ns": {
+        "freshness": 544145435549,
+        "queue_delay": 519047840953,
+        "service": 25097594596,
+        "terminal": 544145435549
+      },
+      "phase_metrics": {
+        "add-episode": {
+          "duration_ns": 25053293979,
+          "span_count": 1
+        },
+        "attributes-summary": {
+          "duration_ns": 10874800,
+          "span_count": 1
+        },
+        "candidate-embedding": {
+          "duration_ns": 53964147,
+          "span_count": 4,
+          "text_count": 5
+        },
+        "candidate-search": {
+          "candidate_count": 40,
+          "candidate_query_count": 4,
+          "duration_ns": 76793099,
+          "span_count": 3
+        },
+        "database": {
+          "duration_ns": 45592666,
+          "span_count": 12
+        },
+        "database-transaction": {
+          "duration_ns": 4384113,
+          "span_count": 1
+        },
+        "edge-extraction": {
+          "duration_ns": 7510200831,
+          "span_count": 1
+        },
+        "edge-resolution": {
+          "duration_ns": 1611295739,
+          "span_count": 1
+        },
+        "embedding": {
+          "duration_ns": 76289796,
+          "span_count": 6,
+          "text_count": 8
+        },
+        "graph-prefix-snapshot": {
+          "duration_ns": 1465,
+          "span_count": 1
+        },
+        "invalidation-update": {
+          "duration_ns": 3497,
+          "span_count": 2
+        },
+        "llm": {
+          "duration_ns": 24915959602,
+          "input_tokens": 81207,
+          "output_tokens": 229,
+          "span_count": 5
+        },
+        "llm-transport": {
+          "duration_ns": 24905048265,
+          "input_tokens": 81207,
+          "output_tokens": 229,
+          "span_count": 5
+        },
+        "node-extraction": {
+          "duration_ns": 7666444388,
+          "span_count": 1
+        },
+        "node-resolution": {
+          "duration_ns": 8242654578,
+          "span_count": 1
+        },
+        "previous-context": {
+          "duration_ns": 2083275,
+          "span_count": 1
+        },
+        "publication": {
+          "duration_ns": 9593799,
+          "span_count": 1
+        }
+      },
+      "queue": {
+        "arrival_ts_ns": 206455864620908,
+        "enqueue_ts_ns": 206455866376533,
+        "publication_ts_ns": 207000010056457,
+        "queue_depth_at_enqueue": 15,
+        "service_start_ts_ns": 206974912461861,
+        "terminal_ts_ns": 207000010056457
+      },
+      "root_span": {
+        "end_ns": 206999972421226,
+        "start_ns": 206974919127247
+      },
+      "schema_version": "membind.paper-eval-v3.unified-observability.v1",
+      "status": "completed"
+    },
+    {
+      "graph_work": {
+        "attribution_status": "SERIAL_PREFIX_DELTA_OBSERVED",
+        "node_delta": 2,
+        "nodes_after": 115,
+        "nodes_before": 113,
+        "relationship_delta": 1,
+        "relationships_after": 196,
+        "relationships_before": 195
+      },
+      "identity": {
+        "episode_id": "b6019101:15",
+        "history_id": "b6019101",
+        "method": "A0",
+        "question_id": "b6019101",
+        "repeat_id": 0,
+        "run_id": "pev3-bs-dev-20260816-001-a0-b6019101-a001",
+        "source_sequence": 15
+      },
+      "latency_ns": {
+        "freshness": 573306148946,
+        "queue_delay": 544144844516,
+        "service": 29161304430,
+        "terminal": 573306148946
+      },
+      "phase_metrics": {
+        "add-episode": {
+          "duration_ns": 29107884654,
+          "span_count": 1
+        },
+        "attributes-summary": {
+          "duration_ns": 9210660771,
+          "span_count": 1
+        },
+        "candidate-embedding": {
+          "duration_ns": 9300357,
+          "span_count": 2,
+          "text_count": 1
+        },
+        "candidate-search": {
+          "candidate_count": 15,
+          "candidate_query_count": 1,
+          "duration_ns": 19858256,
+          "span_count": 2
+        },
+        "database": {
+          "duration_ns": 20139899,
+          "span_count": 6
+        },
+        "database-transaction": {
+          "duration_ns": 8389559,
+          "span_count": 1
+        },
+        "edge-extraction": {
+          "duration_ns": 6092712466,
+          "span_count": 1
+        },
+        "edge-resolution": {
+          "duration_ns": 101954,
+          "span_count": 1
+        },
+        "embedding": {
+          "duration_ns": 27603276,
+          "span_count": 2,
+          "text_count": 2
+        },
+        "graph-prefix-snapshot": {
+          "duration_ns": 1426,
+          "span_count": 1
+        },
+        "invalidation-update": {
+          "duration_ns": 1095,
+          "span_count": 1
+        },
+        "llm": {
+          "duration_ns": 29038748001,
+          "input_tokens": 102285,
+          "output_tokens": 196,
+          "span_count": 4
+        },
+        "llm-transport": {
+          "duration_ns": 29022771337,
+          "input_tokens": 102285,
+          "output_tokens": 196,
+          "span_count": 4
+        },
+        "node-extraction": {
+          "duration_ns": 6993016858,
+          "span_count": 1
+        },
+        "node-resolution": {
+          "duration_ns": 6787142076,
+          "span_count": 1
+        },
+        "previous-context": {
+          "duration_ns": 1814146,
+          "span_count": 1
+        },
+        "publication": {
+          "duration_ns": 22072555,
+          "span_count": 1
+        }
+      },
+      "queue": {
+        "arrival_ts_ns": 206455868121062,
+        "enqueue_ts_ns": 206455869882594,
+        "publication_ts_ns": 207029174270008,
+        "queue_depth_at_enqueue": 16,
+        "service_start_ts_ns": 207000012965578,
+        "terminal_ts_ns": 207029174270008
+      },
+      "root_span": {
+        "end_ns": 207029126685938,
+        "start_ns": 207000018801284
+      },
+      "schema_version": "membind.paper-eval-v3.unified-observability.v1",
+      "status": "completed"
+    },
+    {
+      "graph_work": {
+        "attribution_status": "SERIAL_PREFIX_DELTA_OBSERVED",
+        "node_delta": 1,
+        "nodes_after": 116,
+        "nodes_before": 115,
+        "relationship_delta": 1,
+        "relationships_after": 197,
+        "relationships_before": 196
+      },
+      "identity": {
+        "episode_id": "b6019101:16",
+        "history_id": "b6019101",
+        "method": "A0",
+        "question_id": "b6019101",
+        "repeat_id": 0,
+        "run_id": "pev3-bs-dev-20260816-001-a0-b6019101-a001",
+        "source_sequence": 16
+      },
+      "latency_ns": {
+        "freshness": 614079100768,
+        "queue_delay": 573307994434,
+        "service": 40771106334,
+        "terminal": 614079100768
+      },
+      "phase_metrics": {
+        "add-episode": {
+          "duration_ns": 40732294170,
+          "span_count": 1
+        },
+        "attributes-summary": {
+          "duration_ns": 13385531,
+          "span_count": 1
+        },
+        "candidate-embedding": {
+          "duration_ns": 15906127,
+          "span_count": 2,
+          "text_count": 1
+        },
+        "candidate-search": {
+          "candidate_count": 15,
+          "candidate_query_count": 1,
+          "duration_ns": 28054288,
+          "span_count": 2
+        },
+        "database": {
+          "duration_ns": 18990084,
+          "span_count": 6
+        },
+        "database-transaction": {
+          "duration_ns": 2364866,
+          "span_count": 1
+        },
+        "edge-extraction": {
+          "duration_ns": 33832996344,
+          "span_count": 1
+        },
+        "edge-resolution": {
+          "duration_ns": 62634,
+          "span_count": 1
+        },
+        "embedding": {
+          "duration_ns": 29203991,
+          "span_count": 2,
+          "text_count": 2
+        },
+        "graph-prefix-snapshot": {
+          "duration_ns": 2330,
+          "span_count": 1
+        },
+        "invalidation-update": {
+          "duration_ns": 492,
+          "span_count": 1
+        },
+        "llm": {
+          "duration_ns": 40675565079,
+          "input_tokens": 53253,
+          "output_tokens": 1019,
+          "span_count": 2
+        },
+        "llm-transport": {
+          "duration_ns": 40665326363,
+          "input_tokens": 53253,
+          "output_tokens": 1019,
+          "span_count": 2
+        },
+        "node-extraction": {
+          "duration_ns": 6844217711,
+          "span_count": 1
+        },
+        "node-resolution": {
+          "duration_ns": 29783257,
+          "span_count": 1
+        },
+        "previous-context": {
+          "duration_ns": 5199196,
+          "span_count": 1
+        },
+        "publication": {
+          "duration_ns": 6408970,
+          "span_count": 1
+        }
+      },
+      "queue": {
+        "arrival_ts_ns": 206455871721154,
+        "enqueue_ts_ns": 206455873598239,
+        "publication_ts_ns": 207069950821922,
+        "queue_depth_at_enqueue": 17,
+        "service_start_ts_ns": 207029179715588,
+        "terminal_ts_ns": 207069950821922
+      },
+      "root_span": {
+        "end_ns": 207069927780686,
+        "start_ns": 207029195486516
+      },
+      "schema_version": "membind.paper-eval-v3.unified-observability.v1",
+      "status": "completed"
+    },
+    {
+      "graph_work": {
+        "attribution_status": "SERIAL_PREFIX_DELTA_OBSERVED",
+        "node_delta": 2,
+        "nodes_after": 118,
+        "nodes_before": 116,
+        "relationship_delta": 1,
+        "relationships_after": 198,
+        "relationships_before": 197
+      },
+      "identity": {
+        "episode_id": "b6019101:17",
+        "history_id": "b6019101",
+        "method": "A0",
+        "question_id": "b6019101",
+        "repeat_id": 0,
+        "run_id": "pev3-bs-dev-20260816-001-a0-b6019101-a001",
+        "source_sequence": 17
+      },
+      "latency_ns": {
+        "freshness": 668376667174,
+        "queue_delay": 614078617518,
+        "service": 54298049656,
+        "terminal": 668376667174
+      },
+      "phase_metrics": {
+        "add-episode": {
+          "duration_ns": 54265081511,
+          "span_count": 1
+        },
+        "attributes-summary": {
+          "duration_ns": 8418456714,
+          "span_count": 1
+        },
+        "candidate-embedding": {
+          "duration_ns": 11129960,
+          "span_count": 2,
+          "text_count": 1
+        },
+        "candidate-search": {
+          "candidate_count": 15,
+          "candidate_query_count": 1,
+          "duration_ns": 22120705,
+          "span_count": 2
+        },
+        "database": {
+          "duration_ns": 17007172,
+          "span_count": 6
+        },
+        "database-transaction": {
+          "duration_ns": 3112056,
+          "span_count": 1
+        },
+        "edge-extraction": {
+          "duration_ns": 32801315851,
+          "span_count": 1
+        },
+        "edge-resolution": {
+          "duration_ns": 64341,
+          "span_count": 1
+        },
+        "embedding": {
+          "duration_ns": 25055750,
+          "span_count": 2,
+          "text_count": 2
+        },
+        "graph-prefix-snapshot": {
+          "duration_ns": 1368,
+          "span_count": 1
+        },
+        "invalidation-update": {
+          "duration_ns": 420,
+          "span_count": 1
+        },
+        "llm": {
+          "duration_ns": 54210081328,
+          "input_tokens": 100393,
+          "output_tokens": 1144,
+          "span_count": 4
+        },
+        "llm-transport": {
+          "duration_ns": 54196140638,
+          "input_tokens": 100393,
+          "output_tokens": 1144,
+          "span_count": 4
+        },
+        "node-extraction": {
+          "duration_ns": 6480167588,
+          "span_count": 1
+        },
+        "node-resolution": {
+          "duration_ns": 6553019007,
+          "span_count": 1
+        },
+        "previous-context": {
+          "duration_ns": 3497496,
+          "span_count": 1
+        },
+        "publication": {
+          "duration_ns": 8399160,
+          "span_count": 1
+        }
+      },
+      "queue": {
+        "arrival_ts_ns": 206455875400636,
+        "enqueue_ts_ns": 206455877204740,
+        "publication_ts_ns": 207124252067810,
+        "queue_depth_at_enqueue": 18,
+        "service_start_ts_ns": 207069954018154,
+        "terminal_ts_ns": 207124252067810
+      },
+      "root_span": {
+        "end_ns": 207124225200063,
+        "start_ns": 207069960118552
+      },
+      "schema_version": "membind.paper-eval-v3.unified-observability.v1",
+      "status": "completed"
+    },
+    {
+      "graph_work": {
+        "attribution_status": "SERIAL_PREFIX_DELTA_OBSERVED",
+        "node_delta": 6,
+        "nodes_after": 124,
+        "nodes_before": 118,
+        "relationship_delta": 12,
+        "relationships_after": 210,
+        "relationships_before": 198
+      },
+      "identity": {
+        "episode_id": "b6019101:18",
+        "history_id": "b6019101",
+        "method": "A0",
+        "question_id": "b6019101",
+        "repeat_id": 0,
+        "run_id": "pev3-bs-dev-20260816-001-a0-b6019101-a001",
+        "source_sequence": 18
+      },
+      "latency_ns": {
+        "freshness": 725585259534,
+        "queue_delay": 668376131513,
+        "service": 57209128021,
+        "terminal": 725585259534
+      },
+      "phase_metrics": {
+        "add-episode": {
+          "duration_ns": 57095721123,
+          "span_count": 1
+        },
+        "attributes-summary": {
+          "duration_ns": 14956067169,
+          "span_count": 1
+        },
+        "candidate-embedding": {
+          "duration_ns": 80965748,
+          "span_count": 14,
+          "text_count": 24
+        },
+        "candidate-search": {
+          "candidate_count": 150,
+          "candidate_query_count": 18,
+          "duration_ns": 232118722,
+          "span_count": 13
+        },
+        "database": {
+          "duration_ns": 208353714,
+          "span_count": 41
+        },
+        "database-transaction": {
+          "duration_ns": 11705542,
+          "span_count": 1
+        },
+        "edge-extraction": {
+          "duration_ns": 17902134701,
+          "span_count": 1
+        },
+        "edge-resolution": {
+          "duration_ns": 2228933648,
+          "span_count": 1
+        },
+        "embedding": {
+          "duration_ns": 116365385,
+          "span_count": 16,
+          "text_count": 36
+        },
+        "graph-prefix-snapshot": {
+          "duration_ns": 1525,
+          "span_count": 1
+        },
+        "invalidation-update": {
+          "duration_ns": 19100,
+          "span_count": 12
+        },
+        "llm": {
+          "duration_ns": 56761606214,
+          "input_tokens": 117723,
+          "output_tokens": 1322,
+          "span_count": 16
+        },
+        "llm-transport": {
+          "duration_ns": 56743404831,
+          "input_tokens": 117723,
+          "output_tokens": 1322,
+          "span_count": 16
+        },
+        "node-extraction": {
+          "duration_ns": 10772170342,
+          "span_count": 1
+        },
+        "node-resolution": {
+          "duration_ns": 11215106749,
+          "span_count": 1
+        },
+        "previous-context": {
+          "duration_ns": 1948234,
+          "span_count": 1
+        },
+        "publication": {
+          "duration_ns": 19184598,
+          "span_count": 1
+        }
+      },
+      "queue": {
+        "arrival_ts_ns": 206455878970272,
+        "enqueue_ts_ns": 206455880809191,
+        "publication_ts_ns": 207181464229806,
+        "queue_depth_at_enqueue": 19,
+        "service_start_ts_ns": 207124255101785,
+        "terminal_ts_ns": 207181464229806
+      },
+      "root_span": {
+        "end_ns": 207181356849052,
+        "start_ns": 207124261127929
+      },
+      "schema_version": "membind.paper-eval-v3.unified-observability.v1",
+      "status": "completed"
+    },
+    {
+      "graph_work": {
+        "attribution_status": "SERIAL_PREFIX_DELTA_OBSERVED",
+        "node_delta": 4,
+        "nodes_after": 128,
+        "nodes_before": 124,
+        "relationship_delta": 8,
+        "relationships_after": 218,
+        "relationships_before": 210
+      },
+      "identity": {
+        "episode_id": "b6019101:19",
+        "history_id": "b6019101",
+        "method": "A0",
+        "question_id": "b6019101",
+        "repeat_id": 0,
+        "run_id": "pev3-bs-dev-20260816-001-a0-b6019101-a001",
+        "source_sequence": 19
+      },
+      "latency_ns": {
+        "freshness": 750345225266,
+        "queue_delay": 725584932227,
+        "service": 24760293039,
+        "terminal": 750345225266
+      },
+      "phase_metrics": {
+        "add-episode": {
+          "duration_ns": 24664980306,
+          "span_count": 1
+        },
+        "attributes-summary": {
+          "duration_ns": 4108971363,
+          "span_count": 1
+        },
+        "candidate-embedding": {
+          "duration_ns": 79542244,
+          "span_count": 12,
+          "text_count": 18
+        },
+        "candidate-search": {
+          "candidate_count": 95,
+          "candidate_query_count": 13,
+          "duration_ns": 182327100,
+          "span_count": 11
+        },
+        "database": {
+          "duration_ns": 156418762,
+          "span_count": 33
+        },
+        "database-transaction": {
+          "duration_ns": 8576041,
+          "span_count": 1
+        },
+        "edge-extraction": {
+          "duration_ns": 12852717507,
+          "span_count": 1
+        },
+        "edge-resolution": {
+          "duration_ns": 1569893117,
+          "span_count": 1
+        },
+        "embedding": {
+          "duration_ns": 104514254,
+          "span_count": 14,
+          "text_count": 26
+        },
+        "graph-prefix-snapshot": {
+          "duration_ns": 1933,
+          "span_count": 1
+        },
+        "invalidation-update": {
+          "duration_ns": 13794,
+          "span_count": 10
+        },
+        "llm": {
+          "duration_ns": 24407555929,
+          "input_tokens": 106485,
+          "output_tokens": 898,
+          "span_count": 14
+        },
+        "llm-transport": {
+          "duration_ns": 24394888525,
+          "input_tokens": 106485,
+          "output_tokens": 898,
+          "span_count": 14
+        },
+        "node-extraction": {
+          "duration_ns": 2285515318,
+          "span_count": 1
+        },
+        "node-resolution": {
+          "duration_ns": 3830150516,
+          "span_count": 1
+        },
+        "previous-context": {
+          "duration_ns": 2360256,
+          "span_count": 1
+        },
+        "publication": {
+          "duration_ns": 15216492,
+          "span_count": 1
+        }
+      },
+      "queue": {
+        "arrival_ts_ns": 206455882645023,
+        "enqueue_ts_ns": 206455884487360,
+        "publication_ts_ns": 207206227870289,
+        "queue_depth_at_enqueue": 20,
+        "service_start_ts_ns": 207181467577250,
+        "terminal_ts_ns": 207206227870289
+      },
+      "root_span": {
+        "end_ns": 207206138941738,
+        "start_ns": 207181473961432
+      },
+      "schema_version": "membind.paper-eval-v3.unified-observability.v1",
+      "status": "completed"
+    },
+    {
+      "graph_work": {
+        "attribution_status": "SERIAL_PREFIX_DELTA_OBSERVED",
+        "node_delta": 2,
+        "nodes_after": 130,
+        "nodes_before": 128,
+        "relationship_delta": 1,
+        "relationships_after": 219,
+        "relationships_before": 218
+      },
+      "identity": {
+        "episode_id": "b6019101:20",
+        "history_id": "b6019101",
+        "method": "A0",
+        "question_id": "b6019101",
+        "repeat_id": 0,
+        "run_id": "pev3-bs-dev-20260816-001-a0-b6019101-a001",
+        "source_sequence": 20
+      },
+      "latency_ns": {
+        "freshness": 789021264132,
+        "queue_delay": 750344541275,
+        "service": 38676722857,
+        "terminal": 789021264132
+      },
+      "phase_metrics": {
+        "add-episode": {
+          "duration_ns": 38644759695,
+          "span_count": 1
+        },
+        "attributes-summary": {
+          "duration_ns": 10582197722,
+          "span_count": 1
+        },
+        "candidate-embedding": {
+          "duration_ns": 13622105,
+          "span_count": 2,
+          "text_count": 1
+        },
+        "candidate-search": {
+          "candidate_count": 15,
+          "candidate_query_count": 1,
+          "duration_ns": 24562676,
+          "span_count": 2
+        },
+        "database": {
+          "duration_ns": 14501661,
+          "span_count": 6
+        },
+        "database-transaction": {
+          "duration_ns": 2261915,
+          "span_count": 1
+        },
+        "edge-extraction": {
+          "duration_ns": 13513454824,
+          "span_count": 1
+        },
+        "edge-resolution": {
+          "duration_ns": 66657,
+          "span_count": 1
+        },
+        "embedding": {
+          "duration_ns": 28616871,
+          "span_count": 2,
+          "text_count": 2
+        },
+        "graph-prefix-snapshot": {
+          "duration_ns": 1554,
+          "span_count": 1
+        },
+        "invalidation-update": {
+          "duration_ns": 524,
+          "span_count": 1
+        },
+        "llm": {
+          "duration_ns": 38588180199,
+          "input_tokens": 106619,
+          "output_tokens": 497,
+          "span_count": 4
+        },
+        "llm-transport": {
+          "duration_ns": 38574367253,
+          "input_tokens": 106619,
+          "output_tokens": 497,
+          "span_count": 4
+        },
+        "node-extraction": {
+          "duration_ns": 7333335399,
+          "span_count": 1
+        },
+        "node-resolution": {
+          "duration_ns": 7205629389,
+          "span_count": 1
+        },
+        "previous-context": {
+          "duration_ns": 1776927,
+          "span_count": 1
+        },
+        "publication": {
+          "duration_ns": 8137731,
+          "span_count": 1
+        }
+      },
+      "queue": {
+        "arrival_ts_ns": 206455886373479,
+        "enqueue_ts_ns": 206455888280520,
+        "publication_ts_ns": 207244907637611,
+        "queue_depth_at_enqueue": 21,
+        "service_start_ts_ns": 207206230914754,
+        "terminal_ts_ns": 207244907637611
+      },
+      "root_span": {
+        "end_ns": 207244881626216,
+        "start_ns": 207206236866521
+      },
+      "schema_version": "membind.paper-eval-v3.unified-observability.v1",
+      "status": "completed"
+    },
+    {
+      "graph_work": {
+        "attribution_status": "SERIAL_PREFIX_DELTA_OBSERVED",
+        "node_delta": 2,
+        "nodes_after": 132,
+        "nodes_before": 130,
+        "relationship_delta": 2,
+        "relationships_after": 221,
+        "relationships_before": 219
+      },
+      "identity": {
+        "episode_id": "b6019101:21",
+        "history_id": "b6019101",
+        "method": "A0",
+        "question_id": "b6019101",
+        "repeat_id": 0,
+        "run_id": "pev3-bs-dev-20260816-001-a0-b6019101-a001",
+        "source_sequence": 21
+      },
+      "latency_ns": {
+        "freshness": 794097483329,
+        "queue_delay": 789020538519,
+        "service": 5076944810,
+        "terminal": 794097483329
+      },
+      "phase_metrics": {
+        "add-episode": {
+          "duration_ns": 5044225019,
+          "span_count": 1
+        },
+        "attributes-summary": {
+          "duration_ns": 1453387527,
+          "span_count": 1
+        },
+        "candidate-embedding": {
+          "duration_ns": 14856230,
+          "span_count": 2,
+          "text_count": 2
+        },
+        "candidate-search": {
+          "candidate_count": 30,
+          "candidate_query_count": 2,
+          "duration_ns": 31889596,
+          "span_count": 2
+        },
+        "database": {
+          "duration_ns": 21417459,
+          "span_count": 7
+        },
+        "database-transaction": {
+          "duration_ns": 3148563,
+          "span_count": 1
+        },
+        "edge-extraction": {
+          "duration_ns": 579885392,
+          "span_count": 1
+        },
+        "edge-resolution": {
+          "duration_ns": 58849,
+          "span_count": 1
+        },
+        "embedding": {
+          "duration_ns": 24266346,
+          "span_count": 2,
+          "text_count": 4
+        },
+        "graph-prefix-snapshot": {
+          "duration_ns": 1262,
+          "span_count": 1
+        },
+        "invalidation-update": {
+          "duration_ns": 472,
+          "span_count": 1
+        },
+        "llm": {
+          "duration_ns": 4986661925,
+          "input_tokens": 93941,
+          "output_tokens": 133,
+          "span_count": 4
+        },
+        "llm-transport": {
+          "duration_ns": 4973860629,
+          "input_tokens": 93941,
+          "output_tokens": 133,
+          "span_count": 4
+        },
+        "node-extraction": {
+          "duration_ns": 1431994527,
+          "span_count": 1
+        },
+        "node-resolution": {
+          "duration_ns": 1569962505,
+          "span_count": 1
+        },
+        "previous-context": {
+          "duration_ns": 1672282,
+          "span_count": 1
+        },
+        "publication": {
+          "duration_ns": 7114499,
+          "span_count": 1
+        }
+      },
+      "queue": {
+        "arrival_ts_ns": 206455890113506,
+        "enqueue_ts_ns": 206455891941249,
+        "publication_ts_ns": 207249987596835,
+        "queue_depth_at_enqueue": 22,
+        "service_start_ts_ns": 207244910652025,
+        "terminal_ts_ns": 207249987596835
+      },
+      "root_span": {
+        "end_ns": 207249960239489,
+        "start_ns": 207244916014470
+      },
+      "schema_version": "membind.paper-eval-v3.unified-observability.v1",
+      "status": "completed"
+    },
+    {
+      "graph_work": {
+        "attribution_status": "SERIAL_PREFIX_DELTA_OBSERVED",
+        "node_delta": 33,
+        "nodes_after": 165,
+        "nodes_before": 132,
+        "relationship_delta": 32,
+        "relationships_after": 253,
+        "relationships_before": 221
+      },
+      "identity": {
+        "episode_id": "b6019101:22",
+        "history_id": "b6019101",
+        "method": "A0",
+        "question_id": "b6019101",
+        "repeat_id": 0,
+        "run_id": "pev3-bs-dev-20260816-001-a0-b6019101-a001",
+        "source_sequence": 22
+      },
+      "latency_ns": {
+        "freshness": 901877263734,
+        "queue_delay": 794096783412,
+        "service": 107780480322,
+        "terminal": 901877263734
+      },
+      "phase_metrics": {
+        "add-episode": {
+          "duration_ns": 107723958059,
+          "span_count": 1
+        },
+        "attributes-summary": {
+          "duration_ns": 37587347465,
+          "span_count": 1
+        },
+        "candidate-embedding": {
+          "duration_ns": 32223138,
+          "span_count": 2,
+          "text_count": 32
+        },
+        "candidate-search": {
+          "candidate_count": 480,
+          "candidate_query_count": 32,
+          "duration_ns": 277209496,
+          "span_count": 2
+        },
+        "database": {
+          "duration_ns": 275235429,
+          "span_count": 37
+        },
+        "database-transaction": {
+          "duration_ns": 29243562,
+          "span_count": 1
+        },
+        "edge-extraction": {
+          "duration_ns": 5592242868,
+          "span_count": 1
+        },
+        "edge-resolution": {
+          "duration_ns": 71440,
+          "span_count": 1
+        },
+        "embedding": {
+          "duration_ns": 60438308,
+          "span_count": 2,
+          "text_count": 64
+        },
+        "graph-prefix-snapshot": {
+          "duration_ns": 1114,
+          "span_count": 1
+        },
+        "invalidation-update": {
+          "duration_ns": 520,
+          "span_count": 1
+        },
+        "llm": {
+          "duration_ns": 107296046402,
+          "input_tokens": 121351,
+          "output_tokens": 3214,
+          "span_count": 5
+        },
+        "llm-transport": {
+          "duration_ns": 107283201282,
+          "input_tokens": 121351,
+          "output_tokens": 3214,
+          "span_count": 5
+        },
+        "node-extraction": {
+          "duration_ns": 29726282769,
+          "span_count": 1
+        },
+        "node-resolution": {
+          "duration_ns": 34776991171,
+          "span_count": 1
+        },
+        "previous-context": {
+          "duration_ns": 1579397,
+          "span_count": 1
+        },
+        "publication": {
+          "duration_ns": 39268113,
+          "span_count": 1
+        }
+      },
+      "queue": {
+        "arrival_ts_ns": 206455893843136,
+        "enqueue_ts_ns": 206455895706791,
+        "publication_ts_ns": 207357771106870,
+        "queue_depth_at_enqueue": 23,
+        "service_start_ts_ns": 207249990626548,
+        "terminal_ts_ns": 207357771106870
+      },
+      "root_span": {
+        "end_ns": 207357720122884,
+        "start_ns": 207249996164825
+      },
+      "schema_version": "membind.paper-eval-v3.unified-observability.v1",
+      "status": "completed"
+    },
+    {
+      "graph_work": {
+        "attribution_status": "SERIAL_PREFIX_DELTA_OBSERVED",
+        "node_delta": 22,
+        "nodes_after": 187,
+        "nodes_before": 165,
+        "relationship_delta": 34,
+        "relationships_after": 287,
+        "relationships_before": 253
+      },
+      "identity": {
+        "episode_id": "b6019101:23",
+        "history_id": "b6019101",
+        "method": "A0",
+        "question_id": "b6019101",
+        "repeat_id": 0,
+        "run_id": "pev3-bs-dev-20260816-001-a0-b6019101-a001",
+        "source_sequence": 23
+      },
+      "latency_ns": {
+        "freshness": 998978741415,
+        "queue_delay": 901876801834,
+        "service": 97101939581,
+        "terminal": 998978741415
+      },
+      "phase_metrics": {
+        "add-episode": {
+          "duration_ns": 96903902709,
+          "span_count": 1
+        },
+        "attributes-summary": {
+          "duration_ns": 17004717448,
+          "span_count": 1
+        },
+        "candidate-embedding": {
+          "duration_ns": 122370127,
+          "span_count": 28,
+          "text_count": 60
+        },
+        "candidate-search": {
+          "candidate_count": 445,
+          "candidate_query_count": 47,
+          "duration_ns": 529514165,
+          "span_count": 27
+        },
+        "database": {
+          "duration_ns": 510014564,
+          "span_count": 91
+        },
+        "database-transaction": {
+          "duration_ns": 30633458,
+          "span_count": 1
+        },
+        "edge-extraction": {
+          "duration_ns": 38174360345,
+          "span_count": 1
+        },
+        "edge-resolution": {
+          "duration_ns": 2878428939,
+          "span_count": 1
+        },
+        "embedding": {
+          "duration_ns": 186300445,
+          "span_count": 30,
+          "text_count": 94
+        },
+        "graph-prefix-snapshot": {
+          "duration_ns": 1243,
+          "span_count": 1
+        },
+        "invalidation-update": {
+          "duration_ns": 31976,
+          "span_count": 26
+        },
+        "llm": {
+          "duration_ns": 96147460122,
+          "input_tokens": 121640,
+          "output_tokens": 3639,
+          "span_count": 30
+        },
+        "llm-transport": {
+          "duration_ns": 96133739544,
+          "input_tokens": 121640,
+          "output_tokens": 3639,
+          "span_count": 30
+        },
+        "node-extraction": {
+          "duration_ns": 17207907684,
+          "span_count": 1
+        },
+        "node-resolution": {
+          "duration_ns": 21570457796,
+          "span_count": 1
+        },
+        "previous-context": {
+          "duration_ns": 1720574,
+          "span_count": 1
+        },
+        "publication": {
+          "duration_ns": 66123213,
+          "span_count": 1
+        }
+      },
+      "queue": {
+        "arrival_ts_ns": 206455897566878,
+        "enqueue_ts_ns": 206455899447915,
+        "publication_ts_ns": 207454876308293,
+        "queue_depth_at_enqueue": 24,
+        "service_start_ts_ns": 207357774368712,
+        "terminal_ts_ns": 207454876308293
+      },
+      "root_span": {
+        "end_ns": 207454683937573,
+        "start_ns": 207357780034864
+      },
+      "schema_version": "membind.paper-eval-v3.unified-observability.v1",
+      "status": "completed"
+    },
+    {
+      "graph_work": {
+        "attribution_status": "SERIAL_PREFIX_DELTA_OBSERVED",
+        "node_delta": 9,
+        "nodes_after": 196,
+        "nodes_before": 187,
+        "relationship_delta": 15,
+        "relationships_after": 302,
+        "relationships_before": 287
+      },
+      "identity": {
+        "episode_id": "b6019101:24",
+        "history_id": "b6019101",
+        "method": "A0",
+        "question_id": "b6019101",
+        "repeat_id": 0,
+        "run_id": "pev3-bs-dev-20260816-001-a0-b6019101-a001",
+        "source_sequence": 24
+      },
+      "latency_ns": {
+        "freshness": 1051895921093,
+        "queue_delay": 998977964600,
+        "service": 52917956493,
+        "terminal": 1051895921093
+      },
+      "phase_metrics": {
+        "add-episode": {
+          "duration_ns": 52793374962,
+          "span_count": 1
+        },
+        "attributes-summary": {
+          "duration_ns": 14147543,
+          "span_count": 1
+        },
+        "candidate-embedding": {
+          "duration_ns": 87885331,
+          "span_count": 16,
+          "text_count": 29
+        },
+        "candidate-search": {
+          "candidate_count": 190,
+          "candidate_query_count": 22,
+          "duration_ns": 270219645,
+          "span_count": 15
+        },
+        "database": {
+          "duration_ns": 247443292,
+          "span_count": 48
+        },
+        "database-transaction": {
+          "duration_ns": 14181561,
+          "span_count": 1
+        },
+        "edge-extraction": {
+          "duration_ns": 22647714807,
+          "span_count": 1
+        },
+        "edge-resolution": {
+          "duration_ns": 1922295500,
+          "span_count": 1
+        },
+        "embedding": {
+          "duration_ns": 121645748,
+          "span_count": 18,
+          "text_count": 44
+        },
+        "graph-prefix-snapshot": {
+          "duration_ns": 1949,
+          "span_count": 1
+        },
+        "invalidation-update": {
+          "duration_ns": 19738,
+          "span_count": 14
+        },
+        "llm": {
+          "duration_ns": 52404530491,
+          "input_tokens": 94922,
+          "output_tokens": 1318,
+          "span_count": 17
+        },
+        "llm-transport": {
+          "duration_ns": 52392647821,
+          "input_tokens": 94922,
+          "output_tokens": 1318,
+          "span_count": 17
+        },
+        "node-extraction": {
+          "duration_ns": 13374244344,
+          "span_count": 1
+        },
+        "node-resolution": {
+          "duration_ns": 14802144854,
+          "span_count": 1
+        },
+        "previous-context": {
+          "duration_ns": 1738746,
+          "span_count": 1
+        },
+        "publication": {
+          "duration_ns": 30930949,
+          "span_count": 1
+        }
+      },
+      "queue": {
+        "arrival_ts_ns": 206455901414248,
+        "enqueue_ts_ns": 206455903404888,
+        "publication_ts_ns": 207507797335341,
+        "queue_depth_at_enqueue": 25,
+        "service_start_ts_ns": 207454879378848,
+        "terminal_ts_ns": 207507797335341
+      },
+      "root_span": {
+        "end_ns": 207507678828744,
+        "start_ns": 207454885453782
+      },
+      "schema_version": "membind.paper-eval-v3.unified-observability.v1",
+      "status": "completed"
+    },
+    {
+      "graph_work": {
+        "attribution_status": "SERIAL_PREFIX_DELTA_OBSERVED",
+        "node_delta": 3,
+        "nodes_after": 199,
+        "nodes_before": 196,
+        "relationship_delta": 3,
+        "relationships_after": 305,
+        "relationships_before": 302
+      },
+      "identity": {
+        "episode_id": "b6019101:25",
+        "history_id": "b6019101",
+        "method": "A0",
+        "question_id": "b6019101",
+        "repeat_id": 0,
+        "run_id": "pev3-bs-dev-20260816-001-a0-b6019101-a001",
+        "source_sequence": 25
+      },
+      "latency_ns": {
+        "freshness": 1062154471768,
+        "queue_delay": 1051895128943,
+        "service": 10259342825,
+        "terminal": 1062154471768
+      },
+      "phase_metrics": {
+        "add-episode": {
+          "duration_ns": 10214521864,
+          "span_count": 1
+        },
+        "attributes-summary": {
+          "duration_ns": 9745293,
+          "span_count": 1
+        },
+        "candidate-embedding": {
+          "duration_ns": 40865557,
+          "span_count": 4,
+          "text_count": 5
+        },
+        "candidate-search": {
+          "candidate_count": 40,
+          "candidate_query_count": 4,
+          "duration_ns": 72256137,
+          "span_count": 3
+        },
+        "database": {
+          "duration_ns": 56767625,
+          "span_count": 12
+        },
+        "database-transaction": {
+          "duration_ns": 3911936,
+          "span_count": 1
+        },
+        "edge-extraction": {
+          "duration_ns": 3039744164,
+          "span_count": 1
+        },
+        "edge-resolution": {
+          "duration_ns": 935773174,
+          "span_count": 1
+        },
+        "embedding": {
+          "duration_ns": 62932851,
+          "span_count": 6,
+          "text_count": 8
+        },
+        "graph-prefix-snapshot": {
+          "duration_ns": 1316,
+          "span_count": 1
+        },
+        "invalidation-update": {
+          "duration_ns": 2999,
+          "span_count": 2
+        },
+        "llm": {
+          "duration_ns": 10079266002,
+          "input_tokens": 83189,
+          "output_tokens": 229,
+          "span_count": 5
+        },
+        "llm-transport": {
+          "duration_ns": 10067984817,
+          "input_tokens": 83189,
+          "output_tokens": 229,
+          "span_count": 5
+        },
+        "node-extraction": {
+          "duration_ns": 2942258001,
+          "span_count": 1
+        },
+        "node-resolution": {
+          "duration_ns": 3270268544,
+          "span_count": 1
+        },
+        "previous-context": {
+          "duration_ns": 7680211,
+          "span_count": 1
+        },
+        "publication": {
+          "duration_ns": 8892342,
+          "span_count": 1
+        }
+      },
+      "queue": {
+        "arrival_ts_ns": 206455905414119,
+        "enqueue_ts_ns": 206455907433483,
+        "publication_ts_ns": 207518059885887,
+        "queue_depth_at_enqueue": 26,
+        "service_start_ts_ns": 207507800543062,
+        "terminal_ts_ns": 207518059885887
+      },
+      "root_span": {
+        "end_ns": 207518021024756,
+        "start_ns": 207507806502892
+      },
+      "schema_version": "membind.paper-eval-v3.unified-observability.v1",
+      "status": "completed"
+    },
+    {
+      "graph_work": {
+        "attribution_status": "SERIAL_PREFIX_DELTA_OBSERVED",
+        "node_delta": 5,
+        "nodes_after": 204,
+        "nodes_before": 199,
+        "relationship_delta": 7,
+        "relationships_after": 312,
+        "relationships_before": 305
+      },
+      "identity": {
+        "episode_id": "b6019101:26",
+        "history_id": "b6019101",
+        "method": "A0",
+        "question_id": "b6019101",
+        "repeat_id": 0,
+        "run_id": "pev3-bs-dev-20260816-001-a0-b6019101-a001",
+        "source_sequence": 26
+      },
+      "latency_ns": {
+        "freshness": 1103882473110,
+        "queue_delay": 1062153483123,
+        "service": 41728989987,
+        "terminal": 1103882473110
+      },
+      "phase_metrics": {
+        "add-episode": {
+          "duration_ns": 41646072366,
+          "span_count": 1
+        },
+        "attributes-summary": {
+          "duration_ns": 9566048741,
+          "span_count": 1
+        },
+        "candidate-embedding": {
+          "duration_ns": 76438874,
+          "span_count": 8,
+          "text_count": 13
+        },
+        "candidate-search": {
+          "candidate_count": 90,
+          "candidate_query_count": 10,
+          "duration_ns": 138441900,
+          "span_count": 7
+        },
+        "database": {
+          "duration_ns": 170330511,
+          "span_count": 24
+        },
+        "database-transaction": {
+          "duration_ns": 7555915,
+          "span_count": 1
+        },
+        "edge-extraction": {
+          "duration_ns": 12759473946,
+          "span_count": 1
+        },
+        "edge-resolution": {
+          "duration_ns": 1303548593,
+          "span_count": 1
+        },
+        "embedding": {
+          "duration_ns": 108362072,
+          "span_count": 10,
+          "text_count": 20
+        },
+        "graph-prefix-snapshot": {
+          "duration_ns": 1301,
+          "span_count": 1
+        },
+        "invalidation-update": {
+          "duration_ns": 9918,
+          "span_count": 6
+        },
+        "llm": {
+          "duration_ns": 41358572042,
+          "input_tokens": 106688,
+          "output_tokens": 680,
+          "span_count": 9
+        },
+        "llm-transport": {
+          "duration_ns": 41344799905,
+          "input_tokens": 106688,
+          "output_tokens": 680,
+          "span_count": 9
+        },
+        "node-extraction": {
+          "duration_ns": 7952787807,
+          "span_count": 1
+        },
+        "node-resolution": {
+          "duration_ns": 10045730299,
+          "span_count": 1
+        },
+        "previous-context": {
+          "duration_ns": 1757302,
+          "span_count": 1
+        },
+        "publication": {
+          "duration_ns": 16571096,
+          "span_count": 1
+        }
+      },
+      "queue": {
+        "arrival_ts_ns": 206455909424668,
+        "enqueue_ts_ns": 206455911493774,
+        "publication_ts_ns": 207559791897778,
+        "queue_depth_at_enqueue": 27,
+        "service_start_ts_ns": 207518062907791,
+        "terminal_ts_ns": 207559791897778
+      },
+      "root_span": {
+        "end_ns": 207559717018595,
+        "start_ns": 207518070946229
+      },
+      "schema_version": "membind.paper-eval-v3.unified-observability.v1",
+      "status": "completed"
+    },
+    {
+      "graph_work": {
+        "attribution_status": "SERIAL_PREFIX_DELTA_OBSERVED",
+        "node_delta": 30,
+        "nodes_after": 234,
+        "nodes_before": 204,
+        "relationship_delta": 52,
+        "relationships_after": 364,
+        "relationships_before": 312
+      },
+      "identity": {
+        "episode_id": "b6019101:27",
+        "history_id": "b6019101",
+        "method": "A0",
+        "question_id": "b6019101",
+        "repeat_id": 0,
+        "run_id": "pev3-bs-dev-20260816-001-a0-b6019101-a001",
+        "source_sequence": 27
+      },
+      "latency_ns": {
+        "freshness": 1294653703473,
+        "queue_delay": 1103881416513,
+        "service": 190772286960,
+        "terminal": 1294653703473
+      },
+      "phase_metrics": {
+        "add-episode": {
+          "duration_ns": 190299367790,
+          "span_count": 1
+        },
+        "attributes-summary": {
+          "duration_ns": 38124600160,
+          "span_count": 1
+        },
+        "candidate-embedding": {
+          "duration_ns": 189778149,
+          "span_count": 46,
+          "text_count": 96
+        },
+        "candidate-search": {
+          "candidate_count": 670,
+          "candidate_query_count": 74,
+          "duration_ns": 1175281393,
+          "span_count": 45
+        },
+        "database": {
+          "duration_ns": 1151462707,
+          "span_count": 145
+        },
+        "database-transaction": {
+          "duration_ns": 56806638,
+          "span_count": 1
+        },
+        "edge-extraction": {
+          "duration_ns": 85908575902,
+          "span_count": 1
+        },
+        "edge-resolution": {
+          "duration_ns": 4064113408,
+          "span_count": 1
+        },
+        "embedding": {
+          "duration_ns": 245682754,
+          "span_count": 48,
+          "text_count": 148
+        },
+        "graph-prefix-snapshot": {
+          "duration_ns": 1277,
+          "span_count": 1
+        },
+        "invalidation-update": {
+          "duration_ns": 98558,
+          "span_count": 44
+        },
+        "llm": {
+          "duration_ns": 188858727541,
+          "input_tokens": 131076,
+          "output_tokens": 6139,
+          "span_count": 26
+        },
+        "llm-transport": {
+          "duration_ns": 188840344671,
+          "input_tokens": 131076,
+          "output_tokens": 6139,
+          "span_count": 26
+        },
+        "node-extraction": {
+          "duration_ns": 28272205982,
+          "span_count": 1
+        },
+        "node-resolution": {
+          "duration_ns": 33843972753,
+          "span_count": 1
+        },
+        "previous-context": {
+          "duration_ns": 2701346,
+          "span_count": 1
+        },
+        "publication": {
+          "duration_ns": 82907959,
+          "span_count": 1
+        }
+      },
+      "queue": {
+        "arrival_ts_ns": 206455913516686,
+        "enqueue_ts_ns": 206455915541872,
+        "publication_ts_ns": 207750567220159,
+        "queue_depth_at_enqueue": 28,
+        "service_start_ts_ns": 207559794933199,
+        "terminal_ts_ns": 207750567220159
+      },
+      "root_span": {
+        "end_ns": 207750100202785,
+        "start_ns": 207559800834995
+      },
+      "schema_version": "membind.paper-eval-v3.unified-observability.v1",
+      "status": "completed"
+    },
+    {
+      "graph_work": {
+        "attribution_status": "SERIAL_PREFIX_DELTA_OBSERVED",
+        "node_delta": 2,
+        "nodes_after": 236,
+        "nodes_before": 234,
+        "relationship_delta": 1,
+        "relationships_after": 365,
+        "relationships_before": 364
+      },
+      "identity": {
+        "episode_id": "b6019101:28",
+        "history_id": "b6019101",
+        "method": "A0",
+        "question_id": "b6019101",
+        "repeat_id": 0,
+        "run_id": "pev3-bs-dev-20260816-001-a0-b6019101-a001",
+        "source_sequence": 28
+      },
+      "latency_ns": {
+        "freshness": 1327130412963,
+        "queue_delay": 1294652915103,
+        "service": 32477497860,
+        "terminal": 1327130412963
+      },
+      "phase_metrics": {
+        "add-episode": {
+          "duration_ns": 32444076998,
+          "span_count": 1
+        },
+        "attributes-summary": {
+          "duration_ns": 9836220211,
+          "span_count": 1
+        },
+        "candidate-embedding": {
+          "duration_ns": 10211167,
+          "span_count": 2,
+          "text_count": 1
+        },
+        "candidate-search": {
+          "candidate_count": 15,
+          "candidate_query_count": 1,
+          "duration_ns": 23929624,
+          "span_count": 2
+        },
+        "database": {
+          "duration_ns": 69458006,
+          "span_count": 6
+        },
+        "database-transaction": {
+          "duration_ns": 54427672,
+          "span_count": 1
+        },
+        "edge-extraction": {
+          "duration_ns": 10055720253,
+          "span_count": 1
+        },
+        "edge-resolution": {
+          "duration_ns": 72867,
+          "span_count": 1
+        },
+        "embedding": {
+          "duration_ns": 25906717,
+          "span_count": 2,
+          "text_count": 2
+        },
+        "graph-prefix-snapshot": {
+          "duration_ns": 2028,
+          "span_count": 1
+        },
+        "invalidation-update": {
+          "duration_ns": 770,
+          "span_count": 1
+        },
+        "llm": {
+          "duration_ns": 32333838226,
+          "input_tokens": 96938,
+          "output_tokens": 394,
+          "span_count": 4
+        },
+        "llm-transport": {
+          "duration_ns": 32321146221,
+          "input_tokens": 96938,
+          "output_tokens": 394,
+          "span_count": 4
+        },
+        "node-extraction": {
+          "duration_ns": 6175733098,
+          "span_count": 1
+        },
+        "node-resolution": {
+          "duration_ns": 6313865994,
+          "span_count": 1
+        },
+        "previous-context": {
+          "duration_ns": 1922150,
+          "span_count": 1
+        },
+        "publication": {
+          "duration_ns": 60350192,
+          "span_count": 1
+        }
+      },
+      "queue": {
+        "arrival_ts_ns": 206455917560487,
+        "enqueue_ts_ns": 206455919595096,
+        "publication_ts_ns": 207783047973450,
+        "queue_depth_at_enqueue": 29,
+        "service_start_ts_ns": 207750570475590,
+        "terminal_ts_ns": 207783047973450
+      },
+      "root_span": {
+        "end_ns": 207783021098623,
+        "start_ns": 207750577021625
+      },
+      "schema_version": "membind.paper-eval-v3.unified-observability.v1",
+      "status": "completed"
+    },
+    {
+      "graph_work": {
+        "attribution_status": "SERIAL_PREFIX_DELTA_OBSERVED",
+        "node_delta": 2,
+        "nodes_after": 238,
+        "nodes_before": 236,
+        "relationship_delta": 1,
+        "relationships_after": 366,
+        "relationships_before": 365
+      },
+      "identity": {
+        "episode_id": "b6019101:29",
+        "history_id": "b6019101",
+        "method": "A0",
+        "question_id": "b6019101",
+        "repeat_id": 0,
+        "run_id": "pev3-bs-dev-20260816-001-a0-b6019101-a001",
+        "source_sequence": 29
+      },
+      "latency_ns": {
+        "freshness": 1351448166946,
+        "queue_delay": 1327129481043,
+        "service": 24318685903,
+        "terminal": 1351448166946
+      },
+      "phase_metrics": {
+        "add-episode": {
+          "duration_ns": 24285471264,
+          "span_count": 1
+        },
+        "attributes-summary": {
+          "duration_ns": 8469925765,
+          "span_count": 1
+        },
+        "candidate-embedding": {
+          "duration_ns": 9448956,
+          "span_count": 2,
+          "text_count": 1
+        },
+        "candidate-search": {
+          "candidate_count": 15,
+          "candidate_query_count": 1,
+          "duration_ns": 22514209,
+          "span_count": 2
+        },
+        "database": {
+          "duration_ns": 16651246,
+          "span_count": 6
+        },
+        "database-transaction": {
+          "duration_ns": 2253789,
+          "span_count": 1
+        },
+        "edge-extraction": {
+          "duration_ns": 4766087212,
+          "span_count": 1
+        },
+        "edge-resolution": {
+          "duration_ns": 61964,
+          "span_count": 1
+        },
+        "embedding": {
+          "duration_ns": 25424860,
+          "span_count": 2,
+          "text_count": 2
+        },
+        "graph-prefix-snapshot": {
+          "duration_ns": 1571,
+          "span_count": 1
+        },
+        "invalidation-update": {
+          "duration_ns": 537,
+          "span_count": 1
+        },
+        "llm": {
+          "duration_ns": 24230419916,
+          "input_tokens": 86001,
+          "output_tokens": 220,
+          "span_count": 4
+        },
+        "llm-transport": {
+          "duration_ns": 24219304787,
+          "input_tokens": 86001,
+          "output_tokens": 220,
+          "span_count": 4
+        },
+        "node-extraction": {
+          "duration_ns": 5610272398,
+          "span_count": 1
+        },
+        "node-resolution": {
+          "duration_ns": 5429365521,
+          "span_count": 1
+        },
+        "previous-context": {
+          "duration_ns": 1831418,
+          "span_count": 1
+        },
+        "publication": {
+          "duration_ns": 7764829,
+          "span_count": 1
+        }
+      },
+      "queue": {
+        "arrival_ts_ns": 206455921618548,
+        "enqueue_ts_ns": 206455923601409,
+        "publication_ts_ns": 207807369785494,
+        "queue_depth_at_enqueue": 30,
+        "service_start_ts_ns": 207783051099591,
+        "terminal_ts_ns": 207807369785494
+      },
+      "root_span": {
+        "end_ns": 207807343438261,
+        "start_ns": 207783057966997
+      },
+      "schema_version": "membind.paper-eval-v3.unified-observability.v1",
+      "status": "completed"
+    },
+    {
+      "graph_work": {
+        "attribution_status": "SERIAL_PREFIX_DELTA_OBSERVED",
+        "node_delta": 16,
+        "nodes_after": 254,
+        "nodes_before": 238,
+        "relationship_delta": 63,
+        "relationships_after": 429,
+        "relationships_before": 366
+      },
+      "identity": {
+        "episode_id": "b6019101:30",
+        "history_id": "b6019101",
+        "method": "A0",
+        "question_id": "b6019101",
+        "repeat_id": 0,
+        "run_id": "pev3-bs-dev-20260816-001-a0-b6019101-a001",
+        "source_sequence": 30
+      },
+      "latency_ns": {
+        "freshness": 1504282216658,
+        "queue_delay": 1351447311326,
+        "service": 152834905332,
+        "terminal": 1504282216658
+      },
+      "phase_metrics": {
+        "add-episode": {
+          "duration_ns": 152262473784,
+          "span_count": 1
+        },
+        "attributes-summary": {
+          "duration_ns": 10853652904,
+          "span_count": 1
+        },
+        "candidate-embedding": {
+          "duration_ns": 1786973480,
+          "span_count": 92,
+          "text_count": 153
+        },
+        "candidate-search": {
+          "candidate_count": 720,
+          "candidate_query_count": 108,
+          "duration_ns": 2331086371,
+          "span_count": 91
+        },
+        "database": {
+          "duration_ns": 1422412346,
+          "span_count": 248
+        },
+        "database-transaction": {
+          "duration_ns": 54335978,
+          "span_count": 1
+        },
+        "edge-extraction": {
+          "duration_ns": 91925530559,
+          "span_count": 1
+        },
+        "edge-resolution": {
+          "duration_ns": 9129272629,
+          "span_count": 1
+        },
+        "embedding": {
+          "duration_ns": 1874671497,
+          "span_count": 94,
+          "text_count": 216
+        },
+        "graph-prefix-snapshot": {
+          "duration_ns": 1450,
+          "span_count": 1
+        },
+        "invalidation-update": {
+          "duration_ns": 168878,
+          "span_count": 90
+        },
+        "llm": {
+          "duration_ns": 149629289515,
+          "input_tokens": 149054,
+          "output_tokens": 6071,
+          "span_count": 94
+        },
+        "llm-transport": {
+          "duration_ns": 149614810279,
+          "input_tokens": 149054,
+          "output_tokens": 6071,
+          "span_count": 94
+        },
+        "node-extraction": {
+          "duration_ns": 18980958500,
+          "span_count": 1
+        },
+        "node-resolution": {
+          "duration_ns": 21303860478,
+          "span_count": 1
+        },
+        "previous-context": {
+          "duration_ns": 1940481,
+          "span_count": 1
+        },
+        "publication": {
+          "duration_ns": 67050561,
+          "span_count": 1
+        }
+      },
+      "queue": {
+        "arrival_ts_ns": 206455925623161,
+        "enqueue_ts_ns": 206455927616332,
+        "publication_ts_ns": 207960207839819,
+        "queue_depth_at_enqueue": 31,
+        "service_start_ts_ns": 207807372934487,
+        "terminal_ts_ns": 207960207839819
+      },
+      "root_span": {
+        "end_ns": 207959642180141,
+        "start_ns": 207807379706357
+      },
+      "schema_version": "membind.paper-eval-v3.unified-observability.v1",
+      "status": "completed"
+    },
+    {
+      "graph_work": {
+        "attribution_status": "SERIAL_PREFIX_DELTA_OBSERVED",
+        "node_delta": 3,
+        "nodes_after": 257,
+        "nodes_before": 254,
+        "relationship_delta": 3,
+        "relationships_after": 432,
+        "relationships_before": 429
+      },
+      "identity": {
+        "episode_id": "b6019101:31",
+        "history_id": "b6019101",
+        "method": "A0",
+        "question_id": "b6019101",
+        "repeat_id": 0,
+        "run_id": "pev3-bs-dev-20260816-001-a0-b6019101-a001",
+        "source_sequence": 31
+      },
+      "latency_ns": {
+        "freshness": 1526541040430,
+        "queue_delay": 1504281408901,
+        "service": 22259631529,
+        "terminal": 1526541040430
+      },
+      "phase_metrics": {
+        "add-episode": {
+          "duration_ns": 22211709353,
+          "span_count": 1
+        },
+        "attributes-summary": {
+          "duration_ns": 7545655,
+          "span_count": 1
+        },
+        "candidate-embedding": {
+          "duration_ns": 37473706,
+          "span_count": 4,
+          "text_count": 5
+        },
+        "candidate-search": {
+          "candidate_count": 40,
+          "candidate_query_count": 4,
+          "duration_ns": 63722584,
+          "span_count": 3
+        },
+        "database": {
+          "duration_ns": 73481336,
+          "span_count": 12
+        },
+        "database-transaction": {
+          "duration_ns": 34473953,
+          "span_count": 1
+        },
+        "edge-extraction": {
+          "duration_ns": 7160100804,
+          "span_count": 1
+        },
+        "edge-resolution": {
+          "duration_ns": 1014692587,
+          "span_count": 1
+        },
+        "embedding": {
+          "duration_ns": 56747064,
+          "span_count": 6,
+          "text_count": 8
+        },
+        "graph-prefix-snapshot": {
+          "duration_ns": 1491,
+          "span_count": 1
+        },
+        "invalidation-update": {
+          "duration_ns": 3672,
+          "span_count": 2
+        },
+        "llm": {
+          "duration_ns": 22063642016,
+          "input_tokens": 71567,
+          "output_tokens": 240,
+          "span_count": 5
+        },
+        "llm-transport": {
+          "duration_ns": 22053967545,
+          "input_tokens": 71567,
+          "output_tokens": 240,
+          "span_count": 5
+        },
+        "node-extraction": {
+          "duration_ns": 6823748699,
+          "span_count": 1
+        },
+        "node-resolution": {
+          "duration_ns": 7163575553,
+          "span_count": 1
+        },
+        "previous-context": {
+          "duration_ns": 1699837,
+          "span_count": 1
+        },
+        "publication": {
+          "duration_ns": 40166389,
+          "span_count": 1
+        }
+      },
+      "queue": {
+        "arrival_ts_ns": 206455929624160,
+        "enqueue_ts_ns": 206455931642163,
+        "publication_ts_ns": 207982470664590,
+        "queue_depth_at_enqueue": 32,
+        "service_start_ts_ns": 207960211033061,
+        "terminal_ts_ns": 207982470664590
+      },
+      "root_span": {
+        "end_ns": 207982428839998,
+        "start_ns": 207960217130645
+      },
+      "schema_version": "membind.paper-eval-v3.unified-observability.v1",
+      "status": "completed"
+    },
+    {
+      "graph_work": {
+        "attribution_status": "SERIAL_PREFIX_DELTA_OBSERVED",
+        "node_delta": 1,
+        "nodes_after": 258,
+        "nodes_before": 257,
+        "relationship_delta": 1,
+        "relationships_after": 433,
+        "relationships_before": 432
+      },
+      "identity": {
+        "episode_id": "b6019101:32",
+        "history_id": "b6019101",
+        "method": "A0",
+        "question_id": "b6019101",
+        "repeat_id": 0,
+        "run_id": "pev3-bs-dev-20260816-001-a0-b6019101-a001",
+        "source_sequence": 32
+      },
+      "latency_ns": {
+        "freshness": 1554728940661,
+        "queue_delay": 1526540187860,
+        "service": 28188752801,
+        "terminal": 1554728940661
+      },
+      "phase_metrics": {
+        "add-episode": {
+          "duration_ns": 28159719775,
+          "span_count": 1
+        },
+        "attributes-summary": {
+          "duration_ns": 17409935,
+          "span_count": 1
+        },
+        "candidate-embedding": {
+          "duration_ns": 11456128,
+          "span_count": 2,
+          "text_count": 1
+        },
+        "candidate-search": {
+          "candidate_count": 15,
+          "candidate_query_count": 1,
+          "duration_ns": 23991274,
+          "span_count": 2
+        },
+        "database": {
+          "duration_ns": 16063314,
+          "span_count": 6
+        },
+        "database-transaction": {
+          "duration_ns": 2292311,
+          "span_count": 1
+        },
+        "edge-extraction": {
+          "duration_ns": 22048784075,
+          "span_count": 1
+        },
+        "edge-resolution": {
+          "duration_ns": 66417,
+          "span_count": 1
+        },
+        "embedding": {
+          "duration_ns": 28791712,
+          "span_count": 2,
+          "text_count": 2
+        },
+        "graph-prefix-snapshot": {
+          "duration_ns": 1229,
+          "span_count": 1
+        },
+        "invalidation-update": {
+          "duration_ns": 501,
+          "span_count": 1
+        },
+        "llm": {
+          "duration_ns": 28107849450,
+          "input_tokens": 48325,
+          "output_tokens": 633,
+          "span_count": 2
+        },
+        "llm-transport": {
+          "duration_ns": 28101715393,
+          "input_tokens": 48325,
+          "output_tokens": 633,
+          "span_count": 2
+        },
+        "node-extraction": {
+          "duration_ns": 6060170213,
+          "span_count": 1
+        },
+        "node-resolution": {
+          "duration_ns": 25614997,
+          "span_count": 1
+        },
+        "previous-context": {
+          "duration_ns": 1679444,
+          "span_count": 1
+        },
+        "publication": {
+          "duration_ns": 5843103,
+          "span_count": 1
+        }
+      },
+      "queue": {
+        "arrival_ts_ns": 206455933672849,
+        "enqueue_ts_ns": 206455935822298,
+        "publication_ts_ns": 208010662613510,
+        "queue_depth_at_enqueue": 33,
+        "service_start_ts_ns": 207982473860709,
+        "terminal_ts_ns": 208010662613510
+      },
+      "root_span": {
+        "end_ns": 208010639330468,
+        "start_ns": 207982479610693
+      },
+      "schema_version": "membind.paper-eval-v3.unified-observability.v1",
+      "status": "completed"
+    },
+    {
+      "graph_work": {
+        "attribution_status": "SERIAL_PREFIX_DELTA_OBSERVED",
+        "node_delta": 2,
+        "nodes_after": 260,
+        "nodes_before": 258,
+        "relationship_delta": 1,
+        "relationships_after": 434,
+        "relationships_before": 433
+      },
+      "identity": {
+        "episode_id": "b6019101:33",
+        "history_id": "b6019101",
+        "method": "A0",
+        "question_id": "b6019101",
+        "repeat_id": 0,
+        "run_id": "pev3-bs-dev-20260816-001-a0-b6019101-a001",
+        "source_sequence": 33
+      },
+      "latency_ns": {
+        "freshness": 1587019037273,
+        "queue_delay": 1554727715068,
+        "service": 32291322205,
+        "terminal": 1587019037273
+      },
+      "phase_metrics": {
+        "add-episode": {
+          "duration_ns": 32255671747,
+          "span_count": 1
+        },
+        "attributes-summary": {
+          "duration_ns": 10269892999,
+          "span_count": 1
+        },
+        "candidate-embedding": {
+          "duration_ns": 13918248,
+          "span_count": 2,
+          "text_count": 1
+        },
+        "candidate-search": {
+          "candidate_count": 15,
+          "candidate_query_count": 1,
+          "duration_ns": 27077351,
+          "span_count": 2
+        },
+        "database": {
+          "duration_ns": 16819851,
+          "span_count": 6
+        },
+        "database-transaction": {
+          "duration_ns": 2452354,
+          "span_count": 1
+        },
+        "edge-extraction": {
+          "duration_ns": 6833007022,
+          "span_count": 1
+        },
+        "edge-resolution": {
+          "duration_ns": 66057,
+          "span_count": 1
+        },
+        "embedding": {
+          "duration_ns": 30647306,
+          "span_count": 2,
+          "text_count": 2
+        },
+        "graph-prefix-snapshot": {
+          "duration_ns": 1391,
+          "span_count": 1
+        },
+        "invalidation-update": {
+          "duration_ns": 507,
+          "span_count": 1
+        },
+        "llm": {
+          "duration_ns": 32195172669,
+          "input_tokens": 110794,
+          "output_tokens": 206,
+          "span_count": 4
+        },
+        "llm-transport": {
+          "duration_ns": 32180620088,
+          "input_tokens": 110794,
+          "output_tokens": 206,
+          "span_count": 4
+        },
+        "node-extraction": {
+          "duration_ns": 7634990671,
+          "span_count": 1
+        },
+        "node-resolution": {
+          "duration_ns": 7507888113,
+          "span_count": 1
+        },
+        "previous-context": {
+          "duration_ns": 1691656,
+          "span_count": 1
+        },
+        "publication": {
+          "duration_ns": 7955365,
+          "span_count": 1
+        }
+      },
+      "queue": {
+        "arrival_ts_ns": 206455938005472,
+        "enqueue_ts_ns": 206455940100487,
+        "publication_ts_ns": 208042957042745,
+        "queue_depth_at_enqueue": 34,
+        "service_start_ts_ns": 208010665720540,
+        "terminal_ts_ns": 208042957042745
+      },
+      "root_span": {
+        "end_ns": 208042927152620,
+        "start_ns": 208010671480873
+      },
+      "schema_version": "membind.paper-eval-v3.unified-observability.v1",
+      "status": "completed"
+    },
+    {
+      "graph_work": {
+        "attribution_status": "SERIAL_PREFIX_DELTA_OBSERVED",
+        "node_delta": 8,
+        "nodes_after": 268,
+        "nodes_before": 260,
+        "relationship_delta": 8,
+        "relationships_after": 442,
+        "relationships_before": 434
+      },
+      "identity": {
+        "episode_id": "b6019101:34",
+        "history_id": "b6019101",
+        "method": "A0",
+        "question_id": "b6019101",
+        "repeat_id": 0,
+        "run_id": "pev3-bs-dev-20260816-001-a0-b6019101-a001",
+        "source_sequence": 34
+      },
+      "latency_ns": {
+        "freshness": 1667910399976,
+        "queue_delay": 1587018660775,
+        "service": 80891739201,
+        "terminal": 1667910399976
+      },
+      "phase_metrics": {
+        "add-episode": {
+          "duration_ns": 80853568241,
+          "span_count": 1
+        },
+        "attributes-summary": {
+          "duration_ns": 24212749627,
+          "span_count": 1
+        },
+        "candidate-embedding": {
+          "duration_ns": 20710276,
+          "span_count": 2,
+          "text_count": 8
+        },
+        "candidate-search": {
+          "candidate_count": 120,
+          "candidate_query_count": 8,
+          "duration_ns": 98416203,
+          "span_count": 2
+        },
+        "database": {
+          "duration_ns": 87980618,
+          "span_count": 13
+        },
+        "database-transaction": {
+          "duration_ns": 9051746,
+          "span_count": 1
+        },
+        "edge-extraction": {
+          "duration_ns": 31854887840,
+          "span_count": 1
+        },
+        "edge-resolution": {
+          "duration_ns": 69030,
+          "span_count": 1
+        },
+        "embedding": {
+          "duration_ns": 39966654,
+          "span_count": 2,
+          "text_count": 16
+        },
+        "graph-prefix-snapshot": {
+          "duration_ns": 1433,
+          "span_count": 1
+        },
+        "invalidation-update": {
+          "duration_ns": 490,
+          "span_count": 1
+        },
+        "llm": {
+          "duration_ns": 80687863273,
+          "input_tokens": 107108,
+          "output_tokens": 2006,
+          "span_count": 4
+        },
+        "llm-transport": {
+          "duration_ns": 80674390866,
+          "input_tokens": 107108,
+          "output_tokens": 2006,
+          "span_count": 4
+        },
+        "node-extraction": {
+          "duration_ns": 10444541842,
+          "span_count": 1
+        },
+        "node-resolution": {
+          "duration_ns": 14323571809,
+          "span_count": 1
+        },
+        "previous-context": {
+          "duration_ns": 1678645,
+          "span_count": 1
+        },
+        "publication": {
+          "duration_ns": 15912223,
+          "span_count": 1
+        }
+      },
+      "queue": {
+        "arrival_ts_ns": 206455942279317,
+        "enqueue_ts_ns": 206455944401832,
+        "publication_ts_ns": 208123852679293,
+        "queue_depth_at_enqueue": 35,
+        "service_start_ts_ns": 208042960940092,
+        "terminal_ts_ns": 208123852679293
+      },
+      "root_span": {
+        "end_ns": 208123820243766,
+        "start_ns": 208042966675525
+      },
+      "schema_version": "membind.paper-eval-v3.unified-observability.v1",
+      "status": "completed"
+    },
+    {
+      "graph_work": {
+        "attribution_status": "SERIAL_PREFIX_DELTA_OBSERVED",
+        "node_delta": 5,
+        "nodes_after": 273,
+        "nodes_before": 268,
+        "relationship_delta": 8,
+        "relationships_after": 450,
+        "relationships_before": 442
+      },
+      "identity": {
+        "episode_id": "b6019101:35",
+        "history_id": "b6019101",
+        "method": "A0",
+        "question_id": "b6019101",
+        "repeat_id": 0,
+        "run_id": "pev3-bs-dev-20260816-001-a0-b6019101-a001",
+        "source_sequence": 35
+      },
+      "latency_ns": {
+        "freshness": 1709790226723,
+        "queue_delay": 1667909313654,
+        "service": 41880913069,
+        "terminal": 1709790226723
+      },
+      "phase_metrics": {
+        "add-episode": {
+          "duration_ns": 41808727362,
+          "span_count": 1
+        },
+        "attributes-summary": {
+          "duration_ns": 8637306177,
+          "span_count": 1
+        },
+        "candidate-embedding": {
+          "duration_ns": 64199723,
+          "span_count": 8,
+          "text_count": 14
+        },
+        "candidate-search": {
+          "candidate_count": 105,
+          "candidate_query_count": 11,
+          "duration_ns": 149957734,
+          "span_count": 7
+        },
+        "database": {
+          "duration_ns": 146477771,
+          "span_count": 25
+        },
+        "database-transaction": {
+          "duration_ns": 28475690,
+          "span_count": 1
+        },
+        "edge-extraction": {
+          "duration_ns": 10689670252,
+          "span_count": 1
+        },
+        "edge-resolution": {
+          "duration_ns": 1852335278,
+          "span_count": 1
+        },
+        "embedding": {
+          "duration_ns": 97063421,
+          "span_count": 10,
+          "text_count": 22
+        },
+        "graph-prefix-snapshot": {
+          "duration_ns": 1313,
+          "span_count": 1
+        },
+        "invalidation-update": {
+          "duration_ns": 9284,
+          "span_count": 6
+        },
+        "llm": {
+          "duration_ns": 41551813883,
+          "input_tokens": 110196,
+          "output_tokens": 698,
+          "span_count": 10
+        },
+        "llm-transport": {
+          "duration_ns": 41537819011,
+          "input_tokens": 110196,
+          "output_tokens": 698,
+          "span_count": 10
+        },
+        "node-extraction": {
+          "duration_ns": 9744543190,
+          "span_count": 1
+        },
+        "node-resolution": {
+          "duration_ns": 10848015691,
+          "span_count": 1
+        },
+        "previous-context": {
+          "duration_ns": 1773440,
+          "span_count": 1
+        },
+        "publication": {
+          "duration_ns": 34916944,
+          "span_count": 1
+        }
+      },
+      "queue": {
+        "arrival_ts_ns": 206455946521854,
+        "enqueue_ts_ns": 206455948700722,
+        "publication_ts_ns": 208165736748577,
+        "queue_depth_at_enqueue": 36,
+        "service_start_ts_ns": 208123855835508,
+        "terminal_ts_ns": 208165736748577
+      },
+      "root_span": {
+        "end_ns": 208165670048834,
+        "start_ns": 208123861321472
+      },
+      "schema_version": "membind.paper-eval-v3.unified-observability.v1",
+      "status": "completed"
+    },
+    {
+      "graph_work": {
+        "attribution_status": "SERIAL_PREFIX_DELTA_OBSERVED",
+        "node_delta": 2,
+        "nodes_after": 275,
+        "nodes_before": 273,
+        "relationship_delta": 1,
+        "relationships_after": 451,
+        "relationships_before": 450
+      },
+      "identity": {
+        "episode_id": "b6019101:36",
+        "history_id": "b6019101",
+        "method": "A0",
+        "question_id": "b6019101",
+        "repeat_id": 0,
+        "run_id": "pev3-bs-dev-20260816-001-a0-b6019101-a001",
+        "source_sequence": 36
+      },
+      "latency_ns": {
+        "freshness": 1741398174091,
+        "queue_delay": 1709789090426,
+        "service": 31609083665,
+        "terminal": 1741398174091
+      },
+      "phase_metrics": {
+        "add-episode": {
+          "duration_ns": 31575264313,
+          "span_count": 1
+        },
+        "attributes-summary": {
+          "duration_ns": 9653142249,
+          "span_count": 1
+        },
+        "candidate-embedding": {
+          "duration_ns": 9054463,
+          "span_count": 2,
+          "text_count": 1
+        },
+        "candidate-search": {
+          "candidate_count": 15,
+          "candidate_query_count": 1,
+          "duration_ns": 22084580,
+          "span_count": 2
+        },
+        "database": {
+          "duration_ns": 38646699,
+          "span_count": 6
+        },
+        "database-transaction": {
+          "duration_ns": 13192891,
+          "span_count": 1
+        },
+        "edge-extraction": {
+          "duration_ns": 8075561115,
+          "span_count": 1
+        },
+        "edge-resolution": {
+          "duration_ns": 59671,
+          "span_count": 1
+        },
+        "embedding": {
+          "duration_ns": 24738817,
+          "span_count": 2,
+          "text_count": 2
+        },
+        "graph-prefix-snapshot": {
+          "duration_ns": 1394,
+          "span_count": 1
+        },
+        "invalidation-update": {
+          "duration_ns": 454,
+          "span_count": 1
+        },
+        "llm": {
+          "duration_ns": 31498363705,
+          "input_tokens": 101758,
+          "output_tokens": 301,
+          "span_count": 4
+        },
+        "llm-transport": {
+          "duration_ns": 31485414689,
+          "input_tokens": 101758,
+          "output_tokens": 301,
+          "span_count": 4
+        },
+        "node-extraction": {
+          "duration_ns": 6994757759,
+          "span_count": 1
+        },
+        "node-resolution": {
+          "duration_ns": 6820134814,
+          "span_count": 1
+        },
+        "previous-context": {
+          "duration_ns": 12966282,
+          "span_count": 1
+        },
+        "publication": {
+          "duration_ns": 18438922,
+          "span_count": 1
+        }
+      },
+      "queue": {
+        "arrival_ts_ns": 206455950839976,
+        "enqueue_ts_ns": 206455952975626,
+        "publication_ts_ns": 208197349014067,
+        "queue_depth_at_enqueue": 37,
+        "service_start_ts_ns": 208165739930402,
+        "terminal_ts_ns": 208197349014067
+      },
+      "root_span": {
+        "end_ns": 208197321762217,
+        "start_ns": 208165746497904
+      },
+      "schema_version": "membind.paper-eval-v3.unified-observability.v1",
+      "status": "completed"
+    },
+    {
+      "graph_work": {
+        "attribution_status": "SERIAL_PREFIX_DELTA_OBSERVED",
+        "node_delta": 9,
+        "nodes_after": 284,
+        "nodes_before": 275,
+        "relationship_delta": 14,
+        "relationships_after": 465,
+        "relationships_before": 451
+      },
+      "identity": {
+        "episode_id": "b6019101:37",
+        "history_id": "b6019101",
+        "method": "A0",
+        "question_id": "b6019101",
+        "repeat_id": 0,
+        "run_id": "pev3-bs-dev-20260816-001-a0-b6019101-a001",
+        "source_sequence": 37
+      },
+      "latency_ns": {
+        "freshness": 1789185149222,
+        "queue_delay": 1741397113989,
+        "service": 47788035233,
+        "terminal": 1789185149222
+      },
+      "phase_metrics": {
+        "add-episode": {
+          "duration_ns": 47679408106,
+          "span_count": 1
+        },
+        "attributes-summary": {
+          "duration_ns": 13528939,
+          "span_count": 1
+        },
+        "candidate-embedding": {
+          "duration_ns": 91586245,
+          "span_count": 14,
+          "text_count": 26
+        },
+        "candidate-search": {
+          "candidate_count": 180,
+          "candidate_query_count": 20,
+          "duration_ns": 270520986,
+          "span_count": 13
+        },
+        "database": {
+          "duration_ns": 246112576,
+          "span_count": 43
+        },
+        "database-transaction": {
+          "duration_ns": 14165242,
+          "span_count": 1
+        },
+        "edge-extraction": {
+          "duration_ns": 18687877845,
+          "span_count": 1
+        },
+        "edge-resolution": {
+          "duration_ns": 2105280372,
+          "span_count": 1
+        },
+        "embedding": {
+          "duration_ns": 120506659,
+          "span_count": 16,
+          "text_count": 40
+        },
+        "graph-prefix-snapshot": {
+          "duration_ns": 1165,
+          "span_count": 1
+        },
+        "invalidation-update": {
+          "duration_ns": 18080,
+          "span_count": 12
+        },
+        "llm": {
+          "duration_ns": 47305401394,
+          "input_tokens": 92534,
+          "output_tokens": 1126,
+          "span_count": 15
+        },
+        "llm-transport": {
+          "duration_ns": 47294102401,
+          "input_tokens": 92534,
+          "output_tokens": 1126,
+          "span_count": 15
+        },
+        "node-extraction": {
+          "duration_ns": 12610968840,
+          "span_count": 1
+        },
+        "node-resolution": {
+          "duration_ns": 14239762865,
+          "span_count": 1
+        },
+        "previous-context": {
+          "duration_ns": 1688166,
+          "span_count": 1
+        },
+        "publication": {
+          "duration_ns": 20137335,
+          "span_count": 1
+        }
+      },
+      "queue": {
+        "arrival_ts_ns": 206455955142293,
+        "enqueue_ts_ns": 206455957375381,
+        "publication_ts_ns": 208245140291515,
+        "queue_depth_at_enqueue": 38,
+        "service_start_ts_ns": 208197352256282,
+        "terminal_ts_ns": 208245140291515
+      },
+      "root_span": {
+        "end_ns": 208245037291008,
+        "start_ns": 208197357882902
+      },
+      "schema_version": "membind.paper-eval-v3.unified-observability.v1",
+      "status": "completed"
+    },
+    {
+      "graph_work": {
+        "attribution_status": "SERIAL_PREFIX_DELTA_OBSERVED",
+        "node_delta": 2,
+        "nodes_after": 286,
+        "nodes_before": 284,
+        "relationship_delta": 3,
+        "relationships_after": 468,
+        "relationships_before": 465
+      },
+      "identity": {
+        "episode_id": "b6019101:38",
+        "history_id": "b6019101",
+        "method": "A0",
+        "question_id": "b6019101",
+        "repeat_id": 0,
+        "run_id": "pev3-bs-dev-20260816-001-a0-b6019101-a001",
+        "source_sequence": 38
+      },
+      "latency_ns": {
+        "freshness": 1812573503127,
+        "queue_delay": 1789184012749,
+        "service": 23389490378,
+        "terminal": 1812573503127
+      },
+      "phase_metrics": {
+        "add-episode": {
+          "duration_ns": 23332462346,
+          "span_count": 1
+        },
+        "attributes-summary": {
+          "duration_ns": 11250470,
+          "span_count": 1
+        },
+        "candidate-embedding": {
+          "duration_ns": 37778270,
+          "span_count": 4,
+          "text_count": 5
+        },
+        "candidate-search": {
+          "candidate_count": 40,
+          "candidate_query_count": 4,
+          "duration_ns": 77613626,
+          "span_count": 3
+        },
+        "database": {
+          "duration_ns": 61313414,
+          "span_count": 12
+        },
+        "database-transaction": {
+          "duration_ns": 6429278,
+          "span_count": 1
+        },
+        "edge-extraction": {
+          "duration_ns": 8025476563,
+          "span_count": 1
+        },
+        "edge-resolution": {
+          "duration_ns": 939255307,
+          "span_count": 1
+        },
+        "embedding": {
+          "duration_ns": 59880481,
+          "span_count": 6,
+          "text_count": 8
+        },
+        "graph-prefix-snapshot": {
+          "duration_ns": 1786,
+          "span_count": 1
+        },
+        "invalidation-update": {
+          "duration_ns": 5611,
+          "span_count": 2
+        },
+        "llm": {
+          "duration_ns": 23189271776,
+          "input_tokens": 80813,
+          "output_tokens": 171,
+          "span_count": 5
+        },
+        "llm-transport": {
+          "duration_ns": 23176041527,
+          "input_tokens": 80813,
+          "output_tokens": 171,
+          "span_count": 5
+        },
+        "node-extraction": {
+          "duration_ns": 7285594533,
+          "span_count": 1
+        },
+        "node-resolution": {
+          "duration_ns": 7051079740,
+          "span_count": 1
+        },
+        "previous-context": {
+          "duration_ns": 2222955,
+          "span_count": 1
+        },
+        "publication": {
+          "duration_ns": 17326509,
+          "span_count": 1
+        }
+      },
+      "queue": {
+        "arrival_ts_ns": 206455959557515,
+        "enqueue_ts_ns": 206455961749634,
+        "publication_ts_ns": 208268533060642,
+        "queue_depth_at_enqueue": 39,
+        "service_start_ts_ns": 208245143570264,
+        "terminal_ts_ns": 208268533060642
+      },
+      "root_span": {
+        "end_ns": 208268485943299,
+        "start_ns": 208245153480953
+      },
+      "schema_version": "membind.paper-eval-v3.unified-observability.v1",
+      "status": "completed"
+    },
+    {
+      "graph_work": {
+        "attribution_status": "SERIAL_PREFIX_DELTA_OBSERVED",
+        "node_delta": 12,
+        "nodes_after": 298,
+        "nodes_before": 286,
+        "relationship_delta": 20,
+        "relationships_after": 488,
+        "relationships_before": 468
+      },
+      "identity": {
+        "episode_id": "b6019101:39",
+        "history_id": "b6019101",
+        "method": "A0",
+        "question_id": "b6019101",
+        "repeat_id": 0,
+        "run_id": "pev3-bs-dev-20260816-001-a0-b6019101-a001",
+        "source_sequence": 39
+      },
+      "latency_ns": {
+        "freshness": 1871762991078,
+        "queue_delay": 1812574277353,
+        "service": 59188713725,
+        "terminal": 1871762991078
+      },
+      "phase_metrics": {
+        "add-episode": {
+          "duration_ns": 59002740513,
+          "span_count": 1
+        },
+        "attributes-summary": {
+          "duration_ns": 14408903,
+          "span_count": 1
+        },
+        "candidate-embedding": {
+          "duration_ns": 109953122,
+          "span_count": 20,
+          "text_count": 38
+        },
+        "candidate-search": {
+          "candidate_count": 255,
+          "candidate_query_count": 29,
+          "duration_ns": 605250677,
+          "span_count": 19
+        },
+        "database": {
+          "duration_ns": 590885318,
+          "span_count": 61
+        },
+        "database-transaction": {
+          "duration_ns": 27072415,
+          "span_count": 1
+        },
+        "edge-extraction": {
+          "duration_ns": 24030883946,
+          "span_count": 1
+        },
+        "edge-resolution": {
+          "duration_ns": 2907653510,
+          "span_count": 1
+        },
+        "embedding": {
+          "duration_ns": 142804581,
+          "span_count": 22,
+          "text_count": 58
+        },
+        "graph-prefix-snapshot": {
+          "duration_ns": 2831,
+          "span_count": 1
+        },
+        "invalidation-update": {
+          "duration_ns": 51232,
+          "span_count": 18
+        },
+        "llm": {
+          "duration_ns": 58256597692,
+          "input_tokens": 94751,
+          "output_tokens": 1618,
+          "span_count": 21
+        },
+        "llm-transport": {
+          "duration_ns": 58238856723,
+          "input_tokens": 94751,
+          "output_tokens": 1618,
+          "span_count": 21
+        },
+        "node-extraction": {
+          "duration_ns": 15304430326,
+          "span_count": 1
+        },
+        "node-resolution": {
+          "duration_ns": 16703709979,
+          "span_count": 1
+        },
+        "previous-context": {
+          "duration_ns": 3342892,
+          "span_count": 1
+        },
+        "publication": {
+          "duration_ns": 37958797,
+          "span_count": 1
+        }
+      },
+      "queue": {
+        "arrival_ts_ns": 206455963955677,
+        "enqueue_ts_ns": 206455966153856,
+        "publication_ts_ns": 208327726946755,
+        "queue_depth_at_enqueue": 40,
+        "service_start_ts_ns": 208268538233030,
+        "terminal_ts_ns": 208327726946755
+      },
+      "root_span": {
+        "end_ns": 208327548761852,
+        "start_ns": 208268546021339
+      },
+      "schema_version": "membind.paper-eval-v3.unified-observability.v1",
+      "status": "completed"
+    },
+    {
+      "graph_work": {
+        "attribution_status": "SERIAL_PREFIX_DELTA_OBSERVED",
+        "node_delta": 7,
+        "nodes_after": 305,
+        "nodes_before": 298,
+        "relationship_delta": 10,
+        "relationships_after": 498,
+        "relationships_before": 488
+      },
+      "identity": {
+        "episode_id": "b6019101:40",
+        "history_id": "b6019101",
+        "method": "A0",
+        "question_id": "b6019101",
+        "repeat_id": 0,
+        "run_id": "pev3-bs-dev-20260816-001-a0-b6019101-a001",
+        "source_sequence": 40
+      },
+      "latency_ns": {
+        "freshness": 1918664415585,
+        "queue_delay": 1871764832561,
+        "service": 46899583024,
+        "terminal": 1918664415585
+      },
+      "phase_metrics": {
+        "add-episode": {
+          "duration_ns": 46784426845,
+          "span_count": 1
+        },
+        "attributes-summary": {
+          "duration_ns": 7931661602,
+          "span_count": 1
+        },
+        "candidate-embedding": {
+          "duration_ns": 67356524,
+          "span_count": 10,
+          "text_count": 18
+        },
+        "candidate-search": {
+          "candidate_count": 130,
+          "candidate_query_count": 14,
+          "duration_ns": 232298849,
+          "span_count": 9
+        },
+        "database": {
+          "duration_ns": 215343459,
+          "span_count": 31
+        },
+        "database-transaction": {
+          "duration_ns": 16716021,
+          "span_count": 1
+        },
+        "edge-extraction": {
+          "duration_ns": 13986016408,
+          "span_count": 1
+        },
+        "edge-resolution": {
+          "duration_ns": 2068120855,
+          "span_count": 1
+        },
+        "embedding": {
+          "duration_ns": 99275188,
+          "span_count": 12,
+          "text_count": 28
+        },
+        "graph-prefix-snapshot": {
+          "duration_ns": 3774,
+          "span_count": 1
+        },
+        "invalidation-update": {
+          "duration_ns": 15482,
+          "span_count": 8
+        },
+        "llm": {
+          "duration_ns": 46431816308,
+          "input_tokens": 112414,
+          "output_tokens": 888,
+          "span_count": 12
+        },
+        "llm-transport": {
+          "duration_ns": 46405642554,
+          "input_tokens": 112414,
+          "output_tokens": 888,
+          "span_count": 12
+        },
+        "node-extraction": {
+          "duration_ns": 10635220023,
+          "span_count": 1
+        },
+        "node-resolution": {
+          "duration_ns": 12129951777,
+          "span_count": 1
+        },
+        "previous-context": {
+          "duration_ns": 4172749,
+          "span_count": 1
+        },
+        "publication": {
+          "duration_ns": 28980322,
+          "span_count": 1
+        }
+      },
+      "queue": {
+        "arrival_ts_ns": 206455968383530,
+        "enqueue_ts_ns": 206455970598131,
+        "publication_ts_ns": 208374632799115,
+        "queue_depth_at_enqueue": 41,
+        "service_start_ts_ns": 208327733216091,
+        "terminal_ts_ns": 208374632799115
+      },
+      "root_span": {
+        "end_ns": 208374532533834,
+        "start_ns": 208327748106989
+      },
+      "schema_version": "membind.paper-eval-v3.unified-observability.v1",
+      "status": "completed"
+    },
+    {
+      "graph_work": {
+        "attribution_status": "SERIAL_PREFIX_DELTA_OBSERVED",
+        "node_delta": 7,
+        "nodes_after": 312,
+        "nodes_before": 305,
+        "relationship_delta": 7,
+        "relationships_after": 505,
+        "relationships_before": 498
+      },
+      "identity": {
+        "episode_id": "b6019101:41",
+        "history_id": "b6019101",
+        "method": "A0",
+        "question_id": "b6019101",
+        "repeat_id": 0,
+        "run_id": "pev3-bs-dev-20260816-001-a0-b6019101-a001",
+        "source_sequence": 41
+      },
+      "latency_ns": {
+        "freshness": 1949013217790,
+        "queue_delay": 1918665419830,
+        "service": 30347797960,
+        "terminal": 1949013217790
+      },
+      "phase_metrics": {
+        "add-episode": {
+          "duration_ns": 30249649515,
+          "span_count": 1
+        },
+        "attributes-summary": {
+          "duration_ns": 10841321763,
+          "span_count": 1
+        },
+        "candidate-embedding": {
+          "duration_ns": 44565757,
+          "span_count": 4,
+          "text_count": 9
+        },
+        "candidate-search": {
+          "candidate_count": 100,
+          "candidate_query_count": 8,
+          "duration_ns": 158930346,
+          "span_count": 3
+        },
+        "database": {
+          "duration_ns": 142983642,
+          "span_count": 16
+        },
+        "database-transaction": {
+          "duration_ns": 12553375,
+          "span_count": 1
+        },
+        "edge-extraction": {
+          "duration_ns": 3763543441,
+          "span_count": 1
+        },
+        "edge-resolution": {
+          "duration_ns": 1046320519,
+          "span_count": 1
+        },
+        "embedding": {
+          "duration_ns": 75134764,
+          "span_count": 6,
+          "text_count": 16
+        },
+        "graph-prefix-snapshot": {
+          "duration_ns": 2923,
+          "span_count": 1
+        },
+        "invalidation-update": {
+          "duration_ns": 5926,
+          "span_count": 2
+        },
+        "llm": {
+          "duration_ns": 29981096576,
+          "input_tokens": 116659,
+          "output_tokens": 837,
+          "span_count": 6
+        },
+        "llm-transport": {
+          "duration_ns": 29951910928,
+          "input_tokens": 116659,
+          "output_tokens": 837,
+          "span_count": 6
+        },
+        "node-extraction": {
+          "duration_ns": 6658357458,
+          "span_count": 1
+        },
+        "node-resolution": {
+          "duration_ns": 7913094835,
+          "span_count": 1
+        },
+        "previous-context": {
+          "duration_ns": 3776205,
+          "span_count": 1
+        },
+        "publication": {
+          "duration_ns": 22906989,
+          "span_count": 1
+        }
+      },
+      "queue": {
+        "arrival_ts_ns": 206455972802810,
+        "enqueue_ts_ns": 206455975012505,
+        "publication_ts_ns": 208404986020600,
+        "queue_depth_at_enqueue": 42,
+        "service_start_ts_ns": 208374638222640,
+        "terminal_ts_ns": 208404986020600
+      },
+      "root_span": {
+        "end_ns": 208404900252328,
+        "start_ns": 208374650602813
+      },
+      "schema_version": "membind.paper-eval-v3.unified-observability.v1",
+      "status": "completed"
+    },
+    {
+      "graph_work": {
+        "attribution_status": "SERIAL_PREFIX_DELTA_OBSERVED",
+        "node_delta": 18,
+        "nodes_after": 330,
+        "nodes_before": 312,
+        "relationship_delta": 21,
+        "relationships_after": 526,
+        "relationships_before": 505
+      },
+      "identity": {
+        "episode_id": "b6019101:42",
+        "history_id": "b6019101",
+        "method": "A0",
+        "question_id": "b6019101",
+        "repeat_id": 0,
+        "run_id": "pev3-bs-dev-20260816-001-a0-b6019101-a001",
+        "source_sequence": 42
+      },
+      "latency_ns": {
+        "freshness": 2081822533817,
+        "queue_delay": 1949019586674,
+        "service": 132802947143,
+        "terminal": 2081822533817
+      },
+      "phase_metrics": {
+        "add-episode": {
+          "duration_ns": 132707200375,
+          "span_count": 1
+        },
+        "attributes-summary": {
+          "duration_ns": 39982318291,
+          "span_count": 1
+        },
+        "candidate-embedding": {
+          "duration_ns": 86155963,
+          "span_count": 8,
+          "text_count": 27
+        },
+        "candidate-search": {
+          "candidate_count": 300,
+          "candidate_query_count": 24,
+          "duration_ns": 300373286,
+          "span_count": 7
+        },
+        "database": {
+          "duration_ns": 288663393,
+          "span_count": 38
+        },
+        "database-transaction": {
+          "duration_ns": 26380741,
+          "span_count": 1
+        },
+        "edge-extraction": {
+          "duration_ns": 44426898533,
+          "span_count": 1
+        },
+        "edge-resolution": {
+          "duration_ns": 1941264387,
+          "span_count": 1
+        },
+        "embedding": {
+          "duration_ns": 130462650,
+          "span_count": 10,
+          "text_count": 48
+        },
+        "graph-prefix-snapshot": {
+          "duration_ns": 1952,
+          "span_count": 1
+        },
+        "invalidation-update": {
+          "duration_ns": 19757,
+          "span_count": 6
+        },
+        "llm": {
+          "duration_ns": 132216156112,
+          "input_tokens": 128018,
+          "output_tokens": 3627,
+          "span_count": 10
+        },
+        "llm-transport": {
+          "duration_ns": 132194468283,
+          "input_tokens": 128018,
+          "output_tokens": 3627,
+          "span_count": 10
+        },
+        "node-extraction": {
+          "duration_ns": 21220734028,
+          "span_count": 1
+        },
+        "node-resolution": {
+          "duration_ns": 25085617022,
+          "span_count": 1
+        },
+        "previous-context": {
+          "duration_ns": 13180395,
+          "span_count": 1
+        },
+        "publication": {
+          "duration_ns": 36937246,
+          "span_count": 1
+        }
+      },
+      "queue": {
+        "arrival_ts_ns": 206455977297239,
+        "enqueue_ts_ns": 206455979547604,
+        "publication_ts_ns": 208537799831056,
+        "queue_depth_at_enqueue": 43,
+        "service_start_ts_ns": 208404996883913,
+        "terminal_ts_ns": 208537799831056
+      },
+      "root_span": {
+        "end_ns": 208537716546386,
+        "start_ns": 208405009346011
+      },
+      "schema_version": "membind.paper-eval-v3.unified-observability.v1",
+      "status": "completed"
+    },
+    {
+      "graph_work": {
+        "attribution_status": "SERIAL_PREFIX_DELTA_OBSERVED",
+        "node_delta": 18,
+        "nodes_after": 348,
+        "nodes_before": 330,
+        "relationship_delta": 17,
+        "relationships_after": 543,
+        "relationships_before": 526
+      },
+      "identity": {
+        "episode_id": "b6019101:43",
+        "history_id": "b6019101",
+        "method": "A0",
+        "question_id": "b6019101",
+        "repeat_id": 0,
+        "run_id": "pev3-bs-dev-20260816-001-a0-b6019101-a001",
+        "source_sequence": 43
+      },
+      "latency_ns": {
+        "freshness": 2165807099458,
+        "queue_delay": 2081821609056,
+        "service": 83985490402,
+        "terminal": 2165807099458
+      },
+      "phase_metrics": {
+        "add-episode": {
+          "duration_ns": 83933616625,
+          "span_count": 1
+        },
+        "attributes-summary": {
+          "duration_ns": 36219614843,
+          "span_count": 1
+        },
+        "candidate-embedding": {
+          "duration_ns": 22770552,
+          "span_count": 2,
+          "text_count": 17
+        },
+        "candidate-search": {
+          "candidate_count": 255,
+          "candidate_query_count": 17,
+          "duration_ns": 177953119,
+          "span_count": 2
+        },
+        "database": {
+          "duration_ns": 204827197,
+          "span_count": 22
+        },
+        "database-transaction": {
+          "duration_ns": 48036094,
+          "span_count": 1
+        },
+        "edge-extraction": {
+          "duration_ns": 7657478753,
+          "span_count": 1
+        },
+        "edge-resolution": {
+          "duration_ns": 106371,
+          "span_count": 1
+        },
+        "embedding": {
+          "duration_ns": 47148299,
+          "span_count": 2,
+          "text_count": 34
+        },
+        "graph-prefix-snapshot": {
+          "duration_ns": 1788,
+          "span_count": 1
+        },
+        "invalidation-update": {
+          "duration_ns": 1142,
+          "span_count": 1
+        },
+        "llm": {
+          "duration_ns": 83617080809,
+          "input_tokens": 125158,
+          "output_tokens": 1837,
+          "span_count": 4
+        },
+        "llm-transport": {
+          "duration_ns": 83600631727,
+          "input_tokens": 125158,
+          "output_tokens": 1837,
+          "span_count": 4
+        },
+        "node-extraction": {
+          "duration_ns": 15659582638,
+          "span_count": 1
+        },
+        "node-resolution": {
+          "duration_ns": 24339098023,
+          "span_count": 1
+        },
+        "previous-context": {
+          "duration_ns": 2240064,
+          "span_count": 1
+        },
+        "publication": {
+          "duration_ns": 55270132,
+          "span_count": 1
+        }
+      },
+      "queue": {
+        "arrival_ts_ns": 206455981754489,
+        "enqueue_ts_ns": 206455984014495,
+        "publication_ts_ns": 208621788853947,
+        "queue_depth_at_enqueue": 44,
+        "service_start_ts_ns": 208537803363545,
+        "terminal_ts_ns": 208621788853947
+      },
+      "root_span": {
+        "end_ns": 208621743897796,
+        "start_ns": 208537810281171
+      },
+      "schema_version": "membind.paper-eval-v3.unified-observability.v1",
+      "status": "completed"
+    },
+    {
+      "graph_work": {
+        "attribution_status": "SERIAL_PREFIX_DELTA_OBSERVED",
+        "node_delta": 2,
+        "nodes_after": 350,
+        "nodes_before": 348,
+        "relationship_delta": 1,
+        "relationships_after": 544,
+        "relationships_before": 543
+      },
+      "identity": {
+        "episode_id": "b6019101:44",
+        "history_id": "b6019101",
+        "method": "A0",
+        "question_id": "b6019101",
+        "repeat_id": 0,
+        "run_id": "pev3-bs-dev-20260816-001-a0-b6019101-a001",
+        "source_sequence": 44
+      },
+      "latency_ns": {
+        "freshness": 2198432856218,
+        "queue_delay": 2165805897549,
+        "service": 32626958669,
+        "terminal": 2198432856218
+      },
+      "phase_metrics": {
+        "add-episode": {
+          "duration_ns": 32589556851,
+          "span_count": 1
+        },
+        "attributes-summary": {
+          "duration_ns": 9406939686,
+          "span_count": 1
+        },
+        "candidate-embedding": {
+          "duration_ns": 8377138,
+          "span_count": 2,
+          "text_count": 1
+        },
+        "candidate-search": {
+          "candidate_count": 15,
+          "candidate_query_count": 1,
+          "duration_ns": 23213330,
+          "span_count": 2
+        },
+        "database": {
+          "duration_ns": 18916556,
+          "span_count": 6
+        },
+        "database-transaction": {
+          "duration_ns": 2536101,
+          "span_count": 1
+        },
+        "edge-extraction": {
+          "duration_ns": 7204215594,
+          "span_count": 1
+        },
+        "edge-resolution": {
+          "duration_ns": 65013,
+          "span_count": 1
+        },
+        "embedding": {
+          "duration_ns": 21750538,
+          "span_count": 2,
+          "text_count": 2
+        },
+        "graph-prefix-snapshot": {
+          "duration_ns": 1465,
+          "span_count": 1
+        },
+        "invalidation-update": {
+          "duration_ns": 491,
+          "span_count": 1
+        },
+        "llm": {
+          "duration_ns": 32535030648,
+          "input_tokens": 115905,
+          "output_tokens": 161,
+          "span_count": 4
+        },
+        "llm-transport": {
+          "duration_ns": 32519680896,
+          "input_tokens": 115905,
+          "output_tokens": 161,
+          "span_count": 4
+        },
+        "node-extraction": {
+          "duration_ns": 8050782436,
+          "span_count": 1
+        },
+        "node-resolution": {
+          "duration_ns": 7916861725,
+          "span_count": 1
+        },
+        "previous-context": {
+          "duration_ns": 2003375,
+          "span_count": 1
+        },
+        "publication": {
+          "duration_ns": 8525519,
+          "span_count": 1
+        }
+      },
+      "queue": {
+        "arrival_ts_ns": 206455986403814,
+        "enqueue_ts_ns": 206455988767555,
+        "publication_ts_ns": 208654419260032,
+        "queue_depth_at_enqueue": 45,
+        "service_start_ts_ns": 208621792301363,
+        "terminal_ts_ns": 208654419260032
+      },
+      "root_span": {
+        "end_ns": 208654390134429,
+        "start_ns": 208621800577578
+      },
+      "schema_version": "membind.paper-eval-v3.unified-observability.v1",
+      "status": "completed"
+    },
+    {
+      "graph_work": {
+        "attribution_status": "SERIAL_PREFIX_DELTA_OBSERVED",
+        "node_delta": 5,
+        "nodes_after": 355,
+        "nodes_before": 350,
+        "relationship_delta": 13,
+        "relationships_after": 557,
+        "relationships_before": 544
+      },
+      "identity": {
+        "episode_id": "b6019101:45",
+        "history_id": "b6019101",
+        "method": "A0",
+        "question_id": "b6019101",
+        "repeat_id": 0,
+        "run_id": "pev3-bs-dev-20260816-001-a0-b6019101-a001",
+        "source_sequence": 45
+      },
+      "latency_ns": {
+        "freshness": 2249683793049,
+        "queue_delay": 2198431955741,
+        "service": 51251837308,
+        "terminal": 2249683793049
+      },
+      "phase_metrics": {
+        "add-episode": {
+          "duration_ns": 51106817956,
+          "span_count": 1
+        },
+        "attributes-summary": {
+          "duration_ns": 7541483,
+          "span_count": 1
+        },
+        "candidate-embedding": {
+          "duration_ns": 92774667,
+          "span_count": 20,
+          "text_count": 31
+        },
+        "candidate-search": {
+          "candidate_count": 150,
+          "candidate_query_count": 22,
+          "duration_ns": 291180036,
+          "span_count": 19
+        },
+        "database": {
+          "duration_ns": 272238496,
+          "span_count": 54
+        },
+        "database-transaction": {
+          "duration_ns": 15095102,
+          "span_count": 1
+        },
+        "edge-extraction": {
+          "duration_ns": 25984311447,
+          "span_count": 1
+        },
+        "edge-resolution": {
+          "duration_ns": 2688328255,
+          "span_count": 1
+        },
+        "embedding": {
+          "duration_ns": 120270283,
+          "span_count": 22,
+          "text_count": 44
+        },
+        "graph-prefix-snapshot": {
+          "duration_ns": 1195,
+          "span_count": 1
+        },
+        "invalidation-update": {
+          "duration_ns": 26206,
+          "span_count": 18
+        },
+        "llm": {
+          "duration_ns": 50711178451,
+          "input_tokens": 102345,
+          "output_tokens": 1269,
+          "span_count": 21
+        },
+        "llm-transport": {
+          "duration_ns": 50699540448,
+          "input_tokens": 102345,
+          "output_tokens": 1269,
+          "span_count": 21
+        },
+        "node-extraction": {
+          "duration_ns": 10941855915,
+          "span_count": 1
+        },
+        "node-resolution": {
+          "duration_ns": 11455462444,
+          "span_count": 1
+        },
+        "previous-context": {
+          "duration_ns": 1598508,
+          "span_count": 1
+        },
+        "publication": {
+          "duration_ns": 27549631,
+          "span_count": 1
+        }
+      },
+      "queue": {
+        "arrival_ts_ns": 206455991118452,
+        "enqueue_ts_ns": 206455993489790,
+        "publication_ts_ns": 208705674911501,
+        "queue_depth_at_enqueue": 46,
+        "service_start_ts_ns": 208654423074193,
+        "terminal_ts_ns": 208705674911501
+      },
+      "root_span": {
+        "end_ns": 208705535618913,
+        "start_ns": 208654428800957
+      },
+      "schema_version": "membind.paper-eval-v3.unified-observability.v1",
+      "status": "completed"
+    },
+    {
+      "graph_work": {
+        "attribution_status": "SERIAL_PREFIX_DELTA_OBSERVED",
+        "node_delta": 2,
+        "nodes_after": 357,
+        "nodes_before": 355,
+        "relationship_delta": 1,
+        "relationships_after": 558,
+        "relationships_before": 557
+      },
+      "identity": {
+        "episode_id": "b6019101:46",
+        "history_id": "b6019101",
+        "method": "A0",
+        "question_id": "b6019101",
+        "repeat_id": 0,
+        "run_id": "pev3-bs-dev-20260816-001-a0-b6019101-a001",
+        "source_sequence": 46
+      },
+      "latency_ns": {
+        "freshness": 2279823869570,
+        "queue_delay": 2249682502096,
+        "service": 30141367474,
+        "terminal": 2279823869570
+      },
+      "phase_metrics": {
+        "add-episode": {
+          "duration_ns": 30107551978,
+          "span_count": 1
+        },
+        "attributes-summary": {
+          "duration_ns": 8842643955,
+          "span_count": 1
+        },
+        "candidate-embedding": {
+          "duration_ns": 10597365,
+          "span_count": 2,
+          "text_count": 1
+        },
+        "candidate-search": {
+          "candidate_count": 15,
+          "candidate_query_count": 1,
+          "duration_ns": 27148844,
+          "span_count": 2
+        },
+        "database": {
+          "duration_ns": 20419960,
+          "span_count": 6
+        },
+        "database-transaction": {
+          "duration_ns": 2408487,
+          "span_count": 1
+        },
+        "edge-extraction": {
+          "duration_ns": 6681148697,
+          "span_count": 1
+        },
+        "edge-resolution": {
+          "duration_ns": 72698,
+          "span_count": 1
+        },
+        "embedding": {
+          "duration_ns": 26683115,
+          "span_count": 2,
+          "text_count": 2
+        },
+        "graph-prefix-snapshot": {
+          "duration_ns": 1325,
+          "span_count": 1
+        },
+        "invalidation-update": {
+          "duration_ns": 507,
+          "span_count": 1
+        },
+        "llm": {
+          "duration_ns": 30048093394,
+          "input_tokens": 109409,
+          "output_tokens": 153,
+          "span_count": 4
+        },
+        "llm-transport": {
+          "duration_ns": 30033537791,
+          "input_tokens": 109409,
+          "output_tokens": 153,
+          "span_count": 4
+        },
+        "node-extraction": {
+          "duration_ns": 7234888830,
+          "span_count": 1
+        },
+        "node-resolution": {
+          "duration_ns": 7338937237,
+          "span_count": 1
+        },
+        "previous-context": {
+          "duration_ns": 1943599,
+          "span_count": 1
+        },
+        "publication": {
+          "duration_ns": 7752348,
+          "span_count": 1
+        }
+      },
+      "queue": {
+        "arrival_ts_ns": 206455995784680,
+        "enqueue_ts_ns": 206455998183755,
+        "publication_ts_ns": 208735819654250,
+        "queue_depth_at_enqueue": 47,
+        "service_start_ts_ns": 208705678286776,
+        "terminal_ts_ns": 208735819654250
+      },
+      "root_span": {
+        "end_ns": 208735792615256,
+        "start_ns": 208705685063278
+      },
+      "schema_version": "membind.paper-eval-v3.unified-observability.v1",
+      "status": "completed"
+    },
+    {
+      "graph_work": {
+        "attribution_status": "SERIAL_PREFIX_DELTA_OBSERVED",
+        "node_delta": 4,
+        "nodes_after": 361,
+        "nodes_before": 357,
+        "relationship_delta": 12,
+        "relationships_after": 570,
+        "relationships_before": 558
+      },
+      "identity": {
+        "episode_id": "b6019101:47",
+        "history_id": "b6019101",
+        "method": "A0",
+        "question_id": "b6019101",
+        "repeat_id": 0,
+        "run_id": "pev3-bs-dev-20260816-001-a0-b6019101-a001",
+        "source_sequence": 47
+      },
+      "latency_ns": {
+        "freshness": 2332572641813,
+        "queue_delay": 2279822468861,
+        "service": 52750172952,
+        "terminal": 2332572641813
+      },
+      "phase_metrics": {
+        "add-episode": {
+          "duration_ns": 52651086396,
+          "span_count": 1
+        },
+        "attributes-summary": {
+          "duration_ns": 10207558853,
+          "span_count": 1
+        },
+        "candidate-embedding": {
+          "duration_ns": 78868940,
+          "span_count": 12,
+          "text_count": 22
+        },
+        "candidate-search": {
+          "candidate_count": 155,
+          "candidate_query_count": 17,
+          "duration_ns": 212712208,
+          "span_count": 11
+        },
+        "database": {
+          "duration_ns": 193840494,
+          "span_count": 37
+        },
+        "database-transaction": {
+          "duration_ns": 12935745,
+          "span_count": 1
+        },
+        "edge-extraction": {
+          "duration_ns": 15965315208,
+          "span_count": 1
+        },
+        "edge-resolution": {
+          "duration_ns": 2086216215,
+          "span_count": 1
+        },
+        "embedding": {
+          "duration_ns": 111366750,
+          "span_count": 14,
+          "text_count": 34
+        },
+        "graph-prefix-snapshot": {
+          "duration_ns": 1707,
+          "span_count": 1
+        },
+        "invalidation-update": {
+          "duration_ns": 17848,
+          "span_count": 10
+        },
+        "llm": {
+          "duration_ns": 52335894860,
+          "input_tokens": 111764,
+          "output_tokens": 1141,
+          "span_count": 14
+        },
+        "llm-transport": {
+          "duration_ns": 52321594698,
+          "input_tokens": 111764,
+          "output_tokens": 1141,
+          "span_count": 14
+        },
+        "node-extraction": {
+          "duration_ns": 11516314702,
+          "span_count": 1
+        },
+        "node-resolution": {
+          "duration_ns": 12853591323,
+          "span_count": 1
+        },
+        "previous-context": {
+          "duration_ns": 1854886,
+          "span_count": 1
+        },
+        "publication": {
+          "duration_ns": 20068959,
+          "span_count": 1
+        }
+      },
+      "queue": {
+        "arrival_ts_ns": 206456000525788,
+        "enqueue_ts_ns": 206456002866486,
+        "publication_ts_ns": 208788573167601,
+        "queue_depth_at_enqueue": 48,
+        "service_start_ts_ns": 208735822994649,
+        "terminal_ts_ns": 208788573167601
+      },
+      "root_span": {
+        "end_ns": 208788480463932,
+        "start_ns": 208735829377536
+      },
+      "schema_version": "membind.paper-eval-v3.unified-observability.v1",
+      "status": "completed"
+    },
+    {
+      "graph_work": {
+        "attribution_status": "SERIAL_PREFIX_DELTA_OBSERVED",
+        "node_delta": 2,
+        "nodes_after": 363,
+        "nodes_before": 361,
+        "relationship_delta": 1,
+        "relationships_after": 571,
+        "relationships_before": 570
+      },
+      "identity": {
+        "episode_id": "b6019101:48",
+        "history_id": "b6019101",
+        "method": "A0",
+        "question_id": "b6019101",
+        "repeat_id": 0,
+        "run_id": "pev3-bs-dev-20260816-001-a0-b6019101-a001",
+        "source_sequence": 48
+      },
+      "latency_ns": {
+        "freshness": 2367464131894,
+        "queue_delay": 2332571231125,
+        "service": 34892900769,
+        "terminal": 2367464131894
+      },
+      "phase_metrics": {
+        "add-episode": {
+          "duration_ns": 34859566453,
+          "span_count": 1
+        },
+        "attributes-summary": {
+          "duration_ns": 8202776436,
+          "span_count": 1
+        },
+        "candidate-embedding": {
+          "duration_ns": 9751858,
+          "span_count": 2,
+          "text_count": 1
+        },
+        "candidate-search": {
+          "candidate_count": 15,
+          "candidate_query_count": 1,
+          "duration_ns": 25323967,
+          "span_count": 2
+        },
+        "database": {
+          "duration_ns": 20129896,
+          "span_count": 6
+        },
+        "database-transaction": {
+          "duration_ns": 3403797,
+          "span_count": 1
+        },
+        "edge-extraction": {
+          "duration_ns": 12253333443,
+          "span_count": 1
+        },
+        "edge-resolution": {
+          "duration_ns": 65835,
+          "span_count": 1
+        },
+        "embedding": {
+          "duration_ns": 25408958,
+          "span_count": 2,
+          "text_count": 2
+        },
+        "graph-prefix-snapshot": {
+          "duration_ns": 1673,
+          "span_count": 1
+        },
+        "invalidation-update": {
+          "duration_ns": 510,
+          "span_count": 1
+        },
+        "llm": {
+          "duration_ns": 34801983599,
+          "input_tokens": 106674,
+          "output_tokens": 359,
+          "span_count": 4
+        },
+        "llm-transport": {
+          "duration_ns": 34788014877,
+          "input_tokens": 106674,
+          "output_tokens": 359,
+          "span_count": 4
+        },
+        "node-extraction": {
+          "duration_ns": 7261176319,
+          "span_count": 1
+        },
+        "node-resolution": {
+          "duration_ns": 7131700871,
+          "span_count": 1
+        },
+        "previous-context": {
+          "duration_ns": 1791267,
+          "span_count": 1
+        },
+        "publication": {
+          "duration_ns": 8545845,
+          "span_count": 1
+        }
+      },
+      "queue": {
+        "arrival_ts_ns": 206456005332296,
+        "enqueue_ts_ns": 206456007743474,
+        "publication_ts_ns": 208823469464190,
+        "queue_depth_at_enqueue": 49,
+        "service_start_ts_ns": 208788576563421,
+        "terminal_ts_ns": 208823469464190
+      },
+      "root_span": {
+        "end_ns": 208823442373023,
+        "start_ns": 208788582806570
+      },
+      "schema_version": "membind.paper-eval-v3.unified-observability.v1",
+      "status": "completed"
+    }
+  ],
+  "graph_work": {
+    "node_delta": 363,
+    "relationship_delta": 571
+  },
+  "identity": {
+    "history_id": "b6019101",
+    "method": "A0",
+    "question_id": "b6019101",
+    "repeat_id": 0,
+    "run_id": "pev3-bs-dev-20260816-001-a0-b6019101-a001"
+  },
+  "latency_distributions": {
+    "freshness_ns": {
+      "count": 49,
+      "max": 2367464131894,
+      "mean": 1109552612853.2654,
+      "p50": 1051895921093,
+      "p90": 2198432856218,
+      "p95": 2279823869570,
+      "p99": 2367464131894,
+      "tail_amplification": 2.2506638579166887
+    },
+    "queue_delay_ns": {
+      "count": 49,
+      "max": 2332571231125,
+      "mean": 1061240508321.9183,
+      "p50": 998977964600,
+      "p90": 2165805897549,
+      "p95": 2249682502096,
+      "p99": 2332571231125,
+      "tail_amplification": 2.3349576404910826
+    },
+    "service_ns": {
+      "count": 49,
+      "max": 190772286960,
+      "mean": 48312104531.34694,
+      "p50": 40771106334,
+      "p90": 97101939581,
+      "p95": 132802947143,
+      "p99": 190772286960,
+      "tail_amplification": 4.679104986682945
+    },
+    "terminal_ns": {
+      "count": 49,
+      "max": 2367464131894,
+      "mean": 1109552612853.2654,
+      "p50": 1051895921093,
+      "p90": 2198432856218,
+      "p95": 2279823869570,
+      "p99": 2367464131894,
+      "tail_amplification": 2.2506638579166887
+    }
+  },
+  "metrics": {
+    "direct_violations": null,
+    "direct_violations_status": "NOT_EVALUATED_IN_LIGHTWEIGHT_BASELINE_SUITE",
+    "evidence_recall_at_10": 1.0,
+    "makespan_ns": 2367714135301,
+    "max_backlog": 49,
+    "max_backlog_status": "OBSERVED",
+    "p95_freshness_ns": 2279823869570,
+    "p99_freshness_ns": 2367464131894,
+    "qa_accuracy": 0.0,
+    "successful_goodput": 0.02069506587363883,
+    "successful_goodput_unit": "episodes_per_second"
+  },
+  "quality": {
+    "evidence_recall_at_10": 1.0,
+    "qa_accuracy": 0.0
+  },
+  "schema_version": "membind.paper-eval-v3.unified-observability.v1",
+  "work_volume": {
+    "candidate_count": 7129,
+    "candidate_embedding_items": 1041,
+    "candidate_embedding_spans": 568,
+    "candidate_query_count": 806,
+    "db_operations": 1756,
+    "db_transactions": 49,
+    "embedding_calls": 628,
+    "embedding_items": 1612,
+    "llm_input_tokens": 4565888,
+    "llm_logical_calls": 606,
+    "llm_output_tokens": 62839,
+    "llm_transport_attempts": 606
+  }
+}

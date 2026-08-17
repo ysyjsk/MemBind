@@ -1,0 +1,372 @@
+<?xml version="1.0" encoding="utf-8"?><testsuites name="pytest tests"><testsuite name="pytest" errors="0" failures="12" skipped="0" tests="25" time="0.105" timestamp="2026-08-16T18:02:41.707299+08:00" hostname="aces-System-Product-Name"><testcase classname="tests.test_s6_calibration_contract" name="test_development_history_binding_is_exactly_the_frozen_ordered_four" time="0.000"><failure message="AssertionError: Regex pattern did not match.&#10;  Expected regex: 's6_development_histories_payload_binding_invalid'&#10;  Actual message: 'input_bindings_shape_invalid'">def test_development_history_binding_is_exactly_the_frozen_ordered_four() -&gt; None:
+        assert DEVELOPMENT_HISTORIES_PAYLOAD_SHA256 == payload_sha256(
+            list(DEVELOPMENT_HISTORIES)
+        )
+        bindings = _bindings()
+        bindings["s6_development_histories_payload_sha256"] = payload_sha256(
+            [*DEVELOPMENT_HISTORIES, "c6853660"]
+        )
+    
+&gt;       with pytest.raises(
+            S6CalibrationContractError,
+            match="s6_development_histories_payload_binding_invalid",
+        ):
+E       AssertionError: Regex pattern did not match.
+E         Expected regex: 's6_development_histories_payload_binding_invalid'
+E         Actual message: 'input_bindings_shape_invalid'
+
+tests/test_s6_calibration_contract.py:48: AssertionError</failure></testcase><testcase classname="tests.test_s6_calibration_contract" name="test_matrix_is_exactly_four_histories_two_methods_and_four_concurrencies" time="0.000"><failure message="paper_eval.s6_calibration_contract.S6CalibrationContractError: input_bindings_shape_invalid">def test_matrix_is_exactly_four_histories_two_methods_and_four_concurrencies() -&gt; None:
+&gt;       matrix = build_s6_matrix(input_bindings=_bindings())
+                 ^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^
+
+tests/test_s6_calibration_contract.py:56: 
+_ _ _ _ _ _ _ _ _ _ _ _ _ _ _ _ _ _ _ _ _ _ _ _ _ _ _ _ _ _ _ _ _ _ _ _ _ _ _ _ 
+src/paper_eval/s6_calibration_contract.py:154: in build_s6_matrix
+    bindings = _validate_bindings(input_bindings)
+               ^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^
+_ _ _ _ _ _ _ _ _ _ _ _ _ _ _ _ _ _ _ _ _ _ _ _ _ _ _ _ _ _ _ _ _ _ _ _ _ _ _ _ 
+
+value = {'s6_development_histories_payload_sha256': '17cf7b28580e1cacb15d0b8c769cf122e4dac3492bb5bb55070cb96667640bdf', 'paren...cccccccccc', 's5_pstar_result_payload_sha256': 'dddddddddddddddddddddddddddddddddddddddddddddddddddddddddddddddd', ...}
+
+    def _validate_bindings(value: object) -&gt; dict[str, str]:
+        if not isinstance(value, Mapping) or set(value) != _BINDING_FIELDS:
+&gt;           raise _fail("input_bindings_shape_invalid")
+E           paper_eval.s6_calibration_contract.S6CalibrationContractError: input_bindings_shape_invalid
+
+src/paper_eval/s6_calibration_contract.py:107: S6CalibrationContractError</failure></testcase><testcase classname="tests.test_s6_calibration_contract" name="test_matrix_verifier_recomputes_inventory_and_rejects_drift[&lt;lambda&gt;0]" time="0.000"><failure message="paper_eval.s6_calibration_contract.S6CalibrationContractError: input_bindings_shape_invalid">mutation = &lt;function &lt;lambda&gt; at 0x778c8bcd3c40&gt;
+
+    @pytest.mark.parametrize(
+        "mutation",
+        [
+            lambda value: value["histories"].append("PILOT-PRIVATE-ID"),
+            lambda value: value["cells"].append(deepcopy(value["cells"][0])),
+            lambda value: value["cells"][0].update(configured_concurrency=3),
+            lambda value: value["cells"][0].update(method="U0"),
+            lambda value: value["cells"][0].update(namespace="pev3-other"),
+            lambda value: value["cells"][0].update(cell_index=9),
+            lambda value: value["input_bindings"].update(parent_protocol_sha256="bad"),
+            lambda value: value["input_bindings"].update(
+                development_exposed_ids_payload_sha256=value["input_bindings"].pop(
+                    "s6_development_histories_payload_sha256"
+                )
+            ),
+        ],
+    )
+    def test_matrix_verifier_recomputes_inventory_and_rejects_drift(mutation: object) -&gt; None:
+&gt;       matrix = build_s6_matrix(input_bindings=_bindings())
+                 ^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^
+
+tests/test_s6_calibration_contract.py:105: 
+_ _ _ _ _ _ _ _ _ _ _ _ _ _ _ _ _ _ _ _ _ _ _ _ _ _ _ _ _ _ _ _ _ _ _ _ _ _ _ _ 
+src/paper_eval/s6_calibration_contract.py:154: in build_s6_matrix
+    bindings = _validate_bindings(input_bindings)
+               ^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^
+_ _ _ _ _ _ _ _ _ _ _ _ _ _ _ _ _ _ _ _ _ _ _ _ _ _ _ _ _ _ _ _ _ _ _ _ _ _ _ _ 
+
+value = {'s6_development_histories_payload_sha256': '17cf7b28580e1cacb15d0b8c769cf122e4dac3492bb5bb55070cb96667640bdf', 'paren...cccccccccc', 's5_pstar_result_payload_sha256': 'dddddddddddddddddddddddddddddddddddddddddddddddddddddddddddddddd', ...}
+
+    def _validate_bindings(value: object) -&gt; dict[str, str]:
+        if not isinstance(value, Mapping) or set(value) != _BINDING_FIELDS:
+&gt;           raise _fail("input_bindings_shape_invalid")
+E           paper_eval.s6_calibration_contract.S6CalibrationContractError: input_bindings_shape_invalid
+
+src/paper_eval/s6_calibration_contract.py:107: S6CalibrationContractError</failure></testcase><testcase classname="tests.test_s6_calibration_contract" name="test_matrix_verifier_recomputes_inventory_and_rejects_drift[&lt;lambda&gt;1]" time="0.000"><failure message="paper_eval.s6_calibration_contract.S6CalibrationContractError: input_bindings_shape_invalid">mutation = &lt;function &lt;lambda&gt; at 0x778c8bcd3ce0&gt;
+
+    @pytest.mark.parametrize(
+        "mutation",
+        [
+            lambda value: value["histories"].append("PILOT-PRIVATE-ID"),
+            lambda value: value["cells"].append(deepcopy(value["cells"][0])),
+            lambda value: value["cells"][0].update(configured_concurrency=3),
+            lambda value: value["cells"][0].update(method="U0"),
+            lambda value: value["cells"][0].update(namespace="pev3-other"),
+            lambda value: value["cells"][0].update(cell_index=9),
+            lambda value: value["input_bindings"].update(parent_protocol_sha256="bad"),
+            lambda value: value["input_bindings"].update(
+                development_exposed_ids_payload_sha256=value["input_bindings"].pop(
+                    "s6_development_histories_payload_sha256"
+                )
+            ),
+        ],
+    )
+    def test_matrix_verifier_recomputes_inventory_and_rejects_drift(mutation: object) -&gt; None:
+&gt;       matrix = build_s6_matrix(input_bindings=_bindings())
+                 ^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^
+
+tests/test_s6_calibration_contract.py:105: 
+_ _ _ _ _ _ _ _ _ _ _ _ _ _ _ _ _ _ _ _ _ _ _ _ _ _ _ _ _ _ _ _ _ _ _ _ _ _ _ _ 
+src/paper_eval/s6_calibration_contract.py:154: in build_s6_matrix
+    bindings = _validate_bindings(input_bindings)
+               ^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^
+_ _ _ _ _ _ _ _ _ _ _ _ _ _ _ _ _ _ _ _ _ _ _ _ _ _ _ _ _ _ _ _ _ _ _ _ _ _ _ _ 
+
+value = {'s6_development_histories_payload_sha256': '17cf7b28580e1cacb15d0b8c769cf122e4dac3492bb5bb55070cb96667640bdf', 'paren...cccccccccc', 's5_pstar_result_payload_sha256': 'dddddddddddddddddddddddddddddddddddddddddddddddddddddddddddddddd', ...}
+
+    def _validate_bindings(value: object) -&gt; dict[str, str]:
+        if not isinstance(value, Mapping) or set(value) != _BINDING_FIELDS:
+&gt;           raise _fail("input_bindings_shape_invalid")
+E           paper_eval.s6_calibration_contract.S6CalibrationContractError: input_bindings_shape_invalid
+
+src/paper_eval/s6_calibration_contract.py:107: S6CalibrationContractError</failure></testcase><testcase classname="tests.test_s6_calibration_contract" name="test_matrix_verifier_recomputes_inventory_and_rejects_drift[&lt;lambda&gt;2]" time="0.000"><failure message="paper_eval.s6_calibration_contract.S6CalibrationContractError: input_bindings_shape_invalid">mutation = &lt;function &lt;lambda&gt; at 0x778c8bcd3d80&gt;
+
+    @pytest.mark.parametrize(
+        "mutation",
+        [
+            lambda value: value["histories"].append("PILOT-PRIVATE-ID"),
+            lambda value: value["cells"].append(deepcopy(value["cells"][0])),
+            lambda value: value["cells"][0].update(configured_concurrency=3),
+            lambda value: value["cells"][0].update(method="U0"),
+            lambda value: value["cells"][0].update(namespace="pev3-other"),
+            lambda value: value["cells"][0].update(cell_index=9),
+            lambda value: value["input_bindings"].update(parent_protocol_sha256="bad"),
+            lambda value: value["input_bindings"].update(
+                development_exposed_ids_payload_sha256=value["input_bindings"].pop(
+                    "s6_development_histories_payload_sha256"
+                )
+            ),
+        ],
+    )
+    def test_matrix_verifier_recomputes_inventory_and_rejects_drift(mutation: object) -&gt; None:
+&gt;       matrix = build_s6_matrix(input_bindings=_bindings())
+                 ^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^
+
+tests/test_s6_calibration_contract.py:105: 
+_ _ _ _ _ _ _ _ _ _ _ _ _ _ _ _ _ _ _ _ _ _ _ _ _ _ _ _ _ _ _ _ _ _ _ _ _ _ _ _ 
+src/paper_eval/s6_calibration_contract.py:154: in build_s6_matrix
+    bindings = _validate_bindings(input_bindings)
+               ^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^
+_ _ _ _ _ _ _ _ _ _ _ _ _ _ _ _ _ _ _ _ _ _ _ _ _ _ _ _ _ _ _ _ _ _ _ _ _ _ _ _ 
+
+value = {'s6_development_histories_payload_sha256': '17cf7b28580e1cacb15d0b8c769cf122e4dac3492bb5bb55070cb96667640bdf', 'paren...cccccccccc', 's5_pstar_result_payload_sha256': 'dddddddddddddddddddddddddddddddddddddddddddddddddddddddddddddddd', ...}
+
+    def _validate_bindings(value: object) -&gt; dict[str, str]:
+        if not isinstance(value, Mapping) or set(value) != _BINDING_FIELDS:
+&gt;           raise _fail("input_bindings_shape_invalid")
+E           paper_eval.s6_calibration_contract.S6CalibrationContractError: input_bindings_shape_invalid
+
+src/paper_eval/s6_calibration_contract.py:107: S6CalibrationContractError</failure></testcase><testcase classname="tests.test_s6_calibration_contract" name="test_matrix_verifier_recomputes_inventory_and_rejects_drift[&lt;lambda&gt;3]" time="0.000"><failure message="paper_eval.s6_calibration_contract.S6CalibrationContractError: input_bindings_shape_invalid">mutation = &lt;function &lt;lambda&gt; at 0x778c8bcd3e20&gt;
+
+    @pytest.mark.parametrize(
+        "mutation",
+        [
+            lambda value: value["histories"].append("PILOT-PRIVATE-ID"),
+            lambda value: value["cells"].append(deepcopy(value["cells"][0])),
+            lambda value: value["cells"][0].update(configured_concurrency=3),
+            lambda value: value["cells"][0].update(method="U0"),
+            lambda value: value["cells"][0].update(namespace="pev3-other"),
+            lambda value: value["cells"][0].update(cell_index=9),
+            lambda value: value["input_bindings"].update(parent_protocol_sha256="bad"),
+            lambda value: value["input_bindings"].update(
+                development_exposed_ids_payload_sha256=value["input_bindings"].pop(
+                    "s6_development_histories_payload_sha256"
+                )
+            ),
+        ],
+    )
+    def test_matrix_verifier_recomputes_inventory_and_rejects_drift(mutation: object) -&gt; None:
+&gt;       matrix = build_s6_matrix(input_bindings=_bindings())
+                 ^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^
+
+tests/test_s6_calibration_contract.py:105: 
+_ _ _ _ _ _ _ _ _ _ _ _ _ _ _ _ _ _ _ _ _ _ _ _ _ _ _ _ _ _ _ _ _ _ _ _ _ _ _ _ 
+src/paper_eval/s6_calibration_contract.py:154: in build_s6_matrix
+    bindings = _validate_bindings(input_bindings)
+               ^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^
+_ _ _ _ _ _ _ _ _ _ _ _ _ _ _ _ _ _ _ _ _ _ _ _ _ _ _ _ _ _ _ _ _ _ _ _ _ _ _ _ 
+
+value = {'s6_development_histories_payload_sha256': '17cf7b28580e1cacb15d0b8c769cf122e4dac3492bb5bb55070cb96667640bdf', 'paren...cccccccccc', 's5_pstar_result_payload_sha256': 'dddddddddddddddddddddddddddddddddddddddddddddddddddddddddddddddd', ...}
+
+    def _validate_bindings(value: object) -&gt; dict[str, str]:
+        if not isinstance(value, Mapping) or set(value) != _BINDING_FIELDS:
+&gt;           raise _fail("input_bindings_shape_invalid")
+E           paper_eval.s6_calibration_contract.S6CalibrationContractError: input_bindings_shape_invalid
+
+src/paper_eval/s6_calibration_contract.py:107: S6CalibrationContractError</failure></testcase><testcase classname="tests.test_s6_calibration_contract" name="test_matrix_verifier_recomputes_inventory_and_rejects_drift[&lt;lambda&gt;4]" time="0.000"><failure message="paper_eval.s6_calibration_contract.S6CalibrationContractError: input_bindings_shape_invalid">mutation = &lt;function &lt;lambda&gt; at 0x778c8bcd3ec0&gt;
+
+    @pytest.mark.parametrize(
+        "mutation",
+        [
+            lambda value: value["histories"].append("PILOT-PRIVATE-ID"),
+            lambda value: value["cells"].append(deepcopy(value["cells"][0])),
+            lambda value: value["cells"][0].update(configured_concurrency=3),
+            lambda value: value["cells"][0].update(method="U0"),
+            lambda value: value["cells"][0].update(namespace="pev3-other"),
+            lambda value: value["cells"][0].update(cell_index=9),
+            lambda value: value["input_bindings"].update(parent_protocol_sha256="bad"),
+            lambda value: value["input_bindings"].update(
+                development_exposed_ids_payload_sha256=value["input_bindings"].pop(
+                    "s6_development_histories_payload_sha256"
+                )
+            ),
+        ],
+    )
+    def test_matrix_verifier_recomputes_inventory_and_rejects_drift(mutation: object) -&gt; None:
+&gt;       matrix = build_s6_matrix(input_bindings=_bindings())
+                 ^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^
+
+tests/test_s6_calibration_contract.py:105: 
+_ _ _ _ _ _ _ _ _ _ _ _ _ _ _ _ _ _ _ _ _ _ _ _ _ _ _ _ _ _ _ _ _ _ _ _ _ _ _ _ 
+src/paper_eval/s6_calibration_contract.py:154: in build_s6_matrix
+    bindings = _validate_bindings(input_bindings)
+               ^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^
+_ _ _ _ _ _ _ _ _ _ _ _ _ _ _ _ _ _ _ _ _ _ _ _ _ _ _ _ _ _ _ _ _ _ _ _ _ _ _ _ 
+
+value = {'s6_development_histories_payload_sha256': '17cf7b28580e1cacb15d0b8c769cf122e4dac3492bb5bb55070cb96667640bdf', 'paren...cccccccccc', 's5_pstar_result_payload_sha256': 'dddddddddddddddddddddddddddddddddddddddddddddddddddddddddddddddd', ...}
+
+    def _validate_bindings(value: object) -&gt; dict[str, str]:
+        if not isinstance(value, Mapping) or set(value) != _BINDING_FIELDS:
+&gt;           raise _fail("input_bindings_shape_invalid")
+E           paper_eval.s6_calibration_contract.S6CalibrationContractError: input_bindings_shape_invalid
+
+src/paper_eval/s6_calibration_contract.py:107: S6CalibrationContractError</failure></testcase><testcase classname="tests.test_s6_calibration_contract" name="test_matrix_verifier_recomputes_inventory_and_rejects_drift[&lt;lambda&gt;5]" time="0.000"><failure message="paper_eval.s6_calibration_contract.S6CalibrationContractError: input_bindings_shape_invalid">mutation = &lt;function &lt;lambda&gt; at 0x778c8bcd3f60&gt;
+
+    @pytest.mark.parametrize(
+        "mutation",
+        [
+            lambda value: value["histories"].append("PILOT-PRIVATE-ID"),
+            lambda value: value["cells"].append(deepcopy(value["cells"][0])),
+            lambda value: value["cells"][0].update(configured_concurrency=3),
+            lambda value: value["cells"][0].update(method="U0"),
+            lambda value: value["cells"][0].update(namespace="pev3-other"),
+            lambda value: value["cells"][0].update(cell_index=9),
+            lambda value: value["input_bindings"].update(parent_protocol_sha256="bad"),
+            lambda value: value["input_bindings"].update(
+                development_exposed_ids_payload_sha256=value["input_bindings"].pop(
+                    "s6_development_histories_payload_sha256"
+                )
+            ),
+        ],
+    )
+    def test_matrix_verifier_recomputes_inventory_and_rejects_drift(mutation: object) -&gt; None:
+&gt;       matrix = build_s6_matrix(input_bindings=_bindings())
+                 ^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^
+
+tests/test_s6_calibration_contract.py:105: 
+_ _ _ _ _ _ _ _ _ _ _ _ _ _ _ _ _ _ _ _ _ _ _ _ _ _ _ _ _ _ _ _ _ _ _ _ _ _ _ _ 
+src/paper_eval/s6_calibration_contract.py:154: in build_s6_matrix
+    bindings = _validate_bindings(input_bindings)
+               ^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^
+_ _ _ _ _ _ _ _ _ _ _ _ _ _ _ _ _ _ _ _ _ _ _ _ _ _ _ _ _ _ _ _ _ _ _ _ _ _ _ _ 
+
+value = {'s6_development_histories_payload_sha256': '17cf7b28580e1cacb15d0b8c769cf122e4dac3492bb5bb55070cb96667640bdf', 'paren...cccccccccc', 's5_pstar_result_payload_sha256': 'dddddddddddddddddddddddddddddddddddddddddddddddddddddddddddddddd', ...}
+
+    def _validate_bindings(value: object) -&gt; dict[str, str]:
+        if not isinstance(value, Mapping) or set(value) != _BINDING_FIELDS:
+&gt;           raise _fail("input_bindings_shape_invalid")
+E           paper_eval.s6_calibration_contract.S6CalibrationContractError: input_bindings_shape_invalid
+
+src/paper_eval/s6_calibration_contract.py:107: S6CalibrationContractError</failure></testcase><testcase classname="tests.test_s6_calibration_contract" name="test_matrix_verifier_recomputes_inventory_and_rejects_drift[&lt;lambda&gt;6]" time="0.000"><failure message="paper_eval.s6_calibration_contract.S6CalibrationContractError: input_bindings_shape_invalid">mutation = &lt;function &lt;lambda&gt; at 0x778c8bd58040&gt;
+
+    @pytest.mark.parametrize(
+        "mutation",
+        [
+            lambda value: value["histories"].append("PILOT-PRIVATE-ID"),
+            lambda value: value["cells"].append(deepcopy(value["cells"][0])),
+            lambda value: value["cells"][0].update(configured_concurrency=3),
+            lambda value: value["cells"][0].update(method="U0"),
+            lambda value: value["cells"][0].update(namespace="pev3-other"),
+            lambda value: value["cells"][0].update(cell_index=9),
+            lambda value: value["input_bindings"].update(parent_protocol_sha256="bad"),
+            lambda value: value["input_bindings"].update(
+                development_exposed_ids_payload_sha256=value["input_bindings"].pop(
+                    "s6_development_histories_payload_sha256"
+                )
+            ),
+        ],
+    )
+    def test_matrix_verifier_recomputes_inventory_and_rejects_drift(mutation: object) -&gt; None:
+&gt;       matrix = build_s6_matrix(input_bindings=_bindings())
+                 ^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^
+
+tests/test_s6_calibration_contract.py:105: 
+_ _ _ _ _ _ _ _ _ _ _ _ _ _ _ _ _ _ _ _ _ _ _ _ _ _ _ _ _ _ _ _ _ _ _ _ _ _ _ _ 
+src/paper_eval/s6_calibration_contract.py:154: in build_s6_matrix
+    bindings = _validate_bindings(input_bindings)
+               ^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^
+_ _ _ _ _ _ _ _ _ _ _ _ _ _ _ _ _ _ _ _ _ _ _ _ _ _ _ _ _ _ _ _ _ _ _ _ _ _ _ _ 
+
+value = {'s6_development_histories_payload_sha256': '17cf7b28580e1cacb15d0b8c769cf122e4dac3492bb5bb55070cb96667640bdf', 'paren...cccccccccc', 's5_pstar_result_payload_sha256': 'dddddddddddddddddddddddddddddddddddddddddddddddddddddddddddddddd', ...}
+
+    def _validate_bindings(value: object) -&gt; dict[str, str]:
+        if not isinstance(value, Mapping) or set(value) != _BINDING_FIELDS:
+&gt;           raise _fail("input_bindings_shape_invalid")
+E           paper_eval.s6_calibration_contract.S6CalibrationContractError: input_bindings_shape_invalid
+
+src/paper_eval/s6_calibration_contract.py:107: S6CalibrationContractError</failure></testcase><testcase classname="tests.test_s6_calibration_contract" name="test_matrix_verifier_recomputes_inventory_and_rejects_drift[&lt;lambda&gt;7]" time="0.000"><failure message="paper_eval.s6_calibration_contract.S6CalibrationContractError: input_bindings_shape_invalid">mutation = &lt;function &lt;lambda&gt; at 0x778c8bd580e0&gt;
+
+    @pytest.mark.parametrize(
+        "mutation",
+        [
+            lambda value: value["histories"].append("PILOT-PRIVATE-ID"),
+            lambda value: value["cells"].append(deepcopy(value["cells"][0])),
+            lambda value: value["cells"][0].update(configured_concurrency=3),
+            lambda value: value["cells"][0].update(method="U0"),
+            lambda value: value["cells"][0].update(namespace="pev3-other"),
+            lambda value: value["cells"][0].update(cell_index=9),
+            lambda value: value["input_bindings"].update(parent_protocol_sha256="bad"),
+            lambda value: value["input_bindings"].update(
+                development_exposed_ids_payload_sha256=value["input_bindings"].pop(
+                    "s6_development_histories_payload_sha256"
+                )
+            ),
+        ],
+    )
+    def test_matrix_verifier_recomputes_inventory_and_rejects_drift(mutation: object) -&gt; None:
+&gt;       matrix = build_s6_matrix(input_bindings=_bindings())
+                 ^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^
+
+tests/test_s6_calibration_contract.py:105: 
+_ _ _ _ _ _ _ _ _ _ _ _ _ _ _ _ _ _ _ _ _ _ _ _ _ _ _ _ _ _ _ _ _ _ _ _ _ _ _ _ 
+src/paper_eval/s6_calibration_contract.py:154: in build_s6_matrix
+    bindings = _validate_bindings(input_bindings)
+               ^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^
+_ _ _ _ _ _ _ _ _ _ _ _ _ _ _ _ _ _ _ _ _ _ _ _ _ _ _ _ _ _ _ _ _ _ _ _ _ _ _ _ 
+
+value = {'s6_development_histories_payload_sha256': '17cf7b28580e1cacb15d0b8c769cf122e4dac3492bb5bb55070cb96667640bdf', 'paren...cccccccccc', 's5_pstar_result_payload_sha256': 'dddddddddddddddddddddddddddddddddddddddddddddddddddddddddddddddd', ...}
+
+    def _validate_bindings(value: object) -&gt; dict[str, str]:
+        if not isinstance(value, Mapping) or set(value) != _BINDING_FIELDS:
+&gt;           raise _fail("input_bindings_shape_invalid")
+E           paper_eval.s6_calibration_contract.S6CalibrationContractError: input_bindings_shape_invalid
+
+src/paper_eval/s6_calibration_contract.py:107: S6CalibrationContractError</failure></testcase><testcase classname="tests.test_s6_calibration_contract" name="test_p95_uses_frozen_nearest_rank_convention[values0-10]" time="0.000" /><testcase classname="tests.test_s6_calibration_contract" name="test_p95_uses_frozen_nearest_rank_convention[values1-9]" time="0.000" /><testcase classname="tests.test_s6_calibration_contract" name="test_p95_uses_frozen_nearest_rank_convention[values2-19]" time="0.000" /><testcase classname="tests.test_s6_calibration_contract" name="test_p95_uses_frozen_nearest_rank_convention[values3-19]" time="0.000" /><testcase classname="tests.test_s6_calibration_contract" name="test_p95_uses_frozen_nearest_rank_convention[values4-40]" time="0.000" /><testcase classname="tests.test_s6_calibration_contract" name="test_block_metrics_use_first_service_and_last_terminal_or_publication" time="0.000" /><testcase classname="tests.test_s6_calibration_contract" name="test_complete_treatment_failure_keeps_zero_goodput_and_unstarted_censoring" time="0.000" /><testcase classname="tests.test_s6_calibration_contract" name="test_block_metrics_fail_closed_on_incomplete_or_incoherent_terminal_state[outcomes0]" time="0.000" /><testcase classname="tests.test_s6_calibration_contract" name="test_block_metrics_fail_closed_on_incomplete_or_incoherent_terminal_state[outcomes1]" time="0.000" /><testcase classname="tests.test_s6_calibration_contract" name="test_block_metrics_fail_closed_on_incomplete_or_incoherent_terminal_state[outcomes2]" time="0.000" /><testcase classname="tests.test_s6_calibration_contract" name="test_block_metrics_fail_closed_on_incomplete_or_incoherent_terminal_state[outcomes3]" time="0.000" /><testcase classname="tests.test_s6_calibration_contract" name="test_block_metrics_fail_closed_on_incomplete_or_incoherent_terminal_state[outcomes4]" time="0.000" /><testcase classname="tests.test_s6_calibration_contract" name="test_p95_rejects_empty_boolean_or_negative_samples" time="0.000" /><testcase classname="tests.test_s6_calibration_contract" name="test_matrix_writer_is_ascii_durable_exclusive_and_returns_hashes" time="0.001"><failure message="paper_eval.s6_calibration_contract.S6CalibrationContractError: input_bindings_shape_invalid">tmp_path = PosixPath('/tmp/pytest-of-ly/pytest-478/test_matrix_writer_is_ascii_du0')
+
+    def test_matrix_writer_is_ascii_durable_exclusive_and_returns_hashes(tmp_path) -&gt; None:
+&gt;       matrix = build_s6_matrix(input_bindings=_bindings())
+                 ^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^
+
+tests/test_s6_calibration_contract.py:287: 
+_ _ _ _ _ _ _ _ _ _ _ _ _ _ _ _ _ _ _ _ _ _ _ _ _ _ _ _ _ _ _ _ _ _ _ _ _ _ _ _ 
+src/paper_eval/s6_calibration_contract.py:154: in build_s6_matrix
+    bindings = _validate_bindings(input_bindings)
+               ^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^
+_ _ _ _ _ _ _ _ _ _ _ _ _ _ _ _ _ _ _ _ _ _ _ _ _ _ _ _ _ _ _ _ _ _ _ _ _ _ _ _ 
+
+value = {'s6_development_histories_payload_sha256': '17cf7b28580e1cacb15d0b8c769cf122e4dac3492bb5bb55070cb96667640bdf', 'paren...cccccccccc', 's5_pstar_result_payload_sha256': 'dddddddddddddddddddddddddddddddddddddddddddddddddddddddddddddddd', ...}
+
+    def _validate_bindings(value: object) -&gt; dict[str, str]:
+        if not isinstance(value, Mapping) or set(value) != _BINDING_FIELDS:
+&gt;           raise _fail("input_bindings_shape_invalid")
+E           paper_eval.s6_calibration_contract.S6CalibrationContractError: input_bindings_shape_invalid
+
+src/paper_eval/s6_calibration_contract.py:107: S6CalibrationContractError</failure></testcase><testcase classname="tests.test_s6_calibration_contract" name="test_matrix_writer_verifies_before_creating_output" time="0.000"><failure message="paper_eval.s6_calibration_contract.S6CalibrationContractError: input_bindings_shape_invalid">tmp_path = PosixPath('/tmp/pytest-of-ly/pytest-478/test_matrix_writer_verifies_be0')
+
+    def test_matrix_writer_verifies_before_creating_output(tmp_path) -&gt; None:
+&gt;       matrix = build_s6_matrix(input_bindings=_bindings())
+                 ^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^
+
+tests/test_s6_calibration_contract.py:316: 
+_ _ _ _ _ _ _ _ _ _ _ _ _ _ _ _ _ _ _ _ _ _ _ _ _ _ _ _ _ _ _ _ _ _ _ _ _ _ _ _ 
+src/paper_eval/s6_calibration_contract.py:154: in build_s6_matrix
+    bindings = _validate_bindings(input_bindings)
+               ^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^
+_ _ _ _ _ _ _ _ _ _ _ _ _ _ _ _ _ _ _ _ _ _ _ _ _ _ _ _ _ _ _ _ _ _ _ _ _ _ _ _ 
+
+value = {'s6_development_histories_payload_sha256': '17cf7b28580e1cacb15d0b8c769cf122e4dac3492bb5bb55070cb96667640bdf', 'paren...cccccccccc', 's5_pstar_result_payload_sha256': 'dddddddddddddddddddddddddddddddddddddddddddddddddddddddddddddddd', ...}
+
+    def _validate_bindings(value: object) -&gt; dict[str, str]:
+        if not isinstance(value, Mapping) or set(value) != _BINDING_FIELDS:
+&gt;           raise _fail("input_bindings_shape_invalid")
+E           paper_eval.s6_calibration_contract.S6CalibrationContractError: input_bindings_shape_invalid
+
+src/paper_eval/s6_calibration_contract.py:107: S6CalibrationContractError</failure></testcase></testsuite></testsuites>

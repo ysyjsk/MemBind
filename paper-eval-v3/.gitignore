@@ -6,3 +6,7 @@ __pycache__/
 .env
 runtime/*.lock
 runtime/private/
+# Raw questions, graph facts, Reader prompts, and Judge material stay local.
+artifacts/paper_eval/graph_quality_overlay/runs/**/private_bundle.json
+artifacts/paper_eval/graph_quality_overlay/runs/**/.private_bundle.json.*.tmp
+artifacts/paper_eval/graph_quality_overlay/runs/**/runtime/private/

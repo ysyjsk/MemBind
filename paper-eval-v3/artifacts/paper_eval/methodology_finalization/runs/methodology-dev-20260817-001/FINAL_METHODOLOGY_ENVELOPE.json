@@ -1,0 +1,89 @@
+{
+  "authority_effect": "DOCUMENTATION_ONLY_NO_LIVE_AUTHORITY",
+  "cross_checks": {
+    "json_payload_seals_verified": true,
+    "junit_green_verified": true,
+    "methodology_decision_binding_verified": true,
+    "report_decision_file_binding_verified": true,
+    "run_identity_chain_verified": true
+  },
+  "data_role": "DEVELOPMENT_EXPOSED",
+  "decision_summary": {
+    "actual_decision_matrix_cell": "BLOCKED_QUALITY_PROTOCOL",
+    "live_method_status": "NOT_AUTHORIZED",
+    "mechanism_status": "NO_METHOD_SELECTED",
+    "paper_claim_status": "NOT_AUTHORIZED_DEVELOPMENT_ONLY",
+    "problem_verdict": "BLOCKED_QUALITY_PROTOCOL"
+  },
+  "envelope_run_id": "methodology-dev-20260817-001",
+  "heldout_data_accessed": false,
+  "methodology_document": {
+    "bound_decision_payload_sha256": "50a76d29ff973b67465940af94d3bc9c3814db04bad2774b4ea834b78ed22f4d",
+    "bound_decision_run_id": "methodology-dev-20260817-001",
+    "deterministic_render_verified": true,
+    "file_sha256": "1daa14b633a814bb6674260b617f7ac92356b8b238cb6f8df52e6d0a7e65cb37",
+    "path": "主methodology设计.md",
+    "status": "DESIGN_COMPLETE"
+  },
+  "payload_sha256": "fdce14ca14af82e1f393663bcf822a3153cecbe86c93375a231ab71bcdddec1f",
+  "schema_version": "membind.paper-eval-v3.final-methodology-envelope.v1",
+  "scope": "DEVELOPMENT_EXPOSED_DESCRIPTIVE_ONLY",
+  "source_code_sha256": {
+    "paper-eval-v3/scripts/finalize_final_methodology_envelope.py": "5514989ac53ba42c0f5f8b6766b1a3dbb06db19402476d50f955405e4d764887",
+    "paper-eval-v3/scripts/finalize_main_methodology.py": "f8589a67241ac5bc701acaa1a633c321d44e1d054c01709238692685cc198e5b",
+    "paper-eval-v3/scripts/finalize_methodology_decision.py": "166ee3d4306b64ca07cfaf0c81ad2f369b5753319419c03db762438d786793de",
+    "paper-eval-v3/scripts/write_three_baseline_development_report.py": "d06c979a2e4e0ab426d69a9a8754390f35ed6961560f03533ed1f89456206b9b",
+    "paper-eval-v3/src/paper_eval/artifacts.py": "749f7fb01380cb75627bf8e385bd080584a2a0e7aafe5941c8f1ccb3612bf3ea",
+    "paper-eval-v3/src/paper_eval/development_baseline_report.py": "e5efcb95958f5ea1a54af1704841135cddaa56a7da3c5d24e6f4298a1958bbf3",
+    "paper-eval-v3/src/paper_eval/final_methodology_envelope.py": "5cbf3b1a75ce1be1641dbcccd7d5371c4354b6e5591c5bc21f27bb1099b14a41",
+    "paper-eval-v3/src/paper_eval/graph_quality_overlay.py": "0f4638ee923b7b503033c9e5255e4ae7f9b093a14b1a4215bcf526a7f5b12deb",
+    "paper-eval-v3/src/paper_eval/methodology_decision.py": "06b5d5f3128a52b1436ef33a46e0c5e2055a088969024031a5517ca17ce5686b",
+    "paper-eval-v3/src/paper_eval/methodology_document.py": "329751d11c644c49d989ad49c7d5ae71e3bd51481885d94cd1f4bfc617845988",
+    "paper-eval-v3/tests/test_final_methodology_envelope.py": "067de29071162435e1177c9a37e0bf6d7ee4b1fdd8ce7899c296320c57c8a81a"
+  },
+  "sources": {
+    "development_report": {
+      "file_sha256": "664d9b0250abbeba54abe2ba9b1486c1f5a76e1ea235945ddf65bf21aa8a49ca",
+      "path": "paper-eval-v3/artifacts/paper_eval/development_report/runs/report-dev-20260817-001/REPORT.json",
+      "payload_sha256": "ba060bd48fb933319b522ef5196c003919b2a0c0d2a81c3eb9f00f4b264e9c62",
+      "run_id": "report-dev-20260817-001",
+      "schema_version": "membind.paper-eval-v3.development-baseline-report.v1",
+      "status": "PASS"
+    },
+    "graph_quality_overlay": {
+      "file_sha256": "4103821e34a1e04a462640d899a766d72ded6fe21ab58f9b5451b0fb35e7424f",
+      "path": "paper-eval-v3/artifacts/paper_eval/graph_quality_overlay/runs/gq-dev-20260817-001/GRAPH_QUALITY_RESULTS.json",
+      "payload_sha256": "15bd92d9f8393a3614d8764cdb71752e59f0e0668bc2f5ccb1746df8dad31953",
+      "run_id": "gq-dev-20260817-001",
+      "schema_version": "membind.paper-eval-v3.graph-quality-report.v1",
+      "status": "PASS"
+    },
+    "methodology_decision": {
+      "file_sha256": "6844196b29b2b49493229eb84c68479aa44396487acc4abe3d51049dafb7f88a",
+      "path": "paper-eval-v3/artifacts/paper_eval/methodology_finalization/runs/methodology-dev-20260817-001/METHODOLOGY_DECISION.json",
+      "payload_sha256": "50a76d29ff973b67465940af94d3bc9c3814db04bad2774b4ea834b78ed22f4d",
+      "run_id": "methodology-dev-20260817-001",
+      "schema_version": "membind.paper-eval-v3.methodology-decision.v1",
+      "status": "PASS"
+    },
+    "three_baselines": {
+      "file_sha256": "c012181616366f2b3106a47d517227b4f14e108a4705157fa1064edf54b1b5f8",
+      "path": "paper-eval-v3/artifacts/paper_eval/baseline_suite/runs/bs-dev-20260816-001/THREE_BASELINE_RESULTS.json",
+      "payload_sha256": "7c087a2368724f2f8cfb0f8e17cd5d2f54684e51b3cfb9203a0f6dc04eff4ef0",
+      "run_id": "bs-dev-20260816-001",
+      "schema_version": "membind.paper-eval-v3.three-baseline-report.v1",
+      "status": "PASS"
+    }
+  },
+  "status": "PASS",
+  "tdd": {
+    "errors": 0,
+    "failures": 0,
+    "file_sha256": "9324f1ac2c4458f06018ebe8be4433b0c4eef787066569cf49b1a5bb512e3408",
+    "passed": 1845,
+    "path": "paper-eval-v3/logs/TDD_FULL_OFFLINE_GREEN_FINAL_ENVELOPE_20260817.xml",
+    "skipped": 0,
+    "tests": 1845,
+    "warnings_evidence": "NOT_ENCODED_BY_JUNIT_XML"
+  }
+}

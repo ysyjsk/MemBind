@@ -2,31 +2,55 @@
 
 from __future__ import annotations
 
+import hashlib
+import json
 from copy import deepcopy
 
 import pytest
 
+from paper_eval.artifacts import payload_sha256
 from paper_eval.s6_calibration_contract import (
     CONCURRENCIES,
+    DEVELOPMENT_HISTORIES_PAYLOAD_SHA256,
     DEVELOPMENT_HISTORIES,
     METHODS,
     S6CalibrationContractError,
     build_s6_matrix,
     compute_s6_block_metrics,
     deterministic_nearest_rank_p95,
+    finalize_s6_matrix_freeze,
     verify_s6_matrix,
+    verify_s6_matrix_freeze,
 )
 
 
 def _bindings() -> dict[str, str]:
     return {
-        "development_exposed_ids_payload_sha256": "a" * 64,
+        "s6_development_histories_payload_sha256": (
+            DEVELOPMENT_HISTORIES_PAYLOAD_SHA256
+        ),
         "parent_protocol_sha256": "b" * 64,
         "s5_pstar_result_file_sha256": "c" * 64,
         "s5_pstar_result_payload_sha256": "d" * 64,
         "s5_mstar_result_file_sha256": "e" * 64,
         "s5_mstar_result_payload_sha256": "f" * 64,
     }
+
+
+def test_development_history_binding_is_exactly_the_frozen_ordered_four() -> None:
+    assert DEVELOPMENT_HISTORIES_PAYLOAD_SHA256 == payload_sha256(
+        list(DEVELOPMENT_HISTORIES)
+    )
+    bindings = _bindings()
+    bindings["s6_development_histories_payload_sha256"] = payload_sha256(
+        [*DEVELOPMENT_HISTORIES, "c6853660"]
+    )
+
+    with pytest.raises(
+        S6CalibrationContractError,
+        match="s6_development_histories_payload_binding_invalid",
+    ):
+        build_s6_matrix(input_bindings=bindings)
 
 
 def test_matrix_is_exactly_four_histories_two_methods_and_four_concurrencies() -> None:
@@ -71,6 +95,11 @@ def test_matrix_is_exactly_four_histories_two_methods_and_four_concurrencies() -
         lambda value: value["cells"][0].update(namespace="pev3-other"),
         lambda value: value["cells"][0].update(cell_index=9),
         lambda value: value["input_bindings"].update(parent_protocol_sha256="bad"),
+        lambda value: value["input_bindings"].update(
+            development_exposed_ids_payload_sha256=value["input_bindings"].pop(
+                "s6_development_histories_payload_sha256"
+            )
+        ),
     ],
 )
 def test_matrix_verifier_recomputes_inventory_and_rejects_drift(mutation: object) -> None:
@@ -253,3 +282,78 @@ def test_p95_rejects_empty_boolean_or_negative_samples() -> None:
     for values in ([], [True], [-1], [1, None]):
         with pytest.raises(S6CalibrationContractError):
             deterministic_nearest_rank_p95(values)
+
+
+def test_matrix_freeze_is_finalized_ascii_durable_exclusive_and_hashed(
+    tmp_path,
+) -> None:
+    matrix = build_s6_matrix(input_bindings=_bindings())
+    output = tmp_path / "nested" / "S6_MATRIX_FREEZE.json"
+
+    receipt = finalize_s6_matrix_freeze(
+        output_path=output,
+        matrix=matrix,
+        git_commit="d" * 40,
+    )
+    artifact = receipt["artifact"]
+
+    expected = (
+        json.dumps(artifact, ensure_ascii=True, indent=2, sort_keys=True) + "\n"
+    ).encode("ascii")
+    assert output.read_bytes() == expected
+    assert artifact == verify_s6_matrix_freeze(artifact)
+    assert artifact == {
+        "protocol_version": "paper-eval-v3",
+        "git_commit": "d" * 40,
+        "run_id": "s6-calibration-matrix-freeze-20260816-001",
+        "status": "finalized",
+        "payload": matrix,
+        "payload_sha256": payload_sha256(matrix),
+    }
+    assert receipt == {
+        "artifact": artifact,
+        "matrix_payload_sha256": payload_sha256(matrix),
+        "matrix_file_sha256": hashlib.sha256(expected).hexdigest(),
+    }
+
+    before = output.read_bytes()
+    with pytest.raises(S6CalibrationContractError, match="matrix_output_exists"):
+        finalize_s6_matrix_freeze(
+            output_path=output,
+            matrix=matrix,
+            git_commit="d" * 40,
+        )
+    assert output.read_bytes() == before
+
+
+def test_matrix_finalizer_verifies_before_creating_output(tmp_path) -> None:
+    matrix = build_s6_matrix(input_bindings=_bindings())
+    matrix["cells"][0]["configured_concurrency"] = 3
+    output = tmp_path / "S6_MATRIX_FREEZE.json"
+
+    with pytest.raises(S6CalibrationContractError, match="cell_inventory_invalid"):
+        finalize_s6_matrix_freeze(
+            output_path=output,
+            matrix=matrix,
+            git_commit="d" * 40,
+        )
+
+    assert not output.exists()
+
+
+def test_matrix_freeze_verifier_rejects_raw_payload_and_envelope_drift() -> None:
+    matrix = build_s6_matrix(input_bindings=_bindings())
+    with pytest.raises(S6CalibrationContractError, match="freeze_envelope_shape_invalid"):
+        verify_s6_matrix_freeze(matrix)
+
+    artifact = {
+        "protocol_version": "paper-eval-v3",
+        "git_commit": "d" * 40,
+        "run_id": "s6-calibration-matrix-freeze-20260816-001",
+        "status": "finalized",
+        "payload": matrix,
+        "payload_sha256": payload_sha256(matrix),
+    }
+    artifact["run_id"] = "wrong"
+    with pytest.raises(S6CalibrationContractError, match="freeze_envelope_invalid"):
+        verify_s6_matrix_freeze(artifact)

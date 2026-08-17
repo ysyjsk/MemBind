@@ -1,0 +1,40 @@
+<?xml version="1.0" encoding="utf-8"?><testsuites name="pytest tests"><testsuite name="pytest" errors="0" failures="1" skipped="0" tests="1" time="0.042" timestamp="2026-08-17T04:11:09.308398+08:00" hostname="aces-System-Product-Name"><testcase classname="tests.test_run_three_baseline_graph_quality" name="test_runtime_is_built_before_the_async_client_lifecycle" time="0.012"><failure message="Failed: runtime/client lifecycle entry point must be synchronous">monkeypatch = &lt;_pytest.monkeypatch.MonkeyPatch object at 0x735f0ded02c0&gt;
+
+    def test_runtime_is_built_before_the_async_client_lifecycle(
+        monkeypatch: pytest.MonkeyPatch,
+    ) -&gt; None:
+        module = _script_module()
+        events: list[tuple[str, int | None]] = []
+        runtime = object()
+    
+        def fake_build_runtime(*, env: object) -&gt; object:
+            assert env == {"identity": "frozen"}
+            try:
+                asyncio.get_running_loop()
+            except RuntimeError:
+                loop_identity = None
+            else:  # pragma: no cover - this is the regression being guarded
+                pytest.fail("Graphiti runtime was built inside an active event loop")
+            events.append(("build-runtime", loop_identity))
+            return runtime
+    
+        async def fake_client_lifecycle(**kwargs: object) -&gt; dict[str, object]:
+            assert kwargs["runtime"] is runtime
+            events.append(("run-clients", id(asyncio.get_running_loop())))
+            return {"payload_sha256": "a" * 64}
+    
+        monkeypatch.setattr(module, "build_graph_quality_runtime", fake_build_runtime)
+        monkeypatch.setattr(module, "_build_clients_run_live_and_close", fake_client_lifecycle, raising=False)
+    
+        result = module._build_run_live_and_close(
+            overlay_run_id="gq-test-001",
+            targets=(),
+            records={},
+            env={"identity": "frozen"},
+        )
+        if inspect.isawaitable(result):
+            result.close()
+&gt;           pytest.fail("runtime/client lifecycle entry point must be synchronous")
+E           Failed: runtime/client lifecycle entry point must be synchronous
+
+tests/test_run_three_baseline_graph_quality.py:71: Failed</failure></testcase></testsuite></testsuites>

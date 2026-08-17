@@ -1,0 +1,54 @@
+<?xml version="1.0" encoding="utf-8"?><testsuites name="pytest tests"><testsuite name="pytest" errors="0" failures="1" skipped="0" tests="6" time="0.048" timestamp="2026-08-17T12:36:56.925615+08:00" hostname="aces-System-Product-Name"><testcase classname="tests.test_membind_v1_aligned_schedule" name="test_u0_uses_frozen_arrival_offsets_but_remains_source_serial" time="0.000" /><testcase classname="tests.test_membind_v1_aligned_schedule" name="test_p_c2_uses_no_more_than_two_whole_update_workers_and_records_real_overlap" time="0.000" /><testcase classname="tests.test_membind_v1_aligned_schedule" name="test_scheduler_rejects_bad_trace_before_the_native_callback[offsets0-arrival offset count]" time="0.000" /><testcase classname="tests.test_membind_v1_aligned_schedule" name="test_scheduler_rejects_bad_trace_before_the_native_callback[offsets1-arrival offsets]" time="0.000" /><testcase classname="tests.test_membind_v1_aligned_schedule" name="test_scheduler_never_leaks_the_opaque_episode_into_public_lifecycle_rows" time="0.000" /><testcase classname="tests.test_membind_v1_aligned_schedule" name="test_scheduler_emits_each_durable_lifecycle_boundary_in_source_safe_form" time="0.000"><failure message="TypeError: run_aligned_baseline() got an unexpected keyword argument 'lifecycle_observer'">def test_scheduler_emits_each_durable_lifecycle_boundary_in_source_safe_form() -&gt; None:
+        async def scenario() -&gt; list[tuple[str, int, int]]:
+            observed: list[tuple[str, int, int]] = []
+    
+            async def native(_episode: object) -&gt; None:
+                return None
+    
+            async def observer(event_type: str, source_sequence: int, timestamp_ns: int) -&gt; None:
+                observed.append((event_type, source_sequence, timestamp_ns))
+    
+            await run_aligned_baseline(
+                method="U0-aligned",
+                episodes=_episodes(2),
+                arrival_offsets_ns=(0, 0),
+                native_add_episode=native,
+                lifecycle_observer=observer,
+            )
+            return observed
+    
+&gt;       observed = asyncio.run(scenario())
+                   ^^^^^^^^^^^^^^^^^^^^^^^
+
+tests/test_membind_v1_aligned_schedule.py:169: 
+_ _ _ _ _ _ _ _ _ _ _ _ _ _ _ _ _ _ _ _ _ _ _ _ _ _ _ _ _ _ _ _ _ _ _ _ _ _ _ _ 
+/usr/lib/python3.12/asyncio/runners.py:194: in run
+    return runner.run(main)
+           ^^^^^^^^^^^^^^^^
+/usr/lib/python3.12/asyncio/runners.py:118: in run
+    return self._loop.run_until_complete(task)
+           ^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^
+/usr/lib/python3.12/asyncio/base_events.py:687: in run_until_complete
+    return future.result()
+           ^^^^^^^^^^^^^^^
+_ _ _ _ _ _ _ _ _ _ _ _ _ _ _ _ _ _ _ _ _ _ _ _ _ _ _ _ _ _ _ _ _ _ _ _ _ _ _ _ 
+
+    async def scenario() -&gt; list[tuple[str, int, int]]:
+        observed: list[tuple[str, int, int]] = []
+    
+        async def native(_episode: object) -&gt; None:
+            return None
+    
+        async def observer(event_type: str, source_sequence: int, timestamp_ns: int) -&gt; None:
+            observed.append((event_type, source_sequence, timestamp_ns))
+    
+&gt;       await run_aligned_baseline(
+            method="U0-aligned",
+            episodes=_episodes(2),
+            arrival_offsets_ns=(0, 0),
+            native_add_episode=native,
+            lifecycle_observer=observer,
+        )
+E       TypeError: run_aligned_baseline() got an unexpected keyword argument 'lifecycle_observer'
+
+tests/test_membind_v1_aligned_schedule.py:160: TypeError</failure></testcase></testsuite></testsuites>

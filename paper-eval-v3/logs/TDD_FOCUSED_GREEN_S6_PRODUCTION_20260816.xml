@@ -1,0 +1,212 @@
+<?xml version="1.0" encoding="utf-8"?><testsuites name="pytest tests"><testsuite name="pytest" errors="0" failures="2" skipped="0" tests="5" time="9.397" timestamp="2026-08-16T19:05:36.731574+08:00" hostname="aces-System-Product-Name"><testcase classname="tests.test_s6_production" name="test_real_frozen_workloads_are_exact_49_49_46_44" time="6.236" /><testcase classname="tests.test_s6_production" name="test_execution_identity_is_history_independent_but_method_c_sensitive" time="0.001" /><testcase classname="tests.test_s6_production" name="test_pass_preflight_exclusively_materializes_one_authority" time="1.572"><failure message="NameError: name 'deepcopy' is not defined">tmp_path = PosixPath('/tmp/pytest-of-ly/pytest-500/test_pass_preflight_exclusivel0')
+
+    @pytest.mark.asyncio
+    async def test_pass_preflight_exclusively_materializes_one_authority(tmp_path: Path) -&gt; None:
+        matrix_path = tmp_path / "S6_MATRIX_FREEZE.json"
+        freeze = finalize_s6_matrix_freeze(
+            output_path=matrix_path,
+            matrix=_matrix(),
+            git_commit=GIT,
+        )["artifact"]
+        cell = freeze["payload"]["cells"][0]
+        sources = load_s6_sources(cell=cell, paths=S6ProductionPaths())
+        paths = S6BlockPreparationPaths(
+            matrix_freeze=matrix_path,
+            preflight=tmp_path / "preflights" / f"{cell['run_id']}.json",
+            authority=tmp_path / "authorities" / f"{cell['run_id']}.json",
+        )
+    
+        async def observations(_cell: dict[str, object]) -&gt; dict[str, object]:
+            return {
+                "construction": {
+                    "status": "PASS",
+                    "served_model_id": "qwen3-32b-fp8",
+                    "vllm_version": "0.26.0",
+                    "max_model_len": 65536,
+                },
+                "embedding": {
+                    "status": "PASS",
+                    "served_model_id": "qwen3-embedding-0.6b",
+                },
+                "neo4j_connectivity": True,
+                "namespace": _cell["namespace"],
+                "namespace_state": {"node_count": 0, "relationship_count": 0},
+            }
+    
+&gt;       result = await prepare_s6_block_authority(
+            paths=paths,
+            cell_index=0,
+            sources=sources,
+            git_commit=GIT,
+            observation_collector=observations,
+        )
+
+tests/test_s6_production.py:129: 
+_ _ _ _ _ _ _ _ _ _ _ _ _ _ _ _ _ _ _ _ _ _ _ _ _ _ _ _ _ _ _ _ _ _ _ _ _ _ _ _ 
+
+paths = S6BlockPreparationPaths(matrix_freeze=PosixPath('/tmp/pytest-of-ly/pytest-500/test_pass_preflight_exclusivel0/S6_MATRI...ty=PosixPath('/tmp/pytest-of-ly/pytest-500/test_pass_preflight_exclusivel0/authorities/s6-07741c45-pstar-c1-001.json'))
+cell_index = 0
+sources = (S5EpisodeRef(source_sequence=0, source_sha256='be983c489b10deea9c4d860f1e3203e4fa5d964154e004b814b2b5fee410156a', nat...ecting critical infrastructure and preventing cyber-physical attacks that could have devastating consequences.")), ...)
+git_commit = 'aaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaa'
+observation_collector = &lt;function test_pass_preflight_exclusively_materializes_one_authority.&lt;locals&gt;.observations at 0x7b21ca417380&gt;
+production_paths = S6ProductionPaths(dataset=PosixPath('/data/predator/ly/Mem/data/raw/longmemeval-cleaned/longmemeval_s_cleaned.json'), ...ly/MemBind/paper-eval-v3/artifacts/paper_eval/native/S5_MSTAR_PRODUCTION_CORE_IDENTITY_CURRENT_HEAD_V2_20260816.json'))
+
+    async def prepare_s6_block_authority(
+        *,
+        paths: S6BlockPreparationPaths,
+        cell_index: int,
+        sources: Sequence[object],
+        git_commit: str,
+        observation_collector: ObservationCollector,
+        production_paths: S6ProductionPaths = S6ProductionPaths(),
+    ) -&gt; dict[str, object]:
+        """Persist a read-only preflight, then one authority only on PASS."""
+    
+        if not isinstance(paths, S6BlockPreparationPaths):
+            raise _fail("preparation_paths_invalid")
+        if paths.preflight.exists() or paths.authority.exists():
+            raise _fail("preparation_output_exists")
+        if not callable(observation_collector):
+            raise _fail("observation_collector_invalid")
+        try:
+            freeze = verify_s6_matrix_freeze(_load(paths.matrix_freeze, "matrix_invalid"))
+            cell = verify_s6_cell_identity(freeze["payload"]["cells"][cell_index])
+        except Exception:
+            raise _fail("matrix_or_cell_invalid") from None
+        source_hashes = tuple(str(getattr(source, "source_sha256", "")) for source in sources)
+        if not source_hashes or any(_SHA256.fullmatch(item) is None for item in source_hashes):
+            raise _fail("sources_invalid")
+        source_closure = current_s6_source_closure(str(cell["method"]))
+        dependency_closure = current_s6_dependency_closure(
+            str(cell["method"]), production_paths
+        )
+        core_identity: str | None = None
+        if cell["method"] == "M*":
+            try:
+                core = verify_s5_mstar_production_core_identity(
+                    _load(
+                        production_paths.production_core_identity,
+                        "production_core_identity_invalid",
+                    )
+                )
+                core_identity = str(core["identity_sha256"])
+            except Exception:
+                raise _fail("production_core_identity_invalid") from None
+        execution_identity = build_s6_execution_identity(
+            cell=cell,
+            source_sha256=source_closure,
+            dependency_sha256=dependency_closure,
+            production_core_identity_sha256=core_identity,
+        )
+&gt;       observations_value = observation_collector(deepcopy(dict(cell)))
+                                                   ^^^^^^^^
+E       NameError: name 'deepcopy' is not defined
+
+src/paper_eval/s6_production.py:318: NameError</failure></testcase><testcase classname="tests.test_s6_production" name="test_failed_read_only_preflight_is_persisted_without_authority" time="1.543"><failure message="NameError: name 'deepcopy' is not defined">tmp_path = PosixPath('/tmp/pytest-of-ly/pytest-500/test_failed_read_only_prefligh0')
+
+    @pytest.mark.asyncio
+    async def test_failed_read_only_preflight_is_persisted_without_authority(
+        tmp_path: Path,
+    ) -&gt; None:
+        matrix_path = tmp_path / "S6_MATRIX_FREEZE.json"
+        freeze = finalize_s6_matrix_freeze(
+            output_path=matrix_path,
+            matrix=_matrix(),
+            git_commit=GIT,
+        )["artifact"]
+        cell = freeze["payload"]["cells"][0]
+        sources = load_s6_sources(cell=cell, paths=S6ProductionPaths())
+        paths = S6BlockPreparationPaths(
+            matrix_freeze=matrix_path,
+            preflight=tmp_path / "preflight.json",
+            authority=tmp_path / "authority.json",
+        )
+    
+        async def failed(_cell: dict[str, object]) -&gt; dict[str, object]:
+            return {
+                "construction": {
+                    "status": "FAIL",
+                    "served_model_id": "qwen3-32b-fp8",
+                    "vllm_version": "0.26.0",
+                    "max_model_len": 65536,
+                },
+                "embedding": {
+                    "status": "PASS",
+                    "served_model_id": "qwen3-embedding-0.6b",
+                },
+                "neo4j_connectivity": True,
+                "namespace": _cell["namespace"],
+                "namespace_state": {"node_count": 0, "relationship_count": 0},
+            }
+    
+        with pytest.raises(S6ProductionError, match="preflight_not_pass"):
+&gt;           await prepare_s6_block_authority(
+                paths=paths,
+                cell_index=0,
+                sources=sources,
+                git_commit=GIT,
+                observation_collector=failed,
+            )
+
+tests/test_s6_production.py:183: 
+_ _ _ _ _ _ _ _ _ _ _ _ _ _ _ _ _ _ _ _ _ _ _ _ _ _ _ _ _ _ _ _ _ _ _ _ _ _ _ _ 
+
+paths = S6BlockPreparationPaths(matrix_freeze=PosixPath('/tmp/pytest-of-ly/pytest-500/test_failed_read_only_prefligh0/S6_MATRI...0/preflight.json'), authority=PosixPath('/tmp/pytest-of-ly/pytest-500/test_failed_read_only_prefligh0/authority.json'))
+cell_index = 0
+sources = (S5EpisodeRef(source_sequence=0, source_sha256='be983c489b10deea9c4d860f1e3203e4fa5d964154e004b814b2b5fee410156a', nat...ecting critical infrastructure and preventing cyber-physical attacks that could have devastating consequences.")), ...)
+git_commit = 'aaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaa'
+observation_collector = &lt;function test_failed_read_only_preflight_is_persisted_without_authority.&lt;locals&gt;.failed at 0x7b21ca415120&gt;
+production_paths = S6ProductionPaths(dataset=PosixPath('/data/predator/ly/Mem/data/raw/longmemeval-cleaned/longmemeval_s_cleaned.json'), ...ly/MemBind/paper-eval-v3/artifacts/paper_eval/native/S5_MSTAR_PRODUCTION_CORE_IDENTITY_CURRENT_HEAD_V2_20260816.json'))
+
+    async def prepare_s6_block_authority(
+        *,
+        paths: S6BlockPreparationPaths,
+        cell_index: int,
+        sources: Sequence[object],
+        git_commit: str,
+        observation_collector: ObservationCollector,
+        production_paths: S6ProductionPaths = S6ProductionPaths(),
+    ) -&gt; dict[str, object]:
+        """Persist a read-only preflight, then one authority only on PASS."""
+    
+        if not isinstance(paths, S6BlockPreparationPaths):
+            raise _fail("preparation_paths_invalid")
+        if paths.preflight.exists() or paths.authority.exists():
+            raise _fail("preparation_output_exists")
+        if not callable(observation_collector):
+            raise _fail("observation_collector_invalid")
+        try:
+            freeze = verify_s6_matrix_freeze(_load(paths.matrix_freeze, "matrix_invalid"))
+            cell = verify_s6_cell_identity(freeze["payload"]["cells"][cell_index])
+        except Exception:
+            raise _fail("matrix_or_cell_invalid") from None
+        source_hashes = tuple(str(getattr(source, "source_sha256", "")) for source in sources)
+        if not source_hashes or any(_SHA256.fullmatch(item) is None for item in source_hashes):
+            raise _fail("sources_invalid")
+        source_closure = current_s6_source_closure(str(cell["method"]))
+        dependency_closure = current_s6_dependency_closure(
+            str(cell["method"]), production_paths
+        )
+        core_identity: str | None = None
+        if cell["method"] == "M*":
+            try:
+                core = verify_s5_mstar_production_core_identity(
+                    _load(
+                        production_paths.production_core_identity,
+                        "production_core_identity_invalid",
+                    )
+                )
+                core_identity = str(core["identity_sha256"])
+            except Exception:
+                raise _fail("production_core_identity_invalid") from None
+        execution_identity = build_s6_execution_identity(
+            cell=cell,
+            source_sha256=source_closure,
+            dependency_sha256=dependency_closure,
+            production_core_identity_sha256=core_identity,
+        )
+&gt;       observations_value = observation_collector(deepcopy(dict(cell)))
+                                                   ^^^^^^^^
+E       NameError: name 'deepcopy' is not defined
+
+src/paper_eval/s6_production.py:318: NameError</failure></testcase><testcase classname="tests.test_s6_production" name="test_transparent_runtime_instrumentation_produces_work_volume_shape" time="0.000" /></testsuite></testsuites>

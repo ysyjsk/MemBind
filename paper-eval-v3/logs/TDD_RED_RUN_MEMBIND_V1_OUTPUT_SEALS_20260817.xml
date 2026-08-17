@@ -1,0 +1,112 @@
+<?xml version="1.0" encoding="utf-8"?><testsuites name="pytest tests"><testsuite name="pytest" errors="0" failures="2" skipped="0" tests="6" time="6.591" timestamp="2026-08-17T13:55:31.383594+08:00" hostname="aces-System-Product-Name"><testcase classname="tests.test_run_membind_v1" name="test_command_runs_and_seals_all_twelve_blocks_before_the_first_main_table" time="2.493" /><testcase classname="tests.test_run_membind_v1" name="test_command_reuses_only_verified_complete_block_outputs" time="3.063" /><testcase classname="tests.test_run_membind_v1" name="test_command_stops_at_the_first_failed_block_and_does_not_render_a_partial_table" time="0.874" /><testcase classname="tests.test_run_membind_v1" name="test_command_stays_in_its_new_lane_and_has_no_secret_or_historical_write_path" time="0.000" /><testcase classname="tests.test_run_membind_v1" name="test_persist_block_output_rejects_missing_quality_seal_with_runner_error" time="0.109"><failure message="KeyError: 'quality_and_correctness_sha256'">tmp_path = PosixPath('/tmp/pytest-of-ly/pytest-695/test_persist_block_output_reje0')
+
+    def test_persist_block_output_rejects_missing_quality_seal_with_runner_error(tmp_path: Path) -&gt; None:
+        module = _module()
+        with pytest.raises(module.RunnerError, match="quality projection seal"):
+&gt;           module._persist_block_output(
+                tmp_path / "block",
+                block={
+                    "aligned_run_id": "aligned-main-test-001",
+                    "block_index": 0,
+                    "method": "U0-aligned",
+                    "history_id": "07741c45",
+                },
+                quality_live={"quality_and_correctness": {"missing": True}},
+                quality={"missing": True},
+                derived={"status": "PASS"},
+            )
+
+tests/test_run_membind_v1.py:312: 
+_ _ _ _ _ _ _ _ _ _ _ _ _ _ _ _ _ _ _ _ _ _ _ _ _ _ _ _ _ _ _ _ _ _ _ _ _ _ _ _ 
+
+root = PosixPath('/tmp/pytest-of-ly/pytest-695/test_persist_block_output_reje0/block')
+block = {'aligned_run_id': 'aligned-main-test-001', 'block_index': 0, 'method': 'U0-aligned', 'history_id': '07741c45'}
+quality_live = {'quality_and_correctness': {'missing': True}}
+quality = {'missing': True}, derived = {'status': 'PASS'}
+
+    def _persist_block_output(
+        root: Path,
+        *,
+        block: Mapping[str, object],
+        quality_live: Mapping[str, object],
+        quality: Mapping[str, object],
+        derived: Mapping[str, object],
+    ) -&gt; None:
+        _safe_write(root / "quality_live.json", quality_live)
+        _safe_write(root / "quality_and_correctness.json", quality)
+        _safe_write(root / "derived_block.json", derived)
+        _safe_write(
+            root / "block_output.json",
+            {
+                "schema_version": "membind.paper-eval-v3.membind-v1-aligned-block-output.v1",
+                "status": "PASS",
+                "aligned_run_id": block["aligned_run_id"],
+                "block_index": block["block_index"],
+                "method": block["method"],
+                "history_id": block["history_id"],
+&gt;               "quality_and_correctness_sha256": quality["quality_and_correctness_sha256"],
+                                                  ^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^
+                "derived": dict(derived),
+                "block_output_sha256": payload_sha256(
+                    {
+                        "schema_version": "membind.paper-eval-v3.membind-v1-aligned-block-output.v1",
+                        "status": "PASS",
+                        "aligned_run_id": block["aligned_run_id"],
+                        "block_index": block["block_index"],
+                        "method": block["method"],
+                        "history_id": block["history_id"],
+                        "quality_and_correctness_sha256": quality["quality_and_correctness_sha256"],
+                        "derived": dict(derived),
+                    }
+                ),
+            },
+        )
+E       KeyError: 'quality_and_correctness_sha256'
+
+scripts/run_membind_v1.py:367: KeyError</failure></testcase><testcase classname="tests.test_run_membind_v1" name="test_default_verify_block_rejects_block_output_seal_drift" time="0.001"><failure message="Failed: DID NOT RAISE RunnerError">tmp_path = PosixPath('/tmp/pytest-of-ly/pytest-695/test_default_verify_block_reje0')
+monkeypatch = &lt;_pytest.monkeypatch.MonkeyPatch object at 0x7658f8421b80&gt;
+
+    def test_default_verify_block_rejects_block_output_seal_drift(
+        tmp_path: Path, monkeypatch: pytest.MonkeyPatch
+    ) -&gt; None:
+        module = _module()
+        root = tmp_path / "block"
+        root.mkdir()
+        quality_body = {"quality_payload": "test"}
+        quality = {
+            **quality_body,
+            "quality_and_correctness_sha256": _payload_sha256(quality_body),
+        }
+        (root / "quality_and_correctness.json").write_text(
+            json.dumps(quality), encoding="utf-8"
+        )
+        derived = {"status": "PASS", "block_index": 0}
+        monkeypatch.setattr(
+            module,
+            "derive_aligned_block_output",
+            lambda *_args, **_kwargs: derived,
+        )
+        output_body = {
+            "schema_version": "membind.paper-eval-v3.membind-v1-aligned-block-output.v1",
+            "status": "PASS",
+            "aligned_run_id": "aligned-main-test-001",
+            "block_index": 0,
+            "method": "U0-aligned",
+            "history_id": "07741c45",
+            "quality_and_correctness_sha256": quality["quality_and_correctness_sha256"],
+            "derived": derived,
+        }
+        output = {**output_body, "block_output_sha256": _payload_sha256(output_body)}
+        (root / "block_output.json").write_text(json.dumps(output), encoding="utf-8")
+        assert module._default_verify_block(
+            block_root=root,
+            block={"block_index": 0},
+            plan={},
+        ) == derived
+    
+        output["block_output_sha256"] = "0" * 64
+        (root / "block_output.json").write_text(json.dumps(output), encoding="utf-8")
+&gt;       with pytest.raises(module.RunnerError, match="block output seal"):
+E       Failed: DID NOT RAISE RunnerError
+
+tests/test_run_membind_v1.py:366: Failed</failure></testcase></testsuite></testsuites>

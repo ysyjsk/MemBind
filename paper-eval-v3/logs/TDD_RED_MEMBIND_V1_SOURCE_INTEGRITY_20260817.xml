@@ -1,0 +1,15 @@
+<?xml version="1.0" encoding="utf-8"?><testsuites name="pytest tests"><testsuite name="pytest" errors="0" failures="1" skipped="0" tests="5" time="0.032" timestamp="2026-08-17T11:51:15.345658+08:00" hostname="aces-System-Product-Name"><testcase classname="tests.test_membind_v1_source_log" name="test_source_log_binds_an_exact_contiguous_immutable_inventory" time="0.000" /><testcase classname="tests.test_membind_v1_source_log" name="test_source_log_rejects_noncontiguous_or_duplicate_inventory[records0-source_sequence_not_contiguous]" time="0.000" /><testcase classname="tests.test_membind_v1_source_log" name="test_source_log_rejects_noncontiguous_or_duplicate_inventory[records1-source_sequence_not_contiguous]" time="0.000" /><testcase classname="tests.test_membind_v1_source_log" name="test_source_record_hash_binds_the_immutable_source_projection" time="0.000" /><testcase classname="tests.test_membind_v1_source_log" name="test_source_log_rejects_a_manually_constructed_record_with_bad_hash" time="0.000"><failure message="Failed: DID NOT RAISE MemBindV1SourceLogError">def test_source_log_rejects_a_manually_constructed_record_with_bad_hash() -&gt; None:
+        forged = SourceRecord(
+            source_sequence=0,
+            episode_uuid="episode-0",
+            group_id="group-a",
+            reference_time_ns=1_000,
+            source_filter="message",
+            _episode_projection_json='{"body":"episode 0","name":"E0"}',
+            source_sha256="0" * 64,
+        )
+    
+&gt;       with pytest.raises(MemBindV1SourceLogError, match="source_hash_mismatch"):
+E       Failed: DID NOT RAISE MemBindV1SourceLogError
+
+tests/test_membind_v1_source_log.py:88: Failed</failure></testcase></testsuite></testsuites>

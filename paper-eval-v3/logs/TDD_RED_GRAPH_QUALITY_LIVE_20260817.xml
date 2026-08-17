@@ -1,0 +1,446 @@
+<?xml version="1.0" encoding="utf-8"?><testsuites name="pytest tests"><testsuite name="pytest" errors="0" failures="13" skipped="0" tests="13" time="0.071" timestamp="2026-08-17T00:18:08.352968+08:00" hostname="aces-System-Product-Name"><testcase classname="tests.test_graph_quality_live" name="test_runtime_constructs_neo4j_driver_outside_event_loop_without_init_task" time="0.000"><failure message="ModuleNotFoundError: No module named 'paper_eval.graph_quality_live'">def test_runtime_constructs_neo4j_driver_outside_event_loop_without_init_task() -&gt; None:
+&gt;       runtime = _build()
+                  ^^^^^^^^
+
+tests/test_graph_quality_live.py:84: 
+_ _ _ _ _ _ _ _ _ _ _ _ _ _ _ _ _ _ _ _ _ _ _ _ _ _ _ _ _ _ _ _ _ _ _ _ _ _ _ _ 
+tests/test_graph_quality_live.py:76: in _build
+    live = _live()
+           ^^^^^^^
+tests/test_graph_quality_live.py:21: in _live
+    return importlib.import_module("paper_eval.graph_quality_live")
+           ^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^
+/usr/lib/python3.12/importlib/__init__.py:90: in import_module
+    return _bootstrap._gcd_import(name[level:], package, level)
+           ^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^
+&lt;frozen importlib._bootstrap&gt;:1387: in _gcd_import
+    ???
+&lt;frozen importlib._bootstrap&gt;:1360: in _find_and_load
+    ???
+_ _ _ _ _ _ _ _ _ _ _ _ _ _ _ _ _ _ _ _ _ _ _ _ _ _ _ _ _ _ _ _ _ _ _ _ _ _ _ _ 
+
+name = 'paper_eval.graph_quality_live'
+import_ = &lt;function _gcd_import at 0x7822405a40e0&gt;
+
+&gt;   ???
+E   ModuleNotFoundError: No module named 'paper_eval.graph_quality_live'
+
+&lt;frozen importlib._bootstrap&gt;:1324: ModuleNotFoundError</failure></testcase><testcase classname="tests.test_graph_quality_live" name="test_runtime_builder_rejects_an_active_event_loop" time="0.001"><failure message="ModuleNotFoundError: No module named 'paper_eval.graph_quality_live'">@pytest.mark.asyncio
+    async def test_runtime_builder_rejects_an_active_event_loop() -&gt; None:
+&gt;       live = _live()
+               ^^^^^^^
+
+tests/test_graph_quality_live.py:97: 
+_ _ _ _ _ _ _ _ _ _ _ _ _ _ _ _ _ _ _ _ _ _ _ _ _ _ _ _ _ _ _ _ _ _ _ _ _ _ _ _ 
+tests/test_graph_quality_live.py:21: in _live
+    return importlib.import_module("paper_eval.graph_quality_live")
+           ^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^
+/usr/lib/python3.12/importlib/__init__.py:90: in import_module
+    return _bootstrap._gcd_import(name[level:], package, level)
+           ^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^
+&lt;frozen importlib._bootstrap&gt;:1387: in _gcd_import
+    ???
+&lt;frozen importlib._bootstrap&gt;:1360: in _find_and_load
+    ???
+_ _ _ _ _ _ _ _ _ _ _ _ _ _ _ _ _ _ _ _ _ _ _ _ _ _ _ _ _ _ _ _ _ _ _ _ _ _ _ _ 
+
+name = 'paper_eval.graph_quality_live'
+import_ = &lt;function _gcd_import at 0x7822405a40e0&gt;
+
+&gt;   ???
+E   ModuleNotFoundError: No module named 'paper_eval.graph_quality_live'
+
+&lt;frozen importlib._bootstrap&gt;:1324: ModuleNotFoundError</failure></testcase><testcase classname="tests.test_graph_quality_live" name="test_runtime_uses_exact_frozen_qwen3_embedding_configuration" time="0.000"><failure message="ModuleNotFoundError: No module named 'paper_eval.graph_quality_live'">def test_runtime_uses_exact_frozen_qwen3_embedding_configuration() -&gt; None:
+&gt;       runtime = _build()
+                  ^^^^^^^^
+
+tests/test_graph_quality_live.py:107: 
+_ _ _ _ _ _ _ _ _ _ _ _ _ _ _ _ _ _ _ _ _ _ _ _ _ _ _ _ _ _ _ _ _ _ _ _ _ _ _ _ 
+tests/test_graph_quality_live.py:76: in _build
+    live = _live()
+           ^^^^^^^
+tests/test_graph_quality_live.py:21: in _live
+    return importlib.import_module("paper_eval.graph_quality_live")
+           ^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^
+/usr/lib/python3.12/importlib/__init__.py:90: in import_module
+    return _bootstrap._gcd_import(name[level:], package, level)
+           ^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^
+&lt;frozen importlib._bootstrap&gt;:1387: in _gcd_import
+    ???
+&lt;frozen importlib._bootstrap&gt;:1360: in _find_and_load
+    ???
+_ _ _ _ _ _ _ _ _ _ _ _ _ _ _ _ _ _ _ _ _ _ _ _ _ _ _ _ _ _ _ _ _ _ _ _ _ _ _ _ 
+
+name = 'paper_eval.graph_quality_live'
+import_ = &lt;function _gcd_import at 0x7822405a40e0&gt;
+
+&gt;   ???
+E   ModuleNotFoundError: No module named 'paper_eval.graph_quality_live'
+
+&lt;frozen importlib._bootstrap&gt;:1324: ModuleNotFoundError</failure></testcase><testcase classname="tests.test_graph_quality_live" name="test_construction_llm_and_cross_encoder_are_fail_fast_forbidden" time="0.000"><failure message="ModuleNotFoundError: No module named 'paper_eval.graph_quality_live'">@pytest.mark.asyncio
+    async def test_construction_llm_and_cross_encoder_are_fail_fast_forbidden() -&gt; None:
+&gt;       runtime = _build()
+                  ^^^^^^^^
+
+tests/test_graph_quality_live.py:133: 
+_ _ _ _ _ _ _ _ _ _ _ _ _ _ _ _ _ _ _ _ _ _ _ _ _ _ _ _ _ _ _ _ _ _ _ _ _ _ _ _ 
+tests/test_graph_quality_live.py:76: in _build
+    live = _live()
+           ^^^^^^^
+tests/test_graph_quality_live.py:21: in _live
+    return importlib.import_module("paper_eval.graph_quality_live")
+           ^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^
+/usr/lib/python3.12/importlib/__init__.py:90: in import_module
+    return _bootstrap._gcd_import(name[level:], package, level)
+           ^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^
+&lt;frozen importlib._bootstrap&gt;:1387: in _gcd_import
+    ???
+&lt;frozen importlib._bootstrap&gt;:1360: in _find_and_load
+    ???
+_ _ _ _ _ _ _ _ _ _ _ _ _ _ _ _ _ _ _ _ _ _ _ _ _ _ _ _ _ _ _ _ _ _ _ _ _ _ _ _ 
+
+name = 'paper_eval.graph_quality_live'
+import_ = &lt;function _gcd_import at 0x7822405a40e0&gt;
+
+&gt;   ???
+E   ModuleNotFoundError: No module named 'paper_eval.graph_quality_live'
+
+&lt;frozen importlib._bootstrap&gt;:1324: ModuleNotFoundError</failure></testcase><testcase classname="tests.test_graph_quality_live" name="test_public_identity_contains_no_key_or_credential_material" time="0.000"><failure message="ModuleNotFoundError: No module named 'paper_eval.graph_quality_live'">def test_public_identity_contains_no_key_or_credential_material() -&gt; None:
+&gt;       runtime = _build()
+                  ^^^^^^^^
+
+tests/test_graph_quality_live.py:144: 
+_ _ _ _ _ _ _ _ _ _ _ _ _ _ _ _ _ _ _ _ _ _ _ _ _ _ _ _ _ _ _ _ _ _ _ _ _ _ _ _ 
+tests/test_graph_quality_live.py:76: in _build
+    live = _live()
+           ^^^^^^^
+tests/test_graph_quality_live.py:21: in _live
+    return importlib.import_module("paper_eval.graph_quality_live")
+           ^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^
+/usr/lib/python3.12/importlib/__init__.py:90: in import_module
+    return _bootstrap._gcd_import(name[level:], package, level)
+           ^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^
+&lt;frozen importlib._bootstrap&gt;:1387: in _gcd_import
+    ???
+&lt;frozen importlib._bootstrap&gt;:1360: in _find_and_load
+    ???
+_ _ _ _ _ _ _ _ _ _ _ _ _ _ _ _ _ _ _ _ _ _ _ _ _ _ _ _ _ _ _ _ _ _ _ _ _ _ _ _ 
+
+name = 'paper_eval.graph_quality_live'
+import_ = &lt;function _gcd_import at 0x7822405a40e0&gt;
+
+&gt;   ???
+E   ModuleNotFoundError: No module named 'paper_eval.graph_quality_live'
+
+&lt;frozen importlib._bootstrap&gt;:1324: ModuleNotFoundError</failure></testcase><testcase classname="tests.test_graph_quality_live" name="test_runtime_environment_identity_drift_fails_closed[NEO4J_URI-bolt://other-host:7687]" time="0.000"><failure message="ModuleNotFoundError: No module named 'paper_eval.graph_quality_live'">field = 'NEO4J_URI', value = 'bolt://other-host:7687'
+
+    @pytest.mark.parametrize(
+        ("field", "value"),
+        [
+            ("NEO4J_URI", "bolt://other-host:7687"),
+            ("EMBEDDING_BASE_URL", "http://other-host:8001/v1"),
+            ("EMBEDDING_MODEL", "another-embedding-model"),
+            ("EMBEDDING_DIM", "768"),
+            ("NEO4J_USER", ""),
+            ("NEO4J_PASSWORD", ""),
+            ("EMBEDDING_API_KEY", ""),
+        ],
+    )
+    def test_runtime_environment_identity_drift_fails_closed(
+        field: str,
+        value: str,
+    ) -&gt; None:
+&gt;       live = _live()
+               ^^^^^^^
+
+tests/test_graph_quality_live.py:176: 
+_ _ _ _ _ _ _ _ _ _ _ _ _ _ _ _ _ _ _ _ _ _ _ _ _ _ _ _ _ _ _ _ _ _ _ _ _ _ _ _ 
+tests/test_graph_quality_live.py:21: in _live
+    return importlib.import_module("paper_eval.graph_quality_live")
+           ^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^
+/usr/lib/python3.12/importlib/__init__.py:90: in import_module
+    return _bootstrap._gcd_import(name[level:], package, level)
+           ^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^
+&lt;frozen importlib._bootstrap&gt;:1387: in _gcd_import
+    ???
+&lt;frozen importlib._bootstrap&gt;:1360: in _find_and_load
+    ???
+_ _ _ _ _ _ _ _ _ _ _ _ _ _ _ _ _ _ _ _ _ _ _ _ _ _ _ _ _ _ _ _ _ _ _ _ _ _ _ _ 
+
+name = 'paper_eval.graph_quality_live'
+import_ = &lt;function _gcd_import at 0x7822405a40e0&gt;
+
+&gt;   ???
+E   ModuleNotFoundError: No module named 'paper_eval.graph_quality_live'
+
+&lt;frozen importlib._bootstrap&gt;:1324: ModuleNotFoundError</failure></testcase><testcase classname="tests.test_graph_quality_live" name="test_runtime_environment_identity_drift_fails_closed[EMBEDDING_BASE_URL-http://other-host:8001/v1]" time="0.000"><failure message="ModuleNotFoundError: No module named 'paper_eval.graph_quality_live'">field = 'EMBEDDING_BASE_URL', value = 'http://other-host:8001/v1'
+
+    @pytest.mark.parametrize(
+        ("field", "value"),
+        [
+            ("NEO4J_URI", "bolt://other-host:7687"),
+            ("EMBEDDING_BASE_URL", "http://other-host:8001/v1"),
+            ("EMBEDDING_MODEL", "another-embedding-model"),
+            ("EMBEDDING_DIM", "768"),
+            ("NEO4J_USER", ""),
+            ("NEO4J_PASSWORD", ""),
+            ("EMBEDDING_API_KEY", ""),
+        ],
+    )
+    def test_runtime_environment_identity_drift_fails_closed(
+        field: str,
+        value: str,
+    ) -&gt; None:
+&gt;       live = _live()
+               ^^^^^^^
+
+tests/test_graph_quality_live.py:176: 
+_ _ _ _ _ _ _ _ _ _ _ _ _ _ _ _ _ _ _ _ _ _ _ _ _ _ _ _ _ _ _ _ _ _ _ _ _ _ _ _ 
+tests/test_graph_quality_live.py:21: in _live
+    return importlib.import_module("paper_eval.graph_quality_live")
+           ^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^
+/usr/lib/python3.12/importlib/__init__.py:90: in import_module
+    return _bootstrap._gcd_import(name[level:], package, level)
+           ^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^
+&lt;frozen importlib._bootstrap&gt;:1387: in _gcd_import
+    ???
+&lt;frozen importlib._bootstrap&gt;:1360: in _find_and_load
+    ???
+_ _ _ _ _ _ _ _ _ _ _ _ _ _ _ _ _ _ _ _ _ _ _ _ _ _ _ _ _ _ _ _ _ _ _ _ _ _ _ _ 
+
+name = 'paper_eval.graph_quality_live'
+import_ = &lt;function _gcd_import at 0x7822405a40e0&gt;
+
+&gt;   ???
+E   ModuleNotFoundError: No module named 'paper_eval.graph_quality_live'
+
+&lt;frozen importlib._bootstrap&gt;:1324: ModuleNotFoundError</failure></testcase><testcase classname="tests.test_graph_quality_live" name="test_runtime_environment_identity_drift_fails_closed[EMBEDDING_MODEL-another-embedding-model]" time="0.000"><failure message="ModuleNotFoundError: No module named 'paper_eval.graph_quality_live'">field = 'EMBEDDING_MODEL', value = 'another-embedding-model'
+
+    @pytest.mark.parametrize(
+        ("field", "value"),
+        [
+            ("NEO4J_URI", "bolt://other-host:7687"),
+            ("EMBEDDING_BASE_URL", "http://other-host:8001/v1"),
+            ("EMBEDDING_MODEL", "another-embedding-model"),
+            ("EMBEDDING_DIM", "768"),
+            ("NEO4J_USER", ""),
+            ("NEO4J_PASSWORD", ""),
+            ("EMBEDDING_API_KEY", ""),
+        ],
+    )
+    def test_runtime_environment_identity_drift_fails_closed(
+        field: str,
+        value: str,
+    ) -&gt; None:
+&gt;       live = _live()
+               ^^^^^^^
+
+tests/test_graph_quality_live.py:176: 
+_ _ _ _ _ _ _ _ _ _ _ _ _ _ _ _ _ _ _ _ _ _ _ _ _ _ _ _ _ _ _ _ _ _ _ _ _ _ _ _ 
+tests/test_graph_quality_live.py:21: in _live
+    return importlib.import_module("paper_eval.graph_quality_live")
+           ^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^
+/usr/lib/python3.12/importlib/__init__.py:90: in import_module
+    return _bootstrap._gcd_import(name[level:], package, level)
+           ^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^
+&lt;frozen importlib._bootstrap&gt;:1387: in _gcd_import
+    ???
+&lt;frozen importlib._bootstrap&gt;:1360: in _find_and_load
+    ???
+_ _ _ _ _ _ _ _ _ _ _ _ _ _ _ _ _ _ _ _ _ _ _ _ _ _ _ _ _ _ _ _ _ _ _ _ _ _ _ _ 
+
+name = 'paper_eval.graph_quality_live'
+import_ = &lt;function _gcd_import at 0x7822405a40e0&gt;
+
+&gt;   ???
+E   ModuleNotFoundError: No module named 'paper_eval.graph_quality_live'
+
+&lt;frozen importlib._bootstrap&gt;:1324: ModuleNotFoundError</failure></testcase><testcase classname="tests.test_graph_quality_live" name="test_runtime_environment_identity_drift_fails_closed[EMBEDDING_DIM-768]" time="0.000"><failure message="ModuleNotFoundError: No module named 'paper_eval.graph_quality_live'">field = 'EMBEDDING_DIM', value = '768'
+
+    @pytest.mark.parametrize(
+        ("field", "value"),
+        [
+            ("NEO4J_URI", "bolt://other-host:7687"),
+            ("EMBEDDING_BASE_URL", "http://other-host:8001/v1"),
+            ("EMBEDDING_MODEL", "another-embedding-model"),
+            ("EMBEDDING_DIM", "768"),
+            ("NEO4J_USER", ""),
+            ("NEO4J_PASSWORD", ""),
+            ("EMBEDDING_API_KEY", ""),
+        ],
+    )
+    def test_runtime_environment_identity_drift_fails_closed(
+        field: str,
+        value: str,
+    ) -&gt; None:
+&gt;       live = _live()
+               ^^^^^^^
+
+tests/test_graph_quality_live.py:176: 
+_ _ _ _ _ _ _ _ _ _ _ _ _ _ _ _ _ _ _ _ _ _ _ _ _ _ _ _ _ _ _ _ _ _ _ _ _ _ _ _ 
+tests/test_graph_quality_live.py:21: in _live
+    return importlib.import_module("paper_eval.graph_quality_live")
+           ^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^
+/usr/lib/python3.12/importlib/__init__.py:90: in import_module
+    return _bootstrap._gcd_import(name[level:], package, level)
+           ^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^
+&lt;frozen importlib._bootstrap&gt;:1387: in _gcd_import
+    ???
+&lt;frozen importlib._bootstrap&gt;:1360: in _find_and_load
+    ???
+_ _ _ _ _ _ _ _ _ _ _ _ _ _ _ _ _ _ _ _ _ _ _ _ _ _ _ _ _ _ _ _ _ _ _ _ _ _ _ _ 
+
+name = 'paper_eval.graph_quality_live'
+import_ = &lt;function _gcd_import at 0x7822405a40e0&gt;
+
+&gt;   ???
+E   ModuleNotFoundError: No module named 'paper_eval.graph_quality_live'
+
+&lt;frozen importlib._bootstrap&gt;:1324: ModuleNotFoundError</failure></testcase><testcase classname="tests.test_graph_quality_live" name="test_runtime_environment_identity_drift_fails_closed[NEO4J_USER-]" time="0.000"><failure message="ModuleNotFoundError: No module named 'paper_eval.graph_quality_live'">field = 'NEO4J_USER', value = ''
+
+    @pytest.mark.parametrize(
+        ("field", "value"),
+        [
+            ("NEO4J_URI", "bolt://other-host:7687"),
+            ("EMBEDDING_BASE_URL", "http://other-host:8001/v1"),
+            ("EMBEDDING_MODEL", "another-embedding-model"),
+            ("EMBEDDING_DIM", "768"),
+            ("NEO4J_USER", ""),
+            ("NEO4J_PASSWORD", ""),
+            ("EMBEDDING_API_KEY", ""),
+        ],
+    )
+    def test_runtime_environment_identity_drift_fails_closed(
+        field: str,
+        value: str,
+    ) -&gt; None:
+&gt;       live = _live()
+               ^^^^^^^
+
+tests/test_graph_quality_live.py:176: 
+_ _ _ _ _ _ _ _ _ _ _ _ _ _ _ _ _ _ _ _ _ _ _ _ _ _ _ _ _ _ _ _ _ _ _ _ _ _ _ _ 
+tests/test_graph_quality_live.py:21: in _live
+    return importlib.import_module("paper_eval.graph_quality_live")
+           ^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^
+/usr/lib/python3.12/importlib/__init__.py:90: in import_module
+    return _bootstrap._gcd_import(name[level:], package, level)
+           ^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^
+&lt;frozen importlib._bootstrap&gt;:1387: in _gcd_import
+    ???
+&lt;frozen importlib._bootstrap&gt;:1360: in _find_and_load
+    ???
+_ _ _ _ _ _ _ _ _ _ _ _ _ _ _ _ _ _ _ _ _ _ _ _ _ _ _ _ _ _ _ _ _ _ _ _ _ _ _ _ 
+
+name = 'paper_eval.graph_quality_live'
+import_ = &lt;function _gcd_import at 0x7822405a40e0&gt;
+
+&gt;   ???
+E   ModuleNotFoundError: No module named 'paper_eval.graph_quality_live'
+
+&lt;frozen importlib._bootstrap&gt;:1324: ModuleNotFoundError</failure></testcase><testcase classname="tests.test_graph_quality_live" name="test_runtime_environment_identity_drift_fails_closed[NEO4J_PASSWORD-]" time="0.000"><failure message="ModuleNotFoundError: No module named 'paper_eval.graph_quality_live'">field = 'NEO4J_PASSWORD', value = ''
+
+    @pytest.mark.parametrize(
+        ("field", "value"),
+        [
+            ("NEO4J_URI", "bolt://other-host:7687"),
+            ("EMBEDDING_BASE_URL", "http://other-host:8001/v1"),
+            ("EMBEDDING_MODEL", "another-embedding-model"),
+            ("EMBEDDING_DIM", "768"),
+            ("NEO4J_USER", ""),
+            ("NEO4J_PASSWORD", ""),
+            ("EMBEDDING_API_KEY", ""),
+        ],
+    )
+    def test_runtime_environment_identity_drift_fails_closed(
+        field: str,
+        value: str,
+    ) -&gt; None:
+&gt;       live = _live()
+               ^^^^^^^
+
+tests/test_graph_quality_live.py:176: 
+_ _ _ _ _ _ _ _ _ _ _ _ _ _ _ _ _ _ _ _ _ _ _ _ _ _ _ _ _ _ _ _ _ _ _ _ _ _ _ _ 
+tests/test_graph_quality_live.py:21: in _live
+    return importlib.import_module("paper_eval.graph_quality_live")
+           ^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^
+/usr/lib/python3.12/importlib/__init__.py:90: in import_module
+    return _bootstrap._gcd_import(name[level:], package, level)
+           ^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^
+&lt;frozen importlib._bootstrap&gt;:1387: in _gcd_import
+    ???
+&lt;frozen importlib._bootstrap&gt;:1360: in _find_and_load
+    ???
+_ _ _ _ _ _ _ _ _ _ _ _ _ _ _ _ _ _ _ _ _ _ _ _ _ _ _ _ _ _ _ _ _ _ _ _ _ _ _ _ 
+
+name = 'paper_eval.graph_quality_live'
+import_ = &lt;function _gcd_import at 0x7822405a40e0&gt;
+
+&gt;   ???
+E   ModuleNotFoundError: No module named 'paper_eval.graph_quality_live'
+
+&lt;frozen importlib._bootstrap&gt;:1324: ModuleNotFoundError</failure></testcase><testcase classname="tests.test_graph_quality_live" name="test_runtime_environment_identity_drift_fails_closed[EMBEDDING_API_KEY-]" time="0.000"><failure message="ModuleNotFoundError: No module named 'paper_eval.graph_quality_live'">field = 'EMBEDDING_API_KEY', value = ''
+
+    @pytest.mark.parametrize(
+        ("field", "value"),
+        [
+            ("NEO4J_URI", "bolt://other-host:7687"),
+            ("EMBEDDING_BASE_URL", "http://other-host:8001/v1"),
+            ("EMBEDDING_MODEL", "another-embedding-model"),
+            ("EMBEDDING_DIM", "768"),
+            ("NEO4J_USER", ""),
+            ("NEO4J_PASSWORD", ""),
+            ("EMBEDDING_API_KEY", ""),
+        ],
+    )
+    def test_runtime_environment_identity_drift_fails_closed(
+        field: str,
+        value: str,
+    ) -&gt; None:
+&gt;       live = _live()
+               ^^^^^^^
+
+tests/test_graph_quality_live.py:176: 
+_ _ _ _ _ _ _ _ _ _ _ _ _ _ _ _ _ _ _ _ _ _ _ _ _ _ _ _ _ _ _ _ _ _ _ _ _ _ _ _ 
+tests/test_graph_quality_live.py:21: in _live
+    return importlib.import_module("paper_eval.graph_quality_live")
+           ^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^
+/usr/lib/python3.12/importlib/__init__.py:90: in import_module
+    return _bootstrap._gcd_import(name[level:], package, level)
+           ^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^
+&lt;frozen importlib._bootstrap&gt;:1387: in _gcd_import
+    ???
+&lt;frozen importlib._bootstrap&gt;:1360: in _find_and_load
+    ???
+_ _ _ _ _ _ _ _ _ _ _ _ _ _ _ _ _ _ _ _ _ _ _ _ _ _ _ _ _ _ _ _ _ _ _ _ _ _ _ _ 
+
+name = 'paper_eval.graph_quality_live'
+import_ = &lt;function _gcd_import at 0x7822405a40e0&gt;
+
+&gt;   ???
+E   ModuleNotFoundError: No module named 'paper_eval.graph_quality_live'
+
+&lt;frozen importlib._bootstrap&gt;:1324: ModuleNotFoundError</failure></testcase><testcase classname="tests.test_graph_quality_live" name="test_driver_with_scheduled_schema_initialization_fails_closed" time="0.000"><failure message="ModuleNotFoundError: No module named 'paper_eval.graph_quality_live'">def test_driver_with_scheduled_schema_initialization_fails_closed() -&gt; None:
+&gt;       live = _live()
+               ^^^^^^^
+
+tests/test_graph_quality_live.py:188: 
+_ _ _ _ _ _ _ _ _ _ _ _ _ _ _ _ _ _ _ _ _ _ _ _ _ _ _ _ _ _ _ _ _ _ _ _ _ _ _ _ 
+tests/test_graph_quality_live.py:21: in _live
+    return importlib.import_module("paper_eval.graph_quality_live")
+           ^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^
+/usr/lib/python3.12/importlib/__init__.py:90: in import_module
+    return _bootstrap._gcd_import(name[level:], package, level)
+           ^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^
+&lt;frozen importlib._bootstrap&gt;:1387: in _gcd_import
+    ???
+&lt;frozen importlib._bootstrap&gt;:1360: in _find_and_load
+    ???
+_ _ _ _ _ _ _ _ _ _ _ _ _ _ _ _ _ _ _ _ _ _ _ _ _ _ _ _ _ _ _ _ _ _ _ _ _ _ _ _ 
+
+name = 'paper_eval.graph_quality_live'
+import_ = &lt;function _gcd_import at 0x7822405a40e0&gt;
+
+&gt;   ???
+E   ModuleNotFoundError: No module named 'paper_eval.graph_quality_live'
+
+&lt;frozen importlib._bootstrap&gt;:1324: ModuleNotFoundError</failure></testcase></testsuite></testsuites>

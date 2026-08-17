@@ -1,0 +1,31 @@
+<?xml version="1.0" encoding="utf-8"?><testsuites name="pytest tests"><testsuite name="pytest" errors="0" failures="1" skipped="0" tests="1" time="0.032" timestamp="2026-08-17T00:36:59.675292+08:00" hostname="aces-System-Product-Name"><testcase classname="tests.test_graph_quality_live" name="test_runtime_uses_injected_graphiti_compatible_forbidden_client_types" time="0.002"><failure message="TypeError: GraphQualityLiveComponents.__init__() got an unexpected keyword argument 'llm_factory'">def test_runtime_uses_injected_graphiti_compatible_forbidden_client_types() -&gt; None:
+        live = _live()
+    
+        class RequiredLLM:
+            async def generate_response(self, *_args: object, **_kwargs: object) -&gt; object:
+                raise RuntimeError("construction LLM is forbidden")
+    
+        class RequiredCrossEncoder:
+            async def rank(self, *_args: object, **_kwargs: object) -&gt; object:
+                raise RuntimeError("cross-encoder is forbidden")
+    
+        class StrictGraphiti(_Graphiti):
+            def __init__(self, **kwargs: object) -&gt; None:
+                assert isinstance(kwargs["llm_client"], RequiredLLM)
+                assert isinstance(kwargs["cross_encoder"], RequiredCrossEncoder)
+                super().__init__(**kwargs)
+    
+        runtime = live.build_graph_quality_runtime(
+            env=_env(),
+&gt;           components=live.GraphQualityLiveComponents(
+                driver_type=_Driver,
+                graphiti_type=StrictGraphiti,
+                embedder_config_type=_EmbedderConfig,
+                embedder_type=_Embedder,
+                llm_factory=RequiredLLM,
+                cross_encoder_factory=RequiredCrossEncoder,
+            ),
+        )
+E       TypeError: GraphQualityLiveComponents.__init__() got an unexpected keyword argument 'llm_factory'
+
+tests/test_graph_quality_live.py:223: TypeError</failure></testcase></testsuite></testsuites>

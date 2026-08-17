@@ -8,25 +8,33 @@ layer that must bind each cell to this exact matrix.
 
 from __future__ import annotations
 
+import hashlib
+import json
 import math
+import os
 import re
 from collections.abc import Mapping, Sequence
 from copy import deepcopy
 from numbers import Real
+from pathlib import Path
 from typing import Any
 
+from . import PROTOCOL_VERSION
 from .artifacts import payload_sha256
 
 
 SCHEMA = "membind.paper-eval-v3.s6-calibration-contract.v1"
+MATRIX_FREEZE_RUN_ID = "s6-calibration-matrix-freeze-20260816-001"
 DEVELOPMENT_HISTORIES = ("07741c45", "b6019101", "6071bd76", "a2f3aa27")
+DEVELOPMENT_HISTORIES_PAYLOAD_SHA256 = payload_sha256(list(DEVELOPMENT_HISTORIES))
 METHODS = ("P*", "M*")
 CONCURRENCIES = (1, 2, 4, 8)
 CELL_COUNT = len(DEVELOPMENT_HISTORIES) * len(METHODS) * len(CONCURRENCIES)
 
 _SHA256 = re.compile(r"^[0-9a-f]{64}$")
+_GIT_COMMIT = re.compile(r"^[0-9a-f]{40}$")
 _BINDING_FIELDS = {
-    "development_exposed_ids_payload_sha256",
+    "s6_development_histories_payload_sha256",
     "parent_protocol_sha256",
     "s5_pstar_result_file_sha256",
     "s5_pstar_result_payload_sha256",
@@ -103,6 +111,11 @@ def _validate_bindings(value: object) -> dict[str, str]:
     result = {str(key): str(item) for key, item in value.items()}
     for key, item in result.items():
         _sha(item, f"{key}_invalid")
+    if (
+        result["s6_development_histories_payload_sha256"]
+        != DEVELOPMENT_HISTORIES_PAYLOAD_SHA256
+    ):
+        raise _fail("s6_development_histories_payload_binding_invalid")
     return result
 
 
@@ -136,6 +149,25 @@ def _expected_cells() -> list[dict[str, object]]:
                 )
                 index += 1
     return cells
+
+
+def verify_s6_cell_identity(value: Mapping[str, object]) -> dict[str, object]:
+    """Return one exact frozen cell and reject any detached identity drift."""
+
+    if not isinstance(value, Mapping):
+        raise _fail("cell_identity_invalid")
+    cell = deepcopy(dict(value))
+    index = cell.get("cell_index")
+    expected = _expected_cells()
+    if (
+        isinstance(index, bool)
+        or not isinstance(index, int)
+        or index < 0
+        or index >= len(expected)
+        or cell != expected[index]
+    ):
+        raise _fail("cell_identity_invalid")
+    return cell
 
 
 def build_s6_matrix(*, input_bindings: Mapping[str, object]) -> dict[str, object]:
@@ -316,14 +348,99 @@ def compute_s6_block_metrics(
     }
 
 
+def _write_exclusive(path: Path, artifact: Mapping[str, object]) -> str:
+    output = Path(path)
+    output.parent.mkdir(parents=True, exist_ok=True)
+    serialized = (
+        json.dumps(artifact, ensure_ascii=True, indent=2, sort_keys=True) + "\n"
+    ).encode("ascii")
+    try:
+        descriptor = os.open(output, os.O_CREAT | os.O_EXCL | os.O_WRONLY, 0o664)
+    except FileExistsError:
+        raise _fail("matrix_output_exists") from None
+    try:
+        offset = 0
+        while offset < len(serialized):
+            written = os.write(descriptor, serialized[offset:])
+            if written == 0:
+                raise OSError("short write while freezing S6 matrix")
+            offset += written
+        os.fsync(descriptor)
+    finally:
+        os.close(descriptor)
+    directory = os.open(output.parent, os.O_RDONLY)
+    try:
+        os.fsync(directory)
+    finally:
+        os.close(directory)
+    return hashlib.sha256(serialized).hexdigest()
+
+
+def verify_s6_matrix_freeze(value: Mapping[str, object]) -> dict[str, object]:
+    """Verify the finalized envelope and its exact pure matrix payload."""
+
+    if not isinstance(value, Mapping) or set(value) != {
+        "protocol_version",
+        "git_commit",
+        "run_id",
+        "status",
+        "payload",
+        "payload_sha256",
+    }:
+        raise _fail("freeze_envelope_shape_invalid")
+    artifact = deepcopy(dict(value))
+    payload = artifact.get("payload")
+    if (
+        artifact.get("protocol_version") != PROTOCOL_VERSION
+        or not isinstance(artifact.get("git_commit"), str)
+        or _GIT_COMMIT.fullmatch(str(artifact.get("git_commit"))) is None
+        or artifact.get("run_id") != MATRIX_FREEZE_RUN_ID
+        or artifact.get("status") != "finalized"
+        or not isinstance(payload, Mapping)
+        or artifact.get("payload_sha256") != payload_sha256(payload)
+    ):
+        raise _fail("freeze_envelope_invalid")
+    artifact["payload"] = verify_s6_matrix(payload)
+    return artifact
+
+
+def finalize_s6_matrix_freeze(
+    *, output_path: Path, matrix: Mapping[str, object], git_commit: str
+) -> dict[str, object]:
+    """Seal and exclusively persist the finalized S6 matrix artifact."""
+
+    payload = verify_s6_matrix(matrix)
+    artifact = verify_s6_matrix_freeze(
+        {
+            "protocol_version": PROTOCOL_VERSION,
+            "git_commit": str(git_commit),
+            "run_id": MATRIX_FREEZE_RUN_ID,
+            "status": "finalized",
+            "payload": payload,
+            "payload_sha256": payload_sha256(payload),
+        }
+    )
+    file_sha256 = _write_exclusive(Path(output_path), artifact)
+    return {
+        "artifact": artifact,
+        "matrix_payload_sha256": artifact["payload_sha256"],
+        "matrix_file_sha256": file_sha256,
+    }
+
+
 __all__ = [
     "CELL_COUNT",
     "CONCURRENCIES",
     "DEVELOPMENT_HISTORIES",
+    "DEVELOPMENT_HISTORIES_PAYLOAD_SHA256",
+    "MATRIX_FREEZE_RUN_ID",
     "METHODS",
     "S6CalibrationContractError",
     "build_s6_matrix",
     "compute_s6_block_metrics",
     "deterministic_nearest_rank_p95",
+    "finalize_s6_matrix_freeze",
     "verify_s6_matrix",
+    "verify_s6_cell_identity",
+    "verify_s6_matrix_freeze",
 ]

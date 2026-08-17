@@ -1,0 +1,58 @@
+<?xml version="1.0" encoding="utf-8"?><testsuites name="pytest tests"><testsuite name="pytest" errors="0" failures="2" skipped="0" tests="7" time="0.039" timestamp="2026-08-17T12:15:20.528678+08:00" hostname="aces-System-Product-Name"><testcase classname="tests.test_membind_v1_aligned_plan" name="test_aligned_plan_binds_one_trace_manifest_and_k2_for_each_fresh_method_row" time="0.001" /><testcase classname="tests.test_membind_v1_aligned_plan" name="test_aligned_plan_counterbalances_method_position_over_the_four_histories" time="0.000" /><testcase classname="tests.test_membind_v1_aligned_plan" name="test_plan_verifier_recomputes_inventory_and_rejects_fairness_or_trace_drift[&lt;lambda&gt;-block inventory]" time="0.001" /><testcase classname="tests.test_membind_v1_aligned_plan" name="test_plan_verifier_recomputes_inventory_and_rejects_fairness_or_trace_drift[&lt;lambda&gt;-global LLM admission]" time="0.001"><failure message="AssertionError: Regex pattern did not match.&#10;  Expected regex: 'global LLM admission'&#10;  Actual message: 'plan inventory or payload drift'">mutate = &lt;function &lt;lambda&gt; at 0x7eb2cea3bd80&gt;
+expected = 'global LLM admission'
+
+    @pytest.mark.parametrize(
+        "mutate, expected",
+            [
+                (lambda value: value["blocks"].pop(), "block inventory"),
+                (lambda value: value["blocks"][0].update(global_llm_admission_k=3), "global LLM admission"),
+                (lambda value: value["arrival_traces"]["07741c45"].update(arrival_offsets_ns=[0, 4, 3]), "arrival trace"),
+                # This remains structurally valid and monotonic, but is not the
+                # trace deterministically derived from the frozen interarrival.
+                (lambda value: value["arrival_traces"]["07741c45"].update(arrival_offsets_ns=[0, 0, 1]), "arrival trace"),
+                (lambda value: value["history_source_sha256s"].update({"07741c45": ["bad"]}), "source manifest"),
+            ],
+    )
+    def test_plan_verifier_recomputes_inventory_and_rejects_fairness_or_trace_drift(mutate, expected) -&gt; None:
+        plan = build_aligned_development_plan(
+            aligned_run_id="aligned-dev-test-003",
+            history_source_sha256s=_sources(),
+            interarrival_ns=0,
+            shared_execution_envelope_sha256="a" * 64,
+        )
+        mutate(plan)
+    
+&gt;       with pytest.raises(AlignedPlanError, match=expected):
+E       AssertionError: Regex pattern did not match.
+E         Expected regex: 'global LLM admission'
+E         Actual message: 'plan inventory or payload drift'
+
+tests/test_membind_v1_aligned_plan.py:82: AssertionError</failure></testcase><testcase classname="tests.test_membind_v1_aligned_plan" name="test_plan_verifier_recomputes_inventory_and_rejects_fairness_or_trace_drift[&lt;lambda&gt;-arrival trace0]" time="0.000" /><testcase classname="tests.test_membind_v1_aligned_plan" name="test_plan_verifier_recomputes_inventory_and_rejects_fairness_or_trace_drift[&lt;lambda&gt;-arrival trace1]" time="0.001"><failure message="AssertionError: Regex pattern did not match.&#10;  Expected regex: 'arrival trace'&#10;  Actual message: 'plan inventory or payload drift'">mutate = &lt;function &lt;lambda&gt; at 0x7eb2cea3bec0&gt;, expected = 'arrival trace'
+
+    @pytest.mark.parametrize(
+        "mutate, expected",
+            [
+                (lambda value: value["blocks"].pop(), "block inventory"),
+                (lambda value: value["blocks"][0].update(global_llm_admission_k=3), "global LLM admission"),
+                (lambda value: value["arrival_traces"]["07741c45"].update(arrival_offsets_ns=[0, 4, 3]), "arrival trace"),
+                # This remains structurally valid and monotonic, but is not the
+                # trace deterministically derived from the frozen interarrival.
+                (lambda value: value["arrival_traces"]["07741c45"].update(arrival_offsets_ns=[0, 0, 1]), "arrival trace"),
+                (lambda value: value["history_source_sha256s"].update({"07741c45": ["bad"]}), "source manifest"),
+            ],
+    )
+    def test_plan_verifier_recomputes_inventory_and_rejects_fairness_or_trace_drift(mutate, expected) -&gt; None:
+        plan = build_aligned_development_plan(
+            aligned_run_id="aligned-dev-test-003",
+            history_source_sha256s=_sources(),
+            interarrival_ns=0,
+            shared_execution_envelope_sha256="a" * 64,
+        )
+        mutate(plan)
+    
+&gt;       with pytest.raises(AlignedPlanError, match=expected):
+E       AssertionError: Regex pattern did not match.
+E         Expected regex: 'arrival trace'
+E         Actual message: 'plan inventory or payload drift'
+
+tests/test_membind_v1_aligned_plan.py:82: AssertionError</failure></testcase><testcase classname="tests.test_membind_v1_aligned_plan" name="test_plan_verifier_recomputes_inventory_and_rejects_fairness_or_trace_drift[&lt;lambda&gt;-source manifest]" time="0.000" /></testsuite></testsuites>

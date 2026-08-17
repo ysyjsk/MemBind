@@ -1,0 +1,111 @@
+<?xml version="1.0" encoding="utf-8"?><testsuites name="pytest tests"><testsuite name="pytest" errors="0" failures="2" skipped="0" tests="8" time="0.199" timestamp="2026-08-17T02:58:39.359603+08:00" hostname="aces-System-Product-Name"><testcase classname="tests.test_methodology_decision" name="test_capacity_plus_counterexample_selects_only_a_bounded_candidate" time="0.000" /><testcase classname="tests.test_methodology_decision" name="test_no_capacity_signal_stops_even_when_c5_has_a_counterexample" time="0.000" /><testcase classname="tests.test_methodology_decision" name="test_capacity_direction_uses_aggregate_not_an_arbitrary_win_threshold" time="0.000" /><testcase classname="tests.test_methodology_decision" name="test_capacity_without_counterexample_requires_reassessment_not_a_method" time="0.000" /><testcase classname="tests.test_methodology_decision" name="test_invalid_judge_denominator_blocks_the_methodology_decision" time="0.000" /><testcase classname="tests.test_methodology_decision" name="test_tampered_report_or_c5_is_rejected" time="0.001"><failure message="Failed: DID NOT RAISE MethodologyDecisionError">def test_tampered_report_or_c5_is_rejected() -&gt; None:
+        report = _report()
+        report["methods"]["P(C=2)"]["makespan_ns"] = 1
+        with pytest.raises(MethodologyDecisionError, match="report payload"):
+            _decision(report=report)
+    
+        c5 = _c5()
+        c5["overall_interpretation"] = "NO_NAIVE_PARALLEL_INSUFFICIENCY_OBSERVED"
+        with pytest.raises(MethodologyDecisionError, match="C5 payload"):
+            _decision(c5=c5)
+    
+        inconsistent = _report()
+        inconsistent["methods"]["P(C=2)"][
+            "successful_goodput_episodes_per_second"
+        ] = 999.0
+        inconsistent["payload_sha256"] = payload_sha256(
+            {
+                key: value
+                for key, value in inconsistent.items()
+                if key != "payload_sha256"
+            }
+        )
+        with pytest.raises(MethodologyDecisionError, match="goodput/makespan"):
+            _decision(report=inconsistent)
+    
+        inconsistent = _report()
+        p = inconsistent["methods"]["P(C=2)"]
+        p["histories"] = [
+            {"history_id": history_id, "makespan_ns": 300}
+            for history_id in HISTORIES
+        ]
+        inconsistent["payload_sha256"] = payload_sha256(
+            {
+                key: value
+                for key, value in inconsistent.items()
+                if key != "payload_sha256"
+            }
+        )
+&gt;       with pytest.raises(MethodologyDecisionError, match="aggregate makespan"):
+E       Failed: DID NOT RAISE MethodologyDecisionError
+
+tests/test_methodology_decision.py:289: Failed</failure></testcase><testcase classname="tests.test_methodology_decision" name="test_history_identity_or_parallel_execution_drift_is_rejected" time="0.001" /><testcase classname="tests.test_methodology_decision" name="test_file_backed_finalizer_is_idempotent_and_rejects_output_drift" time="0.154"><failure message="assert 0 != 0&#10; +  where 0 = CompletedProcess(args=['/data/predator/ly/MemBind/paper-eval-v3/.venv/bin/python', '/data/predator/ly/MemBind/paper-ev...737969be67b5&quot;, &quot;problem_verdict&quot;: &quot;PROBLEM_SUPPORTED_FOR_BOUNDED_NODE_ONLY_PROTOTYPE&quot;, &quot;status&quot;: &quot;PASS&quot;}\n', stderr='').returncode">tmp_path = PosixPath('/tmp/pytest-of-ly/pytest-626/test_file_backed_finalizer_is_0')
+
+    def test_file_backed_finalizer_is_idempotent_and_rejects_output_drift(
+        tmp_path: Path,
+    ) -&gt; None:
+        report_path = tmp_path / "REPORT.json"
+        output_path = tmp_path / "METHODOLOGY_DECISION.json"
+        report_path.write_text(
+            json.dumps(_report(), ensure_ascii=False, indent=2, sort_keys=True) + "\n",
+            encoding="utf-8",
+        )
+        c3 = (
+            REPOSITORY
+            / "membind-validation/artifacts/native_characterization/"
+            "e2_dependency_opportunity.json"
+        )
+        c5_root = (
+            REPOSITORY
+            / "membind-validation/artifacts/native_characterization/runs/"
+            "c5-e3867c66ba92e7da"
+        )
+        command = [
+            sys.executable,
+            str(PROJECT / "scripts/finalize_methodology_decision.py"),
+            "methodology-dev-test",
+            "--report",
+            str(report_path),
+            "--c3",
+            str(c3),
+            "--c5",
+            str(c5_root / "e4_whole_parallel.json"),
+            "--c5-events",
+            str(c5_root / "events.jsonl"),
+            "--output",
+            str(output_path),
+        ]
+        environment = {**os.environ, "PYTHONPATH": str(PROJECT / "src")}
+    
+        first = subprocess.run(
+            command, check=False, capture_output=True, text=True, env=environment
+        )
+        assert first.returncode == 0, first.stderr
+        original = output_path.read_bytes()
+        second = subprocess.run(
+            command, check=False, capture_output=True, text=True, env=environment
+        )
+        assert second.returncode == 0, second.stderr
+        assert output_path.read_bytes() == original
+    
+        tampered = json.loads(original)
+        tampered["problem_verdict"] = "TAMPERED"
+        output_path.write_text(json.dumps(tampered), encoding="utf-8")
+        rejected = subprocess.run(
+            command, check=False, capture_output=True, text=True, env=environment
+        )
+        assert rejected.returncode != 0
+        assert "conflicts with sealed inputs" in rejected.stderr
+    
+        output_path.write_bytes(original)
+        typed_tamper = json.loads(original)
+        typed_tamper["observations"]["p_capacity_signal"] = 1
+        output_path.write_text(json.dumps(typed_tamper), encoding="utf-8")
+        rejected_type_drift = subprocess.run(
+            command, check=False, capture_output=True, text=True, env=environment
+        )
+&gt;       assert rejected_type_drift.returncode != 0
+E       assert 0 != 0
+E        +  where 0 = CompletedProcess(args=['/data/predator/ly/MemBind/paper-eval-v3/.venv/bin/python', '/data/predator/ly/MemBind/paper-ev...737969be67b5", "problem_verdict": "PROBLEM_SUPPORTED_FOR_BOUNDED_NODE_ONLY_PROTOTYPE", "status": "PASS"}\n', stderr='').returncode
+
+tests/test_methodology_decision.py:386: AssertionError</failure></testcase></testsuite></testsuites>
