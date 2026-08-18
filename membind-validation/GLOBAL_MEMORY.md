@@ -169,6 +169,35 @@ next_allowed_action=run_native_characterization_c5
 
 ## Long-running execution hygiene memory
 
+### Sandbox network-isolation diagnostic memory
+
+Do not classify a failed model/SSH probe as remote vLLM downtime until the
+current Codex execution permission profile has been checked. A local
+`PermissionError`, `socket: Operation not permitted`, or failure before TCP
+connection establishment while network access is restricted is classified as
+`EXECUTION_SANDBOX_NETWORK_ISOLATION`, not `REMOTE_SERVICE_UNAVAILABLE`.
+
+The 2026-08-18 incident is the canonical example: the restricted sandbox could
+not create sockets to `10.87.5.247:8000`, `:8001`, `:22`, or the local proxy.
+Immediately after network permission was enabled, both `/v1/models` endpoints
+returned HTTP 200, the forced-command SSH endpoint worked, and the existing
+local Neo4j/baseline processes were visible. No remote service restart was
+required.
+
+For every future live gate:
+
+1. Check the current execution/sandbox network permission before diagnosing the
+   remote host.
+2. If socket creation is locally denied, report the sandbox gate and do not
+   mutate experiment state, restart services, or label an attempt as a vLLM
+   outage.
+3. Once networking is enabled, repeat direct `curl --noproxy '*'` checks for
+   ports 8000/8001, the restricted `ssh zju-liuyi '<allowed command>'` probe,
+   and the local Neo4j readiness query.
+4. Only a probe that actually reaches the network stack may contribute to a
+   remote-service failure diagnosis. Preserve the distinction in status
+   reports and failure artifacts.
+
 For any long-running live experiment, benchmark, or model/Graphiti run, start the
 command inside `tmux` first so SSH disconnection cannot kill or perturb the
 foreground process. Recommended pattern:
@@ -645,3 +674,58 @@ v1.3 overlay; this file intentionally keeps only the resume-critical invariants.
 - New diagnostic scripts should include a module docstring explaining whether they are mainline or temporary.
 - New tests should include a short class docstring when they protect protocol boundaries rather than ordinary implementation details.
 - Diagnostics may persist short credential fingerprints but must never persist raw API keys or Authorization headers.
+
+## MemBind v3.1 optimization lane (2026-08-18)
+
+- The frozen v3.1 formal lane remains `C=W=K=2`; the separate bounded W=4
+  exploratory pilot lane is now terminal after its no-ready-work result under
+  `paper-eval-v3/artifacts/paper_eval/membind_v31/optimization/`.
+- Scheduler/admission snapshots are diagnostic-only and route to pilot
+  `queue.jsonl`; they must never be added to formal lifecycle events, old
+  attempts, reducers, or the main table. `queue_diagnostics.py` is the sole
+  offline interpreter and does not infer scheduler readiness from LLM waiters.
+- The canonical pilot implementation is
+  `membind_v31/optimization_pilot.py` + `membind_v31/optimization_live.py` +
+  `scripts/run_membind_v31_w4_pilot.py`. Do not resurrect the removed duplicate
+  `optimization_pilot_executor.py`.
+- A coordinator arrival-task validation error must emit `arrival_failure`, wake
+  the condition, and persist `TERMINAL_FAILURE`; it must never leave the main
+  loop waiting indefinitely. Such an attempt is permanently non-reusable.
+- Long live runs use tmux. vLLM/Neo4j disconnect or malformed output means
+  checkpoint and stop; do not retry in place or silently alter the frozen
+  context/completion/prompt envelope.
+
+## Codex sandbox network boundary (2026-08-18)
+
+- A local `ssh zju-liuyi ...` or vLLM probe that fails with `Operation not
+  permitted` before TCP establishment is a Codex sandbox network-block
+  classification, not evidence that the remote service is down or that its
+  credentials/configuration are invalid.
+- Preserve the exact read-only preflight artifact and stop before namespace
+  creation or generation. After network access is restored, repeat the same
+  preflight and continue the authorized plan; do not alter the model envelope,
+  retry policy, or frozen identities to work around the sandbox.
+- Never bypass the forced-command SSH boundary, probe broader remote paths, or
+  claim a service failure from a sandbox-level socket error. Keep this rule in
+  force for all future MemBind live runs.
+
+## W=4 optimization pilot outcome (2026-08-18)
+
+- The sandbox network recovered; the same read-only preflight then passed for
+  restricted SSH, both vLLM `/v1/models` endpoints, and local Neo4j.
+- The sole authorized diagnostic pilot
+  `membind-v31-opt-w4-20260818-001` completed all 12 sources in source order
+  with 12 `PUBLICATION_DURABLE` states, zero direct violations, and observed
+  max global LLM in-flight count 2.
+- Its final isolated namespace was
+  `pev3-opt-membind-v31-w4-20260818-001-membind-07741c45`; the final read-only
+  probe observed 89 nodes, 201 relationships, and 12 episode names.
+- The sealed queue diagnosis observed max legal-ready Compile count 1,
+  max Prepared ROB occupancy 1, 0 ns window-limited time, 0 ns
+  arrived-beyond-lookahead time, and 0 ns admission-under-capacity-with-waiter
+  time. Transport waiters must not be interpreted as ready scheduler work.
+- Decision: `NO_W2_READY_POOL_STARVATION_OBSERVED`; stop this W=4 lane. The
+  result is permanently `DIAGNOSTIC_ONLY_NON_MERGEABLE` and must not enter the
+  formal reducer or main table. Full details are in
+  `paper-eval-v3/artifacts/paper_eval/membind_v31/optimization/`
+  `MEMBIND_V31_W4_PILOT_RESULT_20260818.md`.

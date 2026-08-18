@@ -1,0 +1,70 @@
+<?xml version="1.0" encoding="utf-8"?><testsuites name="pytest tests"><testsuite name="pytest" errors="0" failures="3" skipped="0" tests="19" time="1.788" timestamp="2026-08-17T23:18:54.158956+08:00" hostname="aces-System-Product-Name"><testcase classname="tests.test_membind_v31_workplan" name="test_historical_parent_remains_byte_identical" time="0.000" /><testcase classname="tests.test_membind_v31_workplan" name="test_v31_authorities_are_hash_bound" time="0.000" /><testcase classname="tests.test_membind_v31_workplan" name="test_v31_workplan_contains_the_frozen_method_and_reuse_boundaries" time="0.000" /><testcase classname="tests.test_membind_v31_workplan" name="test_v31_workplan_keeps_cache_claim_secondary_and_fail_closed" time="0.000" /><testcase classname="tests.test_membind_v31_workplan" name="test_v31_workplan_freezes_exact_method_backend_and_transport_contract" time="0.000"><failure message="AssertionError: assert 'compile workers `C = 2`' in '# MemBind Paper-Level Evaluation Workplan v3.1\n## Methodology-Aligned / Small-First / Reuse-Aware / TDD-Frozen\n\n&gt; ...leted baseline work, but it also does not let historical partial methods\nstand in for the frozen v3.1 architecture.\n'">def test_v31_workplan_freezes_exact_method_backend_and_transport_contract() -&gt; None:
+        text = NEW.read_text(encoding="utf-8")
+        required = (
+            "compile workers `C = 2`",
+            "lookahead `W = 2`",
+            "global LLM admission `K_LLM = 2`",
+            "prefix-match granularity `G = 16 tokens`",
+            "decode-context parallel size `DCP = 1`",
+            "one actual outbound construction-model transport attempt",
+            "Every retry or HTTP transport attempt reacquires admission independently",
+            "observed actual transport-attempt inflight",
+        )
+        for phrase in required:
+&gt;           assert phrase in text
+E           AssertionError: assert 'compile workers `C = 2`' in '# MemBind Paper-Level Evaluation Workplan v3.1\n## Methodology-Aligned / Small-First / Reuse-Aware / TDD-Frozen\n\n&gt; ...leted baseline work, but it also does not let historical partial methods\nstand in for the frozen v3.1 architecture.\n'
+
+tests/test_membind_v31_workplan.py:94: AssertionError</failure></testcase><testcase classname="tests.test_membind_v31_workplan" name="test_v31_workplan_freezes_comparable_cache_isolation_and_artifact_authority" time="0.000"><failure message="AssertionError: assert 'U0/A0/P(C=2)/MemBind-Barrier/MemBind-FIFO/MemBind' in '# MemBind Paper-Level Evaluation Workplan v3.1\n## Methodology-Aligned / Small-First / Reuse-Aware / TDD-Frozen\n\n&gt; ...leted baseline work, but it also does not let historical partial methods\nstand in for the frozen v3.1 architecture.\n'">def test_v31_workplan_freezes_comparable_cache_isolation_and_artifact_authority() -&gt; None:
+        text = NEW.read_text(encoding="utf-8")
+        required = (
+            "U0/A0/P(C=2)/MemBind-Barrier/MemBind-FIFO/MemBind",
+            "unique fresh request cache salt",
+            "cross_block_prefix_identity_reuse = false",
+            "cross_block_warm_inheritance = false",
+            "within_block_prefix_reuse = true",
+            "physical_cache_reset_claimed = false",
+            "V31_REUSE_AUDIT.json` is the V0 offline source/hash/reuse audit only",
+            "V31_BASELINE_ACCEPTANCE.json` is emitted only at V3",
+        )
+        for phrase in required:
+&gt;           assert phrase in text
+E           AssertionError: assert 'U0/A0/P(C=2)/MemBind-Barrier/MemBind-FIFO/MemBind' in '# MemBind Paper-Level Evaluation Workplan v3.1\n## Methodology-Aligned / Small-First / Reuse-Aware / TDD-Frozen\n\n&gt; ...leted baseline work, but it also does not let historical partial methods\nstand in for the frozen v3.1 architecture.\n'
+
+tests/test_membind_v31_workplan.py:110: AssertionError</failure></testcase><testcase classname="tests.test_membind_v31_freezer" name="test_freezer_emits_five_self_hashing_content_safe_artifacts" time="0.637" /><testcase classname="tests.test_membind_v31_freezer" name="test_reuse_and_execution_freezes_bind_exact_authorities_and_c_w_k" time="0.046"><failure message="KeyError: 'decode_context_parallel_size'">tmp_path = PosixPath('/tmp/pytest-of-ly/pytest-790/test_reuse_and_execution_freez0')
+
+    def test_reuse_and_execution_freezes_bind_exact_authorities_and_c_w_k(tmp_path: Path) -&gt; None:
+        paths = _paths(tmp_path / "freeze")
+        frozen = asyncio.run(freeze_v31_qualification(paths))
+        reuse = frozen["V31_REUSE_AUDIT.json"]
+        envelope = frozen["V31_EXECUTION_ENVELOPE.json"]
+    
+        assert reuse["methodology_sha256"] == envelope["methodology_sha256"]
+        assert reuse["workplan_sha256"] == envelope["workplan_sha256"]
+        assert reuse["baseline"]["run_id"] == "apc-baseline-dev-20260817-001"
+        assert reuse["canonical_projection_reuse"]["reuse_scope"] == (
+            "SCHEMA_AND_EXPORT_IMPLEMENTATION_ONLY"
+        )
+        assert reuse["canonical_projection_reuse"]["old_d0_result_authority"] == (
+            "NOT_V31_SERIALIZABILITY_EVIDENCE"
+        )
+        assert envelope["method_knobs"] == {
+            "bind_workers": 1,
+            "compile_workers_c": 2,
+            "global_llm_admission_k": 2,
+            "lookahead_w": 2,
+        }
+        assert envelope["baseline_shared_execution_envelope_sha256"] == (
+            reuse["baseline"]["shared_execution_envelope_sha256"]
+        )
+        assert envelope["backend_contract"]["backend_prefix_match_granularity_tokens"] == 16
+        assert envelope["backend_contract"]["granularity_evidence"]["vllm_revision"] == (
+            "568afb3a13806beb53bb2e6bd518269357b237c0"
+        )
+        assert envelope["backend_contract"]["granularity_evidence"]["cache_source_sha256"] == (
+            "ee2c0db3e4e6c9e9cab33d8be566c4b8101159d36c0d3787c30d47931ee2a9a4"
+        )
+&gt;       assert envelope["backend_contract"]["decode_context_parallel_size"] == 1
+               ^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^
+E       KeyError: 'decode_context_parallel_size'
+
+tests/test_membind_v31_freezer.py:84: KeyError</failure></testcase><testcase classname="tests.test_membind_v31_freezer" name="test_offline_freezer_does_not_emit_terminal_baseline_acceptance" time="0.045" /><testcase classname="tests.test_membind_v31_freezer" name="test_certification_projection_and_serializability_are_cross_bound" time="0.046" /><testcase classname="tests.test_membind_v31_freezer" name="test_freezer_fails_closed_unless_c_w_k_are_exactly_two[1-2-2]" time="0.001" /><testcase classname="tests.test_membind_v31_freezer" name="test_freezer_fails_closed_unless_c_w_k_are_exactly_two[2-1-2]" time="0.001" /><testcase classname="tests.test_membind_v31_freezer" name="test_freezer_fails_closed_unless_c_w_k_are_exactly_two[2-2-1]" time="0.001" /><testcase classname="tests.test_membind_v31_freezer" name="test_freezer_fails_closed_unless_c_w_k_are_exactly_two[3-2-2]" time="0.001" /><testcase classname="tests.test_membind_v31_freezer" name="test_freezer_fails_closed_unless_c_w_k_are_exactly_two[2-3-2]" time="0.001" /><testcase classname="tests.test_membind_v31_freezer" name="test_freezer_fails_closed_unless_c_w_k_are_exactly_two[2-2-3]" time="0.001" /><testcase classname="tests.test_membind_v31_freezer" name="test_verifier_rejects_artifact_or_protocol_tamper" time="0.047" /><testcase classname="tests.test_membind_v31_freezer" name="test_existing_conflicting_freeze_is_never_overwritten" time="0.058" /><testcase classname="tests.test_membind_v31_freezer" name="test_cli_freeze_then_verify_without_live_dependencies" time="0.824" /></testsuite></testsuites>

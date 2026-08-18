@@ -1,0 +1,134 @@
+{
+  "compiled_operator_names": [
+    "graphiti.extract_edges",
+    "graphiti.extract_nodes"
+  ],
+  "execution_envelope_sha256": "52fc757caa18f122a595a54312b07d09f0577538be75a8b9c36f874c67caf3cd",
+  "forbidden_observation_counts": {
+    "future_evidence_access_count": 0,
+    "persistent_state_read_count": 0,
+    "persistent_state_write_count": 0,
+    "undeclared_external_side_effect_count": 0,
+    "undeclared_state_facing_call_count": 0
+  },
+  "formal_run_certification_failure_policy": "INVALIDATE_BLOCK_AND_REVOKE_NEXT_PROTOCOL",
+  "graphiti_version": "0.29.3",
+  "methodology_sha256": "2af8147a839972e120a0123d1d0fffdd3e10653fa64e338c1c7a7fa32f506280",
+  "payload_sha256": "85f05dd73e87a32c430b56be2ab4cf89e8e38935401cf1529a7ef8f527d3f26c",
+  "qualification_document": {
+    "compile_operators": [
+      "graphiti.extract_edges",
+      "graphiti.extract_nodes"
+    ],
+    "graphiti_version": "0.29.3",
+    "operator_records": [
+      {
+        "certification": {
+          "adapter_identity_sha256": "b5b8d6e2afb407bf242d8ccde1e3137d847df9e9eab7dba9a90817fe8676e2bd",
+          "allowed_apis": [
+            "llm.generate_response"
+          ],
+          "allowed_evidence_inputs": [
+            "current_source",
+            "evidence_snapshot"
+          ],
+          "allowed_upstream_outputs": [
+            "graphiti.extract_nodes"
+          ],
+          "code_revision_sha256": "06ba72fe0eb8c015c977c3e60735a433e1273c802e664b80e5d13894c430e2f7",
+          "config_identity_sha256": "006df311ef6a97ab1d1602f7a02678c6ff796facd4e8a2422aa18ba4c3807c1f",
+          "forbidden_apis": [
+            "graph_driver.execute_query",
+            "memory.search",
+            "memory.write"
+          ],
+          "future_evidence_access_count": 0,
+          "memory_backend_identity_sha256": "f758bb556ff55d7e6cbc7951dcf7318f46131876cf07c50e60c4f83d3e905738",
+          "operator_contract_sha256": "eab5a77197f8caae50727f17e100e0087fcd2c1cd8ad0b3d8d9c379a692b6504",
+          "operator_identity_sha256": "cbb1e762d8941d6011c1ff962edd88c968b87ab358fa075f3c787f97ad457e43",
+          "persistent_state_read_count": 0,
+          "persistent_state_write_count": 0,
+          "prompt_identity_sha256": "d22813bebba72549e097d03bd25bcbbd8d608f63b0588b7fee7d9700d74ccd2b",
+          "qualification_trace_sha256": "e1e533be3c6c459bc90ce25da728eab021dbab46b2b5467f3dac2c57f78bb7ed",
+          "schema_identity_sha256": "d716c84a9343913b5aeacf0c7ffaf18ae843da144653b023b004bd7bd1e1715f",
+          "undeclared_external_side_effect_count": 0,
+          "undeclared_state_facing_call_count": 0
+        },
+        "certification_sha256": "c7d7ac0a1577e7d823afb256d03e2d94ad176036d045cfea3d8e5f685df67fe1",
+        "operator_contract": {
+          "dependency_class": "EVIDENCE_BOUND",
+          "effect_class": "PURE",
+          "operator_name": "graphiti.extract_edges"
+        },
+        "operator_contract_sha256": "eab5a77197f8caae50727f17e100e0087fcd2c1cd8ad0b3d8d9c379a692b6504"
+      },
+      {
+        "certification": {
+          "adapter_identity_sha256": "b5b8d6e2afb407bf242d8ccde1e3137d847df9e9eab7dba9a90817fe8676e2bd",
+          "allowed_apis": [
+            "llm.generate_response"
+          ],
+          "allowed_evidence_inputs": [
+            "current_source",
+            "evidence_snapshot"
+          ],
+          "allowed_upstream_outputs": [],
+          "code_revision_sha256": "06ba72fe0eb8c015c977c3e60735a433e1273c802e664b80e5d13894c430e2f7",
+          "config_identity_sha256": "006df311ef6a97ab1d1602f7a02678c6ff796facd4e8a2422aa18ba4c3807c1f",
+          "forbidden_apis": [
+            "graph_driver.execute_query",
+            "memory.search",
+            "memory.write"
+          ],
+          "future_evidence_access_count": 0,
+          "memory_backend_identity_sha256": "f758bb556ff55d7e6cbc7951dcf7318f46131876cf07c50e60c4f83d3e905738",
+          "operator_contract_sha256": "6b37ad5c7db821a45b8e97e4a04c32a9cacb31761ed5c0e973fbda5c79fd5068",
+          "operator_identity_sha256": "1bc878a4a0d401ec298c5e6c296e4ad42e19906f02e9743ad9e73c2e484a9887",
+          "persistent_state_read_count": 0,
+          "persistent_state_write_count": 0,
+          "prompt_identity_sha256": "1c013a22ff432b988b9ec0bbe91221857f0dfc772eaa2fd7def1688cf484eb84",
+          "qualification_trace_sha256": "abd30d08932e70c3bc8a52d304bc76362ca90e77721c515af3abdeb0bb074722",
+          "schema_identity_sha256": "c2681b52e56c961c526bfdbc1ff8bdc3503cd9a635372de896c998bf83e2c35b",
+          "undeclared_external_side_effect_count": 0,
+          "undeclared_state_facing_call_count": 0
+        },
+        "certification_sha256": "f42b2455eb492e88ada3a313b8feefc59e760f2fc806d86c7ed7a70c898a1377",
+        "operator_contract": {
+          "dependency_class": "EVIDENCE_BOUND",
+          "effect_class": "PURE",
+          "operator_name": "graphiti.extract_nodes"
+        },
+        "operator_contract_sha256": "6b37ad5c7db821a45b8e97e4a04c32a9cacb31761ed5c0e973fbda5c79fd5068"
+      }
+    ],
+    "payload_sha256": "f80f277b1307619c7a6de9e18f9684a9845ce36bac18ae23e31d560f59769c63",
+    "qualification_trace": {
+      "allowed_api_calls": [
+        {
+          "api": "llm.generate_response",
+          "response_model": "ExtractedEntities"
+        },
+        {
+          "api": "llm.generate_response",
+          "response_model": "ExtractedEdges"
+        }
+      ],
+      "future_evidence_access_count": 0,
+      "persistent_state_read_count": 0,
+      "persistent_state_write_count": 0,
+      "raw_edge_count": 1,
+      "raw_node_count": 2,
+      "undeclared_external_side_effect_count": 0,
+      "undeclared_state_facing_call_count": 0
+    },
+    "schema_version": "membind.paper-eval-v3.membind-v31-state-cut-qualification.v1",
+    "state_cut_certification_sha256": "c0547286e6aab9d475618180e1d291dee2b7105149fee52e13b776d8061113a2",
+    "status": "PASS"
+  },
+  "reuse_audit_sha256": "fd133062a920090948767b87f1e1abc7fa03efc6c22825928455a65c7d59c72c",
+  "runtime_guard_required": true,
+  "schema_version": "membind.paper-eval-v3.membind-v31-state-cut-certification.v1",
+  "state_cut_certification_sha256": "c0547286e6aab9d475618180e1d291dee2b7105149fee52e13b776d8061113a2",
+  "status": "PASS",
+  "workplan_sha256": "f81c186e7cccd75ba6c1e15628b5e9a90a4484e20a6b4e27ac126aa80763c479"
+}

@@ -1,0 +1,304 @@
+<?xml version="1.0" encoding="utf-8"?><testsuites name="pytest tests"><testsuite name="pytest" errors="0" failures="5" skipped="0" tests="11" time="0.154" timestamp="2026-08-17T22:57:40.794791+08:00" hostname="aces-System-Product-Name"><testcase classname="tests.test_membind_v31_freezer" name="test_freezer_emits_five_self_hashing_content_safe_artifacts" time="0.004"><failure message="paper_eval.membind_v31.freezer.MemBindV31FreezerError: state_cut_qualification_failed:graphiti_distribution_missing">tmp_path = PosixPath('/tmp/pytest-of-ly/pytest-772/test_freezer_emits_five_self_h0')
+
+    def test_freezer_emits_five_self_hashing_content_safe_artifacts(tmp_path: Path) -&gt; None:
+        paths = _paths(tmp_path / "freeze")
+&gt;       frozen = asyncio.run(freeze_v31_qualification(paths))
+                 ^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^
+
+tests/test_membind_v31_freezer.py:38: 
+_ _ _ _ _ _ _ _ _ _ _ _ _ _ _ _ _ _ _ _ _ _ _ _ _ _ _ _ _ _ _ _ _ _ _ _ _ _ _ _ 
+/usr/lib/python3.12/asyncio/runners.py:194: in run
+    return runner.run(main)
+           ^^^^^^^^^^^^^^^^
+/usr/lib/python3.12/asyncio/runners.py:118: in run
+    return self._loop.run_until_complete(task)
+           ^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^
+/usr/lib/python3.12/asyncio/base_events.py:687: in run_until_complete
+    return future.result()
+           ^^^^^^^^^^^^^^^
+_ _ _ _ _ _ _ _ _ _ _ _ _ _ _ _ _ _ _ _ _ _ _ _ _ _ _ _ _ _ _ _ _ _ _ _ _ _ _ _ 
+
+paths = V31FreezePaths(repository_root=PosixPath('/data/predator/ly/MemBind'), project_root=PosixPath('/data/predator/ly/MemBi...31/prepared_artifact.py'), output_dir=PosixPath('/tmp/pytest-of-ly/pytest-772/test_freezer_emits_five_self_h0/freeze'))
+compile_workers = 2, lookahead = 2, global_llm_admission_k = 2
+
+    async def freeze_v31_qualification(
+        paths: V31FreezePaths,
+        *,
+        compile_workers: int = 2,
+        lookahead: int = 2,
+        global_llm_admission_k: int = 2,
+    ) -&gt; dict[str, dict[str, object]]:
+        """Build, verify, then atomically persist the five offline artifacts."""
+    
+        if not isinstance(paths, V31FreezePaths):
+            raise _fail("freeze_paths_invalid")
+        if (compile_workers, lookahead, global_llm_admission_k) != (2, 2, 2):
+            raise _fail("method_knobs_not_frozen_to_two")
+        common = _common(paths)
+        baseline = _load_baseline(paths)
+        preflight = _load_preflight(paths)
+        runtime = _load_runtime_config(paths)
+        s4_contract, _s4_graph = _load_s4_reuse(paths)
+        reuse = _build_reuse(paths, common, baseline, s4_contract)
+        envelope = _build_envelope(
+            paths,
+            common,
+            baseline,
+            preflight,
+            runtime,
+            reuse,
+            compile_workers=compile_workers,
+            lookahead=lookahead,
+            global_llm_admission_k=global_llm_admission_k,
+        )
+        try:
+            qualification = await qualify_graphiti_v0293_state_cut(
+                project_root=paths.repository_root
+            )
+        except ValueError as error:
+&gt;           raise _fail(f"state_cut_qualification_failed:{error}") from None
+E           paper_eval.membind_v31.freezer.MemBindV31FreezerError: state_cut_qualification_failed:graphiti_distribution_missing
+
+src/paper_eval/membind_v31/freezer.py:878: MemBindV31FreezerError</failure></testcase><testcase classname="tests.test_membind_v31_freezer" name="test_reuse_and_execution_freezes_bind_exact_authorities_and_c_w_k" time="0.004"><failure message="paper_eval.membind_v31.freezer.MemBindV31FreezerError: state_cut_qualification_failed:graphiti_distribution_missing">tmp_path = PosixPath('/tmp/pytest-of-ly/pytest-772/test_reuse_and_execution_freez0')
+
+    def test_reuse_and_execution_freezes_bind_exact_authorities_and_c_w_k(tmp_path: Path) -&gt; None:
+        paths = _paths(tmp_path / "freeze")
+&gt;       frozen = asyncio.run(freeze_v31_qualification(paths))
+                 ^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^
+
+tests/test_membind_v31_freezer.py:54: 
+_ _ _ _ _ _ _ _ _ _ _ _ _ _ _ _ _ _ _ _ _ _ _ _ _ _ _ _ _ _ _ _ _ _ _ _ _ _ _ _ 
+/usr/lib/python3.12/asyncio/runners.py:194: in run
+    return runner.run(main)
+           ^^^^^^^^^^^^^^^^
+/usr/lib/python3.12/asyncio/runners.py:118: in run
+    return self._loop.run_until_complete(task)
+           ^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^
+/usr/lib/python3.12/asyncio/base_events.py:687: in run_until_complete
+    return future.result()
+           ^^^^^^^^^^^^^^^
+_ _ _ _ _ _ _ _ _ _ _ _ _ _ _ _ _ _ _ _ _ _ _ _ _ _ _ _ _ _ _ _ _ _ _ _ _ _ _ _ 
+
+paths = V31FreezePaths(repository_root=PosixPath('/data/predator/ly/MemBind'), project_root=PosixPath('/data/predator/ly/MemBi...31/prepared_artifact.py'), output_dir=PosixPath('/tmp/pytest-of-ly/pytest-772/test_reuse_and_execution_freez0/freeze'))
+compile_workers = 2, lookahead = 2, global_llm_admission_k = 2
+
+    async def freeze_v31_qualification(
+        paths: V31FreezePaths,
+        *,
+        compile_workers: int = 2,
+        lookahead: int = 2,
+        global_llm_admission_k: int = 2,
+    ) -&gt; dict[str, dict[str, object]]:
+        """Build, verify, then atomically persist the five offline artifacts."""
+    
+        if not isinstance(paths, V31FreezePaths):
+            raise _fail("freeze_paths_invalid")
+        if (compile_workers, lookahead, global_llm_admission_k) != (2, 2, 2):
+            raise _fail("method_knobs_not_frozen_to_two")
+        common = _common(paths)
+        baseline = _load_baseline(paths)
+        preflight = _load_preflight(paths)
+        runtime = _load_runtime_config(paths)
+        s4_contract, _s4_graph = _load_s4_reuse(paths)
+        reuse = _build_reuse(paths, common, baseline, s4_contract)
+        envelope = _build_envelope(
+            paths,
+            common,
+            baseline,
+            preflight,
+            runtime,
+            reuse,
+            compile_workers=compile_workers,
+            lookahead=lookahead,
+            global_llm_admission_k=global_llm_admission_k,
+        )
+        try:
+            qualification = await qualify_graphiti_v0293_state_cut(
+                project_root=paths.repository_root
+            )
+        except ValueError as error:
+&gt;           raise _fail(f"state_cut_qualification_failed:{error}") from None
+E           paper_eval.membind_v31.freezer.MemBindV31FreezerError: state_cut_qualification_failed:graphiti_distribution_missing
+
+src/paper_eval/membind_v31/freezer.py:878: MemBindV31FreezerError</failure></testcase><testcase classname="tests.test_membind_v31_freezer" name="test_certification_projection_and_serializability_are_cross_bound" time="0.003"><failure message="paper_eval.membind_v31.freezer.MemBindV31FreezerError: state_cut_qualification_failed:graphiti_distribution_missing">tmp_path = PosixPath('/tmp/pytest-of-ly/pytest-772/test_certification_projection_0')
+
+    def test_certification_projection_and_serializability_are_cross_bound(tmp_path: Path) -&gt; None:
+        paths = _paths(tmp_path / "freeze")
+&gt;       frozen = asyncio.run(freeze_v31_qualification(paths))
+                 ^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^
+
+tests/test_membind_v31_freezer.py:81: 
+_ _ _ _ _ _ _ _ _ _ _ _ _ _ _ _ _ _ _ _ _ _ _ _ _ _ _ _ _ _ _ _ _ _ _ _ _ _ _ _ 
+/usr/lib/python3.12/asyncio/runners.py:194: in run
+    return runner.run(main)
+           ^^^^^^^^^^^^^^^^
+/usr/lib/python3.12/asyncio/runners.py:118: in run
+    return self._loop.run_until_complete(task)
+           ^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^
+/usr/lib/python3.12/asyncio/base_events.py:687: in run_until_complete
+    return future.result()
+           ^^^^^^^^^^^^^^^
+_ _ _ _ _ _ _ _ _ _ _ _ _ _ _ _ _ _ _ _ _ _ _ _ _ _ _ _ _ _ _ _ _ _ _ _ _ _ _ _ 
+
+paths = V31FreezePaths(repository_root=PosixPath('/data/predator/ly/MemBind'), project_root=PosixPath('/data/predator/ly/MemBi...31/prepared_artifact.py'), output_dir=PosixPath('/tmp/pytest-of-ly/pytest-772/test_certification_projection_0/freeze'))
+compile_workers = 2, lookahead = 2, global_llm_admission_k = 2
+
+    async def freeze_v31_qualification(
+        paths: V31FreezePaths,
+        *,
+        compile_workers: int = 2,
+        lookahead: int = 2,
+        global_llm_admission_k: int = 2,
+    ) -&gt; dict[str, dict[str, object]]:
+        """Build, verify, then atomically persist the five offline artifacts."""
+    
+        if not isinstance(paths, V31FreezePaths):
+            raise _fail("freeze_paths_invalid")
+        if (compile_workers, lookahead, global_llm_admission_k) != (2, 2, 2):
+            raise _fail("method_knobs_not_frozen_to_two")
+        common = _common(paths)
+        baseline = _load_baseline(paths)
+        preflight = _load_preflight(paths)
+        runtime = _load_runtime_config(paths)
+        s4_contract, _s4_graph = _load_s4_reuse(paths)
+        reuse = _build_reuse(paths, common, baseline, s4_contract)
+        envelope = _build_envelope(
+            paths,
+            common,
+            baseline,
+            preflight,
+            runtime,
+            reuse,
+            compile_workers=compile_workers,
+            lookahead=lookahead,
+            global_llm_admission_k=global_llm_admission_k,
+        )
+        try:
+            qualification = await qualify_graphiti_v0293_state_cut(
+                project_root=paths.repository_root
+            )
+        except ValueError as error:
+&gt;           raise _fail(f"state_cut_qualification_failed:{error}") from None
+E           paper_eval.membind_v31.freezer.MemBindV31FreezerError: state_cut_qualification_failed:graphiti_distribution_missing
+
+src/paper_eval/membind_v31/freezer.py:878: MemBindV31FreezerError</failure></testcase><testcase classname="tests.test_membind_v31_freezer" name="test_freezer_fails_closed_unless_c_w_k_are_exactly_two[1-2-2]" time="0.001" /><testcase classname="tests.test_membind_v31_freezer" name="test_freezer_fails_closed_unless_c_w_k_are_exactly_two[2-1-2]" time="0.001" /><testcase classname="tests.test_membind_v31_freezer" name="test_freezer_fails_closed_unless_c_w_k_are_exactly_two[2-2-1]" time="0.001" /><testcase classname="tests.test_membind_v31_freezer" name="test_freezer_fails_closed_unless_c_w_k_are_exactly_two[3-2-2]" time="0.001" /><testcase classname="tests.test_membind_v31_freezer" name="test_freezer_fails_closed_unless_c_w_k_are_exactly_two[2-3-2]" time="0.001" /><testcase classname="tests.test_membind_v31_freezer" name="test_freezer_fails_closed_unless_c_w_k_are_exactly_two[2-2-3]" time="0.001" /><testcase classname="tests.test_membind_v31_freezer" name="test_verifier_rejects_artifact_or_protocol_tamper" time="0.003"><failure message="paper_eval.membind_v31.freezer.MemBindV31FreezerError: state_cut_qualification_failed:graphiti_distribution_missing">tmp_path = PosixPath('/tmp/pytest-of-ly/pytest-772/test_verifier_rejects_artifact0')
+
+    def test_verifier_rejects_artifact_or_protocol_tamper(tmp_path: Path) -&gt; None:
+        paths = _paths(tmp_path / "freeze")
+&gt;       asyncio.run(freeze_v31_qualification(paths))
+
+tests/test_membind_v31_freezer.py:133: 
+_ _ _ _ _ _ _ _ _ _ _ _ _ _ _ _ _ _ _ _ _ _ _ _ _ _ _ _ _ _ _ _ _ _ _ _ _ _ _ _ 
+/usr/lib/python3.12/asyncio/runners.py:194: in run
+    return runner.run(main)
+           ^^^^^^^^^^^^^^^^
+/usr/lib/python3.12/asyncio/runners.py:118: in run
+    return self._loop.run_until_complete(task)
+           ^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^
+/usr/lib/python3.12/asyncio/base_events.py:687: in run_until_complete
+    return future.result()
+           ^^^^^^^^^^^^^^^
+_ _ _ _ _ _ _ _ _ _ _ _ _ _ _ _ _ _ _ _ _ _ _ _ _ _ _ _ _ _ _ _ _ _ _ _ _ _ _ _ 
+
+paths = V31FreezePaths(repository_root=PosixPath('/data/predator/ly/MemBind'), project_root=PosixPath('/data/predator/ly/MemBi...31/prepared_artifact.py'), output_dir=PosixPath('/tmp/pytest-of-ly/pytest-772/test_verifier_rejects_artifact0/freeze'))
+compile_workers = 2, lookahead = 2, global_llm_admission_k = 2
+
+    async def freeze_v31_qualification(
+        paths: V31FreezePaths,
+        *,
+        compile_workers: int = 2,
+        lookahead: int = 2,
+        global_llm_admission_k: int = 2,
+    ) -&gt; dict[str, dict[str, object]]:
+        """Build, verify, then atomically persist the five offline artifacts."""
+    
+        if not isinstance(paths, V31FreezePaths):
+            raise _fail("freeze_paths_invalid")
+        if (compile_workers, lookahead, global_llm_admission_k) != (2, 2, 2):
+            raise _fail("method_knobs_not_frozen_to_two")
+        common = _common(paths)
+        baseline = _load_baseline(paths)
+        preflight = _load_preflight(paths)
+        runtime = _load_runtime_config(paths)
+        s4_contract, _s4_graph = _load_s4_reuse(paths)
+        reuse = _build_reuse(paths, common, baseline, s4_contract)
+        envelope = _build_envelope(
+            paths,
+            common,
+            baseline,
+            preflight,
+            runtime,
+            reuse,
+            compile_workers=compile_workers,
+            lookahead=lookahead,
+            global_llm_admission_k=global_llm_admission_k,
+        )
+        try:
+            qualification = await qualify_graphiti_v0293_state_cut(
+                project_root=paths.repository_root
+            )
+        except ValueError as error:
+&gt;           raise _fail(f"state_cut_qualification_failed:{error}") from None
+E           paper_eval.membind_v31.freezer.MemBindV31FreezerError: state_cut_qualification_failed:graphiti_distribution_missing
+
+src/paper_eval/membind_v31/freezer.py:878: MemBindV31FreezerError</failure></testcase><testcase classname="tests.test_membind_v31_freezer" name="test_existing_conflicting_freeze_is_never_overwritten" time="0.003"><failure message="paper_eval.membind_v31.freezer.MemBindV31FreezerError: state_cut_qualification_failed:graphiti_distribution_missing">tmp_path = PosixPath('/tmp/pytest-of-ly/pytest-772/test_existing_conflicting_free0')
+
+    def test_existing_conflicting_freeze_is_never_overwritten(tmp_path: Path) -&gt; None:
+        paths = _paths(tmp_path / "freeze")
+&gt;       asyncio.run(freeze_v31_qualification(paths))
+
+tests/test_membind_v31_freezer.py:153: 
+_ _ _ _ _ _ _ _ _ _ _ _ _ _ _ _ _ _ _ _ _ _ _ _ _ _ _ _ _ _ _ _ _ _ _ _ _ _ _ _ 
+/usr/lib/python3.12/asyncio/runners.py:194: in run
+    return runner.run(main)
+           ^^^^^^^^^^^^^^^^
+/usr/lib/python3.12/asyncio/runners.py:118: in run
+    return self._loop.run_until_complete(task)
+           ^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^
+/usr/lib/python3.12/asyncio/base_events.py:687: in run_until_complete
+    return future.result()
+           ^^^^^^^^^^^^^^^
+_ _ _ _ _ _ _ _ _ _ _ _ _ _ _ _ _ _ _ _ _ _ _ _ _ _ _ _ _ _ _ _ _ _ _ _ _ _ _ _ 
+
+paths = V31FreezePaths(repository_root=PosixPath('/data/predator/ly/MemBind'), project_root=PosixPath('/data/predator/ly/MemBi...31/prepared_artifact.py'), output_dir=PosixPath('/tmp/pytest-of-ly/pytest-772/test_existing_conflicting_free0/freeze'))
+compile_workers = 2, lookahead = 2, global_llm_admission_k = 2
+
+    async def freeze_v31_qualification(
+        paths: V31FreezePaths,
+        *,
+        compile_workers: int = 2,
+        lookahead: int = 2,
+        global_llm_admission_k: int = 2,
+    ) -&gt; dict[str, dict[str, object]]:
+        """Build, verify, then atomically persist the five offline artifacts."""
+    
+        if not isinstance(paths, V31FreezePaths):
+            raise _fail("freeze_paths_invalid")
+        if (compile_workers, lookahead, global_llm_admission_k) != (2, 2, 2):
+            raise _fail("method_knobs_not_frozen_to_two")
+        common = _common(paths)
+        baseline = _load_baseline(paths)
+        preflight = _load_preflight(paths)
+        runtime = _load_runtime_config(paths)
+        s4_contract, _s4_graph = _load_s4_reuse(paths)
+        reuse = _build_reuse(paths, common, baseline, s4_contract)
+        envelope = _build_envelope(
+            paths,
+            common,
+            baseline,
+            preflight,
+            runtime,
+            reuse,
+            compile_workers=compile_workers,
+            lookahead=lookahead,
+            global_llm_admission_k=global_llm_admission_k,
+        )
+        try:
+            qualification = await qualify_graphiti_v0293_state_cut(
+                project_root=paths.repository_root
+            )
+        except ValueError as error:
+&gt;           raise _fail(f"state_cut_qualification_failed:{error}") from None
+E           paper_eval.membind_v31.freezer.MemBindV31FreezerError: state_cut_qualification_failed:graphiti_distribution_missing
+
+src/paper_eval/membind_v31/freezer.py:878: MemBindV31FreezerError</failure></testcase></testsuite></testsuites>

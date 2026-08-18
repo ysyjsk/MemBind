@@ -1,0 +1,59 @@
+{
+  "apc_effective_evidence": {
+    "cache_salt_probe": {
+      "finish_reason": "stop",
+      "http_status": 200,
+      "secrets_persisted": false,
+      "status": "CACHE_SALT_ACCEPTED",
+      "system_fingerprint": "vllm-0.26.0-36caa633"
+    },
+    "embedding_cache_salt_probe": {
+      "embedding_count": 1,
+      "http_status": 200,
+      "prompt_tokens": 4,
+      "secrets_persisted": false,
+      "status": "EMBEDDING_CACHE_SALT_ACCEPTED"
+    },
+    "prefix_cache_metrics_exposed": true,
+    "startup_log_enable_prefix_caching_observed": true,
+    "startup_log_vllm_version": "0.26.0"
+  },
+  "cache_reset_endpoint": "HTTP_404_NOT_EXPOSED",
+  "embedding_model_identity": {
+    "max_model_len": 32768,
+    "served_model_id": "qwen3-embedding-0.6b",
+    "system_fingerprint_expected_prefix": "vllm-0.26.0"
+  },
+  "execution_identity_sha256": "6d9b817d453af525693f52a8a2ea8e5d9f85a91efdaa7c8b44093cd7abfc010a",
+  "implementation_hashes": {
+    "correctness": "85eb5294c218149fdb191ab8dc3df8fb7969696679e90093804f9f4daa7205d5",
+    "live": "158fdbc6e46600759fb44152df3f0953cdb318e12bbe419006659f45ee1903c2",
+    "plan_metrics": "608cf1e9a44a600a9b2d3772a0d12138edb1c8106ce3c449029f1cc00053ac02",
+    "runtime": "7fcce41b3278122cdfc7c3ff3bf47af96726fa2b85eb77fe6540aec495710fc5",
+    "schedule": "7c4edc3fae86cb2c7db14f8351afcd241da801c19e907fd0723c1ff63342067d",
+    "telemetry": "0123e4c0040bf64c0369eaf24afe0d7968736332bbda7c3e42d10b246985b6e9",
+    "transport": "f25141000494a8899a40b87f2bf5fb5e5cb519ab2d480d72973aeaf9e0d9c8cc"
+  },
+  "initial_metrics": {
+    "timestamp_ns": 281096871990257,
+    "values": {
+      "generation_tokens": 207471.0,
+      "gpu_kv_cache_usage": 0.0,
+      "preemptions": 0.0,
+      "prefix_cache_hits": 4491008.0,
+      "prefix_cache_queries": 13372055.0,
+      "prompt_tokens": 13372055.0,
+      "running_requests": 0.0,
+      "waiting_requests": 0.0
+    }
+  },
+  "isolation_mechanism": "REQUEST_CACHE_SALT",
+  "model_identity": {
+    "max_model_len": 65536,
+    "served_model_id": "qwen3-32b-fp8",
+    "system_fingerprint_expected_prefix": "vllm-0.26.0"
+  },
+  "payload_sha256": "b89c28b407017a74d5ff1814da962d16d8147be62f41501bbb7433a1ac42aad4",
+  "schema_version": "membind.paper-eval-v3.apc-aligned-preflight.v1",
+  "status": "PASS"
+}

@@ -1,0 +1,307 @@
+<?xml version="1.0" encoding="utf-8"?><testsuites name="pytest tests"><testsuite name="pytest" errors="0" failures="6" skipped="0" tests="6" time="0.123" timestamp="2026-08-18T00:10:56.302653+08:00" hostname="aces-System-Product-Name"><testcase classname="tests.test_membind_v31_orchestration" name="test_orchestrator_runs_exact_smoke_then_strict_six_blocks_and_seals_result" time="0.001"><failure message="paper_eval.membind_v31.orchestration.OrchestrationError: materialized six-block order invalid">tmp_path = PosixPath('/tmp/pytest-of-ly/pytest-824/test_orchestrator_runs_exact_s0')
+monkeypatch = &lt;_pytest.monkeypatch.MonkeyPatch object at 0x7bd192bd38f0&gt;
+
+    def test_orchestrator_runs_exact_smoke_then_strict_six_blocks_and_seals_result(
+        tmp_path: Path, monkeypatch: pytest.MonkeyPatch
+    ) -&gt; None:
+        control = _control()
+        monkeypatch.setattr(
+            "paper_eval.membind_v31.orchestration.inspect_materialized_control",
+            lambda _root: control,
+        )
+        calls: list[object] = []
+        root = tmp_path / "attempt"
+    
+&gt;       result = run_v31_orchestration(
+            control_root=tmp_path / "control",
+            attempt_root=root,
+            attempt_id="v31-attempt-dev-001",
+            hooks=_hooks(control, calls),
+        )
+
+paper-eval-v3/tests/test_membind_v31_orchestration.py:160: 
+_ _ _ _ _ _ _ _ _ _ _ _ _ _ _ _ _ _ _ _ _ _ _ _ _ _ _ _ _ _ _ _ _ _ _ _ _ _ _ _ 
+paper-eval-v3/src/paper_eval/membind_v31/orchestration.py:380: in run_v31_orchestration
+    acceptance, plan, commit = _control(control_root)
+                               ^^^^^^^^^^^^^^^^^^^^^^
+_ _ _ _ _ _ _ _ _ _ _ _ _ _ _ _ _ _ _ _ _ _ _ _ _ _ _ _ _ _ _ _ _ _ _ _ _ _ _ _ 
+
+root = PosixPath('/tmp/pytest-of-ly/pytest-824/test_orchestrator_runs_exact_s0/control')
+
+    def _control(root: Path) -&gt; tuple[dict[str, Any], dict[str, Any], dict[str, Any]]:
+        try:
+            control = inspect_materialized_control(Path(root))
+        except ValueError as error:
+            raise _fail(f"materialized control invalid: {error}") from None
+        if not isinstance(control, Mapping):
+            raise _fail("materialized control invalid")
+        acceptance = _sealed(control.get("acceptance"), label="baseline acceptance")
+        plan = _sealed(control.get("method_plan"), label="method plan")
+        commit = _sealed(control.get("commit"), label="control commit")
+        blocks = plan.get("blocks")
+        if (
+            acceptance.get("status") != "PASS"
+            or commit.get("status") != "COMMITTED"
+            or commit.get("method_plan_payload_sha256") != plan["payload_sha256"]
+            or commit.get("baseline_acceptance_payload_sha256")
+            != acceptance["payload_sha256"]
+            or not isinstance(blocks, list)
+            or len(blocks) != 6
+            or [block.get("block_index") for block in blocks] != list(range(6))
+            or plan.get("global_llm_admission_k") != 2
+        ):
+            raise _fail("materialized control binding invalid")
+        expected = (
+            ("MemBind-Barrier", "07741c45"),
+            ("MemBind-FIFO", "07741c45"),
+            ("MemBind", "07741c45"),
+            ("MemBind", "b6019101"),
+            ("MemBind", "6071bd76"),
+            ("MemBind", "a2f3aa27"),
+        )
+        if [(block.get("method"), block.get("history_id")) for block in blocks] != list(expected):
+&gt;           raise _fail("materialized six-block order invalid")
+E           paper_eval.membind_v31.orchestration.OrchestrationError: materialized six-block order invalid
+
+paper-eval-v3/src/paper_eval/membind_v31/orchestration.py:143: OrchestrationError</failure></testcase><testcase classname="tests.test_membind_v31_orchestration" name="test_smoke_failure_seals_non_reusable_attempt_before_any_formal_block" time="0.001"><failure message="AssertionError: Regex pattern did not match.&#10;  Expected regex: 'smoke execution failed'&#10;  Actual message: 'materialized six-block order invalid'">tmp_path = PosixPath('/tmp/pytest-of-ly/pytest-824/test_smoke_failure_seals_non_r0')
+monkeypatch = &lt;_pytest.monkeypatch.MonkeyPatch object at 0x7bd192b6f470&gt;
+
+    def test_smoke_failure_seals_non_reusable_attempt_before_any_formal_block(
+        tmp_path: Path, monkeypatch: pytest.MonkeyPatch
+    ) -&gt; None:
+        control = _control()
+        monkeypatch.setattr(
+            "paper_eval.membind_v31.orchestration.inspect_materialized_control",
+            lambda _root: control,
+        )
+    
+        def fail_smoke(_spec, _root):
+            raise RuntimeError("private episode text")
+    
+        hooks = OrchestrationHooks(
+            executor_identity_sha256="e" * 64,
+            run_smoke=fail_smoke,
+            run_block=lambda *_args: pytest.fail("formal block must not run"),
+        )
+        root = tmp_path / "attempt"
+&gt;       with pytest.raises(OrchestrationError, match="smoke execution failed"):
+E       AssertionError: Regex pattern did not match.
+E         Expected regex: 'smoke execution failed'
+E         Actual message: 'materialized six-block order invalid'
+
+paper-eval-v3/tests/test_membind_v31_orchestration.py:194: AssertionError</failure></testcase><testcase classname="tests.test_membind_v31_orchestration" name="test_block_failure_preserves_completed_prefix_and_forbids_in_place_retry" time="0.001"><failure message="AssertionError: Regex pattern did not match.&#10;  Expected regex: 'block execution failed'&#10;  Actual message: 'materialized six-block order invalid'">tmp_path = PosixPath('/tmp/pytest-of-ly/pytest-824/test_block_failure_preserves_c0')
+monkeypatch = &lt;_pytest.monkeypatch.MonkeyPatch object at 0x7bd192b6d8e0&gt;
+
+    def test_block_failure_preserves_completed_prefix_and_forbids_in_place_retry(
+        tmp_path: Path, monkeypatch: pytest.MonkeyPatch
+    ) -&gt; None:
+        control = _control()
+        monkeypatch.setattr(
+            "paper_eval.membind_v31.orchestration.inspect_materialized_control",
+            lambda _root: control,
+        )
+        calls: list[int] = []
+    
+        def block(plan, index, _root):
+            calls.append(index)
+            if index == 2:
+                raise ValueError("provider disconnected with private response")
+            return _block_result(plan, index)
+    
+        hooks = OrchestrationHooks("e" * 64, lambda spec, _root: _smoke_result(spec), block)
+        root = tmp_path / "attempt"
+&gt;       with pytest.raises(OrchestrationError, match="block execution failed"):
+E       AssertionError: Regex pattern did not match.
+E         Expected regex: 'block execution failed'
+E         Actual message: 'materialized six-block order invalid'
+
+paper-eval-v3/tests/test_membind_v31_orchestration.py:229: AssertionError</failure></testcase><testcase classname="tests.test_membind_v31_orchestration" name="test_interruption_between_blocks_resumes_only_from_sealed_completed_prefix" time="0.001"><failure message="paper_eval.membind_v31.orchestration.OrchestrationError: materialized six-block order invalid">tmp_path = PosixPath('/tmp/pytest-of-ly/pytest-824/test_interruption_between_bloc0')
+monkeypatch = &lt;_pytest.monkeypatch.MonkeyPatch object at 0x7bd192b6e540&gt;
+
+    def test_interruption_between_blocks_resumes_only_from_sealed_completed_prefix(
+        tmp_path: Path, monkeypatch: pytest.MonkeyPatch
+    ) -&gt; None:
+        control = _control()
+        monkeypatch.setattr(
+            "paper_eval.membind_v31.orchestration.inspect_materialized_control",
+            lambda _root: control,
+        )
+        interrupted = True
+        calls: list[int] = []
+    
+        def block(plan, index, _root):
+            nonlocal interrupted
+            calls.append(index)
+            if index == 2 and interrupted:
+                interrupted = False
+                raise KeyboardInterrupt
+            return _block_result(plan, index)
+    
+        hooks = OrchestrationHooks("e" * 64, lambda spec, _root: _smoke_result(spec), block)
+        root = tmp_path / "attempt"
+        with pytest.raises(KeyboardInterrupt):
+&gt;           run_v31_orchestration(
+                control_root=tmp_path / "control",
+                attempt_root=root,
+                attempt_id="v31-attempt-dev-004",
+                hooks=hooks,
+            )
+
+paper-eval-v3/tests/test_membind_v31_orchestration.py:274: 
+_ _ _ _ _ _ _ _ _ _ _ _ _ _ _ _ _ _ _ _ _ _ _ _ _ _ _ _ _ _ _ _ _ _ _ _ _ _ _ _ 
+paper-eval-v3/src/paper_eval/membind_v31/orchestration.py:380: in run_v31_orchestration
+    acceptance, plan, commit = _control(control_root)
+                               ^^^^^^^^^^^^^^^^^^^^^^
+_ _ _ _ _ _ _ _ _ _ _ _ _ _ _ _ _ _ _ _ _ _ _ _ _ _ _ _ _ _ _ _ _ _ _ _ _ _ _ _ 
+
+root = PosixPath('/tmp/pytest-of-ly/pytest-824/test_interruption_between_bloc0/control')
+
+    def _control(root: Path) -&gt; tuple[dict[str, Any], dict[str, Any], dict[str, Any]]:
+        try:
+            control = inspect_materialized_control(Path(root))
+        except ValueError as error:
+            raise _fail(f"materialized control invalid: {error}") from None
+        if not isinstance(control, Mapping):
+            raise _fail("materialized control invalid")
+        acceptance = _sealed(control.get("acceptance"), label="baseline acceptance")
+        plan = _sealed(control.get("method_plan"), label="method plan")
+        commit = _sealed(control.get("commit"), label="control commit")
+        blocks = plan.get("blocks")
+        if (
+            acceptance.get("status") != "PASS"
+            or commit.get("status") != "COMMITTED"
+            or commit.get("method_plan_payload_sha256") != plan["payload_sha256"]
+            or commit.get("baseline_acceptance_payload_sha256")
+            != acceptance["payload_sha256"]
+            or not isinstance(blocks, list)
+            or len(blocks) != 6
+            or [block.get("block_index") for block in blocks] != list(range(6))
+            or plan.get("global_llm_admission_k") != 2
+        ):
+            raise _fail("materialized control binding invalid")
+        expected = (
+            ("MemBind-Barrier", "07741c45"),
+            ("MemBind-FIFO", "07741c45"),
+            ("MemBind", "07741c45"),
+            ("MemBind", "b6019101"),
+            ("MemBind", "6071bd76"),
+            ("MemBind", "a2f3aa27"),
+        )
+        if [(block.get("method"), block.get("history_id")) for block in blocks] != list(expected):
+&gt;           raise _fail("materialized six-block order invalid")
+E           paper_eval.membind_v31.orchestration.OrchestrationError: materialized six-block order invalid
+
+paper-eval-v3/src/paper_eval/membind_v31/orchestration.py:143: OrchestrationError</failure></testcase><testcase classname="tests.test_membind_v31_orchestration" name="test_live_plan_only_stops_after_four_main_blocks_then_full_control_resumes_ablation" time="0.001"><failure message="AttributeError: 'module' object at paper_eval.membind_v31.orchestration has no attribute 'verify_membind_v31_method_plan'">obj = &lt;module 'paper_eval.membind_v31.orchestration' from '/data/predator/ly/MemBind/paper-eval-v3/src/paper_eval/membind_v31/orchestration.py'&gt;
+name = 'verify_membind_v31_method_plan'
+ann = 'paper_eval.membind_v31.orchestration'
+
+    def annotated_getattr(obj: object, name: str, ann: str) -&gt; object:
+        try:
+&gt;           obj = getattr(obj, name)
+                  ^^^^^^^^^^^^^^^^^^
+E           AttributeError: module 'paper_eval.membind_v31.orchestration' has no attribute 'verify_membind_v31_method_plan'
+
+paper-eval-v3/.venv/lib/python3.12/site-packages/_pytest/monkeypatch.py:95: AttributeError
+
+The above exception was the direct cause of the following exception:
+
+tmp_path = PosixPath('/tmp/pytest-of-ly/pytest-824/test_live_plan_only_stops_afte0')
+monkeypatch = &lt;_pytest.monkeypatch.MonkeyPatch object at 0x7bd192b6ddf0&gt;
+
+    def test_live_plan_only_stops_after_four_main_blocks_then_full_control_resumes_ablation(
+        tmp_path: Path, monkeypatch: pytest.MonkeyPatch
+    ) -&gt; None:
+        control = _control()
+        control_root = tmp_path / "control"
+        control_root.mkdir()
+        (control_root / "V31_METHOD_PLAN.json").write_text(
+            json.dumps(control["method_plan"]), encoding="utf-8"
+        )
+&gt;       monkeypatch.setattr(
+            "paper_eval.membind_v31.orchestration.verify_membind_v31_method_plan",
+            lambda value: value,
+        )
+
+paper-eval-v3/tests/test_membind_v31_orchestration.py:303: 
+_ _ _ _ _ _ _ _ _ _ _ _ _ _ _ _ _ _ _ _ _ _ _ _ _ _ _ _ _ _ _ _ _ _ _ _ _ _ _ _ 
+paper-eval-v3/.venv/lib/python3.12/site-packages/_pytest/monkeypatch.py:109: in derive_importpath
+    annotated_getattr(target, attr, ann=module)
+_ _ _ _ _ _ _ _ _ _ _ _ _ _ _ _ _ _ _ _ _ _ _ _ _ _ _ _ _ _ _ _ _ _ _ _ _ _ _ _ 
+
+obj = &lt;module 'paper_eval.membind_v31.orchestration' from '/data/predator/ly/MemBind/paper-eval-v3/src/paper_eval/membind_v31/orchestration.py'&gt;
+name = 'verify_membind_v31_method_plan'
+ann = 'paper_eval.membind_v31.orchestration'
+
+    def annotated_getattr(obj: object, name: str, ann: str) -&gt; object:
+        try:
+            obj = getattr(obj, name)
+        except AttributeError as e:
+&gt;           raise AttributeError(
+                f"{type(obj).__name__!r} object at {ann} has no attribute {name!r}"
+            ) from e
+E           AttributeError: 'module' object at paper_eval.membind_v31.orchestration has no attribute 'verify_membind_v31_method_plan'
+
+paper-eval-v3/.venv/lib/python3.12/site-packages/_pytest/monkeypatch.py:97: AttributeError</failure></testcase><testcase classname="tests.test_membind_v31_orchestration_cli" name="test_cli_requires_explicit_executor_factory_and_forwards_only_paths" time="0.001"><failure message="SystemExit: 2">tmp_path = PosixPath('/tmp/pytest-of-ly/pytest-824/test_cli_requires_explicit_exe0')
+monkeypatch = &lt;_pytest.monkeypatch.MonkeyPatch object at 0x7bd192b6e1b0&gt;
+
+    def test_cli_requires_explicit_executor_factory_and_forwards_only_paths(tmp_path, monkeypatch) -&gt; None:
+        module = _module()
+        hooks = object()
+        observed = {}
+    
+        def fake_load(value):
+            observed["entrypoint"] = value
+            return hooks
+    
+        def fake_run(**kwargs):
+            observed["run"] = kwargs
+            return {
+                "status": "PASS",
+                "attempt_id": "v31-attempt-dev-001",
+                "payload_sha256": "a" * 64,
+            }
+    
+        monkeypatch.setattr(module, "load_executor_hooks", fake_load)
+        monkeypatch.setattr(
+            module,
+            "run_v31_orchestration",
+            fake_run,
+        )
+    
+&gt;       assert module.main(
+            [
+                "--control-root",
+                str(tmp_path / "control"),
+                "--attempt-root",
+                str(tmp_path / "attempt"),
+                "--attempt-id",
+                "v31-attempt-dev-001",
+                "--executor-factory",
+                "fake.module:build_hooks",
+                "--formal-block-limit",
+                "4",
+            ]
+        ) == 0
+
+paper-eval-v3/tests/test_membind_v31_orchestration_cli.py:44: 
+_ _ _ _ _ _ _ _ _ _ _ _ _ _ _ _ _ _ _ _ _ _ _ _ _ _ _ _ _ _ _ _ _ _ _ _ _ _ _ _ 
+paper-eval-v3/scripts/run_membind_v31_orchestration.py:33: in main
+    args = parser.parse_args(argv)
+           ^^^^^^^^^^^^^^^^^^^^^^^
+/usr/lib/python3.12/argparse.py:1911: in parse_args
+    self.error(msg % ' '.join(argv))
+/usr/lib/python3.12/argparse.py:2677: in error
+    self.exit(2, _('%(prog)s: error: %(message)s\n') % args)
+_ _ _ _ _ _ _ _ _ _ _ _ _ _ _ _ _ _ _ _ _ _ _ _ _ _ _ _ _ _ _ _ _ _ _ _ _ _ _ _ 
+
+self = ArgumentParser(prog='pytest', usage=None, description='Run v3.1 smoke/six-block orchestration with an explicit executor factory.', formatter_class=&lt;class 'argparse.HelpFormatter'&gt;, conflict_handler='error', add_help=True)
+status = 2
+message = 'pytest: error: unrecognized arguments: --formal-block-limit 4\n'
+
+    def exit(self, status=0, message=None):
+        if message:
+            self._print_message(message, _sys.stderr)
+&gt;       _sys.exit(status)
+E       SystemExit: 2
+
+/usr/lib/python3.12/argparse.py:2664: SystemExit</failure></testcase></testsuite></testsuites>

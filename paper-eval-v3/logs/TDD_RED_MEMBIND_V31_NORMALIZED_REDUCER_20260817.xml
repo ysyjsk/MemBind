@@ -1,0 +1,193 @@
+<?xml version="1.0" encoding="utf-8"?><testsuites name="pytest tests"><testsuite name="pytest" errors="0" failures="5" skipped="0" tests="5" time="0.128" timestamp="2026-08-17T23:53:49.934886+08:00" hostname="aces-System-Product-Name"><testcase classname="tests.test_membind_v31_reducer" name="test_reducer_builds_exact_main_and_mechanism_tables_from_sealed_inputs" time="0.004"><failure message="TypeError: reduce_development_results() got an unexpected keyword argument 'workload_complexity'">def test_reducer_builds_exact_main_and_mechanism_tables_from_sealed_inputs() -&gt; None:
+&gt;       reduced = _reduce(_fixture())
+                  ^^^^^^^^^^^^^^^^^^^
+
+paper-eval-v3/tests/test_membind_v31_reducer.py:386: 
+_ _ _ _ _ _ _ _ _ _ _ _ _ _ _ _ _ _ _ _ _ _ _ _ _ _ _ _ _ _ _ _ _ _ _ _ _ _ _ _ 
+
+fixture = {'baseline_plan': {'schema_version': 'membind.paper-eval-v3.apc-aligned-baseline-plan.v1', 'run_id': 'apc-baseline-dev...run_id': 'membind-v31-dev-20260817-001', 'data_role': 'DEVELOPMENT_EXPOSED', 'heldout_data_accessed': False, ...}, ...}
+
+    def _reduce(fixture: dict[str, object]) -&gt; dict[str, object]:
+&gt;       return reduce_development_results(
+            table_run_id="main-table-v31-dev-001",
+            baseline_acceptance=fixture["baseline_acceptance"],
+            baseline_results=fixture["baseline_results"],
+            method_plan=fixture["method_plan"],
+            method_artifacts=fixture["method_artifacts"],
+            quality_report=fixture["quality_report"],
+            quality_rows=fixture["quality_rows"],
+            workload_complexity=fixture["workload_complexity"],
+        )
+E       TypeError: reduce_development_results() got an unexpected keyword argument 'workload_complexity'
+
+paper-eval-v3/tests/test_membind_v31_reducer.py:373: TypeError</failure></testcase><testcase classname="tests.test_membind_v31_reducer" name="test_reducer_fails_closed_on_hash_incomplete_or_quality_binding_drift" time="0.004"><failure message="TypeError: reduce_development_results() got an unexpected keyword argument 'workload_complexity'">def test_reducer_fails_closed_on_hash_incomplete_or_quality_binding_drift() -&gt; None:
+        fixture = _fixture()
+        fixture["baseline_acceptance"]["payload_sha256"] = "f" * 64
+        with pytest.raises(DevelopmentReducerError, match="baseline acceptance hash mismatch"):
+&gt;           _reduce(fixture)
+
+paper-eval-v3/tests/test_membind_v31_reducer.py:448: 
+_ _ _ _ _ _ _ _ _ _ _ _ _ _ _ _ _ _ _ _ _ _ _ _ _ _ _ _ _ _ _ _ _ _ _ _ _ _ _ _ 
+
+fixture = {'baseline_plan': {'schema_version': 'membind.paper-eval-v3.apc-aligned-baseline-plan.v1', 'run_id': 'apc-baseline-dev...run_id': 'membind-v31-dev-20260817-001', 'data_role': 'DEVELOPMENT_EXPOSED', 'heldout_data_accessed': False, ...}, ...}
+
+    def _reduce(fixture: dict[str, object]) -&gt; dict[str, object]:
+&gt;       return reduce_development_results(
+            table_run_id="main-table-v31-dev-001",
+            baseline_acceptance=fixture["baseline_acceptance"],
+            baseline_results=fixture["baseline_results"],
+            method_plan=fixture["method_plan"],
+            method_artifacts=fixture["method_artifacts"],
+            quality_report=fixture["quality_report"],
+            quality_rows=fixture["quality_rows"],
+            workload_complexity=fixture["workload_complexity"],
+        )
+E       TypeError: reduce_development_results() got an unexpected keyword argument 'workload_complexity'
+
+paper-eval-v3/tests/test_membind_v31_reducer.py:373: TypeError</failure></testcase><testcase classname="tests.test_membind_v31_reducer" name="test_reducer_fails_closed_on_semantic_or_workload_binding_drift" time="0.004"><failure message="TypeError: reduce_development_results() got an unexpected keyword argument 'workload_complexity'">def test_reducer_fails_closed_on_semantic_or_workload_binding_drift() -&gt; None:
+        fixture = _fixture()
+        fixture["baseline_acceptance"]["semantic_verdicts"]["P(C=2)-aligned"] = {
+            "direct_violations": 0,
+            "semantic_status": "SAFE",
+        }
+        fixture["baseline_acceptance"]["payload_sha256"] = payload_sha256(
+            {
+                key: value
+                for key, value in fixture["baseline_acceptance"].items()
+                if key != "payload_sha256"
+            }
+        )
+        fixture["method_plan"] = build_membind_v31_method_plan(
+            run_id="membind-v31-dev-20260817-001",
+            verified_baseline_plan=fixture["baseline_plan"],
+            verified_baseline_acceptance=fixture["baseline_acceptance"],
+            methodology_sha256="3" * 64,
+            workplan_sha256="4" * 64,
+        )
+        with pytest.raises((DevelopmentReducerError, ValueError)):
+&gt;           _reduce(fixture)
+
+paper-eval-v3/tests/test_membind_v31_reducer.py:500: 
+_ _ _ _ _ _ _ _ _ _ _ _ _ _ _ _ _ _ _ _ _ _ _ _ _ _ _ _ _ _ _ _ _ _ _ _ _ _ _ _ 
+
+fixture = {'baseline_plan': {'schema_version': 'membind.paper-eval-v3.apc-aligned-baseline-plan.v1', 'run_id': 'apc-baseline-dev...run_id': 'membind-v31-dev-20260817-001', 'data_role': 'DEVELOPMENT_EXPOSED', 'heldout_data_accessed': False, ...}, ...}
+
+    def _reduce(fixture: dict[str, object]) -&gt; dict[str, object]:
+&gt;       return reduce_development_results(
+            table_run_id="main-table-v31-dev-001",
+            baseline_acceptance=fixture["baseline_acceptance"],
+            baseline_results=fixture["baseline_results"],
+            method_plan=fixture["method_plan"],
+            method_artifacts=fixture["method_artifacts"],
+            quality_report=fixture["quality_report"],
+            quality_rows=fixture["quality_rows"],
+            workload_complexity=fixture["workload_complexity"],
+        )
+E       TypeError: reduce_development_results() got an unexpected keyword argument 'workload_complexity'
+
+paper-eval-v3/tests/test_membind_v31_reducer.py:373: TypeError</failure></testcase><testcase classname="tests.test_membind_v31_reducer" name="test_writer_creates_only_the_frozen_output_inventory" time="0.004"><failure message="TypeError: reduce_development_results() got an unexpected keyword argument 'workload_complexity'">tmp_path = PosixPath('/tmp/pytest-of-ly/pytest-814/test_writer_creates_only_the_f0')
+
+    def test_writer_creates_only_the_frozen_output_inventory(tmp_path: Path) -&gt; None:
+        output = tmp_path / "main-table-v31-dev-001"
+&gt;       reduced = _reduce(_fixture())
+                  ^^^^^^^^^^^^^^^^^^^
+
+paper-eval-v3/tests/test_membind_v31_reducer.py:519: 
+_ _ _ _ _ _ _ _ _ _ _ _ _ _ _ _ _ _ _ _ _ _ _ _ _ _ _ _ _ _ _ _ _ _ _ _ _ _ _ _ 
+
+fixture = {'baseline_plan': {'schema_version': 'membind.paper-eval-v3.apc-aligned-baseline-plan.v1', 'run_id': 'apc-baseline-dev...run_id': 'membind-v31-dev-20260817-001', 'data_role': 'DEVELOPMENT_EXPOSED', 'heldout_data_accessed': False, ...}, ...}
+
+    def _reduce(fixture: dict[str, object]) -&gt; dict[str, object]:
+&gt;       return reduce_development_results(
+            table_run_id="main-table-v31-dev-001",
+            baseline_acceptance=fixture["baseline_acceptance"],
+            baseline_results=fixture["baseline_results"],
+            method_plan=fixture["method_plan"],
+            method_artifacts=fixture["method_artifacts"],
+            quality_report=fixture["quality_report"],
+            quality_rows=fixture["quality_rows"],
+            workload_complexity=fixture["workload_complexity"],
+        )
+E       TypeError: reduce_development_results() got an unexpected keyword argument 'workload_complexity'
+
+paper-eval-v3/tests/test_membind_v31_reducer.py:373: TypeError</failure></testcase><testcase classname="tests.test_membind_v31_reducer_cli" name="test_cli_wires_only_sealed_input_paths_to_reducer_and_writer" time="0.001"><failure message="SystemExit: 2">tmp_path = PosixPath('/tmp/pytest-of-ly/pytest-814/test_cli_wires_only_sealed_inp0')
+monkeypatch = &lt;_pytest.monkeypatch.MonkeyPatch object at 0x79b5b967cbf0&gt;
+
+    def test_cli_wires_only_sealed_input_paths_to_reducer_and_writer(tmp_path, monkeypatch) -&gt; None:
+        module = _module()
+        loaded = {
+            "baseline_acceptance": {},
+            "baseline_results": [],
+            "method_plan": {},
+            "method_artifacts": [],
+            "quality_report": {},
+            "quality_rows": [],
+            "workload_complexity": {},
+        }
+        table = {
+            "status": "PASS",
+            "table_run_id": "main-table-v31-dev-001",
+            "payload_sha256": "a" * 64,
+        }
+        outputs = {"DEVELOPMENT_MAIN_TABLE.json": table}
+        calls = {}
+    
+        def fake_load(**kwargs):
+            calls["load"] = kwargs
+            return loaded
+    
+        def fake_reduce(**kwargs):
+            calls["reduce"] = kwargs
+            return outputs
+    
+        def fake_write(root, value):
+            calls["write"] = (root, value)
+    
+        monkeypatch.setattr(module, "load_development_inputs", fake_load)
+        monkeypatch.setattr(module, "reduce_development_results", fake_reduce)
+        monkeypatch.setattr(module, "write_development_outputs", fake_write)
+        output = tmp_path / "output"
+    
+&gt;       assert module.main(
+            [
+                "--table-run-id",
+                "main-table-v31-dev-001",
+                "--baseline-acceptance",
+                str(tmp_path / "acceptance.json"),
+                "--baseline-run-root",
+                str(tmp_path / "baseline"),
+                "--method-plan",
+                str(tmp_path / "PLAN.json"),
+                "--method-run-root",
+                str(tmp_path / "method"),
+                "--quality-root",
+                str(tmp_path / "quality"),
+                "--workload-complexity",
+                str(tmp_path / "V31_WORKLOAD_COMPLEXITY.json"),
+                "--output-root",
+                str(output),
+            ]
+        ) == 0
+
+paper-eval-v3/tests/test_membind_v31_reducer_cli.py:55: 
+_ _ _ _ _ _ _ _ _ _ _ _ _ _ _ _ _ _ _ _ _ _ _ _ _ _ _ _ _ _ _ _ _ _ _ _ _ _ _ _ 
+paper-eval-v3/scripts/reduce_membind_v31_development.py:33: in main
+    args = parser.parse_args(argv)
+           ^^^^^^^^^^^^^^^^^^^^^^^
+/usr/lib/python3.12/argparse.py:1911: in parse_args
+    self.error(msg % ' '.join(argv))
+/usr/lib/python3.12/argparse.py:2677: in error
+    self.exit(2, _('%(prog)s: error: %(message)s\n') % args)
+_ _ _ _ _ _ _ _ _ _ _ _ _ _ _ _ _ _ _ _ _ _ _ _ _ _ _ _ _ _ _ _ _ _ _ _ _ _ _ _ 
+
+self = ArgumentParser(prog='pytest', usage=None, description='Reduce sealed v3.1 development artifacts without any live service access.', formatter_class=&lt;class 'argparse.HelpFormatter'&gt;, conflict_handler='error', add_help=True)
+status = 2
+message = 'pytest: error: unrecognized arguments: --workload-complexity /tmp/pytest-of-ly/pytest-814/test_cli_wires_only_sealed_inp0/V31_WORKLOAD_COMPLEXITY.json\n'
+
+    def exit(self, status=0, message=None):
+        if message:
+            self._print_message(message, _sys.stderr)
+&gt;       _sys.exit(status)
+E       SystemExit: 2
+
+/usr/lib/python3.12/argparse.py:2664: SystemExit</failure></testcase></testsuite></testsuites>

@@ -1,0 +1,31 @@
+<?xml version="1.0" encoding="utf-8"?><testsuites name="pytest tests"><testsuite name="pytest" errors="0" failures="2" skipped="0" tests="3" time="0.138" timestamp="2026-08-17T23:38:47.744612+08:00" hostname="aces-System-Product-Name"><testcase classname="tests.test_membind_v31_live_block" name="test_live_block_binds_plan_runtime_source_and_durable_publication" time="0.083" /><testcase classname="tests.test_membind_v31_live_block" name="test_live_block_rejects_runtime_knob_override_before_io[3-2]" time="0.002"><failure message="AssertionError: Regex pattern did not match.&#10;  Expected regex: 'runtime_knob_plan_mismatch'&#10;  Actual message: 'episode_count_mismatch'">tmp_path = PosixPath('/tmp/pytest-of-ly/pytest-805/test_live_block_rejects_runtim0')
+compile_workers = 3, lookahead = 2
+
+    @pytest.mark.parametrize(
+        ("compile_workers", "lookahead"),
+        ((3, 2), (2, 3)),
+    )
+    def test_live_block_rejects_runtime_knob_override_before_io(
+        tmp_path: Path, compile_workers: int, lookahead: int
+    ) -&gt; None:
+&gt;       with pytest.raises(MemBindV31LiveBlockError, match="runtime_knob_plan_mismatch"):
+E       AssertionError: Regex pattern did not match.
+E         Expected regex: 'runtime_knob_plan_mismatch'
+E         Actual message: 'episode_count_mismatch'
+
+tests/test_membind_v31_live_block.py:214: AssertionError</failure></testcase><testcase classname="tests.test_membind_v31_live_block" name="test_live_block_rejects_runtime_knob_override_before_io[2-3]" time="0.002"><failure message="AssertionError: Regex pattern did not match.&#10;  Expected regex: 'runtime_knob_plan_mismatch'&#10;  Actual message: 'episode_count_mismatch'">tmp_path = PosixPath('/tmp/pytest-of-ly/pytest-805/test_live_block_rejects_runtim1')
+compile_workers = 2, lookahead = 3
+
+    @pytest.mark.parametrize(
+        ("compile_workers", "lookahead"),
+        ((3, 2), (2, 3)),
+    )
+    def test_live_block_rejects_runtime_knob_override_before_io(
+        tmp_path: Path, compile_workers: int, lookahead: int
+    ) -&gt; None:
+&gt;       with pytest.raises(MemBindV31LiveBlockError, match="runtime_knob_plan_mismatch"):
+E       AssertionError: Regex pattern did not match.
+E         Expected regex: 'runtime_knob_plan_mismatch'
+E         Actual message: 'episode_count_mismatch'
+
+tests/test_membind_v31_live_block.py:214: AssertionError</failure></testcase></testsuite></testsuites>

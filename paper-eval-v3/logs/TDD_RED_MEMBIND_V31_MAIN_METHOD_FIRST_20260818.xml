@@ -1,0 +1,46 @@
+<?xml version="1.0" encoding="utf-8"?><testsuites name="pytest tests"><testsuite name="pytest" errors="0" failures="1" skipped="0" tests="1" time="0.309" timestamp="2026-08-18T00:05:25.782923+08:00" hostname="aces-System-Product-Name"><testcase classname="tests.test_membind_v31_baseline_plan" name="test_v31_plan_is_read_only_six_block_projection_with_one_representative_membind" time="0.257"><failure message="AssertionError: assert [('MemBind-Ba..., 'a2f3aa27')] == [('MemBind', ..., '07741c45')]&#10;  &#10;  At index 0 diff: ('MemBind-Barrier', '07741c45') != ('MemBind', '07741c45')&#10;  Use -v to get more diff">tmp_path = PosixPath('/tmp/pytest-of-ly/pytest-823/test_v31_plan_is_read_only_six0')
+
+    def test_v31_plan_is_read_only_six_block_projection_with_one_representative_membind(
+        tmp_path: Path,
+    ) -&gt; None:
+        run_root, quality_root, baseline_plan, _report = _complete_fixture(tmp_path)
+        accepted = verify_apc_baseline_acceptance(run_root, quality_root=quality_root)
+    
+        plan = build_membind_v31_method_plan(
+            run_id="membind-v31-dev-20260817-001",
+            verified_baseline_plan=baseline_plan,
+            verified_baseline_acceptance=accepted,
+            methodology_sha256="a" * 64,
+            workplan_sha256="b" * 64,
+        )
+    
+        assert verify_membind_v31_method_plan(plan) == plan
+        # Durable JSON uses sorted keys, which must not make mapping insertion
+        # order part of the scientific identity.
+        persisted = json.loads(json.dumps(plan, sort_keys=True))
+        assert verify_membind_v31_method_plan(persisted) == persisted
+        assert plan["methods"] == list(MEMBIND_V31_METHODS)
+        assert plan["compile_workers"] == COMPILE_WORKERS == 2
+        assert plan["lookahead"] == LOOKAHEAD == 2
+        assert plan["bind_workers"] == 1
+        assert plan["global_llm_admission_k"] == 2
+        assert plan["prefix_match_unit"] == PREFIX_MATCH_UNIT == 16
+        assert plan["decode_context_parallel_size"] == 1
+        assert plan["transport_admission_boundary"] == "openai_chat_completions_create_attempt"
+        assert plan["cache_affinity_order"] == list(CACHE_AFFINITY_ORDER)
+        assert plan["representative_history_id"] == "07741c45"
+        assert len(plan["blocks"]) == 6
+&gt;       assert [(row["method"], row["history_id"]) for row in plan["blocks"]] == [
+            ("MemBind", "07741c45"),
+            ("MemBind", "b6019101"),
+            ("MemBind", "6071bd76"),
+            ("MemBind", "a2f3aa27"),
+            ("MemBind-Barrier", "07741c45"),
+            ("MemBind-FIFO", "07741c45"),
+        ]
+E       AssertionError: assert [('MemBind-Ba..., 'a2f3aa27')] == [('MemBind', ..., '07741c45')]
+E         
+E         At index 0 diff: ('MemBind-Barrier', '07741c45') != ('MemBind', '07741c45')
+E         Use -v to get more diff
+
+paper-eval-v3/tests/test_membind_v31_baseline_plan.py:452: AssertionError</failure></testcase></testsuite></testsuites>

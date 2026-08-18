@@ -1,0 +1,28 @@
+<?xml version="1.0" encoding="utf-8"?><testsuites name="pytest tests"><testsuite name="pytest" errors="0" failures="2" skipped="0" tests="9" time="0.039" timestamp="2026-08-18T10:34:47.435977+08:00" hostname="aces-System-Product-Name"><testcase classname="tests.test_membind_v31_workplan" name="test_historical_parent_remains_byte_identical" time="0.000" /><testcase classname="tests.test_membind_v31_workplan" name="test_v31_authorities_are_hash_bound" time="0.000"><failure message="AssertionError: assert '286289ef2630...b154dfbd7c19a' == '766f46883eef...00d7b74bc41e7'&#10;  &#10;  - 766f46883eefb9503e734c60a998df153bc615ad0e846534e7c00d7b74bc41e7&#10;  + 286289ef26302fc65e73832117286627bb3c1ff2e313ab5c91db154dfbd7c19a">def test_v31_authorities_are_hash_bound() -&gt; None:
+&gt;       assert _sha256(NEW) == NEW_SHA256
+E       AssertionError: assert '286289ef2630...b154dfbd7c19a' == '766f46883eef...00d7b74bc41e7'
+E         
+E         - 766f46883eefb9503e734c60a998df153bc615ad0e846534e7c00d7b74bc41e7
+E         + 286289ef26302fc65e73832117286627bb3c1ff2e313ab5c91db154dfbd7c19a
+
+paper-eval-v3/tests/test_membind_v31_workplan.py:35: AssertionError</failure></testcase><testcase classname="tests.test_membind_v31_workplan" name="test_v31_workplan_contains_the_frozen_method_and_reuse_boundaries" time="0.000" /><testcase classname="tests.test_membind_v31_workplan" name="test_v31_workplan_keeps_cache_claim_secondary_and_fail_closed" time="0.000" /><testcase classname="tests.test_membind_v31_workplan" name="test_v31_workplan_freezes_exact_method_backend_and_transport_contract" time="0.000" /><testcase classname="tests.test_membind_v31_workplan" name="test_v31_workplan_freezes_comparable_cache_isolation_and_artifact_authority" time="0.000" /><testcase classname="tests.test_membind_v31_workplan" name="test_v31_workplan_separates_artifact_semantics_and_harness_durability" time="0.000" /><testcase classname="tests.test_membind_v31_workplan" name="test_v31_workplan_freezes_zero_live_cost_diagnostics_and_final_quality_gate" time="0.000" /><testcase classname="tests.test_membind_v31_workplan" name="test_v31_workplan_defines_bounded_autoresearch_probe_without_main_table_authority" time="0.000"><failure message="AssertionError: assert 'fixed 12-episode prefix' in '# MemBind Paper-Level Evaluation Workplan v3.1 ## Methodology-Aligned / Small-First / Reuse-Aware / TDD-Frozen &gt; Date...experiment if the backend-locality Claim E is retained. None of those future gates expands this development execution.'">def test_v31_workplan_defines_bounded_autoresearch_probe_without_main_table_authority() -&gt; None:
+        text = " ".join(NEW.read_text(encoding="utf-8").split())
+        required = (
+            "autoresearch development probe",
+            "fixed 12-episode prefix",
+            "results.tsv",
+            "keep / discard / crash",
+            "new namespace and cache salt for every candidate",
+            "probe artifacts are non-mergeable",
+            "C = W = K_LLM = 2 cannot be changed",
+            "no prompt, schema, source, arrival-trace or evaluator changes",
+            "maximum of three candidate iterations",
+            "zero direct violations",
+            "p95 freshness and makespan",
+            "rerun the full offline suite",
+        )
+        for phrase in required:
+&gt;           assert phrase in text
+E           AssertionError: assert 'fixed 12-episode prefix' in '# MemBind Paper-Level Evaluation Workplan v3.1 ## Methodology-Aligned / Small-First / Reuse-Aware / TDD-Frozen &gt; Date...experiment if the backend-locality Claim E is retained. None of those future gates expands this development execution.'
+
+paper-eval-v3/tests/test_membind_v31_workplan.py:165: AssertionError</failure></testcase></testsuite></testsuites>

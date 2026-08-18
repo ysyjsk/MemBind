@@ -75,10 +75,10 @@ async def observe_graph_correctness_counts(
         driver,
         """
         MATCH (episode:Episodic)
-        WHERE episode.group_id = $namespace OR episode.name IN $expected_names
+        WHERE episode.group_id = $namespace
         RETURN episode.name AS name, episode.group_id AS group_id
         """,
-        {"namespace": namespace, "expected_names": list(names)},
+        {"namespace": namespace},
     )
     expected = Counter(names)
     in_namespace = Counter(
@@ -89,11 +89,11 @@ async def observe_graph_correctness_counts(
     lost = sum(max(0, expected[name] - in_namespace[name]) for name in expected)
     duplicate = sum(max(0, in_namespace[name] - expected[name]) for name in expected)
     unexpected = sum(count for name, count in in_namespace.items() if name not in expected)
-    escape = sum(
-        1
-        for row in episode_rows
-        if row.get("name") in expected and row.get("group_id") != namespace
-    )
+    # Source names are intentionally reused across method namespaces.  A
+    # global name lookup cannot attribute another method's legal copy to this
+    # block.  Wrong routing remains observable as missing current-namespace
+    # coverage and as a failed immediate publication-visibility probe.
+    escape = sum(1 for row in episode_rows if row.get("group_id") != namespace)
     hard_rows = await _query(
         driver,
         """

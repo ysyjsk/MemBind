@@ -1,0 +1,75 @@
+{
+  "adapter_version": "membind-v31",
+  "backend_version": "graphiti-core-0.29.3",
+  "canonicalizer": {
+    "path": "membind-validation/src/canonicalize_graph.py",
+    "reuse_origin": "S4_D0",
+    "sha256": "75d31455274c5633ff1815876e843fdcec91c69af7a9d421d4729f5bfd5ef003"
+  },
+  "excluded_non_semantic_keys": [
+    "created_at",
+    "database_id",
+    "db_id",
+    "element_id",
+    "embedding",
+    "fact_embedding",
+    "id",
+    "name_embedding",
+    "updated_at",
+    "uuid"
+  ],
+  "excluded_suffix_rule": "*_uuid",
+  "execution_envelope_sha256": "70c970b4c3c28f8d5c3d8aa560352c289bc64fda3988b8857b70374d8aee1dad",
+  "graph_exporter": {
+    "path": "membind-validation/src/live_outputs.py",
+    "reuse_origin": "S4_D0",
+    "sha256": "563984ab323e7ffbe4ca8b97fc483af67b4798adf43e0f29230a958d2d54a987"
+  },
+  "included_semantic_fields": {
+    "edges": [
+      "source_entity_key",
+      "target_entity_key",
+      "relation_type",
+      "fact",
+      "valid_at",
+      "invalid_at",
+      "expired_at",
+      "attributes",
+      "source_episode_sequence"
+    ],
+    "entities": [
+      "group_id",
+      "name",
+      "labels",
+      "summary",
+      "attributes"
+    ],
+    "episodes": [
+      "source_sequence",
+      "source_hash",
+      "session_id"
+    ]
+  },
+  "methodology_sha256": "2af8147a839972e120a0123d1d0fffdd3e10653fa64e338c1c7a7fa32f506280",
+  "namespace_normalizer": {
+    "path": "paper-eval-v3/src/paper_eval/s4_d0_runner.py",
+    "placeholder": "__S4_ISOLATED_NAMESPACE__",
+    "reuse_origin": "S4_D0",
+    "rule": "ALPHA_RENAME_ENTITY_GROUP_ID_ONLY",
+    "sha256": "3997cfa3840975563670ecc5d1f12df878ee206c3e9776cc929da6b6ad80d89d"
+  },
+  "normalization": {
+    "attribute_keys_sorted": true,
+    "entity_edge_episode_lists_stably_sorted": true,
+    "entity_names_casefolded": true,
+    "whitespace_collapsed": true
+  },
+  "payload_sha256": "3249cf25a7a1b8e9bf9c123c14be9bf286270272d8fd1b2a4633361a26a8327d",
+  "post_result_projection_changes_allowed": false,
+  "projection_version": "graphiti-v0293-s4-d0-canonical-export.v1",
+  "reuse_audit_sha256": "726c02005f8e2162a3b2aa1850a953fbd2c0630e65c3f6351226364107ae66cd",
+  "schema_version": "membind.paper-eval-v3.membind-v31-canonical-projection-freeze.v1",
+  "state_cut_artifact_sha256": "5745b51a41eff0e5f8d04eaf524592260590ab9e5aa647369788ae1b54894e71",
+  "status": "PASS",
+  "workplan_sha256": "267bdc524e5388358051ea5124b8b1c24406ec92384919e23eb409220793e5c8"
+}

@@ -1,0 +1,51 @@
+<?xml version="1.0" encoding="utf-8"?><testsuites name="pytest tests"><testsuite name="pytest" errors="0" failures="1" skipped="0" tests="5" time="0.365" timestamp="2026-08-18T10:27:00.155160+08:00" hostname="aces-System-Product-Name"><testcase classname="tests.test_membind_v31_production_executor" name="test_development_loader_reads_only_exact_sealed_four_history_inventory" time="0.002" /><testcase classname="tests.test_membind_v31_production_executor" name="test_source_bound_smoke_plan_binds_exact_namespace_and_three_source_prefix" time="0.000" /><testcase classname="tests.test_membind_v31_production_executor" name="test_source_bound_smoke_accepts_the_frozen_orchestrator_block_zero" time="0.000" /><testcase classname="tests.test_membind_v31_production_executor" name="test_real_smoke_adapter_uses_source_bound_plan_and_persists_three_artifacts" time="0.298" /><testcase classname="tests.test_membind_v31_production_executor" name="test_production_hooks_load_env_certification_and_delegate_formal_block" time="0.001"><failure message="AssertionError: assert (_Episode(source_sequence=0, source_hash='0000000000000000000000000000000000000000000000000000000000000001', reference...00000000000000000000004', reference_time='2026-01-01T00:00:00+00:00', body='private source body', group_id='original')) is (_Episode(source_sequence=0, source_hash='00000000000000000000000000000000000000000000000000000000000000c9', reference...000000000000000000000cc', reference_time='2026-01-01T00:00:00+00:00', body='private source body', group_id='original'))">tmp_path = PosixPath('/tmp/pytest-of-ly/pytest-835/test_production_hooks_load_env0')
+
+    def test_production_hooks_load_env_certification_and_delegate_formal_block(
+        tmp_path: Path,
+    ) -&gt; None:
+        plan = _plan()
+        episodes = {
+            history: tuple(
+                _Episode(index, plan["history_source_sha256s"][history][index])
+                for index in range(4)
+            )
+            for history in HISTORIES
+        }
+        certification = _certification()
+        calls: dict[str, object] = {}
+        paths = ProductionExecutorPaths.from_repository(tmp_path)
+    
+        async def smoke_executor(**kwargs):
+            calls["smoke"] = kwargs
+            return {"status": "PASS"}
+    
+        async def block_executor(**kwargs):
+            calls["block"] = kwargs
+            return {"status": "PASS", "block_index": kwargs["block_index"]}
+    
+        def load_env(path):
+            calls["env_path"] = path
+            return {"ENV": "value"}
+    
+        def load_certification(freeze_paths):
+            calls["freeze_paths"] = freeze_paths
+            return certification
+    
+        dependencies = ProductionExecutorDependencies(
+            load_control_plan=lambda _path: plan,
+            load_env=load_env,
+            load_certification=load_certification,
+            load_episodes=lambda _path, _plan: episodes,
+            execute_smoke=smoke_executor,
+            execute_block=block_executor,
+        )
+        hooks = build_production_executor_hooks(paths=paths, dependencies=dependencies)
+    
+        hooks.run_smoke(_spec(plan), tmp_path / "smoke")
+        hooks.run_block(plan, 4, tmp_path / "block-04")
+    
+        assert calls["env_path"] == tmp_path / "membind-validation/.env"
+&gt;       assert calls["block"]["episodes"] is episodes[HISTORIES[2]]
+E       AssertionError: assert (_Episode(source_sequence=0, source_hash='0000000000000000000000000000000000000000000000000000000000000001', reference...00000000000000000000004', reference_time='2026-01-01T00:00:00+00:00', body='private source body', group_id='original')) is (_Episode(source_sequence=0, source_hash='00000000000000000000000000000000000000000000000000000000000000c9', reference...000000000000000000000cc', reference_time='2026-01-01T00:00:00+00:00', body='private source body', group_id='original'))
+
+paper-eval-v3/tests/test_membind_v31_production_executor.py:391: AssertionError</failure></testcase></testsuite></testsuites>

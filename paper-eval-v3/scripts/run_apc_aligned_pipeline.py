@@ -4,6 +4,7 @@
 from __future__ import annotations
 
 import argparse
+import hashlib
 import json
 import subprocess
 import sys
@@ -21,6 +22,47 @@ def _read(path: Path) -> dict[str, object]:
     if not isinstance(value, dict):
         raise ValueError(f"artifact invalid: {path}")
     return value
+
+
+def _payload_sha256(value: object) -> str:
+    encoded = json.dumps(
+        value, ensure_ascii=False, sort_keys=True, separators=(",", ":")
+    ).encode("utf-8")
+    return hashlib.sha256(encoded).hexdigest()
+
+
+def _smoke_correctness(
+    *, root: Path, run_id: str, block_index: int, block: dict[str, object]
+) -> dict[str, object]:
+    """Prefer a hash-bound post-crash checker amendment when one exists."""
+
+    path = root / "CORRECTNESS_REMEASUREMENT.json"
+    if not path.exists():
+        value = block.get("correctness")
+        if not isinstance(value, dict):
+            raise ValueError("smoke correctness missing")
+        return value
+    amendment = _read(path)
+    body = {key: value for key, value in amendment.items() if key != "payload_sha256"}
+    if (
+        amendment.get("payload_sha256") != _payload_sha256(body)
+        or amendment.get("status") != "PASS"
+        or amendment.get("run_id") != run_id
+    ):
+        raise ValueError("smoke correctness remeasurement invalid")
+    entries = amendment.get("entries")
+    if not isinstance(entries, list) or block_index >= len(entries):
+        raise ValueError("smoke correctness remeasurement incomplete")
+    entry = entries[block_index]
+    if (
+        not isinstance(entry, dict)
+        or entry.get("block_index") != block_index
+        or entry.get("method") != block.get("method")
+        or entry.get("source_block_payload_sha256") != block.get("payload_sha256")
+        or not isinstance(entry.get("correctness"), dict)
+    ):
+        raise ValueError("smoke correctness remeasurement binding invalid")
+    return entry["correctness"]
 
 
 def _wait_for_smoke(run_id: str) -> None:
@@ -43,7 +85,9 @@ def _wait_for_smoke(run_id: str) -> None:
         block = _read(
             root / "blocks" / f"block-{index:02d}" / "APC_ALIGNED_BLOCK_RESULT.json"
         )
-        correctness = block.get("correctness")
+        correctness = _smoke_correctness(
+            root=root, run_id=run_id, block_index=index, block=block
+        )
         embedding = block.get("embedding_vllm_telemetry")
         if (
             block.get("status") != "PASS"

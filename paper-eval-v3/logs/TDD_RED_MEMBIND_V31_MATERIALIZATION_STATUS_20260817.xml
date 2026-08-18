@@ -1,0 +1,229 @@
+<?xml version="1.0" encoding="utf-8"?><testsuites name="pytest tests"><testsuite name="pytest" errors="0" failures="2" skipped="0" tests="2" time="0.062" timestamp="2026-08-17T23:57:10.069777+08:00" hostname="aces-System-Product-Name"><testcase classname="tests.test_membind_v31_materialization" name="test_materialization_rejects_invalid_artifact_or_semantic_status[&lt;lambda&gt;0]" time="0.002"><failure message="ValueError: baseline acceptance binding invalid">tmp_path = PosixPath('/tmp/pytest-of-ly/pytest-816/test_materialization_rejects_i0')
+monkeypatch = &lt;_pytest.monkeypatch.MonkeyPatch object at 0x7663cceac440&gt;
+mutate = &lt;function &lt;lambda&gt; at 0x7663ccebbba0&gt;
+
+    @pytest.mark.parametrize(
+        "mutate",
+        (
+            lambda value: value.__setitem__("artifact_status", "INCOMPLETE"),
+            lambda value: value["semantic_verdicts"]["P(C=2)-aligned"].__setitem__(
+                "semantic_status", "VIOLATION_OBSERVED"
+            ),
+        ),
+    )
+    def test_materialization_rejects_invalid_artifact_or_semantic_status(
+        tmp_path: Path,
+        monkeypatch: pytest.MonkeyPatch,
+        mutate,
+    ) -&gt; None:
+        baseline = tmp_path / EXPECTED_BASELINE_RUN_ID
+        plan = _plan()
+        _write_plan(baseline, plan)
+        accepted = _accepted(plan)
+        mutate(accepted)
+        accepted["payload_sha256"] = payload_sha256(
+            {key: value for key, value in accepted.items() if key != "payload_sha256"}
+        )
+        monkeypatch.setattr(
+            "paper_eval.membind_v31.materialization.verify_apc_baseline_acceptance",
+            lambda *_args, **_kwargs: accepted,
+        )
+    
+        with pytest.raises(MaterializationError, match="baseline acceptance"):
+&gt;           materialize_membind_v31_control(
+                baseline_root=baseline,
+                quality_root=tmp_path / "quality",
+                output_root=tmp_path / "v31-control",
+                run_id="membind-v31-dev-20260817-006",
+                methodology_sha256="a" * 64,
+                workplan_sha256="b" * 64,
+            )
+
+paper-eval-v3/tests/test_membind_v31_materialization.py:246: 
+_ _ _ _ _ _ _ _ _ _ _ _ _ _ _ _ _ _ _ _ _ _ _ _ _ _ _ _ _ _ _ _ _ _ _ _ _ _ _ _ 
+paper-eval-v3/src/paper_eval/membind_v31/materialization.py:144: in materialize_membind_v31_control
+    method_plan = build_membind_v31_method_plan(
+paper-eval-v3/src/paper_eval/membind_v31/method_plan.py:274: in build_membind_v31_method_plan
+    acceptance = _verify_acceptance(
+_ _ _ _ _ _ _ _ _ _ _ _ _ _ _ _ _ _ _ _ _ _ _ _ _ _ _ _ _ _ _ _ _ _ _ _ _ _ _ _ 
+
+value = {'schema_version': 'membind.paper-eval-v3.membind-v31-baseline-acceptance.v1', 'status': 'PASS', 'artifact_status': 'I...iolations': 0, 'semantic_status': 'SAFE'}, 'P(C=2)-aligned': {'direct_violations': 0, 'semantic_status': 'SAFE'}}, ...}
+baseline_plan = {'aligned_run_id': 'apc-baseline-dev-20260817-001', 'apc_cache_policy': 'HOT_ENGINE_COLD_CROSS_BLOCK_NATURAL_WITHIN_BL...7cd265f8f3de4d4be4fe2e2a0d2c510f7c02775baf5d9c25a210423018d2e', 'history_id': 'b6019101', 'interarrival_ns': 10}}, ...}
+
+    def _verify_acceptance(
+        value: Mapping[str, object], *, baseline_plan: Mapping[str, object]
+    ) -&gt; dict[str, Any]:
+        if not isinstance(value, Mapping):
+            raise ValueError("baseline acceptance invalid")
+        accepted = deepcopy(dict(value))
+        stored = _sha(accepted.get("payload_sha256"), "baseline acceptance hash invalid")
+        body = {key: child for key, child in accepted.items() if key != "payload_sha256"}
+        if stored != payload_sha256(body):
+            raise ValueError("baseline acceptance hash mismatch")
+        expected_keys = {
+            "schema_version",
+            "status",
+            "artifact_status",
+            "semantic_verdicts",
+            "run_id",
+            "completed_block_count",
+            "terminal_episode_count_per_method",
+            "plan_payload_sha256",
+            "source_manifest_sha256",
+            "arrival_trace_sha256",
+            "shared_execution_envelope_sha256",
+            "global_llm_admission_k",
+            "execution_identity_sha256",
+            "block_result_payload_sha256s",
+            "quality_run_id",
+            "quality_report_payload_sha256",
+            "quality_identity_sha256",
+            "quality_runtime_identity_sha256",
+            "payload_sha256",
+        }
+        if set(accepted) != expected_keys:
+            raise ValueError("baseline acceptance inventory invalid")
+        expected = {
+            "schema_version": ACCEPTANCE_SCHEMA,
+            "status": "PASS",
+            "artifact_status": "SEALED_VALID",
+            "run_id": EXPECTED_BASELINE_RUN_ID,
+            "completed_block_count": 12,
+            "terminal_episode_count_per_method": 188,
+            "plan_payload_sha256": baseline_plan["payload_sha256"],
+            "source_manifest_sha256": baseline_plan["source_manifest_sha256"],
+            "arrival_trace_sha256": baseline_plan["arrival_trace_sha256"],
+            "shared_execution_envelope_sha256": baseline_plan[
+                "shared_execution_envelope_sha256"
+            ],
+            "global_llm_admission_k": baseline_plan["global_llm_admission_k"],
+        }
+        if any(accepted.get(key) != wanted for key, wanted in expected.items()):
+&gt;           raise ValueError("baseline acceptance binding invalid")
+E           ValueError: baseline acceptance binding invalid
+
+paper-eval-v3/src/paper_eval/membind_v31/method_plan.py:110: ValueError</failure></testcase><testcase classname="tests.test_membind_v31_materialization" name="test_materialization_rejects_invalid_artifact_or_semantic_status[&lt;lambda&gt;1]" time="0.002"><failure message="ValueError: baseline semantic verdict invalid">tmp_path = PosixPath('/tmp/pytest-of-ly/pytest-816/test_materialization_rejects_i1')
+monkeypatch = &lt;_pytest.monkeypatch.MonkeyPatch object at 0x7663cceafc50&gt;
+mutate = &lt;function &lt;lambda&gt; at 0x7663ccebbc40&gt;
+
+    @pytest.mark.parametrize(
+        "mutate",
+        (
+            lambda value: value.__setitem__("artifact_status", "INCOMPLETE"),
+            lambda value: value["semantic_verdicts"]["P(C=2)-aligned"].__setitem__(
+                "semantic_status", "VIOLATION_OBSERVED"
+            ),
+        ),
+    )
+    def test_materialization_rejects_invalid_artifact_or_semantic_status(
+        tmp_path: Path,
+        monkeypatch: pytest.MonkeyPatch,
+        mutate,
+    ) -&gt; None:
+        baseline = tmp_path / EXPECTED_BASELINE_RUN_ID
+        plan = _plan()
+        _write_plan(baseline, plan)
+        accepted = _accepted(plan)
+        mutate(accepted)
+        accepted["payload_sha256"] = payload_sha256(
+            {key: value for key, value in accepted.items() if key != "payload_sha256"}
+        )
+        monkeypatch.setattr(
+            "paper_eval.membind_v31.materialization.verify_apc_baseline_acceptance",
+            lambda *_args, **_kwargs: accepted,
+        )
+    
+        with pytest.raises(MaterializationError, match="baseline acceptance"):
+&gt;           materialize_membind_v31_control(
+                baseline_root=baseline,
+                quality_root=tmp_path / "quality",
+                output_root=tmp_path / "v31-control",
+                run_id="membind-v31-dev-20260817-006",
+                methodology_sha256="a" * 64,
+                workplan_sha256="b" * 64,
+            )
+
+paper-eval-v3/tests/test_membind_v31_materialization.py:246: 
+_ _ _ _ _ _ _ _ _ _ _ _ _ _ _ _ _ _ _ _ _ _ _ _ _ _ _ _ _ _ _ _ _ _ _ _ _ _ _ _ 
+paper-eval-v3/src/paper_eval/membind_v31/materialization.py:144: in materialize_membind_v31_control
+    method_plan = build_membind_v31_method_plan(
+paper-eval-v3/src/paper_eval/membind_v31/method_plan.py:274: in build_membind_v31_method_plan
+    acceptance = _verify_acceptance(
+_ _ _ _ _ _ _ _ _ _ _ _ _ _ _ _ _ _ _ _ _ _ _ _ _ _ _ _ _ _ _ _ _ _ _ _ _ _ _ _ 
+
+value = {'schema_version': 'membind.paper-eval-v3.membind-v31-baseline-acceptance.v1', 'status': 'PASS', 'artifact_status': 'S... 'semantic_status': 'SAFE'}, 'P(C=2)-aligned': {'direct_violations': 0, 'semantic_status': 'VIOLATION_OBSERVED'}}, ...}
+baseline_plan = {'aligned_run_id': 'apc-baseline-dev-20260817-001', 'apc_cache_policy': 'HOT_ENGINE_COLD_CROSS_BLOCK_NATURAL_WITHIN_BL...7cd265f8f3de4d4be4fe2e2a0d2c510f7c02775baf5d9c25a210423018d2e', 'history_id': 'b6019101', 'interarrival_ns': 10}}, ...}
+
+    def _verify_acceptance(
+        value: Mapping[str, object], *, baseline_plan: Mapping[str, object]
+    ) -&gt; dict[str, Any]:
+        if not isinstance(value, Mapping):
+            raise ValueError("baseline acceptance invalid")
+        accepted = deepcopy(dict(value))
+        stored = _sha(accepted.get("payload_sha256"), "baseline acceptance hash invalid")
+        body = {key: child for key, child in accepted.items() if key != "payload_sha256"}
+        if stored != payload_sha256(body):
+            raise ValueError("baseline acceptance hash mismatch")
+        expected_keys = {
+            "schema_version",
+            "status",
+            "artifact_status",
+            "semantic_verdicts",
+            "run_id",
+            "completed_block_count",
+            "terminal_episode_count_per_method",
+            "plan_payload_sha256",
+            "source_manifest_sha256",
+            "arrival_trace_sha256",
+            "shared_execution_envelope_sha256",
+            "global_llm_admission_k",
+            "execution_identity_sha256",
+            "block_result_payload_sha256s",
+            "quality_run_id",
+            "quality_report_payload_sha256",
+            "quality_identity_sha256",
+            "quality_runtime_identity_sha256",
+            "payload_sha256",
+        }
+        if set(accepted) != expected_keys:
+            raise ValueError("baseline acceptance inventory invalid")
+        expected = {
+            "schema_version": ACCEPTANCE_SCHEMA,
+            "status": "PASS",
+            "artifact_status": "SEALED_VALID",
+            "run_id": EXPECTED_BASELINE_RUN_ID,
+            "completed_block_count": 12,
+            "terminal_episode_count_per_method": 188,
+            "plan_payload_sha256": baseline_plan["payload_sha256"],
+            "source_manifest_sha256": baseline_plan["source_manifest_sha256"],
+            "arrival_trace_sha256": baseline_plan["arrival_trace_sha256"],
+            "shared_execution_envelope_sha256": baseline_plan[
+                "shared_execution_envelope_sha256"
+            ],
+            "global_llm_admission_k": baseline_plan["global_llm_admission_k"],
+        }
+        if any(accepted.get(key) != wanted for key, wanted in expected.items()):
+            raise ValueError("baseline acceptance binding invalid")
+        verdicts = accepted.get("semantic_verdicts")
+        if not isinstance(verdicts, Mapping) or set(verdicts) != set(
+            APC_BASELINE_METHODS
+        ):
+            raise ValueError("baseline semantic verdict inventory invalid")
+        for method in APC_BASELINE_METHODS:
+            verdict = verdicts.get(method)
+            if (
+                not isinstance(verdict, Mapping)
+                or isinstance(verdict.get("direct_violations"), bool)
+                or not isinstance(verdict.get("direct_violations"), int)
+                or int(verdict["direct_violations"]) &lt; 0
+                or verdict.get("semantic_status")
+                != (
+                    "SAFE"
+                    if int(verdict["direct_violations"]) == 0
+                    else "VIOLATION_OBSERVED"
+                )
+            ):
+&gt;               raise ValueError("baseline semantic verdict invalid")
+E               ValueError: baseline semantic verdict invalid
+
+paper-eval-v3/src/paper_eval/membind_v31/method_plan.py:130: ValueError</failure></testcase></testsuite></testsuites>

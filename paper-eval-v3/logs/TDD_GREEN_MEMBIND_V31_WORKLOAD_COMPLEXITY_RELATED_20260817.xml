@@ -1,0 +1,99 @@
+<?xml version="1.0" encoding="utf-8"?><testsuites name="pytest tests"><testsuite name="pytest" errors="0" failures="1" skipped="0" tests="15" time="5.463" timestamp="2026-08-17T23:50:33.930739+08:00" hostname="aces-System-Product-Name"><testcase classname="tests.test_membind_v31_freezer" name="test_freezer_emits_six_self_hashing_content_safe_artifacts" time="2.804" /><testcase classname="tests.test_membind_v31_freezer" name="test_workload_complexity_freezes_content_free_source_normalizers" time="0.316" /><testcase classname="tests.test_membind_v31_freezer" name="test_reuse_and_execution_freezes_bind_exact_authorities_and_c_w_k" time="0.318" /><testcase classname="tests.test_membind_v31_freezer" name="test_offline_freezer_does_not_emit_terminal_baseline_acceptance" time="0.319" /><testcase classname="tests.test_membind_v31_freezer" name="test_certification_projection_and_serializability_are_cross_bound" time="0.317" /><testcase classname="tests.test_membind_v31_freezer" name="test_freezer_fails_closed_unless_c_w_k_are_exactly_two[1-2-2]" time="0.001" /><testcase classname="tests.test_membind_v31_freezer" name="test_freezer_fails_closed_unless_c_w_k_are_exactly_two[2-1-2]" time="0.001" /><testcase classname="tests.test_membind_v31_freezer" name="test_freezer_fails_closed_unless_c_w_k_are_exactly_two[2-2-1]" time="0.001" /><testcase classname="tests.test_membind_v31_freezer" name="test_freezer_fails_closed_unless_c_w_k_are_exactly_two[3-2-2]" time="0.001" /><testcase classname="tests.test_membind_v31_freezer" name="test_freezer_fails_closed_unless_c_w_k_are_exactly_two[2-3-2]" time="0.001" /><testcase classname="tests.test_membind_v31_freezer" name="test_freezer_fails_closed_unless_c_w_k_are_exactly_two[2-2-3]" time="0.001" /><testcase classname="tests.test_membind_v31_freezer" name="test_verifier_rejects_artifact_or_protocol_tamper" time="0.320" /><testcase classname="tests.test_membind_v31_freezer" name="test_verifier_rejects_resealed_workload_complexity_drift" time="0.450" /><testcase classname="tests.test_membind_v31_freezer" name="test_existing_conflicting_freeze_is_never_overwritten" time="0.463" /><testcase classname="tests.test_membind_v31_freezer" name="test_cli_freeze_then_verify_without_live_dependencies" time="0.061"><failure message="subprocess.CalledProcessError: Command '['/data/predator/ly/MemBind/paper-eval-v3/.venv/bin/python', '/data/predator/ly/MemBind/paper-eval-v3/scripts/freeze_membind_v31.py', 'freeze', '--repository-root', '/data/predator/ly/MemBind', '--output-dir', '/tmp/pytest-of-ly/pytest-811/test_cli_freeze_then_verify_wi0/cli-freeze']' returned non-zero exit status 1.">tmp_path = PosixPath('/tmp/pytest-of-ly/pytest-811/test_cli_freeze_then_verify_wi0')
+
+    def test_cli_freeze_then_verify_without_live_dependencies(tmp_path: Path) -&gt; None:
+        output = tmp_path / "cli-freeze"
+        command = [
+            str(REPOSITORY / "paper-eval-v3/.venv/bin/python"),
+            str(REPOSITORY / "paper-eval-v3/scripts/freeze_membind_v31.py"),
+        ]
+&gt;       frozen = subprocess.run(
+            [
+                *command,
+                "freeze",
+                "--repository-root",
+                str(REPOSITORY),
+                "--output-dir",
+                str(output),
+            ],
+            check=True,
+            capture_output=True,
+            text=True,
+        )
+
+paper-eval-v3/tests/test_membind_v31_freezer.py:292: 
+_ _ _ _ _ _ _ _ _ _ _ _ _ _ _ _ _ _ _ _ _ _ _ _ _ _ _ _ _ _ _ _ _ _ _ _ _ _ _ _ 
+
+input = None, capture_output = True, timeout = None, check = True
+popenargs = (['/data/predator/ly/MemBind/paper-eval-v3/.venv/bin/python', '/data/predator/ly/MemBind/paper-eval-v3/scripts/freeze_membind_v31.py', 'freeze', '--repository-root', '/data/predator/ly/MemBind', '--output-dir', ...],)
+kwargs = {'text': True, 'stdout': -1, 'stderr': -1}
+
+    def run(*popenargs,
+            input=None, capture_output=False, timeout=None, check=False, **kwargs):
+        """Run command with arguments and return a CompletedProcess instance.
+    
+        The returned instance will have attributes args, returncode, stdout and
+        stderr. By default, stdout and stderr are not captured, and those attributes
+        will be None. Pass stdout=PIPE and/or stderr=PIPE in order to capture them,
+        or pass capture_output=True to capture both.
+    
+        If check is True and the exit code was non-zero, it raises a
+        CalledProcessError. The CalledProcessError object will have the return code
+        in the returncode attribute, and output &amp; stderr attributes if those streams
+        were captured.
+    
+        If timeout is given, and the process takes too long, a TimeoutExpired
+        exception will be raised.
+    
+        There is an optional argument "input", allowing you to
+        pass bytes or a string to the subprocess's stdin.  If you use this argument
+        you may not also use the Popen constructor's "stdin" argument, as
+        it will be used internally.
+    
+        By default, all communication is in bytes, and therefore any "input" should
+        be bytes, and the stdout and stderr will be bytes. If in text mode, any
+        "input" should be a string, and stdout and stderr will be strings decoded
+        according to locale encoding, or by "encoding" if set. Text mode is
+        triggered by setting any of text, encoding, errors or universal_newlines.
+    
+        The other arguments are the same as for the Popen constructor.
+        """
+        if input is not None:
+            if kwargs.get('stdin') is not None:
+                raise ValueError('stdin and input arguments may not both be used.')
+            kwargs['stdin'] = PIPE
+    
+        if capture_output:
+            if kwargs.get('stdout') is not None or kwargs.get('stderr') is not None:
+                raise ValueError('stdout and stderr arguments may not be used '
+                                 'with capture_output.')
+            kwargs['stdout'] = PIPE
+            kwargs['stderr'] = PIPE
+    
+        with Popen(*popenargs, **kwargs) as process:
+            try:
+                stdout, stderr = process.communicate(input, timeout=timeout)
+            except TimeoutExpired as exc:
+                process.kill()
+                if _mswindows:
+                    # Windows accumulates the output in a single blocking
+                    # read() call run on child threads, with the timeout
+                    # being done in a join() on those threads.  communicate()
+                    # _after_ kill() is required to collect that and add it
+                    # to the exception.
+                    exc.stdout, exc.stderr = process.communicate()
+                else:
+                    # POSIX _communicate already populated the output so
+                    # far into the TimeoutExpired exception.
+                    process.wait()
+                raise
+            except:  # Including KeyboardInterrupt, communicate handled that.
+                process.kill()
+                # We don't call process.wait() as .__exit__ does that for us.
+                raise
+            retcode = process.poll()
+            if check and retcode:
+&gt;               raise CalledProcessError(retcode, process.args,
+                                         output=stdout, stderr=stderr)
+E               subprocess.CalledProcessError: Command '['/data/predator/ly/MemBind/paper-eval-v3/.venv/bin/python', '/data/predator/ly/MemBind/paper-eval-v3/scripts/freeze_membind_v31.py', 'freeze', '--repository-root', '/data/predator/ly/MemBind', '--output-dir', '/tmp/pytest-of-ly/pytest-811/test_cli_freeze_then_verify_wi0/cli-freeze']' returned non-zero exit status 1.
+
+/usr/lib/python3.12/subprocess.py:571: CalledProcessError</failure></testcase></testsuite></testsuites>

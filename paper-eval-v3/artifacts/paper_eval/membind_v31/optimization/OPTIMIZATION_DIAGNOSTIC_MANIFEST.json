@@ -1,0 +1,35 @@
+{
+  "artifact_status": "DIAGNOSTIC_ONLY_NON_MERGEABLE",
+  "decision_document": {
+    "path": "paper-eval-v3/artifacts/paper_eval/membind_v31/optimization/MEMBIND_V31_OPTIMIZATION_DECISION_20260818.md",
+    "sha256": "8016eca7d0e562b077d2f96e6723eff3e638e6b3e5ed6e050db63858c8c1c437"
+  },
+  "diagnostic": {
+    "path": "paper-eval-v3/artifacts/paper_eval/membind_v31/optimization/diagnostics/membind-v31-smoke-20260818-004-block-00/LLM_TRACE_DIAGNOSTIC.json",
+    "sha256": "2dc904d5c2d19910f893911bda05791821bb32c95d66374454f18acd26b33e3d",
+    "payload_sha256": "90800d20fd59896312c27968ff7091d3c39e71d7df6145d17d6d60d7a4bf4565"
+  },
+  "input_attempt": {
+    "attempt_id": "membind-v31-smoke-20260818-004",
+    "status": "FAILED_NON_REUSABLE",
+    "llm_trace_path": "paper-eval-v3/artifacts/paper_eval/membind_v31/runs/membind-v31-smoke-20260818-004/blocks/block-00/llm.jsonl",
+    "llm_trace_sha256": "2427035424d0fc2cbeecfcdcbda42b9a7a1c7fdff3954219c1e6078b9802d02a",
+    "failure_path": "paper-eval-v3/artifacts/paper_eval/membind_v31/runs/membind-v31-smoke-20260818-004/FAILURE.json",
+    "failure_sha256": "0c0227288a85f2a3ebda37dfba3a571d308cf05c5c36d7e0c6a15e61f39910f0"
+  },
+  "implementation": {
+    "diagnostics_module_sha256": "84f090a88cb830de7490760f44ff77ea3749bf0cf5aa46a19a2d96b347d86e9f",
+    "diagnostics_test_sha256": "070f882efa54421e33c6532a67171ba2487b95585d5897bbdb9747fb1110465f",
+    "optimization_fixture_test_sha256": "c494fdb10aed466783db3b6e5df9d2507d393a3b05b621d167d4cde9502947a8",
+    "cli_sha256": "20485a6468f15a09431a07ef1a0a88d941b5be73817f9f136ba462eb1d9d3290"
+  },
+  "verification": {
+    "command": "PYTHONDONTWRITEBYTECODE=1 PYTHONPATH=paper-eval-v3/src paper-eval-v3/.venv/bin/pytest -q paper-eval-v3/tests/test_membind_v31_*.py",
+    "log_path": "paper-eval-v3/logs/TDD_GREEN_MEMBIND_V31_OPTIMIZATION_FINAL_OFFLINE_20260818.log",
+    "log_sha256": "70d1806b8eb17d6ef1996386391c33b44d580f7631cfc2768c228c8aea6d9186",
+    "result": "181 passed, 1 warning"
+  },
+  "frozen_lane_unchanged": true,
+  "formal_main_table_eligible": false,
+  "schema_version": "membind.paper-eval-v3.membind-v31-optimization-diagnostic-manifest.v1"
+}

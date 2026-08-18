@@ -1,0 +1,97 @@
+<?xml version="1.0" encoding="utf-8"?><testsuites name="pytest tests"><testsuite name="pytest" errors="0" failures="1" skipped="0" tests="1" time="0.076" timestamp="2026-08-18T13:24:08.701533+08:00" hostname="aces-System-Product-Name"><testcase classname="tests.test_membind_v31_request_runtime" name="test_one_frontier_bind_region_allows_multiple_nested_graphiti_attempts" time="0.001"><failure message="paper_eval.membind_v31.admission.MemBindV31AdmissionError: multiple_frontier_requests">async def scenario() -&gt; None:
+        inner = _ControlledLLM()
+        client = AdmittedLLMClientV31(
+            inner=inner,
+            limit=2,
+            policy=AdmissionPolicy.CACHE_AFFINE,
+            request_id_prefix="nested-frontier",
+            prefix_encoder=_tokenizer,
+        )
+        async with client.frontier_bind_region("history-a", 0):
+            first = asyncio.create_task(
+                _request(client, RequestKind.FRONTIER, 0, "frontier-child-a")
+            )
+            second = asyncio.create_task(
+                _request(client, RequestKind.FRONTIER, 0, "frontier-child-b")
+            )
+            await asyncio.sleep(0)
+            await asyncio.sleep(0)
+&gt;           assert inner.started == ["frontier-child-a", "frontier-child-b"]
+E           AssertionError: assert ['frontier-child-a'] == ['frontier-ch...tier-child-b']
+E             
+E             Right contains one more item: 'frontier-child-b'
+E             Use -v to get more diff
+
+paper-eval-v3/tests/test_membind_v31_request_runtime.py:248: AssertionError
+
+During handling of the above exception, another exception occurred:
+
+    def test_one_frontier_bind_region_allows_multiple_nested_graphiti_attempts() -&gt; None:
+        """A logical bind may issue several actual LLM calls, still bounded by K."""
+    
+        async def scenario() -&gt; None:
+            inner = _ControlledLLM()
+            client = AdmittedLLMClientV31(
+                inner=inner,
+                limit=2,
+                policy=AdmissionPolicy.CACHE_AFFINE,
+                request_id_prefix="nested-frontier",
+                prefix_encoder=_tokenizer,
+            )
+            async with client.frontier_bind_region("history-a", 0):
+                first = asyncio.create_task(
+                    _request(client, RequestKind.FRONTIER, 0, "frontier-child-a")
+                )
+                second = asyncio.create_task(
+                    _request(client, RequestKind.FRONTIER, 0, "frontier-child-b")
+                )
+                await asyncio.sleep(0)
+                await asyncio.sleep(0)
+                assert inner.started == ["frontier-child-a", "frontier-child-b"]
+                assert inner.max_active == 2
+                inner.release["frontier-child-a"].set()
+                inner.release["frontier-child-b"].set()
+                await asyncio.gather(first, second)
+    
+            assert client.observation()["observed_max_inflight"] == 2
+    
+&gt;       asyncio.run(scenario())
+
+paper-eval-v3/tests/test_membind_v31_request_runtime.py:256: 
+_ _ _ _ _ _ _ _ _ _ _ _ _ _ _ _ _ _ _ _ _ _ _ _ _ _ _ _ _ _ _ _ _ _ _ _ _ _ _ _ 
+/usr/lib/python3.12/asyncio/runners.py:194: in run
+    return runner.run(main)
+           ^^^^^^^^^^^^^^^^
+/usr/lib/python3.12/asyncio/runners.py:118: in run
+    return self._loop.run_until_complete(task)
+           ^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^
+/usr/lib/python3.12/asyncio/base_events.py:687: in run_until_complete
+    return future.result()
+           ^^^^^^^^^^^^^^^
+paper-eval-v3/tests/test_membind_v31_request_runtime.py:239: in scenario
+    async with client.frontier_bind_region("history-a", 0):
+/usr/lib/python3.12/contextlib.py:231: in __aexit__
+    await self.gen.athrow(value)
+paper-eval-v3/src/paper_eval/membind_v31/request_runtime.py:373: in frontier_bind_region
+    self._dispatch_locked()
+paper-eval-v3/src/paper_eval/membind_v31/request_runtime.py:168: in _dispatch_locked
+    for spec in self._controller.admit_available():
+                ^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^
+_ _ _ _ _ _ _ _ _ _ _ _ _ _ _ _ _ _ _ _ _ _ _ _ _ _ _ _ _ _ _ _ _ _ _ _ _ _ _ _ 
+
+self = &lt;paper_eval.membind_v31.admission.RequestAdmissionController object at 0x70ba3508eba0&gt;
+
+    def admit_available(self) -&gt; tuple[RequestSpec, ...]:
+        """Admit up to residual K with frontier semantics ahead of policy order."""
+    
+        frontier_groups = {
+            record.spec.frontier_group or record.spec.request_id
+            for record in self._records.values()
+            if record.spec.kind is RequestKind.FRONTIER
+            and record.state in {"WAITING", "ACTIVE"}
+        }
+        if len(frontier_groups) &gt; 1:
+&gt;           raise _fail("multiple_frontier_requests")
+E           paper_eval.membind_v31.admission.MemBindV31AdmissionError: multiple_frontier_requests
+
+paper-eval-v3/src/paper_eval/membind_v31/admission.py:240: MemBindV31AdmissionError</failure></testcase></testsuite></testsuites>

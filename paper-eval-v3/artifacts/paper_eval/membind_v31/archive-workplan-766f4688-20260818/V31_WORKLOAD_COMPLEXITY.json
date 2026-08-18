@@ -1,0 +1,82 @@
+{
+  "data_role": "DEVELOPMENT_EXPOSED",
+  "definitions": {
+    "source_input_characters": "sum(len(rendered Episode.body))",
+    "source_input_tokens": "sum(Qwen tokenizer encode(rendered Episode.body, add_special_tokens=False))",
+    "source_turn": "one raw message in each frozen LongMemEval session"
+  },
+  "heldout_data_accessed": false,
+  "histories": {
+    "07741c45": {
+      "episode_count": 49,
+      "source_input_character_count": 475885,
+      "source_input_token_count": 104014,
+      "source_turn_count": 527
+    },
+    "6071bd76": {
+      "episode_count": 46,
+      "source_input_character_count": 491502,
+      "source_input_token_count": 105786,
+      "source_turn_count": 482
+    },
+    "a2f3aa27": {
+      "episode_count": 44,
+      "source_input_character_count": 491801,
+      "source_input_token_count": 105977,
+      "source_turn_count": 448
+    },
+    "b6019101": {
+      "episode_count": 49,
+      "source_input_character_count": 502571,
+      "source_input_token_count": 106914,
+      "source_turn_count": 510
+    }
+  },
+  "history_order": [
+    "07741c45",
+    "b6019101",
+    "6071bd76",
+    "a2f3aa27"
+  ],
+  "live_service_calls_performed": false,
+  "methodology_sha256": "2af8147a839972e120a0123d1d0fffdd3e10653fa64e338c1c7a7fa32f506280",
+  "payload_sha256": "ed8363dc8d1b1d402a1fb9a242f5f31e17a61ab18b0b3441296db2393e26aaf7",
+  "raw_content_persisted": false,
+  "renderer_identity": {
+    "functions": [
+      "build_episodes",
+      "render_episode_body"
+    ],
+    "path": "membind-validation/src/dataset.py",
+    "sha256": "0dc97963f4e6143b555853d6061967b6e7606d36e0cba66acc70e27ba0a4d163"
+  },
+  "schema_version": "membind.paper-eval-v3.membind-v31-workload-complexity.v1",
+  "source_identity": {
+    "baseline_plan_payload_sha256": "f7414cc846c4f585fede0873c0fd25ed6f1a552abacf103c0b21adaf24cd7b85",
+    "development_input_file_sha256": "a1e3088193eaf6b866fceb62343ebe09beddc8ad0ed57bc70176232f16b3454b",
+    "development_input_payload_sha256": "ab58dc9faddc06f488cb61fca3f3bff2af2c35199a7b5df4427c830a854ce6f9",
+    "per_source_identities_persisted": false,
+    "source_dataset_sha256": "d6f21ea9d60a0d56f34a05b609c79c88a451d2ae03597821ea3d5a9678c3a442"
+  },
+  "source_manifest_sha256": "8bcd9fe468bbf471f0a26847b658fc2466df3e14639f05b575a8f207a45a89ec",
+  "status": "PASS",
+  "token_ids_persisted": false,
+  "tokenizer_identity": {
+    "add_special_tokens": false,
+    "file_sha256s": {
+      "config.json": "e546dacd2c772660270233f5579e9ab923cc2a7ec5ed3c58c27c2bc62cbf5169",
+      "tokenizer.json": "aeb13307a71acd8fe81861d94ad54ab689df773318809eed3cbe794b4492dae4",
+      "tokenizer_config.json": "d5d09f07b48c3086c508b30d1c9114bd1189145b74e982a265350c923acd8101"
+    },
+    "local_snapshot_path_persisted": false,
+    "repository": "Qwen/Qwen3-32B-FP8",
+    "revision": "aa55da1ecc13d006e8b8e4f54579b1ea8c3db2df"
+  },
+  "totals": {
+    "episode_count": 188,
+    "source_input_character_count": 1961759,
+    "source_input_token_count": 422691,
+    "source_turn_count": 1967
+  },
+  "workplan_sha256": "766f46883eefb9503e734c60a998df153bc615ad0e846534e7c00d7b74bc41e7"
+}

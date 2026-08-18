@@ -4,6 +4,59 @@ Protocol source: `../（主实验）MemBind_PAPER_EVALUATION_WORKPLAN_v3_SMALL_F
 
 Protocol SHA256: `4b81c89b33d407f04fc20862a81eab6badba16d0d61d98331cbe188d1bb4f41e`
 
+## Active methodology-v3.1 execution overlay (2026-08-17)
+
+Historical sections below remain bound to the byte-identical v3.0 protocol
+above. New MemBind implementation and development-table work is controlled by:
+
+```text
+../MemBind_FINAL_METHODOLOGY_v3.1_FROZEN.md
+SHA256 2af8147a839972e120a0123d1d0fffdd3e10653fa64e338c1c7a7fa32f506280
+
+../（主实验）MemBind_PAPER_EVALUATION_WORKPLAN_v3.1_METHODOLOGY_ALIGNED.md
+SHA256 f81c186e7cccd75ba6c1e15628b5e9a90a4484e20a6b4e27ac126aa80763c479
+```
+
+The v3.1 development envelope is frozen to `C=W=K_LLM=2`, `G=16` tokens,
+`DCP=1`, and one Bind worker. `K_LLM` counts actual outbound transport
+attempts; every retry reacquires a permit. All comparable methods use a unique
+fresh per-block request cache salt, allow within-block reuse, and prohibit
+cross-block cache identity or warm-prefix inheritance. The physical engine may
+remain resident, so all development cache/APC results remain `OBSERVATIONAL`.
+
+`V31_REUSE_AUDIT.json` is an offline V0 source/hash/reuse audit only.
+`V31_BASELINE_ACCEPTANCE.json` is a separate V3 authority emitted only after
+the exact APC baseline run is terminal and fully verified; the six-file
+offline freezer never emits it. After V1/V2, the source-bound
+`V31_METHOD_PLAN.json` may authorize live execution with scope
+`LIVE_EXECUTION_AUTHORIZED_BASELINE_MERGE_PENDING`. V3 later binds the
+byte-identical plan and terminal acceptance under `V31_CONTROL_COMMIT.json`;
+that commit, not the live plan alone, authorizes final merge.
+
+This is a versioned overlay, not a rewrite of the old parent. It authorizes
+only DEVELOPMENT_EXPOSED implementation and evaluation:
+
+```text
+offline v3.1 TDD
+  -> source-bound live plan
+  -> recoverably pause running APC baseline at a durable checkpoint
+  -> final-method 3-episode smoke
+  -> bounded 12-episode autoresearch probe (non-mergeable)
+  -> four MemBind history blocks (plan blocks 0-3)
+  -> resume and finish exact APC baseline/Quality process
+  -> representative Barrier/FIFO mechanism blocks 4-5
+  -> common read-only quality overlay
+  -> development main table and STOP
+```
+
+The running baseline identities are fixed to tmux
+`apc-aligned-pipeline-20260817-001` and run
+`apc-baseline-dev-20260817-001`. By explicit operator priority on 2026-08-18,
+the exact process may be recoverably paused while the shared backend is idle;
+baseline acceptance still blocks final merge, not MemBind live execution. The prior
+`membind_v1` node-only implementation is reusable scaffolding only; it is not
+the v3.1 final method identity.
+
 ## Scope
 
 This is a new, isolated lane. Existing C0-C5 contracts and artifacts remain historical evidence and are not rewritten. v3 forbids C6, so this lane never schedules C6.

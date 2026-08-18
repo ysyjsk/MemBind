@@ -1,0 +1,34 @@
+{
+  "schema_version": "membind.paper-eval-v3.membind-v31-optimization-tdd-evidence.v1",
+  "status": "OFFLINE_GREEN_LIVE_BLOCKED",
+  "date": "2026-08-18",
+  "tests": [
+    {
+      "label": "focused optimization lane",
+      "command": "PYTHONDONTWRITEBYTECODE=1 PYTHONPATH=paper-eval-v3/src paper-eval-v3/.venv/bin/pytest -q paper-eval-v3/tests/test_membind_v31_optimization_pilot.py paper-eval-v3/tests/test_membind_v31_optimization_live.py paper-eval-v3/tests/test_membind_v31_w4_pilot_cli.py paper-eval-v3/tests/test_membind_v31_queue_diagnostics.py paper-eval-v3/tests/test_membind_v31_coordinator.py paper-eval-v3/tests/test_membind_v31_request_runtime.py",
+      "result": "43 passed"
+    },
+    {
+      "label": "all v3.1 offline",
+      "command": "PYTHONDONTWRITEBYTECODE=1 PYTHONPATH=paper-eval-v3/src paper-eval-v3/.venv/bin/pytest -q paper-eval-v3/tests/test_membind_v31_*.py",
+      "result": "210 passed, 1 warning"
+    },
+    {
+      "label": "full paper-eval offline with pinned Graphiti site-packages",
+      "command": "PYTHONDONTWRITEBYTECODE=1 PYTHONPATH=src:.:../membind-validation/.venv/lib/python3.12/site-packages .venv/bin/pytest -q",
+      "result": "2251 passed, 1 warning"
+    },
+    {
+      "label": "real-input pilot preflight",
+      "command": "PYTHONDONTWRITEBYTECODE=1 PYTHONPATH=paper-eval-v3/src paper-eval-v3/.venv/bin/python paper-eval-v3/scripts/run_membind_v31_w4_pilot.py --dry-run",
+      "result": "PILOT_PREFLIGHT_PASS",
+      "contract_payload_sha256": "36e3d9d7912d508a7a1307a0b72ab4e55d1dea4ed7154167bd84aa71e8554288"
+    }
+  ],
+  "live_gate": {
+    "status": "STOPPED_BEFORE_LIVE",
+    "reason_artifact": "LIVE_PREFLIGHT_BLOCKED_20260818.json",
+    "namespace_created": false,
+    "generation_requests_sent": false
+  }
+}

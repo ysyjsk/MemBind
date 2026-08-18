@@ -1,0 +1,45 @@
+<?xml version="1.0" encoding="utf-8"?><testsuites name="pytest tests"><testsuite name="pytest" errors="0" failures="1" skipped="0" tests="1" time="0.068" timestamp="2026-08-18T10:22:57.618268+08:00" hostname="aces-System-Product-Name"><testcase classname="tests.test_membind_v31_production_executor" name="test_source_bound_smoke_accepts_the_frozen_orchestrator_block_zero" time="0.000"><failure message="paper_eval.membind_v31.production_executor.ProductionExecutorError: smoke source-bound identity invalid">def test_source_bound_smoke_accepts_the_frozen_orchestrator_block_zero() -&gt; None:
+        plan = _plan()
+        block_zero_spec = replace(_spec(plan), block_index=0)
+        episodes = tuple(
+            _Episode(index, plan["history_source_sha256s"][HISTORIES[0]][index])
+            for index in range(3)
+        )
+    
+&gt;       smoke = build_source_bound_smoke_plan(
+            smoke_spec=block_zero_spec, verified_plan=plan, episodes=episodes
+        )
+
+paper-eval-v3/tests/test_membind_v31_production_executor.py:232: 
+_ _ _ _ _ _ _ _ _ _ _ _ _ _ _ _ _ _ _ _ _ _ _ _ _ _ _ _ _ _ _ _ _ _ _ _ _ _ _ _ 
+
+smoke_spec = SmokeSpec(attempt_id='v31-attempt-dev-test', plan_payload_sha256='0bf63b2472e9a6dd49b5081a60001e9d910a49a0ecfbcb7dd3ce...41c45', namespace='formal-2-07741c45-smoke-v31-attempt-dev-test', source_sequences=(0, 1, 2), global_llm_admission_k=2)
+verified_plan = {'schema_version': 'membind.paper-eval-v3.membind-v31-method-plan.v1', 'run_id': 'membind-v31-dev-test', 'data_role': 'DEVELOPMENT_EXPOSED', 'histories': ['07741c45', 'b6019101', '6071bd76', 'a2f3aa27'], ...}
+episodes = (_Episode(source_sequence=0, source_hash='0000000000000000000000000000000000000000000000000000000000000001', reference...00000000000000000000003', reference_time='2026-01-01T00:00:00+00:00', body='private source body', group_id='original'))
+
+    def build_source_bound_smoke_plan(
+        *,
+        smoke_spec: SmokeSpec,
+        verified_plan: Mapping[str, object],
+        episodes: Sequence[object],
+    ) -&gt; dict[str, Any]:
+        """Build a self-verifying plan whose namespace and sources equal runtime use."""
+    
+        if not isinstance(smoke_spec, SmokeSpec):
+            raise _fail("smoke spec invalid")
+        plan = _plan_shape(verified_plan)
+        if (
+            smoke_spec.plan_payload_sha256 != plan["payload_sha256"]
+            or smoke_spec.block_index != 2
+            or smoke_spec.method != "MemBind"
+            or smoke_spec.history_id != HISTORIES[0]
+            or smoke_spec.source_sequences != (0, 1, 2)
+            or smoke_spec.global_llm_admission_k != 2
+            or isinstance(episodes, (str, bytes))
+            or not isinstance(episodes, Sequence)
+            or len(episodes) != 3
+        ):
+&gt;           raise _fail("smoke source-bound identity invalid")
+E           paper_eval.membind_v31.production_executor.ProductionExecutorError: smoke source-bound identity invalid
+
+paper-eval-v3/src/paper_eval/membind_v31/production_executor.py:225: ProductionExecutorError</failure></testcase></testsuite></testsuites>

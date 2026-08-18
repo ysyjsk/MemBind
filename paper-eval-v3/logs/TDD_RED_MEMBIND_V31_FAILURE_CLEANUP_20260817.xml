@@ -1,0 +1,13 @@
+<?xml version="1.0" encoding="utf-8"?><testsuites name="pytest tests"><testsuite name="pytest" errors="0" failures="1" skipped="0" tests="6" time="0.044" timestamp="2026-08-17T22:09:19.741220+08:00" hostname="aces-System-Product-Name"><testcase classname="tests.test_membind_v31_arrival_rob" name="test_unarrived_source_payload_cannot_be_observed_or_claimed" time="0.000" /><testcase classname="tests.test_membind_v31_arrival_rob" name="test_arrival_release_order_is_deterministic_without_leaking_payloads" time="0.000" /><testcase classname="tests.test_membind_v31_arrival_rob" name="test_rob_enforces_compile_worker_and_per_stream_lookahead_bounds" time="0.000" /><testcase classname="tests.test_membind_v31_arrival_rob" name="test_only_frontier_can_bind_and_only_one_bind_can_be_active_globally" time="0.000" /><testcase classname="tests.test_membind_v31_arrival_rob" name="test_compile_failure_and_bind_cancellation_are_fail_closed_and_content_safe" time="0.000" /><testcase classname="tests.test_membind_v31_arrival_rob" name="test_stream_failure_releases_other_same_stream_workers_deterministically" time="0.000"><failure message="assert 2 == 0">def test_stream_failure_releases_other_same_stream_workers_deterministically() -&gt; None:
+        rob = PreparedROB(compile_workers=3, lookahead=2)
+        for sequence in range(3):
+            rob.record_arrival("stream-a", sequence)
+            rob.start_compile("stream-a", sequence)
+    
+        rob.fail_compile("stream-a", 1, RuntimeError("private evidence"))
+    
+        snapshot = rob.observation()
+&gt;       assert snapshot["active_compile_count"] == 0
+E       assert 2 == 0
+
+tests/test_membind_v31_arrival_rob.py:142: AssertionError</failure></testcase></testsuite></testsuites>

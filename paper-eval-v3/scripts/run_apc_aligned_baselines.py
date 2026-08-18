@@ -172,8 +172,10 @@ async def _sample_until_done(
 
 
 async def _close(value: object) -> None:
-    graphiti = getattr(value, "graphiti", value)
-    close = getattr(graphiti, "close", None)
+    close = getattr(value, "aclose", None)
+    if not callable(close):
+        graphiti = getattr(value, "graphiti", value)
+        close = getattr(graphiti, "close", None)
     if callable(close):
         result = close()
         if hasattr(result, "__await__"):
@@ -297,11 +299,113 @@ async def _run(
     return {"status": "PASS", "completed_block_indices": completed}
 
 
+async def _remeasure_existing_correctness(
+    *,
+    run_root: Path,
+    plan: Mapping[str, object],
+    workload: Mapping[str, Mapping[str, object]],
+    block_indices: Sequence[int],
+    read_runtime: object,
+) -> dict[str, object]:
+    """Create a non-destructive checker amendment for sealed block payloads."""
+
+    entries: list[dict[str, object]] = []
+    blocks = plan["blocks"]
+    for block_index in block_indices:
+        block = blocks[block_index]
+        block_root = run_root / "blocks" / f"block-{block_index:02d}"
+        result = _read_json(block_root / "APC_ALIGNED_BLOCK_RESULT.json")
+        block_payload = {
+            key: value for key, value in result.items() if key != "payload_sha256"
+        }
+        if result.get("payload_sha256") != payload_sha256(block_payload):
+            raise ValueError("completed block result hash mismatch")
+        episodes = workload[str(block["history_id"])]["episodes"]
+        correctness = await measure_apc_aligned_direct_violations(
+            block_root,
+            verified_plan=plan,
+            block_index=block_index,
+            driver=read_runtime.graphiti.driver,
+            expected_episode_names=tuple(str(getattr(value, "name")) for value in episodes),
+        )
+        entries.append(
+            {
+                "block_index": block_index,
+                "method": block["method"],
+                "history_id": block["history_id"],
+                "source_block_payload_sha256": result["payload_sha256"],
+                "correctness": correctness,
+            }
+        )
+    body: dict[str, object] = {
+        "schema_version": "membind.paper-eval-v3.apc-aligned-correctness-remeasurement.v1",
+        "status": "PASS",
+        "run_id": plan["run_id"],
+        "plan_payload_sha256": plan["payload_sha256"],
+        "checker_implementation_sha256": sha256_file(
+            PROJECT / "src/paper_eval/apc_aligned_correctness.py"
+        ),
+        "entries": entries,
+    }
+    body["payload_sha256"] = payload_sha256(body)
+    path = run_root / "CORRECTNESS_REMEASUREMENT.json"
+    if path.exists() and _read_json(path) != body:
+        raise ValueError("correctness remeasurement drift")
+    if not path.exists():
+        _write(path, body)
+    return body
+
+
+async def _run_and_close(
+    *,
+    run_root: Path,
+    plan: Mapping[str, object],
+    workload: Mapping[str, Mapping[str, object]],
+    env: Mapping[str, str],
+    execution_identity_sha256: str,
+    block_indices: Sequence[int],
+    read_runtime: object,
+    remeasure_existing_correctness: bool = False,
+) -> dict[str, object]:
+    """Execute and close loop-bound Neo4j/HTTP resources on one event loop."""
+
+    try:
+        result = await _run(
+            run_root=run_root,
+            plan=plan,
+            workload=workload,
+            env=env,
+            execution_identity_sha256=execution_identity_sha256,
+            block_indices=block_indices,
+            read_runtime=read_runtime,
+        )
+        if remeasure_existing_correctness:
+            amendment = await _remeasure_existing_correctness(
+                run_root=run_root,
+                plan=plan,
+                workload=workload,
+                block_indices=block_indices,
+                read_runtime=read_runtime,
+            )
+            result = {
+                **result,
+                "correctness_remeasurement_payload_sha256": amendment[
+                    "payload_sha256"
+                ],
+            }
+        return result
+    finally:
+        await _close(read_runtime)
+
+
 def main() -> int:
     parser = argparse.ArgumentParser(description=__doc__)
     parser.add_argument("run_id")
     parser.add_argument("--phase", choices=("smoke", "full"), required=True)
+    parser.add_argument("--remeasure-existing-correctness", action="store_true")
     args = parser.parse_args()
+    if args.remeasure_existing_correctness and args.phase != "smoke":
+        raise SystemExit("correctness remeasurement recovery is smoke-only")
     run_root = RUNS_ROOT / args.run_id
     if run_root.exists() and not (run_root / "PLAN.json").exists():
         raise SystemExit("run root exists without plan")
@@ -365,12 +469,23 @@ def main() -> int:
         "implementation_hashes": _implementation_hashes(),
     }
     preflight["payload_sha256"] = payload_sha256(preflight)
-    _write(run_root / "PREFLIGHT.json", preflight)
+    preflight_path = run_root / "PREFLIGHT.json"
+    if preflight_path.exists():
+        previous_preflight = _read_json(preflight_path)
+        previous_body = {
+            key: value
+            for key, value in previous_preflight.items()
+            if key != "payload_sha256"
+        }
+        if previous_preflight.get("payload_sha256") != payload_sha256(previous_body):
+            raise SystemExit("existing preflight hash mismatch")
+    else:
+        _write(preflight_path, preflight)
     indices = (0, 1, 2) if args.phase == "smoke" else tuple(range(12))
     read_runtime = build_graph_quality_runtime(env=env)
     try:
         result = asyncio.run(
-            _run(
+            _run_and_close(
                 run_root=run_root,
                 plan=plan,
                 workload=workload,
@@ -378,6 +493,7 @@ def main() -> int:
                 execution_identity_sha256=execution_identity,
                 block_indices=indices,
                 read_runtime=read_runtime,
+                remeasure_existing_correctness=args.remeasure_existing_correctness,
             )
         )
     except BaseException as error:
@@ -390,8 +506,6 @@ def main() -> int:
         _write(run_root / "FAILURE.json", failure)
         print(json.dumps(failure, sort_keys=True), flush=True)
         return 1
-    finally:
-        asyncio.run(_close(read_runtime))
     final = {
         "status": "PASS",
         "phase": args.phase,

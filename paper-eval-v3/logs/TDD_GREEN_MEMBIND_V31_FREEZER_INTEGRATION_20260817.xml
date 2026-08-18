@@ -1,0 +1,339 @@
+<?xml version="1.0" encoding="utf-8"?><testsuites name="pytest tests"><testsuite name="pytest" errors="0" failures="10" skipped="0" tests="104" time="12.755" timestamp="2026-08-17T23:03:09.899498+08:00" hostname="aces-System-Product-Name"><testcase classname="tests.test_membind_v31_adapter" name="test_graphiti_v0293_operator_map_freezes_node_and_edge_extract_as_compile" time="0.000" /><testcase classname="tests.test_membind_v31_adapter" name="test_arrival_fence_is_immutable_and_rejects_current_or_future_evidence" time="0.000" /><testcase classname="tests.test_membind_v31_adapter" name="test_runtime_guard_fails_closed_on_forbidden_or_undeclared_api" time="0.000" /><testcase classname="tests.test_membind_v31_adapter" name="test_adapter_compiles_node_then_edge_from_only_fenced_inputs" time="0.001" /><testcase classname="tests.test_membind_v31_adapter" name="test_adapter_rejects_wrong_operator_certification_before_callbacks" time="0.000" /><testcase classname="tests.test_membind_v31_adapter" name="test_adapter_rejects_tampered_arrival_fence_before_callbacks" time="0.001" /><testcase classname="tests.test_membind_v31_adapter" name="test_duplicate_runtime_uuid_coalesces_only_for_same_canonical_projection" time="0.000" /><testcase classname="tests.test_membind_v31_adapter" name="test_captured_transition_parity_is_exact_after_compatible_coalescing" time="0.000" /><testcase classname="tests.test_membind_v31_adapter" name="test_captured_transition_parity_fails_closed_on_state_or_version_drift" time="0.001" /><testcase classname="tests.test_membind_v31_admission" name="test_waiting_frontier_outranks_compile_and_residual_capacity_is_work_conserving[FIFO]" time="0.000"><failure message="TypeError: RequestSpec.__init__() got an unexpected keyword argument 'provider_recency'">policy = &lt;AdmissionPolicy.FIFO: 'FIFO'&gt;
+
+    @pytest.mark.parametrize("policy", [AdmissionPolicy.FIFO, AdmissionPolicy.CACHE_AFFINE])
+    def test_waiting_frontier_outranks_compile_and_residual_capacity_is_work_conserving(
+        policy: AdmissionPolicy,
+    ) -&gt; None:
+        admission = RequestAdmissionController(limit=3, policy=policy)
+&gt;       admission.submit(_compile("compile-0", 0, score=100))
+                         ^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^
+
+tests/test_membind_v31_admission.py:51: 
+_ _ _ _ _ _ _ _ _ _ _ _ _ _ _ _ _ _ _ _ _ _ _ _ _ _ _ _ _ _ _ _ _ _ _ _ _ _ _ _ 
+
+request_id = 'compile-0', sequence = 0, score = 100, recency = 0
+cohort_gain = 0, signature = 'sig-none'
+
+    def _compile(
+        request_id: str,
+        sequence: int,
+        *,
+        score: int = 0,
+        recency: int = 0,
+        cohort_gain: int = 0,
+        signature: str = "sig-none",
+    ) -&gt; RequestSpec:
+&gt;       return RequestSpec(
+            request_id=request_id,
+            kind=RequestKind.COMPILE,
+            stream_id="history-a",
+            source_sequence=sequence,
+            affinity_score=score,
+            provider_recency=recency,
+            cohort_gain=cohort_gain,
+            affinity_signature=signature,
+        )
+E       TypeError: RequestSpec.__init__() got an unexpected keyword argument 'provider_recency'
+
+tests/test_membind_v31_admission.py:25: TypeError</failure></testcase><testcase classname="tests.test_membind_v31_admission" name="test_waiting_frontier_outranks_compile_and_residual_capacity_is_work_conserving[CACHE_AFFINE]" time="0.000"><failure message="TypeError: RequestSpec.__init__() got an unexpected keyword argument 'provider_recency'">policy = &lt;AdmissionPolicy.CACHE_AFFINE: 'CACHE_AFFINE'&gt;
+
+    @pytest.mark.parametrize("policy", [AdmissionPolicy.FIFO, AdmissionPolicy.CACHE_AFFINE])
+    def test_waiting_frontier_outranks_compile_and_residual_capacity_is_work_conserving(
+        policy: AdmissionPolicy,
+    ) -&gt; None:
+        admission = RequestAdmissionController(limit=3, policy=policy)
+&gt;       admission.submit(_compile("compile-0", 0, score=100))
+                         ^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^
+
+tests/test_membind_v31_admission.py:51: 
+_ _ _ _ _ _ _ _ _ _ _ _ _ _ _ _ _ _ _ _ _ _ _ _ _ _ _ _ _ _ _ _ _ _ _ _ _ _ _ _ 
+
+request_id = 'compile-0', sequence = 0, score = 100, recency = 0
+cohort_gain = 0, signature = 'sig-none'
+
+    def _compile(
+        request_id: str,
+        sequence: int,
+        *,
+        score: int = 0,
+        recency: int = 0,
+        cohort_gain: int = 0,
+        signature: str = "sig-none",
+    ) -&gt; RequestSpec:
+&gt;       return RequestSpec(
+            request_id=request_id,
+            kind=RequestKind.COMPILE,
+            stream_id="history-a",
+            source_sequence=sequence,
+            affinity_score=score,
+            provider_recency=recency,
+            cohort_gain=cohort_gain,
+            affinity_signature=signature,
+        )
+E       TypeError: RequestSpec.__init__() got an unexpected keyword argument 'provider_recency'
+
+tests/test_membind_v31_admission.py:25: TypeError</failure></testcase><testcase classname="tests.test_membind_v31_admission" name="test_barrier_policy_leaves_residual_capacity_idle_until_frontier_finishes" time="0.000"><failure message="TypeError: RequestSpec.__init__() got an unexpected keyword argument 'provider_recency'">def test_barrier_policy_leaves_residual_capacity_idle_until_frontier_finishes() -&gt; None:
+        admission = RequestAdmissionController(limit=3, policy=AdmissionPolicy.BARRIER)
+&gt;       admission.submit(_compile("compile-0", 0))
+                         ^^^^^^^^^^^^^^^^^^^^^^^^
+
+tests/test_membind_v31_admission.py:65: 
+_ _ _ _ _ _ _ _ _ _ _ _ _ _ _ _ _ _ _ _ _ _ _ _ _ _ _ _ _ _ _ _ _ _ _ _ _ _ _ _ 
+
+request_id = 'compile-0', sequence = 0, score = 0, recency = 0, cohort_gain = 0
+signature = 'sig-none'
+
+    def _compile(
+        request_id: str,
+        sequence: int,
+        *,
+        score: int = 0,
+        recency: int = 0,
+        cohort_gain: int = 0,
+        signature: str = "sig-none",
+    ) -&gt; RequestSpec:
+&gt;       return RequestSpec(
+            request_id=request_id,
+            kind=RequestKind.COMPILE,
+            stream_id="history-a",
+            source_sequence=sequence,
+            affinity_score=score,
+            provider_recency=recency,
+            cohort_gain=cohort_gain,
+            affinity_signature=signature,
+        )
+E       TypeError: RequestSpec.__init__() got an unexpected keyword argument 'provider_recency'
+
+tests/test_membind_v31_admission.py:25: TypeError</failure></testcase><testcase classname="tests.test_membind_v31_admission" name="test_fifo_and_cache_affine_have_deterministic_but_distinct_compile_order" time="0.000"><failure message="TypeError: RequestSpec.__init__() got an unexpected keyword argument 'provider_recency'">def test_fifo_and_cache_affine_have_deterministic_but_distinct_compile_order() -&gt; None:
+        specs = [
+&gt;           _compile("compile-2", 2, score=5, signature="safe-b"),
+            ^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^
+            _compile("compile-0", 0, score=5, signature="safe-a"),
+            _compile("compile-1", 1, score=9, signature="safe-c"),
+        ]
+
+tests/test_membind_v31_admission.py:80: 
+_ _ _ _ _ _ _ _ _ _ _ _ _ _ _ _ _ _ _ _ _ _ _ _ _ _ _ _ _ _ _ _ _ _ _ _ _ _ _ _ 
+
+request_id = 'compile-2', sequence = 2, score = 5, recency = 0, cohort_gain = 0
+signature = 'safe-b'
+
+    def _compile(
+        request_id: str,
+        sequence: int,
+        *,
+        score: int = 0,
+        recency: int = 0,
+        cohort_gain: int = 0,
+        signature: str = "sig-none",
+    ) -&gt; RequestSpec:
+&gt;       return RequestSpec(
+            request_id=request_id,
+            kind=RequestKind.COMPILE,
+            stream_id="history-a",
+            source_sequence=sequence,
+            affinity_score=score,
+            provider_recency=recency,
+            cohort_gain=cohort_gain,
+            affinity_signature=signature,
+        )
+E       TypeError: RequestSpec.__init__() got an unexpected keyword argument 'provider_recency'
+
+tests/test_membind_v31_admission.py:25: TypeError</failure></testcase><testcase classname="tests.test_membind_v31_admission" name="test_cache_affine_lexicographic_order_matches_frozen_methodology" time="0.000"><failure message="TypeError: RequestSpec.__init__() got an unexpected keyword argument 'provider_recency'">def test_cache_affine_lexicographic_order_matches_frozen_methodology() -&gt; None:
+        admission = RequestAdmissionController(limit=4, policy=AdmissionPolicy.CACHE_AFFINE)
+        specs = [
+&gt;           _compile("lower-affinity", 0, score=4, recency=99, cohort_gain=999),
+            ^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^
+            _compile("older-provider", 1, score=8, recency=2, cohort_gain=999),
+            _compile("lower-cohort", 2, score=8, recency=3, cohort_gain=4),
+            _compile("winner", 3, score=8, recency=3, cohort_gain=12),
+        ]
+
+tests/test_membind_v31_admission.py:106: 
+_ _ _ _ _ _ _ _ _ _ _ _ _ _ _ _ _ _ _ _ _ _ _ _ _ _ _ _ _ _ _ _ _ _ _ _ _ _ _ _ 
+
+request_id = 'lower-affinity', sequence = 0, score = 4, recency = 99
+cohort_gain = 999, signature = 'sig-none'
+
+    def _compile(
+        request_id: str,
+        sequence: int,
+        *,
+        score: int = 0,
+        recency: int = 0,
+        cohort_gain: int = 0,
+        signature: str = "sig-none",
+    ) -&gt; RequestSpec:
+&gt;       return RequestSpec(
+            request_id=request_id,
+            kind=RequestKind.COMPILE,
+            stream_id="history-a",
+            source_sequence=sequence,
+            affinity_score=score,
+            provider_recency=recency,
+            cohort_gain=cohort_gain,
+            affinity_signature=signature,
+        )
+E       TypeError: RequestSpec.__init__() got an unexpected keyword argument 'provider_recency'
+
+tests/test_membind_v31_admission.py:25: TypeError</failure></testcase><testcase classname="tests.test_membind_v31_admission" name="test_waiting_affinity_can_be_refreshed_but_active_or_identity_changes_fail_closed" time="0.000"><failure message="TypeError: RequestSpec.__init__() got an unexpected keyword argument 'provider_recency'">def test_waiting_affinity_can_be_refreshed_but_active_or_identity_changes_fail_closed() -&gt; None:
+        admission = RequestAdmissionController(limit=1, policy=AdmissionPolicy.CACHE_AFFINE)
+&gt;       admission.submit(_compile("compile-0", 0))
+                         ^^^^^^^^^^^^^^^^^^^^^^^^
+
+tests/test_membind_v31_admission.py:124: 
+_ _ _ _ _ _ _ _ _ _ _ _ _ _ _ _ _ _ _ _ _ _ _ _ _ _ _ _ _ _ _ _ _ _ _ _ _ _ _ _ 
+
+request_id = 'compile-0', sequence = 0, score = 0, recency = 0, cohort_gain = 0
+signature = 'sig-none'
+
+    def _compile(
+        request_id: str,
+        sequence: int,
+        *,
+        score: int = 0,
+        recency: int = 0,
+        cohort_gain: int = 0,
+        signature: str = "sig-none",
+    ) -&gt; RequestSpec:
+&gt;       return RequestSpec(
+            request_id=request_id,
+            kind=RequestKind.COMPILE,
+            stream_id="history-a",
+            source_sequence=sequence,
+            affinity_score=score,
+            provider_recency=recency,
+            cohort_gain=cohort_gain,
+            affinity_signature=signature,
+        )
+E       TypeError: RequestSpec.__init__() got an unexpected keyword argument 'provider_recency'
+
+tests/test_membind_v31_admission.py:25: TypeError</failure></testcase><testcase classname="tests.test_membind_v31_admission" name="test_active_compile_is_not_preempted_when_frontier_becomes_ready" time="0.000"><failure message="TypeError: RequestSpec.__init__() got an unexpected keyword argument 'provider_recency'">def test_active_compile_is_not_preempted_when_frontier_becomes_ready() -&gt; None:
+        admission = RequestAdmissionController(limit=1, policy=AdmissionPolicy.FIFO)
+&gt;       admission.submit(_compile("compile-0", 0))
+                         ^^^^^^^^^^^^^^^^^^^^^^^^
+
+tests/test_membind_v31_admission.py:151: 
+_ _ _ _ _ _ _ _ _ _ _ _ _ _ _ _ _ _ _ _ _ _ _ _ _ _ _ _ _ _ _ _ _ _ _ _ _ _ _ _ 
+
+request_id = 'compile-0', sequence = 0, score = 0, recency = 0, cohort_gain = 0
+signature = 'sig-none'
+
+    def _compile(
+        request_id: str,
+        sequence: int,
+        *,
+        score: int = 0,
+        recency: int = 0,
+        cohort_gain: int = 0,
+        signature: str = "sig-none",
+    ) -&gt; RequestSpec:
+&gt;       return RequestSpec(
+            request_id=request_id,
+            kind=RequestKind.COMPILE,
+            stream_id="history-a",
+            source_sequence=sequence,
+            affinity_score=score,
+            provider_recency=recency,
+            cohort_gain=cohort_gain,
+            affinity_signature=signature,
+        )
+E       TypeError: RequestSpec.__init__() got an unexpected keyword argument 'provider_recency'
+
+tests/test_membind_v31_admission.py:25: TypeError</failure></testcase><testcase classname="tests.test_membind_v31_admission" name="test_waiting_cancellation_and_active_error_are_deterministic_and_content_safe" time="0.000"><failure message="TypeError: RequestSpec.__init__() got an unexpected keyword argument 'provider_recency'">def test_waiting_cancellation_and_active_error_are_deterministic_and_content_safe() -&gt; None:
+        admission = RequestAdmissionController(limit=1, policy=AdmissionPolicy.FIFO)
+&gt;       admission.submit(_compile("compile-active", 0, signature="safe-signature"))
+                         ^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^
+
+tests/test_membind_v31_admission.py:165: 
+_ _ _ _ _ _ _ _ _ _ _ _ _ _ _ _ _ _ _ _ _ _ _ _ _ _ _ _ _ _ _ _ _ _ _ _ _ _ _ _ 
+
+request_id = 'compile-active', sequence = 0, score = 0, recency = 0
+cohort_gain = 0, signature = 'safe-signature'
+
+    def _compile(
+        request_id: str,
+        sequence: int,
+        *,
+        score: int = 0,
+        recency: int = 0,
+        cohort_gain: int = 0,
+        signature: str = "sig-none",
+    ) -&gt; RequestSpec:
+&gt;       return RequestSpec(
+            request_id=request_id,
+            kind=RequestKind.COMPILE,
+            stream_id="history-a",
+            source_sequence=sequence,
+            affinity_score=score,
+            provider_recency=recency,
+            cohort_gain=cohort_gain,
+            affinity_signature=signature,
+        )
+E       TypeError: RequestSpec.__init__() got an unexpected keyword argument 'provider_recency'
+
+tests/test_membind_v31_admission.py:25: TypeError</failure></testcase><testcase classname="tests.test_membind_v31_admission" name="test_duplicate_or_invalid_requests_fail_closed" time="0.000"><failure message="TypeError: RequestSpec.__init__() got an unexpected keyword argument 'provider_recency'">def test_duplicate_or_invalid_requests_fail_closed() -&gt; None:
+        admission = RequestAdmissionController(limit=2, policy=AdmissionPolicy.FIFO)
+&gt;       admission.submit(_compile("compile-0", 0))
+                         ^^^^^^^^^^^^^^^^^^^^^^^^
+
+tests/test_membind_v31_admission.py:183: 
+_ _ _ _ _ _ _ _ _ _ _ _ _ _ _ _ _ _ _ _ _ _ _ _ _ _ _ _ _ _ _ _ _ _ _ _ _ _ _ _ 
+
+request_id = 'compile-0', sequence = 0, score = 0, recency = 0, cohort_gain = 0
+signature = 'sig-none'
+
+    def _compile(
+        request_id: str,
+        sequence: int,
+        *,
+        score: int = 0,
+        recency: int = 0,
+        cohort_gain: int = 0,
+        signature: str = "sig-none",
+    ) -&gt; RequestSpec:
+&gt;       return RequestSpec(
+            request_id=request_id,
+            kind=RequestKind.COMPILE,
+            stream_id="history-a",
+            source_sequence=sequence,
+            affinity_score=score,
+            provider_recency=recency,
+            cohort_gain=cohort_gain,
+            affinity_signature=signature,
+        )
+E       TypeError: RequestSpec.__init__() got an unexpected keyword argument 'provider_recency'
+
+tests/test_membind_v31_admission.py:25: TypeError</failure></testcase><testcase classname="tests.test_membind_v31_arrival_rob" name="test_unarrived_source_payload_cannot_be_observed_or_claimed" time="0.000" /><testcase classname="tests.test_membind_v31_arrival_rob" name="test_arrival_release_order_is_deterministic_without_leaking_payloads" time="0.000" /><testcase classname="tests.test_membind_v31_arrival_rob" name="test_rob_enforces_compile_worker_and_per_stream_lookahead_bounds" time="0.000" /><testcase classname="tests.test_membind_v31_arrival_rob" name="test_only_frontier_can_bind_and_only_one_bind_can_be_active_globally" time="0.000" /><testcase classname="tests.test_membind_v31_arrival_rob" name="test_compile_failure_and_bind_cancellation_are_fail_closed_and_content_safe" time="0.000" /><testcase classname="tests.test_membind_v31_arrival_rob" name="test_stream_failure_releases_other_same_stream_workers_deterministically" time="0.000" /><testcase classname="tests.test_membind_v31_artifacts" name="test_store_persists_prepared_privately_and_seals_complete_public_trace" time="0.410" /><testcase classname="tests.test_membind_v31_artifacts" name="test_store_rejects_private_telemetry_and_duplicate_or_invalid_transition" time="0.128" /><testcase classname="tests.test_membind_v31_artifacts" name="test_inspector_detects_event_tamper_and_unpublished_commit_poison" time="0.368" /><testcase classname="tests.test_membind_v31_baseline_plan" name="test_running_baseline_is_explicitly_not_terminal_and_verifier_writes_nothing" time="0.002" /><testcase classname="tests.test_membind_v31_baseline_plan" name="test_terminal_baseline_acceptance_recomputes_complete_construction_and_quality_chain" time="1.101" /><testcase classname="tests.test_membind_v31_baseline_plan" name="test_terminal_acceptance_rejects_resealed_runtime_or_correctness_drift[blocks/block-00/APC_ALIGNED_BLOCK_RESULT.json-&lt;lambda&gt;-global LLM admission]" time="1.089" /><testcase classname="tests.test_membind_v31_baseline_plan" name="test_terminal_acceptance_rejects_resealed_runtime_or_correctness_drift[blocks/block-00/APC_ALIGNED_BLOCK_RESULT.json-&lt;lambda&gt;-arrival trace]" time="1.052" /><testcase classname="tests.test_membind_v31_baseline_plan" name="test_terminal_acceptance_rejects_resealed_runtime_or_correctness_drift[blocks/block-00/APC_ALIGNED_BLOCK_RESULT.json-&lt;lambda&gt;-correctness]" time="1.087" /><testcase classname="tests.test_membind_v31_baseline_plan" name="test_terminal_acceptance_rejects_quality_unit_not_bound_to_construction" time="1.099" /><testcase classname="tests.test_membind_v31_baseline_plan" name="test_v31_plan_is_read_only_six_block_projection_with_one_representative_membind" time="1.136" /><testcase classname="tests.test_membind_v31_baseline_plan" name="test_v31_plan_verifier_rejects_document_or_baseline_binding_drift" time="1.176" /><testcase classname="tests.test_membind_v31_contracts" name="test_operator_contract_accepts_only_semantically_legal_class_pairs[EVIDENCE_BOUND-PURE]" time="0.000" /><testcase classname="tests.test_membind_v31_contracts" name="test_operator_contract_accepts_only_semantically_legal_class_pairs[STATE_BOUND-PURE]" time="0.000" /><testcase classname="tests.test_membind_v31_contracts" name="test_operator_contract_accepts_only_semantically_legal_class_pairs[STATE_BOUND-STATE_READ]" time="0.000" /><testcase classname="tests.test_membind_v31_contracts" name="test_operator_contract_accepts_only_semantically_legal_class_pairs[STATE_BOUND-STATE_WRITE]" time="0.000" /><testcase classname="tests.test_membind_v31_contracts" name="test_operator_contract_accepts_only_semantically_legal_class_pairs[STATE_BOUND-PUBLISH]" time="0.000" /><testcase classname="tests.test_membind_v31_contracts" name="test_evidence_bound_operator_rejects_any_mutable_state_effect[STATE_READ]" time="0.000" /><testcase classname="tests.test_membind_v31_contracts" name="test_evidence_bound_operator_rejects_any_mutable_state_effect[STATE_WRITE]" time="0.000" /><testcase classname="tests.test_membind_v31_contracts" name="test_evidence_bound_operator_rejects_any_mutable_state_effect[PUBLISH]" time="0.000" /><testcase classname="tests.test_membind_v31_contracts" name="test_operator_contract_rejects_unknown_or_coerced_enum_values[UNKNOWN-PURE-dependency_class_invalid]" time="0.000" /><testcase classname="tests.test_membind_v31_contracts" name="test_operator_contract_rejects_unknown_or_coerced_enum_values[STATE_BOUND-UNKNOWN-effect_class_invalid]" time="0.000" /><testcase classname="tests.test_membind_v31_contracts" name="test_operator_contract_rejects_unknown_or_coerced_enum_values[EVIDENCE_BOUND-True-effect_class_invalid]" time="0.000" /><testcase classname="tests.test_membind_v31_contracts" name="test_certification_binds_complete_identity_and_canonical_api_sets" time="0.000" /><testcase classname="tests.test_membind_v31_contracts" name="test_certification_fails_closed_when_any_forbidden_count_is_nonzero[persistent_state_read_count]" time="0.000" /><testcase classname="tests.test_membind_v31_contracts" name="test_certification_fails_closed_when_any_forbidden_count_is_nonzero[persistent_state_write_count]" time="0.000" /><testcase classname="tests.test_membind_v31_contracts" name="test_certification_fails_closed_when_any_forbidden_count_is_nonzero[undeclared_external_side_effect_count]" time="0.000" /><testcase classname="tests.test_membind_v31_contracts" name="test_certification_fails_closed_when_any_forbidden_count_is_nonzero[future_evidence_access_count]" time="0.000" /><testcase classname="tests.test_membind_v31_contracts" name="test_certification_fails_closed_when_any_forbidden_count_is_nonzero[undeclared_state_facing_call_count]" time="0.000" /><testcase classname="tests.test_membind_v31_contracts" name="test_certification_rejects_non_evidence_bound_or_non_pure_operator" time="0.000" /><testcase classname="tests.test_membind_v31_contracts" name="test_certification_rejects_ambiguous_api_policy_or_bad_identity" time="0.000" /><testcase classname="tests.test_membind_v31_contracts" name="test_certification_hash_covers_every_identity_and_trace_policy_field" time="0.000" /><testcase classname="tests.test_membind_v31_contracts" name="test_direct_certification_tamper_is_detected_by_self_verification" time="0.000" /><testcase classname="tests.test_membind_v31_contracts" name="test_state_cut_certification_canonicalizes_multiple_operator_records" time="0.000" /><testcase classname="tests.test_membind_v31_contracts" name="test_state_cut_certification_fails_closed_on_duplicate_or_tamper" time="0.000" /><testcase classname="tests.test_membind_v31_contracts" name="test_prepared_artifact_canonicalizes_raw_nodes_and_optional_edges" time="0.000" /><testcase classname="tests.test_membind_v31_contracts" name="test_prepared_artifact_hash_binds_source_evidence_certification_and_raw_data" time="0.000" /><testcase classname="tests.test_membind_v31_contracts" name="test_prepared_artifact_rejects_conflicting_expected_identity" time="0.000" /><testcase classname="tests.test_membind_v31_contracts" name="test_prepared_artifact_detects_tamper_and_returns_defensive_json_copies" time="0.000" /><testcase classname="tests.test_membind_v31_contracts" name="test_prepared_artifact_rejects_noncanonical_or_malformed_input[source_sequence--1-source_sequence_invalid]" time="0.000" /><testcase classname="tests.test_membind_v31_contracts" name="test_prepared_artifact_rejects_noncanonical_or_malformed_input[raw_nodes-not-a-sequence-of-mappings-raw_nodes_invalid]" time="0.000" /><testcase classname="tests.test_membind_v31_contracts" name="test_prepared_artifact_rejects_noncanonical_or_malformed_input[raw_nodes-value2-raw_nodes_invalid]" time="0.000" /><testcase classname="tests.test_membind_v31_contracts" name="test_prepared_artifact_rejects_noncanonical_or_malformed_input[raw_edges-value3-raw_edges_invalid]" time="0.000" /><testcase classname="tests.test_membind_v31_contracts" name="test_prepared_artifact_binds_pure_intermediates_defensively" time="0.000" /><testcase classname="tests.test_membind_v31_contracts" name="test_prepared_artifact_rejects_tampered_pure_intermediates" time="0.000" /><testcase classname="tests.test_membind_v31_coordinator" name="test_out_of_order_compile_enters_rob_but_bind_and_publish_remain_source_ordered" time="0.001" /><testcase classname="tests.test_membind_v31_coordinator" name="test_compile_failure_stops_stream_without_binding_later_artifacts" time="0.001" /><testcase classname="tests.test_membind_v31_coordinator" name="test_publication_visibility_failure_is_a_direct_lost_publish_violation" time="0.000" /><testcase classname="tests.test_membind_v31_freezer" name="test_freezer_emits_five_self_hashing_content_safe_artifacts" time="0.812" /><testcase classname="tests.test_membind_v31_freezer" name="test_reuse_and_execution_freezes_bind_exact_authorities_and_c_w_k" time="0.187" /><testcase classname="tests.test_membind_v31_freezer" name="test_certification_projection_and_serializability_are_cross_bound" time="0.187" /><testcase classname="tests.test_membind_v31_freezer" name="test_freezer_fails_closed_unless_c_w_k_are_exactly_two[1-2-2]" time="0.001" /><testcase classname="tests.test_membind_v31_freezer" name="test_freezer_fails_closed_unless_c_w_k_are_exactly_two[2-1-2]" time="0.001" /><testcase classname="tests.test_membind_v31_freezer" name="test_freezer_fails_closed_unless_c_w_k_are_exactly_two[2-2-1]" time="0.001" /><testcase classname="tests.test_membind_v31_freezer" name="test_freezer_fails_closed_unless_c_w_k_are_exactly_two[3-2-2]" time="0.001" /><testcase classname="tests.test_membind_v31_freezer" name="test_freezer_fails_closed_unless_c_w_k_are_exactly_two[2-3-2]" time="0.001" /><testcase classname="tests.test_membind_v31_freezer" name="test_freezer_fails_closed_unless_c_w_k_are_exactly_two[2-2-3]" time="0.001" /><testcase classname="tests.test_membind_v31_freezer" name="test_verifier_rejects_artifact_or_protocol_tamper" time="0.193" /><testcase classname="tests.test_membind_v31_freezer" name="test_existing_conflicting_freeze_is_never_overwritten" time="0.194" /><testcase classname="tests.test_membind_v31_freezer" name="test_cli_freeze_then_verify_without_live_dependencies" time="0.961" /><testcase classname="tests.test_membind_v31_graphiti_adapter" name="test_node_and_edge_compile_use_only_arrived_evidence_and_llm_capability" time="0.001" /><testcase classname="tests.test_membind_v31_graphiti_adapter" name="test_bind_uses_prepared_edges_and_preserves_native_stateful_suffix_order" time="0.001" /><testcase classname="tests.test_membind_v31_graphiti_adapter" name="test_uncertified_edge_extract_stays_inside_version_bound_bind" time="0.001" /><testcase classname="tests.test_membind_v31_graphiti_adapter" name="test_compile_forbidden_capability_access_fails_closed" time="0.000" /><testcase classname="tests.test_membind_v31_graphiti_adapter" name="test_adapter_rejects_state_cut_without_required_node_extract" time="0.000" /><testcase classname="tests.test_membind_v31_live_block" name="test_live_block_binds_plan_runtime_source_and_durable_publication" time="0.480" /><testcase classname="tests.test_membind_v31_live_runtime" name="test_v31_runtime_reuses_shared_envelope_and_replaces_v1_gate_at_both_refs" time="0.000" /><testcase classname="tests.test_membind_v31_materialization" name="test_not_terminal_materialization_is_write_free_and_does_not_touch_apc" time="0.001" /><testcase classname="tests.test_membind_v31_materialization" name="test_pass_materialization_commits_a_hash_bound_pair_and_is_idempotent" time="0.128" /><testcase classname="tests.test_membind_v31_materialization" name="test_existing_uncommitted_or_conflicting_output_fails_closed" time="0.003" /><testcase classname="tests.test_membind_v31_materialization" name="test_status_only_cli_prints_not_terminal_and_never_materializes" time="0.001" /><testcase classname="tests.test_membind_v31_materialization" name="test_materialize_cli_delegates_without_fallback_or_hidden_write" time="0.001" /><testcase classname="tests.test_membind_v31_qualification" name="test_real_pinned_extractors_qualify_without_mutable_state_capability" time="0.001"><failure message="paper_eval.membind_v31.qualification.MemBindV31QualificationError: graphiti_distribution_missing">def test_real_pinned_extractors_qualify_without_mutable_state_capability() -&gt; None:
+&gt;       result = asyncio.run(
+            qualify_graphiti_v0293_state_cut(
+                project_root=Path(__file__).resolve().parents[2],
+            )
+        )
+
+tests/test_membind_v31_qualification.py:12: 
+_ _ _ _ _ _ _ _ _ _ _ _ _ _ _ _ _ _ _ _ _ _ _ _ _ _ _ _ _ _ _ _ _ _ _ _ _ _ _ _ 
+/usr/lib/python3.12/asyncio/runners.py:194: in run
+    return runner.run(main)
+           ^^^^^^^^^^^^^^^^
+/usr/lib/python3.12/asyncio/runners.py:118: in run
+    return self._loop.run_until_complete(task)
+           ^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^
+/usr/lib/python3.12/asyncio/base_events.py:687: in run_until_complete
+    return future.result()
+           ^^^^^^^^^^^^^^^
+_ _ _ _ _ _ _ _ _ _ _ _ _ _ _ _ _ _ _ _ _ _ _ _ _ _ _ _ _ _ _ _ _ _ _ _ _ _ _ _ 
+
+project_root = PosixPath('/data/predator/ly/MemBind')
+
+    async def qualify_graphiti_v0293_state_cut(*, project_root: Path) -&gt; QualificationResult:
+        """Execute real extractors with no mutable-state capability and seal evidence."""
+    
+        root = Path(project_root)
+        try:
+            version = importlib.metadata.version("graphiti-core")
+        except importlib.metadata.PackageNotFoundError:
+&gt;           raise _fail("graphiti_distribution_missing") from None
+E           paper_eval.membind_v31.qualification.MemBindV31QualificationError: graphiti_distribution_missing
+
+src/paper_eval/membind_v31/qualification.py:93: MemBindV31QualificationError</failure></testcase><testcase classname="tests.test_membind_v31_reducer" name="test_reducer_builds_exact_main_and_mechanism_tables_from_sealed_inputs" time="0.007" /><testcase classname="tests.test_membind_v31_reducer" name="test_reducer_fails_closed_on_hash_incomplete_or_quality_binding_drift" time="0.015" /><testcase classname="tests.test_membind_v31_reducer" name="test_writer_creates_only_the_frozen_output_inventory" time="0.538" /><testcase classname="tests.test_membind_v31_reducer_cli" name="test_cli_wires_only_sealed_input_paths_to_reducer_and_writer" time="0.001" /><testcase classname="tests.test_membind_v31_workplan" name="test_historical_parent_remains_byte_identical" time="0.000" /><testcase classname="tests.test_membind_v31_workplan" name="test_v31_authorities_are_hash_bound" time="0.000" /><testcase classname="tests.test_membind_v31_workplan" name="test_v31_workplan_contains_the_frozen_method_and_reuse_boundaries" time="0.000" /><testcase classname="tests.test_membind_v31_workplan" name="test_v31_workplan_keeps_cache_claim_secondary_and_fail_closed" time="0.000" /></testsuite></testsuites>

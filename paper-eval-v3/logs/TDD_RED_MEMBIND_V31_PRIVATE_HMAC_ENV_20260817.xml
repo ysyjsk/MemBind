@@ -1,0 +1,110 @@
+<?xml version="1.0" encoding="utf-8"?><testsuites name="pytest tests"><testsuite name="pytest" errors="0" failures="5" skipped="0" tests="7" time="0.090" timestamp="2026-08-17T23:39:40.388092+08:00" hostname="aces-System-Product-Name"><testcase classname="tests.test_membind_v31_live_runtime" name="test_v31_runtime_reuses_shared_envelope_and_replaces_v1_gate_at_both_refs" time="0.000" /><testcase classname="tests.test_membind_v31_live_runtime" name="test_shared_graphiti_and_reranker_transport_calls_use_the_same_fail_closed_gate" time="0.001" /><testcase classname="tests.test_membind_v31_live_runtime" name="test_production_prefix_key_is_loaded_from_private_env_not_api_credential" time="0.000"><failure message="AssertionError: assert b'\x9c\x99#\x...r\x07\xd7\x97' == b'kkkkkkkkkkk...kkkkkkkkkkkkk'&#10;  &#10;  At index 0 diff: b'\x9c' != b'k'&#10;  Use -v to get more diff">monkeypatch = &lt;_pytest.monkeypatch.MonkeyPatch object at 0x70b96098c890&gt;
+
+    def test_production_prefix_key_is_loaded_from_private_env_not_api_credential(
+        monkeypatch: pytest.MonkeyPatch,
+    ) -&gt; None:
+        import paper_eval.membind_v31.live_runtime as module
+    
+        observed: dict[str, object] = {}
+    
+        def builder(**kwargs):
+            observed.update(kwargs)
+            return _prefix_encoder
+    
+        monkeypatch.setattr(module, "build_production_qwen_prefix_encoder", builder)
+        env = _env()
+        env["CONSTRUCTION_LLM_API_KEY"] = "unrelated-api-credential"
+        runtime = build_membind_v31_runtime(
+            env=env,
+            policy=AdmissionPolicy.FIFO,
+            request_id_prefix="v31-private-trace-key",
+            components=_components(),
+        )
+    
+&gt;       assert observed["trace_hmac_key"] == b"k" * 32
+E       AssertionError: assert b'\x9c\x99#\x...r\x07\xd7\x97' == b'kkkkkkkkkkk...kkkkkkkkkkkkk'
+E         
+E         At index 0 diff: b'\x9c' != b'k'
+E         Use -v to get more diff
+
+tests/test_membind_v31_live_runtime.py:179: AssertionError</failure></testcase><testcase classname="tests.test_membind_v31_live_runtime" name="test_production_prefix_key_missing_or_invalid_fails_closed[None]" time="0.009"><failure message="AssertionError: Regex pattern did not match.&#10;  Expected regex: 'trace_hmac_key_(missing|invalid)'&#10;  Actual message: 'tokenizer_load_failed'">value = None
+
+    @pytest.mark.parametrize(
+        "value",
+        (None, "", "00", "z" * 64),
+    )
+    def test_production_prefix_key_missing_or_invalid_fails_closed(value: str | None) -&gt; None:
+        env = _env()
+        if value is None:
+            env.pop("MEMBIND_V31_TRACE_HMAC_KEY")
+        else:
+            env["MEMBIND_V31_TRACE_HMAC_KEY"] = value
+&gt;       with pytest.raises(
+            Exception,
+            match="trace_hmac_key_(missing|invalid)",
+        ):
+E       AssertionError: Regex pattern did not match.
+E         Expected regex: 'trace_hmac_key_(missing|invalid)'
+E         Actual message: 'tokenizer_load_failed'
+
+tests/test_membind_v31_live_runtime.py:194: AssertionError</failure></testcase><testcase classname="tests.test_membind_v31_live_runtime" name="test_production_prefix_key_missing_or_invalid_fails_closed[]" time="0.009"><failure message="AssertionError: Regex pattern did not match.&#10;  Expected regex: 'trace_hmac_key_(missing|invalid)'&#10;  Actual message: 'tokenizer_load_failed'">value = ''
+
+    @pytest.mark.parametrize(
+        "value",
+        (None, "", "00", "z" * 64),
+    )
+    def test_production_prefix_key_missing_or_invalid_fails_closed(value: str | None) -&gt; None:
+        env = _env()
+        if value is None:
+            env.pop("MEMBIND_V31_TRACE_HMAC_KEY")
+        else:
+            env["MEMBIND_V31_TRACE_HMAC_KEY"] = value
+&gt;       with pytest.raises(
+            Exception,
+            match="trace_hmac_key_(missing|invalid)",
+        ):
+E       AssertionError: Regex pattern did not match.
+E         Expected regex: 'trace_hmac_key_(missing|invalid)'
+E         Actual message: 'tokenizer_load_failed'
+
+tests/test_membind_v31_live_runtime.py:194: AssertionError</failure></testcase><testcase classname="tests.test_membind_v31_live_runtime" name="test_production_prefix_key_missing_or_invalid_fails_closed[00]" time="0.009"><failure message="AssertionError: Regex pattern did not match.&#10;  Expected regex: 'trace_hmac_key_(missing|invalid)'&#10;  Actual message: 'tokenizer_load_failed'">value = '00'
+
+    @pytest.mark.parametrize(
+        "value",
+        (None, "", "00", "z" * 64),
+    )
+    def test_production_prefix_key_missing_or_invalid_fails_closed(value: str | None) -&gt; None:
+        env = _env()
+        if value is None:
+            env.pop("MEMBIND_V31_TRACE_HMAC_KEY")
+        else:
+            env["MEMBIND_V31_TRACE_HMAC_KEY"] = value
+&gt;       with pytest.raises(
+            Exception,
+            match="trace_hmac_key_(missing|invalid)",
+        ):
+E       AssertionError: Regex pattern did not match.
+E         Expected regex: 'trace_hmac_key_(missing|invalid)'
+E         Actual message: 'tokenizer_load_failed'
+
+tests/test_membind_v31_live_runtime.py:194: AssertionError</failure></testcase><testcase classname="tests.test_membind_v31_live_runtime" name="test_production_prefix_key_missing_or_invalid_fails_closed[zzzzzzzzzzzzzzzzzzzzzzzzzzzzzzzzzzzzzzzzzzzzzzzzzzzzzzzzzzzzzzzz]" time="0.008"><failure message="AssertionError: Regex pattern did not match.&#10;  Expected regex: 'trace_hmac_key_(missing|invalid)'&#10;  Actual message: 'tokenizer_load_failed'">value = 'zzzzzzzzzzzzzzzzzzzzzzzzzzzzzzzzzzzzzzzzzzzzzzzzzzzzzzzzzzzzzzzz'
+
+    @pytest.mark.parametrize(
+        "value",
+        (None, "", "00", "z" * 64),
+    )
+    def test_production_prefix_key_missing_or_invalid_fails_closed(value: str | None) -&gt; None:
+        env = _env()
+        if value is None:
+            env.pop("MEMBIND_V31_TRACE_HMAC_KEY")
+        else:
+            env["MEMBIND_V31_TRACE_HMAC_KEY"] = value
+&gt;       with pytest.raises(
+            Exception,
+            match="trace_hmac_key_(missing|invalid)",
+        ):
+E       AssertionError: Regex pattern did not match.
+E         Expected regex: 'trace_hmac_key_(missing|invalid)'
+E         Actual message: 'tokenizer_load_failed'
+
+tests/test_membind_v31_live_runtime.py:194: AssertionError</failure></testcase></testsuite></testsuites>

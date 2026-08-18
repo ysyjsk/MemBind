@@ -1,0 +1,55 @@
+<?xml version="1.0" encoding="utf-8"?><testsuites name="pytest tests"><testsuite name="pytest" errors="0" failures="1" skipped="0" tests="10" time="0.094" timestamp="2026-08-17T23:07:13.632807+08:00" hostname="aces-System-Product-Name"><testcase classname="tests.test_membind_v31_live_runtime" name="test_v31_runtime_reuses_shared_envelope_and_replaces_v1_gate_at_both_refs" time="0.009"><failure message="paper_eval.membind_v31.prefix_affinity.MemBindV31PrefixAffinityError: tokenizer_load_failed">def test_v31_runtime_reuses_shared_envelope_and_replaces_v1_gate_at_both_refs() -&gt; None:
+        events: list[dict[str, object]] = []
+&gt;       runtime = build_membind_v31_runtime(
+            env=_env(),
+            policy=AdmissionPolicy.FIFO,
+            request_id_prefix="v31-runtime",
+            observer=events.append,
+            components=_components(),
+        )
+
+tests/test_membind_v31_live_runtime.py:64: 
+_ _ _ _ _ _ _ _ _ _ _ _ _ _ _ _ _ _ _ _ _ _ _ _ _ _ _ _ _ _ _ _ _ _ _ _ _ _ _ _ 
+src/paper_eval/membind_v31/live_runtime.py:67: in build_membind_v31_runtime
+    selected_prefix_encoder = prefix_encoder or build_production_qwen_prefix_encoder(
+_ _ _ _ _ _ _ _ _ _ _ _ _ _ _ _ _ _ _ _ _ _ _ _ _ _ _ _ _ _ _ _ _ _ _ _ _ _ _ _ 
+
+inner = &lt;test_membind_v31_live_runtime._RawLLM object at 0x739356418230&gt;
+tokenizer_root = PosixPath('/data/predator/ly/Mem/cache/huggingface/models--Qwen--Qwen3-32B-FP8/snapshots/aa55da1ecc13d006e8b8e4f54579b1ea8c3db2df')
+prefix_match_unit = 16
+
+    def build_production_qwen_prefix_encoder(
+        *,
+        inner: object,
+        tokenizer_root: Path = DEFAULT_TOKENIZER_ROOT,
+        prefix_match_unit: int = DEFAULT_PREFIX_MATCH_UNIT,
+    ) -&gt; QwenGraphitiPrefixEncoder:
+        """Load only the pinned tokenizer snapshot; never download during a run."""
+    
+        root = Path(tokenizer_root)
+        observed: dict[str, str] = {}
+        for name, expected in TOKENIZER_FILE_SHA256S.items():
+            value = _file_sha256(root / name)
+            if value != expected:
+                raise _fail("tokenizer_file_hash_mismatch")
+            observed[name] = value
+        identity = payload_sha256(
+            {
+                "schema_version": "membind.paper-eval-v3.qwen-tokenizer-identity.v1",
+                "repo_id": TOKENIZER_REPO_ID,
+                "revision": TOKENIZER_REVISION,
+                "files": observed,
+                "chat_template_kwargs": {"enable_thinking": False},
+                "add_generation_prompt": True,
+            }
+        )
+        try:
+            from graphiti_core.llm_client.client import get_extraction_language_instruction
+            from transformers import AutoTokenizer
+    
+            tokenizer = AutoTokenizer.from_pretrained(root, local_files_only=True)
+        except Exception:
+&gt;           raise _fail("tokenizer_load_failed") from None
+E           paper_eval.membind_v31.prefix_affinity.MemBindV31PrefixAffinityError: tokenizer_load_failed
+
+src/paper_eval/membind_v31/prefix_affinity.py:427: MemBindV31PrefixAffinityError</failure></testcase><testcase classname="tests.test_membind_v31_request_runtime" name="test_transport_gate_is_nonpreemptive_and_frontier_first_at_next_permit" time="0.001" /><testcase classname="tests.test_membind_v31_request_runtime" name="test_barrier_blocks_new_compile_during_non_llm_frontier_bind_region" time="0.000" /><testcase classname="tests.test_membind_v31_request_runtime" name="test_transport_gate_enforces_k_and_emits_content_safe_events" time="0.001" /><testcase classname="tests.test_membind_v31_request_runtime" name="test_transport_call_without_declared_scope_is_hidden_fallback" time="0.000" /><testcase classname="tests.test_membind_v31_request_runtime" name="test_cache_affinity_uses_completed_token_prefix_not_prompt_name" time="0.001" /><testcase classname="tests.test_membind_v31_prefix_affinity" name="test_encoder_projects_the_exact_effective_qwen_chat_request_without_mutating_input" time="0.000" /><testcase classname="tests.test_membind_v31_prefix_affinity" name="test_json_object_schema_injection_is_mode_accurate_and_fail_closed" time="0.000" /><testcase classname="tests.test_membind_v31_prefix_affinity" name="test_provider_index_uses_only_completed_providers_and_granularity_aligned_lcp" time="0.000" /><testcase classname="tests.test_membind_v31_prefix_affinity" name="test_prefix_metadata_is_tamper_resistant_and_rejects_invalid_token_ids" time="0.000" /></testsuite></testsuites>

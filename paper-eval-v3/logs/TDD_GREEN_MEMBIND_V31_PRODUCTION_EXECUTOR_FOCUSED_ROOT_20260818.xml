@@ -1,0 +1,215 @@
+<?xml version="1.0" encoding="utf-8"?><testsuites name="pytest tests"><testsuite name="pytest" errors="0" failures="2" skipped="0" tests="4" time="0.179" timestamp="2026-08-18T00:27:05.838281+08:00" hostname="aces-System-Product-Name"><testcase classname="tests.test_membind_v31_production_executor" name="test_development_loader_reads_only_exact_sealed_four_history_inventory" time="0.001" /><testcase classname="tests.test_membind_v31_production_executor" name="test_source_bound_smoke_plan_binds_exact_namespace_and_three_source_prefix" time="0.000" /><testcase classname="tests.test_membind_v31_production_executor" name="test_real_smoke_adapter_uses_source_bound_plan_and_persists_three_artifacts" time="0.090"><failure message="paper_eval.membind_v31.prepared_artifact.PreparedArtifactError: source_identity_conflict">tmp_path = PosixPath('/tmp/pytest-of-ly/pytest-829/test_real_smoke_adapter_uses_s0')
+
+    def test_real_smoke_adapter_uses_source_bound_plan_and_persists_three_artifacts(
+        tmp_path: Path,
+    ) -&gt; None:
+        plan = _plan()
+        certification = _certification()
+        episodes = tuple(
+            _Episode(index, plan["history_source_sha256s"][HISTORIES[0]][index])
+            for index in range(3)
+        )
+        state: dict[str, object] = {"visible": [], "closed": False}
+        runtime = SimpleNamespace(
+            graphiti=SimpleNamespace(),
+            admitted_llm=_RequestClient(),
+            shared_execution_envelope_sha256="a" * 64,
+            method_execution_identity_sha256="9" * 64,
+        )
+    
+        async def namespace_probe(_runtime, _namespace):
+            return {
+                "node_count": len(state["visible"]),
+                "relationship_count": 0,
+                "episode_names": list(state["visible"]),
+            }
+    
+        hooks = V31LiveHooks(
+            runtime_builder=lambda **_kwargs: runtime,
+            runtime_ready=lambda _runtime: asyncio.sleep(0),
+            namespace_probe=namespace_probe,
+            namespace_episode=lambda episode, namespace: replace(episode, group_id=namespace),
+            source_visibility_probe=lambda _runtime, source: asyncio.sleep(
+                0, result=source.episode_projection["name"] in state["visible"]
+            ),
+            reference_time_to_ns=lambda _value: 1,
+            adapter_factory=lambda _runtime, _certification: object(),
+            close_runtime=lambda _runtime: asyncio.sleep(0, result=state.update(closed=True)),
+        )
+    
+        async def coordinator(**kwargs):
+            source_log = kwargs["source_log"]
+            for sequence in range(3):
+                source = source_log.record(sequence)
+                kwargs["observer"](
+                    {"event_type": "arrival", "source_sequence": sequence, "timestamp_ns": sequence * 100}
+                )
+                kwargs["observer"](
+                    {"event_type": "compile_start", "source_sequence": sequence, "timestamp_ns": sequence * 100 + 1}
+                )
+                artifact = PreparedArtifact.create(
+                    source_sequence=sequence,
+                    source_sha256=source.source_sha256,
+                    evidence_sha256=f"{500 + sequence:064x}",
+                    certification_sha256=certification.certification_sha256,
+                    raw_nodes=[],
+                    raw_edges=[],
+                    pure_intermediates={"node_episode_index_map": {}},
+                )
+                kwargs["prepared_persistor"](artifact)
+                kwargs["observer"](
+                    {"event_type": "prepared_durable", "source_sequence": sequence, "timestamp_ns": sequence * 100 + 2}
+                )
+                kwargs["observer"](
+                    {"event_type": "bind_start", "source_sequence": sequence, "timestamp_ns": sequence * 100 + 3}
+                )
+                state["visible"].append(source.episode_projection["name"])
+                kwargs["commit_observer"](sequence, {})
+                assert await kwargs["publication_probe"](sequence, {}) is True
+                kwargs["publication_persistor"](sequence, {})
+            return {
+                "status": "PASS",
+                "publication_source_sequences": [0, 1, 2],
+                "direct_violation_count": 0,
+            }
+    
+        root = tmp_path / "smoke"
+        root.mkdir()
+&gt;       result = asyncio.run(
+            execute_v31_three_episode_smoke(
+                smoke_spec=_spec(plan),
+                verified_plan=plan,
+                episodes=episodes,
+                env={"SAFE": "value"},
+                smoke_root=root,
+                state_cut_certification=certification,
+                hooks=hooks,
+                coordinator=coordinator,
+            )
+        )
+
+paper-eval-v3/tests/test_membind_v31_production_executor.py:308: 
+_ _ _ _ _ _ _ _ _ _ _ _ _ _ _ _ _ _ _ _ _ _ _ _ _ _ _ _ _ _ _ _ _ _ _ _ _ _ _ _ 
+/usr/lib/python3.12/asyncio/runners.py:194: in run
+    return runner.run(main)
+           ^^^^^^^^^^^^^^^^
+/usr/lib/python3.12/asyncio/runners.py:118: in run
+    return self._loop.run_until_complete(task)
+           ^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^
+/usr/lib/python3.12/asyncio/base_events.py:687: in run_until_complete
+    return future.result()
+           ^^^^^^^^^^^^^^^
+paper-eval-v3/src/paper_eval/membind_v31/production_executor.py:473: in execute_v31_three_episode_smoke
+    result = await coordinator(
+paper-eval-v3/tests/test_membind_v31_production_executor.py:289: in coordinator
+    kwargs["prepared_persistor"](artifact)
+paper-eval-v3/src/paper_eval/membind_v31/production_executor.py:372: in persist_prepared
+    artifact.verify(
+_ _ _ _ _ _ _ _ _ _ _ _ _ _ _ _ _ _ _ _ _ _ _ _ _ _ _ _ _ _ _ _ _ _ _ _ _ _ _ _ 
+
+self = PreparedArtifact(source_sequence=0, source_sha256='3df1b815d087effac37367a469c6397f6c73dd983c56d609e2fcbcec4e2d0891', ...on='{"node_episode_index_map":{}}', artifact_sha256='f4bd6e39b43af8daa3f8227a50f1ac529c7ae97c67d8692b2b2a47f9b914e3e8')
+expected_source_sha256 = '0000000000000000000000000000000000000000000000000000000000000001'
+expected_evidence_sha256 = None
+expected_certification_sha256 = '0940e1e2e2b33e8e3d33141d7c5772bbd2dcd26c6c24c68936e7883af3c12ae9'
+
+    def verify(
+        self,
+        *,
+        expected_source_sha256: str | None = None,
+        expected_evidence_sha256: str | None = None,
+        expected_certification_sha256: str | None = None,
+    ) -&gt; "PreparedArtifact":
+        _sequence(self.source_sequence)
+        source = _sha256(self.source_sha256, "source_sha256_invalid")
+        evidence = _sha256(self.evidence_sha256, "evidence_sha256_invalid")
+        certification = _sha256(
+            self.certification_sha256, "certification_sha256_invalid"
+        )
+        _sha256(self.artifact_sha256, "artifact_sha256_invalid")
+        nodes = _canonical_records(
+            _decoded(self._raw_nodes_json), code="raw_nodes_invalid", optional=False
+        )
+        edges = _canonical_records(
+            _decoded(self._raw_edges_json), code="raw_edges_invalid", optional=True
+        )
+        intermediates = _canonical_mapping(
+            json.loads(self._pure_intermediates_json),
+            code="pure_intermediates_invalid",
+        )
+        if (
+            nodes != self._raw_nodes_json
+            or edges != self._raw_edges_json
+            or intermediates != self._pure_intermediates_json
+        ):
+            raise _fail("artifact_not_canonical")
+        if payload_sha256(self.payload()) != self.artifact_sha256:
+            raise _fail("artifact_hash_mismatch")
+        if expected_source_sha256 is not None and source != _sha256(
+            expected_source_sha256, "expected_source_sha256_invalid"
+        ):
+&gt;           raise _fail("source_identity_conflict")
+E           paper_eval.membind_v31.prepared_artifact.PreparedArtifactError: source_identity_conflict
+
+paper-eval-v3/src/paper_eval/membind_v31/prepared_artifact.py:223: PreparedArtifactError</failure></testcase><testcase classname="tests.test_membind_v31_production_executor" name="test_production_hooks_load_env_certification_and_delegate_formal_block" time="0.001"><failure message="paper_eval.membind_v31.production_executor.ProductionExecutorError: production context invalid">tmp_path = PosixPath('/tmp/pytest-of-ly/pytest-829/test_production_hooks_load_env0')
+
+    def test_production_hooks_load_env_certification_and_delegate_formal_block(
+        tmp_path: Path,
+    ) -&gt; None:
+        plan = _plan()
+        episodes = {
+            history: tuple(
+                _Episode(index, plan["history_source_sha256s"][history][index])
+                for index in range(4)
+            )
+            for history in HISTORIES
+        }
+        certification = _certification()
+        calls: dict[str, object] = {}
+        paths = ProductionExecutorPaths.from_repository(tmp_path)
+    
+        async def smoke_executor(**kwargs):
+            calls["smoke"] = kwargs
+            return {"status": "PASS"}
+    
+        async def block_executor(**kwargs):
+            calls["block"] = kwargs
+            return {"status": "PASS", "block_index": kwargs["block_index"]}
+    
+        dependencies = ProductionExecutorDependencies(
+            load_control_plan=lambda _path: plan,
+            load_env=lambda path: calls.setdefault("env_path", path) or {"ENV": "value"},
+            load_certification=lambda freeze_paths: calls.setdefault("freeze_paths", freeze_paths) or certification,
+            load_episodes=lambda _path, _plan: episodes,
+            execute_smoke=smoke_executor,
+            execute_block=block_executor,
+        )
+        hooks = build_production_executor_hooks(paths=paths, dependencies=dependencies)
+    
+&gt;       hooks.run_smoke(_spec(plan), tmp_path / "smoke")
+
+paper-eval-v3/tests/test_membind_v31_production_executor.py:364: 
+_ _ _ _ _ _ _ _ _ _ _ _ _ _ _ _ _ _ _ _ _ _ _ _ _ _ _ _ _ _ _ _ _ _ _ _ _ _ _ _ 
+paper-eval-v3/src/paper_eval/membind_v31/production_executor.py:638: in run_smoke
+    env, certification, episodes = context()
+                                   ^^^^^^^^^
+_ _ _ _ _ _ _ _ _ _ _ _ _ _ _ _ _ _ _ _ _ _ _ _ _ _ _ _ _ _ _ _ _ _ _ _ _ _ _ _ 
+
+    def context() -&gt; tuple[Mapping[str, str], StateCutCertification, Mapping[str, Sequence[object]]]:
+        if not loaded:
+            env = selected_dependencies.load_env(selected_paths.env_file)
+            certification = selected_dependencies.load_certification(
+                selected_paths.freeze_paths
+            )
+            episodes = selected_dependencies.load_episodes(
+                selected_paths.development_input, plan
+            )
+            if (
+                not isinstance(env, Mapping)
+                or any(not isinstance(key, str) or not isinstance(value, str) for key, value in env.items())
+                or not isinstance(certification, StateCutCertification)
+                or tuple(episodes) != HISTORIES
+            ):
+&gt;               raise _fail("production context invalid")
+E               paper_eval.membind_v31.production_executor.ProductionExecutorError: production context invalid
+
+paper-eval-v3/src/paper_eval/membind_v31/production_executor.py:633: ProductionExecutorError</failure></testcase></testsuite></testsuites>

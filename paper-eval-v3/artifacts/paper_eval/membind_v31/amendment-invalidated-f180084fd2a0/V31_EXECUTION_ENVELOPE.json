@@ -1,0 +1,125 @@
+{
+  "backend_contract": {
+    "apc_enabled": true,
+    "apc_evidence": "REUSED_BASELINE_PREFLIGHT",
+    "backend_prefix_match_granularity_tokens": 16,
+    "cache_claim_status": "OBSERVATIONAL_UNLESS_CONTROLLED_RESET_OR_RESTART",
+    "cache_initial_state_policy": "HOT_ENGINE_COLD_CROSS_BLOCK_NATURAL_WITH_REQUEST_CACHE_SALT",
+    "cache_reset_endpoint": "HTTP_404_NOT_EXPOSED",
+    "chunked_prefill": "SAME_AS_BASELINE_SHARED_ENVELOPE",
+    "gpu_memory_budget": "SAME_AS_BASELINE_SHARED_ENVELOPE",
+    "granularity_evidence": {
+      "cache_source_git_blob": "a628e7d7cdd03152b44cc07bfba3f60d09fd1a46",
+      "cache_source_path": "vllm/config/cache.py",
+      "cache_source_sha256": "ee2c0db3e4e6c9e9cab33d8be566c4b8101159d36c0d3787c30d47931ee2a9a4",
+      "default_constant": "CacheConfig.DEFAULT_BLOCK_SIZE",
+      "derivation": "VLLM_0_26_0_DEFAULT_WITH_NO_LAUNCH_OVERRIDE",
+      "operator_supplied_log_contents_persisted": false,
+      "operator_supplied_read_only_log_observation_sha256": "1f06e98940d28b841748f7c2241b83b2040daba0f47cb8541e14ac4a6ab4069e",
+      "remote_launch_overrides_observed": false,
+      "vllm_repository": "https://github.com/vllm-project/vllm",
+      "vllm_revision": "568afb3a13806beb53bb2e6bd518269357b237c0"
+    }
+  },
+  "baseline_plan_payload_sha256": "f7414cc846c4f585fede0873c0fd25ed6f1a552abacf103c0b21adaf24cd7b85",
+  "baseline_run_id": "apc-baseline-dev-20260817-001",
+  "baseline_shared_execution_envelope_sha256": "1bc49eabdc85f51546bc2b5477141887c087bb1fc0a0b26b33d1bf569660be25",
+  "deployment": {
+    "construction": {
+      "dtype": "bfloat16",
+      "enable_thinking": false,
+      "max_model_len": 65536,
+      "quantization": "fp8",
+      "repository_revision": "aa55da1ecc13d006e8b8e4f54579b1ea8c3db2df",
+      "requested_max_tokens": 16384,
+      "rope_parameters": {
+        "factor": 2.0,
+        "original_max_position_embeddings": 32768,
+        "rope_theta": 1000000,
+        "rope_type": "yarn"
+      },
+      "served_model_id": "qwen3-32b-fp8",
+      "structured_output_mode": "json_schema",
+      "vllm_version": "0.26.0"
+    },
+    "embedding": {
+      "deployment_fingerprint": "5f5a8400eeaa2f07d167d8b5b7e63d615945a8f54f506e02342840cd4e3fe626",
+      "dimension": 1024,
+      "dtype": "bfloat16",
+      "instruction_policy": "none",
+      "normalization": "l2",
+      "pooling": "last_token",
+      "served_model_id": "qwen3-embedding-0.6b"
+    },
+    "graphiti": {
+      "repository_commit": "021d3a57d511f21b10adaf7fa923bd5c1fce5e9d",
+      "version": "0.29.3"
+    },
+    "neo4j": {
+      "deployment": "local_non_docker_community",
+      "live_readiness_checked_by_s0": false,
+      "uri": "bolt://localhost:7687",
+      "version": "5.26.0"
+    }
+  },
+  "live_recheck_required_before_namespace_creation": true,
+  "live_service_calls_performed": false,
+  "method_knobs": {
+    "bind_workers": 1,
+    "compile_workers_c": 2,
+    "global_llm_admission_k": 2,
+    "lookahead_w": 2
+  },
+  "methodology_sha256": "2af8147a839972e120a0123d1d0fffdd3e10653fa64e338c1c7a7fa32f506280",
+  "payload_sha256": "7f7b0b13fbc7f930a2119b0f86caa2e79c7a61dec80c0c7b96ac23efdee506da",
+  "preflight_binding": {
+    "file_sha256": "6070b3fc431fefe5fd2ee0ce2bb8f56b63291603a22136fa55b68f8d5002e98c",
+    "path": "paper-eval-v3/artifacts/paper_eval/apc_aligned_baseline/runs/apc-baseline-dev-20260817-001/PREFLIGHT.json",
+    "payload_sha256": "b89c28b407017a74d5ff1814da962d16d8147be62f41501bbb7433a1ac42aad4"
+  },
+  "reuse_audit_sha256": "4d0817d71a4f54d9430c2f20739e84e545ff1b48a2182af474a164d1db215b03",
+  "runtime_config_binding": {
+    "file_sha256": "0206ea7f0c8746102fb7d9f555b88b162e3ed947bc332695a8595889bf2b9cca",
+    "path": "paper-eval-v3/artifacts/paper_eval/native/S5_PSTAR_RUNTIME_CONFIG_FORMAL_CHAIN_FRESH_20260816.json"
+  },
+  "schema_version": "membind.paper-eval-v3.membind-v31-execution-envelope.v1",
+  "shared_public_runtime_identity": {
+    "construction": {
+      "base_url": "http://10.87.5.247:8000/v1",
+      "requested_max_tokens": 16384,
+      "served_model_id": "qwen3-32b-fp8",
+      "structured_output_mode": "json_schema"
+    },
+    "embedding": {
+      "base_url": "http://10.87.5.247:8001/v1",
+      "dimension": 1024,
+      "served_model_id": "qwen3-embedding-0.6b"
+    },
+    "global_llm_admission_k": 2,
+    "graphiti_max_coroutines": 8,
+    "neo4j": {
+      "uri": "bolt://localhost:7687"
+    },
+    "schema_version": "membind.paper-eval-v3.membind-v1-live-runtime.v1"
+  },
+  "state_contract": {
+    "claim_scope": "CONSTRUCTION_TO_CONSTRUCTION_SOURCE_ORDER_SERIALIZABILITY",
+    "external_writer_allowed": false,
+    "hidden_post_publish_state_task_allowed": false,
+    "publish_completeness": "ALL_DECLARED_EFFECTS_AND_STATE_MUTATING_TASKS_JOINED",
+    "published_read_contract": false,
+    "single_writer_per_namespace": true
+  },
+  "status": "PASS",
+  "tokenizer_identity": {
+    "file_sha256s": {
+      "config.json": "e546dacd2c772660270233f5579e9ab923cc2a7ec5ed3c58c27c2bc62cbf5169",
+      "tokenizer.json": "aeb13307a71acd8fe81861d94ad54ab689df773318809eed3cbe794b4492dae4",
+      "tokenizer_config.json": "d5d09f07b48c3086c508b30d1c9114bd1189145b74e982a265350c923acd8101"
+    },
+    "local_snapshot_path_persisted": false,
+    "repository": "Qwen/Qwen3-32B-FP8",
+    "revision": "aa55da1ecc13d006e8b8e4f54579b1ea8c3db2df"
+  },
+  "workplan_sha256": "f180084fd2a00e0a274aee8a33168d8e9728878190b44113aebf7036525889f9"
+}

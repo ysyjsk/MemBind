@@ -1,0 +1,69 @@
+{
+  "admission_capacity": 2,
+  "complete_request_count": 502,
+  "evidence_boundary": {
+    "conclusion": "READY_POOL_STARVATION_NOT_IDENTIFIABLE_FROM_LLM_TRACE",
+    "frontier_wait_reason_observable": false,
+    "ready_pool_observable": false
+  },
+  "frontier_bind_region_count": 32,
+  "frontier_bind_region_union_ns": 2710683802783,
+  "incomplete_request_ids": [],
+  "occupancy": {
+    "active_fraction_by_count": {
+      "1": 0.7237459811318812,
+      "2": 0.2202448735850655
+    },
+    "active_time_by_count_ns": {
+      "1": 2736917699501,
+      "2": 832877982682
+    },
+    "observed_max_active": 2,
+    "service_window_ns": 3781599858034,
+    "under_capacity_ns": 2736917699501
+  },
+  "payload_sha256": "90800d20fd59896312c27968ff7091d3c39e71d7df6145d17d6d60d7a4bf4565",
+  "prompt_tokens_by_kind": {
+    "COMPILE": 1508405,
+    "FRONTIER": 1494314
+  },
+  "request_count_by_kind": {
+    "COMPILE": 69,
+    "FRONTIER": 433
+  },
+  "rho": {
+    "COMPILE": {
+      "prompt_fraction": 0.5023463734035719,
+      "request_fraction": 0.13745019920318724,
+      "service_span_fraction": 0.3944061695747429,
+      "service_union_fraction": 0.36154543613769846
+    },
+    "FRONTIER": {
+      "prompt_fraction": 0.4976536265964281,
+      "request_fraction": 0.8625498007968128,
+      "service_span_fraction": 0.605593830425257,
+      "service_union_fraction": 0.6384545638623016
+    }
+  },
+  "schema_version": "membind.paper-eval-v3.membind-v31-scheduler-diagnostic.v1",
+  "service_interval_union_ns_by_kind": {
+    "COMPILE": 1458741185329,
+    "FRONTIER": 2575997023269
+  },
+  "service_interval_union_ns_total": 3569795682183,
+  "service_overlap_excess_ns_by_kind": {
+    "COMPILE": 277700470718,
+    "FRONTIER": 90234985549
+  },
+  "service_span_sum_ns_by_kind": {
+    "COMPILE": 1736441656047,
+    "FRONTIER": 2666232008818
+  },
+  "status": "DIAGNOSTIC_ONLY",
+  "trace_sha256": "2427035424d0fc2cbeecfcdcbda42b9a7a1c7fdff3954219c1e6078b9802d02a",
+  "trace_status": "COMPLETE_TRACE",
+  "transport_wait": {
+    "submitted_wait_sum_ns": 1495053378609,
+    "under_capacity_ns": 1808828992
+  }
+}

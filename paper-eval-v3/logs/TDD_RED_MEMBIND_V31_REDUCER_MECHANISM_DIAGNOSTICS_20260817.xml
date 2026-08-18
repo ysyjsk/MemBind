@@ -1,0 +1,44 @@
+<?xml version="1.0" encoding="utf-8"?><testsuites name="pytest tests"><testsuite name="pytest" errors="0" failures="1" skipped="0" tests="3" time="0.168" timestamp="2026-08-17T23:01:04.036299+08:00" hostname="aces-System-Product-Name"><testcase classname="tests.test_membind_v31_reducer" name="test_reducer_builds_exact_main_and_mechanism_tables_from_sealed_inputs" time="0.007"><failure message="KeyError: 'frontier_wait_p95_ns'">def test_reducer_builds_exact_main_and_mechanism_tables_from_sealed_inputs() -&gt; None:
+        reduced = _reduce(_fixture())
+    
+        assert set(reduced) == {
+            "INPUT_BINDINGS.json",
+            "PER_HISTORY_RESULTS.jsonl",
+            "MECHANISM_ABLATION.json",
+            "DEVELOPMENT_MAIN_TABLE.json",
+            "DEVELOPMENT_MAIN_TABLE.csv",
+            "DEVELOPMENT_MAIN_TABLE.md",
+            "EXPERIMENT_REPORT.md",
+        }
+        rows = reduced["DEVELOPMENT_MAIN_TABLE.json"]["rows"]
+        assert [row["method"] for row in rows] == [
+            "U0-aligned",
+            "A0-aligned",
+            "P(C=2)-aligned",
+            "MemBind",
+        ]
+        assert all(row["episode_count"] == 188 for row in rows)
+        assert rows[2]["direct_violations"] == 4
+        assert rows[3]["direct_violations"] == 0
+        assert rows[3]["qa_accuracy"] == 0.5
+        assert rows[3]["evidence_recall_at_10"] == 0.75
+        mechanism = reduced["MECHANISM_ABLATION.json"]
+        assert [row["method"] for row in mechanism["rows"]] == [
+            "MemBind-Barrier",
+            "MemBind-FIFO",
+            "MemBind",
+        ]
+        assert mechanism["history_id"] == "07741c45"
+&gt;       assert all(row["frontier_wait_p95_ns"] == 30 for row in mechanism["rows"])
+               ^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^
+
+tests/test_membind_v31_reducer.py:364: 
+_ _ _ _ _ _ _ _ _ _ _ _ _ _ _ _ _ _ _ _ _ _ _ _ _ _ _ _ _ _ _ _ _ _ _ _ _ _ _ _ 
+
+.0 = &lt;list_iterator object at 0x746352837460&gt;
+
+&gt;   assert all(row["frontier_wait_p95_ns"] == 30 for row in mechanism["rows"])
+               ^^^^^^^^^^^^^^^^^^^^^^^^^^^
+E   KeyError: 'frontier_wait_p95_ns'
+
+tests/test_membind_v31_reducer.py:364: KeyError</failure></testcase><testcase classname="tests.test_membind_v31_reducer" name="test_reducer_fails_closed_on_hash_incomplete_or_quality_binding_drift" time="0.014" /><testcase classname="tests.test_membind_v31_reducer" name="test_writer_creates_only_the_frozen_output_inventory" time="0.100" /></testsuite></testsuites>

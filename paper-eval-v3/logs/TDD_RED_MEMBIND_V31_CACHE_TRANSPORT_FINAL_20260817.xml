@@ -1,0 +1,879 @@
+<?xml version="1.0" encoding="utf-8"?><testsuites name="pytest tests"><testsuite name="pytest" errors="0" failures="20" skipped="0" tests="30" time="0.263" timestamp="2026-08-17T23:19:17.206074+08:00" hostname="aces-System-Product-Name"><testcase classname="tests.test_membind_v31_prefix_affinity" name="test_encoder_projects_the_exact_effective_qwen_chat_request_without_mutating_input" time="0.000"><failure message="TypeError: QwenGraphitiPrefixEncoder.__init__() got an unexpected keyword argument 'cache_identity_sha256'">def test_encoder_projects_the_exact_effective_qwen_chat_request_without_mutating_input() -&gt; None:
+        tokenizer = _Tokenizer()
+&gt;       encoder = QwenGraphitiPrefixEncoder(
+            inner=_Inner(),
+            tokenizer=tokenizer,
+            prefix_match_unit=4,
+            tokenizer_identity_sha256="a" * 64,
+            cache_identity_sha256="1" * 64,
+            trace_hmac_key=b"a" * 32,
+            multilingual_instruction=lambda group_id: f"|LANG:{group_id}",
+        )
+E       TypeError: QwenGraphitiPrefixEncoder.__init__() got an unexpected keyword argument 'cache_identity_sha256'
+
+paper-eval-v3/tests/test_membind_v31_prefix_affinity.py:50: TypeError</failure></testcase><testcase classname="tests.test_membind_v31_prefix_affinity" name="test_json_object_schema_injection_is_mode_accurate_and_fail_closed" time="0.000"><failure message="TypeError: QwenGraphitiPrefixEncoder.__init__() got an unexpected keyword argument 'cache_identity_sha256'">def test_json_object_schema_injection_is_mode_accurate_and_fail_closed() -&gt; None:
+        class JsonObjectInner(_Inner):
+            structured_output_mode = "json_object"
+    
+        class Schema:
+            @staticmethod
+            def model_json_schema():
+                return {"type": "object", "properties": {"answer": {"type": "string"}}}
+    
+        tokenizer = _Tokenizer()
+&gt;       encoder = QwenGraphitiPrefixEncoder(
+            inner=JsonObjectInner(),
+            tokenizer=tokenizer,
+            prefix_match_unit=4,
+            tokenizer_identity_sha256="b" * 64,
+            cache_identity_sha256="2" * 64,
+            trace_hmac_key=b"b" * 32,
+            multilingual_instruction=lambda _group_id: "",
+        )
+E       TypeError: QwenGraphitiPrefixEncoder.__init__() got an unexpected keyword argument 'cache_identity_sha256'
+
+paper-eval-v3/tests/test_membind_v31_prefix_affinity.py:97: TypeError</failure></testcase><testcase classname="tests.test_membind_v31_prefix_affinity" name="test_provider_index_uses_only_completed_providers_and_granularity_aligned_lcp" time="0.000"><failure message="TypeError: PrefixMetadata.from_token_ids() got an unexpected keyword argument 'cache_identity_sha256'">def test_provider_index_uses_only_completed_providers_and_granularity_aligned_lcp() -&gt; None:
+        index = PrefixProviderIndex(prefix_match_unit=4)
+&gt;       candidate = _metadata([1, 2, 3, 4, 5, 6, 7, 9, 10])
+                    ^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^
+
+paper-eval-v3/tests/test_membind_v31_prefix_affinity.py:132: 
+_ _ _ _ _ _ _ _ _ _ _ _ _ _ _ _ _ _ _ _ _ _ _ _ _ _ _ _ _ _ _ _ _ _ _ _ _ _ _ _ 
+
+tokens = [1, 2, 3, 4, 5, 6, ...], unit = 4
+tokenizer_identity = 'cccccccccccccccccccccccccccccccccccccccccccccccccccccccccccccccc'
+trace_key = b'cccccccccccccccccccccccccccccccc'
+cache_identity = '3333333333333333333333333333333333333333333333333333333333333333'
+
+    def _metadata(
+        tokens: list[int],
+        *,
+        unit: int = 4,
+        tokenizer_identity: str = "c" * 64,
+        trace_key: bytes = b"c" * 32,
+        cache_identity: str = "3" * 64,
+    ) -&gt; PrefixMetadata:
+&gt;       return PrefixMetadata.from_token_ids(
+            tokens,
+            prefix_match_unit=unit,
+            tokenizer_identity_sha256=tokenizer_identity,
+            cache_identity_sha256=cache_identity,
+            trace_hmac_key=trace_key,
+        )
+E       TypeError: PrefixMetadata.from_token_ids() got an unexpected keyword argument 'cache_identity_sha256'
+
+paper-eval-v3/tests/test_membind_v31_prefix_affinity.py:121: TypeError</failure></testcase><testcase classname="tests.test_membind_v31_prefix_affinity" name="test_provider_index_freezes_full_prefix_and_backend_identity[tokenizer_identity-dddddddddddddddddddddddddddddddddddddddddddddddddddddddddddddddd]" time="0.000"><failure message="TypeError: PrefixMetadata.from_token_ids() got an unexpected keyword argument 'cache_identity_sha256'">field = 'tokenizer_identity'
+value = 'dddddddddddddddddddddddddddddddddddddddddddddddddddddddddddddddd'
+
+    @pytest.mark.parametrize(
+        ("field", "value"),
+        [
+            ("tokenizer_identity", "d" * 64),
+            ("trace_key", b"different-private-trace-key".ljust(32, b"0")),
+            ("cache_identity", "4" * 64),
+            ("unit", 8),
+        ],
+    )
+    def test_provider_index_freezes_full_prefix_and_backend_identity(field, value) -&gt; None:
+        index = PrefixProviderIndex(prefix_match_unit=4)
+&gt;       index.register_completed(_metadata([1, 2, 3, 4]), completion_sequence=1)
+                                 ^^^^^^^^^^^^^^^^^^^^^^^
+
+paper-eval-v3/tests/test_membind_v31_prefix_affinity.py:158: 
+_ _ _ _ _ _ _ _ _ _ _ _ _ _ _ _ _ _ _ _ _ _ _ _ _ _ _ _ _ _ _ _ _ _ _ _ _ _ _ _ 
+
+tokens = [1, 2, 3, 4], unit = 4
+tokenizer_identity = 'cccccccccccccccccccccccccccccccccccccccccccccccccccccccccccccccc'
+trace_key = b'cccccccccccccccccccccccccccccccc'
+cache_identity = '3333333333333333333333333333333333333333333333333333333333333333'
+
+    def _metadata(
+        tokens: list[int],
+        *,
+        unit: int = 4,
+        tokenizer_identity: str = "c" * 64,
+        trace_key: bytes = b"c" * 32,
+        cache_identity: str = "3" * 64,
+    ) -&gt; PrefixMetadata:
+&gt;       return PrefixMetadata.from_token_ids(
+            tokens,
+            prefix_match_unit=unit,
+            tokenizer_identity_sha256=tokenizer_identity,
+            cache_identity_sha256=cache_identity,
+            trace_hmac_key=trace_key,
+        )
+E       TypeError: PrefixMetadata.from_token_ids() got an unexpected keyword argument 'cache_identity_sha256'
+
+paper-eval-v3/tests/test_membind_v31_prefix_affinity.py:121: TypeError</failure></testcase><testcase classname="tests.test_membind_v31_prefix_affinity" name="test_provider_index_freezes_full_prefix_and_backend_identity[trace_key-different-private-trace-key00000]" time="0.000"><failure message="TypeError: PrefixMetadata.from_token_ids() got an unexpected keyword argument 'cache_identity_sha256'">field = 'trace_key', value = b'different-private-trace-key00000'
+
+    @pytest.mark.parametrize(
+        ("field", "value"),
+        [
+            ("tokenizer_identity", "d" * 64),
+            ("trace_key", b"different-private-trace-key".ljust(32, b"0")),
+            ("cache_identity", "4" * 64),
+            ("unit", 8),
+        ],
+    )
+    def test_provider_index_freezes_full_prefix_and_backend_identity(field, value) -&gt; None:
+        index = PrefixProviderIndex(prefix_match_unit=4)
+&gt;       index.register_completed(_metadata([1, 2, 3, 4]), completion_sequence=1)
+                                 ^^^^^^^^^^^^^^^^^^^^^^^
+
+paper-eval-v3/tests/test_membind_v31_prefix_affinity.py:158: 
+_ _ _ _ _ _ _ _ _ _ _ _ _ _ _ _ _ _ _ _ _ _ _ _ _ _ _ _ _ _ _ _ _ _ _ _ _ _ _ _ 
+
+tokens = [1, 2, 3, 4], unit = 4
+tokenizer_identity = 'cccccccccccccccccccccccccccccccccccccccccccccccccccccccccccccccc'
+trace_key = b'cccccccccccccccccccccccccccccccc'
+cache_identity = '3333333333333333333333333333333333333333333333333333333333333333'
+
+    def _metadata(
+        tokens: list[int],
+        *,
+        unit: int = 4,
+        tokenizer_identity: str = "c" * 64,
+        trace_key: bytes = b"c" * 32,
+        cache_identity: str = "3" * 64,
+    ) -&gt; PrefixMetadata:
+&gt;       return PrefixMetadata.from_token_ids(
+            tokens,
+            prefix_match_unit=unit,
+            tokenizer_identity_sha256=tokenizer_identity,
+            cache_identity_sha256=cache_identity,
+            trace_hmac_key=trace_key,
+        )
+E       TypeError: PrefixMetadata.from_token_ids() got an unexpected keyword argument 'cache_identity_sha256'
+
+paper-eval-v3/tests/test_membind_v31_prefix_affinity.py:121: TypeError</failure></testcase><testcase classname="tests.test_membind_v31_prefix_affinity" name="test_provider_index_freezes_full_prefix_and_backend_identity[cache_identity-4444444444444444444444444444444444444444444444444444444444444444]" time="0.000"><failure message="TypeError: PrefixMetadata.from_token_ids() got an unexpected keyword argument 'cache_identity_sha256'">field = 'cache_identity'
+value = '4444444444444444444444444444444444444444444444444444444444444444'
+
+    @pytest.mark.parametrize(
+        ("field", "value"),
+        [
+            ("tokenizer_identity", "d" * 64),
+            ("trace_key", b"different-private-trace-key".ljust(32, b"0")),
+            ("cache_identity", "4" * 64),
+            ("unit", 8),
+        ],
+    )
+    def test_provider_index_freezes_full_prefix_and_backend_identity(field, value) -&gt; None:
+        index = PrefixProviderIndex(prefix_match_unit=4)
+&gt;       index.register_completed(_metadata([1, 2, 3, 4]), completion_sequence=1)
+                                 ^^^^^^^^^^^^^^^^^^^^^^^
+
+paper-eval-v3/tests/test_membind_v31_prefix_affinity.py:158: 
+_ _ _ _ _ _ _ _ _ _ _ _ _ _ _ _ _ _ _ _ _ _ _ _ _ _ _ _ _ _ _ _ _ _ _ _ _ _ _ _ 
+
+tokens = [1, 2, 3, 4], unit = 4
+tokenizer_identity = 'cccccccccccccccccccccccccccccccccccccccccccccccccccccccccccccccc'
+trace_key = b'cccccccccccccccccccccccccccccccc'
+cache_identity = '3333333333333333333333333333333333333333333333333333333333333333'
+
+    def _metadata(
+        tokens: list[int],
+        *,
+        unit: int = 4,
+        tokenizer_identity: str = "c" * 64,
+        trace_key: bytes = b"c" * 32,
+        cache_identity: str = "3" * 64,
+    ) -&gt; PrefixMetadata:
+&gt;       return PrefixMetadata.from_token_ids(
+            tokens,
+            prefix_match_unit=unit,
+            tokenizer_identity_sha256=tokenizer_identity,
+            cache_identity_sha256=cache_identity,
+            trace_hmac_key=trace_key,
+        )
+E       TypeError: PrefixMetadata.from_token_ids() got an unexpected keyword argument 'cache_identity_sha256'
+
+paper-eval-v3/tests/test_membind_v31_prefix_affinity.py:121: TypeError</failure></testcase><testcase classname="tests.test_membind_v31_prefix_affinity" name="test_provider_index_freezes_full_prefix_and_backend_identity[unit-8]" time="0.000"><failure message="TypeError: PrefixMetadata.from_token_ids() got an unexpected keyword argument 'cache_identity_sha256'">field = 'unit', value = 8
+
+    @pytest.mark.parametrize(
+        ("field", "value"),
+        [
+            ("tokenizer_identity", "d" * 64),
+            ("trace_key", b"different-private-trace-key".ljust(32, b"0")),
+            ("cache_identity", "4" * 64),
+            ("unit", 8),
+        ],
+    )
+    def test_provider_index_freezes_full_prefix_and_backend_identity(field, value) -&gt; None:
+        index = PrefixProviderIndex(prefix_match_unit=4)
+&gt;       index.register_completed(_metadata([1, 2, 3, 4]), completion_sequence=1)
+                                 ^^^^^^^^^^^^^^^^^^^^^^^
+
+paper-eval-v3/tests/test_membind_v31_prefix_affinity.py:158: 
+_ _ _ _ _ _ _ _ _ _ _ _ _ _ _ _ _ _ _ _ _ _ _ _ _ _ _ _ _ _ _ _ _ _ _ _ _ _ _ _ 
+
+tokens = [1, 2, 3, 4], unit = 4
+tokenizer_identity = 'cccccccccccccccccccccccccccccccccccccccccccccccccccccccccccccccc'
+trace_key = b'cccccccccccccccccccccccccccccccc'
+cache_identity = '3333333333333333333333333333333333333333333333333333333333333333'
+
+    def _metadata(
+        tokens: list[int],
+        *,
+        unit: int = 4,
+        tokenizer_identity: str = "c" * 64,
+        trace_key: bytes = b"c" * 32,
+        cache_identity: str = "3" * 64,
+    ) -&gt; PrefixMetadata:
+&gt;       return PrefixMetadata.from_token_ids(
+            tokens,
+            prefix_match_unit=unit,
+            tokenizer_identity_sha256=tokenizer_identity,
+            cache_identity_sha256=cache_identity,
+            trace_hmac_key=trace_key,
+        )
+E       TypeError: PrefixMetadata.from_token_ids() got an unexpected keyword argument 'cache_identity_sha256'
+
+paper-eval-v3/tests/test_membind_v31_prefix_affinity.py:121: TypeError</failure></testcase><testcase classname="tests.test_membind_v31_prefix_affinity" name="test_prefix_metadata_is_tamper_resistant_and_rejects_invalid_token_ids" time="0.000"><failure message="TypeError: PrefixMetadata.from_token_ids() got an unexpected keyword argument 'cache_identity_sha256'">def test_prefix_metadata_is_tamper_resistant_and_rejects_invalid_token_ids() -&gt; None:
+&gt;       metadata = _metadata([1, 2, 3, 4, 5])
+                   ^^^^^^^^^^^^^^^^^^^^^^^^^^
+
+paper-eval-v3/tests/test_membind_v31_prefix_affinity.py:168: 
+_ _ _ _ _ _ _ _ _ _ _ _ _ _ _ _ _ _ _ _ _ _ _ _ _ _ _ _ _ _ _ _ _ _ _ _ _ _ _ _ 
+
+tokens = [1, 2, 3, 4, 5], unit = 4
+tokenizer_identity = 'cccccccccccccccccccccccccccccccccccccccccccccccccccccccccccccccc'
+trace_key = b'cccccccccccccccccccccccccccccccc'
+cache_identity = '3333333333333333333333333333333333333333333333333333333333333333'
+
+    def _metadata(
+        tokens: list[int],
+        *,
+        unit: int = 4,
+        tokenizer_identity: str = "c" * 64,
+        trace_key: bytes = b"c" * 32,
+        cache_identity: str = "3" * 64,
+    ) -&gt; PrefixMetadata:
+&gt;       return PrefixMetadata.from_token_ids(
+            tokens,
+            prefix_match_unit=unit,
+            tokenizer_identity_sha256=tokenizer_identity,
+            cache_identity_sha256=cache_identity,
+            trace_hmac_key=trace_key,
+        )
+E       TypeError: PrefixMetadata.from_token_ids() got an unexpected keyword argument 'cache_identity_sha256'
+
+paper-eval-v3/tests/test_membind_v31_prefix_affinity.py:121: TypeError</failure></testcase><testcase classname="tests.test_membind_v31_prefix_affinity" name="test_public_prefix_identities_are_keyed_and_not_cross_run_dictionary_hashes" time="0.000"><failure message="TypeError: PrefixMetadata.from_token_ids() got an unexpected keyword argument 'cache_identity_sha256'">def test_public_prefix_identities_are_keyed_and_not_cross_run_dictionary_hashes() -&gt; None:
+&gt;       first = PrefixMetadata.from_token_ids(
+            [1, 2, 3, 4],
+            prefix_match_unit=4,
+            tokenizer_identity_sha256="f" * 64,
+            cache_identity_sha256="6" * 64,
+            trace_hmac_key=b"first-private-trace-key".ljust(32, b"0"),
+        )
+E       TypeError: PrefixMetadata.from_token_ids() got an unexpected keyword argument 'cache_identity_sha256'
+
+paper-eval-v3/tests/test_membind_v31_prefix_affinity.py:192: TypeError</failure></testcase><testcase classname="tests.test_membind_v31_prefix_affinity" name="test_public_projection_contains_only_hmac_and_public_identity_material" time="0.000"><failure message="TypeError: PrefixMetadata.from_token_ids() got an unexpected keyword argument 'cache_identity_sha256'">def test_public_projection_contains_only_hmac_and_public_identity_material() -&gt; None:
+        raw_cache_salt = "private-cache-salt"
+&gt;       metadata = PrefixMetadata.from_token_ids(
+            [101, 202, 303, 404],
+            prefix_match_unit=4,
+            tokenizer_identity_sha256="f" * 64,
+            cache_identity_sha256="7" * 64,
+            trace_hmac_key=b"private-trace-key".ljust(32, b"0"),
+        )
+E       TypeError: PrefixMetadata.from_token_ids() got an unexpected keyword argument 'cache_identity_sha256'
+
+paper-eval-v3/tests/test_membind_v31_prefix_affinity.py:213: TypeError</failure></testcase><testcase classname="tests.test_membind_v31_admission" name="test_waiting_frontier_outranks_compile_and_residual_capacity_is_work_conserving[FIFO]" time="0.000" /><testcase classname="tests.test_membind_v31_admission" name="test_waiting_frontier_outranks_compile_and_residual_capacity_is_work_conserving[CACHE_AFFINE]" time="0.000" /><testcase classname="tests.test_membind_v31_admission" name="test_barrier_policy_leaves_residual_capacity_idle_until_frontier_finishes" time="0.000" /><testcase classname="tests.test_membind_v31_admission" name="test_fifo_and_cache_affine_have_deterministic_but_distinct_compile_order" time="0.000" /><testcase classname="tests.test_membind_v31_admission" name="test_cache_affine_lexicographic_order_matches_frozen_methodology" time="0.000" /><testcase classname="tests.test_membind_v31_admission" name="test_waiting_affinity_can_be_refreshed_but_active_or_identity_changes_fail_closed" time="0.000" /><testcase classname="tests.test_membind_v31_admission" name="test_second_global_frontier_request_fails_closed" time="0.000"><failure message="Failed: DID NOT RAISE MemBindV31AdmissionError">def test_second_global_frontier_request_fails_closed() -&gt; None:
+        admission = RequestAdmissionController(limit=2, policy=AdmissionPolicy.FIFO)
+        admission.submit(_frontier("bind-0", 0))
+        admission.submit(_frontier("bind-1", 1))
+&gt;       with pytest.raises(MemBindV31AdmissionError, match="multiple_frontier_requests"):
+E       Failed: DID NOT RAISE MemBindV31AdmissionError
+
+paper-eval-v3/tests/test_membind_v31_admission.py:153: Failed</failure></testcase><testcase classname="tests.test_membind_v31_admission" name="test_active_compile_is_not_preempted_when_frontier_becomes_ready" time="0.000" /><testcase classname="tests.test_membind_v31_admission" name="test_waiting_cancellation_and_active_error_are_deterministic_and_content_safe" time="0.000" /><testcase classname="tests.test_membind_v31_admission" name="test_duplicate_or_invalid_requests_fail_closed" time="0.000" /><testcase classname="tests.test_membind_v31_request_runtime" name="test_transport_gate_is_nonpreemptive_and_frontier_first_at_next_permit" time="0.001"><failure message="AssertionError: assert [] == ['compile-first']&#10;  &#10;  Right contains one more item: 'compile-first'&#10;  Use -v to get more diff">def test_transport_gate_is_nonpreemptive_and_frontier_first_at_next_permit() -&gt; None:
+        async def scenario() -&gt; None:
+            inner = _ControlledLLM()
+            client = AdmittedLLMClientV31(
+                inner=inner,
+                limit=1,
+                policy=AdmissionPolicy.FIFO,
+                request_id_prefix="v31-test",
+                prefix_encoder=_tokenizer,
+            )
+            first = asyncio.create_task(
+                _request(client, RequestKind.COMPILE, 1, "compile-first")
+            )
+            await asyncio.sleep(0)
+            frontier = asyncio.create_task(
+                _request(client, RequestKind.FRONTIER, 0, "frontier-next")
+            )
+            compile_next = asyncio.create_task(
+                _request(client, RequestKind.COMPILE, 2, "compile-next")
+            )
+            await asyncio.sleep(0)
+    
+            assert inner.started == ["compile-first"]
+            inner.release["compile-first"].set()
+            await asyncio.sleep(0)
+            await asyncio.sleep(0)
+            assert inner.started == ["compile-first", "frontier-next"]
+            inner.release["frontier-next"].set()
+            await asyncio.sleep(0)
+            await asyncio.sleep(0)
+            assert inner.started == ["compile-first", "frontier-next", "compile-next"]
+            inner.release["compile-next"].set()
+            await asyncio.gather(first, frontier, compile_next)
+            assert client.observation()["observed_max_inflight"] == 1
+    
+&gt;       asyncio.run(scenario())
+
+paper-eval-v3/tests/test_membind_v31_request_runtime.py:101: 
+_ _ _ _ _ _ _ _ _ _ _ _ _ _ _ _ _ _ _ _ _ _ _ _ _ _ _ _ _ _ _ _ _ _ _ _ _ _ _ _ 
+/usr/lib/python3.12/asyncio/runners.py:194: in run
+    return runner.run(main)
+           ^^^^^^^^^^^^^^^^
+/usr/lib/python3.12/asyncio/runners.py:118: in run
+    return self._loop.run_until_complete(task)
+           ^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^
+/usr/lib/python3.12/asyncio/base_events.py:687: in run_until_complete
+    return future.result()
+           ^^^^^^^^^^^^^^^
+_ _ _ _ _ _ _ _ _ _ _ _ _ _ _ _ _ _ _ _ _ _ _ _ _ _ _ _ _ _ _ _ _ _ _ _ _ _ _ _ 
+
+    async def scenario() -&gt; None:
+        inner = _ControlledLLM()
+        client = AdmittedLLMClientV31(
+            inner=inner,
+            limit=1,
+            policy=AdmissionPolicy.FIFO,
+            request_id_prefix="v31-test",
+            prefix_encoder=_tokenizer,
+        )
+        first = asyncio.create_task(
+            _request(client, RequestKind.COMPILE, 1, "compile-first")
+        )
+        await asyncio.sleep(0)
+        frontier = asyncio.create_task(
+            _request(client, RequestKind.FRONTIER, 0, "frontier-next")
+        )
+        compile_next = asyncio.create_task(
+            _request(client, RequestKind.COMPILE, 2, "compile-next")
+        )
+        await asyncio.sleep(0)
+    
+&gt;       assert inner.started == ["compile-first"]
+E       AssertionError: assert [] == ['compile-first']
+E         
+E         Right contains one more item: 'compile-first'
+E         Use -v to get more diff
+
+paper-eval-v3/tests/test_membind_v31_request_runtime.py:88: AssertionError</failure></testcase><testcase classname="tests.test_membind_v31_request_runtime" name="test_transport_wrapper_admits_each_actual_attempt_and_fails_unscoped" time="0.000"><failure message="paper_eval.membind_v31.request_runtime.MemBindV31RequestRuntimeError: prefix_metadata_failed">def test_transport_wrapper_admits_each_actual_attempt_and_fails_unscoped() -&gt; None:
+        class Transport:
+            def __init__(self) -&gt; None:
+                self.calls = 0
+    
+            async def create(self, **kwargs):
+                self.calls += 1
+                return {"messages": len(kwargs["messages"])}
+    
+        async def scenario() -&gt; None:
+            inner = _ControlledLLM()
+            gate = AdmittedLLMClientV31(
+                inner=inner,
+                limit=1,
+                policy=AdmissionPolicy.FIFO,
+                request_id_prefix="transport-test",
+                prefix_encoder=_tokenizer,
+            )
+            transport = Transport()
+            wrapped = AdmittedChatCompletionsV31(inner=transport, admission=gate)
+            with pytest.raises(MemBindV31RequestRuntimeError, match="llm_request_scope_missing"):
+                await wrapped.create(messages=[], prompt_name="hidden")
+            with llm_request_scope(
+                kind=RequestKind.FRONTIER,
+                stream_id="history-a",
+                source_sequence=0,
+            ):
+                assert await wrapped.create(
+                    messages=[{"role": "user", "content": "private prompt"}],
+                    prompt_name="warm-a",
+                ) == {"messages": 1}
+                assert await wrapped.create(
+                    messages=[{"role": "user", "content": "private prompt"}],
+                    prompt_name="near-a",
+                ) == {"messages": 1}
+            assert transport.calls == 2
+            assert gate.observation()["completed_count"] == 2
+    
+&gt;       asyncio.run(scenario())
+
+paper-eval-v3/tests/test_membind_v31_request_runtime.py:142: 
+_ _ _ _ _ _ _ _ _ _ _ _ _ _ _ _ _ _ _ _ _ _ _ _ _ _ _ _ _ _ _ _ _ _ _ _ _ _ _ _ 
+/usr/lib/python3.12/asyncio/runners.py:194: in run
+    return runner.run(main)
+           ^^^^^^^^^^^^^^^^
+/usr/lib/python3.12/asyncio/runners.py:118: in run
+    return self._loop.run_until_complete(task)
+           ^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^
+/usr/lib/python3.12/asyncio/base_events.py:687: in run_until_complete
+    return future.result()
+           ^^^^^^^^^^^^^^^
+paper-eval-v3/tests/test_membind_v31_request_runtime.py:131: in scenario
+    assert await wrapped.create(
+paper-eval-v3/src/paper_eval/membind_v31/request_runtime.py:385: in create
+    return await self._admission.execute_transport(
+paper-eval-v3/src/paper_eval/membind_v31/request_runtime.py:317: in execute_transport
+    return await self._execute(operation, *args, **kwargs)
+           ^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^
+_ _ _ _ _ _ _ _ _ _ _ _ _ _ _ _ _ _ _ _ _ _ _ _ _ _ _ _ _ _ _ _ _ _ _ _ _ _ _ _ 
+
+self = &lt;paper_eval.membind_v31.request_runtime.AdmittedLLMClientV31 object at 0x79c52a73a330&gt;
+operation = &lt;bound method test_transport_wrapper_admits_each_actual_attempt_and_fails_unscoped.&lt;locals&gt;.Transport.create of &lt;test_...time.test_transport_wrapper_admits_each_actual_attempt_and_fails_unscoped.&lt;locals&gt;.Transport object at 0x79c52a73b620&gt;&gt;
+args = ()
+kwargs = {'messages': [{'role': 'user', 'content': 'private prompt'}], 'prompt_name': 'warm-a'}
+
+    async def _execute(
+        self,
+        operation: Callable[..., object],
+        *args: object,
+        **kwargs: object,
+    ) -&gt; object:
+        scope = _SCOPE.get()
+        if scope is None:
+            raise _fail("llm_request_scope_missing")
+        if not callable(operation):
+            raise _fail("request_operation_invalid")
+        try:
+            metadata = self._prefix_encoder(*args, **kwargs)
+            if not isinstance(metadata, PrefixMetadata):
+                raise TypeError("prefix encoder must return PrefixMetadata")
+            metadata.verify()
+        except Exception:
+&gt;           raise _fail("prefix_metadata_failed") from None
+E           paper_eval.membind_v31.request_runtime.MemBindV31RequestRuntimeError: prefix_metadata_failed
+
+paper-eval-v3/src/paper_eval/membind_v31/request_runtime.py:274: MemBindV31RequestRuntimeError</failure></testcase><testcase classname="tests.test_membind_v31_request_runtime" name="test_actual_transport_attempts_share_one_global_k_limit" time="0.001"><failure message="assert 0 == 2&#10; +  where 0 = &lt;test_membind_v31_request_runtime.test_actual_transport_attempts_share_one_global_k_limit.&lt;locals&gt;.Transport object at 0x79c52a6f5e20&gt;.max_active">def test_actual_transport_attempts_share_one_global_k_limit() -&gt; None:
+        class Transport:
+            def __init__(self) -&gt; None:
+                self.started: list[str] = []
+                self.active = 0
+                self.max_active = 0
+                self.release: dict[str, asyncio.Event] = {}
+    
+            async def create(self, **kwargs):
+                name = str(kwargs["prompt_name"])
+                self.started.append(name)
+                self.active += 1
+                self.max_active = max(self.max_active, self.active)
+                await self.release.setdefault(name, asyncio.Event()).wait()
+                self.active -= 1
+                return {"ok": name}
+    
+        async def invoke(transport, index):
+            with llm_request_scope(
+                kind=RequestKind.COMPILE,
+                stream_id="history-a",
+                source_sequence=index,
+            ):
+                return await transport.create(
+                    messages=[{"role": "user", "content": "private prompt"}],
+                    prompt_name=f"compile-{index}",
+                )
+    
+        async def scenario() -&gt; None:
+            gate = AdmittedLLMClientV31(
+                inner=_ControlledLLM(),
+                limit=2,
+                policy=AdmissionPolicy.FIFO,
+                request_id_prefix="actual-transport-k",
+                prefix_encoder=_tokenizer,
+            )
+            inner = Transport()
+            transport = AdmittedChatCompletionsV31(inner=inner, admission=gate)
+            tasks = [asyncio.create_task(invoke(transport, index)) for index in range(3)]
+            await asyncio.sleep(0)
+            await asyncio.sleep(0)
+            assert inner.max_active == 2
+            assert len(inner.started) == 2
+            for name in tuple(inner.started):
+                inner.release[name].set()
+            await asyncio.sleep(0)
+            await asyncio.sleep(0)
+            assert len(inner.started) == 3
+            inner.release[inner.started[-1]].set()
+            await asyncio.gather(*tasks)
+            assert gate.observation()["observed_max_inflight"] == 2
+    
+&gt;       asyncio.run(scenario())
+
+paper-eval-v3/tests/test_membind_v31_request_runtime.py:197: 
+_ _ _ _ _ _ _ _ _ _ _ _ _ _ _ _ _ _ _ _ _ _ _ _ _ _ _ _ _ _ _ _ _ _ _ _ _ _ _ _ 
+/usr/lib/python3.12/asyncio/runners.py:194: in run
+    return runner.run(main)
+           ^^^^^^^^^^^^^^^^
+/usr/lib/python3.12/asyncio/runners.py:118: in run
+    return self._loop.run_until_complete(task)
+           ^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^
+/usr/lib/python3.12/asyncio/base_events.py:687: in run_until_complete
+    return future.result()
+           ^^^^^^^^^^^^^^^
+_ _ _ _ _ _ _ _ _ _ _ _ _ _ _ _ _ _ _ _ _ _ _ _ _ _ _ _ _ _ _ _ _ _ _ _ _ _ _ _ 
+
+    async def scenario() -&gt; None:
+        gate = AdmittedLLMClientV31(
+            inner=_ControlledLLM(),
+            limit=2,
+            policy=AdmissionPolicy.FIFO,
+            request_id_prefix="actual-transport-k",
+            prefix_encoder=_tokenizer,
+        )
+        inner = Transport()
+        transport = AdmittedChatCompletionsV31(inner=inner, admission=gate)
+        tasks = [asyncio.create_task(invoke(transport, index)) for index in range(3)]
+        await asyncio.sleep(0)
+        await asyncio.sleep(0)
+&gt;       assert inner.max_active == 2
+E       assert 0 == 2
+E        +  where 0 = &lt;test_membind_v31_request_runtime.test_actual_transport_attempts_share_one_global_k_limit.&lt;locals&gt;.Transport object at 0x79c52a6f5e20&gt;.max_active
+
+paper-eval-v3/tests/test_membind_v31_request_runtime.py:186: AssertionError</failure></testcase><testcase classname="tests.test_membind_v31_request_runtime" name="test_barrier_blocks_new_compile_during_non_llm_frontier_bind_region" time="0.001"><failure message="AssertionError: assert [] == ['compile-blocked']&#10;  &#10;  Right contains one more item: 'compile-blocked'&#10;  Use -v to get more diff">def test_barrier_blocks_new_compile_during_non_llm_frontier_bind_region() -&gt; None:
+        async def scenario() -&gt; None:
+            inner = _ControlledLLM()
+            client = AdmittedLLMClientV31(
+                inner=inner,
+                limit=2,
+                policy=AdmissionPolicy.BARRIER,
+                request_id_prefix="barrier-test",
+                prefix_encoder=_tokenizer,
+            )
+            async with client.frontier_bind_region("history-a", 0):
+                task = asyncio.create_task(
+                    _request(client, RequestKind.COMPILE, 1, "compile-blocked")
+                )
+                await asyncio.sleep(0)
+                await asyncio.sleep(0)
+                assert inner.started == []
+    
+            await asyncio.sleep(0)
+            await asyncio.sleep(0)
+            assert inner.started == ["compile-blocked"]
+            inner.release["compile-blocked"].set()
+            await task
+    
+&gt;       asyncio.run(scenario())
+
+paper-eval-v3/tests/test_membind_v31_request_runtime.py:224: 
+_ _ _ _ _ _ _ _ _ _ _ _ _ _ _ _ _ _ _ _ _ _ _ _ _ _ _ _ _ _ _ _ _ _ _ _ _ _ _ _ 
+/usr/lib/python3.12/asyncio/runners.py:194: in run
+    return runner.run(main)
+           ^^^^^^^^^^^^^^^^
+/usr/lib/python3.12/asyncio/runners.py:118: in run
+    return self._loop.run_until_complete(task)
+           ^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^
+/usr/lib/python3.12/asyncio/base_events.py:687: in run_until_complete
+    return future.result()
+           ^^^^^^^^^^^^^^^
+_ _ _ _ _ _ _ _ _ _ _ _ _ _ _ _ _ _ _ _ _ _ _ _ _ _ _ _ _ _ _ _ _ _ _ _ _ _ _ _ 
+
+    async def scenario() -&gt; None:
+        inner = _ControlledLLM()
+        client = AdmittedLLMClientV31(
+            inner=inner,
+            limit=2,
+            policy=AdmissionPolicy.BARRIER,
+            request_id_prefix="barrier-test",
+            prefix_encoder=_tokenizer,
+        )
+        async with client.frontier_bind_region("history-a", 0):
+            task = asyncio.create_task(
+                _request(client, RequestKind.COMPILE, 1, "compile-blocked")
+            )
+            await asyncio.sleep(0)
+            await asyncio.sleep(0)
+            assert inner.started == []
+    
+        await asyncio.sleep(0)
+        await asyncio.sleep(0)
+&gt;       assert inner.started == ["compile-blocked"]
+E       AssertionError: assert [] == ['compile-blocked']
+E         
+E         Right contains one more item: 'compile-blocked'
+E         Use -v to get more diff
+
+paper-eval-v3/tests/test_membind_v31_request_runtime.py:220: AssertionError</failure></testcase><testcase classname="tests.test_membind_v31_request_runtime" name="test_transport_gate_enforces_k_and_emits_content_safe_events" time="0.000"><failure message="assert 0 == 2&#10; +  where 0 = len([])&#10; +    where [] = &lt;test_membind_v31_request_runtime._ControlledLLM object at 0x79c52a603d40&gt;.started">def test_transport_gate_enforces_k_and_emits_content_safe_events() -&gt; None:
+        async def scenario() -&gt; None:
+            inner = _ControlledLLM()
+            events: list[dict[str, object]] = []
+            client = AdmittedLLMClientV31(
+                inner=inner,
+                limit=2,
+                policy=AdmissionPolicy.CACHE_AFFINE,
+                request_id_prefix="content-safe",
+                observer=events.append,
+                prefix_encoder=_tokenizer,
+            )
+            tasks = [
+                asyncio.create_task(
+                    _request(client, RequestKind.COMPILE, index, f"compile-{index}")
+                )
+                for index in range(3)
+            ]
+            await asyncio.sleep(0)
+            await asyncio.sleep(0)
+            assert len(inner.started) == 2
+            assert inner.max_active == 2
+            for prompt_name in list(inner.started):
+                inner.release[prompt_name].set()
+            await asyncio.sleep(0)
+            await asyncio.sleep(0)
+            inner.release["compile-2"].set()
+            await asyncio.gather(*tasks)
+    
+            assert client.observation()["observed_max_inflight"] == 2
+            assert "private prompt" not in repr(events)
+            assert all("prompt" not in key for event in events for key in event)
+    
+&gt;       asyncio.run(scenario())
+
+paper-eval-v3/tests/test_membind_v31_request_runtime.py:260: 
+_ _ _ _ _ _ _ _ _ _ _ _ _ _ _ _ _ _ _ _ _ _ _ _ _ _ _ _ _ _ _ _ _ _ _ _ _ _ _ _ 
+/usr/lib/python3.12/asyncio/runners.py:194: in run
+    return runner.run(main)
+           ^^^^^^^^^^^^^^^^
+/usr/lib/python3.12/asyncio/runners.py:118: in run
+    return self._loop.run_until_complete(task)
+           ^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^
+/usr/lib/python3.12/asyncio/base_events.py:687: in run_until_complete
+    return future.result()
+           ^^^^^^^^^^^^^^^
+_ _ _ _ _ _ _ _ _ _ _ _ _ _ _ _ _ _ _ _ _ _ _ _ _ _ _ _ _ _ _ _ _ _ _ _ _ _ _ _ 
+
+    async def scenario() -&gt; None:
+        inner = _ControlledLLM()
+        events: list[dict[str, object]] = []
+        client = AdmittedLLMClientV31(
+            inner=inner,
+            limit=2,
+            policy=AdmissionPolicy.CACHE_AFFINE,
+            request_id_prefix="content-safe",
+            observer=events.append,
+            prefix_encoder=_tokenizer,
+        )
+        tasks = [
+            asyncio.create_task(
+                _request(client, RequestKind.COMPILE, index, f"compile-{index}")
+            )
+            for index in range(3)
+        ]
+        await asyncio.sleep(0)
+        await asyncio.sleep(0)
+&gt;       assert len(inner.started) == 2
+E       assert 0 == 2
+E        +  where 0 = len([])
+E        +    where [] = &lt;test_membind_v31_request_runtime._ControlledLLM object at 0x79c52a603d40&gt;.started
+
+paper-eval-v3/tests/test_membind_v31_request_runtime.py:247: AssertionError</failure></testcase><testcase classname="tests.test_membind_v31_request_runtime" name="test_public_request_events_receive_nonnegative_monotonic_timestamps" time="0.000"><failure message="TypeError: AdmittedLLMClientV31.__init__() got an unexpected keyword argument 'clock_ns'">def test_public_request_events_receive_nonnegative_monotonic_timestamps() -&gt; None:
+        async def scenario() -&gt; None:
+            timestamps = iter(range(100, 200))
+            inner = _ControlledLLM()
+            client = AdmittedLLMClientV31(
+                inner=inner,
+                limit=1,
+                policy=AdmissionPolicy.FIFO,
+                request_id_prefix="timestamp-test",
+                prefix_encoder=_tokenizer,
+                clock_ns=lambda: next(timestamps),
+            )
+            task = asyncio.create_task(
+                _request(client, RequestKind.COMPILE, 0, "timestamped")
+            )
+            await asyncio.sleep(0)
+            inner.release["timestamped"].set()
+            await task
+    
+            observed = [int(event["timestamp_ns"]) for event in client.public_events]
+            assert observed
+            assert observed == sorted(observed)
+            assert min(observed) &gt;= 0
+    
+&gt;       asyncio.run(scenario())
+
+paper-eval-v3/tests/test_membind_v31_request_runtime.py:287: 
+_ _ _ _ _ _ _ _ _ _ _ _ _ _ _ _ _ _ _ _ _ _ _ _ _ _ _ _ _ _ _ _ _ _ _ _ _ _ _ _ 
+/usr/lib/python3.12/asyncio/runners.py:194: in run
+    return runner.run(main)
+           ^^^^^^^^^^^^^^^^
+/usr/lib/python3.12/asyncio/runners.py:118: in run
+    return self._loop.run_until_complete(task)
+           ^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^
+/usr/lib/python3.12/asyncio/base_events.py:687: in run_until_complete
+    return future.result()
+           ^^^^^^^^^^^^^^^
+_ _ _ _ _ _ _ _ _ _ _ _ _ _ _ _ _ _ _ _ _ _ _ _ _ _ _ _ _ _ _ _ _ _ _ _ _ _ _ _ 
+
+    async def scenario() -&gt; None:
+        timestamps = iter(range(100, 200))
+        inner = _ControlledLLM()
+&gt;       client = AdmittedLLMClientV31(
+            inner=inner,
+            limit=1,
+            policy=AdmissionPolicy.FIFO,
+            request_id_prefix="timestamp-test",
+            prefix_encoder=_tokenizer,
+            clock_ns=lambda: next(timestamps),
+        )
+E       TypeError: AdmittedLLMClientV31.__init__() got an unexpected keyword argument 'clock_ns'
+
+paper-eval-v3/tests/test_membind_v31_request_runtime.py:267: TypeError</failure></testcase><testcase classname="tests.test_membind_v31_request_runtime" name="test_transport_call_without_declared_scope_is_hidden_fallback" time="0.000" /><testcase classname="tests.test_membind_v31_request_runtime" name="test_cache_affinity_uses_completed_token_prefix_not_prompt_name" time="0.000"><failure message="KeyError: 'warm-a'">def test_cache_affinity_uses_completed_token_prefix_not_prompt_name() -&gt; None:
+        async def scenario() -&gt; None:
+            inner = _ControlledLLM()
+            client = AdmittedLLMClientV31(
+                inner=inner,
+                limit=1,
+                policy=AdmissionPolicy.CACHE_AFFINE,
+                request_id_prefix="prefix-test",
+                prefix_encoder=_tokenizer,
+            )
+            warm = asyncio.create_task(_request(client, RequestKind.COMPILE, 0, "warm-a"))
+            await asyncio.sleep(0)
+            inner.release["warm-a"].set()
+            await warm
+    
+            # Submit the unrelated request first. Both remain queued behind a frontier
+            # request, then the completed-provider LCP must select near-a first.
+            frontier = asyncio.create_task(_request(client, RequestKind.FRONTIER, 1, "frontier"))
+            await asyncio.sleep(0)
+            far = asyncio.create_task(_request(client, RequestKind.COMPILE, 2, "far-b"))
+            near = asyncio.create_task(_request(client, RequestKind.COMPILE, 3, "near-a"))
+            await asyncio.sleep(0)
+            assert inner.started[-1] == "frontier"
+            inner.release["frontier"].set()
+            await asyncio.sleep(0)
+            await asyncio.sleep(0)
+            assert inner.started[-1] == "near-a"
+            inner.release["near-a"].set()
+            await asyncio.sleep(0)
+            await asyncio.sleep(0)
+            assert inner.started[-1] == "far-b"
+            inner.release["far-b"].set()
+            await asyncio.gather(frontier, far, near)
+    
+            submitted = [
+                event for event in client.public_events if event["event_type"] == "llm_request_submitted"
+            ]
+            assert all("token_sequence_hmac_sha256" in event for event in submitted)
+            assert all("token_prefix_block_hmac_sha256s" in event for event in submitted)
+            assert "private prompt" not in repr(submitted)
+    
+&gt;       asyncio.run(scenario())
+
+paper-eval-v3/tests/test_membind_v31_request_runtime.py:346: 
+_ _ _ _ _ _ _ _ _ _ _ _ _ _ _ _ _ _ _ _ _ _ _ _ _ _ _ _ _ _ _ _ _ _ _ _ _ _ _ _ 
+/usr/lib/python3.12/asyncio/runners.py:194: in run
+    return runner.run(main)
+           ^^^^^^^^^^^^^^^^
+/usr/lib/python3.12/asyncio/runners.py:118: in run
+    return self._loop.run_until_complete(task)
+           ^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^
+/usr/lib/python3.12/asyncio/base_events.py:687: in run_until_complete
+    return future.result()
+           ^^^^^^^^^^^^^^^
+_ _ _ _ _ _ _ _ _ _ _ _ _ _ _ _ _ _ _ _ _ _ _ _ _ _ _ _ _ _ _ _ _ _ _ _ _ _ _ _ 
+
+    async def scenario() -&gt; None:
+        inner = _ControlledLLM()
+        client = AdmittedLLMClientV31(
+            inner=inner,
+            limit=1,
+            policy=AdmissionPolicy.CACHE_AFFINE,
+            request_id_prefix="prefix-test",
+            prefix_encoder=_tokenizer,
+        )
+        warm = asyncio.create_task(_request(client, RequestKind.COMPILE, 0, "warm-a"))
+        await asyncio.sleep(0)
+&gt;       inner.release["warm-a"].set()
+        ^^^^^^^^^^^^^^^^^^^^^^^
+E       KeyError: 'warm-a'
+
+paper-eval-v3/tests/test_membind_v31_request_runtime.py:317: KeyError</failure></testcase><testcase classname="tests.test_membind_v31_live_runtime" name="test_v31_runtime_reuses_shared_envelope_and_replaces_v1_gate_at_both_refs" time="0.000"><failure message="paper_eval.membind_v31.live_runtime.MemBindV31LiveRuntimeError: shared_runtime_invalid:embedding cache salt transport unavailable">def test_v31_runtime_reuses_shared_envelope_and_replaces_v1_gate_at_both_refs() -&gt; None:
+        events: list[dict[str, object]] = []
+&gt;       runtime = build_membind_v31_runtime(
+            env=_env(),
+            policy=AdmissionPolicy.FIFO,
+            request_id_prefix="v31-runtime",
+            observer=events.append,
+            components=_components(),
+            prefix_encoder=_prefix_encoder,
+        )
+
+paper-eval-v3/tests/test_membind_v31_live_runtime.py:97: 
+_ _ _ _ _ _ _ _ _ _ _ _ _ _ _ _ _ _ _ _ _ _ _ _ _ _ _ _ _ _ _ _ _ _ _ _ _ _ _ _ 
+
+env = {'CONSTRUCTION_LLM_API_KEY': 'construction-secret', 'CONSTRUCTION_LLM_BASE_URL': 'http://10.87.5.247:8000/v1', 'CONSTRUCTION_LLM_MODEL': 'qwen3-32b-fp8', 'EMBEDDING_API_KEY': 'embedding-secret', ...}
+policy = &lt;AdmissionPolicy.FIFO: 'FIFO'&gt;, request_id_prefix = 'v31-runtime'
+observer = &lt;built-in method append of list object at 0x79c52a3a1d00&gt;
+components = RuntimeComponents(graphiti_type=&lt;class 'test_membind_v31_live_runtime._Graphiti'&gt;, llm_config_type=&lt;class 'test_membin...s 'test_membind_v31_live_runtime._Embedder'&gt;, reranker_type=&lt;function _components.&lt;locals&gt;.&lt;lambda&gt; at 0x79c52a631300&gt;)
+prefix_encoder = &lt;function _prefix_encoder at 0x79c52a50fba0&gt;
+
+    def build_membind_v31_runtime(
+        *,
+        env: Mapping[str, str],
+        policy: AdmissionPolicy,
+        request_id_prefix: str,
+        observer: Callable[[dict[str, object]], object] | None = None,
+        components: RuntimeComponents | None = None,
+        prefix_encoder: Callable[..., object] | None = None,
+    ) -&gt; MemBindV31LiveRuntime:
+        """Reuse the exact baseline envelope, replacing only its request policy."""
+    
+        if not isinstance(policy, AdmissionPolicy):
+            raise _fail("admission_policy_invalid")
+        try:
+            shared = build_membind_v1_runtime(
+                env=env,
+                admission=RequestAdmission(limit=2),
+                request_id_prefix=f"{request_id_prefix}:bootstrap",
+                components=components,
+            )
+        except ValueError as error:
+&gt;           raise _fail(f"shared_runtime_invalid:{error}") from None
+E           paper_eval.membind_v31.live_runtime.MemBindV31LiveRuntimeError: shared_runtime_invalid:embedding cache salt transport unavailable
+
+paper-eval-v3/src/paper_eval/membind_v31/live_runtime.py:62: MemBindV31LiveRuntimeError</failure></testcase><testcase classname="tests.test_membind_v31_live_runtime" name="test_shared_graphiti_and_reranker_transport_calls_use_the_same_fail_closed_gate" time="0.000"><failure message="paper_eval.membind_v31.live_runtime.MemBindV31LiveRuntimeError: shared_runtime_invalid:embedding cache salt transport unavailable">def test_shared_graphiti_and_reranker_transport_calls_use_the_same_fail_closed_gate() -&gt; None:
+&gt;       runtime = build_membind_v31_runtime(
+            env=_env(),
+            policy=AdmissionPolicy.FIFO,
+            request_id_prefix="v31-shared-transport",
+            components=_components(),
+            prefix_encoder=_prefix_encoder,
+        )
+
+paper-eval-v3/tests/test_membind_v31_live_runtime.py:125: 
+_ _ _ _ _ _ _ _ _ _ _ _ _ _ _ _ _ _ _ _ _ _ _ _ _ _ _ _ _ _ _ _ _ _ _ _ _ _ _ _ 
+
+env = {'CONSTRUCTION_LLM_API_KEY': 'construction-secret', 'CONSTRUCTION_LLM_BASE_URL': 'http://10.87.5.247:8000/v1', 'CONSTRUCTION_LLM_MODEL': 'qwen3-32b-fp8', 'EMBEDDING_API_KEY': 'embedding-secret', ...}
+policy = &lt;AdmissionPolicy.FIFO: 'FIFO'&gt;
+request_id_prefix = 'v31-shared-transport', observer = None
+components = RuntimeComponents(graphiti_type=&lt;class 'test_membind_v31_live_runtime._Graphiti'&gt;, llm_config_type=&lt;class 'test_membin...s 'test_membind_v31_live_runtime._Embedder'&gt;, reranker_type=&lt;function _components.&lt;locals&gt;.&lt;lambda&gt; at 0x79c52a6316c0&gt;)
+prefix_encoder = &lt;function _prefix_encoder at 0x79c52a50fba0&gt;
+
+    def build_membind_v31_runtime(
+        *,
+        env: Mapping[str, str],
+        policy: AdmissionPolicy,
+        request_id_prefix: str,
+        observer: Callable[[dict[str, object]], object] | None = None,
+        components: RuntimeComponents | None = None,
+        prefix_encoder: Callable[..., object] | None = None,
+    ) -&gt; MemBindV31LiveRuntime:
+        """Reuse the exact baseline envelope, replacing only its request policy."""
+    
+        if not isinstance(policy, AdmissionPolicy):
+            raise _fail("admission_policy_invalid")
+        try:
+            shared = build_membind_v1_runtime(
+                env=env,
+                admission=RequestAdmission(limit=2),
+                request_id_prefix=f"{request_id_prefix}:bootstrap",
+                components=components,
+            )
+        except ValueError as error:
+&gt;           raise _fail(f"shared_runtime_invalid:{error}") from None
+E           paper_eval.membind_v31.live_runtime.MemBindV31LiveRuntimeError: shared_runtime_invalid:embedding cache salt transport unavailable
+
+paper-eval-v3/src/paper_eval/membind_v31/live_runtime.py:62: MemBindV31LiveRuntimeError</failure></testcase></testsuite></testsuites>

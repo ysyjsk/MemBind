@@ -1,0 +1,35 @@
+{
+  "schema_version": "membind.paper-eval-v3.membind-v31-live-preflight.v1",
+  "status": "BLOCKED_BEFORE_LIVE",
+  "classification": "SANDBOX_NETWORK_BLOCKED_NOT_SERVICE_VERDICT",
+  "timestamp_date": "2026-08-18",
+  "remote_access_policy": "ssh zju-liuyi read-only forced-command under /home/lhx/liuyi/**",
+  "checks": {
+    "ssh_zju_liuyi_status": {
+      "attempted": true,
+      "outcome": "BLOCKED_BEFORE_TCP",
+      "error_class": "sandbox_network_operation_not_permitted"
+    },
+    "construction_vllm_models": {
+      "endpoint": "http://10.87.5.247:8000/v1/models",
+      "attempted": true,
+      "outcome": "BLOCKED_BEFORE_TCP",
+      "http_status": null,
+      "error_class": "connection_blocked_by_sandbox"
+    },
+    "local_listener_probe": {
+      "attempted": true,
+      "outcome": "NO_VISIBLE_LISTENER_OR_NETLINK_PERMISSION",
+      "interpretation": "not a service health verdict"
+    },
+    "tmux_sessions": {
+      "attempted": true,
+      "visible_sessions": []
+    }
+  },
+  "live_started": false,
+  "namespace_created": false,
+  "generation_requests_sent": false,
+  "formal_artifacts_modified": false,
+  "next_action": "repeat read-only preflight after sandbox network access is restored"
+}

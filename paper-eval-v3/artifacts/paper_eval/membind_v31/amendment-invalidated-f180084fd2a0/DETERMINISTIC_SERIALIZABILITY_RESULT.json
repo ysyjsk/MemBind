@@ -1,0 +1,258 @@
+{
+  "canonical_projection_artifact_sha256": "3b8b8678704a95b7f686473b40652614ebe4cd669caea374da2ef54026d60ee8",
+  "canonical_state_parity_at_every_checkpoint": true,
+  "checkpoint_count": 2,
+  "checkpoints": [
+    {
+      "candidate_captured_provider_output_sha256": "dd60cf338b3d61601494a5a69cdcc9468f8fa207443664ec973a2ec219962842",
+      "candidate_rendered_input_sha256": "76271a145c7f3bc1d28d7f522469df397412ecc610a27691f08d9c656ff7518e",
+      "candidate_transition": {
+        "predecessor_state": {
+          "edges": [],
+          "entities": [],
+          "episodes": []
+        },
+        "predecessor_state_sha256": "5c595fc30e20ded7890b530b517cde7ed8de432fcbe3b9ace0ba3f7cf43704f3",
+        "predecessor_version": -1,
+        "prepared_artifact_sha256": "fcd7ace3243edc7e1ac94591ecad8b9a62da0d2ff476215cab5eb234aa09ea86",
+        "resolved_nodes": [
+          {
+            "name": "Entity 0",
+            "summary": "fixture",
+            "uuid": "canonical-0"
+          }
+        ],
+        "source_sequence": 0,
+        "stream_id": "v31-deterministic-fixture",
+        "successor_state": {
+          "edges": [],
+          "entities": [
+            {
+              "name": "entity 0",
+              "summary": "fixture"
+            }
+          ],
+          "episodes": [
+            {
+              "source_hash": "fixture-0",
+              "source_sequence": 0
+            }
+          ]
+        },
+        "successor_state_sha256": "18043bc8404d39ad42c2352467c3ba159cb026b07f1cd4e61fa16a464a2030c8",
+        "successor_version": 0,
+        "transition_sha256": "24484db05a25dbe21648f6c6c9adb1dda1242b19d8acb839db3dc4124b66c36c"
+      },
+      "exact_canonical_state_parity": true,
+      "exact_predecessor_state_parity": true,
+      "exact_prepared_artifact_parity": true,
+      "exact_resolved_node_parity": true,
+      "semantic_work_contract_sha256": "bf273753454808e247c050733cc4a35387d0345867b12be617fed1195c7de44e",
+      "serial_captured_provider_output_sha256": "dd60cf338b3d61601494a5a69cdcc9468f8fa207443664ec973a2ec219962842",
+      "serial_rendered_input_sha256": "76271a145c7f3bc1d28d7f522469df397412ecc610a27691f08d9c656ff7518e",
+      "serial_transition": {
+        "predecessor_state": {
+          "edges": [],
+          "entities": [],
+          "episodes": []
+        },
+        "predecessor_state_sha256": "5c595fc30e20ded7890b530b517cde7ed8de432fcbe3b9ace0ba3f7cf43704f3",
+        "predecessor_version": -1,
+        "prepared_artifact_sha256": "fcd7ace3243edc7e1ac94591ecad8b9a62da0d2ff476215cab5eb234aa09ea86",
+        "resolved_nodes": [
+          {
+            "name": "Entity 0",
+            "summary": "fixture",
+            "uuid": "canonical-0"
+          }
+        ],
+        "source_sequence": 0,
+        "stream_id": "v31-deterministic-fixture",
+        "successor_state": {
+          "edges": [],
+          "entities": [
+            {
+              "name": "entity 0",
+              "summary": "fixture"
+            }
+          ],
+          "episodes": [
+            {
+              "source_hash": "fixture-0",
+              "source_sequence": 0
+            }
+          ]
+        },
+        "successor_state_sha256": "18043bc8404d39ad42c2352467c3ba159cb026b07f1cd4e61fa16a464a2030c8",
+        "successor_version": 0,
+        "transition_sha256": "24484db05a25dbe21648f6c6c9adb1dda1242b19d8acb839db3dc4124b66c36c"
+      },
+      "source_sequence": 0,
+      "stream_id": "v31-deterministic-fixture",
+      "successor_version": 0
+    },
+    {
+      "candidate_captured_provider_output_sha256": "8267a2d8b390fef38a4c096c4746b74c7763556393399954aa5a1bdbca6cc0a1",
+      "candidate_rendered_input_sha256": "ed32c96a3490e3e86a7b35af2e8024eb3f9deadfd396a88729e4e4f35483403f",
+      "candidate_transition": {
+        "predecessor_state": {
+          "edges": [],
+          "entities": [
+            {
+              "name": "entity 0",
+              "summary": "fixture"
+            }
+          ],
+          "episodes": [
+            {
+              "source_hash": "fixture-0",
+              "source_sequence": 0
+            }
+          ]
+        },
+        "predecessor_state_sha256": "18043bc8404d39ad42c2352467c3ba159cb026b07f1cd4e61fa16a464a2030c8",
+        "predecessor_version": 0,
+        "prepared_artifact_sha256": "fb0b89db56d32589970f092411f104597691eb70fbb8fc5c9599601b171a6a14",
+        "resolved_nodes": [
+          {
+            "name": "Entity 1",
+            "summary": "fixture",
+            "uuid": "canonical-1"
+          }
+        ],
+        "source_sequence": 1,
+        "stream_id": "v31-deterministic-fixture",
+        "successor_state": {
+          "edges": [
+            {
+              "fact": "Entity 0 precedes Entity 1",
+              "source_entity_key": "entity 0",
+              "target_entity_key": "entity 1"
+            }
+          ],
+          "entities": [
+            {
+              "name": "entity 0",
+              "summary": "fixture"
+            },
+            {
+              "name": "entity 1",
+              "summary": "fixture"
+            }
+          ],
+          "episodes": [
+            {
+              "source_hash": "fixture-0",
+              "source_sequence": 0
+            },
+            {
+              "source_hash": "fixture-1",
+              "source_sequence": 1
+            }
+          ]
+        },
+        "successor_state_sha256": "7ffde3e6240b164146876939004b8a35ff1965ba32cefea214e08e367d622acc",
+        "successor_version": 1,
+        "transition_sha256": "96fec0b7f038378a124b6ab5b7836dd932c84761e655f95996421452deb1d663"
+      },
+      "exact_canonical_state_parity": true,
+      "exact_predecessor_state_parity": true,
+      "exact_prepared_artifact_parity": true,
+      "exact_resolved_node_parity": true,
+      "semantic_work_contract_sha256": "058da347d4ca58787c3803dfa06064e4c46aae5d7e830464a3c8232bd03f73f9",
+      "serial_captured_provider_output_sha256": "8267a2d8b390fef38a4c096c4746b74c7763556393399954aa5a1bdbca6cc0a1",
+      "serial_rendered_input_sha256": "ed32c96a3490e3e86a7b35af2e8024eb3f9deadfd396a88729e4e4f35483403f",
+      "serial_transition": {
+        "predecessor_state": {
+          "edges": [],
+          "entities": [
+            {
+              "name": "entity 0",
+              "summary": "fixture"
+            }
+          ],
+          "episodes": [
+            {
+              "source_hash": "fixture-0",
+              "source_sequence": 0
+            }
+          ]
+        },
+        "predecessor_state_sha256": "18043bc8404d39ad42c2352467c3ba159cb026b07f1cd4e61fa16a464a2030c8",
+        "predecessor_version": 0,
+        "prepared_artifact_sha256": "fb0b89db56d32589970f092411f104597691eb70fbb8fc5c9599601b171a6a14",
+        "resolved_nodes": [
+          {
+            "name": "Entity 1",
+            "summary": "fixture",
+            "uuid": "canonical-1"
+          }
+        ],
+        "source_sequence": 1,
+        "stream_id": "v31-deterministic-fixture",
+        "successor_state": {
+          "edges": [
+            {
+              "fact": "Entity 0 precedes Entity 1",
+              "source_entity_key": "entity 0",
+              "target_entity_key": "entity 1"
+            }
+          ],
+          "entities": [
+            {
+              "name": "entity 0",
+              "summary": "fixture"
+            },
+            {
+              "name": "entity 1",
+              "summary": "fixture"
+            }
+          ],
+          "episodes": [
+            {
+              "source_hash": "fixture-0",
+              "source_sequence": 0
+            },
+            {
+              "source_hash": "fixture-1",
+              "source_sequence": 1
+            }
+          ]
+        },
+        "successor_state_sha256": "7ffde3e6240b164146876939004b8a35ff1965ba32cefea214e08e367d622acc",
+        "successor_version": 1,
+        "transition_sha256": "96fec0b7f038378a124b6ab5b7836dd932c84761e655f95996421452deb1d663"
+      },
+      "source_sequence": 1,
+      "stream_id": "v31-deterministic-fixture",
+      "successor_version": 1
+    }
+  ],
+  "execution_envelope_sha256": "7f7b0b13fbc7f930a2119b0f86caa2e79c7a61dec80c0c7b96ac23efdee506da",
+  "fail_closed_tamper_probe": "PASS_REJECTED_DRIFT",
+  "hidden_fallback_count": 0,
+  "live_llm_bitwise_graph_parity_claimed": false,
+  "methodology_sha256": "2af8147a839972e120a0123d1d0fffdd3e10653fa64e338c1c7a7fa32f506280",
+  "oracle_miss_count": 0,
+  "payload_sha256": "e85adb5d5a4c872706f047805488f5c95eaef3d4bbc0a5bcd1e0de8265c2243b",
+  "qualification_mode": "CAPTURED_DETERMINISTIC_OFFLINE",
+  "reuse_audit_sha256": "4d0817d71a4f54d9430c2f20739e84e545ff1b48a2182af474a164d1db215b03",
+  "same_captured_outputs_at_every_checkpoint": true,
+  "same_prepared_artifact_at_every_checkpoint": true,
+  "same_rendered_inputs_at_every_checkpoint": true,
+  "same_semantic_work_at_every_checkpoint": true,
+  "schema_version": "membind.paper-eval-v3.membind-v31-deterministic-serializability.v1",
+  "source_ordered_predecessor_versions": [
+    -1,
+    0
+  ],
+  "source_ordered_successor_versions": [
+    0,
+    1
+  ],
+  "state_cut_artifact_sha256": "dabb3a3ac706c2b5030a97d3af0b3768a5e902359da50d381b4bbfcdd2ac5182",
+  "state_cut_certification_failure_count": 0,
+  "state_cut_certification_sha256": "c0547286e6aab9d475618180e1d291dee2b7105149fee52e13b776d8061113a2",
+  "status": "PASS",
+  "workplan_sha256": "f180084fd2a00e0a274aee8a33168d8e9728878190b44113aebf7036525889f9"
+}

@@ -1,0 +1,21 @@
+<?xml version="1.0" encoding="utf-8"?><testsuites name="pytest tests"><testsuite name="pytest" errors="0" failures="1" skipped="0" tests="1" time="0.039" timestamp="2026-08-18T10:31:49.270769+08:00" hostname="aces-System-Product-Name"><testcase classname="tests.test_membind_v31_workplan" name="test_v31_workplan_defines_bounded_autoresearch_probe_without_main_table_authority" time="0.001"><failure message="AssertionError: assert 'autoresearch development probe' in '# MemBind Paper-Level Evaluation Workplan v3.1 ## Methodology-Aligned / Small-First / Reuse-Aware / TDD-Frozen &gt; Date...experiment if the backend-locality Claim E is retained. None of those future gates expands this development execution.'">def test_v31_workplan_defines_bounded_autoresearch_probe_without_main_table_authority() -&gt; None:
+        text = " ".join(NEW.read_text(encoding="utf-8").split())
+        required = (
+            "autoresearch development probe",
+            "fixed 12-episode prefix",
+            "results.tsv",
+            "keep / discard / crash",
+            "new namespace and cache salt for every candidate",
+            "probe artifacts are non-mergeable",
+            "C = W = K_LLM = 2 cannot be changed",
+            "no prompt, schema, source, arrival-trace or evaluator changes",
+            "maximum of three candidate iterations",
+            "zero direct violations",
+            "p95 freshness and makespan",
+            "rerun the full offline suite",
+        )
+        for phrase in required:
+&gt;           assert phrase in text
+E           AssertionError: assert 'autoresearch development probe' in '# MemBind Paper-Level Evaluation Workplan v3.1 ## Methodology-Aligned / Small-First / Reuse-Aware / TDD-Frozen &gt; Date...experiment if the backend-locality Claim E is retained. None of those future gates expands this development execution.'
+
+paper-eval-v3/tests/test_membind_v31_workplan.py:165: AssertionError</failure></testcase></testsuite></testsuites>

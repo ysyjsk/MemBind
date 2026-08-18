@@ -6,6 +6,8 @@ requires-python = ">=3.11"
 dependencies = [
   # LongMemEval's public flat-turn BM25 implementation imports this package.
   "rank-bm25==0.2.2",
+  # Exact offline Qwen token accounting for the frozen workload-complexity artifact.
+  "tokenizers==0.21.0",
 ]
 
 [tool.pytest.ini_options]

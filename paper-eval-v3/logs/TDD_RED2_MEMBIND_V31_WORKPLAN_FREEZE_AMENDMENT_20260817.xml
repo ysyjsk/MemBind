@@ -1,0 +1,19 @@
+<?xml version="1.0" encoding="utf-8"?><testsuites name="pytest tests"><testsuite name="pytest" errors="0" failures="1" skipped="0" tests="6" time="0.038" timestamp="2026-08-17T23:23:53.132742+08:00" hostname="aces-System-Product-Name"><testcase classname="tests.test_membind_v31_workplan" name="test_historical_parent_remains_byte_identical" time="0.000" /><testcase classname="tests.test_membind_v31_workplan" name="test_v31_authorities_are_hash_bound" time="0.000" /><testcase classname="tests.test_membind_v31_workplan" name="test_v31_workplan_contains_the_frozen_method_and_reuse_boundaries" time="0.000" /><testcase classname="tests.test_membind_v31_workplan" name="test_v31_workplan_keeps_cache_claim_secondary_and_fail_closed" time="0.000" /><testcase classname="tests.test_membind_v31_workplan" name="test_v31_workplan_freezes_exact_method_backend_and_transport_contract" time="0.000" /><testcase classname="tests.test_membind_v31_workplan" name="test_v31_workplan_freezes_comparable_cache_isolation_and_artifact_authority" time="0.000"><failure message="AssertionError: assert 'V0 never emits `V31_METHOD_PLAN.json`' in '# MemBind Paper-Level Evaluation Workplan v3.1\n## Methodology-Aligned / Small-First / Reuse-Aware / TDD-Frozen\n\n&gt; ...leted baseline work, but it also does not let historical partial methods\nstand in for the frozen v3.1 architecture.\n'">def test_v31_workplan_freezes_comparable_cache_isolation_and_artifact_authority() -&gt; None:
+        text = NEW.read_text(encoding="utf-8")
+        required = (
+            "U0/A0/P(C=2)/MemBind-Barrier/MemBind-FIFO/MemBind",
+            "unique fresh request cache salt",
+            "cross_block_prefix_identity_reuse = false",
+            "cross_block_warm_inheritance = false",
+            "within_block_prefix_reuse = true",
+            "physical_cache_reset_claimed = false",
+            "V31_REUSE_AUDIT.json` is the V0 offline source/hash/reuse audit only",
+            "V31_BASELINE_ACCEPTANCE.json` is emitted only at V3",
+            "V0 never emits `V31_METHOD_PLAN.json`",
+            "V31_CONTROL_COMMIT.json",
+        )
+        for phrase in required:
+&gt;           assert phrase in text
+E           AssertionError: assert 'V0 never emits `V31_METHOD_PLAN.json`' in '# MemBind Paper-Level Evaluation Workplan v3.1\n## Methodology-Aligned / Small-First / Reuse-Aware / TDD-Frozen\n\n&gt; ...leted baseline work, but it also does not let historical partial methods\nstand in for the frozen v3.1 architecture.\n'
+
+tests/test_membind_v31_workplan.py:113: AssertionError</failure></testcase></testsuite></testsuites>

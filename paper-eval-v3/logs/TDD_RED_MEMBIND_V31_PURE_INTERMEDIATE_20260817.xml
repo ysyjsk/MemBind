@@ -1,0 +1,67 @@
+<?xml version="1.0" encoding="utf-8"?><testsuites name="pytest tests"><testsuite name="pytest" errors="0" failures="2" skipped="0" tests="31" time="0.059" timestamp="2026-08-17T22:17:12.580687+08:00" hostname="aces-System-Product-Name"><testcase classname="tests.test_membind_v31_contracts" name="test_operator_contract_accepts_only_semantically_legal_class_pairs[EVIDENCE_BOUND-PURE]" time="0.000" /><testcase classname="tests.test_membind_v31_contracts" name="test_operator_contract_accepts_only_semantically_legal_class_pairs[STATE_BOUND-PURE]" time="0.000" /><testcase classname="tests.test_membind_v31_contracts" name="test_operator_contract_accepts_only_semantically_legal_class_pairs[STATE_BOUND-STATE_READ]" time="0.000" /><testcase classname="tests.test_membind_v31_contracts" name="test_operator_contract_accepts_only_semantically_legal_class_pairs[STATE_BOUND-STATE_WRITE]" time="0.000" /><testcase classname="tests.test_membind_v31_contracts" name="test_operator_contract_accepts_only_semantically_legal_class_pairs[STATE_BOUND-PUBLISH]" time="0.000" /><testcase classname="tests.test_membind_v31_contracts" name="test_evidence_bound_operator_rejects_any_mutable_state_effect[STATE_READ]" time="0.000" /><testcase classname="tests.test_membind_v31_contracts" name="test_evidence_bound_operator_rejects_any_mutable_state_effect[STATE_WRITE]" time="0.000" /><testcase classname="tests.test_membind_v31_contracts" name="test_evidence_bound_operator_rejects_any_mutable_state_effect[PUBLISH]" time="0.000" /><testcase classname="tests.test_membind_v31_contracts" name="test_operator_contract_rejects_unknown_or_coerced_enum_values[UNKNOWN-PURE-dependency_class_invalid]" time="0.000" /><testcase classname="tests.test_membind_v31_contracts" name="test_operator_contract_rejects_unknown_or_coerced_enum_values[STATE_BOUND-UNKNOWN-effect_class_invalid]" time="0.000" /><testcase classname="tests.test_membind_v31_contracts" name="test_operator_contract_rejects_unknown_or_coerced_enum_values[EVIDENCE_BOUND-True-effect_class_invalid]" time="0.000" /><testcase classname="tests.test_membind_v31_contracts" name="test_certification_binds_complete_identity_and_canonical_api_sets" time="0.000" /><testcase classname="tests.test_membind_v31_contracts" name="test_certification_fails_closed_when_any_forbidden_count_is_nonzero[persistent_state_read_count]" time="0.000" /><testcase classname="tests.test_membind_v31_contracts" name="test_certification_fails_closed_when_any_forbidden_count_is_nonzero[persistent_state_write_count]" time="0.000" /><testcase classname="tests.test_membind_v31_contracts" name="test_certification_fails_closed_when_any_forbidden_count_is_nonzero[undeclared_external_side_effect_count]" time="0.000" /><testcase classname="tests.test_membind_v31_contracts" name="test_certification_fails_closed_when_any_forbidden_count_is_nonzero[future_evidence_access_count]" time="0.000" /><testcase classname="tests.test_membind_v31_contracts" name="test_certification_fails_closed_when_any_forbidden_count_is_nonzero[undeclared_state_facing_call_count]" time="0.000" /><testcase classname="tests.test_membind_v31_contracts" name="test_certification_rejects_non_evidence_bound_or_non_pure_operator" time="0.000" /><testcase classname="tests.test_membind_v31_contracts" name="test_certification_rejects_ambiguous_api_policy_or_bad_identity" time="0.000" /><testcase classname="tests.test_membind_v31_contracts" name="test_certification_hash_covers_every_identity_and_trace_policy_field" time="0.000" /><testcase classname="tests.test_membind_v31_contracts" name="test_direct_certification_tamper_is_detected_by_self_verification" time="0.000" /><testcase classname="tests.test_membind_v31_contracts" name="test_prepared_artifact_canonicalizes_raw_nodes_and_optional_edges" time="0.000" /><testcase classname="tests.test_membind_v31_contracts" name="test_prepared_artifact_hash_binds_source_evidence_certification_and_raw_data" time="0.000" /><testcase classname="tests.test_membind_v31_contracts" name="test_prepared_artifact_rejects_conflicting_expected_identity" time="0.000" /><testcase classname="tests.test_membind_v31_contracts" name="test_prepared_artifact_detects_tamper_and_returns_defensive_json_copies" time="0.000" /><testcase classname="tests.test_membind_v31_contracts" name="test_prepared_artifact_rejects_noncanonical_or_malformed_input[source_sequence--1-source_sequence_invalid]" time="0.000" /><testcase classname="tests.test_membind_v31_contracts" name="test_prepared_artifact_rejects_noncanonical_or_malformed_input[raw_nodes-not-a-sequence-of-mappings-raw_nodes_invalid]" time="0.000" /><testcase classname="tests.test_membind_v31_contracts" name="test_prepared_artifact_rejects_noncanonical_or_malformed_input[raw_nodes-value2-raw_nodes_invalid]" time="0.000" /><testcase classname="tests.test_membind_v31_contracts" name="test_prepared_artifact_rejects_noncanonical_or_malformed_input[raw_edges-value3-raw_edges_invalid]" time="0.000" /><testcase classname="tests.test_membind_v31_contracts" name="test_prepared_artifact_binds_pure_intermediates_defensively" time="0.000"><failure message="TypeError: PreparedArtifact.create() got an unexpected keyword argument 'pure_intermediates'">def test_prepared_artifact_binds_pure_intermediates_defensively() -&gt; None:
+&gt;       artifact = _artifact(
+            pure_intermediates={"node_episode_index_map": {"node-a": [0, 2]}},
+        )
+
+paper-eval-v3/tests/test_membind_v31_contracts.py:316: 
+_ _ _ _ _ _ _ _ _ _ _ _ _ _ _ _ _ _ _ _ _ _ _ _ _ _ _ _ _ _ _ _ _ _ _ _ _ _ _ _ 
+
+overrides = {'pure_intermediates': {'node_episode_index_map': {'node-a': [0, 2]}}}
+
+    def _artifact(**overrides: object) -&gt; PreparedArtifact:
+        values: dict[str, object] = {
+            "source_sequence": 7,
+            "source_sha256": HASHES["source"],
+            "evidence_sha256": HASHES["evidence"],
+            "certification_sha256": _certification().certification_sha256,
+            "raw_nodes": (
+                {"name": "Ada", "labels": ["Person"], "attributes": {"z": 2, "a": 1}},
+                {"name": "Analytical Engine", "labels": ["Machine"]},
+            ),
+            "raw_edges": (
+                {
+                    "source_name": "Ada",
+                    "target_name": "Analytical Engine",
+                    "relation_type": "DESCRIBED",
+                },
+            ),
+        }
+        values.update(overrides)
+&gt;       return PreparedArtifact.create(**values)
+               ^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^
+E       TypeError: PreparedArtifact.create() got an unexpected keyword argument 'pure_intermediates'
+
+paper-eval-v3/tests/test_membind_v31_contracts.py:103: TypeError</failure></testcase><testcase classname="tests.test_membind_v31_contracts" name="test_prepared_artifact_rejects_tampered_pure_intermediates" time="0.000"><failure message="TypeError: PreparedArtifact.create() got an unexpected keyword argument 'pure_intermediates'">def test_prepared_artifact_rejects_tampered_pure_intermediates() -&gt; None:
+&gt;       artifact = _artifact(
+            pure_intermediates={"node_episode_index_map": {}},
+        )
+
+paper-eval-v3/tests/test_membind_v31_contracts.py:333: 
+_ _ _ _ _ _ _ _ _ _ _ _ _ _ _ _ _ _ _ _ _ _ _ _ _ _ _ _ _ _ _ _ _ _ _ _ _ _ _ _ 
+
+overrides = {'pure_intermediates': {'node_episode_index_map': {}}}
+
+    def _artifact(**overrides: object) -&gt; PreparedArtifact:
+        values: dict[str, object] = {
+            "source_sequence": 7,
+            "source_sha256": HASHES["source"],
+            "evidence_sha256": HASHES["evidence"],
+            "certification_sha256": _certification().certification_sha256,
+            "raw_nodes": (
+                {"name": "Ada", "labels": ["Person"], "attributes": {"z": 2, "a": 1}},
+                {"name": "Analytical Engine", "labels": ["Machine"]},
+            ),
+            "raw_edges": (
+                {
+                    "source_name": "Ada",
+                    "target_name": "Analytical Engine",
+                    "relation_type": "DESCRIBED",
+                },
+            ),
+        }
+        values.update(overrides)
+&gt;       return PreparedArtifact.create(**values)
+               ^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^
+E       TypeError: PreparedArtifact.create() got an unexpected keyword argument 'pure_intermediates'
+
+paper-eval-v3/tests/test_membind_v31_contracts.py:103: TypeError</failure></testcase></testsuite></testsuites>
