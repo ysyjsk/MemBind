@@ -23,7 +23,11 @@ from paper_eval.membind_v1.graphiti_factories import build_source_log_from_episo
 from paper_eval.membind_v31.admission import AdmissionPolicy
 from paper_eval.membind_v31.certification import StateCutCertification
 from paper_eval.membind_v31.coordinator import run_membind_v31_stream
-from paper_eval.membind_v31.live_block import V31LiveHooks, production_v31_live_hooks
+from paper_eval.membind_v31.live_block import (
+    V31LiveHooks,
+    _invoke_runtime_builder,
+    production_v31_live_hooks,
+)
 from paper_eval.membind_v31.optimization_pilot import (
     ARTIFACT_STATUS,
     GLOBAL_LLM_ADMISSION_K,
@@ -341,7 +345,9 @@ async def execute_w4_pilot(
             **dict(env),
             "CONSTRUCTION_CACHE_SALT": str(selected_contract["cache_salt_sha256"]),
         }
-        runtime = selected_hooks.runtime_builder(
+        runtime = _invoke_runtime_builder(
+            selected_hooks.runtime_builder,
+            response_observer=request_observer,
             env=block_env,
             policy=AdmissionPolicy.CACHE_AFFINE,
             request_id_prefix=f"w4-{selected_contract['attempt_id']}",

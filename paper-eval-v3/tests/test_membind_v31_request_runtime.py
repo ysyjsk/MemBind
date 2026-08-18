@@ -3,6 +3,9 @@
 from __future__ import annotations
 
 import asyncio
+import hashlib
+import json
+from types import SimpleNamespace
 
 import pytest
 
@@ -138,6 +141,121 @@ def test_transport_wrapper_admits_each_actual_attempt_and_fails_unscoped() -> No
             ) == {"messages": 1}
         assert transport.calls == 2
         assert gate.observation()["completed_count"] == 2
+
+    asyncio.run(scenario())
+
+
+def _response_format() -> dict[str, object]:
+    return {
+        "type": "json_schema",
+        "json_schema": {
+            "name": "tiny_result",
+            "strict": True,
+            "schema": {
+                "type": "object",
+                "properties": {"n": {"type": "integer"}},
+                "required": ["n"],
+                "additionalProperties": False,
+            },
+        },
+    }
+
+
+def _canonical_sha256(value: object) -> str:
+    return hashlib.sha256(
+        json.dumps(
+            value,
+            ensure_ascii=True,
+            sort_keys=True,
+            separators=(",", ":"),
+        ).encode("utf-8")
+    ).hexdigest()
+
+
+@pytest.mark.parametrize(
+    ("content", "finish_reason", "completion_tokens"),
+    [
+        ('{"n":1}', "stop", 7),
+        ('{"n":"private truncated completion', "length", 16_384),
+    ],
+)
+def test_transport_response_telemetry_captures_envelope_without_content(
+    content: str,
+    finish_reason: str,
+    completion_tokens: int,
+) -> None:
+    class Transport:
+        async def create(self, **_kwargs):
+            return SimpleNamespace(
+                choices=[
+                    SimpleNamespace(
+                        finish_reason=finish_reason,
+                        message=SimpleNamespace(content=content),
+                    )
+                ],
+                usage=SimpleNamespace(
+                    prompt_tokens=25_243,
+                    completion_tokens=completion_tokens,
+                    total_tokens=25_243 + completion_tokens,
+                ),
+            )
+
+    async def scenario() -> None:
+        events: list[dict[str, object]] = []
+        gate = AdmittedLLMClientV31(
+            inner=_ControlledLLM(),
+            limit=1,
+            policy=AdmissionPolicy.FIFO,
+            request_id_prefix="response-telemetry",
+            prefix_encoder=_tokenizer,
+        )
+        wrapped = AdmittedChatCompletionsV31(
+            inner=Transport(),
+            admission=gate,
+            response_observer=events.append,
+            structured_backend_identity="xgrammar",
+        )
+        response_format = _response_format()
+        with llm_request_scope(
+            kind=RequestKind.FRONTIER,
+            stream_id="history-a",
+            source_sequence=31,
+        ):
+            selected = await wrapped.create(
+                messages=[{"role": "user", "content": "private prompt"}],
+                prompt_name="warm-a",
+                max_tokens=16_384,
+                response_format=response_format,
+            )
+
+        assert selected.choices[0].message.content == content
+        assert len(events) == 1
+        event = events[0]
+        assert event == {
+            "schema_version": "membind.paper-eval-v3.transport-response.v1",
+            "event_type": "llm_transport_response",
+            "transport_attempt_index": 0,
+            "retry_index": None,
+            "request_kind": "FRONTIER",
+            "stream_id": "history-a",
+            "source_sequence": 31,
+            "requested_max_tokens": 16_384,
+            "effective_max_tokens": 16_384,
+            "response_format_sha256": _canonical_sha256(response_format),
+            "json_schema_sha256": _canonical_sha256(
+                response_format["json_schema"]["schema"]
+            ),
+            "response_byte_length": len(content.encode("utf-8")),
+            "response_sha256": hashlib.sha256(content.encode("utf-8")).hexdigest(),
+            "finish_reason": finish_reason,
+            "prompt_tokens": 25_243,
+            "completion_tokens": completion_tokens,
+            "total_tokens": 25_243 + completion_tokens,
+            "structured_backend_identity": "xgrammar",
+        }
+        assert "private prompt" not in repr(events)
+        assert content not in repr(events)
+        assert wrapped.public_response_events == (event,)
 
     asyncio.run(scenario())
 

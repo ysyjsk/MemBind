@@ -31,6 +31,9 @@ if str(LEGACY / "src") not in sys.path:
 
 from paper_eval.artifacts import atomic_write_json, payload_sha256, sha256_file  # noqa: E402
 from paper_eval.membind_v31.method_plan import verify_membind_v31_method_plan  # noqa: E402
+from paper_eval.membind_v31.provider_envelope import (  # noqa: E402
+    read_provider_execution_envelope,
+)
 from paper_eval.membind_v31.production_executor import (  # noqa: E402
     build_production_executor_hooks,
 )
@@ -125,11 +128,23 @@ def verify_cleanup_evidence(path: Path, *, namespace: str) -> dict[str, Any]:
     return evidence
 
 
-def build_manifest(*, attempt_id: str, plan: Mapping[str, Any], gate: Mapping[str, Any], cleanup: Mapping[str, Any]) -> dict[str, Any]:
+def verify_provider_envelope(path: Path) -> dict[str, Any]:
+    """Load the observed provider identity and return its sealed public body."""
+
+    try:
+        return read_provider_execution_envelope(Path(path))
+    except ValueError:
+        raise _fail("provider_envelope_invalid") from None
+
+
+def build_manifest(*, attempt_id: str, plan: Mapping[str, Any], gate: Mapping[str, Any], cleanup: Mapping[str, Any], provider: Mapping[str, Any]) -> dict[str, Any]:
     """Build a public, sealed wrapper manifest before opening live services."""
 
     if not isinstance(attempt_id, str) or _ID.fullmatch(attempt_id) is None:
         raise _fail("attempt_id_invalid")
+    provider_sha = provider.get("payload_sha256")
+    if not isinstance(provider_sha, str) or len(provider_sha) != 64:
+        raise _fail("provider_envelope_invalid")
     block = plan["blocks"][BLOCK_INDEX]
     body: dict[str, Any] = {
         "schema_version": SCHEMA,
@@ -150,6 +165,7 @@ def build_manifest(*, attempt_id: str, plan: Mapping[str, Any], gate: Mapping[st
         "global_llm_admission_k": block["global_llm_admission_k"],
         "policy": block["policy"],
         "cleanup_evidence_payload_sha256": cleanup["payload_sha256"],
+        "provider_execution_envelope_sha256": provider_sha,
         "formal_main_table_eligible": False,
         "result_role": "SINGLE_HISTORY_FEASIBILITY_GATE_NOT_FINAL_TABLE",
     }
@@ -186,6 +202,7 @@ def run_single_history(
     plan_path: Path,
     smoke_gate_path: Path,
     cleanup_evidence_path: Path,
+    provider_envelope_path: Path,
     attempt_root: Path,
     attempt_id: str,
     hooks: object | None = None,
@@ -196,12 +213,19 @@ def run_single_history(
     block = plan["blocks"][BLOCK_INDEX]
     gate = verify_smoke_gate(smoke_gate_path, plan_payload_sha256=plan["payload_sha256"])
     cleanup = verify_cleanup_evidence(cleanup_evidence_path, namespace=block["namespace"])
+    provider = verify_provider_envelope(provider_envelope_path)
     root = Path(attempt_root)
     if root.exists():
         raise _fail("attempt_root_exists")
     root.mkdir(parents=True, exist_ok=False)
     block_root = root / "block-00"
-    manifest = build_manifest(attempt_id=attempt_id, plan=plan, gate=gate, cleanup=cleanup)
+    manifest = build_manifest(
+        attempt_id=attempt_id,
+        plan=plan,
+        gate=gate,
+        cleanup=cleanup,
+        provider=provider,
+    )
     atomic_write_json(root / "MANIFEST.json", manifest)
     atomic_write_json(root / "CHECKPOINT.json", _checkpoint(manifest=manifest, status="RUNNING"))
     selected_hooks = build_production_executor_hooks() if hooks is None else hooks
@@ -224,6 +248,9 @@ def run_single_history(
             "block_result": result_copy,
             "result_role": "SINGLE_HISTORY_FEASIBILITY_GATE_NOT_FINAL_TABLE",
             "formal_main_table_eligible": False,
+            "provider_execution_envelope_sha256": manifest[
+                "provider_execution_envelope_sha256"
+            ],
         }
         sealed = {**body, "payload_sha256": payload_sha256(body)}
         atomic_write_json(root / "RESULT.json", sealed)
@@ -266,6 +293,7 @@ def main(argv: list[str] | None = None) -> int:
     parser.add_argument("--plan", type=Path, default=PROJECT / "artifacts/paper_eval/membind_v31/V31_METHOD_PLAN.json")
     parser.add_argument("--smoke-gate", type=Path, required=True)
     parser.add_argument("--cleanup-evidence", type=Path, required=True)
+    parser.add_argument("--provider-envelope", type=Path, required=True)
     parser.add_argument("--attempt-root", type=Path, required=True)
     parser.add_argument("--attempt-id", required=True)
     args = parser.parse_args(argv)
@@ -274,6 +302,7 @@ def main(argv: list[str] | None = None) -> int:
             plan_path=args.plan,
             smoke_gate_path=args.smoke_gate,
             cleanup_evidence_path=args.cleanup_evidence,
+            provider_envelope_path=args.provider_envelope,
             attempt_root=args.attempt_root,
             attempt_id=args.attempt_id,
         )
@@ -286,4 +315,3 @@ def main(argv: list[str] | None = None) -> int:
 
 if __name__ == "__main__":
     raise SystemExit(main())
-

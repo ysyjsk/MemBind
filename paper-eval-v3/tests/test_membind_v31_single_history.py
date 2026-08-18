@@ -79,10 +79,18 @@ def test_manifest_freezes_single_history_and_is_not_main_table_eligible() -> Non
     plan = {"payload_sha256": "d" * 64, "blocks": [block]}
     gate = {"payload_sha256": "e" * 64}
     cleanup = {"payload_sha256": "f" * 64}
-    result = module.build_manifest(attempt_id="membind-v31-feasibility-test-001", plan=plan, gate=gate, cleanup=cleanup)
+    provider = {"payload_sha256": "1" * 64}
+    result = module.build_manifest(
+        attempt_id="membind-v31-feasibility-test-001",
+        plan=plan,
+        gate=gate,
+        cleanup=cleanup,
+        provider=provider,
+    )
     assert result["source_count"] == 49
     assert result["history_id"] == "07741c45"
     assert result["formal_main_table_eligible"] is False
+    assert result["provider_execution_envelope_sha256"] == "1" * 64
     assert result["result_role"].endswith("NOT_FINAL_TABLE")
     assert result["payload_sha256"] == payload_sha256({k: v for k, v in result.items() if k != "payload_sha256"})
 
@@ -96,8 +104,8 @@ def test_existing_attempt_root_is_rejected_without_in_place_resume(monkeypatch, 
             plan_path=tmp_path / "missing-plan.json",
             smoke_gate_path=tmp_path / "missing-gate.json",
             cleanup_evidence_path=tmp_path / "missing-cleanup.json",
+            provider_envelope_path=tmp_path / "missing-provider.json",
             attempt_root=root,
             attempt_id="membind-v31-feasibility-test-002",
             hooks=object(),
         )
-

@@ -1,0 +1,77 @@
+{
+  "construction": {
+    "base_url": "http://10.87.5.247:8000/v1",
+    "chat_template_kwargs": {
+      "enable_thinking": false
+    },
+    "chunked_prefill": true,
+    "flashinfer_sampler": false,
+    "generation_config": {
+      "effective_sources": {
+        "enable_thinking": "explicit_request",
+        "max_tokens": "explicit_request",
+        "seed": "explicit_request",
+        "temperature": "explicit_request",
+        "top_k": "inherited_model_default",
+        "top_p": "explicit_request"
+      },
+      "model_defaults": {
+        "temperature": 0.6,
+        "top_k": 20,
+        "top_p": 0.95
+      },
+      "model_defaults_source": "server-startup-log-summary",
+      "policy": "per_field_request_or_model_default",
+      "request": {
+        "enable_thinking": false,
+        "max_tokens": 16384,
+        "seed": 20260806,
+        "temperature": 0.0,
+        "top_p": 1.0
+      }
+    },
+    "gpu_memory_utilization": 0.75,
+    "kv_cache_tokens": 127280,
+    "max_model_len": 65536,
+    "model": "qwen3-32b-fp8",
+    "prefix_caching": true,
+    "requested_max_tokens": 16384,
+    "scheduler": "fcfs",
+    "structured_backend": "xgrammar",
+    "structured_output_mode": "json_schema",
+    "vllm_version": "0.26.0",
+    "yarn": {
+      "factor": 2.0,
+      "original_max_position_embeddings": 32768,
+      "rope_theta": 1000000
+    }
+  },
+  "embedding": {
+    "base_url": "http://10.87.5.247:8001/v1",
+    "deployment_fingerprint": "5f5a8400eeaa2f07d167d8b5b7e63d615945a8f54f506e02342840cd4e3fe626",
+    "dimension": 1024,
+    "dtype": "bfloat16",
+    "gpu_memory_utilization": 0.15,
+    "max_model_len": 32768,
+    "max_num_batched_tokens": 32768,
+    "max_num_seqs": 128,
+    "model": "qwen3-embedding-0.6b",
+    "normalization": true,
+    "pooling": "last_token",
+    "runner": "pooling"
+  },
+  "payload_sha256": "31f1a8476650767bc391215675924ceed972e10153df02feeaf44eb9fa54e0ee",
+  "provider": {
+    "kind": "vllm",
+    "protocol": "openai-compatible-chat-completions"
+  },
+  "schema_version": "membind.paper-eval-v3.provider-execution-envelope.v2",
+  "startup_evidence": {
+    "construction_identity_projection_sha256": "55c8d4f82a0c14c961e7650faf897f6dfd50f51ecbb3b87f48299ffd946ee607",
+    "construction_startup_log_sha256": "49367fc14aa8fdd05542da26ed6ad4f866ee1c0cbe784db49c8d0de9b28dae79",
+    "embedding_identity_projection_sha256": "d3fdb5dbd242a0ee19f032ebb8a209851edc8c2b924e101c4c5150c6eee0ab4e",
+    "embedding_startup_log_sha256": "e831949b02f39a2a2b5bbc18a622827d3c53cb8fc288d661425296e0af64afb9",
+    "observation_transport": "restricted-ssh-read"
+  },
+  "status": "PASS"
+}

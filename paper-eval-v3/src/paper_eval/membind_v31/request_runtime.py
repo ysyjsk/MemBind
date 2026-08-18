@@ -4,9 +4,11 @@ from __future__ import annotations
 
 import asyncio
 import contextvars
+import hashlib
+import json
 import re
 import time
-from collections.abc import AsyncIterator, Callable, Iterator
+from collections.abc import AsyncIterator, Callable, Iterator, Mapping
 from contextlib import asynccontextmanager, contextmanager
 from dataclasses import dataclass
 from typing import Any
@@ -41,6 +43,54 @@ def _sequence(value: object) -> int:
     if isinstance(value, bool) or not isinstance(value, int) or value < 0:
         raise _fail("source_sequence_invalid")
     return value
+
+
+def _public_sha256(value: object) -> str | None:
+    """Hash JSON-compatible request metadata without retaining its contents."""
+
+    if value is None:
+        return None
+    try:
+        encoded = json.dumps(
+            value,
+            ensure_ascii=True,
+            sort_keys=True,
+            separators=(",", ":"),
+        ).encode("utf-8")
+    except (TypeError, ValueError, OverflowError):
+        return None
+    return hashlib.sha256(encoded).hexdigest()
+
+
+def _member(value: object, name: str) -> object:
+    if isinstance(value, Mapping):
+        return value.get(name)
+    return getattr(value, name, None)
+
+
+def _response_projection(response: object) -> tuple[str | None, int | None, str | None]:
+    """Return finish reason, UTF-8 response byte length, and content hash."""
+
+    choices = _member(response, "choices")
+    choice = choices[0] if isinstance(choices, (list, tuple)) and choices else None
+    finish_reason = _member(choice, "finish_reason")
+    if finish_reason is not None and not isinstance(finish_reason, str):
+        finish_reason = str(finish_reason)
+    message = _member(choice, "message")
+    content = _member(message, "content")
+    if not isinstance(content, str):
+        return finish_reason, None, None
+    encoded = content.encode("utf-8")
+    return finish_reason, len(encoded), hashlib.sha256(encoded).hexdigest()
+
+
+def _usage_projection(response: object) -> tuple[int | None, int | None, int | None]:
+    usage = _member(response, "usage")
+    values: list[int | None] = []
+    for field in ("prompt_tokens", "completion_tokens", "total_tokens"):
+        value = _member(usage, field)
+        values.append(value if isinstance(value, int) and not isinstance(value, bool) else None)
+    return tuple(values)  # type: ignore[return-value]
 
 
 @dataclass(frozen=True, slots=True)
@@ -487,21 +537,102 @@ class AdmittedLLMClientV31:
 class AdmittedChatCompletionsV31:
     """Install one v3.1 gate at the real ``chat.completions.create`` boundary."""
 
-    def __init__(self, *, inner: object, admission: AdmittedLLMClientV31) -> None:
+    def __init__(
+        self,
+        *,
+        inner: object,
+        admission: AdmittedLLMClientV31,
+        response_observer: Callable[[dict[str, object]], object] | None = None,
+        structured_backend_identity: str | None = None,
+    ) -> None:
         if inner is None or not callable(getattr(inner, "create", None)):
             raise _fail("chat_completions_transport_invalid")
         if not isinstance(admission, AdmittedLLMClientV31):
             raise _fail("transport_admission_invalid")
+        if response_observer is not None and not callable(response_observer):
+            raise _fail("response_observer_invalid")
+        if structured_backend_identity is not None and (
+            not isinstance(structured_backend_identity, str)
+            or not structured_backend_identity
+        ):
+            raise _fail("structured_backend_identity_invalid")
         self._inner = inner
         self._admission = admission
+        self._response_observer = response_observer
+        self._structured_backend_identity = structured_backend_identity
+        self._response_events: list[dict[str, object]] = []
+        self._transport_attempt_index = 0
 
     def __getattr__(self, name: str) -> Any:
         return getattr(self._inner, name)
 
     async def create(self, *args: object, **kwargs: object) -> object:
-        return await self._admission.execute_transport(
+        # Incrementing before the await gives each transport attempt a stable,
+        # content-free ordinal even when several Graphiti calls overlap.
+        attempt_index = self._transport_attempt_index
+        self._transport_attempt_index += 1
+        response = await self._admission.execute_transport(
             self._inner.create, *args, **kwargs
         )
+        scope = _SCOPE.get()
+        response_format = kwargs.get("response_format")
+        schema = None
+        if isinstance(response_format, Mapping):
+            json_schema = response_format.get("json_schema")
+            if isinstance(json_schema, Mapping):
+                schema = json_schema.get("schema")
+        requested_max_tokens = kwargs.get("max_tokens")
+        if isinstance(requested_max_tokens, bool) or not isinstance(
+            requested_max_tokens, int
+        ):
+            requested_max_tokens = None
+        effective_max_tokens = requested_max_tokens
+        if effective_max_tokens is None:
+            alternate_max_tokens = kwargs.get("max_completion_tokens")
+            if isinstance(alternate_max_tokens, int) and not isinstance(
+                alternate_max_tokens, bool
+            ):
+                effective_max_tokens = alternate_max_tokens
+        retry_index = kwargs.get("retry_index", kwargs.get("attempt_index"))
+        if isinstance(retry_index, bool) or not isinstance(retry_index, int) or retry_index < 0:
+            retry_index = None
+        finish_reason, response_byte_length, response_sha256 = _response_projection(
+            response
+        )
+        prompt_tokens, completion_tokens, total_tokens = _usage_projection(response)
+        event: dict[str, object] = {
+            "schema_version": "membind.paper-eval-v3.transport-response.v1",
+            "event_type": "llm_transport_response",
+            "transport_attempt_index": attempt_index,
+            "retry_index": retry_index,
+            "request_kind": None if scope is None else scope.kind.value,
+            "stream_id": None if scope is None else scope.stream_id,
+            "source_sequence": None if scope is None else scope.source_sequence,
+            "requested_max_tokens": requested_max_tokens,
+            "effective_max_tokens": effective_max_tokens,
+            "response_format_sha256": _public_sha256(response_format),
+            "json_schema_sha256": _public_sha256(schema),
+            "response_byte_length": response_byte_length,
+            "response_sha256": response_sha256,
+            "finish_reason": finish_reason,
+            "prompt_tokens": prompt_tokens,
+            "completion_tokens": completion_tokens,
+            "total_tokens": total_tokens,
+            "structured_backend_identity": self._structured_backend_identity,
+        }
+        self._response_events.append(event)
+        if self._response_observer is not None:
+            try:
+                self._response_observer(dict(event))
+            except Exception:
+                raise _fail("response_observer_failed") from None
+        return response
+
+    @property
+    def public_response_events(self) -> tuple[dict[str, object], ...]:
+        """Return content-free response telemetry for durable artifact writers."""
+
+        return tuple(dict(event) for event in self._response_events)
 
 
 __all__ = [

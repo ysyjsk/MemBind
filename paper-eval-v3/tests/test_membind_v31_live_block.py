@@ -23,6 +23,7 @@ from paper_eval.membind_v31 import (
 from paper_eval.membind_v31.live_block import (
     MemBindV31LiveBlockError,
     V31LiveHooks,
+    _invoke_runtime_builder,
     execute_v31_live_block,
 )
 from paper_eval.membind_v31.method_plan import build_membind_v31_method_plan
@@ -130,6 +131,35 @@ class _RequestClient:
         yield
 
 
+def test_runtime_builder_response_hook_preserves_old_explicit_injection_signature() -> None:
+    calls: list[dict[str, object]] = []
+
+    def old_builder(*, env, policy, request_id_prefix, observer):
+        calls.append(
+            {
+                "env": env,
+                "policy": policy,
+                "request_id_prefix": request_id_prefix,
+                "observer": observer,
+            }
+        )
+        return "legacy-runtime"
+
+    response_observer = lambda _row: None
+    selected = _invoke_runtime_builder(
+        old_builder,
+        response_observer=response_observer,
+        env={"SAFE": "value"},
+        policy="FIFO",
+        request_id_prefix="legacy-hook",
+        observer=lambda _row: None,
+    )
+
+    assert selected == "legacy-runtime"
+    assert len(calls) == 1
+    assert "response_observer" not in calls[0]
+
+
 def test_live_block_binds_plan_runtime_source_and_durable_publication(tmp_path: Path) -> None:
     state: dict[str, object] = {"visible": [], "closed": False}
     certification = _certification()
@@ -166,8 +196,38 @@ def test_live_block_binds_plan_runtime_source_and_durable_publication(tmp_path: 
             "episode_names": list(state["visible"]),
         }
 
+    runtime_builder_kwargs: dict[str, object] = {}
+
+    def runtime_builder(**kwargs: object):
+        runtime_builder_kwargs.update(kwargs)
+        response_observer = kwargs["response_observer"]
+        assert callable(response_observer)
+        response_observer(
+            {
+                "schema_version": "membind.paper-eval-v3.transport-response.v1",
+                "event_type": "llm_transport_response",
+                "transport_attempt_index": 0,
+                "retry_index": None,
+                "request_kind": "FRONTIER",
+                "stream_id": "07741c45",
+                "source_sequence": 0,
+                "requested_max_tokens": 16_384,
+                "effective_max_tokens": 16_384,
+                "response_format_sha256": "a" * 64,
+                "json_schema_sha256": "b" * 64,
+                "response_byte_length": 7,
+                "response_sha256": "c" * 64,
+                "finish_reason": "stop",
+                "prompt_tokens": 25_243,
+                "completion_tokens": 7,
+                "total_tokens": 25_250,
+                "structured_backend_identity": "xgrammar",
+            }
+        )
+        return runtime
+
     hooks = V31LiveHooks(
-        runtime_builder=lambda **_kwargs: runtime,
+        runtime_builder=runtime_builder,
         runtime_ready=lambda _runtime: asyncio.sleep(0),
         namespace_probe=namespace_probe,
         namespace_episode=lambda episode, namespace: replace(episode, group_id=namespace),
@@ -201,6 +261,11 @@ def test_live_block_binds_plan_runtime_source_and_durable_publication(tmp_path: 
     assert result["final_namespace"]["episode_names"] == ["history::episode::0000"]
     assert state["closed"] is True
     assert (tmp_path / "block-00/result.json").is_file()
+    llm_rows = (tmp_path / "block-00/llm.jsonl").read_text(encoding="utf-8").splitlines()
+    assert len(llm_rows) == 1
+    assert "llm_transport_response" in llm_rows[0]
+    assert "private" not in llm_rows[0]
+    assert callable(runtime_builder_kwargs["observer"])
     assert "private" not in (tmp_path / "block-00/events.jsonl").read_text(encoding="utf-8")
 
 

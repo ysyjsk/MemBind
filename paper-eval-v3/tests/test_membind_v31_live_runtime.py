@@ -185,6 +185,36 @@ def test_live_runtime_observer_receives_content_safe_admission_snapshots() -> No
     assert "private prompt" not in repr(snapshots)
 
 
+def test_live_runtime_wires_response_observer_and_xgrammar_identity() -> None:
+    events: list[dict[str, object]] = []
+    runtime = build_membind_v31_runtime(
+        env=_env(),
+        policy=AdmissionPolicy.FIFO,
+        request_id_prefix="v31-live-response-events",
+        response_observer=events.append,
+        components=_components(),
+        prefix_encoder=_prefix_encoder,
+    )
+
+    async def scenario() -> None:
+        with llm_request_scope(
+            kind=RequestKind.FRONTIER,
+            stream_id="history-a",
+            source_sequence=0,
+        ):
+            await runtime.raw_llm.client.chat.completions.create(
+                messages=[{"role": "user", "content": "private prompt"}],
+                max_tokens=16_384,
+            )
+
+    asyncio.run(scenario())
+    assert len(events) == 1
+    assert events[0]["event_type"] == "llm_transport_response"
+    assert events[0]["structured_backend_identity"] == "xgrammar"
+    assert events[0]["requested_max_tokens"] == 16_384
+    assert "private prompt" not in repr(events)
+
+
 def test_production_prefix_key_is_loaded_from_private_env_not_api_credential(
     monkeypatch: pytest.MonkeyPatch,
 ) -> None:

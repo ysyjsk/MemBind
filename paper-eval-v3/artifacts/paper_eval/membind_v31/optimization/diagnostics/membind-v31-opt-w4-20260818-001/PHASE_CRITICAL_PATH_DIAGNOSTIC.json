@@ -1,0 +1,87 @@
+{
+  "admission": {
+    "capacity": 2,
+    "snapshot_count": 582,
+    "under_capacity_with_waiter_ns": 0,
+    "under_capacity_without_waiter_ns": 577187181532
+  },
+  "event_summary": {
+    "arrival_count": 12,
+    "event_count": 72,
+    "event_counts": {
+      "ARRIVAL": 12,
+      "BIND_STARTED": 12,
+      "COMMIT_RETURNED": 12,
+      "COMPILE_STARTED": 12,
+      "PREPARED_DURABLE": 12,
+      "PUBLICATION_DURABLE": 12
+    },
+    "lifecycle_makespan_ns": 698777570889,
+    "publication_count": 12
+  },
+  "events_trace_sha256": "54a76f5aac2ba4005036e441b74c1351de4ec20ad41ad17edd8e32116523bd38",
+  "ideal_overlap": {
+    "bind_phase_ns": 254124162685,
+    "compile_phase_ns": 304471710803,
+    "interpretation": "STRUCTURAL_OVERLAP_BOUND_NOT_OBSERVED_SPEEDUP",
+    "lower_bound_ns": 444606994786,
+    "no_source_phase_ns": 140135283983,
+    "speedup_upper_bound": 1.5716779770600304
+  },
+  "llm_trace_sha256": "55ff7d48c9ffba068b1ead781daf7bf5dd2bfe5681fa897937311e7f82dee6eb",
+  "observation_end_ns": 360474710157793,
+  "observation_start_ns": 359775931135641,
+  "observation_window_ns": 698779022152,
+  "payload_sha256": "9104fd125b5c1ae7f24b250ac77d7b6212aaedd425d81c5bccc3276616bdcbc3",
+  "phase_fraction": {
+    "BINDING": 0.36366884899089363,
+    "BIND_DISPATCHED": 3.1618894242068315e-05,
+    "COMPILE_ACTIVE": 0.4357195925334613,
+    "NO_SOURCE_ARRIVED": 0.2005430608827256,
+    "READY_TO_BIND": 7.567721457513512e-06,
+    "WAITING_FOR_COMPILE": 2.7090798950576107e-05
+  },
+  "phase_time_ns": {
+    "BINDING": 254124162685,
+    "BIND_DISPATCHED": 22094620,
+    "COMPILE_ACTIVE": 304471710803,
+    "NO_SOURCE_ARRIVED": 140135283983,
+    "READY_TO_BIND": 5288165,
+    "WAITING_FOR_COMPILE": 18930482
+  },
+  "queue_trace_sha256": "c33a9be35d0c5327617cc6769a8fa441b799020af2dc34303ab87deb0bda3f83",
+  "ready_work": {
+    "legal_ready_duration_ns": 6258028,
+    "legal_ready_fraction": 8.955660948045374e-06,
+    "max_legal_ready_compile_count": 1,
+    "prepared_rob_time_by_count_ns": {
+      "0": 696416726157,
+      "1": 2360744581
+    },
+    "ready_work_observable": true
+  },
+  "request_overlap": {
+    "compile_frontier_overlap_ns": 69483506695,
+    "compile_interval_union_ns": 375409008905,
+    "compile_service_span_sum_ns": 377787810943,
+    "complete_request_count": 279,
+    "frontier_interval_union_ns": 247124158293,
+    "frontier_service_span_sum_ns": 296162825186,
+    "incomplete_request_count": 0,
+    "region_count": 12,
+    "region_union_ns": 254061265213,
+    "request_count": 279,
+    "token_count_by_kind": {
+      "COMPILE": 323756,
+      "FRONTIER": 402609
+    }
+  },
+  "schema_version": "membind.paper-eval-v3.membind-v31-phase-critical-path.v1",
+  "status": "DIAGNOSTIC_ONLY",
+  "verdict": {
+    "admission": "NO_ADMISSION_UNDER_CAPACITY_WITH_WAITER_OBSERVED",
+    "bind_phase": "BIND_PHASE_NOT_LONGER_THAN_COMPILE_PHASE",
+    "ready_pool": "SINGLE_LEGAL_READY_WORK_ONLY_OBSERVED",
+    "scientific_claim": "DIAGNOSTIC_ONLY_REQUIRES_ALIGNED_FORMAL_CONTROL"
+  }
+}

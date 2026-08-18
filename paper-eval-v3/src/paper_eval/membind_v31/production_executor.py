@@ -37,6 +37,7 @@ from paper_eval.membind_v31.freezer import (
 )
 from paper_eval.membind_v31.live_block import (
     V31LiveHooks,
+    _invoke_runtime_builder,
     execute_v31_live_block,
     production_v31_live_hooks,
 )
@@ -420,7 +421,9 @@ async def execute_v31_three_episode_smoke(
 
     runtime: object | None = None
     try:
-        runtime = selected_hooks.runtime_builder(
+        runtime = _invoke_runtime_builder(
+            selected_hooks.runtime_builder,
+            response_observer=request_observer,
             env={**dict(env), "CONSTRUCTION_CACHE_SALT": smoke_plan["cache_salt_sha256"]},
             policy=AdmissionPolicy.CACHE_AFFINE,
             request_id_prefix=f"v31-smoke-{smoke_spec.attempt_id}",

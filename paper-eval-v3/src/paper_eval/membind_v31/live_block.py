@@ -48,6 +48,31 @@ class V31LiveHooks:
     close_runtime: Callable[[object], object]
 
 
+def _invoke_runtime_builder(
+    runtime_builder: Callable[..., object],
+    *,
+    response_observer: Callable[[dict[str, object]], object],
+    **kwargs: object,
+) -> object:
+    """Pass response telemetry to new builders without breaking old hooks."""
+
+    if not callable(runtime_builder) or not callable(response_observer):
+        raise _fail("runtime_builder_invalid")
+    try:
+        parameters = inspect.signature(runtime_builder).parameters.values()
+    except (TypeError, ValueError):
+        parameters = ()
+    supports_response_observer = any(
+        parameter.name == "response_observer"
+        or parameter.kind is inspect.Parameter.VAR_KEYWORD
+        for parameter in parameters
+    )
+    selected = dict(kwargs)
+    if supports_response_observer:
+        selected["response_observer"] = response_observer
+    return runtime_builder(**selected)
+
+
 def _policy(value: object) -> AdmissionPolicy:
     mapping = {
         "FRONTIER_BARRIER": AdmissionPolicy.BARRIER,
@@ -195,7 +220,9 @@ async def execute_v31_live_block(
     block_env = {**dict(env), "CONSTRUCTION_CACHE_SALT": str(block["cache_salt_sha256"])}
     runtime: object | None = None
     try:
-        runtime = selected_hooks.runtime_builder(
+        runtime = _invoke_runtime_builder(
+            selected_hooks.runtime_builder,
+            response_observer=request_observer,
             env=block_env,
             policy=policy,
             request_id_prefix=f"v31-{block_index:02d}-{block['history_id']}",

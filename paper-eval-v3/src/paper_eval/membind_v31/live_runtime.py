@@ -65,6 +65,7 @@ def build_membind_v31_runtime(
     request_id_prefix: str,
     observer: Callable[[dict[str, object]], object] | None = None,
     admission_observer: Callable[[dict[str, object]], object] | None = None,
+    response_observer: Callable[[dict[str, object]], object] | None = None,
     components: RuntimeComponents | None = None,
     prefix_encoder: Callable[..., object] | None = None,
 ) -> MemBindV31LiveRuntime:
@@ -129,6 +130,8 @@ def build_membind_v31_runtime(
         chat.completions = AdmittedChatCompletionsV31(
             inner=completions,
             admission=admitted,
+            response_observer=response_observer,
+            structured_backend_identity="xgrammar",
         )
         graphiti.llm_client = shared.raw_llm
         clients.llm_client = shared.raw_llm
