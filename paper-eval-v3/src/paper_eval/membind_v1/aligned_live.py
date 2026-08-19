@@ -29,6 +29,13 @@ from paper_eval.apc_aligned_baseline import (
     SCHEMA as APC_BASELINE_PLAN_SCHEMA,
     verify_apc_aligned_baseline_plan,
 )
+from paper_eval.c246_plan import (
+    C246_METHODS,
+    C8_EXTENSION_SCHEMA,
+    SCHEMA as C246_PLAN_SCHEMA,
+    verify_c246_plan,
+    verify_c8_extension_plan,
+)
 from paper_eval.membind_v1.admission import RequestAdmission
 from paper_eval.membind_v1.aligned_artifacts import (
     AlignedBlockArtifactStore,
@@ -43,6 +50,8 @@ from paper_eval.membind_v1.aligned_schedule import (
     A0_ALIGNED,
     AlignedEpisodeRef,
     P_C2_ALIGNED,
+    P_C4_ALIGNED,
+    P_C8_ALIGNED,
     U0_ALIGNED,
     run_aligned_baseline,
 )
@@ -140,9 +149,17 @@ def _plan_block(
 ) -> tuple[dict[str, object], dict[str, object], tuple[str, ...], tuple[int, ...]]:
     try:
         plan = (
-            verify_apc_aligned_baseline_plan(verified_plan)
-            if verified_plan.get("schema_version") == APC_BASELINE_PLAN_SCHEMA
-            else verify_aligned_development_plan(verified_plan)
+            verify_c8_extension_plan(verified_plan)
+            if verified_plan.get("schema_version") == C8_EXTENSION_SCHEMA
+            else (
+                verify_c246_plan(verified_plan)
+                if verified_plan.get("schema_version") == C246_PLAN_SCHEMA
+                else (
+                    verify_apc_aligned_baseline_plan(verified_plan)
+                    if verified_plan.get("schema_version") == APC_BASELINE_PLAN_SCHEMA
+                    else verify_aligned_development_plan(verified_plan)
+                )
+            )
         )
     except (AlignedPlanError, ValueError, TypeError):
         raise _fail("verified plan invalid") from None
@@ -154,7 +171,7 @@ def _plan_block(
     if not isinstance(raw_block, Mapping):
         raise _fail("plan block invalid")
     block = dict(raw_block)
-    supported_methods = set(ALIGNED_METHODS) | set(APC_BASELINE_METHODS)
+    supported_methods = set(ALIGNED_METHODS) | set(APC_BASELINE_METHODS) | set(C246_METHODS) | {P_C8_ALIGNED}
     if block.get("block_index") != index or block.get("method") not in supported_methods:
         raise _fail("plan block invalid")
     if block.get("global_llm_admission_k") != 2:
@@ -525,7 +542,7 @@ async def execute_aligned_live_block(
         runner: dict[str, object] | None = None
         attempt_root: Path | None = None
         try:
-            if block["method"] in {U0_ALIGNED, A0_ALIGNED, P_C2_ALIGNED}:
+            if block["method"] in {U0_ALIGNED, A0_ALIGNED, P_C2_ALIGNED, P_C4_ALIGNED, P_C8_ALIGNED}:
                 schedule = await _run_native_row(
                     block=block,
                     scoped_episodes=scoped_episodes,

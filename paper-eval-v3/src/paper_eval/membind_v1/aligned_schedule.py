@@ -21,7 +21,9 @@ from typing import Any
 U0_ALIGNED = "U0-aligned"
 A0_ALIGNED = "A0-aligned"
 P_C2_ALIGNED = "P(C=2)-aligned"
-_METHODS = {U0_ALIGNED, A0_ALIGNED, P_C2_ALIGNED}
+P_C4_ALIGNED = "P(C=4)-aligned"
+P_C8_ALIGNED = "P(C=8)-aligned"
+_METHODS = {U0_ALIGNED, A0_ALIGNED, P_C2_ALIGNED, P_C4_ALIGNED, P_C8_ALIGNED}
 _SHA256 = re.compile(r"^[0-9a-f]{64}$")
 
 
@@ -202,8 +204,9 @@ async def _run_u0(
     }
 
 
-async def _run_p_c2(
+async def _run_parallel(
     *,
+    method: str,
     episodes: tuple[AlignedEpisodeRef, ...],
     targets: tuple[int, ...],
     native_add_episode: NativeAddEpisode,
@@ -211,11 +214,12 @@ async def _run_p_c2(
     sleep: Sleep,
     lifecycle_observer: LifecycleObserver | None,
 ) -> dict[str, Any]:
-    semaphore = asyncio.Semaphore(2)
+    concurrency = {P_C2_ALIGNED: 2, P_C4_ALIGNED: 4, P_C8_ALIGNED: 8}[method]
+    semaphore = asyncio.Semaphore(concurrency)
     lock = asyncio.Lock()
-    workers: asyncio.Queue[int] = asyncio.Queue(maxsize=2)
-    workers.put_nowait(0)
-    workers.put_nowait(1)
+    workers: asyncio.Queue[int] = asyncio.Queue(maxsize=concurrency)
+    for worker_id in range(concurrency):
+        workers.put_nowait(worker_id)
     rows: list[dict[str, int | str]] = []
     intervals: list[tuple[int, int, int]] = []
     active = 0
@@ -286,7 +290,7 @@ async def _run_p_c2(
         for right_start, right_end, right_worker in intervals[index + 1 :]
     )
     return {
-        "configured_worker_count": 2,
+        "configured_worker_count": concurrency,
         "observed_max_active_updates": observed_max,
         "whole_update_interval_overlap_observed": overlap,
         "lifecycle": sorted(rows, key=lambda row: int(row["source_sequence"])),
@@ -422,7 +426,8 @@ async def run_aligned_baseline(
             lifecycle_observer=lifecycle_observer,
         )
     else:
-        result = await _run_p_c2(
+        result = await _run_parallel(
+            method=method,
             episodes=selected,
             targets=targets,
             native_add_episode=native_add_episode,
@@ -444,6 +449,8 @@ __all__ = [
     "AlignedEpisodeRef",
     "AlignedScheduleError",
     "P_C2_ALIGNED",
+    "P_C4_ALIGNED",
+    "P_C8_ALIGNED",
     "U0_ALIGNED",
     "run_aligned_baseline",
 ]

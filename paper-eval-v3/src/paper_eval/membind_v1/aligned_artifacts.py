@@ -24,6 +24,12 @@ from paper_eval.apc_aligned_baseline import (
     SCHEMA as APC_BASELINE_PLAN_SCHEMA,
     verify_apc_aligned_baseline_plan,
 )
+from paper_eval.c246_plan import (
+    C8_EXTENSION_SCHEMA,
+    SCHEMA as C246_PLAN_SCHEMA,
+    verify_c246_plan,
+    verify_c8_extension_plan,
+)
 
 
 MANIFEST_SCHEMA = "membind.paper-eval-v3.membind-v1-aligned-block-manifest.v1"
@@ -129,9 +135,17 @@ def _plan_block(
 ) -> tuple[dict[str, object], dict[str, object], list[str]]:
     try:
         plan = (
-            verify_apc_aligned_baseline_plan(verified_plan)
-            if verified_plan.get("schema_version") == APC_BASELINE_PLAN_SCHEMA
-            else verify_aligned_development_plan(verified_plan)
+            verify_c8_extension_plan(verified_plan)
+            if verified_plan.get("schema_version") == C8_EXTENSION_SCHEMA
+            else (
+                verify_c246_plan(verified_plan)
+                if verified_plan.get("schema_version") == C246_PLAN_SCHEMA
+                else (
+                    verify_apc_aligned_baseline_plan(verified_plan)
+                    if verified_plan.get("schema_version") == APC_BASELINE_PLAN_SCHEMA
+                    else verify_aligned_development_plan(verified_plan)
+                )
+            )
         )
     except ValueError:
         raise _fail("verified plan invalid") from None

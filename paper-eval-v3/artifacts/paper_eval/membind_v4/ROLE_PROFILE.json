@@ -1,0 +1,112 @@
+{
+  "limitations": [
+    "The available target-GPU c246 baseline exposes no logical-call trace; this profile uses the existing native_baseline trace set.",
+    "The profile is an initialization reference, not a post-result tuning license."
+  ],
+  "logical_call_rows": 1900,
+  "payload_sha256": "f597e3379560d063eb2705886fb3306c60a4b8ea9fb2f793e89a58b5d0294bbc",
+  "profile_source": "EXISTING_LOGICAL_CALL_TRACE",
+  "resource_classification": {
+    "long_decode_cutoff_output_tokens": 266.40000000000055,
+    "long_decode_cutoff_quantile": 0.9,
+    "rule": "input_tokens>=4096 and median_output_tokens<long_decode_cutoff => LONG_PREFILL; input_tokens<4096 => SHORT; otherwise MIXED"
+  },
+  "roles": {
+    "dedupe_edges.resolve_edge": {
+      "duration_ns_median": 1337181586.0,
+      "duration_ns_p50": 1337181586.0,
+      "duration_ns_p95": 2504762144.0,
+      "input_tokens_median": 963.0,
+      "input_tokens_total": 596533,
+      "logical_call_count": 623,
+      "output_tokens_median": 19.0,
+      "output_tokens_total": 11621,
+      "resource_class": "SHORT",
+      "retry_count_total": 0
+    },
+    "dedupe_nodes.nodes": {
+      "duration_ns_median": 8397701964.5,
+      "duration_ns_p50": 8397701964.5,
+      "duration_ns_p95": 23255009154.94997,
+      "input_tokens_median": 27655.0,
+      "input_tokens_total": 4472482,
+      "logical_call_count": 170,
+      "output_tokens_median": 112.5,
+      "output_tokens_total": 31214,
+      "resource_class": "LONG_PREFILL",
+      "retry_count_total": 0
+    },
+    "extract_edges.edge": {
+      "duration_ns_median": 11504549692.5,
+      "duration_ns_p50": 11504549692.5,
+      "duration_ns_p95": 40104774917.8,
+      "input_tokens_median": 26291.0,
+      "input_tokens_total": 4712843,
+      "logical_call_count": 188,
+      "output_tokens_median": 227.5,
+      "output_tokens_total": 94064,
+      "resource_class": "LONG_PREFILL",
+      "retry_count_total": 1
+    },
+    "extract_edges.extract_timestamps": {
+      "duration_ns_median": 530236924.0,
+      "duration_ns_p50": 530236924.0,
+      "duration_ns_p95": 1107267770.8,
+      "input_tokens_median": 314.0,
+      "input_tokens_total": 190555,
+      "logical_call_count": 604,
+      "output_tokens_median": 17.0,
+      "output_tokens_total": 13294,
+      "resource_class": "SHORT",
+      "retry_count_total": 0
+    },
+    "extract_nodes.extract_message": {
+      "duration_ns_median": 7525739628.0,
+      "duration_ns_p50": 7525739628.0,
+      "duration_ns_p95": 18640654519.700005,
+      "input_tokens_median": 26690.5,
+      "input_tokens_total": 4788691,
+      "logical_call_count": 188,
+      "output_tokens_median": 75.5,
+      "output_tokens_total": 25109,
+      "resource_class": "LONG_PREFILL",
+      "retry_count_total": 0
+    },
+    "extract_nodes.extract_summaries_batch": {
+      "duration_ns_median": 9648871516.0,
+      "duration_ns_p50": 9648871516.0,
+      "duration_ns_p95": 23900373681.699993,
+      "input_tokens_median": 25193.0,
+      "input_tokens_total": 3099933,
+      "logical_call_count": 127,
+      "output_tokens_median": 167.0,
+      "output_tokens_total": 32466,
+      "resource_class": "LONG_PREFILL",
+      "retry_count_total": 0
+    }
+  },
+  "schema_version": "membind.paper-eval-v3.membind-v4-role-profile.v1",
+  "source_traces": [
+    {
+      "absolute_path": "/data/predator/ly/MemBind/paper-eval-v3/artifacts/paper_eval/native_baseline/runs/nb-20260816-001/07741c45/llm.jsonl",
+      "sha256": "d74757665e495d0e05105d664f1bbc8ba9b4562475db0de0a83170400ea9c1a1",
+      "size_bytes": 527775
+    },
+    {
+      "absolute_path": "/data/predator/ly/MemBind/paper-eval-v3/artifacts/paper_eval/native_baseline/runs/nb-20260816-001/6071bd76/llm.jsonl",
+      "sha256": "ba4951c1597440b2d5a66cc657774b3af4725ac1db273137b082f71cd0ea04b8",
+      "size_bytes": 386799
+    },
+    {
+      "absolute_path": "/data/predator/ly/MemBind/paper-eval-v3/artifacts/paper_eval/native_baseline/runs/nb-20260816-001/a2f3aa27/llm.jsonl",
+      "sha256": "08945d5acf2ab0f26d185c0e2ad40fb678e71fa52d0f83d28dcf47ea8562a1e1",
+      "size_bytes": 372390
+    },
+    {
+      "absolute_path": "/data/predator/ly/MemBind/paper-eval-v3/artifacts/paper_eval/native_baseline/runs/nb-20260816-001/b6019101/llm.jsonl",
+      "sha256": "8a65ee2c8de248ae0fa9f1de733096b4ceff02d1cd706c587f30ab499ae627d7",
+      "size_bytes": 601828
+    }
+  ],
+  "status": "PASS"
+}

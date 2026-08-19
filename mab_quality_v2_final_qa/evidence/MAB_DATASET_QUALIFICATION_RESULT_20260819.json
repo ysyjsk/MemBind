@@ -1,0 +1,49 @@
+{
+  "schema_version": "mab-quality-v2-final-qa.dataset-qualification.v1",
+  "dataset_revision": "hf:ai-hyz/MemoryAgentBench@7ea066982b140a19337e17e60d45d4076e042faf",
+  "source_filter": "longmemeval_s*",
+  "selected_record_count": 5,
+  "accepted_context_count": 4,
+  "rejected_context_count": 1,
+  "accepted_qa_count": 240,
+  "accepted": [
+    {
+      "record_index": 0,
+      "context_id": "longmemeval_s*:3c7e614ecadaf1a6",
+      "context_sha256": "4d5fc1e69a3a92ae1822098dd0b4e50ab904b0ccd1e6852252af76a2bb492425",
+      "session_count": 111,
+      "qa_count": 60
+    },
+    {
+      "record_index": 1,
+      "context_id": "longmemeval_s*:68e0c0a3c1784bc0",
+      "context_sha256": "968ab4c347bce6cb673fbaed6c904ce616322e98121b8cc16b6fd1e363614034",
+      "session_count": 107,
+      "qa_count": 60
+    },
+    {
+      "record_index": 2,
+      "context_id": "longmemeval_s*:9b8cbac923a7a2d1",
+      "context_sha256": "91a0f0cf7fb859f93d6fbf1e60b671750c4f6f6096637aade02719c67d7da234",
+      "session_count": 116,
+      "qa_count": 60
+    },
+    {
+      "record_index": 3,
+      "context_id": "longmemeval_s*:92fa22f6540b0e82",
+      "context_sha256": "fe5ab2dd65f7a08c065ba8d1cad2769588acd1e0ed21f1e059b77709878ce763",
+      "session_count": 111,
+      "qa_count": 60
+    }
+  ],
+  "rejected": [
+    {
+      "record_index": 4,
+      "source": "longmemeval_s*",
+      "failure": "question 38 gold session is absent from common context"
+    }
+  ],
+  "decision": "STOP_DATASET_MAPPING_UNQUALIFIED",
+  "live_authorized": false,
+  "payload_sha256": "1bee6f1ef7a112ae1c7dd2ff437336c9ad8671018896a580b5c890d09c891264"
+}

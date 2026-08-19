@@ -217,6 +217,7 @@ class V31BlockStore:
         compile_workers: int,
         lookahead: int,
         compile_source_sha256s: Sequence[str] | None = None,
+        namespace_override: str | None = None,
     ) -> "V31BlockStore":
         try:
             plan = verify_membind_v31_method_plan(verified_plan)
@@ -227,6 +228,11 @@ class V31BlockStore:
         if index >= len(blocks) or blocks[index].get("block_index") != index:
             raise _fail("plan_block_invalid")
         block = blocks[index]
+        namespace = block["namespace"]
+        if namespace_override is not None:
+            if not isinstance(namespace_override, str) or not namespace_override:
+                raise _fail("namespace_override_invalid")
+            namespace = namespace_override
         sources = plan["history_source_sha256s"][block["history_id"]]
         compile_sources = list(sources) if compile_source_sha256s is None else list(compile_source_sha256s)
         if (
@@ -250,7 +256,7 @@ class V31BlockStore:
             "method": block["method"],
             "policy": block["policy"],
             "history_id": block["history_id"],
-            "namespace": block["namespace"],
+            "namespace": namespace,
             "source_count": len(sources),
             "source_sha256s": list(sources),
             "compile_source_sha256s": compile_sources,

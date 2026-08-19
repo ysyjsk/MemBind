@@ -255,7 +255,7 @@ def derive_apc_aligned_performance(
 def lifecycle_rows_from_events(
     events: Sequence[Mapping[str, object]], *, method: str, source_count: int
 ) -> list[dict[str, int]]:
-    if method not in APC_BASELINE_METHODS:
+    if method not in (*APC_BASELINE_METHODS, "P(C=4)-aligned"):
         raise ValueError("method invalid")
     count = _nonnegative_int(source_count, "source count invalid")
     if count < 1 or isinstance(events, (str, bytes)) or not isinstance(events, Sequence):

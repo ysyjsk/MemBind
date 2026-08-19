@@ -11,6 +11,12 @@ from paper_eval.apc_aligned_baseline import (
     summarize_direct_violations,
     verify_apc_aligned_baseline_plan,
 )
+from paper_eval.c246_plan import (
+    C8_EXTENSION_SCHEMA,
+    SCHEMA as C246_SCHEMA,
+    verify_c246_plan,
+    verify_c8_extension_plan,
+)
 from paper_eval.membind_v1.aligned_artifacts import inspect_aligned_block_artifacts
 
 
@@ -150,7 +156,15 @@ async def measure_apc_aligned_direct_violations(
     driver: object,
     expected_episode_names: Sequence[str],
 ) -> dict[str, object]:
-    plan = verify_apc_aligned_baseline_plan(verified_plan)
+    plan = (
+        verify_c8_extension_plan(verified_plan)
+        if verified_plan.get("schema_version") == C8_EXTENSION_SCHEMA
+        else (
+            verify_c246_plan(verified_plan)
+            if verified_plan.get("schema_version") == C246_SCHEMA
+            else verify_apc_aligned_baseline_plan(verified_plan)
+        )
+    )
     blocks = plan["blocks"]
     if (
         isinstance(block_index, bool)

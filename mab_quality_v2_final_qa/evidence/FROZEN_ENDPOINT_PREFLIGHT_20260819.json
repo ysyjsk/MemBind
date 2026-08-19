@@ -1,0 +1,51 @@
+{
+  "schema_version": "mab-quality-v2-final-qa.endpoint-preflight.v1",
+  "checked_at": "2026-08-19T11:12:00+08:00",
+  "required_initial_ports": [8002, 8003],
+  "initial_port_results": [
+    {
+      "port": 8002,
+      "url": "http://127.0.0.1:8002/v1/models",
+      "available": false,
+      "http_status": null,
+      "error_class": "ConnectionRefusedError",
+      "classification": "ENDPOINT_CONNECTION_REFUSED"
+    },
+    {
+      "port": 8003,
+      "url": "http://127.0.0.1:8003/v1/models",
+      "available": false,
+      "http_status": null,
+      "error_class": "ConnectionRefusedError",
+      "classification": "ENDPOINT_CONNECTION_REFUSED"
+    }
+  ],
+  "frozen_project_topology": {
+    "construction": {
+      "base_url": "http://10.87.5.247:8000/v1",
+      "expected_model": "qwen3-32b-fp8"
+    },
+    "embedding": {
+      "base_url": "http://10.87.5.247:8001/v1",
+      "expected_model": "qwen3-embedding-0.6b"
+    }
+  },
+  "latest_live_probe": {
+    "construction": {
+      "available": false,
+      "http_status": null,
+      "models": [],
+      "classification": "ENDPOINT_TIMEOUT_OR_UPSTREAM_502",
+      "direct_tcp_observation": "CLOSED"
+    },
+    "embedding": {
+      "available": false,
+      "http_status": null,
+      "models": [],
+      "classification": "ENDPOINT_TIMEOUT_OR_UPSTREAM_502",
+      "direct_tcp_observation": "CLOSED"
+    }
+  },
+  "decision": "STOP_LIVE_MODEL_UNAVAILABLE",
+  "live_authorized": false
+}

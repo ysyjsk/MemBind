@@ -1,0 +1,16 @@
+{
+  "schema_version": "mab-quality-v2-final-qa.tdd-regression.v1",
+  "isolated_tests": {
+    "command": "PYTHONPATH=src /tmp/membind-mab-tests.1IvLJL/bin/pytest -q",
+    "result": "PASS",
+    "passed": 25
+  },
+  "quality_v1_regression": {
+    "command": "PYTHONPATH=src:../paper-eval-v3/src:../membind-validation/src /data/predator/ly/MemBind/paper-eval-v3/.venv/bin/pytest -q tests/test_quality_v1_integration.py ../paper-eval-v3/tests/test_quality_evaluation_v1.py ../paper-eval-v3/tests/test_quality_evaluation_v1_retrieval.py ../paper-eval-v3/tests/test_quality_evaluation_v1_reader.py",
+    "result": "PASS",
+    "passed": 21
+  },
+  "compileall": "PASS",
+  "ruff": "NOT_AVAILABLE_IN_WORKSPACE_ENVIRONMENT",
+  "notes": "The first compatibility invocation used a test environment without rank_bm25; it was rerun in the project venv and passed."
+}

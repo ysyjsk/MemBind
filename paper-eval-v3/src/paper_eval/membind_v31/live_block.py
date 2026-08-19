@@ -156,6 +156,7 @@ async def execute_v31_live_block(
     compile_workers: int,
     lookahead: int,
     hooks: V31LiveHooks | None = None,
+    namespace_override: str | None = None,
 ) -> dict[str, object]:
     """Execute a single plan block without touching baseline artifacts."""
 
@@ -194,6 +195,10 @@ async def execute_v31_live_block(
         raise _fail("live_hooks_invalid")
 
     namespace = str(block["namespace"])
+    if namespace_override is not None:
+        if not isinstance(namespace_override, str) or not namespace_override:
+            raise _fail("namespace_override_invalid")
+        namespace = namespace_override
     try:
         scoped = tuple(selected_hooks.namespace_episode(item, namespace) for item in episodes)
         source_log, raw_hashes = build_source_log_from_episodes(
@@ -265,6 +270,7 @@ async def execute_v31_live_block(
             compile_workers=compile_workers,
             lookahead=lookahead,
             compile_source_sha256s=[record.source_sha256 for record in source_log.records],
+            namespace_override=namespace_override,
         )
         for row in request_rows:
             store.append_telemetry("llm", row)
