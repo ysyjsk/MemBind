@@ -1,0 +1,352 @@
+{
+  "analysis_mode": "OFFLINE_READ_ONLY",
+  "decision": {
+    "live_authorized": false,
+    "new_scheduler_authorized": false,
+    "reasons": [
+      "operator_identity_missing",
+      "operator_ready_materialization_timing_missing",
+      "memory_version_evidence_missing",
+      "dependency_and_effect_scope_missing",
+      "deterministic_operator_trace_missing",
+      "persistent_effect_and_publication_trace_missing"
+    ],
+    "status": "STOP_REAL_TRACE_INSUFFICIENT_OBSERVABILITY",
+    "synthetic_decision": "GO_OFFLINE_CERTIFIED"
+  },
+  "payload_sha256": "446f36f807b60ecadd6a3e58bea9989e7110e4bb107b317dee2a5b39d76d6680",
+  "real_trace": {
+    "history_id": "07741c45",
+    "mseg_recovered": false,
+    "observability": {
+      "blocking_reasons": [
+        "operator_identity_missing",
+        "operator_ready_materialization_timing_missing",
+        "memory_version_evidence_missing",
+        "dependency_and_effect_scope_missing",
+        "deterministic_operator_trace_missing",
+        "persistent_effect_and_publication_trace_missing"
+      ],
+      "complete_client_lifecycle_count": 193,
+      "dependency_effect_scope_recovered": false,
+      "deterministic_operator_instances_observable": false,
+      "event_fields": {
+        "frontier_bind_region_end": [
+          "event_sequence",
+          "event_type",
+          "source_sequence",
+          "stream_id",
+          "timestamp_ns"
+        ],
+        "frontier_bind_region_start": [
+          "event_sequence",
+          "event_type",
+          "source_sequence",
+          "stream_id",
+          "timestamp_ns"
+        ],
+        "llm_request_start": [
+          "affinity_score",
+          "cohort_gain",
+          "eligible_prefix_tokens",
+          "event_sequence",
+          "event_type",
+          "operator_id",
+          "operator_phase",
+          "operator_role",
+          "parent_bind_id",
+          "parent_operator_id",
+          "provider_recency",
+          "request_id",
+          "request_kind",
+          "source_sequence",
+          "stream_id",
+          "timestamp_ns"
+        ],
+        "llm_request_submitted": [
+          "cache_identity_sha256",
+          "event_sequence",
+          "event_type",
+          "operator_id",
+          "operator_phase",
+          "operator_role",
+          "parent_bind_id",
+          "parent_operator_id",
+          "prefix_match_unit",
+          "prefix_metadata_sha256",
+          "request_id",
+          "request_kind",
+          "source_sequence",
+          "stream_id",
+          "timestamp_ns",
+          "token_count",
+          "token_prefix_block_hmac_sha256s",
+          "token_sequence_hmac_sha256",
+          "tokenizer_identity_sha256",
+          "trace_key_identity_sha256"
+        ],
+        "llm_request_terminal": [
+          "error_class",
+          "event_sequence",
+          "event_type",
+          "operator_id",
+          "operator_phase",
+          "operator_role",
+          "parent_bind_id",
+          "parent_operator_id",
+          "request_id",
+          "status",
+          "timestamp_ns"
+        ],
+        "llm_transport_response": [
+          "completion_tokens",
+          "effective_max_tokens",
+          "event_type",
+          "finish_reason",
+          "json_schema_sha256",
+          "operator_id",
+          "operator_phase",
+          "operator_role",
+          "parent_bind_id",
+          "parent_operator_id",
+          "prompt_tokens",
+          "request_kind",
+          "requested_max_tokens",
+          "response_byte_length",
+          "response_format_sha256",
+          "response_sha256",
+          "retry_index",
+          "schema_version",
+          "source_sequence",
+          "stream_id",
+          "structured_backend_identity",
+          "total_tokens",
+          "transport_attempt_index"
+        ]
+      },
+      "field_coverage": {
+        "admission_enqueue_ns": {
+          "coverage_fraction": 0.0,
+          "observed_count": 0,
+          "request_count": 193,
+          "status": "NOT_OBSERVABLE"
+        },
+        "completion_tokens": {
+          "coverage_fraction": 0.0,
+          "observed_count": 0,
+          "request_count": 193,
+          "status": "NOT_OBSERVABLE"
+        },
+        "data_dependency_ids": {
+          "coverage_fraction": 0.0,
+          "observed_count": 0,
+          "request_count": 193,
+          "status": "NOT_OBSERVABLE"
+        },
+        "dependency_knowledge_state": {
+          "coverage_fraction": 0.0,
+          "observed_count": 0,
+          "request_count": 193,
+          "status": "NOT_OBSERVABLE"
+        },
+        "effect_conflict_dependency_ids": {
+          "coverage_fraction": 0.0,
+          "observed_count": 0,
+          "request_count": 193,
+          "status": "NOT_OBSERVABLE"
+        },
+        "effect_scope": {
+          "coverage_fraction": 0.0,
+          "observed_count": 0,
+          "request_count": 193,
+          "status": "NOT_OBSERVABLE"
+        },
+        "episode_arrival_ns": {
+          "coverage_fraction": 0.0,
+          "observed_count": 0,
+          "request_count": 193,
+          "status": "NOT_OBSERVABLE"
+        },
+        "execution_mode": {
+          "coverage_fraction": 0.0,
+          "observed_count": 0,
+          "request_count": 193,
+          "status": "NOT_OBSERVABLE"
+        },
+        "history_id": {
+          "coverage_fraction": 0.0,
+          "observed_count": 0,
+          "request_count": 193,
+          "status": "NOT_OBSERVABLE"
+        },
+        "memory_version_observed": {
+          "coverage_fraction": 0.0,
+          "observed_count": 0,
+          "request_count": 193,
+          "status": "NOT_OBSERVABLE"
+        },
+        "memory_version_required": {
+          "coverage_fraction": 0.0,
+          "observed_count": 0,
+          "request_count": 193,
+          "status": "NOT_OBSERVABLE"
+        },
+        "operator_end_ns": {
+          "coverage_fraction": 0.0,
+          "observed_count": 0,
+          "request_count": 193,
+          "status": "NOT_OBSERVABLE"
+        },
+        "operator_id": {
+          "coverage_fraction": 1.0,
+          "observed_count": 193,
+          "request_count": 193,
+          "status": "OBSERVED"
+        },
+        "operator_ready_ns": {
+          "coverage_fraction": 0.0,
+          "observed_count": 0,
+          "request_count": 193,
+          "status": "NOT_OBSERVABLE"
+        },
+        "operator_role": {
+          "coverage_fraction": 1.0,
+          "observed_count": 193,
+          "request_count": 193,
+          "status": "OBSERVED"
+        },
+        "operator_start_ns": {
+          "coverage_fraction": 0.0,
+          "observed_count": 0,
+          "request_count": 193,
+          "status": "NOT_OBSERVABLE"
+        },
+        "parent_bind_id": {
+          "coverage_fraction": 1.0,
+          "observed_count": 193,
+          "request_count": 193,
+          "status": "OBSERVED"
+        },
+        "parent_operator_id": {
+          "coverage_fraction": 1.0,
+          "observed_count": 193,
+          "request_count": 193,
+          "status": "OBSERVED"
+        },
+        "prompt_name": {
+          "coverage_fraction": 0.0,
+          "observed_count": 0,
+          "request_count": 193,
+          "status": "NOT_OBSERVABLE"
+        },
+        "prompt_tokens": {
+          "coverage_fraction": 0.0,
+          "observed_count": 0,
+          "request_count": 193,
+          "status": "NOT_OBSERVABLE"
+        },
+        "publication_dependency_ids": {
+          "coverage_fraction": 0.0,
+          "observed_count": 0,
+          "request_count": 193,
+          "status": "NOT_OBSERVABLE"
+        },
+        "publication_frontier_at_materialization": {
+          "coverage_fraction": 0.0,
+          "observed_count": 0,
+          "request_count": 193,
+          "status": "NOT_OBSERVABLE"
+        },
+        "publication_frontier_at_ready": {
+          "coverage_fraction": 0.0,
+          "observed_count": 0,
+          "request_count": 193,
+          "status": "NOT_OBSERVABLE"
+        },
+        "read_scope": {
+          "coverage_fraction": 0.0,
+          "observed_count": 0,
+          "request_count": 193,
+          "status": "NOT_OBSERVABLE"
+        },
+        "request_materialized_ns": {
+          "coverage_fraction": 0.0,
+          "observed_count": 0,
+          "request_count": 193,
+          "status": "NOT_OBSERVABLE"
+        },
+        "version_dependency_ids": {
+          "coverage_fraction": 0.0,
+          "observed_count": 0,
+          "request_count": 193,
+          "status": "NOT_OBSERVABLE"
+        }
+      },
+      "fine_grained_identity_recovered": false,
+      "history_id": "07741c45",
+      "interpretation_boundary": {
+        "client_running_is_gpu_execution": false,
+        "client_running_is_vllm_batch_membership": false,
+        "llm_request_is_complete_operator_graph": false,
+        "manifest_history_binding_is_direct_per_request_metadata": false
+      },
+      "memory_version_recovered": false,
+      "mseg_recovered": false,
+      "operator_timing_recovered": false,
+      "persistent_effect_instances_observable": false,
+      "prohibited_inferences": [
+        "prompt_or_token_length",
+        "request_order",
+        "prompt_or_prefix_similarity"
+      ],
+      "request_count": 193,
+      "request_kind_counts": {
+        "COMPILE": 24,
+        "FRONTIER": 169
+      },
+      "role_attribution_method": "NONE",
+      "role_count": "NOT_OBSERVABLE",
+      "schema_version": "membind.paper-eval-v4.mseg-trace-observability.v1",
+      "source_trace": "/data/predator/ly/MemBind/paper-eval-v3/artifacts/paper_eval/membind_v4/mseg/q0/membind-v31-opt-w4-q0-20260820-001/llm.jsonl",
+      "source_trace_sha256": "399c506c41e8007610f8366d7c473cd82f56fb597d059d4642d82fe9ce7fa1c8"
+    },
+    "trace_path": "/data/predator/ly/MemBind/paper-eval-v3/artifacts/paper_eval/membind_v4/mseg/q0/membind-v31-opt-w4-q0-20260820-001/llm.jsonl"
+  },
+  "schema_version": "membind.paper-eval-v4.mseg-design-qualification.v1",
+  "scope": {
+    "network_calls": 0,
+    "persistent_writes": 0,
+    "runtime_policy_modified": false,
+    "sealed_artifacts_modified": false,
+    "services_started": 0
+  },
+  "synthetic": {
+    "case_results": {
+      "durable-publication": {
+        "codes": [],
+        "status": "CERTIFIED_PUBLISHABLE"
+      },
+      "private-left": {
+        "codes": [],
+        "status": "CERTIFIED_PRIVATE"
+      },
+      "private-right": {
+        "codes": [],
+        "status": "CERTIFIED_PRIVATE"
+      }
+    },
+    "decision": "GO_OFFLINE_CERTIFIED",
+    "reasons": [],
+    "reorder_counts": {
+      "CERTIFIED": 1,
+      "CONFLICT": 0,
+      "UNKNOWN": 0
+    },
+    "status_counts": {
+      "CERTIFIED_PRIVATE": 2,
+      "CERTIFIED_PUBLISHABLE": 1,
+      "INVALID": 0,
+      "OPAQUE": 0
+    }
+  }
+}
