@@ -1,10 +1,16 @@
 {
   "decision": {
-    "dominant_gain_source": "NONE_ORACLE_NOT_RECOVERABLE",
+    "dominant_gain_source": "NOT_EVALUABLE",
+    "instrumentation_only_qualification_authorized": true,
     "live_authorized": false,
     "mseg_recovered": false,
-    "next_mechanism": "STOP_V4_FINE_GRAINED",
-    "root_cause": "FINE_GRAINED_CAUSAL_IDENTITY_NOT_OBSERVABLE"
+    "new_mechanism_authorized": false,
+    "new_scheduler_authorized": false,
+    "next_action": "INSTRUMENTATION_ONLY_QUALIFICATION",
+    "next_mechanism": "STOP_V4_FINE_GRAINED_ON_EXISTING_TRACE",
+    "q0_measurement_authorized": true,
+    "root_cause": "FINE_GRAINED_CAUSAL_IDENTITY_NOT_RECORDED",
+    "status": "STOP_V4_FINE_GRAINED_ON_EXISTING_TRACE"
   },
   "gain_attribution": {
     "Gain_ConflictOrdering_O2_minus_O1": "NOT_OBSERVABLE",
@@ -12,11 +18,11 @@
     "Gain_StateCut_O1_minus_O0": "NOT_OBSERVABLE",
     "Gain_ValidatedExecution_O3_minus_O2": "NOT_OBSERVABLE"
   },
-  "hypotheses": {
-    "H1_OVER_SERIALIZATION": "REJECTED_AT_EVIDENCE_GATE",
-    "H2_LATE_BOUND_DEPENDENCY": "REJECTED_AT_EVIDENCE_GATE",
-    "H3_CRITICALITY_HETEROGENEITY": "REJECTED_AT_EVIDENCE_GATE",
-    "H4_SEMANTIC_ADMISSION_OPPORTUNITY": "REJECTED_AT_EVIDENCE_GATE"
+  "hypothesis_status": {
+    "H1_OVER_SERIALIZATION": "NOT_EVALUABLE",
+    "H2_LATE_BOUND_DEPENDENCY": "NOT_EVALUABLE",
+    "H3_CRITICALITY_HETEROGENEITY": "NOT_EVALUABLE",
+    "H4_SEMANTIC_ADMISSION_OPPORTUNITY": "NOT_EVALUABLE"
   },
   "input_binding": {
     "graphiti": {
@@ -114,7 +120,7 @@
       "status": "NOT_OBSERVABLE"
     }
   },
-  "payload_sha256": "ec8b5f4b1e5fefba9b3161949dc97db176b63cab34f0f2899daabdf200a26118",
+  "payload_sha256": "535da14bedd2d2a06d351018ade0d962f895ba003dab615690fe08ae005fe529",
   "schema_version": "membind.paper-eval-v4.mseg-oracle-comparison.v1",
   "scope": {
     "analysis_mode": "OFFLINE_READ_ONLY",

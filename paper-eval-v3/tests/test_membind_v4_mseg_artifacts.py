@@ -76,6 +76,12 @@ def test_generator_emits_fail_closed_mseg_oracle_bundle(tmp_path: Path) -> None:
         "VERSION_DEP": "NOT_OBSERVABLE",
     }
 
+    late_bound = _read_json(output / "MSEG_LATE_BOUND_ANALYSIS.json")
+    assert late_bound["status"] == "NOT_OBSERVABLE"
+    assert late_bound["h2_late_bound_dependency"] == "NOT_EVALUABLE"
+    assert "does not prove" in late_bound["interpretation"]
+    assert "late-bound dependency" in late_bound["interpretation"]
+
     comparison = _read_json(output / "MSEG_ORACLE_COMPARISON.json")
     observability = comparison["trace_observability"]
     assert observability["request_count"] == 279
@@ -94,11 +100,23 @@ def test_generator_emits_fail_closed_mseg_oracle_bundle(tmp_path: Path) -> None:
     ):
         assert comparison["oracles"][oracle]["status"] == "NOT_OBSERVABLE"
     assert comparison["decision"] == {
-        "dominant_gain_source": "NONE_ORACLE_NOT_RECOVERABLE",
+        "dominant_gain_source": "NOT_EVALUABLE",
+        "instrumentation_only_qualification_authorized": True,
         "live_authorized": False,
         "mseg_recovered": False,
-        "next_mechanism": "STOP_V4_FINE_GRAINED",
-        "root_cause": "FINE_GRAINED_CAUSAL_IDENTITY_NOT_OBSERVABLE",
+        "new_mechanism_authorized": False,
+        "new_scheduler_authorized": False,
+        "next_action": "INSTRUMENTATION_ONLY_QUALIFICATION",
+        "next_mechanism": "STOP_V4_FINE_GRAINED_ON_EXISTING_TRACE",
+        "q0_measurement_authorized": True,
+        "root_cause": "FINE_GRAINED_CAUSAL_IDENTITY_NOT_RECORDED",
+        "status": "STOP_V4_FINE_GRAINED_ON_EXISTING_TRACE",
+    }
+    assert comparison["hypothesis_status"] == {
+        "H1_OVER_SERIALIZATION": "NOT_EVALUABLE",
+        "H2_LATE_BOUND_DEPENDENCY": "NOT_EVALUABLE",
+        "H3_CRITICALITY_HETEROGENEITY": "NOT_EVALUABLE",
+        "H4_SEMANTIC_ADMISSION_OPPORTUNITY": "NOT_EVALUABLE",
     }
 
     trace_lines = (output / "MSEG_FINE_GRAINED_TRACE.jsonl").read_text(
@@ -144,16 +162,20 @@ def test_generated_audits_state_code_evidence_and_claim_boundaries(tmp_path: Pat
 
     decision = (output / "MSEG_FINAL_DECISION.md").read_text(encoding="utf-8")
     for required in (
+        "STATUS: STOP_V4_FINE_GRAINED_ON_EXISTING_TRACE",
+        "ROOT_CAUSE: FINE_GRAINED_CAUSAL_IDENTITY_NOT_RECORDED",
         "MSEG_RECOVERED: no",
-        "H1_OVER_SERIALIZATION: rejected",
-        "H2_LATE_BOUND_DEPENDENCY: rejected",
-        "H3_CRITICALITY_HETEROGENEITY: rejected",
-        "H4_SEMANTIC_ADMISSION_OPPORTUNITY: rejected",
+        "H1_OVER_SERIALIZATION: NOT_EVALUABLE",
+        "H2_LATE_BOUND_DEPENDENCY: NOT_EVALUABLE",
+        "H3_CRITICALITY_HETEROGENEITY: NOT_EVALUABLE",
+        "H4_SEMANTIC_ADMISSION_OPPORTUNITY: NOT_EVALUABLE",
         "MAX_LEGAL_READY_WIDTH: NOT_OBSERVABLE",
         "O0_CURRENT: 698777570889 ns",
         "O1_CERTIFIED_EARLY: NOT_OBSERVABLE",
-        "NEXT_MECHANISM: STOP_V4_FINE_GRAINED",
-        "LIVE_AUTHORIZED: no",
+        "NEXT_ACTION: INSTRUMENTATION_ONLY_QUALIFICATION",
+        "NEW_MECHANISM_AUTHORIZED: no",
+        "NEW_SCHEDULER_AUTHORIZED: no",
+        "Q0_MEASUREMENT_AUTHORIZED: yes",
         "SEALED_ARTIFACTS_UNCHANGED: yes",
     ):
         assert required in decision
@@ -187,9 +209,15 @@ def test_registered_bundle_is_byte_identical_to_fresh_generation(tmp_path: Path)
         text=True,
     )
 
-    assert {path.name for path in registered.iterdir()} == {
-        path.name for path in regenerated.iterdir()
+    registered_files = {
+        path.name for path in registered.iterdir() if path.is_file()
     }
+    regenerated_files = {
+        path.name for path in regenerated.iterdir() if path.is_file()
+    }
+    assert registered_files == regenerated_files
     for registered_path in registered.iterdir():
+        if not registered_path.is_file():
+            continue
         regenerated_path = regenerated / registered_path.name
         assert registered_path.read_bytes() == regenerated_path.read_bytes()

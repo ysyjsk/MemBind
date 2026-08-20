@@ -1,0 +1,94 @@
+{
+  "admission": {
+    "active_time_by_count_ns": {
+      "0": 142391003897,
+      "1": 333394409908,
+      "2": 119342531091
+    },
+    "admission_state_observable": true,
+    "compile_waiter_under_capacity_duration_ns": 0,
+    "configured_limit": 2,
+    "frontier_waiter_under_capacity_duration_ns": 0,
+    "max_active_count": 2,
+    "max_waiting_count": 19,
+    "observation_window_ns": 595127944896,
+    "policy": "CACHE_AFFINE",
+    "snapshot_count": 410,
+    "status": "OBSERVED",
+    "under_capacity_with_waiter_duration_ns": 0,
+    "under_capacity_without_waiter_duration_ns": 333394409908,
+    "waiting_time_by_count_ns": {
+      "0": 532723384979,
+      "1": 1763803617,
+      "10": 9686369740,
+      "11": 917544325,
+      "12": 5318643489,
+      "13": 1189727074,
+      "14": 424167369,
+      "15": 423930351,
+      "16": 528603816,
+      "17": 421576806,
+      "18": 1148875393,
+      "19": 13354194609,
+      "2": 2093912472,
+      "3": 2370062512,
+      "4": 2417844793,
+      "5": 2517112098,
+      "6": 6473292601,
+      "7": 2735124054,
+      "8": 6614760240,
+      "9": 2005014558
+    }
+  },
+  "interpretation_boundary": {
+    "ready_work_requires_scheduler_snapshot": true,
+    "transport_wait_is_not_scheduler_ready_work": true,
+    "under_capacity_requires_waiter_for_admission_candidate": true
+  },
+  "merge_eligible": false,
+  "payload_sha256": "1f9e07036fe7d54dccd38daaebd54332576c128216f3dea0edd219034edef7a6",
+  "scheduler": {
+    "active_compile_time_by_count_ns": {
+      "0": 280214293154,
+      "1": 312253117469,
+      "2": 2690407850
+    },
+    "arrived_beyond_window_duration_ns": 0,
+    "compile_workers": 2,
+    "frontier_phase_time_ns": {
+      "BINDING": 238382761665,
+      "BIND_DISPATCHED": 23035731,
+      "COMPILE_ACTIVE": 217633021473,
+      "NO_SOURCE_ARRIVED": 139094916705,
+      "READY_TO_BIND": 6154052,
+      "WAITING_FOR_COMPILE": 17928847
+    },
+    "frontier_wait_reason_time_ns": {
+      "BIND_DISPATCHED": 23035731,
+      "BIND_IN_PROGRESS": 238382761665,
+      "COMPILE_DISPATCHED": 14155081,
+      "COMPILE_IN_PROGRESS": 217633021473,
+      "COMPILE_READY": 3773766,
+      "NONE": 6154052,
+      "SOURCE_NOT_ARRIVED": 139094916705
+    },
+    "legal_ready_duration_ns": 6610965,
+    "max_arrived_beyond_lookahead_count": 0,
+    "max_legal_ready_compile_count": 1,
+    "max_prepared_rob_occupancy": 1,
+    "observation_window_ns": 595157818473,
+    "prepared_rob_time_by_count_ns": {
+      "0": 595128628690,
+      "1": 29189783
+    },
+    "ready_work_observable": true,
+    "snapshot_count": 84,
+    "status": "OBSERVED",
+    "window_limited_duration_ns": 0,
+    "work_conservation_candidate_duration_ns": 6610965
+  },
+  "schema_version": "membind.paper-eval-v3.membind-v31-queue-diagnostic.v1",
+  "source_trace": "/data/predator/ly/MemBind/paper-eval-v3/artifacts/paper_eval/membind_v4/mseg/q0/membind-v31-opt-w4-q0-20260820-001/queue.jsonl",
+  "source_trace_sha256": "eda613c67b26c2adc6d0a729e76f1d489171ad9f5851f95fc5ac1dfdc4228121",
+  "status": "DIAGNOSTIC_ONLY"
+}

@@ -66,6 +66,7 @@ def build_membind_v31_runtime(
     observer: Callable[[dict[str, object]], object] | None = None,
     admission_observer: Callable[[dict[str, object]], object] | None = None,
     response_observer: Callable[[dict[str, object]], object] | None = None,
+    causal_metadata_provider: Callable[[], Mapping[str, object]] | None = None,
     components: RuntimeComponents | None = None,
     prefix_encoder: Callable[..., object] | None = None,
 ) -> MemBindV31LiveRuntime:
@@ -119,6 +120,7 @@ def build_membind_v31_runtime(
         request_id_prefix=request_id_prefix,
         observer=observer,
         admission_observer=admission_observer,
+        causal_metadata_provider=causal_metadata_provider,
         prefix_encoder=selected_prefix_encoder,
     )
     transport = getattr(shared.raw_llm, "client", None)
@@ -156,6 +158,11 @@ def build_membind_v31_runtime(
             "transport_admission_installed": True,
         },
     }
+    if causal_metadata_provider is not None:
+        method_identity["observability_overlay"] = {
+            "causal_metadata_enabled": True,
+            "execution_policy_changed": False,
+        }
     return MemBindV31LiveRuntime(
         graphiti=graphiti,
         raw_llm=shared.raw_llm,

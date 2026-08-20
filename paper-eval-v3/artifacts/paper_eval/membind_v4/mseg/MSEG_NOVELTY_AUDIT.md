@@ -39,5 +39,7 @@ batch or GPU claim is made here.
 ## Result
 
 The conceptual differentiation is coherent, but the Oracle Gate has no causal
-trace on which to validate H1-H4 or measure O1-O4. The only authorized outcome
-is `STOP_V4_FINE_GRAINED`, not a live implementation.
+trace on which to validate H1-H4 or measure O1-O4. No mechanism or scheduler is
+authorized. The sole next action is the bounded, instrumentation-only
+`V4-MSEG-Q0` measurement; the existing trace remains stopped at
+`STOP_V4_FINE_GRAINED_ON_EXISTING_TRACE`.

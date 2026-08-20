@@ -23,6 +23,15 @@ from paper_eval.membind_v31.prefix_affinity import PrefixMetadata, PrefixProvide
 
 
 _REQUEST_ID = re.compile(r"^[A-Za-z0-9][A-Za-z0-9._:-]{0,127}$")
+_CAUSAL_METADATA_FIELDS = frozenset(
+    {
+        "operator_role",
+        "operator_id",
+        "parent_bind_id",
+        "parent_operator_id",
+        "operator_phase",
+    }
+)
 
 
 class MemBindV31RequestRuntimeError(ValueError):
@@ -154,6 +163,7 @@ class AdmittedLLMClientV31:
         request_id_prefix: str,
         observer: Callable[[dict[str, object]], object] | None = None,
         admission_observer: Callable[[dict[str, object]], object] | None = None,
+        causal_metadata_provider: Callable[[], Mapping[str, object]] | None = None,
         prefix_encoder: Callable[..., PrefixMetadata],
         clock_ns: Callable[[], int] = time.monotonic_ns,
     ) -> None:
@@ -164,6 +174,10 @@ class AdmittedLLMClientV31:
             raise _fail("request_observer_invalid")
         if admission_observer is not None and not callable(admission_observer):
             raise _fail("admission_observer_invalid")
+        if causal_metadata_provider is not None and not callable(
+            causal_metadata_provider
+        ):
+            raise _fail("causal_metadata_provider_invalid")
         if not callable(prefix_encoder):
             raise _fail("prefix_encoder_invalid")
         if not callable(clock_ns):
@@ -174,6 +188,7 @@ class AdmittedLLMClientV31:
         self._prefix = prefix
         self._observer = observer
         self._admission_observer = admission_observer
+        self._causal_metadata_provider = causal_metadata_provider
         self._prefix_encoder = prefix_encoder
         self._clock_ns = clock_ns
         self._last_timestamp_ns = -1
@@ -184,6 +199,7 @@ class AdmittedLLMClientV31:
         self._events: list[dict[str, object]] = []
         self._admission_events: list[dict[str, object]] = []
         self._prefix_metadata: dict[str, PrefixMetadata] = {}
+        self._causal_metadata: dict[str, dict[str, object]] = {}
         self._provider_index: PrefixProviderIndex | None = None
         self._completion_sequence = 1
 
@@ -216,6 +232,30 @@ class AdmittedLLMClientV31:
         value = f"{self._prefix}:{self._counter:08d}"
         self._counter += 1
         return value
+
+    def causal_metadata(self) -> dict[str, object]:
+        """Return opt-in, content-safe causal dimensions for one request."""
+
+        if self._causal_metadata_provider is None:
+            return {}
+        try:
+            selected = self._causal_metadata_provider()
+        except Exception:
+            raise _fail("causal_metadata_provider_failed") from None
+        if not isinstance(selected, Mapping):
+            raise _fail("causal_metadata_invalid")
+        result = dict(selected)
+        if not set(result) <= _CAUSAL_METADATA_FIELDS:
+            raise _fail("causal_metadata_field_unsupported")
+        for key, value in result.items():
+            if value is None and key == "parent_operator_id":
+                continue
+            if not isinstance(value, str) or _REQUEST_ID.fullmatch(value) is None:
+                raise _fail("causal_metadata_value_invalid")
+        required = _CAUSAL_METADATA_FIELDS - {"parent_operator_id"}
+        if not required <= set(result):
+            raise _fail("causal_metadata_incomplete")
+        return result
 
     def _dispatch_locked(self) -> None:
         self._refresh_affinity_locked()
@@ -332,7 +372,11 @@ class AdmittedLLMClientV31:
             self._waiters[request_id] = (updated, event)
 
     async def _submit(
-        self, scope: LLMRequestScope, *, metadata: PrefixMetadata
+        self,
+        scope: LLMRequestScope,
+        *,
+        metadata: PrefixMetadata,
+        causal_metadata: Mapping[str, object],
     ) -> tuple[str, asyncio.Event]:
         async with self._lock:
             if self._provider_index is None:
@@ -356,6 +400,8 @@ class AdmittedLLMClientV31:
             event = asyncio.Event()
             self._waiters[request_id] = (spec, event)
             self._prefix_metadata[request_id] = metadata
+            selected_causal_metadata = dict(causal_metadata)
+            self._causal_metadata[request_id] = selected_causal_metadata
             self._controller.submit(spec)
             self._emit(
                 {
@@ -364,6 +410,7 @@ class AdmittedLLMClientV31:
                     "request_kind": scope.kind.value,
                     "stream_id": scope.stream_id,
                     "source_sequence": scope.source_sequence,
+                    **selected_causal_metadata,
                     **metadata.public_projection(),
                 }
             )
@@ -398,12 +445,15 @@ class AdmittedLLMClientV31:
                     completion_sequence=self._completion_sequence,
                 )
                 self._completion_sequence += 1
+            causal_metadata = self._causal_metadata[request_id]
             self._waiters.pop(request_id, None)
             self._prefix_metadata.pop(request_id, None)
+            self._causal_metadata.pop(request_id, None)
             self._emit(
                 {
                     "event_type": "llm_request_terminal",
                     "request_id": request_id,
+                    **causal_metadata,
                     "status": terminal,
                     "error_class": None
                     if error is None
@@ -417,6 +467,7 @@ class AdmittedLLMClientV31:
         self,
         operation: Callable[..., object],
         *args: object,
+        causal_metadata: Mapping[str, object] | None = None,
         **kwargs: object,
     ) -> object:
         scope = _SCOPE.get()
@@ -431,7 +482,16 @@ class AdmittedLLMClientV31:
             metadata.verify()
         except Exception:
             raise _fail("prefix_metadata_failed") from None
-        request_id, admitted = await self._submit(scope, metadata=metadata)
+        selected_causal_metadata = (
+            self.causal_metadata()
+            if causal_metadata is None
+            else dict(causal_metadata)
+        )
+        request_id, admitted = await self._submit(
+            scope,
+            metadata=metadata,
+            causal_metadata=selected_causal_metadata,
+        )
         try:
             await admitted.wait()
             self._emit(
@@ -441,6 +501,7 @@ class AdmittedLLMClientV31:
                     "request_kind": scope.kind.value,
                     "stream_id": scope.stream_id,
                     "source_sequence": scope.source_sequence,
+                    **self._causal_metadata[request_id],
                     "affinity_score": self._waiters[request_id][0].affinity_score,
                     "provider_recency": self._waiters[request_id][0].provider_recency,
                     "cohort_gain": self._waiters[request_id][0].cohort_gain,
@@ -474,6 +535,23 @@ class AdmittedLLMClientV31:
         """Admit exactly one actual OpenAI-compatible transport attempt."""
 
         return await self._execute(operation, *args, **kwargs)
+
+    async def execute_transport_with_causal_metadata(
+        self,
+        operation: Callable[..., object],
+        *args: object,
+        **kwargs: object,
+    ) -> tuple[object, dict[str, object]]:
+        """Snapshot Q0 metadata once and reuse it for request/response events."""
+
+        causal_metadata = self.causal_metadata()
+        result = await self._execute(
+            operation,
+            *args,
+            causal_metadata=causal_metadata,
+            **kwargs,
+        )
+        return result, causal_metadata
 
     @asynccontextmanager
     async def frontier_bind_region(
@@ -571,7 +649,7 @@ class AdmittedChatCompletionsV31:
         # content-free ordinal even when several Graphiti calls overlap.
         attempt_index = self._transport_attempt_index
         self._transport_attempt_index += 1
-        response = await self._admission.execute_transport(
+        response, causal_metadata = await self._admission.execute_transport_with_causal_metadata(
             self._inner.create, *args, **kwargs
         )
         scope = _SCOPE.get()
@@ -608,6 +686,7 @@ class AdmittedChatCompletionsV31:
             "request_kind": None if scope is None else scope.kind.value,
             "stream_id": None if scope is None else scope.stream_id,
             "source_sequence": None if scope is None else scope.source_sequence,
+            **causal_metadata,
             "requested_max_tokens": requested_max_tokens,
             "effective_max_tokens": effective_max_tokens,
             "response_format_sha256": _public_sha256(response_format),

@@ -1,5 +1,5 @@
 {
-  "h2_late_bound_dependency": "REJECTED_AT_EVIDENCE_GATE",
+  "h2_late_bound_dependency": "NOT_EVALUABLE",
   "input_binding": {
     "graphiti": {
       "metadata_file_sha256": "f9ef708c33fc91df9fd9015c9dd7694d4d18a1f706ce63598c6176364b6aa3dc",
@@ -42,8 +42,8 @@
     },
     "source_scope": "0..11"
   },
-  "interpretation": "Rejected as an authorization claim because the sealed trace cannot test it; this does not prove late-bound dependency absent in Graphiti.",
-  "payload_sha256": "fcd4d4bde4ac087e204c8b149036000c09aacf1a822e27363ddaf9461bbd58f5",
+  "interpretation": "Not evaluable because the sealed trace does not record the causal variables needed to test late-bound dependency; this does not prove that late-bound dependency is absent in Graphiti.",
+  "payload_sha256": "dd8673d1c62aa7110590e7b50483546a755c528b7463925414f692cbbc7a28df",
   "reason": "The sealed W=4 trace has no direct operator role/parent identity, operator-ready or materialization time, exact memory version, dependency edge, effect scope, deterministic operator, persistent effect, or publication-instance records.",
   "schema_version": "membind.paper-eval-v4.mseg-late-bound-analysis.v1",
   "scope": {

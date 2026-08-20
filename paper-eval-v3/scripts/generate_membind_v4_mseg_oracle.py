@@ -480,10 +480,11 @@ def _build_documents() -> tuple[dict[str, dict[str, Any]], dict[str, object]]:
             "unresolved_dependency_fraction": NOT_OBSERVABLE,
             "state_residence_time_ns": NOT_OBSERVABLE,
             "transition_reason_counts": NOT_OBSERVABLE,
-            "h2_late_bound_dependency": "REJECTED_AT_EVIDENCE_GATE",
+            "h2_late_bound_dependency": "NOT_EVALUABLE",
             "interpretation": (
-                "Rejected as an authorization claim because the sealed trace cannot test it; "
-                "this does not prove late-bound dependency absent in Graphiti."
+                "Not evaluable because the sealed trace does not record the causal "
+                "variables needed to test late-bound dependency; this does not prove "
+                "that late-bound dependency is absent in Graphiti."
             ),
             "reason": reason,
         }
@@ -591,18 +592,24 @@ def _build_documents() -> tuple[dict[str, dict[str, Any]], dict[str, object]]:
                 "Gain_ValidatedExecution_O3_minus_O2": NOT_OBSERVABLE,
                 "Gain_CriticalityAdmission_O4_minus_O3": NOT_OBSERVABLE,
             },
-            "hypotheses": {
-                "H1_OVER_SERIALIZATION": "REJECTED_AT_EVIDENCE_GATE",
-                "H2_LATE_BOUND_DEPENDENCY": "REJECTED_AT_EVIDENCE_GATE",
-                "H3_CRITICALITY_HETEROGENEITY": "REJECTED_AT_EVIDENCE_GATE",
-                "H4_SEMANTIC_ADMISSION_OPPORTUNITY": "REJECTED_AT_EVIDENCE_GATE",
+            "hypothesis_status": {
+                "H1_OVER_SERIALIZATION": "NOT_EVALUABLE",
+                "H2_LATE_BOUND_DEPENDENCY": "NOT_EVALUABLE",
+                "H3_CRITICALITY_HETEROGENEITY": "NOT_EVALUABLE",
+                "H4_SEMANTIC_ADMISSION_OPPORTUNITY": "NOT_EVALUABLE",
             },
             "decision": {
-                "dominant_gain_source": "NONE_ORACLE_NOT_RECOVERABLE",
+                "dominant_gain_source": "NOT_EVALUABLE",
+                "instrumentation_only_qualification_authorized": True,
                 "live_authorized": False,
                 "mseg_recovered": False,
-                "next_mechanism": "STOP_V4_FINE_GRAINED",
-                "root_cause": "FINE_GRAINED_CAUSAL_IDENTITY_NOT_OBSERVABLE",
+                "new_mechanism_authorized": False,
+                "new_scheduler_authorized": False,
+                "next_action": "INSTRUMENTATION_ONLY_QUALIFICATION",
+                "next_mechanism": "STOP_V4_FINE_GRAINED_ON_EXISTING_TRACE",
+                "q0_measurement_authorized": True,
+                "root_cause": "FINE_GRAINED_CAUSAL_IDENTITY_NOT_RECORDED",
+                "status": "STOP_V4_FINE_GRAINED_ON_EXISTING_TRACE",
             },
         }
     )
@@ -803,8 +810,10 @@ batch or GPU claim is made here.
 ## Result
 
 The conceptual differentiation is coherent, but the Oracle Gate has no causal
-trace on which to validate H1-H4 or measure O1-O4. The only authorized outcome
-is `STOP_V4_FINE_GRAINED`, not a live implementation.
+trace on which to validate H1-H4 or measure O1-O4. No mechanism or scheduler is
+authorized. The sole next action is the bounded, instrumentation-only
+`V4-MSEG-Q0` measurement; the existing trace remains stopped at
+`STOP_V4_FINE_GRAINED_ON_EXISTING_TRACE`.
 """
 
 
@@ -817,19 +826,19 @@ def _render_final_decision(context: dict[str, object]) -> str:
 ## Required Result
 
 ```text
-STATUS: STOP_V4_FINE_GRAINED
+STATUS: STOP_V4_FINE_GRAINED_ON_EXISTING_TRACE
 
 MSEG_RECOVERED: no
 
-ROOT_CAUSE: FINE_GRAINED_CAUSAL_IDENTITY_NOT_OBSERVABLE
+ROOT_CAUSE: FINE_GRAINED_CAUSAL_IDENTITY_NOT_RECORDED
 
-H1_OVER_SERIALIZATION: rejected
+H1_OVER_SERIALIZATION: NOT_EVALUABLE
 
-H2_LATE_BOUND_DEPENDENCY: rejected
+H2_LATE_BOUND_DEPENDENCY: NOT_EVALUABLE
 
-H3_CRITICALITY_HETEROGENEITY: rejected
+H3_CRITICALITY_HETEROGENEITY: NOT_EVALUABLE
 
-H4_SEMANTIC_ADMISSION_OPPORTUNITY: rejected
+H4_SEMANTIC_ADMISSION_OPPORTUNITY: NOT_EVALUABLE
 
 MAX_LEGAL_READY_WIDTH: NOT_OBSERVABLE
 
@@ -853,21 +862,25 @@ O3_VALIDATED_EXECUTION: NOT_OBSERVABLE
 
 O4_PUBLICATION_CRITICAL: NOT_OBSERVABLE
 
-DOMINANT_GAIN_SOURCE: NONE_ORACLE_NOT_RECOVERABLE
+DOMINANT_GAIN_SOURCE: NOT_EVALUABLE
 
-NEXT_MECHANISM: STOP_V4_FINE_GRAINED
+NEXT_ACTION: INSTRUMENTATION_ONLY_QUALIFICATION
 
-LIVE_AUTHORIZED: no
+NEW_MECHANISM_AUTHORIZED: no
+
+NEW_SCHEDULER_AUTHORIZED: no
+
+Q0_MEASUREMENT_AUTHORIZED: yes
 
 SEALED_ARTIFACTS_UNCHANGED: yes
 ```
 
 ## Evidence Interpretation
 
-The four hypotheses are `rejected` for implementation authorization: none is
-supported by a recoverable target-trace MSEG. This is not evidence that the
+The four hypotheses are `NOT_EVALUABLE`: the target trace did not record the
+causal variables required to test them. This is not evidence that the
 underlying Graphiti workflow lacks late-bound dependencies or fine-grained
-opportunity. It is evidence that the sealed W=4 trace cannot test those claims.
+opportunity. Absence of observability is not absence of opportunity.
 
 The O0 value is the existing 12-source diagnostic pilot, not a new run and not
 formal main-table evidence. O1-O4 are not reported as equal to O0 or as zero
@@ -876,11 +889,12 @@ length, request order, or unlimited resources would create a false oracle.
 
 ## Gate Consequence
 
-The six live prerequisites fail at fine-grained identity and MSEG recovery, so
-legal width, hideable critical time, incremental mechanism gain, and a complete
-correctness contract cannot be established. No scheduler, M-CO runtime,
-speculation runtime, admission candidate, vLLM/Neo4j process, namespace, or live
-experiment is authorized. `STOP_V4_NODE_RESOLVE` and
+The mechanism prerequisites fail at fine-grained identity and MSEG recovery,
+so legal width, hideable critical time, incremental mechanism gain, and a
+complete correctness contract cannot be established. No scheduler, M-CO
+runtime, speculation runtime, or admission candidate is authorized. One fresh
+namespace may be used solely for `V4-MSEG-Q0`, with identical v3.1 execution
+policy and an observability overlay. `STOP_V4_NODE_RESOLVE` and
 `NO_STAGE_SCHEDULER_CHOICE` remain sealed.
 """ % o0["makespan_ns"]
 
@@ -941,7 +955,8 @@ def main(argv: list[str] | None = None) -> int:
                 "output_root": str(output_root),
                 "payload_sha256": comparison["payload_sha256"],
                 "mseg_recovered": False,
-                "next_mechanism": "STOP_V4_FINE_GRAINED",
+                "next_action": "INSTRUMENTATION_ONLY_QUALIFICATION",
+                "next_mechanism": "STOP_V4_FINE_GRAINED_ON_EXISTING_TRACE",
                 "live_authorized": False,
             },
             sort_keys=True,

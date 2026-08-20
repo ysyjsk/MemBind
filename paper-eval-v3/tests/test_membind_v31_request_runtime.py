@@ -638,3 +638,151 @@ def test_barrier_snapshot_distinguishes_local_frontier_region_from_llm_wait() ->
         await compile_task
 
     asyncio.run(scenario())
+
+
+def _causal_metadata() -> dict[str, object]:
+    return {
+        "operator_role": "graphiti.resolve_extracted_nodes",
+        "operator_id": "07741c45:3:FRONTIER:resolve_extracted_nodes:0",
+        "parent_bind_id": "07741c45:3:FRONTIER",
+        "parent_operator_id": None,
+        "operator_phase": "FRONTIER",
+    }
+
+
+def test_opt_in_causal_metadata_is_snapshotted_across_complete_transport_lifecycle() -> None:
+    class Transport:
+        def __init__(self) -> None:
+            self.calls = 0
+
+        async def create(self, **_kwargs):
+            self.calls += 1
+            return {"ok": True}
+
+    async def scenario() -> None:
+        request_events: list[dict[str, object]] = []
+        response_events: list[dict[str, object]] = []
+        provider_calls = 0
+
+        def provider() -> dict[str, object]:
+            nonlocal provider_calls
+            provider_calls += 1
+            return _causal_metadata()
+
+        gate = AdmittedLLMClientV31(
+            inner=_ControlledLLM(),
+            limit=1,
+            policy=AdmissionPolicy.FIFO,
+            request_id_prefix="causal-lifecycle",
+            observer=request_events.append,
+            causal_metadata_provider=provider,
+            prefix_encoder=_tokenizer,
+        )
+        transport = Transport()
+        wrapped = AdmittedChatCompletionsV31(
+            inner=transport,
+            admission=gate,
+            response_observer=response_events.append,
+        )
+        with llm_request_scope(
+            kind=RequestKind.FRONTIER,
+            stream_id="07741c45",
+            source_sequence=3,
+        ):
+            assert await wrapped.create(
+                messages=[{"role": "user", "content": "private prompt"}],
+                prompt_name="warm-a",
+            ) == {"ok": True}
+
+        correlated = [
+            event
+            for event in request_events
+            if event["event_type"]
+            in {
+                "llm_request_submitted",
+                "llm_request_start",
+                "llm_request_terminal",
+            }
+        ]
+        assert len(correlated) == 3
+        assert len(response_events) == 1
+        for event in [*correlated, *response_events]:
+            for key, value in _causal_metadata().items():
+                assert event[key] == value
+        assert provider_calls == 1
+        assert transport.calls == 1
+        assert "private prompt" not in repr(correlated)
+        assert "private prompt" not in repr(response_events)
+
+    asyncio.run(scenario())
+
+
+@pytest.mark.parametrize(
+    ("metadata", "error_code"),
+    [
+        ({}, "causal_metadata_incomplete"),
+        ({"operator_role": "graphiti.resolve_extracted_nodes"}, "causal_metadata_incomplete"),
+        ({**_causal_metadata(), "unsupported": "x"}, "causal_metadata_field_unsupported"),
+        ({**_causal_metadata(), "operator_id": "contains whitespace"}, "causal_metadata_value_invalid"),
+    ],
+)
+def test_explicit_causal_provider_fails_closed_before_transport(
+    metadata: dict[str, object],
+    error_code: str,
+) -> None:
+    class Transport:
+        def __init__(self) -> None:
+            self.calls = 0
+
+        async def create(self, **_kwargs):
+            self.calls += 1
+            return {"ok": True}
+
+    async def scenario() -> None:
+        gate = AdmittedLLMClientV31(
+            inner=_ControlledLLM(),
+            limit=1,
+            policy=AdmissionPolicy.FIFO,
+            request_id_prefix="causal-fail-closed",
+            causal_metadata_provider=lambda: metadata,
+            prefix_encoder=_tokenizer,
+        )
+        inner = Transport()
+        wrapped = AdmittedChatCompletionsV31(inner=inner, admission=gate)
+        with llm_request_scope(
+            kind=RequestKind.FRONTIER,
+            stream_id="07741c45",
+            source_sequence=3,
+        ):
+            with pytest.raises(MemBindV31RequestRuntimeError, match=error_code):
+                await wrapped.create(
+                    messages=[{"role": "user", "content": "private prompt"}],
+                    prompt_name="warm-a",
+                )
+        assert inner.calls == 0
+        assert gate.public_events == ()
+
+    asyncio.run(scenario())
+
+
+def test_default_request_events_retain_frozen_v31_shape_without_provider() -> None:
+    async def scenario() -> None:
+        inner = _ControlledLLM()
+        client = AdmittedLLMClientV31(
+            inner=inner,
+            limit=1,
+            policy=AdmissionPolicy.FIFO,
+            request_id_prefix="default-event-shape",
+            prefix_encoder=_tokenizer,
+        )
+        task = asyncio.create_task(
+            _request(client, RequestKind.FRONTIER, 0, "default-shape")
+        )
+        await asyncio.sleep(0)
+        inner.release["default-shape"].set()
+        await task
+
+        causal_keys = set(_causal_metadata())
+        assert all(causal_keys.isdisjoint(event) for event in client.public_events)
+
+    asyncio.run(scenario())
