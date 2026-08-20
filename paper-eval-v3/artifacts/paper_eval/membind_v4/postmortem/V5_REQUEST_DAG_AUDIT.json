@@ -1,0 +1,133 @@
+{
+  "configured_k": 2,
+  "criticality": {
+    "maximum_downstream_blocked_work_count": "NOT_OBSERVABLE",
+    "maximum_downstream_publication_distance_ns": "NOT_OBSERVABLE",
+    "maximum_publication_unlock_count": "NOT_OBSERVABLE",
+    "reason": "exact_request_dependency_dag_not_recoverable",
+    "request_on_publication_critical_path_count": "NOT_OBSERVABLE",
+    "status": "NOT_EVALUABLE"
+  },
+  "dag": {
+    "acyclic": true,
+    "evidence_backed_edge_count": 573,
+    "evidence_backed_edge_count_by_type": {
+      "CONTROL": 242,
+      "DATA": 162,
+      "PUBLICATION": 169
+    },
+    "exact_dependency_dag_recovered": false,
+    "exact_depth": "NOT_OBSERVABLE",
+    "exact_width": "NOT_OBSERVABLE",
+    "node_count": 205,
+    "partial_graph_depth_lower_bound": 6,
+    "partial_graph_level_width_by_depth": {
+      "0": 12,
+      "1": 12,
+      "2": 12,
+      "3": 155,
+      "4": 11,
+      "5": 3
+    },
+    "partial_graph_width_upper_bound": 155,
+    "request_node_count": 193,
+    "synthetic_publication_sink_count": 12,
+    "unknown_dependency_group_count": 7
+  },
+  "graphiti_evidence": {
+    "per_edge_child_request_identity": "NOT_OBSERVABLE",
+    "resolve_extracted_edge_internal_calls": "conditional sequential dedupe -> attribute -> timestamp",
+    "resolve_extracted_edges_parallelism": "semaphore_gather_per_extracted_edge",
+    "response_to_request_id": "NOT_OBSERVABLE",
+    "unsupported_fields": [
+      "prompt_name",
+      "persistent_state_access_class",
+      "memory_version",
+      "vllm_batch_membership",
+      "gpu_execution_width"
+    ],
+    "version": "0.29.3"
+  },
+  "history_id": "07741c45",
+  "input_paths": [
+    "/data/predator/ly/MemBind/paper-eval-v3/artifacts/paper_eval/membind_v4/mseg/q0/membind-v31-opt-w4-q0-20260820-001/llm.jsonl",
+    "/data/predator/ly/MemBind/paper-eval-v3/artifacts/paper_eval/membind_v4/mseg/q0/membind-v31-opt-w4-q0-20260820-001/events.jsonl"
+  ],
+  "input_sha256": {
+    "events_file_sha256": "cfe6c5cfe5152ba0e44e16ee10ed1f1b6f215b7242edb96bba89e0712418d41e",
+    "llm_file_sha256": "399c506c41e8007610f8366d7c473cd82f56fb597d059d4642d82fe9ce7fa1c8",
+    "manifest_file_sha256": "f03f447920fbb5525a27b3b7935ae9adb468dd78e182cc0977dc8c16d937f8c2",
+    "persistent_state_access_class": "NOT_OBSERVABLE",
+    "prompt_name": "NOT_OBSERVABLE",
+    "transport_request_id": "NOT_OBSERVABLE"
+  },
+  "observability": {
+    "complete_client_lifecycle_count": 193,
+    "completion_tokens_per_request": "NOT_OBSERVABLE",
+    "operator_role_counts": {
+      "graphiti.extract_attributes_from_nodes": 8,
+      "graphiti.extract_edges": 12,
+      "graphiti.extract_nodes": 12,
+      "graphiti.resolve_extracted_edges": 150,
+      "graphiti.resolve_extracted_nodes": 11
+    },
+    "persistent_state_access_class": "NOT_OBSERVABLE",
+    "prompt_name": "NOT_OBSERVABLE",
+    "prompt_tokens_per_request": "NOT_OBSERVABLE",
+    "request_kind_counts": {
+      "COMPILE": 24,
+      "FRONTIER": 169
+    },
+    "requests_per_source": {
+      "0": 3,
+      "1": 8,
+      "10": 26,
+      "11": 32,
+      "2": 4,
+      "3": 4,
+      "4": 4,
+      "5": 23,
+      "6": 17,
+      "7": 23,
+      "8": 45,
+      "9": 4
+    },
+    "total_llm_requests": 193,
+    "transport_request_id": "NOT_OBSERVABLE"
+  },
+  "payload_sha256": "a478c597cf6beafd601f5bfbd2829c070779f5aa97971ba73284e24376109816",
+  "q0_scope": {
+    "artifact_status": "DIAGNOSTIC_ONLY_NON_MERGEABLE",
+    "formal_main_table_eligible": false,
+    "live_run_performed": false,
+    "new_scheduler_authorized_before_oracle": false,
+    "v4_remains_stopped": true
+  },
+  "schema_version": "membind.paper-eval-v5.request-dag-oracle.audit.v1",
+  "source_count": 12,
+  "status": "PARTIAL_DAG_INSUFFICIENT_OBSERVABILITY",
+  "unknown_dependencies": {
+    "affected_request_count": 150,
+    "affected_requests_by_source": {
+      "1": 5,
+      "10": 22,
+      "11": 28,
+      "5": 20,
+      "6": 14,
+      "7": 19,
+      "8": 42
+    },
+    "group_count": 7,
+    "markers": [
+      "UNKNOWN_DEPENDENCY:07741c45:10:FRONTIER:resolve_extracted_edges:0:per_edge_child_identity_missing",
+      "UNKNOWN_DEPENDENCY:07741c45:11:FRONTIER:resolve_extracted_edges:0:per_edge_child_identity_missing",
+      "UNKNOWN_DEPENDENCY:07741c45:1:FRONTIER:resolve_extracted_edges:0:per_edge_child_identity_missing",
+      "UNKNOWN_DEPENDENCY:07741c45:5:FRONTIER:resolve_extracted_edges:0:per_edge_child_identity_missing",
+      "UNKNOWN_DEPENDENCY:07741c45:6:FRONTIER:resolve_extracted_edges:0:per_edge_child_identity_missing",
+      "UNKNOWN_DEPENDENCY:07741c45:7:FRONTIER:resolve_extracted_edges:0:per_edge_child_identity_missing",
+      "UNKNOWN_DEPENDENCY:07741c45:8:FRONTIER:resolve_extracted_edges:0:per_edge_child_identity_missing"
+    ],
+    "root_cause": "Graphiti resolve_extracted_edge may issue sequential dedupe, attribute, and timestamp calls, while Q0 records only their shared source-level operator_id and no per-edge child identity",
+    "unaffected_request_count": 43
+  }
+}
