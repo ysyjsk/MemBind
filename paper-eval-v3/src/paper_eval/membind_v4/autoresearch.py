@@ -85,8 +85,10 @@ def assess_candidate(summary: Mapping[str, object]) -> dict[str, object]:
     source_count = summary.get("source_count")
     if candidate_id not in _CANDIDATES:
         return {"decision": "STOP_FAILURE", "reason": "candidate_id_invalid"}
-    if isinstance(source_count, bool) or source_count not in {6, 12}:
+    if isinstance(source_count, bool) or source_count not in {6, 12, 20}:
         return {"decision": "STOP_FAILURE", "reason": "source_count_invalid"}
+    if source_count == 20 and candidate_id != "c01":
+        return {"decision": "STOP", "reason": "a1_candidate_not_c01"}
 
     count_fields = (
         "direct_violation_count",
@@ -109,6 +111,11 @@ def assess_candidate(summary: Mapping[str, object]) -> dict[str, object]:
         counts[field] = value
 
     if counts["direct_violation_count"] != 0:
+        # A1 is a single 20-source development treatment.  Its terminal
+        # vocabulary is intentionally narrower than the historical c01/c02
+        # tuning loop: any correctness violation is simply STOP.
+        if source_count == 20:
+            return {"decision": "STOP", "reason": "direct_violation"}
         return {"decision": "STOP_AND_FIX_CORRECTNESS", "reason": "direct_violation"}
     qualified = counts["qualified_node_resolve_count"]
     launches = counts["speculation_launch_count"]
@@ -116,17 +123,58 @@ def assess_candidate(summary: Mapping[str, object]) -> dict[str, object]:
     hits = counts["semantic_hit_count"]
     misses = counts["semantic_miss_count"]
     overlaps = counts["overlap_count"]
+    if source_count == 20:
+        publication = summary.get("publication_source_sequences")
+        if publication != list(range(20)):
+            return {
+                "decision": "STOP",
+                "reason": "incomplete_publication_coverage",
+            }
+        durable = summary.get("publication_durable_count", 20)
+        if durable != 20:
+            return {"decision": "STOP", "reason": "incomplete_publication_coverage"}
+        failed = summary.get("llm_failed_count", 0)
+        if isinstance(failed, bool) or not isinstance(failed, int) or failed != 0:
+            return {"decision": "STOP", "reason": "llm_failure"}
+        persistent = summary.get("persistent_speculative_write_count", 0)
+        if isinstance(persistent, bool) or not isinstance(persistent, int) or persistent != 0:
+            return {"decision": "STOP", "reason": "persistent_speculative_write"}
+        wrong_version = summary.get("wrong_version_reuse_count", 0)
+        if isinstance(wrong_version, bool) or not isinstance(wrong_version, int) or wrong_version != 0:
+            return {"decision": "STOP", "reason": "wrong_version_reuse"}
+        publication_violations = summary.get("publication_order_violation_count", 0)
+        if (
+            isinstance(publication_violations, bool)
+            or not isinstance(publication_violations, int)
+            or publication_violations != 0
+        ):
+            return {"decision": "STOP", "reason": "publication_order_violation"}
     if qualified == 0:
+        if source_count == 20:
+            return {
+                "decision": "STOP_RUNTIME_OPPORTUNITY_MISMATCH",
+                "reason": "no_qualified_node_resolve",
+            }
         return {
             "decision": "STOP_V4_NODE_RESOLVE",
             "reason": "no_qualified_node_resolve",
         }
     if launches == 0:
+        if source_count == 20:
+            return {
+                "decision": "STOP_RUNTIME_OPPORTUNITY_MISMATCH",
+                "reason": "no_speculation_launched",
+            }
         return {
             "decision": "STOP_MECHANISM_NOT_TRIGGERED",
             "reason": "no_speculation_launched",
         }
     if validations == 0:
+        if source_count == 20:
+            return {
+                "decision": "STOP_RUNTIME_OPPORTUNITY_MISMATCH",
+                "reason": "no_exact_validation_completed",
+            }
         return {
             "decision": "STOP_MECHANISM_NOT_TRIGGERED",
             "reason": "no_exact_validation_completed",
@@ -137,11 +185,21 @@ def assess_candidate(summary: Mapping[str, object]) -> dict[str, object]:
         or launches < qualified
         or overlaps > launches
     ):
+        if source_count == 20:
+            return {
+                "decision": "STOP",
+                "reason": "mechanism_evidence_inconsistent",
+            }
         return {
             "decision": "STOP_FAILURE",
             "reason": "mechanism_evidence_inconsistent",
         }
     if overlaps == 0:
+        if source_count == 20:
+            return {
+                "decision": "STOP_RUNTIME_OPPORTUNITY_MISMATCH",
+                "reason": "no_real_overlap",
+            }
         return {"decision": "STOP_V4_NODE_RESOLVE", "reason": "no_real_overlap"}
 
     try:
@@ -177,9 +235,45 @@ def assess_candidate(summary: Mapping[str, object]) -> dict[str, object]:
             }
         return {"decision": "EXTEND_TO_12", "reason": "mechanism_triggered"}
 
+    # A1 is the only decision prefix whose terminal performance gate includes
+    # backend conversion evidence.  Read and validate it *before* evaluating
+    # frontier interference or wall-clock gain.  This ordering is deliberate:
+    # a frontier slowdown may only route to c02 when the second slot actually
+    # produced a useful backend-throughput improvement, and a wall-clock gain
+    # can never justify FREEZE when useful throughput regressed by >5%.
+    #
+    # Keep the historical 6/12 rules above byte-for-byte in spirit: those
+    # prefixes predate A1 and do not require this additional metric.
+    useful_ratio: float | None = None
+    if source_count == 20:
+        if "useful_token_throughput_ratio" in summary:
+            raw_useful_ratio = summary.get("useful_token_throughput_ratio")
+        elif "backend_useful_throughput_ratio" in summary:
+            raw_useful_ratio = summary.get("backend_useful_throughput_ratio")
+        else:
+            # A missing optional field retains the historical neutral default;
+            # an explicitly supplied zero/None must not be silently converted
+            # into that default by a truthiness check.
+            raw_useful_ratio = 1.0
+        try:
+            useful_ratio = float(raw_useful_ratio)
+        except (TypeError, ValueError):
+            return {"decision": "STOP", "reason": "useful_throughput_evidence_invalid"}
+        if not math.isfinite(useful_ratio):
+            return {"decision": "STOP", "reason": "useful_throughput_evidence_invalid"}
+        # The registered safety bound is a five-percent maximum drop.  This
+        # check runs before every A1 terminal branch, including TUNE_TO_C02.
+        if useful_ratio < 0.95:
+            return {"decision": "STOP", "reason": "useful_throughput_regression"}
+
     # The semantic opportunity gate precedes every performance decision.  A
     # missing hidden-time measurement is intentionally equivalent to zero.
     if hits == 0:
+        if source_count == 20:
+            return {
+                "decision": "STOP_V4_NODE_RESOLVE_NO_SEMANTIC_REUSE",
+                "reason": "no_semantic_hit",
+            }
         return {"decision": "STOP_V4_NODE_RESOLVE", "reason": "no_semantic_hit"}
     hidden_time = summary.get("hidden_critical_time_ns", 0)
     if (
@@ -187,6 +281,11 @@ def assess_candidate(summary: Mapping[str, object]) -> dict[str, object]:
         or not isinstance(hidden_time, (int, float))
         or hidden_time <= 0
     ):
+        if source_count == 20:
+            return {
+                "decision": "STOP_V4_NODE_RESOLVE_NO_CRITICAL_PATH_GAIN",
+                "reason": "no_hidden_critical_time",
+            }
         return {"decision": "STOP_V4_NODE_RESOLVE", "reason": "no_hidden_critical_time"}
 
     if frontier_ratio > 1.05:
@@ -194,6 +293,21 @@ def assess_candidate(summary: Mapping[str, object]) -> dict[str, object]:
             return {
                 "decision": "STOP_NO_MEASURABLE_GAIN",
                 "reason": "candidate_budget_exhausted",
+            }
+        if source_count == 20:
+            # c02 is authorized only when c01 has demonstrated a positive
+            # backend conversion trend.  A neutral (1.0) or merely
+            # non-regressing ratio is insufficient evidence to spend the
+            # next candidate budget on role-aware tuning.
+            if useful_ratio is None or useful_ratio <= 1.0:
+                return {
+                    "decision": "STOP",
+                    "reason": "frontier_interference_without_backend_gain",
+                }
+            return {
+                "decision": "TUNE_TO_C02",
+                "reason": "frontier_interference",
+                "frontier_ratio": frontier_ratio,
             }
         return {
             "decision": "TUNE_ONCE",
@@ -207,6 +321,12 @@ def assess_candidate(summary: Mapping[str, object]) -> dict[str, object]:
             "freshness_ratio": freshness_ratio,
             "makespan_ratio": makespan_ratio,
         }
+    if source_count == 20:
+        # ``useful_ratio`` was validated above before any A1 terminal branch.
+        # Retain this final neutral-performance STOP for the no-gain case;
+        # importantly, a ratio in [0.95, 1.0] is safe but is not a backend
+        # improvement and therefore cannot authorize c02.
+        return {"decision": "STOP", "reason": "no_pre_registered_gain"}
     return {"decision": "STOP_NO_MEASURABLE_GAIN", "reason": "no_pre_registered_gain"}
 
 

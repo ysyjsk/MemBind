@@ -96,6 +96,82 @@ async def test_bridge_hit_never_continues_from_stale_result() -> None:
 
 
 @pytest.mark.asyncio
+async def test_bridge_hit_records_recomputable_hidden_critical_time() -> None:
+    """Only pre-exact work on a validated HIT is counted as hidden."""
+
+    class Clock:
+        def __init__(self) -> None:
+            self.value = 100
+
+        def __call__(self) -> int:
+            self.value += 10
+            return self.value
+
+    async def materialize(_input, prepared, state_version):
+        return {
+            "call": _call(prepared.source_sequence, state_version),
+            "request": (prepared.source_sequence, state_version),
+        }
+
+    bridge = V4LiveNodeResolveBridge(
+        materialize_request=materialize,
+        execute_request=lambda request: {"request": request},
+        interpret_response=lambda response, _call: response,
+        continue_native_bind=lambda *_args, **_kwargs: "ok",
+        clock_ns=Clock(),
+    )
+    await bridge.launch_speculation({}, _prepared(1), state_version=0)
+    assert await bridge.bind({}, _prepared(1), state_version=1, logical_time_ns=10) == "ok"
+
+    telemetry = bridge.telemetry()
+    event = next(
+        row for row in telemetry["events"] if row["event_type"] == "semantic_hit"
+    )
+    assert event["speculation_started_timestamp_ns"] <= event[
+        "exact_ready_timestamp_ns"
+    ]
+    assert event["speculation_completed_timestamp_ns"] >= event[
+        "speculation_started_timestamp_ns"
+    ]
+    assert event["hidden_critical_time_ns"] == min(
+        event["speculation_service_span_ns"],
+        event["exact_ready_timestamp_ns"]
+        - event["speculation_started_timestamp_ns"],
+    )
+    assert event["token_sequence_hmac_sha256"] == _sha(11)
+    assert telemetry["hidden_critical_time_ns"] == event["hidden_critical_time_ns"]
+    assert telemetry["hidden_critical_time_ns"] > 0
+    assert telemetry["exact_validation_completed_count"] == 1
+
+
+@pytest.mark.asyncio
+async def test_bridge_miss_never_reports_hidden_critical_time() -> None:
+    async def materialize(_input, prepared, state_version):
+        marker = "stale" if state_version == 0 else "exact"
+        return {
+            "call": _call(prepared.source_sequence, state_version, marker),
+            "request": (prepared.source_sequence, state_version),
+        }
+
+    bridge = V4LiveNodeResolveBridge(
+        materialize_request=materialize,
+        execute_request=lambda request: request,
+        interpret_response=lambda response, _call: response,
+        continue_native_bind=lambda *_args, **_kwargs: "ok",
+    )
+    await bridge.launch_speculation({}, _prepared(1), state_version=0)
+    await bridge.bind({}, _prepared(1), state_version=1, logical_time_ns=10)
+
+    event = next(
+        row
+        for row in bridge.telemetry()["events"]
+        if row["event_type"] == "semantic_miss"
+    )
+    assert event["hidden_critical_time_ns"] == 0
+    assert bridge.telemetry()["hidden_critical_time_ns"] == 0
+
+
+@pytest.mark.asyncio
 async def test_bridge_miss_executes_exact_and_cleans_background_task() -> None:
     executed: list[object] = []
 

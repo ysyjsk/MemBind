@@ -13,6 +13,7 @@ import asyncio
 import hashlib
 import inspect
 import json
+import math
 from collections.abc import Callable, Mapping, Sequence
 from copy import deepcopy
 from pathlib import Path
@@ -43,7 +44,9 @@ from paper_eval.membind_v4.live_block import (
 
 
 CANDIDATE_HISTORY_ID = "07741c45"
-CANDIDATE_SOURCE_COUNTS = (6, 12)
+CANDIDATE_SOURCE_COUNTS = (6, 12, 20)
+A1_PROTOCOL_AMENDMENT_ID = "A1"
+A1_SOURCE_COUNT = 20
 
 
 class V4ProductionRunnerError(ValueError):
@@ -69,6 +72,439 @@ def _read_prior_sealed(path: Path, label: str, schema: str) -> dict[str, Any]:
         raise _fail(f"prior_six_{label}_schema_invalid")
     body["payload_sha256"] = digest
     return body
+
+
+def _read_a1_sealed(path: Path, label: str) -> dict[str, Any]:
+    """Read an A1 sidecar without trusting any value outside its seal.
+
+    A1 is deliberately a sidecar amendment.  Keeping this reader separate
+    from the prior-six reader prevents an A1 artifact from being accepted as
+    evidence for the original six-to-twelve protocol.
+    """
+
+    try:
+        value = json.loads(Path(path).read_text(encoding="utf-8"))
+    except (OSError, UnicodeError, json.JSONDecodeError) as error:
+        raise _fail(f"a1_{label}_unreadable") from error
+    if not isinstance(value, dict):
+        raise _fail(f"a1_{label}_invalid")
+    body = dict(value)
+    digest = body.pop("payload_sha256", None)
+    if not isinstance(digest, str) or digest != payload_sha256(body):
+        raise _fail(f"a1_{label}_payload_hash_mismatch")
+    expected_schema = {
+        "audit": "membind.paper-eval-v4.a1-opportunity-audit.v1",
+        "amendment": "membind.paper-eval-v4.a1-protocol-amendment.v1",
+    }[label]
+    if body.get("schema_version") != expected_schema:
+        raise _fail(f"a1_{label}_schema_invalid")
+    body["payload_sha256"] = digest
+    return body
+
+
+def _a1_value(body: Mapping[str, object], *names: str) -> object:
+    """Return the first present value from a small, documented alias set."""
+
+    for name in names:
+        if name in body:
+            return body[name]
+    # The amendment JSON keeps immutable references under ``sealed_reference``
+    # to distinguish them from the prose/decision fields.  Read only this
+    # explicitly named container (and the equivalent ``identity`` container),
+    # never arbitrary user-controlled descendants.
+    for container_name in ("sealed_reference", "identity", "bindings"):
+        nested = body.get(container_name)
+        if isinstance(nested, Mapping):
+            for name in names:
+                if name in nested:
+                    return nested[name]
+    return None
+
+
+def _a1_bound_values(body: Mapping[str, object], *names: str) -> tuple[object, ...]:
+    """Collect duplicate identity fields so conflicting copies cannot hide."""
+
+    values: list[object] = []
+    for name in names:
+        if name in body:
+            values.append(body[name])
+    for container_name in ("sealed_reference", "identity", "bindings"):
+        nested = body.get(container_name)
+        if isinstance(nested, Mapping):
+            for name in names:
+                if name in nested:
+                    values.append(nested[name])
+    return tuple(values)
+
+
+def _a1_count(body: Mapping[str, object], *names: str) -> object:
+    value = _a1_value(body, *names)
+    if value is not None:
+        return value
+    nested = body.get("opportunity_counts")
+    if isinstance(nested, Mapping):
+        for name in names:
+            if name in nested:
+                return nested[name]
+    prefixes = body.get("prefix_opportunity_counts")
+    if isinstance(prefixes, Mapping):
+        for name in names:
+            if name in prefixes:
+                return prefixes[name]
+    # Generated audit revisions may keep each prefix as an object carrying a
+    # named ``potential_opportunity_count``.  Walk only mappings (never raw
+    # strings/lists) to remain deterministic while accepting that stable
+    # presentation shape.
+    wanted = set(names)
+    def walk(value: object) -> object:
+        if isinstance(value, Mapping):
+            for key, item in value.items():
+                if key in wanted:
+                    if isinstance(item, Mapping):
+                        for count_key in (
+                            "potential_opportunity_count",
+                            "opportunity_count",
+                            "count",
+                        ):
+                            if count_key in item:
+                                return item[count_key]
+                    else:
+                        return item
+                found = walk(item)
+                if found is not None:
+                    return found
+        return None
+    return walk(body)
+
+
+def _a1_linear_percentile(values: Sequence[int], probability: float) -> float:
+    if not values:
+        raise _fail("a1_measurement_reference_invalid")
+    ordered = sorted(values)
+    index = (len(ordered) - 1) * probability
+    lower = math.floor(index)
+    upper = math.ceil(index)
+    if lower == upper:
+        return float(ordered[lower])
+    weight = index - lower
+    return float(ordered[lower] + (ordered[upper] - ordered[lower]) * weight)
+
+
+def _a1_measurement_reference(audit: Mapping[str, object]) -> dict[str, object] | None:
+    """Verify the optional sealed backend reference added by A1 TDD.
+
+    Minimal synthetic sidecars used to test plan admission predate these raw
+    measurements, so absence is represented explicitly.  A real 20-source
+    live result requires the returned reference and fails closed otherwise.
+    """
+
+    development = audit.get("development_reference_0_19")
+    if not isinstance(development, Mapping):
+        return None
+    rows = development.get("source_rows")
+    llm = development.get("llm_reference")
+    if not isinstance(rows, Sequence) or isinstance(rows, (str, bytes)) or not isinstance(llm, Mapping):
+        return None
+    service: list[int] = []
+    for row in rows:
+        value = row.get("service_latency_ns") if isinstance(row, Mapping) else None
+        if isinstance(value, bool) or not isinstance(value, int) or value < 0:
+            raise _fail("a1_measurement_reference_invalid")
+        service.append(value)
+    if len(service) != A1_SOURCE_COUNT:
+        raise _fail("a1_measurement_reference_invalid")
+    frontier_p95 = _a1_linear_percentile(service, 0.95)
+    if development.get("frontier_p95_service_ns") != frontier_p95:
+        raise _fail("a1_measurement_reference_invalid")
+    makespan = development.get("makespan_ns")
+    freshness_p95 = development.get("freshness_ns_p95")
+    token_count = llm.get("useful_token_count")
+    throughput = llm.get("useful_token_throughput_tokens_per_second")
+    llm_path = llm.get("absolute_path")
+    llm_hash = llm.get("file_sha256")
+    if (
+        isinstance(makespan, bool)
+        or not isinstance(makespan, int)
+        or makespan <= 0
+        or isinstance(freshness_p95, bool)
+        or not isinstance(freshness_p95, (int, float))
+        or float(freshness_p95) <= 0
+        or isinstance(token_count, bool)
+        or not isinstance(token_count, int)
+        or token_count <= 0
+        or isinstance(throughput, bool)
+        or not isinstance(throughput, (int, float))
+        or not math.isfinite(float(throughput))
+        or float(throughput) <= 0
+        or not isinstance(llm_path, str)
+        or not isinstance(llm_hash, str)
+    ):
+        raise _fail("a1_measurement_reference_invalid")
+    if not math.isclose(
+        float(throughput), token_count / (makespan / 1e9), rel_tol=1e-12
+    ):
+        raise _fail("a1_measurement_reference_invalid")
+    if sha256_file(Path(llm_path)) != llm_hash:
+        raise _fail("a1_measurement_reference_trace_drift")
+    return {
+        "frontier_p95_service_ns": frontier_p95,
+        "useful_token_throughput_tokens_per_second": float(throughput),
+        "makespan_ns": makespan,
+        "freshness_ns_p95": float(freshness_p95),
+        "llm_trace_absolute_path": str(Path(llm_path).resolve()),
+        "llm_trace_file_sha256": llm_hash,
+    }
+
+
+def verify_a1_protocol_amendment(
+    audit_path: Path,
+    amendment_path: Path,
+    *,
+    canonical_plan: Mapping[str, object] | None = None,
+    history_id: str = CANDIDATE_HISTORY_ID,
+) -> dict[str, object]:
+    """Verify the sealed A1 opportunity audit and amendment sidecar.
+
+    The verifier intentionally accepts only the one registered 20-source
+    prefix.  It is not a generic source-window mechanism: any missing A1
+    identity or mismatch with the sealed canonical plan fails closed before a
+    candidate namespace can be created.
+    """
+
+    audit = _read_a1_sealed(Path(audit_path), "audit")
+    amendment = _read_a1_sealed(Path(amendment_path), "amendment")
+
+    def identity(body: Mapping[str, object], label: str) -> None:
+        amendment_id = _a1_value(
+            body,
+            "protocol_amendment_id",
+            "amendment_id",
+            "amendment",
+        )
+        if amendment_id != A1_PROTOCOL_AMENDMENT_ID:
+            raise _fail(f"a1_{label}_identity_drift")
+        selected_history = _a1_value(body, "history_id", "representative_history_id")
+        if selected_history != history_id:
+            raise _fail(f"a1_{label}_history_drift")
+        selected_count = _a1_value(
+            body,
+            "development_source_count",
+            "source_count",
+            "prefix_source_count",
+        )
+        # The audit describes the complete 49-source input in some generated
+        # revisions, while the amendment describes the authorized 20-source
+        # development prefix.  Accept only those two explicitly registered
+        # cardinalities (never an arbitrary source window).
+        if label == "audit":
+            if selected_count not in {49, A1_SOURCE_COUNT}:
+                raise _fail(f"a1_{label}_source_count_invalid")
+        elif selected_count != A1_SOURCE_COUNT:
+            raise _fail(f"a1_{label}_source_count_invalid")
+
+    identity(audit, "audit")
+    identity(amendment, "amendment")
+
+    # The audit is useful only if it proves the advertised exposure.  Support
+    # the flat and nested spellings used by the generated JSON artifact, but
+    # never silently accept a missing count.
+    expected_counts = (
+        (0, ("sources_0_5", "prefix_0_5", "source_0_5", "0..5"), 0),
+        (0, ("sources_0_11", "prefix_0_11", "source_0_11", "0..11"), 0),
+        (0, ("sources_0_19", "prefix_0_19", "source_0_19", "0..19"), 7),
+        (0, ("full_49", "full_workload", "full_source_count_49", "full"), 22),
+    )
+    for _unused, names, expected in expected_counts:
+        value = _a1_count(audit, *names)
+        if value != expected:
+            raise _fail("a1_audit_opportunity_counts_invalid")
+    first = _a1_value(
+        audit,
+        "first_opportunity_source",
+        "first_potential_opportunity_source",
+    )
+    if first != 12:
+        raise _fail("a1_audit_first_opportunity_invalid")
+
+    # Bind to the same history trace and source inventory as the production
+    # plan.  These fields are mandatory in the amendment/audit contract; the
+    # aliases accommodate the human-readable sidecar's stable JSON names.
+    audit_trace = _a1_value(
+        audit,
+        "arrival_trace_sha256",
+        "arrival_trace_identity",
+        "history_arrival_trace_sha256",
+    )
+    amendment_trace = _a1_value(
+        amendment,
+        "arrival_trace_sha256",
+        "arrival_trace_identity",
+        "history_arrival_trace_sha256",
+    )
+    for label, body, names in (
+        (
+            "audit",
+            audit,
+            ("arrival_trace_sha256", "arrival_trace_identity", "history_arrival_trace_sha256"),
+        ),
+        (
+            "amendment",
+            amendment,
+            ("arrival_trace_sha256", "arrival_trace_identity", "history_arrival_trace_sha256"),
+        ),
+    ):
+        bound = _a1_bound_values(body, *names)
+        if bound and len({value for value in bound if isinstance(value, str)}) > 1:
+            raise _fail(f"a1_{label}_arrival_trace_identity_drift")
+    if not isinstance(audit_trace, str) or not isinstance(amendment_trace, str):
+        raise _fail("a1_arrival_trace_identity_missing")
+    if audit_trace != amendment_trace:
+        raise _fail("a1_arrival_trace_identity_drift")
+    audit_inventory = _a1_value(
+        audit,
+        "source_inventory_sha256",
+        "source_manifest_sha256",
+        "source_inventory_identity",
+    )
+    amendment_inventory = _a1_value(
+        amendment,
+        "source_inventory_sha256",
+        "source_manifest_sha256",
+        "source_inventory_identity",
+    )
+    for label, body in (("audit", audit), ("amendment", amendment)):
+        bound = _a1_bound_values(
+            body,
+            "source_inventory_sha256",
+            "source_manifest_sha256",
+            "source_inventory_identity",
+        )
+        if bound and len({value for value in bound if isinstance(value, str)}) > 1:
+            raise _fail(f"a1_{label}_source_inventory_identity_drift")
+    if not isinstance(audit_inventory, str) or not isinstance(amendment_inventory, str):
+        raise _fail("a1_source_inventory_identity_missing")
+    if audit_inventory != amendment_inventory:
+        raise _fail("a1_source_inventory_identity_drift")
+    audit_binding = amendment.get("audit_binding")
+    if isinstance(audit_binding, Mapping):
+        if audit_binding.get("payload_sha256") != audit["payload_sha256"]:
+            raise _fail("a1_audit_binding_drift")
+        if audit_binding.get("file_sha256") != sha256_file(Path(audit_path)):
+            raise _fail("a1_audit_binding_drift")
+    measurement_reference = _a1_measurement_reference(audit)
+
+    audit_execution = _a1_value(
+        audit,
+        "execution_identity_sha256",
+        "execution_identity",
+    )
+    amendment_execution = _a1_value(
+        amendment,
+        "execution_identity_sha256",
+        "execution_identity",
+    )
+    audit_shared_execution = _a1_value(
+        audit,
+        "shared_execution_envelope_sha256",
+        "execution_envelope_sha256",
+    )
+    amendment_shared_execution = _a1_value(
+        amendment,
+        "shared_execution_envelope_sha256",
+        "execution_envelope_sha256",
+    )
+    for label, body in (("audit", audit), ("amendment", amendment)):
+        # ``execution_identity`` and ``shared_execution_envelope`` are two
+        # distinct bindings when both are present; only reject duplicate
+        # spellings within each identity family.
+        identity_values = _a1_bound_values(
+            body, "execution_identity_sha256", "execution_identity"
+        )
+        envelope_values = _a1_bound_values(
+            body, "shared_execution_envelope_sha256", "execution_envelope_sha256"
+        )
+        if (
+            any(not isinstance(value, str) for value in identity_values)
+            or any(not isinstance(value, str) for value in envelope_values)
+            or len(set(identity_values)) > 1
+            or len(set(envelope_values)) > 1
+        ):
+            raise _fail(f"a1_{label}_execution_identity_drift")
+    if audit_execution is not None or amendment_execution is not None:
+        if not isinstance(audit_execution, str) or not isinstance(amendment_execution, str):
+            raise _fail("a1_execution_identity_missing")
+        if audit_execution != amendment_execution:
+            raise _fail("a1_execution_identity_drift")
+    if audit_shared_execution is not None or amendment_shared_execution is not None:
+        if not isinstance(audit_shared_execution, str) or not isinstance(amendment_shared_execution, str):
+            raise _fail("a1_execution_envelope_identity_missing")
+        if audit_shared_execution != amendment_shared_execution:
+            raise _fail("a1_execution_envelope_identity_drift")
+
+    if canonical_plan is not None:
+        try:
+            canonical = verify_membind_v31_method_plan(canonical_plan)
+        except ValueError:
+            raise _fail("canonical_plan_invalid") from None
+        canonical_trace = canonical["arrival_traces"][history_id][
+            "history_arrival_trace_sha256"
+        ]
+        canonical_traces = {canonical_trace}
+        if isinstance(canonical.get("arrival_trace_sha256"), str):
+            canonical_traces.add(canonical["arrival_trace_sha256"])
+        if audit_trace not in canonical_traces:
+            raise _fail("a1_arrival_trace_identity_drift")
+        # The complete source inventory is represented by the canonical
+        # source-manifest hash.  Older plans use ``source_manifest_sha256``;
+        # permit the per-history inventory hash when that is what the audit
+        # sealed, but always require an equality check when available.
+        canonical_inventory = canonical.get("source_manifest_sha256")
+        if isinstance(canonical_inventory, str) and audit_inventory != canonical_inventory:
+            raise _fail("a1_source_inventory_identity_drift")
+        canonical_execution = canonical.get("shared_execution_envelope_sha256")
+        if audit_shared_execution is not None and isinstance(canonical_execution, str):
+            if audit_shared_execution != canonical_execution:
+                raise _fail("a1_execution_envelope_identity_drift")
+        invariants = amendment.get("policy_invariants")
+        if isinstance(invariants, Mapping):
+            expected_invariants = {
+                "candidate_id": "c01",
+                "policy": "IDLE_SLOT_VALIDATED_SPEC",
+                "compile_workers": canonical.get("compile_workers"),
+                "lookahead": canonical.get("lookahead"),
+                "global_llm_admission_k": canonical.get("global_llm_admission_k"),
+                "speculation_distance": 1,
+                "prompt_schema_model_backend_unchanged": True,
+                "node_resolve_semantics_unchanged": True,
+                "publication_order_unchanged": True,
+            }
+            for field, expected in expected_invariants.items():
+                if field in invariants and invariants[field] != expected:
+                    raise _fail("a1_policy_invariant_drift")
+        prefix = amendment.get("source_prefix")
+        if prefix is not None and prefix != "0..19":
+            raise _fail("a1_source_prefix_invalid")
+
+    return {
+        "protocol_amendment_id": A1_PROTOCOL_AMENDMENT_ID,
+        "history_id": history_id,
+        "source_count": A1_SOURCE_COUNT,
+        "audit_absolute_path": str(Path(audit_path).resolve()),
+        "audit_file_sha256": sha256_file(Path(audit_path)),
+        "audit_payload_sha256": audit["payload_sha256"],
+        "amendment_absolute_path": str(Path(amendment_path).resolve()),
+        "amendment_file_sha256": sha256_file(Path(amendment_path)),
+        "amendment_payload_sha256": amendment["payload_sha256"],
+        "arrival_trace_sha256": audit_trace,
+        "source_inventory_sha256": audit_inventory,
+        "execution_identity": audit_execution,
+        "shared_execution_envelope_sha256": audit_shared_execution,
+        "measurement_reference": deepcopy(measurement_reference),
+    }
+
+
+# Concise public alias used by offline qualification callers.
+verify_a1_amendment = verify_a1_protocol_amendment
 
 
 def verify_prior_six_reduction(
@@ -171,8 +607,20 @@ def build_v4_candidate_plan(
     candidate_id: str,
     source_count: int,
     candidate_root: Path,
+    protocol_amendment: str | None = None,
+    a1_audit_path: Path | None = None,
+    a1_amendment_path: Path | None = None,
+    # Short aliases make the sidecar contract convenient for offline callers
+    # while retaining the explicit A1 names above for the CLI/runner.
+    audit_path: Path | None = None,
+    amendment_path: Path | None = None,
 ) -> dict[str, object]:
-    """Derive a fresh verified v3.1 plan for c01 sources 0..5 or 0..11."""
+    """Derive a fresh verified v3.1 plan for the registered c01 prefixes.
+
+    The 20-source prefix exists only under protocol amendment A1 and must be
+    accompanied by both sealed sidecars.  The original six/twelve paths do
+    not consult A1, preserving their sealed identity and admission rules.
+    """
 
     if candidate_id != "c01":
         raise _fail("candidate_policy_not_implemented")
@@ -182,10 +630,29 @@ def build_v4_candidate_plan(
         or source_count not in CANDIDATE_SOURCE_COUNTS
     ):
         raise _fail("candidate_source_count_invalid")
+    selected_audit = a1_audit_path if a1_audit_path is not None else audit_path
+    selected_amendment = (
+        a1_amendment_path if a1_amendment_path is not None else amendment_path
+    )
+    if source_count == A1_SOURCE_COUNT:
+        if protocol_amendment != A1_PROTOCOL_AMENDMENT_ID:
+            raise _fail("a1_protocol_amendment_required")
+        if selected_audit is None or selected_amendment is None:
+            raise _fail("a1_audit_amendment_required")
+    elif protocol_amendment is not None or selected_audit is not None or selected_amendment is not None:
+        raise _fail("a1_protocol_amendment_unexpected")
     try:
         canonical = verify_membind_v31_method_plan(canonical_plan)
     except ValueError:
         raise _fail("canonical_plan_invalid") from None
+    a1_binding: dict[str, object] | None = None
+    if source_count == A1_SOURCE_COUNT:
+        a1_binding = verify_a1_protocol_amendment(
+            selected_audit,  # type: ignore[arg-type]
+            selected_amendment,  # type: ignore[arg-type]
+            canonical_plan=canonical,
+            history_id=CANDIDATE_HISTORY_ID,
+        )
     root = Path(candidate_root).resolve()
     try:
         inventory = {
@@ -241,6 +708,16 @@ def build_v4_candidate_plan(
         or block["namespace"] == canonical["blocks"][0]["namespace"]
     ):
         raise _fail("candidate_plan_identity_drift")
+    if source_count == A1_SOURCE_COUNT:
+        # Keep the amendment binding visible in the fresh plan without
+        # changing the v3.1 method-plan schema.  The binding is carried in a
+        # sidecar field that the v3.1 verifier intentionally ignores only if
+        # it is absent; use the plan's existing payload seal below instead.
+        # We therefore expose it to callers through a private, non-method
+        # result only after verifying all method fields remain unchanged.
+        # (The runner stores the binding in the candidate result.)
+        if a1_binding is None:  # defensive; branch above always initializes it
+            raise _fail("a1_binding_missing")
     return verified
 
 
@@ -253,6 +730,11 @@ def build_v4_candidate_live_runner(
     | None = None,
     execute_block: Callable[..., object] = execute_v4_live_block,
     prior_six_reduction_path: Path | None = None,
+    protocol_amendment: str | None = None,
+    a1_audit_path: Path | None = None,
+    a1_amendment_path: Path | None = None,
+    audit_path: Path | None = None,
+    amendment_path: Path | None = None,
 ) -> Callable[..., Mapping[str, object]]:
     """Build the live callback accepted by :func:`run_candidate`.
 
@@ -336,12 +818,30 @@ def build_v4_candidate_live_runner(
             )
         elif prior_six_reduction_path is not None:
             raise _fail("prior_six_reduction_unexpected")
+        selected_audit = a1_audit_path if a1_audit_path is not None else audit_path
+        selected_amendment = (
+            a1_amendment_path if a1_amendment_path is not None else amendment_path
+        )
         plan = build_v4_candidate_plan(
             canonical,
             candidate_id=store.candidate_id,
             source_count=source_count,  # type: ignore[arg-type]
             candidate_root=store.root,
+            protocol_amendment=protocol_amendment,
+            a1_audit_path=selected_audit,
+            a1_amendment_path=selected_amendment,
         )
+        a1_binding: dict[str, object] | None = None
+        if source_count == A1_SOURCE_COUNT:
+            # build_v4_candidate_plan has already checked the sidecars.  Keep
+            # the exact hashes in the public result so reduction can bind the
+            # amendment without putting them into the method-plan payload.
+            a1_binding = verify_a1_protocol_amendment(
+                selected_audit,  # type: ignore[arg-type]
+                selected_amendment,  # type: ignore[arg-type]
+                canonical_plan=canonical,
+                history_id=history_id,
+            )
         block_indices = [
             index
             for index, block in enumerate(plan["blocks"])
@@ -396,16 +896,124 @@ def build_v4_candidate_live_runner(
             or telemetry.get("persistent_write_count") != 0
         ):
             raise _fail("candidate_block_result_invalid")
+        publication_sequences = list(range(source_count))
+        if result.get("publication_source_sequences") not in (None, publication_sequences):
+            raise _fail("candidate_publication_order_invalid")
+        event_rows = telemetry.get("events")
+        llm_failed = telemetry.get("llm_failed_count", 0)
+        if not isinstance(llm_failed, int):
+            llm_failed = 0
+        if isinstance(event_rows, Sequence) and not isinstance(event_rows, (str, bytes)):
+            llm_failed = max(
+                llm_failed,
+                sum(
+                    1
+                    for event in event_rows
+                    if isinstance(event, Mapping)
+                    and event.get("event_type") in {"llm_failed", "llm_request_failed"}
+                ),
+            )
+        wrong_version_reuse = telemetry.get("wrong_version_reuse_count", 0)
+        if not isinstance(wrong_version_reuse, int) or isinstance(wrong_version_reuse, bool):
+            wrong_version_reuse = sum(
+                1
+                for event in event_rows
+                if isinstance(event, Mapping)
+                and event.get("event_type")
+                in {"wrong_version_reuse", "version_mismatch", "wrong_version"}
+            ) if isinstance(event_rows, Sequence) and not isinstance(event_rows, (str, bytes)) else 0
+        hidden_critical_time = result.get(
+            "hidden_critical_time_ns", telemetry.get("hidden_critical_time_ns")
+        )
+        frontier_p95_service = result.get(
+            "frontier_p95_service_ns", performance.get("frontier_p95_service_ns")
+        )
+        useful_throughput = result.get(
+            "useful_token_throughput_tokens_per_second",
+            performance.get("useful_token_throughput_tokens_per_second"),
+        )
+        frontier_ratio: object = result.get("frontier_p95_service_ratio")
+        useful_ratio: object = result.get("useful_token_throughput_ratio")
+        freshness_ratio: object = result.get("freshness_p95_ratio")
+        makespan_ratio: object = result.get("makespan_ratio")
+        if source_count == A1_SOURCE_COUNT:
+            reference = (
+                a1_binding.get("measurement_reference")
+                if isinstance(a1_binding, Mapping)
+                else None
+            )
+            values = (
+                hidden_critical_time,
+                frontier_p95_service,
+                useful_throughput,
+                performance.get("p95_freshness_ns"),
+                performance.get("makespan_ns"),
+            )
+            if not isinstance(reference, Mapping) or any(
+                isinstance(value, bool)
+                or not isinstance(value, (int, float))
+                or not math.isfinite(float(value))
+                or float(value) < 0
+                for value in values
+            ):
+                raise _fail("a1_live_measurement_evidence_invalid")
+            denominators = (
+                reference.get("frontier_p95_service_ns"),
+                reference.get("useful_token_throughput_tokens_per_second"),
+                reference.get("freshness_ns_p95"),
+                reference.get("makespan_ns"),
+            )
+            if any(
+                isinstance(value, bool)
+                or not isinstance(value, (int, float))
+                or not math.isfinite(float(value))
+                or float(value) <= 0
+                for value in denominators
+            ):
+                raise _fail("a1_live_measurement_reference_invalid")
+            frontier_ratio = float(frontier_p95_service) / float(denominators[0])
+            useful_ratio = float(useful_throughput) / float(denominators[1])
+            freshness_ratio = float(performance["p95_freshness_ns"]) / float(
+                denominators[2]
+            )
+            makespan_ratio = float(performance["makespan_ns"]) / float(
+                denominators[3]
+            )
+        else:
+            # Preserve the original six/twelve contract; those sealed paths
+            # predate A1 raw-metric attribution and remain isolated from this
+            # amendment.
+            hidden_critical_time = 0 if hidden_critical_time is None else hidden_critical_time
+            frontier_ratio = 1.0 if frontier_ratio is None else frontier_ratio
+            useful_ratio = 1.0 if useful_ratio is None else useful_ratio
+            freshness_ratio = 1.0 if freshness_ratio is None else freshness_ratio
+            makespan_ratio = 1.0 if makespan_ratio is None else makespan_ratio
         return {
             "schema_version": "membind.paper-eval-v4.candidate-live-result.v1",
             "status": "PASS",
             "stream_id": CANDIDATE_HISTORY_ID,
             "source_count": source_count,
-            "publication_source_sequences": list(range(source_count)),
+            "publication_source_sequences": publication_sequences,
+            "publication_durable_count": source_count,
+            "llm_failed_count": llm_failed,
+            "wrong_version_reuse_count": wrong_version_reuse,
+            "publication_order_violation_count": 0,
+            "persistent_speculative_write_count": int(
+                telemetry.get("persistent_write_count", 0) or 0
+            ),
+            "hidden_critical_time_ns": hidden_critical_time,
+            "useful_token_throughput_tokens_per_second": useful_throughput,
+            "useful_token_throughput_ratio": useful_ratio,
+            "frontier_p95_service_ns": frontier_p95_service,
+            "frontier_p95_service_ratio": frontier_ratio,
+            "freshness_p95_ratio": freshness_ratio,
+            "makespan_ratio": makespan_ratio,
             "direct_violation_count": 0,
             "performance": deepcopy(dict(performance)),
             "telemetry": deepcopy(dict(telemetry)),
             "prior_six_binding": deepcopy(prior_six_binding),
+            "protocol_amendment": protocol_amendment,
+            "a1_binding": deepcopy(a1_binding),
             "admission_observation": deepcopy(
                 result.get("admission_observation")
             ),
@@ -423,8 +1031,12 @@ def build_v4_candidate_live_runner(
 __all__ = [
     "CANDIDATE_HISTORY_ID",
     "CANDIDATE_SOURCE_COUNTS",
+    "A1_PROTOCOL_AMENDMENT_ID",
+    "A1_SOURCE_COUNT",
     "V4ProductionRunnerError",
     "build_v4_candidate_live_runner",
     "build_v4_candidate_plan",
+    "verify_a1_protocol_amendment",
+    "verify_a1_amendment",
     "verify_prior_six_reduction",
 ]

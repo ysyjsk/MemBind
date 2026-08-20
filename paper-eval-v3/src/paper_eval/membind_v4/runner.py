@@ -14,7 +14,7 @@ from dataclasses import dataclass
 from pathlib import Path
 from typing import Any, Callable, Mapping
 
-from paper_eval.artifacts import atomic_write_json
+from paper_eval.artifacts import atomic_write_json, payload_sha256
 from paper_eval.membind_v4.autoresearch import CandidateStore
 from paper_eval.membind_v4.coordinator import run_membind_v4_stream
 from paper_eval.membind_v4.runtime import PreparedNodeResolve
@@ -82,6 +82,15 @@ def _public_result(result: Mapping[str, object]) -> dict[str, object]:
         "telemetry",
         "admission_observation",
         "prior_six_binding",
+        "protocol_amendment",
+        "a1_binding",
+        "publication_durable_count",
+        "llm_failed_count",
+        "wrong_version_reuse_count",
+        "publication_order_violation_count",
+        "persistent_speculative_write_count",
+        "hidden_critical_time_ns",
+        "useful_token_throughput_ratio",
         "frontier_p95_service_ratio",
         "freshness_p95_ratio",
     }
@@ -127,6 +136,9 @@ def run_candidate(
     mode: str = "live",
     preflight: Mapping[str, object] | None = None,
     live_runner: Callable[..., Mapping[str, object]] | None = None,
+    protocol_amendment: str | None = None,
+    a1_audit_path: Path | None = None,
+    a1_amendment_path: Path | None = None,
 ) -> dict[str, object]:
     """Run one candidate and durably retain either a summary or failure."""
 
@@ -136,6 +148,73 @@ def run_candidate(
         raise _fail("source_count_invalid")
     if mode not in {"fixture", "live", "blocked"}:
         raise _fail("runner_mode_invalid")
+    if source_count == 20:
+        if mode == "fixture":
+            raise _fail("a1_fixture_not_authorized")
+        if protocol_amendment != "A1":
+            raise _fail("a1_protocol_amendment_required")
+        if a1_audit_path is None or a1_amendment_path is None:
+            raise _fail("a1_audit_amendment_required")
+        # Fail before creating a candidate namespace even in fixture/blocked
+        # mode.  The production runner performs the deeper canonical-plan
+        # binding; this lightweight check enforces that both inputs are
+        # present and sealed for every execution mode.
+        a1_bodies: dict[str, dict[str, object]] = {}
+        for label, path in (("audit", a1_audit_path), ("amendment", a1_amendment_path)):
+            try:
+                body = json.loads(Path(path).read_text(encoding="utf-8"))
+            except (OSError, UnicodeError, json.JSONDecodeError) as error:
+                raise _fail(f"a1_{label}_unreadable") from error
+            if not isinstance(body, dict):
+                raise _fail(f"a1_{label}_invalid")
+            a1_bodies[label] = body
+            digest = body.get("payload_sha256")
+            unsigned = dict(body)
+            unsigned.pop("payload_sha256", None)
+            if not isinstance(digest, str) or digest != payload_sha256(unsigned):
+                raise _fail(f"a1_{label}_payload_hash_mismatch")
+            if body.get("protocol_amendment_id", body.get("amendment_id")) != "A1":
+                raise _fail(f"a1_{label}_identity_drift")
+            selected_count = body.get(
+                "development_source_count",
+                body.get("prefix_source_count", body.get("source_count")),
+            )
+            if label == "amendment" and selected_count != 20:
+                raise _fail("a1_amendment_source_count_invalid")
+            if label == "audit" and selected_count not in {20, 49}:
+                raise _fail("a1_audit_source_count_invalid")
+        def bound(body: dict[str, object], *names: str) -> object:
+            for name in names:
+                if name in body:
+                    return body[name]
+            nested = body.get("sealed_reference")
+            if isinstance(nested, dict):
+                for name in names:
+                    if name in nested:
+                        return nested[name]
+            return None
+        if bound(a1_bodies["audit"], "history_id") != history_id or bound(
+            a1_bodies["amendment"], "history_id"
+        ) != history_id:
+            raise _fail("a1_history_identity_drift")
+        for label, names, code in (
+            (
+                "arrival_trace",
+                ("arrival_trace_sha256", "history_arrival_trace_sha256"),
+                "a1_arrival_trace_identity_drift",
+            ),
+            (
+                "source_inventory",
+                ("source_inventory_sha256", "source_manifest_sha256"),
+                "a1_source_inventory_identity_drift",
+            ),
+        ):
+            left = bound(a1_bodies["audit"], *names)
+            right = bound(a1_bodies["amendment"], *names)
+            if not isinstance(left, str) or not isinstance(right, str) or left != right:
+                raise _fail(code)
+    elif protocol_amendment is not None or a1_audit_path is not None or a1_amendment_path is not None:
+        raise _fail("a1_protocol_amendment_unexpected")
     store = CandidateStore.create(Path(output_root), candidate_id, source_count=source_count)
     if preflight is not None:
         atomic_write_json(store.root / "preflight.json", dict(preflight))
@@ -158,6 +237,26 @@ def run_candidate(
                 raise _fail("live_runner_not_configured")
             result = dict(live_runner(store=store, history_id=history_id, source_count=source_count))
             _persist_live_events(store, result)
+        if source_count == 20 and "a1_binding" not in result:
+            # Fixture/blocked-free offline paths still carry the same sealed
+            # A1 identity into reduction; no live provider is initialized by
+            # this verifier.
+            from paper_eval.membind_v4.production_runner import (  # noqa: PLC0415
+                verify_a1_protocol_amendment,
+            )
+
+            try:
+                binding = verify_a1_protocol_amendment(
+                    a1_audit_path,  # type: ignore[arg-type]
+                    a1_amendment_path,  # type: ignore[arg-type]
+                )
+            except Exception as error:
+                raise _fail(f"a1_sidecar_binding_invalid:{error}") from error
+            result = {
+                **dict(result),
+                "protocol_amendment": "A1",
+                "a1_binding": binding,
+            }
         status = str(result.get("status", "PASS"))
         performance = result.get("performance")
         performance = performance if isinstance(performance, Mapping) else {}
@@ -170,6 +269,26 @@ def run_candidate(
             freshness_p95_ratio=float(result.get("freshness_p95_ratio", 1.0) or 1.0),
             makespan_ns=performance.get("makespan_ns"),
             p95_freshness_ns=performance.get("p95_freshness_ns"),
+            publication_source_sequences=result.get("publication_source_sequences"),
+            publication_durable_count=int(
+                result.get("publication_durable_count", source_count) or 0
+            ),
+            llm_failed_count=int(result.get("llm_failed_count", 0) or 0),
+            wrong_version_reuse_count=int(
+                result.get("wrong_version_reuse_count", 0) or 0
+            ),
+            publication_order_violation_count=int(
+                result.get("publication_order_violation_count", 0) or 0
+            ),
+            persistent_speculative_write_count=int(
+                result.get("persistent_speculative_write_count", 0) or 0
+            ),
+            hidden_critical_time_ns=result.get("hidden_critical_time_ns", 0),
+            useful_token_throughput_ratio=float(
+                result.get("useful_token_throughput_ratio", 1.0) or 1.0
+            ),
+            protocol_amendment=result.get("protocol_amendment"),
+            a1_binding=result.get("a1_binding"),
             result=_public_result(result),
         )
         return {**summary, "result": result}

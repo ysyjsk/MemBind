@@ -1,0 +1,87 @@
+{
+  "amendment_title": "Opportunity exposure from the first sealed NodeResolve window",
+  "arrival_trace_sha256": "ff5f10b62d375dc7e3cf9963bc34c1277e913a58bf1f8fc29b1f7ad7a89f11a8",
+  "audit_binding": {
+    "absolute_path": "/data/predator/ly/MemBind/paper-eval-v3/artifacts/paper_eval/membind_v4/protocol_amendment_a1/V4_OPPORTUNITY_AUDIT_A1.json",
+    "file_sha256": "f7f1355f5be72eec8cd1b161c62acdfe9d92a951bbdd8831923bc25d1f73d1a0",
+    "payload_sha256": "7f85d5c99fd2d3296af26a0d4adcf6bb9382a60c734adb645af1fd0b16b66b75",
+    "schema_version": "membind.paper-eval-v4.a1-opportunity-audit.v1"
+  },
+  "change": {
+    "first_opportunity_source": 12,
+    "formal_experiment_trace_rule": "use_the_complete_original_arrival_trace; never_filter_by_opportunity",
+    "full_workload_opportunity_count": 22,
+    "new_development_prefix_opportunity_count": 7,
+    "opportunity_filtering_applied_to_formal_experiment": false,
+    "original_c01_six_source_stop_immutable": true,
+    "original_prefix_0_11_opportunity_count": 0,
+    "original_prefix_0_5_opportunity_count": 0,
+    "rationale": "The sealed untreated v3.1 timing trace exposes no opportunity in 0..5 or 0..11; source 12 is the first opportunity, and 0..19 contains seven opportunities.",
+    "selection_basis": "sealed_v3.1_timing_only_before_v4_treatment"
+  },
+  "development_reference_binding": {
+    "absolute_path": "/data/predator/ly/MemBind/paper-eval-v3/artifacts/paper_eval/membind_v4/protocol_amendment_a1/V4_A1_DEVELOPMENT_REFERENCE.json",
+    "file_sha256": "03e26a36a7d1b7c393164caa1456f9a68f4b6059f95a26bd27d087948ba847c9",
+    "payload_sha256": "ba0b5edabda8c50573df448ab8b5cfb66546d2de2a555ed38342436151464161"
+  },
+  "development_source_count": 20,
+  "formal_main_table_eligible": false,
+  "history_arrival_trace_sha256": "ff5f10b62d375dc7e3cf9963bc34c1277e913a58bf1f8fc29b1f7ad7a89f11a8",
+  "history_id": "07741c45",
+  "input_bindings": {
+    "method_plan_absolute_path": "/data/predator/ly/MemBind/paper-eval-v3/artifacts/paper_eval/membind_v31/V31_METHOD_PLAN.json",
+    "method_plan_file_sha256": "74176884b30956e3b94c26ae8f3fdcffd26f53b9e37404fe5a224d14ae6367b6",
+    "provider_envelope_absolute_path": "/data/predator/ly/MemBind/paper-eval-v3/artifacts/paper_eval/membind_v31/PROVIDER_EXECUTION_ENVELOPE_XGRAMMAR_20260819.json",
+    "provider_envelope_file_sha256": "c9c4c8f9d0d0dfed933b0d280283b78dd6f9b2ac860a88a8f88190409fba12fc",
+    "provider_envelope_payload_sha256": "31f1a8476650767bc391215675924ceed972e10153df02feeaf44eb9fa54e0ee"
+  },
+  "payload_sha256": "ccaa4fa3313c05c6921f362bd085fc097430ba04f3c29393b99c168143768499",
+  "policy_invariants": {
+    "bind_workers": 1,
+    "candidate_id": "c01",
+    "compile_workers": 2,
+    "frontier_first": true,
+    "global_llm_admission_k": 2,
+    "lookahead": 2,
+    "node_resolve_semantics_unchanged": true,
+    "policy": "IDLE_SLOT_VALIDATED_SPEC",
+    "prompt_schema_model_backend_unchanged": true,
+    "publication_order_unchanged": true,
+    "retry_and_transport_admission_unchanged": true,
+    "speculation_distance": 1
+  },
+  "protocol_amendment_id": "A1",
+  "reference_alignment": {
+    "mixed_p0_baseline_status": "MIXED_ENVELOPES_NOT_FORMAL_COMPARISON",
+    "performance_reference_for_0_19_available": true,
+    "performance_reference_scope": "development_only_from_sealed_v3.1_event_trace",
+    "reason": "The 0..19 development reference is derived directly from the sealed v3.1 event timestamps and cross-checks the existing 0..5 and 0..11 PREFIX_REFERENCE values; it is not a formal fair comparator.",
+    "v3_1_trace_reused_without_rerun": true
+  },
+  "schema_version": "membind.paper-eval-v4.a1-protocol-amendment.v1",
+  "scope_and_authority": {
+    "authorized_live_runs": 1,
+    "authorized_run": "c01/A1/source_count=20/history=07741c45",
+    "development_performance_is_formal_comparator": false,
+    "formal_four_history_authorized": false,
+    "gpu_sweep_authorized": false,
+    "k_or_w_tuning_authorized": false,
+    "original_stop_artifact_replaced": false,
+    "original_workplan_rewritten": false,
+    "other_candidates_authorized": false
+  },
+  "sealed_reference": {
+    "arrival_trace_sha256": "ff5f10b62d375dc7e3cf9963bc34c1277e913a58bf1f8fc29b1f7ad7a89f11a8",
+    "execution_identity_sha256": "823857f46a51e5f65aec196220ff94dcea975aee6ebdd41c765569732ef79231",
+    "history_arrival_trace_sha256": "ff5f10b62d375dc7e3cf9963bc34c1277e913a58bf1f8fc29b1f7ad7a89f11a8",
+    "method_plan_payload_sha256": "3efbaa9a246ee1895bcd79011526bbdac7674ceb62c8b6a0e4c2fd14eef03730",
+    "provider_execution_envelope_sha256": "31f1a8476650767bc391215675924ceed972e10153df02feeaf44eb9fa54e0ee",
+    "shared_execution_envelope_sha256": "1bc49eabdc85f51546bc2b5477141887c087bb1fc0a0b26b33d1bf569660be25",
+    "source_manifest_sha256": "8bcd9fe468bbf471f0a26847b658fc2466df3e14639f05b575a8f207a45a89ec"
+  },
+  "source_inventory_scope": "full_v3.1_49_source_inventory_with_first_20_exposed",
+  "source_inventory_sha256": "8bcd9fe468bbf471f0a26847b658fc2466df3e14639f05b575a8f207a45a89ec",
+  "source_manifest_sha256": "8bcd9fe468bbf471f0a26847b658fc2466df3e14639f05b575a8f207a45a89ec",
+  "source_prefix": "0..19",
+  "status": "AUTHORIZED_DEVELOPMENT_ONLY"
+}

@@ -41,7 +41,10 @@ def main(argv: list[str] | None = None) -> int:
     parser = argparse.ArgumentParser(description=__doc__)
     parser.add_argument("--candidate", choices=("c01", "c02", "c03"), default="c01")
     parser.add_argument("--history-id", default="07741c45")
-    parser.add_argument("--source-count", type=int, choices=(6, 12), default=6)
+    parser.add_argument("--source-count", type=int, choices=(6, 12, 20), default=6)
+    parser.add_argument("--protocol-amendment", default=None)
+    parser.add_argument("--a1-audit", type=Path, default=None)
+    parser.add_argument("--a1-amendment", type=Path, default=None)
     parser.add_argument("--policy", default=None)
     parser.add_argument("--fresh-namespace", action="store_true")
     parser.add_argument(
@@ -59,6 +62,18 @@ def main(argv: list[str] | None = None) -> int:
 
     if args.policy is not None and args.policy != candidate_config(args.candidate)["policy"]:
         parser.error("candidate_policy_drift")
+
+    if args.source_count == 20:
+        if args.candidate != "c01":
+            parser.error("a1_candidate_not_c01")
+        if args.protocol_amendment != "A1":
+            parser.error("a1_protocol_amendment_required")
+        if args.a1_audit is None:
+            args.a1_audit = PROJECT / "artifacts/paper_eval/membind_v4/protocol_amendment_a1/V4_OPPORTUNITY_AUDIT_A1.json"
+        if args.a1_amendment is None:
+            args.a1_amendment = PROJECT / "artifacts/paper_eval/membind_v4/protocol_amendment_a1/V4_PROTOCOL_AMENDMENT_A1_OPPORTUNITY_EXPOSURE.json"
+    elif args.protocol_amendment is not None or args.a1_audit is not None or args.a1_amendment is not None:
+        parser.error("a1_protocol_amendment_unexpected")
 
     if args.source_count == 12:
         if args.prior_six_reduction is None:
@@ -101,6 +116,9 @@ def main(argv: list[str] | None = None) -> int:
         else:
             live_runner = build_v4_candidate_live_runner(
                 prior_six_reduction_path=args.prior_six_reduction,
+                protocol_amendment=args.protocol_amendment,
+                a1_audit_path=args.a1_audit,
+                a1_amendment_path=args.a1_amendment,
             )
     result = run_candidate(
         candidate_id=args.candidate,
@@ -110,6 +128,9 @@ def main(argv: list[str] | None = None) -> int:
         mode=args.mode,
         preflight=preflight,
         live_runner=live_runner,
+        protocol_amendment=args.protocol_amendment,
+        a1_audit_path=args.a1_audit,
+        a1_amendment_path=args.a1_amendment,
     )
     print(
         json.dumps(

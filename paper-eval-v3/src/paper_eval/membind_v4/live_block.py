@@ -14,6 +14,7 @@ import asyncio
 import hashlib
 import inspect
 import json
+import math
 from collections.abc import Callable, Mapping, Sequence
 from copy import deepcopy
 from dataclasses import dataclass
@@ -362,6 +363,227 @@ def _per_source_freshness(events: Sequence[Mapping[str, object]]) -> dict[str, o
     return {"freshness_ns": freshness, "per_source": rows}
 
 
+def _linear_percentile(values: Sequence[int], probability: float) -> float:
+    """Use the frozen linear interpolation used by the A1 references."""
+
+    if not values:
+        raise _fail("metric_inventory_empty")
+    ordered = sorted(values)
+    index = (len(ordered) - 1) * probability
+    lower = math.floor(index)
+    upper = math.ceil(index)
+    if lower == upper:
+        return float(ordered[lower])
+    weight = index - lower
+    return float(ordered[lower] + (ordered[upper] - ordered[lower]) * weight)
+
+
+def _read_public_llm_rows(path: Path) -> list[dict[str, object]]:
+    """Read only sealed, content-safe rows from the block's public LLM trace."""
+
+    try:
+        lines = Path(path).read_text(encoding="utf-8").splitlines()
+    except (OSError, UnicodeError):
+        raise _fail("llm_trace_unreadable") from None
+    rows: list[dict[str, object]] = []
+    for line in lines:
+        if not line.strip():
+            continue
+        try:
+            wrapper = json.loads(line)
+        except json.JSONDecodeError:
+            raise _fail("llm_trace_invalid") from None
+        if not isinstance(wrapper, Mapping) or set(wrapper) != {
+            "record",
+            "record_sha256",
+        }:
+            raise _fail("llm_trace_invalid")
+        record = wrapper.get("record")
+        if not isinstance(record, Mapping) or wrapper.get("record_sha256") != payload_sha256(record):
+            raise _fail("llm_trace_hash_mismatch")
+        row = record.get("row")
+        if not isinstance(row, Mapping):
+            raise _fail("llm_trace_row_invalid")
+        # The block writer already enforces content safety; keep this reader
+        # defensive so a hand-edited trace can never enter the ratio gate.
+        if any(
+            str(key).casefold() in {"prompt", "response", "content", "messages"}
+            for key in row
+        ):
+            raise _fail("llm_trace_content_unsafe")
+        rows.append(dict(row))
+    return rows
+
+
+def _request_attempt_index(request_id: object) -> int | None:
+    if not isinstance(request_id, str) or ":" not in request_id:
+        return None
+    suffix = request_id.rsplit(":", 1)[-1]
+    if not suffix.isdigit():
+        return None
+    return int(suffix)
+
+
+def _derive_live_metrics(
+    *,
+    events: Sequence[Mapping[str, object]],
+    telemetry: Mapping[str, object],
+    llm_path: Path,
+) -> dict[str, object]:
+    """Derive raw mechanism/backend metrics from durable events and llm.jsonl.
+
+    This function intentionally returns absolute measurements only.  A1 ratio
+    comparison is done by the production runner against its sealed reference;
+    no fallback/default ratio is manufactured here.
+    """
+
+    by_source: dict[int, dict[str, int]] = {}
+    for raw in events:
+        if not isinstance(raw, Mapping):
+            raise _fail("lifecycle_event_invalid")
+        sequence = raw.get("source_sequence")
+        timestamp = raw.get("timestamp_ns")
+        event_type = raw.get("event_type")
+        if (
+            isinstance(sequence, bool)
+            or not isinstance(sequence, int)
+            or sequence < 0
+            or isinstance(timestamp, bool)
+            or not isinstance(timestamp, int)
+            or timestamp < 0
+            or event_type not in {"ARRIVAL", "BIND_STARTED", "PUBLICATION_DURABLE"}
+        ):
+            continue
+        row = by_source.setdefault(sequence, {})
+        if event_type in row:
+            raise _fail("lifecycle_duplicate_metric")
+        row[str(event_type)] = timestamp
+    if not by_source or any(
+        set(row) != {"ARRIVAL", "BIND_STARTED", "PUBLICATION_DURABLE"}
+        for row in by_source.values()
+    ):
+        raise _fail("lifecycle_metric_coverage_incomplete")
+    service_ns: list[int] = []
+    for row in by_source.values():
+        if not (
+            row["ARRIVAL"] <= row["BIND_STARTED"] <= row["PUBLICATION_DURABLE"]
+        ):
+            raise _fail("lifecycle_metric_order_invalid")
+        service_ns.append(row["PUBLICATION_DURABLE"] - row["BIND_STARTED"])
+    makespan_ns = max(row["PUBLICATION_DURABLE"] for row in by_source.values()) - min(
+        row["ARRIVAL"] for row in by_source.values()
+    )
+    if makespan_ns <= 0:
+        raise _fail("makespan_metric_invalid")
+
+    rows = _read_public_llm_rows(Path(llm_path))
+    submitted: dict[int, dict[str, object]] = {}
+    responses: dict[int, dict[str, object]] = {}
+    successful_tokens = 0
+    for row in rows:
+        event_type = row.get("event_type")
+        if event_type == "llm_request_submitted":
+            index = _request_attempt_index(row.get("request_id"))
+            hmac = row.get("token_sequence_hmac_sha256")
+            timestamp = row.get("timestamp_ns")
+            if (
+                index is None
+                or not isinstance(hmac, str)
+                or len(hmac) != 64
+                or isinstance(timestamp, bool)
+                or not isinstance(timestamp, int)
+            ):
+                raise _fail("llm_trace_request_identity_invalid")
+            if index in submitted:
+                raise _fail("llm_trace_request_duplicate")
+            submitted[index] = dict(row)
+        elif event_type == "llm_transport_response":
+            index = row.get("transport_attempt_index")
+            tokens = row.get("total_tokens")
+            if (
+                isinstance(index, bool)
+                or not isinstance(index, int)
+                or index < 0
+                or isinstance(tokens, bool)
+                or not isinstance(tokens, int)
+                or tokens < 0
+            ):
+                raise _fail("llm_trace_response_invalid")
+            if index in responses:
+                raise _fail("llm_trace_response_duplicate")
+            responses[index] = dict(row)
+            successful_tokens += tokens
+
+    semantic_events = telemetry.get("events")
+    if isinstance(semantic_events, (str, bytes)) or not isinstance(semantic_events, Sequence):
+        raise _fail("speculative_telemetry_invalid")
+    miss_tokens = 0
+    aligned_speculation_count = 0
+    for event in semantic_events:
+        if not isinstance(event, Mapping) or event.get("event_type") not in {
+            "semantic_hit",
+            "semantic_miss",
+        }:
+            continue
+        if event.get("execution_mode") != "LLM":
+            continue
+        source = event.get("source_sequence")
+        # ``token_sequence_hmac_sha256`` remains the exact, state-bound
+        # identity.  The sealed provider row belongs to the stale
+        # speculative call, whose hash is recorded separately.  The fallback
+        # preserves compatibility with telemetry emitted before that field.
+        exact_hmac = event.get("token_sequence_hmac_sha256")
+        speculative_hmac = event.get(
+            "speculative_token_sequence_hmac_sha256", exact_hmac
+        )
+        start = event.get("speculation_started_timestamp_ns")
+        end = event.get("speculation_completed_timestamp_ns")
+        if (
+            isinstance(source, bool)
+            or not isinstance(source, int)
+            or not isinstance(exact_hmac, str)
+            or len(exact_hmac) != 64
+            or not isinstance(speculative_hmac, str)
+            or len(speculative_hmac) != 64
+            or isinstance(start, bool)
+            or not isinstance(start, int)
+            or isinstance(end, bool)
+            or not isinstance(end, int)
+            or end < start
+        ):
+            raise _fail("speculative_telemetry_invalid")
+        matches = [
+            index
+            for index, row in submitted.items()
+            if row.get("source_sequence") == source
+            and row.get("token_sequence_hmac_sha256") == speculative_hmac
+            and start <= int(row["timestamp_ns"]) <= end
+        ]
+        if not matches:
+            raise _fail("speculative_llm_trace_alignment_failed")
+        aligned_speculation_count += 1
+        if event.get("event_type") == "semantic_miss":
+            for index in matches:
+                response = responses.get(index)
+                if response is None:
+                    raise _fail("speculative_llm_trace_alignment_failed")
+                miss_tokens += int(response["total_tokens"])
+
+    useful_tokens = successful_tokens - miss_tokens
+    if useful_tokens < 0:
+        raise _fail("useful_token_metric_invalid")
+    return {
+        "frontier_service_ns": service_ns,
+        "frontier_p95_service_ns": _linear_percentile(service_ns, 0.95),
+        "makespan_ns": makespan_ns,
+        "llm_successful_token_count": successful_tokens,
+        "miss_speculative_token_count": miss_tokens,
+        "useful_token_count": useful_tokens,
+        "useful_token_throughput_tokens_per_second": useful_tokens / (makespan_ns / 1e9),
+        "aligned_speculation_count": aligned_speculation_count,
+    }
+
+
 @dataclass(frozen=True, slots=True)
 class V4LiveBlockComposition:
     """Hooks plus the last public v4 telemetry captured at runtime close."""
@@ -533,7 +755,36 @@ async def execute_v4_live_block(
     performance = deepcopy(result.get("performance"))
     if not isinstance(performance, Mapping):
         performance = {}
-    performance = {**dict(performance), **_per_source_freshness(inspected["events"])}
+    freshness_projection = _per_source_freshness(inspected["events"])
+    performance = {
+        **dict(performance),
+        **freshness_projection,
+        "p50_freshness_ns": _linear_percentile(
+            freshness_projection["freshness_ns"], 0.50
+        ),
+        "p95_freshness_ns": _linear_percentile(
+            freshness_projection["freshness_ns"], 0.95
+        ),
+    }
+    live_metrics = _derive_live_metrics(
+        events=inspected["events"],
+        telemetry=telemetry,
+        llm_path=Path(block_root) / "llm.jsonl",
+    )
+    performance = {
+        **performance,
+        "makespan_ns": live_metrics["makespan_ns"],
+        "frontier_service_ns": live_metrics["frontier_service_ns"],
+        "frontier_p95_service_ns": live_metrics["frontier_p95_service_ns"],
+        "llm_successful_token_count": live_metrics["llm_successful_token_count"],
+        "miss_speculative_token_count": live_metrics[
+            "miss_speculative_token_count"
+        ],
+        "useful_token_count": live_metrics["useful_token_count"],
+        "useful_token_throughput_tokens_per_second": live_metrics[
+            "useful_token_throughput_tokens_per_second"
+        ],
+    }
     artifact = {
         "schema_version": "membind.paper-eval-v4.live-block-result.v1",
         "status": result.get("status"),
@@ -546,6 +797,15 @@ async def execute_v4_live_block(
         "performance": performance,
         "admission_observation": deepcopy(result.get("request_admission")),
         "telemetry": telemetry,
+        "hidden_critical_time_ns": telemetry.get("hidden_critical_time_ns", 0),
+        "frontier_p95_service_ns": live_metrics["frontier_p95_service_ns"],
+        "useful_token_throughput_tokens_per_second": live_metrics[
+            "useful_token_throughput_tokens_per_second"
+        ],
+        "llm_successful_token_count": live_metrics["llm_successful_token_count"],
+        "miss_speculative_token_count": live_metrics[
+            "miss_speculative_token_count"
+        ],
         "v31_result_payload_sha256": result.get("payload_sha256"),
     }
     artifact["payload_sha256"] = payload_sha256(artifact)

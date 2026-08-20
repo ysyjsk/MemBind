@@ -13,6 +13,79 @@ from typing import Any, Mapping, Sequence
 from .contracts import assert_gold_blind, canonical_sha256
 
 
+def normalize_siliconflow_chat_request(
+    request: Mapping[str, object],
+) -> dict[str, object]:
+    """Map local-vLLM Qwen options to SiliconFlow's OpenAI extension fields.
+
+    The frozen project client emits ``chat_template_kwargs.enable_thinking``
+    and may attach vLLM-only ``cache_salt``.  SiliconFlow exposes the same Qwen
+    no-thinking choice as top-level ``enable_thinking`` and does not accept the
+    local cache-salt extension.  Scientific cache identity remains recorded by
+    the MAB runner, but unsupported provider fields must not be sent.
+    """
+
+    normalized = deepcopy(dict(request))
+    extra = normalized.get("extra_body")
+    selected_extra = dict(extra) if isinstance(extra, Mapping) else {}
+    template = selected_extra.pop("chat_template_kwargs", None)
+    selected_extra.pop("cache_salt", None)
+    enable_thinking: bool | None = None
+    if isinstance(template, Mapping) and type(template.get("enable_thinking")) is bool:
+        enable_thinking = bool(template["enable_thinking"])
+    if type(selected_extra.get("enable_thinking")) is bool:
+        enable_thinking = bool(selected_extra["enable_thinking"])
+    if enable_thinking is None:
+        enable_thinking = False
+    selected_extra["enable_thinking"] = enable_thinking
+    normalized["extra_body"] = selected_extra
+    return normalized
+
+
+class SiliconFlowChatCompletions:
+    """One transparent request-normalization layer at the actual HTTP boundary."""
+
+    def __init__(self, inner: object) -> None:
+        if inner is None or not callable(getattr(inner, "create", None)):
+            raise ValueError("SILICONFLOW_CHAT_COMPLETIONS_INVALID")
+        self._inner = inner
+
+    def __getattr__(self, name: str) -> Any:
+        return getattr(self._inner, name)
+
+    async def create(self, *args: object, **kwargs: object) -> object:
+        result = self._inner.create(
+            *args, **normalize_siliconflow_chat_request(kwargs)
+        )
+        if not hasattr(result, "__await__"):
+            raise TypeError("SILICONFLOW_CHAT_COMPLETION_MUST_BE_ASYNC")
+        return await result
+
+
+class SiliconFlowChat:
+    def __init__(self, inner: object) -> None:
+        self._inner = inner
+        self.completions = SiliconFlowChatCompletions(
+            getattr(inner, "completions", None)
+        )
+
+    def __getattr__(self, name: str) -> Any:
+        return getattr(self._inner, name)
+
+
+class SiliconFlowOpenAITransport:
+    """Preserve the SDK surface while normalizing only chat requests."""
+
+    def __init__(self, inner: object) -> None:
+        self._inner = inner
+        self.chat = SiliconFlowChat(getattr(inner, "chat", None))
+        if hasattr(inner, "embeddings"):
+            self.embeddings = getattr(inner, "embeddings")
+
+    def __getattr__(self, name: str) -> Any:
+        return getattr(self._inner, name)
+
+
 @dataclass(frozen=True)
 class PublicEpisode:
     question_id: str
@@ -163,7 +236,9 @@ class LiveReaderTransport:
         if request.get("model") != self.model:
             raise ValueError("READER_MODEL_IDENTITY_MISMATCH")
         response = await asyncio.wait_for(
-            self._client.chat.completions.create(**deepcopy(request)),
+            self._client.chat.completions.create(
+                **normalize_siliconflow_chat_request(request)
+            ),
             timeout=self.timeout_seconds,
         )
         choices = getattr(response, "choices", None)
@@ -202,4 +277,7 @@ __all__ = [
     "ReaderCompletion",
     "declared_arrival_offsets_ns",
     "render_public_episodes",
+    "normalize_siliconflow_chat_request",
+    "SiliconFlowChatCompletions",
+    "SiliconFlowOpenAITransport",
 ]

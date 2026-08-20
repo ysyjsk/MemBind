@@ -158,6 +158,20 @@ def test_fixture_candidate_runs_through_real_gate_and_writes_summary(tmp_path: P
     assert summary["direct_violation_count"] == 0
 
 
+def test_a1_twenty_source_fixture_is_not_authorized(tmp_path: Path) -> None:
+    with pytest.raises(ValueError, match="a1_fixture_not_authorized"):
+        run_candidate(
+            candidate_id="c01",
+            history_id="07741c45",
+            source_count=20,
+            output_root=tmp_path,
+            mode="fixture",
+            protocol_amendment="A1",
+            a1_audit_path=tmp_path / "audit.json",
+            a1_amendment_path=tmp_path / "amendment.json",
+        )
+
+
 def test_live_result_projection_is_persisted_without_private_payload(tmp_path: Path) -> None:
     def live_runner(**_kwargs):
         return {

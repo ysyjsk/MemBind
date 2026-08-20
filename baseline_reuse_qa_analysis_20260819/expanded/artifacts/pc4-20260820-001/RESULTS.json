@@ -1,0 +1,310 @@
+{
+  "available_histories": [
+    "07741c45"
+  ],
+  "available_history_count": 1,
+  "blocker": "PC4_NAMESPACE_COVERAGE_INCOMPLETE",
+  "claim_scope": "BASELINE_REUSE_4_HISTORY_AUTHORED_EXTENSION",
+  "comparison": {
+    "history_id": "07741c45",
+    "methods": {
+      "P(C=2)": {
+        "accuracy": 1.0,
+        "correct_count": 4,
+        "invalid_count": 0,
+        "judge_invalid_count": 0,
+        "question_count": 4,
+        "reader_invalid_count": 0,
+        "retrieval": {
+          "mrr": 0.5277777777777778,
+          "ndcg_at_10": 0.6407223757017241,
+          "recall_at_1": 0.25,
+          "recall_at_10": 1.0,
+          "recall_at_3": 0.75,
+          "recall_at_5": 0.75
+        },
+        "valid_count": 4,
+        "valid_only_accuracy": 1.0
+      },
+      "P(C=4)": {
+        "accuracy": 0.75,
+        "correct_count": 3,
+        "invalid_count": 0,
+        "judge_invalid_count": 0,
+        "question_count": 4,
+        "reader_invalid_count": 0,
+        "retrieval": {
+          "mrr": 0.5277777777777778,
+          "ndcg_at_10": 0.6407223757017241,
+          "recall_at_1": 0.25,
+          "recall_at_10": 1.0,
+          "recall_at_3": 0.75,
+          "recall_at_5": 0.75
+        },
+        "valid_count": 4,
+        "valid_only_accuracy": 0.75
+      },
+      "U0": {
+        "accuracy": 0.75,
+        "correct_count": 3,
+        "invalid_count": 0,
+        "judge_invalid_count": 0,
+        "question_count": 4,
+        "reader_invalid_count": 0,
+        "retrieval": {
+          "mrr": 0.5277777777777778,
+          "ndcg_at_10": 0.6407223757017241,
+          "recall_at_1": 0.25,
+          "recall_at_10": 1.0,
+          "recall_at_3": 0.75,
+          "recall_at_5": 0.75
+        },
+        "valid_count": 4,
+        "valid_only_accuracy": 0.75
+      }
+    },
+    "questions": [
+      {
+        "P(C=2)": {
+          "gold_rank": 2,
+          "label": true
+        },
+        "P(C=4)": {
+          "gold_rank": 2,
+          "label": true
+        },
+        "U0": {
+          "gold_rank": 2,
+          "label": true
+        },
+        "question_id": "07741c45-ext-001"
+      },
+      {
+        "P(C=2)": {
+          "gold_rank": 9,
+          "label": true
+        },
+        "P(C=4)": {
+          "gold_rank": 9,
+          "label": false
+        },
+        "U0": {
+          "gold_rank": 9,
+          "label": false
+        },
+        "question_id": "07741c45-ext-002"
+      },
+      {
+        "P(C=2)": {
+          "gold_rank": 2,
+          "label": true
+        },
+        "P(C=4)": {
+          "gold_rank": 2,
+          "label": true
+        },
+        "U0": {
+          "gold_rank": 2,
+          "label": true
+        },
+        "question_id": "07741c45-ext-003"
+      },
+      {
+        "P(C=2)": {
+          "gold_rank": 1,
+          "label": true
+        },
+        "P(C=4)": {
+          "gold_rank": 1,
+          "label": true
+        },
+        "U0": {
+          "gold_rank": 1,
+          "label": true
+        },
+        "question_id": "07741c45-ext-004"
+      }
+    ]
+  },
+  "construction_calls": 0,
+  "missing_histories": [
+    "b6019101",
+    "6071bd76",
+    "a2f3aa27"
+  ],
+  "namespace_snapshots_after": {
+    "07741c45": {
+      "episode_count": 49,
+      "episode_map_sha256": "4cc4b6ab31048fba9f03c18aefc4ec45954cb115db9ec5198106e86629140be7",
+      "namespace_sha256": "64cb4059f247ba259b332ec4438c2bcb6acb8efd2b600acf187ac578c65d6ad2",
+      "node_count": 347,
+      "relationship_count": 571
+    }
+  },
+  "namespace_snapshots_before": {
+    "07741c45": {
+      "episode_count": 49,
+      "episode_map_sha256": "4cc4b6ab31048fba9f03c18aefc4ec45954cb115db9ec5198106e86629140be7",
+      "namespace_sha256": "64cb4059f247ba259b332ec4438c2bcb6acb8efd2b600acf187ac578c65d6ad2",
+      "node_count": 347,
+      "relationship_count": 571
+    }
+  },
+  "namespace_snapshots_unchanged": true,
+  "partial": true,
+  "question_count": 4,
+  "rows": [
+    {
+      "context_gold_session_coverage_posthoc": 1.0,
+      "correct": true,
+      "counters": {
+        "construction_calls": 0,
+        "construction_llm_requests": 0,
+        "database_mutation_attempts": 0,
+        "embedding_requests": 0,
+        "graphiti_search_calls": 0,
+        "neo4j_read_requests": 4
+      },
+      "failure_category": "SUCCESS",
+      "history_id": "07741c45",
+      "judge_model": "Qwen/Qwen3-32B",
+      "judge_valid": true,
+      "method": "P(C=4)",
+      "predicted_answer": "Your old sneakers were stored under your bed before you moved them to the shoe rack in your closet.",
+      "private_payload_sha256": "14362640e0296cafbe8fe5f8832c1ff54d71805c839de41298c004db6c00413a",
+      "question_id": "07741c45-ext-001",
+      "reader_model": "Qwen/Qwen3-32B",
+      "reader_valid": true,
+      "retrieval_metrics": {
+        "mrr": 0.5,
+        "ndcg_at_10": 0.6309297535714575,
+        "recall_at_1": 0.0,
+        "recall_at_10": 1.0,
+        "recall_at_3": 1.0,
+        "recall_at_5": 1.0,
+        "gold_ranks": [
+          2
+        ]
+      }
+    },
+    {
+      "context_gold_session_coverage_posthoc": 1.0,
+      "correct": false,
+      "counters": {
+        "construction_calls": 0,
+        "construction_llm_requests": 0,
+        "database_mutation_attempts": 0,
+        "embedding_requests": 0,
+        "graphiti_search_calls": 0,
+        "neo4j_read_requests": 4
+      },
+      "failure_category": "READER_OR_JUDGE_INCORRECT",
+      "history_id": "07741c45",
+      "judge_model": "Qwen/Qwen3-32B",
+      "judge_valid": true,
+      "method": "P(C=4)",
+      "predicted_answer": "Based on the information provided, the two sandal brands you mentioned liking are **Teva** and **Keen**.",
+      "private_payload_sha256": "8ab9f0d46c9c407ba911bc42140b19eb1f977ddb8996cfa7983804a775b8ba4b",
+      "question_id": "07741c45-ext-002",
+      "reader_model": "Qwen/Qwen3-32B",
+      "reader_valid": true,
+      "retrieval_metrics": {
+        "mrr": 0.1111111111111111,
+        "ndcg_at_10": 0.3010299956639812,
+        "recall_at_1": 0.0,
+        "recall_at_10": 1.0,
+        "recall_at_3": 0.0,
+        "recall_at_5": 0.0,
+        "gold_ranks": [
+          9
+        ]
+      }
+    },
+    {
+      "context_gold_session_coverage_posthoc": 1.0,
+      "correct": true,
+      "counters": {
+        "construction_calls": 0,
+        "construction_llm_requests": 0,
+        "database_mutation_attempts": 0,
+        "embedding_requests": 0,
+        "graphiti_search_calls": 0,
+        "neo4j_read_requests": 4
+      },
+      "failure_category": "SUCCESS",
+      "history_id": "07741c45",
+      "judge_model": "Qwen/Qwen3-32B",
+      "judge_valid": true,
+      "method": "P(C=4)",
+      "predicted_answer": "You planned to donate your old dress shoes to the local charity thrift store this Saturday.",
+      "private_payload_sha256": "da113b21e770618fbc8a68c195c53599727c7f7ab1c1d149fbb002b08909242b",
+      "question_id": "07741c45-ext-003",
+      "reader_model": "Qwen/Qwen3-32B",
+      "reader_valid": true,
+      "retrieval_metrics": {
+        "mrr": 0.5,
+        "ndcg_at_10": 0.6309297535714575,
+        "recall_at_1": 0.0,
+        "recall_at_10": 1.0,
+        "recall_at_3": 1.0,
+        "recall_at_5": 1.0,
+        "gold_ranks": [
+          2
+        ]
+      }
+    },
+    {
+      "context_gold_session_coverage_posthoc": 1.0,
+      "correct": true,
+      "counters": {
+        "construction_calls": 0,
+        "construction_llm_requests": 0,
+        "database_mutation_attempts": 0,
+        "embedding_requests": 0,
+        "graphiti_search_calls": 0,
+        "neo4j_read_requests": 4
+      },
+      "failure_category": "SUCCESS",
+      "history_id": "07741c45",
+      "judge_model": "Qwen/Qwen3-32B",
+      "judge_valid": true,
+      "method": "P(C=4)",
+      "predicted_answer": "You planned to organize your shoe collection by purging and decluttering, categorizing and grouping shoes by type, using storage containers for items like socks and accessories, and utilizing vertical space with stackable shoe racks or shelves.",
+      "private_payload_sha256": "828f43a17ffed7f6325f234068411ac8d4273581b555227b97c4b93e919e9838",
+      "question_id": "07741c45-ext-004",
+      "reader_model": "Qwen/Qwen3-32B",
+      "reader_valid": true,
+      "retrieval_metrics": {
+        "mrr": 1.0,
+        "ndcg_at_10": 1.0,
+        "recall_at_1": 1.0,
+        "recall_at_10": 1.0,
+        "recall_at_3": 1.0,
+        "recall_at_5": 1.0,
+        "gold_ranks": [
+          1
+        ]
+      }
+    }
+  ],
+  "schema_version": "membind.baseline-reuse-pc4-analysis.v1",
+  "status": "PARTIAL",
+  "summary": {
+    "accuracy": 0.75,
+    "correct_count": 3,
+    "invalid_count": 0,
+    "judge_invalid_count": 0,
+    "question_count": 4,
+    "reader_invalid_count": 0,
+    "retrieval": {
+      "mrr": 0.5277777777777778,
+      "ndcg_at_10": 0.6407223757017241,
+      "recall_at_1": 0.25,
+      "recall_at_10": 1.0,
+      "recall_at_3": 0.75,
+      "recall_at_5": 0.75
+    },
+    "valid_count": 4,
+    "valid_only_accuracy": 0.75
+  }
+}

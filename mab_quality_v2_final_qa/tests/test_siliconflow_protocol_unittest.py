@@ -4,7 +4,7 @@ import io
 import json
 import os
 import unittest
-from dataclasses import replace
+from dataclasses import dataclass
 from types import SimpleNamespace
 from unittest import mock
 
@@ -13,12 +13,18 @@ from mab_quality_v2_final_qa.live_adapters import normalize_siliconflow_chat_req
 from mab_quality_v2_final_qa.live_workflow import (
     _execution_methods,
     _overlay_siliconflow_env,
+    _prepare_execution_contexts,
     _select_execution_contexts,
 )
 from mab_quality_v2_final_qa.runtime_gate import (
     RuntimeTopology,
     check_embedding_endpoint,
     check_model_endpoint,
+)
+from mab_quality_v2_final_qa.siliconflow_runtime import (
+    RuntimeComponents,
+    SILICONFLOW_HTTP_TIMEOUT_SECONDS,
+    build_siliconflow_u0_runtime,
 )
 
 
@@ -101,6 +107,104 @@ class SiliconFlowTopologyTests(unittest.TestCase):
         self.assertEqual(selected["EMBEDDING_MODEL"], EMBEDDING_MODEL)
 
 
+class SiliconFlowRuntimeTests(unittest.TestCase):
+    def test_u0_runtime_binds_exact_chat_and_embedding_models(self) -> None:
+        class Config:
+            def __init__(self, **kwargs: object) -> None:
+                self.kwargs = kwargs
+
+        class Completions:
+            async def create(self, **_kwargs: object) -> object:
+                return object()
+
+        class Transport:
+            def __init__(self) -> None:
+                self.chat = SimpleNamespace(completions=Completions())
+
+        class Qwen:
+            def __init__(self, *, config: Config, **kwargs: object) -> None:
+                self.config = config
+                self.kwargs = kwargs
+                self.client = Transport()
+
+            async def generate_response(self, *_args: object, **_kwargs: object):
+                return {}
+
+        class Embedder:
+            def __init__(self, config: Config, client: object = None) -> None:
+                self.config = config
+                self.client = client
+
+        class Graph:
+            def __init__(self, **kwargs: object) -> None:
+                self.kwargs = kwargs
+                self.llm_client = kwargs["llm_client"]
+                self.clients = SimpleNamespace(llm_client=kwargs["llm_client"])
+
+        class Admission:
+            def __init__(
+                self,
+                *,
+                inner: object,
+                admission: object,
+                request_id_prefix: str,
+            ) -> None:
+                self.inner = inner
+                self.admission = admission
+                self.request_id_prefix = request_id_prefix
+
+            async def generate_response(self, *_args: object, **_kwargs: object):
+                return {}
+
+        components = RuntimeComponents(
+            graphiti_type=Graph,
+            llm_config_type=Config,
+            qwen_client_type=Qwen,
+            embedder_config_type=Config,
+            embedder_type=Embedder,
+            reranker_type=lambda config, client=None: SimpleNamespace(
+                config=config, client=client
+            ),
+            admitted_client_type=Admission,
+            request_admission_type=lambda *, limit: SimpleNamespace(limit=limit),
+            openai_client_factory=lambda **kwargs: SimpleNamespace(**kwargs),
+        )
+        env = {
+            "MAB_RUNTIME_PROVIDER": "SILICONFLOW_QWEN",
+            "CONSTRUCTION_LLM_BASE_URL": SILICONFLOW_URL,
+            "CONSTRUCTION_LLM_MODEL": CHAT_MODEL,
+            "CONSTRUCTION_LLM_API_KEY": "test-secret",
+            "QUALITY_LLM_BASE_URL": SILICONFLOW_URL,
+            "QUALITY_LLM_MODEL": CHAT_MODEL,
+            "EMBEDDING_BASE_URL": SILICONFLOW_URL,
+            "EMBEDDING_MODEL": EMBEDDING_MODEL,
+            "EMBEDDING_DIM": "1024",
+            "EMBEDDING_API_KEY": "test-secret",
+            "NEO4J_URI": "bolt://localhost:7687",
+            "NEO4J_USER": "neo4j",
+            "NEO4J_PASSWORD": "test-password",
+            "GRAPHITI_MAX_COROUTINES": "8",
+        }
+
+        runtime = build_siliconflow_u0_runtime(
+            env=env,
+            request_id_prefix="mab-test-u0",
+            components=components,
+        )
+
+        self.assertEqual(runtime.raw_llm.config.kwargs["model"], CHAT_MODEL)
+        embedder = runtime.graphiti.kwargs["embedder"]
+        self.assertEqual(embedder.config.kwargs["embedding_model"], EMBEDDING_MODEL)
+        self.assertEqual(embedder.config.kwargs["embedding_dim"], 1024)
+        self.assertEqual(runtime.public_identity["provider"], "SILICONFLOW_QWEN")
+        self.assertEqual(
+            runtime.public_identity["http_timeout_seconds"],
+            SILICONFLOW_HTTP_TIMEOUT_SECONDS,
+        )
+        self.assertNotIn("test-secret", json.dumps(runtime.public_identity))
+        self.assertIs(runtime.graphiti.llm_client, runtime.admitted_llm)
+
+
 class SiliconFlowRequestTests(unittest.TestCase):
     def test_chat_request_maps_thinking_and_removes_vllm_cache_salt(self) -> None:
         request = normalize_siliconflow_chat_request(
@@ -171,6 +275,11 @@ class StageSelectionTests(unittest.TestCase):
         self.assertEqual(_execution_methods("full"), ("U0", "MEMBIND_V31"))
 
     def test_smoke_selects_one_context_and_six_deterministic_qa(self) -> None:
+        @dataclass(frozen=True)
+        class Context:
+            context_id: str
+            qa_items: tuple[object, ...]
+
         qa_items = tuple(
             SimpleNamespace(
                 qa_pair_id=f"qa-{index:02d}",
@@ -178,7 +287,7 @@ class StageSelectionTests(unittest.TestCase):
             )
             for index in range(10)
         )
-        context = SimpleNamespace(context_id="context-1", qa_items=qa_items)
+        context = Context(context_id="context-1", qa_items=qa_items)
         with mock.patch(
             "mab_quality_v2_final_qa.live_workflow.select_probe_contexts",
             return_value=(context,),
@@ -189,6 +298,48 @@ class StageSelectionTests(unittest.TestCase):
             selected = _select_execution_contexts((context,), mode="smoke")
         self.assertEqual(len(selected), 1)
         self.assertEqual(len(selected[0].qa_items), 6)
+
+    def test_smoke_selection_precedes_history_limit(self) -> None:
+        @dataclass(frozen=True)
+        class Context:
+            context_id: str
+            qa_items: tuple[object, ...]
+
+        contexts = tuple(
+            Context(context_id=f"context-{index}", qa_items=tuple(range(8)))
+            for index in range(4)
+        )
+        selected_context = contexts[2]
+        with mock.patch(
+            "mab_quality_v2_final_qa.live_workflow.select_probe_contexts",
+            side_effect=lambda candidates, count: (
+                self.assertEqual(tuple(candidates), contexts),
+                (selected_context,),
+            )[1],
+        ), mock.patch(
+            "mab_quality_v2_final_qa.live_workflow.select_probe_qa",
+            return_value=tuple(range(6)),
+        ):
+            selected = _prepare_execution_contexts(
+                contexts, history_limit=1, mode="smoke"
+            )
+        self.assertEqual(selected[0].context_id, "context-2")
+        self.assertEqual(selected[0].qa_items, tuple(range(6)))
+
+    def test_full_selection_applies_history_limit_after_mode_choice(self) -> None:
+        @dataclass(frozen=True)
+        class Context:
+            context_id: str
+            qa_items: tuple[object, ...]
+
+        contexts = tuple(
+            Context(context_id=f"context-{index}", qa_items=tuple())
+            for index in range(4)
+        )
+        selected = _prepare_execution_contexts(
+            contexts, history_limit=1, mode="full"
+        )
+        self.assertEqual(tuple(item.context_id for item in selected), ("context-0",))
 
 
 if __name__ == "__main__":

@@ -1,0 +1,65 @@
+{
+  "schema_version": "membind.baseline-reuse-workload-compatibility-audit.v1",
+  "status": "PASS_WITH_SCOPE_RESTRICTION",
+  "decision": "REUSE_EXISTING_BASELINE_QA_AND_JUDGE_EVIDENCE_WITHOUT_CONSTRUCTION",
+  "formal_mab_multiqa_claim_allowed": false,
+  "claim_scope": "BASELINE_REUSE_4_HISTORY_NOT_MAB_MULTIQA",
+  "construction_calls_after_scope_pivot": 0,
+  "historical_namespaces_read_only": true,
+  "baseline": {
+    "source_path": "paper-eval-v3/artifacts/paper_eval/development_inputs/LONGMEMEVAL_S_DEVELOPMENT_EXPOSED_4.json",
+    "source_sha256": "a1e3088193eaf6b866fceb62343ebe09beddc8ad0ed57bc70176232f16b3454b",
+    "histories": [
+      {
+        "history_id": "07741c45",
+        "session_count": 49
+      },
+      {
+        "history_id": "b6019101",
+        "session_count": 49
+      },
+      {
+        "history_id": "6071bd76",
+        "session_count": 46
+      },
+      {
+        "history_id": "a2f3aa27",
+        "session_count": 44
+      }
+    ]
+  },
+  "mab_candidate_workload": {
+    "source_path": "mab_quality_v2_final_qa/data/official_5_contexts.json",
+    "source_sha256": "97fd80207f3419fc57c3684db824334224546d6bdd62c17ef52cd116eec9ffc8",
+    "qualified_contexts": [
+      {
+        "context_id": "longmemeval_s*:3c7e614ecadaf1a6",
+        "session_count": 111,
+        "qa_count": 60
+      },
+      {
+        "context_id": "longmemeval_s*:68e0c0a3c1784bc0",
+        "session_count": 107,
+        "qa_count": 60
+      },
+      {
+        "context_id": "longmemeval_s*:9b8cbac923a7a2d1",
+        "session_count": 116,
+        "qa_count": 60
+      },
+      {
+        "context_id": "longmemeval_s*:92fa22f6540b0e82",
+        "session_count": 111,
+        "qa_count": 60
+      }
+    ]
+  },
+  "identity_checks": {
+    "exact_ordered_session_inventory_matches": 0,
+    "maximum_session_content_overlap_with_any_baseline_history": 2,
+    "neo4j_complete_matching_namespace_count": 0,
+    "neo4j_group_count_examined_read_only": 64,
+    "neo4j_episodic_node_count_examined_read_only": 2362
+  },
+  "interpretation": "The existing four-history construction can be reused for its own frozen QA/Judge analysis, but cannot serve the selected 240-question MAB workload because the context session inventories differ."
+}

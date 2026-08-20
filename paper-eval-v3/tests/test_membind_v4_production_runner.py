@@ -17,6 +17,8 @@ from paper_eval.membind_v4.autoresearch import (
     candidate_config,
 )
 from paper_eval.membind_v4.production_runner import (
+    A1_PROTOCOL_AMENDMENT_ID,
+    A1_SOURCE_COUNT,
     V4ProductionRunnerError,
     build_v4_candidate_live_runner,
     build_v4_candidate_plan,
@@ -107,6 +109,38 @@ def _prior_six(
     return _sealed(root / "reduction.json", reduction)
 
 
+def _a1_sidecars(tmp_path: Path) -> tuple[Path, Path]:
+    canonical = _canonical_plan()
+    trace = canonical["arrival_traces"]["07741c45"]["history_arrival_trace_sha256"]
+    inventory = canonical["source_manifest_sha256"]
+    root = tmp_path / "a1"
+    audit = {
+        "schema_version": "membind.paper-eval-v4.a1-opportunity-audit.v1",
+        "protocol_amendment_id": A1_PROTOCOL_AMENDMENT_ID,
+        "history_id": "07741c45",
+        "source_count": 20,
+        "arrival_trace_sha256": trace,
+        "source_inventory_sha256": inventory,
+        "sources_0_5": 0,
+        "sources_0_11": 0,
+        "sources_0_19": 7,
+        "full_49": 22,
+        "first_opportunity_source": 12,
+    }
+    amendment = {
+        "schema_version": "membind.paper-eval-v4.a1-protocol-amendment.v1",
+        "protocol_amendment_id": A1_PROTOCOL_AMENDMENT_ID,
+        "history_id": "07741c45",
+        "source_count": 20,
+        "arrival_trace_sha256": trace,
+        "source_inventory_sha256": inventory,
+    }
+    return (
+        _sealed(root / "V4_OPPORTUNITY_AUDIT_A1.json", audit),
+        _sealed(root / "V4_PROTOCOL_AMENDMENT_A1_OPPORTUNITY_EXPOSURE.json", amendment),
+    )
+
+
 def test_prior_six_admission_accepts_only_sealed_extend_decision(tmp_path: Path) -> None:
     path = _prior_six(tmp_path)
 
@@ -192,6 +226,59 @@ def test_candidate_plan_is_fresh_verified_prefix_without_knob_drift(
     assert plan["blocks"][0]["namespace"] != canonical["blocks"][0]["namespace"]
 
 
+def test_a1_twenty_source_plan_requires_sealed_sidecars_and_preserves_knobs(
+    tmp_path: Path,
+) -> None:
+    canonical = verify_membind_v31_method_plan(_canonical_plan())
+    with pytest.raises(V4ProductionRunnerError, match="a1_audit_amendment_required"):
+        build_v4_candidate_plan(
+            canonical,
+            candidate_id="c01",
+            source_count=A1_SOURCE_COUNT,
+            candidate_root=tmp_path / "missing",
+            protocol_amendment=A1_PROTOCOL_AMENDMENT_ID,
+        )
+
+    audit, amendment = _a1_sidecars(tmp_path)
+    plan = build_v4_candidate_plan(
+        canonical,
+        candidate_id="c01",
+        source_count=A1_SOURCE_COUNT,
+        candidate_root=tmp_path / "valid",
+        protocol_amendment=A1_PROTOCOL_AMENDMENT_ID,
+        a1_audit_path=audit,
+        a1_amendment_path=amendment,
+    )
+    assert verify_membind_v31_method_plan(plan) == plan
+    assert plan["history_source_sha256s"]["07741c45"] == canonical[
+        "history_source_sha256s"
+    ]["07741c45"][:20]
+    assert plan["arrival_traces"]["07741c45"]["arrival_offsets_ns"] == canonical[
+        "arrival_traces"
+    ]["07741c45"]["arrival_offsets_ns"][:20]
+    for field in ("compile_workers", "lookahead", "global_llm_admission_k"):
+        assert plan[field] == canonical[field]
+    assert plan["blocks"][0]["source_count"] == 20
+
+
+def test_a1_sidecar_identity_drift_fails_closed(tmp_path: Path) -> None:
+    audit, amendment = _a1_sidecars(tmp_path)
+    body = json.loads(audit.read_text(encoding="utf-8"))
+    body["protocol_amendment_id"] = "A2"
+    body.pop("payload_sha256", None)
+    _sealed(audit, body)
+    with pytest.raises(V4ProductionRunnerError, match="a1_audit_identity_drift"):
+        build_v4_candidate_plan(
+            _canonical_plan(),
+            candidate_id="c01",
+            source_count=20,
+            candidate_root=tmp_path / "drift",
+            protocol_amendment="A1",
+            a1_audit_path=audit,
+            a1_amendment_path=amendment,
+        )
+
+
 @pytest.mark.parametrize("candidate_id,source_count", (("c02", 6), ("c01", 5), ("c01", 49)))
 def test_candidate_plan_rejects_unimplemented_policy_or_non_preregistered_prefix(
     tmp_path: Path, candidate_id: str, source_count: int
@@ -270,6 +357,84 @@ def test_candidate_live_runner_executes_exact_prefix_in_candidate_block_root(
     assert calls[0]["lookahead"] == 2
     assert calls[0]["stream_id"] == "07741c45"
     assert calls[0]["namespace_override"] is None
+
+
+def test_a1_live_runner_computes_ratios_from_sealed_raw_measurements() -> None:
+    project = Path(__file__).resolve().parents[1]
+    canonical = verify_membind_v31_method_plan(_canonical_plan())
+    audit = project / "artifacts/paper_eval/membind_v4/protocol_amendment_a1/V4_OPPORTUNITY_AUDIT_A1.json"
+    amendment = project / "artifacts/paper_eval/membind_v4/protocol_amendment_a1/V4_PROTOCOL_AMENDMENT_A1_OPPORTUNITY_EXPOSURE.json"
+    audit_body = json.loads(audit.read_text(encoding="utf-8"))
+    reference = audit_body["development_reference_0_19"]
+    metrics = reference["llm_reference"]
+    certification = object.__new__(StateCutCertification)
+    episodes = {
+        history: tuple(range(len(canonical["history_source_sha256s"][history])))
+        for history in canonical["histories"]
+    }
+    paths = ProductionExecutorPaths.from_repository(project)
+
+    async def execute_block(**kwargs: object) -> dict[str, object]:
+        plan = kwargs["verified_plan"]
+        block = plan["blocks"][kwargs["block_index"]]
+        return {
+            "schema_version": "membind.paper-eval-v4.live-block-result.v1",
+            "status": "PASS",
+            "run_id": plan["run_id"],
+            "history_id": block["history_id"],
+            "namespace": block["namespace"],
+            "source_count": 20,
+            "direct_violation_count": 0,
+            "hidden_critical_time_ns": 123,
+            "frontier_p95_service_ns": reference["frontier_p95_service_ns"] * 1.04,
+            "useful_token_throughput_tokens_per_second": metrics[
+                "useful_token_throughput_tokens_per_second"
+            ]
+            * 1.02,
+            "performance": {
+                "makespan_ns": reference["makespan_ns"] * 0.95,
+                "p95_freshness_ns": reference["freshness_ns_p95"] * 0.96,
+                "freshness_ns": list(range(20)),
+            },
+            "telemetry": {
+                "persistent_write_count": 0,
+                "events": [
+                    {
+                        "event_type": "semantic_hit",
+                        "source_sequence": 12,
+                    }
+                ],
+            },
+            "payload_sha256": "a" * 64,
+        }
+
+    runner = build_v4_candidate_live_runner(
+        paths=paths,
+        loaders=V4ProductionLoaders(
+            load_plan=lambda _path: canonical,
+            load_env=lambda _path: {"SAFE": "value"},
+            load_certification=lambda _paths: certification,
+            load_episodes=lambda _path, _plan: episodes,
+        ),
+        execute_block=execute_block,
+        protocol_amendment="A1",
+        a1_audit_path=audit,
+        a1_amendment_path=amendment,
+    )
+    store = CandidateStore.create(project / "artifacts/paper_eval/membind_v4/.tmp-a1-metrics-test", "c01", source_count=20)
+    try:
+        result = runner(store=store, history_id="07741c45", source_count=20)
+    finally:
+        # The candidate store is intentionally outside all sealed artifacts;
+        # tests only need to avoid leaving a namespace-like temp directory.
+        import shutil
+
+        shutil.rmtree(store.root.parent.parent, ignore_errors=True)
+    assert result["hidden_critical_time_ns"] == 123
+    assert result["frontier_p95_service_ratio"] == pytest.approx(1.04)
+    assert result["useful_token_throughput_ratio"] == pytest.approx(1.02)
+    assert result["makespan_ratio"] == pytest.approx(0.95)
+    assert result["freshness_p95_ratio"] == pytest.approx(0.96)
 
 
 def test_candidate_live_runner_rejects_identity_drift_before_execution(tmp_path: Path) -> None:

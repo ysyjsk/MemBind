@@ -1,0 +1,238 @@
+{
+  "arrival_trace_sha256": "ff5f10b62d375dc7e3cf9963bc34c1277e913a58bf1f8fc29b1f7ad7a89f11a8",
+  "audit_binding": {
+    "absolute_path": "/data/predator/ly/MemBind/paper-eval-v3/artifacts/paper_eval/membind_v4/protocol_amendment_a1/V4_OPPORTUNITY_AUDIT_A1.json",
+    "file_sha256": "f7f1355f5be72eec8cd1b161c62acdfe9d92a951bbdd8831923bc25d1f73d1a0",
+    "payload_sha256": "7f85d5c99fd2d3296af26a0d4adcf6bb9382a60c734adb645af1fd0b16b66b75"
+  },
+  "execution_identity_sha256": "823857f46a51e5f65aec196220ff94dcea975aee6ebdd41c765569732ef79231",
+  "formal_main_table_eligible": false,
+  "history_arrival_trace_sha256": "ff5f10b62d375dc7e3cf9963bc34c1277e913a58bf1f8fc29b1f7ad7a89f11a8",
+  "history_id": "07741c45",
+  "limitations": [
+    "This is a development trend reference extracted from untreated sealed v3.1 events.",
+    "It is not a formal fair comparator and does not authorize a four-history run.",
+    "The A1 live run must use its own fresh namespace and preserve the complete arrival trace."
+  ],
+  "payload_sha256": "ba0b5edabda8c50573df448ab8b5cfb66546d2de2a555ed38342436151464161",
+  "performance": {
+    "freshness_ns_max": 184625031391,
+    "freshness_ns_mean": 82075874125.35,
+    "freshness_ns_p50": 66437596605.5,
+    "freshness_ns_p95": 181620504073.7,
+    "frontier_p95_service_ns": 48165149817.550026,
+    "frontier_service_ns": [
+      2143435006,
+      2647875920,
+      20927337661,
+      12139669088,
+      6340083442,
+      8244132110,
+      15033455893,
+      17855273431,
+      30590526676,
+      12319194324,
+      46372008801,
+      82234829132,
+      38583871951,
+      20362770487,
+      42888961948,
+      28766219501,
+      20836573487,
+      17933386478,
+      8014948046,
+      20359058940
+    ],
+    "goodput_episodes_per_second": 0.02346710570873481,
+    "llm_reference": {
+      "absolute_path": "/data/predator/ly/MemBind/paper-eval-v3/artifacts/paper_eval/membind_v31/feasibility/membind-v31-feasibility-20260819-004/block-00/llm.jsonl",
+      "derivation": "sum of sealed llm_transport_response.total_tokens; untreated v3.1 has no speculative MISS waste",
+      "file_sha256": "2d988a3910a6842fc48b12ef007e70e59319528f5b067449615c463538237aca",
+      "successful_response_count": 300,
+      "successful_token_count": 1533609,
+      "useful_token_count": 1533609,
+      "useful_token_throughput_tokens_per_second": 1799.4682259433541
+    },
+    "makespan_ns": 852256782248
+  },
+  "prefix_reference_cross_checks": {
+    "sources_0_11": {
+      "expected": {
+        "freshness_ns_p50": 38812777571.0,
+        "freshness_ns_p95": 125837748729.74992,
+        "makespan_ns": 644560721098
+      },
+      "match": true,
+      "observed": {
+        "freshness_ns_p50": 38812777571.0,
+        "freshness_ns_p95": 125837748729.74992,
+        "makespan_ns": 644560721098,
+        "source_count": 12
+      }
+    },
+    "sources_0_5": {
+      "expected": {
+        "freshness_ns_p50": 16380238747.5,
+        "freshness_ns_p95": 31874908592.0,
+        "makespan_ns": 242136638225
+      },
+      "match": true,
+      "observed": {
+        "freshness_ns_p50": 16380238747.5,
+        "freshness_ns_p95": 31874908592.0,
+        "makespan_ns": 242136638225,
+        "source_count": 6
+      }
+    }
+  },
+  "protocol_amendment_id": "A1",
+  "provider_execution_envelope_sha256": "31f1a8476650767bc391215675924ceed972e10153df02feeaf44eb9fa54e0ee",
+  "schema_version": "membind.paper-eval-v4.a1-development-reference.v1",
+  "shared_execution_envelope_sha256": "1bc49eabdc85f51546bc2b5477141887c087bb1fc0a0b26b33d1bf569660be25",
+  "source_count": 20,
+  "source_manifest_sha256": "8bcd9fe468bbf471f0a26847b658fc2466df3e14639f05b575a8f207a45a89ec",
+  "source_prefix": "0..19",
+  "source_rows": [
+    {
+      "arrival_timestamp_ns": 379630130296434,
+      "freshness_ns": 8620663389,
+      "publication_timestamp_ns": 379638750959823,
+      "service_latency_ns": 2143435006,
+      "source_sequence": 0
+    },
+    {
+      "arrival_timestamp_ns": 379671975643803,
+      "freshness_ns": 15602136635,
+      "publication_timestamp_ns": 379687577780438,
+      "service_latency_ns": 2647875920,
+      "source_sequence": 1
+    },
+    {
+      "arrival_timestamp_ns": 379713779879979,
+      "freshness_ns": 28363452509,
+      "publication_timestamp_ns": 379742143332488,
+      "service_latency_ns": 20927337661,
+      "source_sequence": 2
+    },
+    {
+      "arrival_timestamp_ns": 379755577882652,
+      "freshness_ns": 17158340860,
+      "publication_timestamp_ns": 379772736223512,
+      "service_latency_ns": 12139669088,
+      "source_sequence": 3
+    },
+    {
+      "arrival_timestamp_ns": 379797401172779,
+      "freshness_ns": 8720525858,
+      "publication_timestamp_ns": 379806121698637,
+      "service_latency_ns": 6340083442,
+      "source_sequence": 4
+    },
+    {
+      "arrival_timestamp_ns": 379839221540706,
+      "freshness_ns": 33045393953,
+      "publication_timestamp_ns": 379872266934659,
+      "service_latency_ns": 8244132110,
+      "source_sequence": 5
+    },
+    {
+      "arrival_timestamp_ns": 379881008895420,
+      "freshness_ns": 51097941304,
+      "publication_timestamp_ns": 379932106836724,
+      "service_latency_ns": 15033455893,
+      "source_sequence": 6
+    },
+    {
+      "arrival_timestamp_ns": 379922815910549,
+      "freshness_ns": 44580161189,
+      "publication_timestamp_ns": 379967396071738,
+      "service_latency_ns": 17855273431,
+      "source_sequence": 7
+    },
+    {
+      "arrival_timestamp_ns": 379964624288842,
+      "freshness_ns": 75041516138,
+      "publication_timestamp_ns": 380039665804980,
+      "service_latency_ns": 30590526676,
+      "source_sequence": 8
+    },
+    {
+      "arrival_timestamp_ns": 380006471373511,
+      "freshness_ns": 49283642468,
+      "publication_timestamp_ns": 380055755015979,
+      "service_latency_ns": 12319194324,
+      "source_sequence": 9
+    },
+    {
+      "arrival_timestamp_ns": 380048248657509,
+      "freshness_ns": 77739062916,
+      "publication_timestamp_ns": 380125987720425,
+      "service_latency_ns": 46372008801,
+      "source_sequence": 10
+    },
+    {
+      "arrival_timestamp_ns": 380090065986141,
+      "freshness_ns": 184625031391,
+      "publication_timestamp_ns": 380274691017532,
+      "service_latency_ns": 82234829132,
+      "source_sequence": 11
+    },
+    {
+      "arrival_timestamp_ns": 380131874057880,
+      "freshness_ns": 181462371057,
+      "publication_timestamp_ns": 380313336428937,
+      "service_latency_ns": 38583871951,
+      "source_sequence": 12
+    },
+    {
+      "arrival_timestamp_ns": 380173698281605,
+      "freshness_ns": 160055006144,
+      "publication_timestamp_ns": 380333753287749,
+      "service_latency_ns": 20362770487,
+      "source_sequence": 13
+    },
+    {
+      "arrival_timestamp_ns": 380215507558241,
+      "freshness_ns": 161191770556,
+      "publication_timestamp_ns": 380376699328797,
+      "service_latency_ns": 42888961948,
+      "source_sequence": 14
+    },
+    {
+      "arrival_timestamp_ns": 380257303572369,
+      "freshness_ns": 157820173246,
+      "publication_timestamp_ns": 380415123745615,
+      "service_latency_ns": 28766219501,
+      "source_sequence": 15
+    },
+    {
+      "arrival_timestamp_ns": 380299117254002,
+      "freshness_ns": 136902135719,
+      "publication_timestamp_ns": 380436019389721,
+      "service_latency_ns": 20836573487,
+      "source_sequence": 16
+    },
+    {
+      "arrival_timestamp_ns": 380340925137103,
+      "freshness_ns": 113085044519,
+      "publication_timestamp_ns": 380454010181622,
+      "service_latency_ns": 17933386478,
+      "source_sequence": 17
+    },
+    {
+      "arrival_timestamp_ns": 380382737161496,
+      "freshness_ns": 79289435583,
+      "publication_timestamp_ns": 380462026597079,
+      "service_latency_ns": 8014948046,
+      "source_sequence": 18
+    },
+    {
+      "arrival_timestamp_ns": 380424553401609,
+      "freshness_ns": 57833677073,
+      "publication_timestamp_ns": 380482387078682,
+      "service_latency_ns": 20359058940,
+      "source_sequence": 19
+    }
+  ],
+  "status": "PASS_DEVELOPMENT_ONLY"
+}

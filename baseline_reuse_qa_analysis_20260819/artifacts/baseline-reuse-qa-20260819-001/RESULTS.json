@@ -1,0 +1,166 @@
+{
+  "claim_scope": "BASELINE_REUSE_4_HISTORY_NOT_MAB_MULTIQA",
+  "construction_calls": 0,
+  "construction_reused": true,
+  "items": [
+    {
+      "agrees_with_original": true,
+      "correct": true,
+      "history_id": "07741c45",
+      "method": "P(C=2)",
+      "reader_valid": true,
+      "valid": true
+    },
+    {
+      "agrees_with_original": true,
+      "correct": true,
+      "history_id": "07741c45",
+      "method": "U0",
+      "reader_valid": true,
+      "valid": true
+    },
+    {
+      "agrees_with_original": true,
+      "correct": false,
+      "history_id": "6071bd76",
+      "method": "P(C=2)",
+      "reader_valid": true,
+      "valid": true
+    },
+    {
+      "agrees_with_original": true,
+      "correct": false,
+      "history_id": "6071bd76",
+      "method": "U0",
+      "reader_valid": true,
+      "valid": true
+    },
+    {
+      "agrees_with_original": true,
+      "correct": false,
+      "history_id": "a2f3aa27",
+      "method": "P(C=2)",
+      "reader_valid": true,
+      "valid": true
+    },
+    {
+      "agrees_with_original": true,
+      "correct": false,
+      "history_id": "a2f3aa27",
+      "method": "U0",
+      "reader_valid": true,
+      "valid": true
+    },
+    {
+      "agrees_with_original": true,
+      "correct": true,
+      "history_id": "b6019101",
+      "method": "P(C=2)",
+      "reader_valid": true,
+      "valid": true
+    },
+    {
+      "agrees_with_original": true,
+      "correct": true,
+      "history_id": "b6019101",
+      "method": "U0",
+      "reader_valid": true,
+      "valid": true
+    }
+  ],
+  "judge_calls_reused": 8,
+  "judge_model": "Qwen/Qwen3-32B",
+  "judge_validation": {
+    "agreement_rate": 1.0,
+    "agreement_with_original_count": 8,
+    "invalid_count": 0,
+    "request_count": 8
+  },
+  "limitations": [
+    "Only four development histories are scored per method.",
+    "The result is a baseline-reuse diagnostic, not a MAB Multi-QA result.",
+    "All four questions are knowledge-update questions; no question-type generalization is supported.",
+    "Identical observed accuracy does not establish method equivalence or non-inferiority."
+  ],
+  "methods": {
+    "P(C=2)": {
+      "accuracy": 0.5,
+      "accuracy_wilson_95": {
+        "high": 0.8499610108478506,
+        "low": 0.15003898915214947
+      },
+      "context_gold_session_coverage_mean": 1.0,
+      "correct_count": 2,
+      "invalid_count": 0,
+      "question_count": 4,
+      "reader_valid_count": 4,
+      "retrieval": {
+        "mrr": 1.0,
+        "ndcg_at_10": 1.0,
+        "recall_at_1": 0.5,
+        "recall_at_10": 1.0,
+        "recall_at_3": 1.0,
+        "recall_at_5": 1.0
+      },
+      "valid_count": 4
+    },
+    "U0": {
+      "accuracy": 0.5,
+      "accuracy_wilson_95": {
+        "high": 0.8499610108478506,
+        "low": 0.15003898915214947
+      },
+      "context_gold_session_coverage_mean": 1.0,
+      "correct_count": 2,
+      "invalid_count": 0,
+      "question_count": 4,
+      "reader_valid_count": 4,
+      "retrieval": {
+        "mrr": 1.0,
+        "ndcg_at_10": 1.0,
+        "recall_at_1": 0.5,
+        "recall_at_10": 1.0,
+        "recall_at_3": 1.0,
+        "recall_at_5": 1.0
+      },
+      "valid_count": 4
+    }
+  },
+  "paired": {
+    "accuracy_delta_pc2_minus_u0": 0.0,
+    "agreement_count": 4,
+    "agreement_rate": 1.0,
+    "discordant_count": 0,
+    "items": [
+      {
+        "P(C=2)": true,
+        "U0": true,
+        "agreement": true,
+        "history_id": "07741c45"
+      },
+      {
+        "P(C=2)": false,
+        "U0": false,
+        "agreement": true,
+        "history_id": "6071bd76"
+      },
+      {
+        "P(C=2)": false,
+        "U0": false,
+        "agreement": true,
+        "history_id": "a2f3aa27"
+      },
+      {
+        "P(C=2)": true,
+        "U0": true,
+        "agreement": true,
+        "history_id": "b6019101"
+      }
+    ],
+    "pair_count": 4
+  },
+  "payload_sha256": "5d6f9f983b8119963dd8597df66a0aadcbb91be4a6c86fda9a8fc0c56a355dae",
+  "reader_calls": 0,
+  "schema_version": "membind.baseline-reuse-qa-analysis.v1",
+  "status": "PASS"
+}

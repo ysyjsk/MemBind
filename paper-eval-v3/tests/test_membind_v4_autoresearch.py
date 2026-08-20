@@ -259,3 +259,146 @@ def test_summarize_events_is_deterministic() -> None:
     assert summary["semantic_miss_count"] == 1
     assert summary["overlap_count"] == 1
     assert summary["exact_validation_completed_count"] == 2
+
+
+def _a1_summary(**overrides: object) -> dict[str, object]:
+    summary: dict[str, object] = {
+        "status": "PASS",
+        "candidate_id": "c01",
+        "source_count": 20,
+        "publication_source_sequences": list(range(20)),
+        "publication_durable_count": 20,
+        "llm_failed_count": 0,
+        "persistent_speculative_write_count": 0,
+        "qualified_node_resolve_count": 2,
+        "speculation_launch_count": 2,
+        "exact_validation_completed_count": 2,
+        "semantic_hit_count": 1,
+        "semantic_miss_count": 1,
+        "overlap_count": 1,
+        "hidden_critical_time_ns": 1,
+        "direct_violation_count": 0,
+        "frontier_p95_service_ratio": 1.0,
+        "freshness_p95_ratio": 0.90,
+        "makespan_ratio": 1.0,
+    }
+    summary.update(overrides)
+    return summary
+
+
+def test_assess_candidate_a1_never_extends_to_twelve() -> None:
+    decision = assess_candidate(_a1_summary())
+    assert decision["decision"] in {"FREEZE", "TUNE_TO_C02", "STOP"}
+    assert decision["decision"] != "EXTEND_TO_12"
+
+
+def test_assess_candidate_a1_correctness_and_coverage_are_stop() -> None:
+    assert assess_candidate(_a1_summary(direct_violation_count=1)) == {
+        "decision": "STOP",
+        "reason": "direct_violation",
+    }
+    assert assess_candidate(_a1_summary(publication_source_sequences=list(range(19)))) == {
+        "decision": "STOP",
+        "reason": "incomplete_publication_coverage",
+    }
+
+
+def test_assess_candidate_a1_zero_exposure_is_runtime_mismatch() -> None:
+    assert assess_candidate(
+        _a1_summary(
+            qualified_node_resolve_count=0,
+            speculation_launch_count=0,
+            exact_validation_completed_count=0,
+            semantic_hit_count=0,
+            semantic_miss_count=0,
+            overlap_count=0,
+        )
+    ) == {
+        "decision": "STOP_RUNTIME_OPPORTUNITY_MISMATCH",
+        "reason": "no_qualified_node_resolve",
+    }
+
+
+def test_assess_candidate_a1_hit_without_hidden_time_is_critical_path_stop() -> None:
+    assert assess_candidate(_a1_summary(hidden_critical_time_ns=0)) == {
+        "decision": "STOP_V4_NODE_RESOLVE_NO_CRITICAL_PATH_GAIN",
+        "reason": "no_hidden_critical_time",
+    }
+
+
+def test_assess_candidate_a1_qualified_miss_is_no_reuse_stop() -> None:
+    assert assess_candidate(
+        _a1_summary(
+            semantic_hit_count=0,
+            semantic_miss_count=2,
+            hidden_critical_time_ns=1,
+        )
+    ) == {
+        "decision": "STOP_V4_NODE_RESOLVE_NO_SEMANTIC_REUSE",
+        "reason": "no_semantic_hit",
+    }
+
+
+def test_assess_candidate_a1_safety_rejects_wrong_version_reuse() -> None:
+    assert assess_candidate(_a1_summary(wrong_version_reuse_count=1)) == {
+        "decision": "STOP",
+        "reason": "wrong_version_reuse",
+    }
+
+
+def test_assess_candidate_a1_frontier_interference_is_tune_to_c02() -> None:
+    decision = assess_candidate(
+        _a1_summary(
+            frontier_p95_service_ratio=1.06,
+            useful_token_throughput_ratio=1.01,
+        )
+    )
+    assert decision["decision"] == "TUNE_TO_C02"
+
+
+def test_assess_candidate_a1_frontier_interference_without_backend_gain_stops() -> None:
+    decision = assess_candidate(
+        _a1_summary(
+            frontier_p95_service_ratio=1.06,
+            useful_token_throughput_ratio=1.0,
+        )
+    )
+    assert decision == {
+        "decision": "STOP",
+        "reason": "frontier_interference_without_backend_gain",
+    }
+
+
+@pytest.mark.parametrize("ratio", (0.0, 0.94, 0.90))
+def test_assess_candidate_a1_throughput_regression_blocks_every_terminal_gain(
+    ratio: float,
+) -> None:
+    # A wall-clock improvement cannot mask a >5% useful-throughput drop.
+    decision = assess_candidate(
+        _a1_summary(
+            freshness_p95_ratio=0.90,
+            makespan_ratio=0.90,
+            useful_token_throughput_ratio=ratio,
+        )
+    )
+    assert decision == {"decision": "STOP", "reason": "useful_throughput_regression"}
+
+
+def test_assess_candidate_a1_accepts_exact_five_percent_throughput_bound() -> None:
+    decision = assess_candidate(
+        _a1_summary(
+            freshness_p95_ratio=0.90,
+            useful_token_throughput_ratio=0.95,
+        )
+    )
+    assert decision["decision"] == "FREEZE"
+
+
+def test_assess_candidate_a1_backend_alias_can_authorize_c02() -> None:
+    decision = assess_candidate(
+        _a1_summary(
+            frontier_p95_service_ratio=1.06,
+            backend_useful_throughput_ratio=1.02,
+        )
+    )
+    assert decision["decision"] == "TUNE_TO_C02"

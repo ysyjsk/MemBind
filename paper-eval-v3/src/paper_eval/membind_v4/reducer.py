@@ -923,6 +923,16 @@ def _candidate_ratio(value: object, reference: object) -> float | None:
 
 
 def _reference(prefix_reference: Mapping[str, Any], source_count: int) -> Mapping[str, Any]:
+    if source_count == 20:
+        # A1's aligned 0..19 reference is a separate development-only sealed
+        # artifact; it must never be inserted into the original 6/12
+        # PREFIX_REFERENCE envelope.
+        if prefix_reference.get("schema_version") != "membind.paper-eval-v4.a1-development-reference.v1":
+            raise _fail("a1_reference_schema_invalid")
+        performance = prefix_reference.get("performance")
+        if not isinstance(performance, Mapping):
+            raise _fail("a1_reference_performance_missing")
+        return performance
     if source_count not in {6, 12}:
         raise _fail("candidate_source_count_invalid")
     prefix = "sources_0_5" if source_count == 6 else "sources_0_11"
@@ -936,10 +946,72 @@ def _reference(prefix_reference: Mapping[str, Any], source_count: int) -> Mappin
     return value
 
 
+def _verify_a1_reduction_binding(
+    *,
+    summary: Mapping[str, object],
+    binding: Mapping[str, object],
+    reference: Mapping[str, object],
+    history_id: str,
+    audit_path_override: Path | None = None,
+    amendment_path_override: Path | None = None,
+) -> None:
+    """Recheck the immutable A1 sidecars before deriving a candidate result."""
+
+    if summary.get("protocol_amendment") != "A1":
+        raise _fail("a1_candidate_identity_missing")
+    if binding.get("protocol_amendment_id") != "A1" or binding.get("source_count") != 20:
+        raise _fail("a1_candidate_identity_drift")
+    audit_path = (
+        str(audit_path_override.resolve())
+        if audit_path_override is not None
+        else binding.get("audit_absolute_path")
+    )
+    amendment_path = (
+        str(amendment_path_override.resolve())
+        if amendment_path_override is not None
+        else binding.get("amendment_absolute_path")
+    )
+    if not isinstance(audit_path, str) or not isinstance(amendment_path, str):
+        raise _fail("a1_candidate_sidecar_binding_missing")
+    try:
+        # Import lazily: the production runner imports the candidate ledger,
+        # while the reducer remains usable for all legacy 6/12 artifacts.
+        from paper_eval.membind_v4.production_runner import verify_a1_protocol_amendment
+
+        checked = verify_a1_protocol_amendment(
+            Path(audit_path), Path(amendment_path), history_id=history_id
+        )
+    except Exception as error:
+        if isinstance(error, V4ReducerError):
+            raise
+        raise _fail(f"a1_sidecar_binding_invalid:{error}") from None
+    for field in (
+        "audit_file_sha256",
+        "audit_payload_sha256",
+        "amendment_file_sha256",
+        "amendment_payload_sha256",
+        "arrival_trace_sha256",
+        "source_inventory_sha256",
+        "shared_execution_envelope_sha256",
+    ):
+        if field in binding and binding.get(field) != checked.get(field):
+            raise _fail("a1_candidate_sidecar_binding_drift")
+    identity_pairs = (
+        ("arrival_trace_sha256", "arrival_trace_sha256"),
+        ("source_manifest_sha256", "source_inventory_sha256"),
+        ("shared_execution_envelope_sha256", "shared_execution_envelope_sha256"),
+    )
+    for reference_field, binding_field in identity_pairs:
+        if reference.get(reference_field) != binding.get(binding_field):
+            raise _fail("a1_candidate_reference_identity_drift")
+
+
 def reduce_candidate(
     *,
     candidate_root: Path,
     reference_path: Path,
+    a1_audit_path: Path | None = None,
+    a1_amendment_path: Path | None = None,
 ) -> dict[str, Any]:
     root = Path(candidate_root).resolve()
     candidate_path = root / "candidate.json"
@@ -955,11 +1027,6 @@ def reduce_candidate(
         "candidate_summary",
         schema=_CANDIDATE_SUMMARY_SCHEMA,
     )
-    prefix_reference = _sealed(
-        _read_labeled(selected_reference_path, "prefix_reference"),
-        "prefix_reference",
-        schema=PREFIX_REFERENCE_SCHEMA,
-    )
     candidate_id = summary.get("candidate_id")
     source_count = summary.get("source_count")
     history_id = summary.get("history_id")
@@ -973,12 +1040,60 @@ def reduce_candidate(
         or candidate.get("source_count") != source_count
         or not isinstance(history_id, str)
         or not history_id
-        or prefix_reference.get("history_id") != history_id
     ):
         raise _fail("candidate_summary_identity_drift")
+    reference_schema = (
+        "membind.paper-eval-v4.a1-development-reference.v1"
+        if source_count == 20
+        else PREFIX_REFERENCE_SCHEMA
+    )
+    prefix_reference = _sealed(
+        _read_labeled(selected_reference_path, "prefix_reference"),
+        "prefix_reference",
+        schema=reference_schema,
+    )
+    if prefix_reference.get("history_id") != history_id:
+        raise _fail("candidate_summary_identity_drift")
+    a1_binding = summary.get("a1_binding")
+    if source_count == 20:
+        if summary.get("protocol_amendment") != "A1" or not isinstance(a1_binding, Mapping):
+            raise _fail("a1_candidate_identity_missing")
+        if a1_binding.get("protocol_amendment_id") != "A1" or a1_binding.get("source_count") != 20:
+            raise _fail("a1_candidate_identity_drift")
+        for label, path_key, file_key, payload_key in (
+            ("audit", "audit_absolute_path", "audit_file_sha256", "audit_payload_sha256"),
+            (
+                "amendment",
+                "amendment_absolute_path",
+                "amendment_file_sha256",
+                "amendment_payload_sha256",
+            ),
+        ):
+            selected = a1_binding.get(path_key)
+            if not isinstance(selected, str):
+                raise _fail("a1_candidate_sidecar_binding")
+            sidecar = Path(selected)
+            try:
+                body = json.loads(sidecar.read_text(encoding="utf-8"))
+            except (OSError, UnicodeError, json.JSONDecodeError) as error:
+                raise _fail("a1_candidate_sidecar_binding") from error
+            if not isinstance(body, Mapping):
+                raise _fail("a1_candidate_sidecar_binding")
+            digest = body.get("payload_sha256")
+            unsigned = dict(body)
+            unsigned.pop("payload_sha256", None)
+            if (
+                digest != a1_binding.get(payload_key)
+                or payload_sha256(unsigned) != digest
+                or sha256_file(sidecar) != a1_binding.get(file_key)
+            ):
+                raise _fail("a1_sidecar_binding_invalid")
     if candidate.get("status") not in {"RUNNING", "COMPLETED"}:
         raise _fail("candidate_manifest_status_invalid")
-    if prefix_reference.get("status") != "PASS":
+    valid_reference_statuses = {"PASS"}
+    if source_count == 20:
+        valid_reference_statuses.add("PASS_DEVELOPMENT_ONLY")
+    if prefix_reference.get("status") not in valid_reference_statuses:
         raise _fail("prefix_reference_status_invalid")
     result = summary.get("result") if isinstance(summary.get("result"), Mapping) else {}
     if (
@@ -987,6 +1102,15 @@ def reduce_candidate(
     ):
         raise _fail("candidate_summary_identity_drift")
     reference = _reference(prefix_reference, source_count)
+    if source_count == 20:
+        _verify_a1_reduction_binding(
+            summary=summary,
+            binding=a1_binding,  # type: ignore[arg-type]
+            reference=prefix_reference,
+            history_id=history_id,
+            audit_path_override=a1_audit_path,
+            amendment_path_override=a1_amendment_path,
+        )
     performance = result.get("performance") if isinstance(result, Mapping) else {}
     if not isinstance(performance, Mapping):
         performance = {}
@@ -1002,6 +1126,11 @@ def reduce_candidate(
             "summary": _input_binding(summary_path, summary),
             "prefix_reference": _input_binding(
                 selected_reference_path, prefix_reference
+            ),
+            **(
+                {"a1": deepcopy(dict(a1_binding))}
+                if source_count == 20 and isinstance(a1_binding, Mapping)
+                else {}
             ),
         },
         "mechanism": {

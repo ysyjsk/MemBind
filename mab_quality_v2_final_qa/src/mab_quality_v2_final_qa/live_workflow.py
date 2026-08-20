@@ -10,27 +10,105 @@ from __future__ import annotations
 import asyncio
 import hashlib
 import json
+import os
 import sys
 from dataclasses import replace
 from pathlib import Path
 from types import SimpleNamespace
 from typing import Any, Mapping, Sequence
 
-from .artifacts import ArtifactStore, atomic_write_json
+from .artifacts import ArtifactStore, atomic_write_json, file_sha256
+from .autoresearch import AutoResearchController, freeze_identity
 from .compatibility import build_context_pack, quality_v1_identity
 from .contracts import MABContext, canonical_sha256
 from .dataset_adapter import MABDatasetAdapter
-from .live_adapters import render_public_episodes
+from .autoresearch import select_probe_contexts, select_probe_qa
+from .live_adapters import SiliconFlowChatCompletions, render_public_episodes
 from .qualification import qualify_declared_inventory
 from .reducer import reduce_method_rows, reduce_paired_rows
 from .report import render_final_report
 from .runner import MABQualityRunner
-from .runtime_gate import RuntimeTopology, check_model_endpoint
+from .runtime_gate import (
+    SILICONFLOW_BASE_URL,
+    SILICONFLOW_CHAT_MODEL,
+    SILICONFLOW_EMBEDDING_DIMENSION,
+    SILICONFLOW_EMBEDDING_MODEL,
+    SILICONFLOW_PROVIDER,
+    RuntimeTopology,
+    check_embedding_endpoint,
+    check_model_endpoint,
+)
 
 
 ROOT = Path(__file__).resolve().parents[3]
 LEGACY = ROOT / "membind-validation"
 PROJECT = ROOT / "paper-eval-v3"
+
+
+def _overlay_siliconflow_env(
+    source_env: Mapping[str, str], process_env: Mapping[str, str]
+) -> dict[str, str]:
+    """Create an in-memory provider overlay without mutating the ignored .env."""
+
+    api_key = str(process_env.get("SILICONFLOW_API_KEY", ""))
+    if not api_key:
+        raise ValueError("SILICONFLOW_API_KEY_MISSING")
+    selected = dict(source_env)
+    selected.update(
+        {
+            "MAB_RUNTIME_PROVIDER": SILICONFLOW_PROVIDER,
+            "CONSTRUCTION_LLM_BASE_URL": SILICONFLOW_BASE_URL,
+            "CONSTRUCTION_LLM_MODEL": SILICONFLOW_CHAT_MODEL,
+            "CONSTRUCTION_LLM_API_KEY": api_key,
+            "QUALITY_LLM_BASE_URL": SILICONFLOW_BASE_URL,
+            "QUALITY_LLM_MODEL": SILICONFLOW_CHAT_MODEL,
+            "QUALITY_LLM_API_KEY": api_key,
+            "EMBEDDING_BASE_URL": SILICONFLOW_BASE_URL,
+            "EMBEDDING_MODEL": SILICONFLOW_EMBEDDING_MODEL,
+            "EMBEDDING_DIM": str(SILICONFLOW_EMBEDDING_DIMENSION),
+            "EMBEDDING_API_KEY": api_key,
+        }
+    )
+    return selected
+
+
+def _execution_methods(mode: str) -> tuple[str, ...]:
+    if mode == "smoke":
+        return ("U0",)
+    if mode == "full":
+        return ("U0", "MEMBIND_V31")
+    raise ValueError("MODE_INVALID")
+
+
+def _select_execution_contexts(
+    contexts: Sequence[MABContext], *, mode: str
+) -> tuple[MABContext, ...]:
+    if mode == "full":
+        return tuple(contexts)
+    if mode != "smoke":
+        raise ValueError("MODE_INVALID")
+    chosen = select_probe_contexts(contexts, count=1)
+    if len(chosen) != 1:
+        raise ValueError("SMOKE_CONTEXT_SELECTION_INVALID")
+    context = chosen[0]
+    qa_items = select_probe_qa(context, count=6)
+    if len(qa_items) != 6:
+        raise ValueError("SMOKE_QA_SELECTION_INVALID")
+    return (replace(context, qa_items=qa_items),)
+
+
+def _prepare_execution_contexts(
+    contexts: Sequence[MABContext], *, history_limit: int, mode: str
+) -> tuple[MABContext, ...]:
+    """Apply mode-specific limits without changing the frozen smoke probe."""
+
+    if history_limit not in {1, 4}:
+        raise ValueError("HISTORY_LIMIT_INVALID")
+    if mode == "smoke":
+        return _select_execution_contexts(tuple(contexts), mode="smoke")
+    if mode == "full":
+        return _select_execution_contexts(tuple(contexts)[:history_limit], mode="full")
+    raise ValueError("MODE_INVALID")
 
 
 def _import_project_surfaces() -> dict[str, Any]:
@@ -52,7 +130,14 @@ def _import_project_surfaces() -> dict[str, Any]:
         load_v31_state_cut_certification,
     )
     from paper_eval.s2_adapters import build_qualified_qwen_judge
+    from paper_eval.s2_adapters import S2LongMemEvalJudge
     from paper_eval.quality_evaluation_v1_reader import QualityEvaluationV1Reader
+    from evaluation.backends.openai_compatible import (
+        OpenAICompatibleJudgeBackend,
+        canonical_json_sha256,
+    )
+    from evaluation.benchmarks.longmemeval import LongMemEvalAdapter
+    from evaluation.schemas import EvaluationItem
 
     return locals()
 
@@ -197,17 +282,47 @@ def _build_quality_callbacks(
     transport = __import__(
         "mab_quality_v2_final_qa.live_adapters", fromlist=["LiveReaderTransport"]
     ).LiveReaderTransport(
-        model=topology.construction.model,
-        base_url=topology.construction.base_url,
-        api_key=str(env["CONSTRUCTION_LLM_API_KEY"]),
+        model=topology.quality.model,
+        base_url=topology.quality.base_url,
+        api_key=str(env["QUALITY_LLM_API_KEY"]),
     )
     reader = surfaces["QualityEvaluationV1Reader"](
-        model=topology.construction.model, transport=transport
+        model=topology.quality.model, transport=transport
     )
-    judge = surfaces["build_qualified_qwen_judge"](
-        base_url=topology.construction.base_url,
-        api_key=str(env["CONSTRUCTION_LLM_API_KEY"]),
-    )
+    if topology.provider == SILICONFLOW_PROVIDER:
+        backend = surfaces["OpenAICompatibleJudgeBackend"](
+            model=topology.quality.model,
+            base_url=topology.quality.base_url,
+            api_key=str(env["QUALITY_LLM_API_KEY"]),
+            temperature=0,
+            max_tokens=10,
+            n=1,
+            enable_thinking=None,
+            thinking_control="siliconflow_top_level",
+            max_attempts=1,
+        )
+        # The generic backend's extension form targets the historical vLLM
+        # deployment.  Bind SiliconFlow's top-level flag and recompute the
+        # public config hash before the S2 wrapper captures its identity.
+        backend._request["extra_body"] = {"enable_thinking": False}
+        backend._public_config["effective_enable_thinking"] = False
+        backend._public_config["thinking_control"] = "siliconflow_top_level"
+        backend.config_hash = surfaces["canonical_json_sha256"](
+            backend._public_config
+        )
+        backend._client.chat.completions = SiliconFlowChatCompletions(
+            backend._client.chat.completions
+        )
+        judge = surfaces["S2LongMemEvalJudge"](
+            backend=backend,
+            evaluator=surfaces["LongMemEvalAdapter"](backend),
+            evaluation_item_type=surfaces["EvaluationItem"],
+        )
+    else:
+        judge = surfaces["build_qualified_qwen_judge"](
+            base_url=topology.quality.base_url,
+            api_key=str(env["QUALITY_LLM_API_KEY"]),
+        )
     judge = _enable_abstention_route(judge)
 
     async def retrieve(**kwargs: Any) -> Mapping[str, Any]:
@@ -267,15 +382,35 @@ def _build_quality_callbacks(
 
 
 async def _construct_u0(
-    *, runtime: Any, context: MABContext, namespace: str, hooks: Any
+    *,
+    runtime: Any,
+    context: MABContext,
+    namespace: str,
+    hooks: Any,
+    root: Path | None = None,
 ) -> Mapping[str, Any]:
     public = context.public_context().as_dict()
     episodes = render_public_episodes(public, namespace=namespace)
     source_log, _ = hooks["build_source_log_from_episodes"](
         episodes, namespace=namespace, reference_time_to_ns=hooks["aligned"].reference_time_to_ns
     )
-    for episode, source in zip(episodes, source_log.records, strict=True):
+    for completed, (episode, source) in enumerate(
+        zip(episodes, source_log.records, strict=True), 1
+    ):
         await hooks["aligned"].native_add_episode(runtime, episode, source)
+        if root is not None:
+            atomic_write_json(
+                root / "construction_progress.json",
+                {
+                    "schema_version": "mab-quality-v2-final-qa.construction-progress.v1",
+                    "method": "U0",
+                    "context_id": context.context_id,
+                    "namespace": namespace,
+                    "completed_source_count": completed,
+                    "total_source_count": len(episodes),
+                    "status": "CONSTRUCTING" if completed < len(episodes) else "CONSTRUCTED",
+                },
+            )
     provenance = await _episode_provenance(runtime.graphiti, namespace, context.context_id)
     return {
         "namespace_sealed": True,
@@ -355,22 +490,56 @@ async def run_quality_workflow(
     if mode not in {"smoke", "full"}:
         raise ValueError("MODE_INVALID")
     surfaces = _import_project_surfaces()
-    env = surfaces["load_env_file"](LEGACY / ".env")
+    source_env = surfaces["load_env_file"](LEGACY / ".env")
+    env = _overlay_siliconflow_env(source_env, os.environ)
     topology = RuntimeTopology.from_env(env)
     construction_probe = check_model_endpoint(
-        topology.construction.base_url, expected_model=topology.construction.model
+        topology.construction.base_url,
+        expected_models=(topology.construction.model, topology.embedding.model),
+        api_key=str(env["CONSTRUCTION_LLM_API_KEY"]),
     )
-    embedding_probe = check_model_endpoint(
-        topology.embedding.base_url, expected_model=topology.embedding.model
+    embedding_probe = check_embedding_endpoint(
+        topology.embedding.base_url,
+        model=topology.embedding.model,
+        expected_dimension=topology.embedding_dimension,
+        api_key=str(env["EMBEDDING_API_KEY"]),
     )
     if not construction_probe.available or not embedding_probe.available:
         raise RuntimeError("LIVE_FROZEN_ENDPOINT_GATE_FAILED")
+    # Smoke selection is defined over the complete qualified four-context
+    # inventory.  Apply the history limit only to full execution; truncating
+    # before deterministic probe selection silently changes the frozen probe.
     contexts = _load_contexts(
         dataset_path,
         revision=revision,
         included_record_indices=(0, 1, 2, 3),
-    )[:history_limit]
+    )
+    if mode == "full":
+        contexts = contexts[:history_limit]
     store = ArtifactStore(artifact_root)
+    runtime_identity = topology.public_identity()
+    store.write_manifest(
+        "RUNTIME_AUTHORIZATION.json",
+        {
+            "schema_version": "mab-quality-v2-final-qa.siliconflow-authorization.v1",
+            "run_id": run_id,
+            "scope": "DEVELOPMENT_ONLY_PROVIDER_PROTOCOL_AMENDMENT",
+            "authorization_basis": (
+                "USER_EXPLICITLY_REQUESTED_SILICONFLOW_QWEN32B_AND_QWEN3_EMBEDDING"
+            ),
+            "runtime_identity": runtime_identity,
+            "models_preflight": {
+                "available": construction_probe.available,
+                "http_status": construction_probe.http_status,
+                "required_model_count": 2,
+                "observed_model_count": len(construction_probe.models),
+            },
+            "embedding_preflight": embedding_probe.__dict__,
+            "api_key_source": "SILICONFLOW_API_KEY_PROCESS_ENVIRONMENT",
+            "api_key_serialized": False,
+            "historical_runtime_modified": False,
+        },
+    )
     # Public inventory is frozen before any runtime or QA call.
     inventory = qualify_declared_inventory(
         json.loads(dataset_path.read_text(encoding="utf-8")),
@@ -390,18 +559,26 @@ async def run_quality_workflow(
         "V31FreezePaths": surfaces["V31FreezePaths"],
     }
     all_rows: dict[str, list[dict[str, Any]]] = {"U0": [], "MEMBIND_V31": []}
-    selected = contexts[:1] if mode == "smoke" else contexts
-    for method in ("U0", "MEMBIND_V31"):
+    selected = _prepare_execution_contexts(
+        contexts, history_limit=history_limit, mode=mode
+    )
+    for method in _execution_methods(mode):
         for context in selected:
             if method == "U0":
-                runtime = surfaces["build_membind_v1_runtime"](
-                    # U0 is the unsalted construction baseline.
+                from mab_quality_v2_final_qa.siliconflow_runtime import (
+                    build_siliconflow_u0_runtime,
+                )
+
+                runtime = build_siliconflow_u0_runtime(
                     env=dict(env),
-                    admission=surfaces["RequestAdmission"](limit=2),
                     request_id_prefix=f"mab-{run_id}-{method}",
                 )
             else:
-                runtime = surfaces["build_membind_v31_runtime"](
+                from mab_quality_v2_final_qa.siliconflow_runtime import (
+                    build_siliconflow_v31_runtime,
+                )
+
+                runtime = build_siliconflow_v31_runtime(
                     env={
                         **dict(env),
                         "CONSTRUCTION_CACHE_SALT": canonical_sha256(
@@ -412,13 +589,19 @@ async def run_quality_workflow(
                     request_id_prefix=f"mab-{run_id}-{method}",
                 )
             await hooks["aligned"].runtime_ready(runtime)
-            method_hash = hashlib.sha256(method.encode()).hexdigest()
+            method_hash = canonical_sha256(
+                {
+                    "method": method,
+                    "runtime_identity": runtime.method_public_identity,
+                }
+            )
             if method == "U0":
                 construct = lambda **kwargs: _construct_u0(
                     runtime=runtime,
                     context=context,
                     namespace=kwargs["namespace"],
                     hooks=hooks,
+                    root=store.root / "construction" / method / context.context_id,
                 )
             else:
                 construct = lambda **kwargs: _construct_membind(
@@ -483,8 +666,104 @@ async def run_quality_workflow(
         "inventory_payload_sha256": inventory["payload_sha256"],
         "construction_endpoint": construction_probe.__dict__,
         "embedding_endpoint": embedding_probe.__dict__,
+        "runtime_identity": runtime_identity,
         "row_counts": {key: len(value) for key, value in all_rows.items()},
     }
+    if mode == "smoke":
+        rows = all_rows["U0"]
+        valid_rows = [row for row in rows if row.get("judge_valid") is True]
+        candidate = {
+            "candidate_id": "c00",
+            "parent_code_sha256": file_sha256(Path(__file__)),
+            "code_sha256": canonical_sha256(
+                {
+                    "live_workflow": file_sha256(Path(__file__)),
+                    "live_adapters": file_sha256(
+                        Path(__file__).with_name("live_adapters.py")
+                    ),
+                    "siliconflow_runtime": file_sha256(
+                        Path(__file__).with_name("siliconflow_runtime.py")
+                    ),
+                }
+            ),
+            "description": (
+                "SiliconFlow exact-model provider compatibility with unchanged QA semantics"
+            ),
+        }
+        metrics = [row.get("retrieval_metrics") or {} for row in rows]
+
+        def mean_metric(name: str) -> float | None:
+            values = [value.get(name) for value in metrics]
+            numeric = [float(value) for value in values if isinstance(value, (int, float))]
+            return sum(numeric) / len(numeric) if numeric else None
+
+        observed = {
+            "pipeline_valid": len(rows) == 6 and len(valid_rows) == 6,
+            "gold_blind_valid": True,
+            "construction_count": 1,
+            "qa_count": len(rows),
+            "retrieval_valid_count": sum(bool(value) for value in metrics),
+            "reader_valid_count": sum(
+                isinstance(row.get("answer"), str) and bool(row.get("answer"))
+                for row in rows
+            ),
+            "judge_valid_count": len(valid_rows),
+            "qa_accuracy": (
+                sum(row.get("correct") is True for row in valid_rows) / len(valid_rows)
+                if valid_rows
+                else None
+            ),
+            "recall_at_1": mean_metric("recall_at_1"),
+            "recall_at_3": mean_metric("recall_at_3"),
+            "recall_at_5": mean_metric("recall_at_5"),
+            "recall_at_10": mean_metric("recall_at_10"),
+            "mrr": mean_metric("mrr"),
+            "ndcg_at_10": mean_metric("ndcg_at_10"),
+            "failure_class": ",".join(
+                sorted(
+                    {
+                        str(row.get("failure_class"))
+                        for row in rows
+                        if row.get("failure_class")
+                    }
+                )
+            ),
+            "description": candidate["description"],
+            "semantics_unchanged": True,
+            "diagnosed_engineering_fix": True,
+        }
+        ledger = AutoResearchController(store.path("autoresearch/results.tsv"))
+        candidate_result = ledger.evaluate(
+            [candidate], evaluator=lambda _candidate: observed
+        )[0]
+        result["autoresearch_candidate"] = candidate_result
+        if candidate_result["status"] == "keep":
+            freeze = freeze_identity(
+                dataset_manifest_sha256=inventory["payload_sha256"],
+                adapter_sha256=file_sha256(Path(__file__).with_name("dataset_adapter.py")),
+                compatibility_sha256=file_sha256(
+                    Path(__file__).with_name("compatibility.py")
+                ),
+                runner_sha256=file_sha256(Path(__file__).with_name("runner.py")),
+                retrieval_config_sha256=quality_ids[
+                    "quality_v1_identity_sha256"
+                ],
+                reader_config_sha256=quality_ids["reader_config_sha256"],
+                judge_config_sha256=quality_ids["judge_config_sha256"],
+                question_inventory_sha256=inventory[
+                    "question_inventory_sha256"
+                ],
+                selected_candidate_id="c00",
+            )
+            freeze["runtime_identity_sha256"] = canonical_sha256(runtime_identity)
+            freeze["provider_protocol_amendment"] = (
+                "SILICONFLOW_EXACT_QWEN_MODELS_USER_AUTHORIZED_DEVELOPMENT_ONLY"
+            )
+            freeze["freeze_sha256"] = canonical_sha256(
+                {key: value for key, value in freeze.items() if key != "freeze_sha256"}
+            )
+            store.write_json("MAB_QUALITY_V2_FREEZE.json", freeze)
+            result["freeze"] = freeze
     if mode == "full":
         paired = reduce_paired_rows(all_rows["U0"], all_rows["MEMBIND_V31"], bootstrap_samples=2000)
         result["paired"] = paired

@@ -1,0 +1,196 @@
+{
+  "claim_scope": "BASELINE_REUSE_4_HISTORY_AUTHORED_EXTENSION",
+  "methods": {
+    "P(C=2)": {
+      "accuracy": 0.75,
+      "accuracy_wilson_95": {
+        "high": 0.8981793250878696,
+        "low": 0.5050168346449122
+      },
+      "construction_calls": 0,
+      "context_gold_session_coverage_mean": 1.0,
+      "correct_count": 12,
+      "failure_categories": {
+        "READER_INVALID": 1,
+        "READER_OR_JUDGE_INCORRECT": 3,
+        "SUCCESS": 12
+      },
+      "invalid_count": 1,
+      "judge_invalid_count": 0,
+      "judge_model": "Qwen/Qwen3-32B",
+      "question_count": 16,
+      "reader_invalid_count": 1,
+      "reader_model": "Qwen/Qwen3-32B",
+      "reader_valid_count": 15,
+      "retrieval": {
+        "mrr": 0.8506944444444444,
+        "ndcg_at_10": 0.8871137035236472,
+        "recall_at_1": 0.75,
+        "recall_at_10": 1.0,
+        "recall_at_3": 0.9375,
+        "recall_at_5": 0.9375
+      },
+      "valid_count": 15,
+      "valid_only_accuracy": 0.8
+    },
+    "U0": {
+      "accuracy": 0.8125,
+      "accuracy_wilson_95": {
+        "high": 0.9340840092857187,
+        "low": 0.5699111903802586
+      },
+      "construction_calls": 0,
+      "context_gold_session_coverage_mean": 1.0,
+      "correct_count": 13,
+      "failure_categories": {
+        "READER_OR_JUDGE_INCORRECT": 3,
+        "SUCCESS": 13
+      },
+      "invalid_count": 0,
+      "judge_invalid_count": 0,
+      "judge_model": "Qwen/Qwen3-32B",
+      "question_count": 16,
+      "reader_invalid_count": 0,
+      "reader_model": "Qwen/Qwen3-32B",
+      "reader_valid_count": 16,
+      "retrieval": {
+        "mrr": 0.8506944444444444,
+        "ndcg_at_10": 0.8871137035236472,
+        "recall_at_1": 0.75,
+        "recall_at_10": 1.0,
+        "recall_at_3": 0.9375,
+        "recall_at_5": 0.9375
+      },
+      "valid_count": 16,
+      "valid_only_accuracy": 0.8125
+    }
+  },
+  "paired": {
+    "accuracy_delta_pc2_minus_u0": -0.0625,
+    "agreement_count": 13,
+    "agreement_rate": 0.8666666666666667,
+    "agreement_rate_all_pairs": 0.8125,
+    "discordant_count": 2,
+    "invalid_pair_count": 1,
+    "items": [
+      {
+        "P(C=2)": true,
+        "U0": true,
+        "agreement": true,
+        "jointly_valid": true,
+        "question_id": "07741c45-ext-001"
+      },
+      {
+        "P(C=2)": true,
+        "U0": false,
+        "agreement": false,
+        "jointly_valid": true,
+        "question_id": "07741c45-ext-002"
+      },
+      {
+        "P(C=2)": true,
+        "U0": true,
+        "agreement": true,
+        "jointly_valid": true,
+        "question_id": "07741c45-ext-003"
+      },
+      {
+        "P(C=2)": true,
+        "U0": true,
+        "agreement": true,
+        "jointly_valid": true,
+        "question_id": "07741c45-ext-004"
+      },
+      {
+        "P(C=2)": true,
+        "U0": true,
+        "agreement": true,
+        "jointly_valid": true,
+        "question_id": "6071bd76-ext-001"
+      },
+      {
+        "P(C=2)": true,
+        "U0": true,
+        "agreement": true,
+        "jointly_valid": true,
+        "question_id": "6071bd76-ext-002"
+      },
+      {
+        "P(C=2)": true,
+        "U0": true,
+        "agreement": true,
+        "jointly_valid": true,
+        "question_id": "6071bd76-ext-003"
+      },
+      {
+        "P(C=2)": false,
+        "U0": true,
+        "agreement": false,
+        "jointly_valid": true,
+        "question_id": "6071bd76-ext-004"
+      },
+      {
+        "P(C=2)": true,
+        "U0": true,
+        "agreement": true,
+        "jointly_valid": true,
+        "question_id": "a2f3aa27-ext-001"
+      },
+      {
+        "P(C=2)": false,
+        "U0": false,
+        "agreement": true,
+        "jointly_valid": true,
+        "question_id": "a2f3aa27-ext-002"
+      },
+      {
+        "P(C=2)": null,
+        "U0": true,
+        "agreement": null,
+        "jointly_valid": false,
+        "question_id": "a2f3aa27-ext-003"
+      },
+      {
+        "P(C=2)": true,
+        "U0": true,
+        "agreement": true,
+        "jointly_valid": true,
+        "question_id": "a2f3aa27-ext-004"
+      },
+      {
+        "P(C=2)": true,
+        "U0": true,
+        "agreement": true,
+        "jointly_valid": true,
+        "question_id": "b6019101-ext-001"
+      },
+      {
+        "P(C=2)": true,
+        "U0": true,
+        "agreement": true,
+        "jointly_valid": true,
+        "question_id": "b6019101-ext-002"
+      },
+      {
+        "P(C=2)": true,
+        "U0": true,
+        "agreement": true,
+        "jointly_valid": true,
+        "question_id": "b6019101-ext-003"
+      },
+      {
+        "P(C=2)": false,
+        "U0": false,
+        "agreement": true,
+        "jointly_valid": true,
+        "question_id": "b6019101-ext-004"
+      }
+    ],
+    "jointly_valid_pair_count": 15,
+    "pair_count": 16
+  },
+  "payload_sha256": "ad61a0077e78a1756224ae879da19dd54479e68f5c0c396c17c898516c7c9bbf",
+  "question_count": 16,
+  "schema_version": "membind.baseline-reuse-expanded-analysis.v1",
+  "status": "PASS"
+}

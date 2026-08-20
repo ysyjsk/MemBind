@@ -64,7 +64,6 @@ class RuntimeTopology:
             "CONSTRUCTION_LLM_MODEL",
             "EMBEDDING_BASE_URL",
             "EMBEDDING_MODEL",
-            "EMBEDDING_DIM",
             "NEO4J_URI",
         }
         if not isinstance(env, Mapping) or any(not env.get(key) for key in required):
@@ -74,7 +73,7 @@ class RuntimeTopology:
         construction_model = str(env["CONSTRUCTION_LLM_MODEL"])
         embedding_model = str(env["EMBEDDING_MODEL"])
         try:
-            embedding_dimension = int(env["EMBEDDING_DIM"])
+            embedding_dimension = int(env.get("EMBEDDING_DIM", "1024"))
         except (TypeError, ValueError):
             raise ValueError("EMBEDDING_DIMENSION_INVALID") from None
         provider = str(env.get("MAB_RUNTIME_PROVIDER", "FROZEN_V31"))

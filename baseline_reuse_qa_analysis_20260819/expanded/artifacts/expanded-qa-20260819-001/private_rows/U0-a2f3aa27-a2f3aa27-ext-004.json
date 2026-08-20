@@ -1,0 +1,487 @@
+{
+  "context_gold_session_coverage_posthoc": 1.0,
+  "edge_provenance_metrics": {
+    "edge_gold_source_precision_at_1": 0.0,
+    "edge_gold_source_precision_at_10": 0.0,
+    "edge_gold_source_precision_at_20": 0.0,
+    "edge_gold_source_precision_at_3": 0.0,
+    "edge_gold_source_precision_at_5": 0.0,
+    "gold_fact_labels_available": false,
+    "gold_session_edge_coverage_at_1": 0.0,
+    "gold_session_edge_coverage_at_10": 0.0,
+    "gold_session_edge_coverage_at_20": 0.0,
+    "gold_session_edge_coverage_at_3": 0.0,
+    "gold_session_edge_coverage_at_5": 0.0,
+    "metric_scope": "PROVENANCE_PROXY_NOT_GOLD_FACT_RECALL"
+  },
+  "failure_category": "SUCCESS",
+  "gold_evidence_quotes": [
+    "I'll reach out to Ashley Gaida and propose a guest blog post collaboration"
+  ],
+  "gold_session_ids": [
+    "answer_5126c02d_2"
+  ],
+  "history_id": "a2f3aa27",
+  "judge": {
+    "config_sha256": "74dc12563a8627582773fcc030a2ae66ff1eaff06334204f40917f21a2ba8907",
+    "error_class": null,
+    "label": true,
+    "model": "Qwen/Qwen3-32B",
+    "output_byte_count": 4,
+    "output_character_count": 4,
+    "output_sha256": "5f9a2b795615ba6a3d5455fd5624d773fbca5bcd16249c421fd37411dc9837da",
+    "parse_status": "YES",
+    "prompt_sha256": "028939661a1bdeff176c04d5f7ede082b6be44cd38947b1d7e1423fed8d29090",
+    "raw_output": "Yes.",
+    "retry_count": 0,
+    "status": "SUCCESS"
+  },
+  "method": "U0",
+  "namespace": "nc-e1e2-98a47763f4982f11",
+  "payload_sha256": "7a2c11602acf387dc9db9a6a956a83f0de461496dba4e9637df1de25d1c275bb",
+  "predicted_answer": "You planned to propose a guest blog post collaboration to Ashley Gaida.",
+  "question": "What collaboration format did I plan to propose to Ashley Gaida?",
+  "question_date": "2023/06/23 (Fri) 07:31",
+  "question_id": "a2f3aa27-ext-004",
+  "question_type": "knowledge-update",
+  "reader": {
+    "answer": "You planned to propose a guest blog post collaboration to Ashley Gaida.",
+    "completion_tokens": 14,
+    "config_sha256": "49b26ff4c523f609d55ca5a0808bb22518f9665cbc70edd98ea46398b62f0b74",
+    "finish_reason": "stop",
+    "model": "Qwen/Qwen3-32B",
+    "prompt_for_test": "Answer the question using only the provided memory evidence.\nConsider evidence in chronological order.\nWhen information changes, use the latest effective information before the\nquestion date and distinguish current facts from future plans.\nReturn only a concise final answer.\n\nMemory evidence (JSON):\n[{\"evidence_type\":\"graph_fact\",\"expired_at\":null,\"invalid_at\":null,\"raw_evidence\":\"NFC chip may have certification according to EMVCo.\",\"retrieval_rank\":11,\"source_id\":\"3da7cba3-37da-4e9c-8b46-76f20516641e\",\"source_session_ids\":[\"sharegpt_wyaZNL4_9\"],\"speaker\":\"graph_fact\",\"timestamp\":\"2023-04-25T10:21:00+00:00\",\"valid_at\":null},{\"evidence_type\":\"graph_fact\",\"expired_at\":null,\"invalid_at\":null,\"raw_evidence\":\"NFC chip may have certification according to Common Criteria.\",\"retrieval_rank\":13,\"source_id\":\"b5a16ce2-9a9c-416f-be63-0ce9ea76c545\",\"source_session_ids\":[\"sharegpt_wyaZNL4_9\"],\"speaker\":\"graph_fact\",\"timestamp\":\"2023-04-25T10:21:00+00:00\",\"valid_at\":null},{\"evidence_type\":\"graph_fact\",\"expired_at\":null,\"invalid_at\":null,\"raw_evidence\":\"NFC chip may have certification according to FIPS 140-3.\",\"retrieval_rank\":20,\"source_id\":\"ac98dbae-5a82-4cc6-8656-8207df8a51c2\",\"source_session_ids\":[\"sharegpt_wyaZNL4_9\"],\"speaker\":\"graph_fact\",\"timestamp\":\"2023-04-25T10:21:00+00:00\",\"valid_at\":null},{\"evidence_type\":\"source_local_round\",\"expired_at\":null,\"graphiti_session_rank\":2,\"invalid_at\":null,\"raw_evidence\":[{\"content\":\"I think collaboration is key to reducing plastic waste. Do you know of any successful collaboration efforts in this area?\",\"role\":\"user\"},{\"content\":\"Yes, there have been successful collaboration efforts in reducing plastic waste. Here are a few examples:\\n\\n1. The Ocean Clean Up:\\nThe Ocean Clean Up, a Dutch nonprofit organization, has partnered with several companies and organizations to create an innovative solution for cleaning up plastic waste in the ocean. The group has run several successful pilot projects, and has established partnerships with coastal countries to facilitate cleaning up plastic waste entering oceans.\\n\\n2. The Global Plastic Action Partnership (GPAP):\\nThe GPAP, a collaboration between the World Economic Forum and several stakeholders, works to address plastic pollution at a global level. The partnership brings together governments, businesses, and NGOs to create transformative strategies that can help reduce plastic waste. \\n\\n3. The Plastic Leak Project:\\nThe Plastic Leak Project is a coalition between organizations and companies working towards identifying plastic waste and leakage points to prevent plastic waste leakage into the environment. It maps out hotspots of plastic leakage and works with companies to reduce plastic use through circular economy solutions.\\n\\n4. Multi-Stakeholder Platforms:\\nThere are several multi-stakeholder platforms that work to reduce plastic waste. These include the Plastic Alliance and the New Plastics Economy Global Commitment, which bring together governments, businesses, and NGOs to find sustainable solutions to plastic waste.\\n\\n5. City-level Initiatives:\\nSeveral cities have launched initiatives to reduce plastic waste. For example, San Francisco, Seattle, and Delhi, have banned the use of single-use plastic bags, while Amsterdam has launched an initiative to create a circular economy for plastics by 2050. \\n\\nCollaboration is crucial to effectively addressing plastic waste pollution, requiring the involvement of everyone, from businesses and governments to individuals and local communities.\",\"role\":\"assistant\"}],\"retrieval_rank\":2,\"source_id\":\"ultrachat_59277_5\",\"source_session_ids\":[\"ultrachat_59277\"],\"speaker\":\"user+assistant\",\"timestamp\":\"2023/05/04 (Thu) 10:47\",\"valid_at\":null},{\"evidence_type\":\"source_local_round\",\"expired_at\":null,\"graphiti_session_rank\":2,\"invalid_at\":null,\"raw_evidence\":[{\"content\":\"It's great to hear about these successful collaboration efforts! How can we encourage more cities and businesses to take action against plastic waste?\",\"role\":\"user\"},{\"content\":\"Encouraging more cities and businesses to take action against plastic waste can be achieved through a variety of measures, including:\\n\\n1. Education and Awareness: Education and awareness-raising campaigns are essential for engaging and encouraging individuals, businesses, and cities to take action. Governments, NGOs, and local communities should work together to inform people on the harm plastic has on the environment and what choices they can make to reduce plastic consumption.\\n\\n2. Regulatory incentives: Governments can introduce regulations and incentives like tax rebates, subsidies, and grants to incentivize companies that take action to reduce their plastic waste.\\n\\n3. Innovations and new Materials: Governments and private companies should invest in innovative solutions and sustainable alternatives to plastic to provide companies with alternatives to plastic use.\\n\\n4. Partnerships and Collaborations: Partnerships between government, NGOs, and businesses facilitate systematic planning and problem solving. This encourages businesses to take measures that contribute to a cleaner and greener environment.\\n\\n5. Sharing success stories: Sharing success stories of different cities and businesses that have successfully implemented initiatives in reducing their plastic waste can inspire and encourage others to follow suit.\\n\\n6. Global Target Setting: Collaboration between governments lead to setting global targets to reduce plastic waste. Governments can collectively pledge to a timeline and strategy to reduce plastic pollution throughout the world.\",\"role\":\"assistant\"}],\"retrieval_rank\":4,\"source_id\":\"ultrachat_59277_7\",\"source_session_ids\":[\"ultrachat_59277\"],\"speaker\":\"user+assistant\",\"timestamp\":\"2023/05/04 (Thu) 10:47\",\"valid_at\":null},{\"evidence_type\":\"source_local_round\",\"expired_at\":null,\"graphiti_session_rank\":2,\"invalid_at\":null,\"raw_evidence\":[{\"content\":\"What are the most promising strategies for reducing plastic waste in the world's oceans, and how can individuals and governments collaborate to implement them?\",\"role\":\"user\"},{\"content\":\"1. Reduction of Single-Use Plastics:\\nGovernments can implement policies that aim to reduce single-use plastic production and consumption by encouraging the use of reusable bags, cups, and containers in public spaces, grocery stores, and restaurants.\\n\\n2. Recycling and Waste Management:\\nGovernments can collaborate with local organizations and industries to improve waste management systems that properly dispose of plastic waste.\\n\\n3. Innovation and Research:\\nInvesting and collaborating with research organizations to innovate and develop new materials that can replace plastic or make plastic biodegradable.\\n\\n4. Consumer Education:\\nGovernments and organizations can launch a public education campaign aimed to raise consumer awareness of the environmental impacts of plastic pollution\\n\\n5. International agreements:\\nInternational agreements between governments and industries could set targets for reducing plastic waste, and improve monitoring and reporting of plastic waste in global waterways.\\n\\n6. Infrastructure Development:\\nGovernments can invest in improving infrastructure to develop better systems for collecting, sorting, and recycling plastic waste. \\n\\nIndividuals can take personal steps to reduce their plastic waste by being mindful of their consumption habits, choosing products made from alternative materials, composting, and properly disposing of plastic waste. Collaborating between individuals and organizations will reduce plastic waste in oceans.\",\"role\":\"assistant\"}],\"retrieval_rank\":7,\"source_id\":\"ultrachat_59277_1\",\"source_session_ids\":[\"ultrachat_59277\"],\"speaker\":\"user+assistant\",\"timestamp\":\"2023/05/04 (Thu) 10:47\",\"valid_at\":null},{\"evidence_type\":\"source_local_round\",\"expired_at\":null,\"graphiti_session_rank\":17,\"invalid_at\":null,\"raw_evidence\":[{\"content\":\"i own a fractional leadership consulting company by the name of Sheba Consulting. I have a ton of experience as an executive but recently the economy has declined and with it my business. I did everything possible to reach new clients and it is too slow. what can you suggest i do to get some good new clients quickly?\",\"role\":\"user\"},{\"content\":\"I'm sorry to hear that your business has been impacted by the economic downturn. Here are some suggestions to help you quickly acquire new clients for your fractional leadership consulting company:\\n\\n1. Reevaluate your target market: Analyze your current client base and determine if there's a different segment of the market that may be more resilient or responsive to your services. This might include pivoting to industries that have been less impacted by the economic downturn.\\n2. Offer a limited-time promotion: Create an enticing offer for new clients, such as a discounted rate for the first three months or a free consultation session. This can help generate immediate interest in your services.\\n3. Network extensively: Attend industry events, both online and in-person, to connect with potential clients. Leverage your professional network, including your LinkedIn connections, to reach out to people who might be interested in your services.\\n4. Collaborate with complementary businesses: Partner with other companies that offer non-competitive, complementary services. For example, you could team up with a marketing agency or a human resources consulting firm to offer bundled services to clients.\\n5. Content marketing: Create valuable content, such as blog posts, whitepapers, webinars, or podcasts, that showcase your expertise in leadership consulting. Share this content on your website and social media channels, and consider guest posting on other reputable industry sites.\\n6. Utilize social media advertising: Use targeted social media advertising, such as LinkedIn or Facebook ads, to reach potential clients in specific industries or job titles.\\n7. Offer free resources: Develop and share free resources, like templates, checklists, or guides, that can provide value to potential clients. This can help establish your credibility and encourage potential clients to reach out to you for further assistance.\\n8. Testimonials and case studies: Showcase success stories from your previous clients on your website and in your marketing materials. Potential clients are more likely to work with you if they see concrete examples of your impact.\\n9. Personalize your outreach: When reaching out to potential clients, personalize your messages to address their specific pain points and demonstrate how your services can help them.\\n10. Follow up on leads: Ensure that you follow up on all leads and referrals in a timely and professional manner. Persistence is key when trying to secure new clients, especially in a challenging economic environment.\\n\\nRemember that acquiring new clients takes time and effort, so it's essential to stay proactive and persistent in your marketing and outreach activities.\",\"role\":\"assistant\"}],\"retrieval_rank\":5,\"source_id\":\"sharegpt_gYShON7_0_1\",\"source_session_ids\":[\"sharegpt_gYShON7_0\"],\"speaker\":\"user+assistant\",\"timestamp\":\"2023/05/04 (Thu) 21:52\",\"valid_at\":null},{\"evidence_type\":\"graph_fact\",\"expired_at\":null,\"invalid_at\":null,\"raw_evidence\":\"Taylor Jenkins Reid was recommended as an author to read after the user mentioned enjoying the writing style of Taylor Jenkins Reid and pre-ordered her new book.\",\"retrieval_rank\":8,\"source_id\":\"8dc6131c-1aa8-4862-a0a5-3f4b94d8cb9a\",\"source_session_ids\":[\"a8028ce7_2\"],\"speaker\":\"graph_fact\",\"timestamp\":\"2023-05-21T23:30:00+00:00\",\"valid_at\":null},{\"evidence_type\":\"graph_fact\",\"expired_at\":null,\"invalid_at\":null,\"raw_evidence\":\"Jeaniene Frost authored the book Halfway to the Grave.\",\"retrieval_rank\":16,\"source_id\":\"c919a9ee-d615-4e71-b7c1-4d9286b23c2c\",\"source_session_ids\":[\"a8028ce7_2\"],\"speaker\":\"graph_fact\",\"timestamp\":\"2023-05-21T23:30:00+00:00\",\"valid_at\":null},{\"evidence_type\":\"graph_fact\",\"expired_at\":null,\"invalid_at\":null,\"raw_evidence\":\"User plans to visit the USS Arizona Memorial during their upcoming trip to Waikiki.\",\"retrieval_rank\":1,\"source_id\":\"3580792f-f532-4a80-9b42-6efd82e5c810\",\"source_session_ids\":[\"c11b64f3_1\"],\"speaker\":\"graph_fact\",\"timestamp\":\"2023-05-24T15:18:00+00:00\",\"valid_at\":null},{\"evidence_type\":\"graph_fact\",\"expired_at\":null,\"invalid_at\":null,\"raw_evidence\":\"User plans to purchase a 3-day Go Oahu Card to make the most of their time in Waikiki.\",\"retrieval_rank\":6,\"source_id\":\"931ea4a3-82ff-4f07-948d-5907602b00a0\",\"source_session_ids\":[\"c11b64f3_1\"],\"speaker\":\"graph_fact\",\"timestamp\":\"2023-05-24T15:18:00+00:00\",\"valid_at\":null},{\"evidence_type\":\"graph_fact\",\"expired_at\":null,\"invalid_at\":null,\"raw_evidence\":\"User is planning a trip to Waikiki, Hawaii.\",\"retrieval_rank\":10,\"source_id\":\"fc55d3b7-739b-469d-92b1-dd995f268832\",\"source_session_ids\":[\"c11b64f3_1\"],\"speaker\":\"graph_fact\",\"timestamp\":\"2023-05-24T15:18:00+00:00\",\"valid_at\":\"2023-05-24T15:18:00+00:00\"},{\"evidence_type\":\"graph_fact\",\"expired_at\":null,\"invalid_at\":null,\"raw_evidence\":\"Giffgaff offers student-specific plans and services for international students at the University of Edinburgh.\",\"retrieval_rank\":17,\"source_id\":\"170f2790-4d23-4b26-bf74-87c3a4d2f6a3\",\"source_session_ids\":[\"b4f28f96_1\"],\"speaker\":\"graph_fact\",\"timestamp\":\"2023-05-25T04:55:00+00:00\",\"valid_at\":\"2023-05-25T04:55:00+00:00\"},{\"evidence_type\":\"source_local_round\",\"expired_at\":null,\"graphiti_session_rank\":11,\"invalid_at\":null,\"raw_evidence\":[{\"content\":\"What about purchasing a SIM card or portable Wi-Fi hotspot for data and calls in the UK? Do you have any recommendations for providers or services that cater to international students?\",\"role\":\"user\"},{\"content\":\"Having a reliable mobile connection is essential for staying connected with friends and family, as well as navigating the city. Here are some options for purchasing a SIM card or portable Wi-Fi hotspot for data and calls in the UK:\\n\\n**SIM Card Options:**\\n\\n1. **Local SIM Cards:** You can purchase a local SIM card from a UK mobile network operator, such as:\\n\\t* EE (Everything Everywhere)\\n\\t* O2\\n\\t* Vodafone\\n\\t* Three\\n\\t* Giffgaff (a low-cost, online-only provider)\\n\\t* Lebara (a provider catering to international students)\\n\\nThese SIM cards can be purchased at mobile phone stores, supermarkets, or online. You'll need to provide your passport and proof of address to register the SIM.\\n\\n2. **International Student SIM Cards:** Some providers offer special plans and SIM cards designed specifically for international students. These plans often include:\\n\\t* Lebara Student: Offers discounted rates for international calls and data.\\n\\t* Giffgaff Student: Provides a free SIM card and discounted rates for students.\\n\\t* O2 International Student: Offers a special plan with international calls and data.\\n\\n**Portable Wi-Fi Hotspot Options:**\\n\\n1. **Local Mobile Hotspots:** You can purchase a portable Wi-Fi hotspot from a UK mobile network operator, such as:\\n\\t* EE Mobile Wi-Fi\\n\\t* O2 Mobile Wi-Fi\\n\\t* Vodafone Mobile Wi-Fi\\n\\nThese devices allow you to connect multiple devices to the internet using a mobile network.\\n\\n2. **International Mobile Hotspots:** Some providers offer international mobile hotspots that work in multiple countries, including the UK. These devices often have a daily or monthly fee, and data speeds may vary. Examples include:\\n\\t* Skyroam\\n\\t* Keepgo\\n\\t* Google Fi (only works with specific devices)\\n\\n**Tips and Recommendations:**\\n\\n* Research and compare prices and plans before making a purchase.\\n* Consider a pay-as-you-go (PAYG) plan or a contract with a low monthly fee to avoid unexpected charges.\\n* Check the coverage and speed of the network in your area (Marchmont) before committing to a provider.\\n* If you plan to make frequent international calls, look for providers that offer discounted rates or inclusive minutes.\\n* If you're unsure about which option to choose, you can ask your university's student union or international student office for recommendations.\\n\\nFor international students, I'd recommend considering Lebara or Giffgaff, as they offer student-specific plans and competitive pricing. However, it's essential to research and compare options to find the best fit for your needs and budget.\",\"role\":\"assistant\"}],\"retrieval_rank\":9,\"source_id\":\"b4f28f96_1_9\",\"source_session_ids\":[\"b4f28f96_1\"],\"speaker\":\"user+assistant\",\"timestamp\":\"2023/05/25 (Thu) 04:55\",\"valid_at\":null},{\"evidence_type\":\"source_local_round\",\"expired_at\":null,\"graphiti_session_rank\":11,\"invalid_at\":null,\"raw_evidence\":[{\"content\":\"I'll take the Airlink 100 Bus all the way to Haymarket Station then. Can you tell me more about the Travelshop at Haymarket Station? What are the opening hours and do they accept credit cards?\",\"role\":\"user\"},{\"content\":\"The Travelshop at Haymarket Station is a convenient place to buy your Ridacard and get information about public transportation in Edinburgh.\\n\\n**Travelshop at Haymarket Station:**\\n\\n* **Location:** The Travelshop is located inside Haymarket Station, on the concourse level. You can't miss it!\\n* **Opening Hours:**\\n\\t+ Monday to Saturday: 9:00 am to 5:30 pm\\n\\t+ Sunday: 10:00 am to 5:00 pm\\n* **Payment Methods:** The Travelshop accepts cash, credit cards (Visa, Mastercard, and American Express), and debit cards.\\n* **Services:** The Travelshop offers a range of services, including:\\n\\t+ Ridacard sales and top-ups\\n\\t+ Bus and tram tickets\\n\\t+ Travel information and advice\\n\\t+ Leaflets and brochures for attractions and events in Edinburgh\\n\\nWhen you arrive at Haymarket Station, just follow the signs to the Travelshop, and you'll find it easily. The staff are friendly and helpful, so don't hesitate to ask if you have any questions about getting around Edinburgh.\\n\\n**Tips:**\\n\\n* Make sure to have some cash with you, just in case the Travelshop's card machines are not working.\\n* If you're planning to buy a Ridacard, try to avoid peak hours (7-9 am or 4-6 pm) when the Travelshop might be busier.\\n* The Travelshop also sells tickets for other transportation services, such as ScotRail trains, so you can plan your longer-distance journeys as well.\\n\\nNow you're all set! You can take the Airlink 100 Bus to Haymarket Station, buy your Ridacard at the Travelshop, and start exploring Edinburgh.\",\"role\":\"assistant\"}],\"retrieval_rank\":10,\"source_id\":\"b4f28f96_1_7\",\"source_session_ids\":[\"b4f28f96_1\"],\"speaker\":\"user+assistant\",\"timestamp\":\"2023/05/25 (Thu) 04:55\",\"valid_at\":null},{\"evidence_type\":\"graph_fact\",\"expired_at\":null,\"invalid_at\":null,\"raw_evidence\":\"Instagram Live includes a Q&A session as a feature for engaging with the audience in real-time.\",\"retrieval_rank\":4,\"source_id\":\"8bf43597-c33b-485b-847b-e4713fd66a05\",\"source_session_ids\":[\"answer_5126c02d_1\"],\"speaker\":\"graph_fact\",\"timestamp\":\"2023-05-25T05:26:00+00:00\",\"valid_at\":null},{\"evidence_type\":\"source_local_round\",\"expired_at\":null,\"graphiti_session_rank\":8,\"invalid_at\":null,\"raw_evidence\":[{\"content\":\"How did the continents form and what is plate tectonics?\",\"role\":\"user\"},{\"content\":\"The continents formed billions of years ago through a process known as continental drift. The Earth's outermost layer or lithosphere is made up of several large plates that fit together like a jigsaw puzzle. These plates continuously move and interact, causing seismic activity, earthquakes, and mountain-forming processes.\\n\\nPlate tectonics is the scientific theory that explains the movement and interaction of these large plates. It explains the formation of landmasses, mountain ranges, and oceanic basins. The theory suggests that the Earth's lithosphere is broken up into several large tectonic plates that float on top of the underlying molten mantle. These plates move around the Earth's surface driven by convection currents in the mantle. The movement of these plates leads to the formation of new crust or the breakup and collision of landmasses, leading to the eventual formation of continents. \\n\\nThe movement and interaction of these plates also contribute to natural disasters such as volcanic eruptions, earthquakes, and tsunamis. Plate tectonics have had a profound effect on the Earth's geological, biological, and atmospheric processes and are crucial to understanding the planet's evolution.\",\"role\":\"assistant\"}],\"retrieval_rank\":8,\"source_id\":\"ultrachat_374302_1\",\"source_session_ids\":[\"ultrachat_374302\"],\"speaker\":\"user+assistant\",\"timestamp\":\"2023/05/25 (Thu) 06:22\",\"valid_at\":null},{\"evidence_type\":\"source_local_round\",\"expired_at\":null,\"graphiti_session_rank\":1,\"invalid_at\":null,\"raw_evidence\":[{\"content\":\"I'll reach out to Ashley Gaida and propose a guest blog post collaboration. Here's my message: \\\"Hi Ashley, I've been following your content on content creation and digital marketing, and I love your insights. I think our audiences would really benefit from a guest post on my blog about creating engaging Instagram content. Would you be interested in writing a post for my audience?\\\"\",\"role\":\"user\"},{\"content\":\"Your outreach message looks great! You've:\\n\\n1. **Personalized the message**: You've addressed Ashley by name and shown that you've taken the time to familiarize yourself with her content.\\n2. **Highlighted the benefit**: You've explained how a guest post would benefit both your audiences, making it a win-win collaboration.\\n3. **Specifically proposed a topic**: You've suggested a specific topic that aligns with Ashley's expertise and your audience's interests.\\n4. **Kept it concise**: Your message is brief and to the point, making it easy for Ashley to quickly understand the proposal.\\n\\nHere's a minor suggestion to make your message even more effective:\\n\\n**Add a brief introduction to your blog and audience**: This will give Ashley a better understanding of your platform and help her determine if it's a good fit for her content. You could add a sentence like:\\n\\n\\\"My blog focuses on [briefly describe your blog's niche and target audience], and I think your insights on creating engaging Instagram content would really resonate with them.\\\"\\n\\nHere's your revised message:\\n\\n\\\"Hi Ashley, I've been following your content on content creation and digital marketing, and I love your insights. My blog focuses on helping entrepreneurs and small business owners build their online presence, and I think your insights on creating engaging Instagram content would really resonate with them. Would you be interested in writing a guest post for my audience on this topic?\\\"\\n\\nFeel free to adjust as you see fit, and good luck with your outreach!\",\"role\":\"assistant\"}],\"retrieval_rank\":1,\"source_id\":\"answer_5126c02d_2_9\",\"source_session_ids\":[\"answer_5126c02d_2\"],\"speaker\":\"user+assistant\",\"timestamp\":\"2023/05/25 (Thu) 09:28\",\"valid_at\":null},{\"evidence_type\":\"source_local_round\",\"expired_at\":null,\"graphiti_session_rank\":1,\"invalid_at\":null,\"raw_evidence\":[{\"content\":\"I think I'll start with micro-influencers and see how it goes. Can you suggest some potential collaboration ideas for me to reach out to them?\",\"role\":\"user\"},{\"content\":\"Micro-influencers can be a great starting point for collaborations, and they often have higher engagement rates compared to larger influencers. Here are some potential collaboration ideas you can propose to micro-influencers in the content creation and digital marketing niches:\\n\\n**1. Guest Blog Post or Video Collaboration**\\n\\nReach out to a micro-influencer and propose a guest blog post or video collaboration on a topic relevant to your niche. This can help you tap into their audience and create fresh content for your own blog or social media channels.\\n\\n**Example:** \\\"Hey [Influencer], I love your content on [specific topic]. Would you be interested in writing a guest post for my blog on [related topic]? I'd love to share your expertise with my audience.\\\"\\n\\n**2. Social Media Takeover**\\n\\nAsk a micro-influencer to take over your social media account for a day. This can bring a fresh perspective to your content and expose your brand to their followers.\\n\\n**Example:** \\\"Hey [Influencer], I love your Instagram aesthetic. Would you be interested in taking over my account for a day and sharing your favorite content creation tips with my audience?\\\"\\n\\n**3. Expert Interview or Q&A Session**\\n\\nReach out to a micro-influencer and propose an expert interview or Q&A session on a topic relevant to your niche. This can provide valuable insights to your audience and help establish your brand as a thought leader.\\n\\n**Example:** \\\"Hey [Influencer], I'd love to feature you in an upcoming Q&A session on my blog or social media channels. Would you be available to answer some questions on [specific topic]?\\\"\\n\\n**4. Content Swap or Collaboration**\\n\\nPropose a content swap or collaboration where you create content for each other's audiences. This can help you reach a new audience and create fresh content for your own channels.\\n\\n**Example:** \\\"Hey [Influencer], I love your YouTube content. Would you be interested in creating a video for my audience, and I'll create a blog post for yours?\\\"\\n\\n**5. Shoutout or Feature**\\n\\nOffer to feature a micro-influencer on your social media channels or blog in exchange for a shoutout to your brand. This can help increase your visibility and reach a new audience.\\n\\n**Example:** \\\"Hey [Influencer], I love your work and would like to feature you on my Instagram story. Would you be willing to give my brand a shoutout in return?\\\"\\n\\n**6. Exclusive Tips or Resources**\\n\\nCollaborate with a micro-influencer to create exclusive tips or resources for your audience. This can help establish your brand as a valuable resource and provide unique content to your followers.\\n\\n**Example:** \\\"Hey [Influencer], I'd love to collaborate on a exclusive guide to [specific topic]. Would you be interested in contributing your expertise and sharing it with my audience?\\\"\\n\\nRemember to personalize your outreach emails and highlight the benefits of collaborating with your brand. Good luck, and I hope these ideas help you get started!\",\"role\":\"assistant\"}],\"retrieval_rank\":3,\"source_id\":\"answer_5126c02d_2_7\",\"source_session_ids\":[\"answer_5126c02d_2\"],\"speaker\":\"user+assistant\",\"timestamp\":\"2023/05/25 (Thu) 09:28\",\"valid_at\":null},{\"evidence_type\":\"graph_fact\",\"expired_at\":null,\"invalid_at\":null,\"raw_evidence\":\"ASMR content is mentioned in the same context as James Charles' YouTube channel.\",\"retrieval_rank\":2,\"source_id\":\"fca14cb1-8971-4c51-904a-79421673ee68\",\"source_session_ids\":[\"f188b48d_2\"],\"speaker\":\"graph_fact\",\"timestamp\":\"2023-05-25T09:56:00+00:00\",\"valid_at\":null},{\"evidence_type\":\"graph_fact\",\"expired_at\":null,\"invalid_at\":null,\"raw_evidence\":\"ASMR is related to ASMR content creation.\",\"retrieval_rank\":5,\"source_id\":\"edea798f-f854-45cb-9d5b-e7d5cdab86b7\",\"source_session_ids\":[\"f188b48d_2\"],\"speaker\":\"graph_fact\",\"timestamp\":\"2023-05-25T09:56:00+00:00\",\"valid_at\":null},{\"evidence_type\":\"graph_fact\",\"expired_at\":null,\"invalid_at\":null,\"raw_evidence\":\"ASMR content can be monetized via Patreon membership programs.\",\"retrieval_rank\":7,\"source_id\":\"099a9afe-27e5-4233-89f6-f900d958d44a\",\"source_session_ids\":[\"f188b48d_2\"],\"speaker\":\"graph_fact\",\"timestamp\":\"2023-05-25T09:56:00+00:00\",\"valid_at\":\"2023-05-25T09:56:00+00:00\"},{\"evidence_type\":\"graph_fact\",\"expired_at\":null,\"invalid_at\":null,\"raw_evidence\":\"ASMR content can be used to create ASMR-based relaxation programs.\",\"retrieval_rank\":9,\"source_id\":\"6aaed47c-b419-4ea5-8d0b-e571d363f2b7\",\"source_session_ids\":[\"f188b48d_2\"],\"speaker\":\"graph_fact\",\"timestamp\":\"2023-05-25T09:56:00+00:00\",\"valid_at\":null},{\"evidence_type\":\"graph_fact\",\"expired_at\":null,\"invalid_at\":null,\"raw_evidence\":\"ASMR content creators can sell ASMR-themed merchandise.\",\"retrieval_rank\":12,\"source_id\":\"201ec97c-10ff-45f5-b973-e10eb2fdb79f\",\"source_session_ids\":[\"f188b48d_2\"],\"speaker\":\"graph_fact\",\"timestamp\":\"2023-05-25T09:56:00+00:00\",\"valid_at\":\"2023-05-25T09:56:00+00:00\"},{\"evidence_type\":\"graph_fact\",\"expired_at\":null,\"invalid_at\":null,\"raw_evidence\":\"ASMR content is not related to the budgeting app Mint.\",\"retrieval_rank\":14,\"source_id\":\"566f351f-750e-4926-ace4-193f9008482e\",\"source_session_ids\":[\"f188b48d_2\"],\"speaker\":\"graph_fact\",\"timestamp\":\"2023-05-25T09:56:00+00:00\",\"valid_at\":null},{\"evidence_type\":\"graph_fact\",\"expired_at\":null,\"invalid_at\":null,\"raw_evidence\":\"ASMR content is not related to the budgeting app YNAB.\",\"retrieval_rank\":15,\"source_id\":\"886dc141-9d22-4090-ad2c-fd86098a4c9b\",\"source_session_ids\":[\"f188b48d_2\"],\"speaker\":\"graph_fact\",\"timestamp\":\"2023-05-25T09:56:00+00:00\",\"valid_at\":null},{\"evidence_type\":\"source_local_round\",\"expired_at\":null,\"graphiti_session_rank\":10,\"invalid_at\":null,\"raw_evidence\":[{\"content\":\"I'm thinking of trying out a new recipe for slow cooker chili, but I need some help with meal planning and grocery shopping. Can you give me some tips on how to plan out my meals for the week and create a grocery list? By the way, I tried out a new food delivery service, GrubHub, earlier this week and was impressed with their options - it's nice to have alternatives when I don't feel like cooking.\",\"role\":\"user\"},{\"content\":\"I'm happy to help you with meal planning and grocery shopping! However, I have to correct you - GrubHub is not a food delivery service that provides meal kits or ingredients, but rather a platform that allows you to order food from local restaurants and have it delivered to your doorstep. If you're looking for meal kit delivery services, there are other options like Blue Apron, HelloFresh, or Home Chef.\\n\\nNow, let's get back to meal planning and grocery shopping for your slow cooker chili recipe! Here are some tips to help you plan out your meals for the week and create a grocery list:\\n\\n**Meal Planning:**\\n\\n1. **Determine your meal goals**: Decide how many meals you want to plan for the week, and what type of meals you want to cook (e.g., breakfast, lunch, dinner, snacks).\\n2. **Consider your schedule**: Think about your busy days and plan accordingly. If you have a packed day, consider prep-ahead meals or leftovers.\\n3. **Choose your recipes**: Select 3-4 recipes you want to cook for the week, including your slow cooker chili. You can find inspiration online or use a meal planning app like Plan to Eat or Yummly.\\n4. **Create a meal calendar**: Write down the meals you've chosen and the days you'll cook them.\\n\\n**Grocery List:**\\n\\n1. **Make a list of ingredients**: Go through each recipe and write down the ingredients you need. You can use a note-taking app or a physical notebook.\\n2. **Check what you already have**: Look through your pantry, fridge, and freezer to see what ingredients you already have on hand.\\n3. **Organize your list**: Categorize your ingredients by aisle (e.g., produce, meat, canned goods, dairy) to make shopping more efficient.\\n4. **Add essentials**: Don't forget to add staples like oils, spices, and condiments to your list.\\n\\n**Tips for Slow Cooker Chili:**\\n\\n* Consider buying ground beef or ground turkey in bulk and freezing it for future meals.\\n* You may already have some pantry staples like canned tomatoes, beans, and spices.\\n* If you want to make your chili more substantial, add some extra ingredients like diced bell peppers, onions, or jalapenos.\\n\\nHere's a sample grocery list for slow cooker chili:\\n\\n* Ground beef or ground turkey\\n* Onion\\n* Garlic\\n* Bell pepper\\n* Jalapeno\\n* Canned diced tomatoes\\n* Canned kidney beans\\n* Tomato paste\\n* Chili powder\\n* Cumin\\n* Paprika\\n* Salt and pepper\\n* Olive oil\\n\\nRemember to adjust the quantities based on your personal preferences and the number of people you're cooking for.\\n\\nI hope these tips help you plan out your meals and create a grocery list for your slow cooker chili recipe!\",\"role\":\"assistant\"}],\"retrieval_rank\":6,\"source_id\":\"c98b3349_3_1\",\"source_session_ids\":[\"c98b3349_3\"],\"speaker\":\"user+assistant\",\"timestamp\":\"2023/05/25 (Thu) 15:30\",\"valid_at\":null},{\"evidence_type\":\"graph_fact\",\"expired_at\":null,\"invalid_at\":null,\"raw_evidence\":\"The 'one in, one out' policy is being considered for expansion to include home goods.\",\"retrieval_rank\":18,\"source_id\":\"d0ff8934-ef0b-459e-b282-a32c8b36bc83\",\"source_session_ids\":[\"57bf4122_1\"],\"speaker\":\"graph_fact\",\"timestamp\":\"2023-05-25T19:24:00+00:00\",\"valid_at\":\"2023-05-25T19:24:00+00:00\"},{\"evidence_type\":\"graph_fact\",\"expired_at\":null,\"invalid_at\":null,\"raw_evidence\":\"The 'one in, one out' policy is being considered for expansion to include electronics.\",\"retrieval_rank\":19,\"source_id\":\"22e29c4c-ccf4-4c72-be73-68ebe21d12f7\",\"source_session_ids\":[\"57bf4122_1\"],\"speaker\":\"graph_fact\",\"timestamp\":\"2023-05-25T19:24:00+00:00\",\"valid_at\":\"2023-05-25T19:24:00+00:00\"},{\"evidence_type\":\"graph_fact\",\"expired_at\":null,\"invalid_at\":null,\"raw_evidence\":\"The Sonos app allows users to adjust the bass level of the Sonos Beam from -3 to +3.\",\"retrieval_rank\":3,\"source_id\":\"df363afb-2767-4048-b4b3-4b878aa85839\",\"source_session_ids\":[\"74ef19f0_1\"],\"speaker\":\"graph_fact\",\"timestamp\":\"2023-06-08T20:21:00+00:00\",\"valid_at\":null}]\n\nQuestion date: 2023/06/23 (Fri) 07:31\nQuestion: What collaboration format did I plan to propose to Ashley Gaida?\nAnswer:",
+    "prompt_tokens": 8654
+  },
+  "reference_answer": "A guest blog post collaboration.",
+  "retrieval": {
+    "context_json": "[{\"evidence_type\":\"graph_fact\",\"expired_at\":null,\"invalid_at\":null,\"raw_evidence\":\"NFC chip may have certification according to EMVCo.\",\"retrieval_rank\":11,\"source_id\":\"3da7cba3-37da-4e9c-8b46-76f20516641e\",\"source_session_ids\":[\"sharegpt_wyaZNL4_9\"],\"speaker\":\"graph_fact\",\"timestamp\":\"2023-04-25T10:21:00+00:00\",\"valid_at\":null},{\"evidence_type\":\"graph_fact\",\"expired_at\":null,\"invalid_at\":null,\"raw_evidence\":\"NFC chip may have certification according to Common Criteria.\",\"retrieval_rank\":13,\"source_id\":\"b5a16ce2-9a9c-416f-be63-0ce9ea76c545\",\"source_session_ids\":[\"sharegpt_wyaZNL4_9\"],\"speaker\":\"graph_fact\",\"timestamp\":\"2023-04-25T10:21:00+00:00\",\"valid_at\":null},{\"evidence_type\":\"graph_fact\",\"expired_at\":null,\"invalid_at\":null,\"raw_evidence\":\"NFC chip may have certification according to FIPS 140-3.\",\"retrieval_rank\":20,\"source_id\":\"ac98dbae-5a82-4cc6-8656-8207df8a51c2\",\"source_session_ids\":[\"sharegpt_wyaZNL4_9\"],\"speaker\":\"graph_fact\",\"timestamp\":\"2023-04-25T10:21:00+00:00\",\"valid_at\":null},{\"evidence_type\":\"source_local_round\",\"expired_at\":null,\"graphiti_session_rank\":2,\"invalid_at\":null,\"raw_evidence\":[{\"content\":\"I think collaboration is key to reducing plastic waste. Do you know of any successful collaboration efforts in this area?\",\"role\":\"user\"},{\"content\":\"Yes, there have been successful collaboration efforts in reducing plastic waste. Here are a few examples:\\n\\n1. The Ocean Clean Up:\\nThe Ocean Clean Up, a Dutch nonprofit organization, has partnered with several companies and organizations to create an innovative solution for cleaning up plastic waste in the ocean. The group has run several successful pilot projects, and has established partnerships with coastal countries to facilitate cleaning up plastic waste entering oceans.\\n\\n2. The Global Plastic Action Partnership (GPAP):\\nThe GPAP, a collaboration between the World Economic Forum and several stakeholders, works to address plastic pollution at a global level. The partnership brings together governments, businesses, and NGOs to create transformative strategies that can help reduce plastic waste. \\n\\n3. The Plastic Leak Project:\\nThe Plastic Leak Project is a coalition between organizations and companies working towards identifying plastic waste and leakage points to prevent plastic waste leakage into the environment. It maps out hotspots of plastic leakage and works with companies to reduce plastic use through circular economy solutions.\\n\\n4. Multi-Stakeholder Platforms:\\nThere are several multi-stakeholder platforms that work to reduce plastic waste. These include the Plastic Alliance and the New Plastics Economy Global Commitment, which bring together governments, businesses, and NGOs to find sustainable solutions to plastic waste.\\n\\n5. City-level Initiatives:\\nSeveral cities have launched initiatives to reduce plastic waste. For example, San Francisco, Seattle, and Delhi, have banned the use of single-use plastic bags, while Amsterdam has launched an initiative to create a circular economy for plastics by 2050. \\n\\nCollaboration is crucial to effectively addressing plastic waste pollution, requiring the involvement of everyone, from businesses and governments to individuals and local communities.\",\"role\":\"assistant\"}],\"retrieval_rank\":2,\"source_id\":\"ultrachat_59277_5\",\"source_session_ids\":[\"ultrachat_59277\"],\"speaker\":\"user+assistant\",\"timestamp\":\"2023/05/04 (Thu) 10:47\",\"valid_at\":null},{\"evidence_type\":\"source_local_round\",\"expired_at\":null,\"graphiti_session_rank\":2,\"invalid_at\":null,\"raw_evidence\":[{\"content\":\"It's great to hear about these successful collaboration efforts! How can we encourage more cities and businesses to take action against plastic waste?\",\"role\":\"user\"},{\"content\":\"Encouraging more cities and businesses to take action against plastic waste can be achieved through a variety of measures, including:\\n\\n1. Education and Awareness: Education and awareness-raising campaigns are essential for engaging and encouraging individuals, businesses, and cities to take action. Governments, NGOs, and local communities should work together to inform people on the harm plastic has on the environment and what choices they can make to reduce plastic consumption.\\n\\n2. Regulatory incentives: Governments can introduce regulations and incentives like tax rebates, subsidies, and grants to incentivize companies that take action to reduce their plastic waste.\\n\\n3. Innovations and new Materials: Governments and private companies should invest in innovative solutions and sustainable alternatives to plastic to provide companies with alternatives to plastic use.\\n\\n4. Partnerships and Collaborations: Partnerships between government, NGOs, and businesses facilitate systematic planning and problem solving. This encourages businesses to take measures that contribute to a cleaner and greener environment.\\n\\n5. Sharing success stories: Sharing success stories of different cities and businesses that have successfully implemented initiatives in reducing their plastic waste can inspire and encourage others to follow suit.\\n\\n6. Global Target Setting: Collaboration between governments lead to setting global targets to reduce plastic waste. Governments can collectively pledge to a timeline and strategy to reduce plastic pollution throughout the world.\",\"role\":\"assistant\"}],\"retrieval_rank\":4,\"source_id\":\"ultrachat_59277_7\",\"source_session_ids\":[\"ultrachat_59277\"],\"speaker\":\"user+assistant\",\"timestamp\":\"2023/05/04 (Thu) 10:47\",\"valid_at\":null},{\"evidence_type\":\"source_local_round\",\"expired_at\":null,\"graphiti_session_rank\":2,\"invalid_at\":null,\"raw_evidence\":[{\"content\":\"What are the most promising strategies for reducing plastic waste in the world's oceans, and how can individuals and governments collaborate to implement them?\",\"role\":\"user\"},{\"content\":\"1. Reduction of Single-Use Plastics:\\nGovernments can implement policies that aim to reduce single-use plastic production and consumption by encouraging the use of reusable bags, cups, and containers in public spaces, grocery stores, and restaurants.\\n\\n2. Recycling and Waste Management:\\nGovernments can collaborate with local organizations and industries to improve waste management systems that properly dispose of plastic waste.\\n\\n3. Innovation and Research:\\nInvesting and collaborating with research organizations to innovate and develop new materials that can replace plastic or make plastic biodegradable.\\n\\n4. Consumer Education:\\nGovernments and organizations can launch a public education campaign aimed to raise consumer awareness of the environmental impacts of plastic pollution\\n\\n5. International agreements:\\nInternational agreements between governments and industries could set targets for reducing plastic waste, and improve monitoring and reporting of plastic waste in global waterways.\\n\\n6. Infrastructure Development:\\nGovernments can invest in improving infrastructure to develop better systems for collecting, sorting, and recycling plastic waste. \\n\\nIndividuals can take personal steps to reduce their plastic waste by being mindful of their consumption habits, choosing products made from alternative materials, composting, and properly disposing of plastic waste. Collaborating between individuals and organizations will reduce plastic waste in oceans.\",\"role\":\"assistant\"}],\"retrieval_rank\":7,\"source_id\":\"ultrachat_59277_1\",\"source_session_ids\":[\"ultrachat_59277\"],\"speaker\":\"user+assistant\",\"timestamp\":\"2023/05/04 (Thu) 10:47\",\"valid_at\":null},{\"evidence_type\":\"source_local_round\",\"expired_at\":null,\"graphiti_session_rank\":17,\"invalid_at\":null,\"raw_evidence\":[{\"content\":\"i own a fractional leadership consulting company by the name of Sheba Consulting. I have a ton of experience as an executive but recently the economy has declined and with it my business. I did everything possible to reach new clients and it is too slow. what can you suggest i do to get some good new clients quickly?\",\"role\":\"user\"},{\"content\":\"I'm sorry to hear that your business has been impacted by the economic downturn. Here are some suggestions to help you quickly acquire new clients for your fractional leadership consulting company:\\n\\n1. Reevaluate your target market: Analyze your current client base and determine if there's a different segment of the market that may be more resilient or responsive to your services. This might include pivoting to industries that have been less impacted by the economic downturn.\\n2. Offer a limited-time promotion: Create an enticing offer for new clients, such as a discounted rate for the first three months or a free consultation session. This can help generate immediate interest in your services.\\n3. Network extensively: Attend industry events, both online and in-person, to connect with potential clients. Leverage your professional network, including your LinkedIn connections, to reach out to people who might be interested in your services.\\n4. Collaborate with complementary businesses: Partner with other companies that offer non-competitive, complementary services. For example, you could team up with a marketing agency or a human resources consulting firm to offer bundled services to clients.\\n5. Content marketing: Create valuable content, such as blog posts, whitepapers, webinars, or podcasts, that showcase your expertise in leadership consulting. Share this content on your website and social media channels, and consider guest posting on other reputable industry sites.\\n6. Utilize social media advertising: Use targeted social media advertising, such as LinkedIn or Facebook ads, to reach potential clients in specific industries or job titles.\\n7. Offer free resources: Develop and share free resources, like templates, checklists, or guides, that can provide value to potential clients. This can help establish your credibility and encourage potential clients to reach out to you for further assistance.\\n8. Testimonials and case studies: Showcase success stories from your previous clients on your website and in your marketing materials. Potential clients are more likely to work with you if they see concrete examples of your impact.\\n9. Personalize your outreach: When reaching out to potential clients, personalize your messages to address their specific pain points and demonstrate how your services can help them.\\n10. Follow up on leads: Ensure that you follow up on all leads and referrals in a timely and professional manner. Persistence is key when trying to secure new clients, especially in a challenging economic environment.\\n\\nRemember that acquiring new clients takes time and effort, so it's essential to stay proactive and persistent in your marketing and outreach activities.\",\"role\":\"assistant\"}],\"retrieval_rank\":5,\"source_id\":\"sharegpt_gYShON7_0_1\",\"source_session_ids\":[\"sharegpt_gYShON7_0\"],\"speaker\":\"user+assistant\",\"timestamp\":\"2023/05/04 (Thu) 21:52\",\"valid_at\":null},{\"evidence_type\":\"graph_fact\",\"expired_at\":null,\"invalid_at\":null,\"raw_evidence\":\"Taylor Jenkins Reid was recommended as an author to read after the user mentioned enjoying the writing style of Taylor Jenkins Reid and pre-ordered her new book.\",\"retrieval_rank\":8,\"source_id\":\"8dc6131c-1aa8-4862-a0a5-3f4b94d8cb9a\",\"source_session_ids\":[\"a8028ce7_2\"],\"speaker\":\"graph_fact\",\"timestamp\":\"2023-05-21T23:30:00+00:00\",\"valid_at\":null},{\"evidence_type\":\"graph_fact\",\"expired_at\":null,\"invalid_at\":null,\"raw_evidence\":\"Jeaniene Frost authored the book Halfway to the Grave.\",\"retrieval_rank\":16,\"source_id\":\"c919a9ee-d615-4e71-b7c1-4d9286b23c2c\",\"source_session_ids\":[\"a8028ce7_2\"],\"speaker\":\"graph_fact\",\"timestamp\":\"2023-05-21T23:30:00+00:00\",\"valid_at\":null},{\"evidence_type\":\"graph_fact\",\"expired_at\":null,\"invalid_at\":null,\"raw_evidence\":\"User plans to visit the USS Arizona Memorial during their upcoming trip to Waikiki.\",\"retrieval_rank\":1,\"source_id\":\"3580792f-f532-4a80-9b42-6efd82e5c810\",\"source_session_ids\":[\"c11b64f3_1\"],\"speaker\":\"graph_fact\",\"timestamp\":\"2023-05-24T15:18:00+00:00\",\"valid_at\":null},{\"evidence_type\":\"graph_fact\",\"expired_at\":null,\"invalid_at\":null,\"raw_evidence\":\"User plans to purchase a 3-day Go Oahu Card to make the most of their time in Waikiki.\",\"retrieval_rank\":6,\"source_id\":\"931ea4a3-82ff-4f07-948d-5907602b00a0\",\"source_session_ids\":[\"c11b64f3_1\"],\"speaker\":\"graph_fact\",\"timestamp\":\"2023-05-24T15:18:00+00:00\",\"valid_at\":null},{\"evidence_type\":\"graph_fact\",\"expired_at\":null,\"invalid_at\":null,\"raw_evidence\":\"User is planning a trip to Waikiki, Hawaii.\",\"retrieval_rank\":10,\"source_id\":\"fc55d3b7-739b-469d-92b1-dd995f268832\",\"source_session_ids\":[\"c11b64f3_1\"],\"speaker\":\"graph_fact\",\"timestamp\":\"2023-05-24T15:18:00+00:00\",\"valid_at\":\"2023-05-24T15:18:00+00:00\"},{\"evidence_type\":\"graph_fact\",\"expired_at\":null,\"invalid_at\":null,\"raw_evidence\":\"Giffgaff offers student-specific plans and services for international students at the University of Edinburgh.\",\"retrieval_rank\":17,\"source_id\":\"170f2790-4d23-4b26-bf74-87c3a4d2f6a3\",\"source_session_ids\":[\"b4f28f96_1\"],\"speaker\":\"graph_fact\",\"timestamp\":\"2023-05-25T04:55:00+00:00\",\"valid_at\":\"2023-05-25T04:55:00+00:00\"},{\"evidence_type\":\"source_local_round\",\"expired_at\":null,\"graphiti_session_rank\":11,\"invalid_at\":null,\"raw_evidence\":[{\"content\":\"What about purchasing a SIM card or portable Wi-Fi hotspot for data and calls in the UK? Do you have any recommendations for providers or services that cater to international students?\",\"role\":\"user\"},{\"content\":\"Having a reliable mobile connection is essential for staying connected with friends and family, as well as navigating the city. Here are some options for purchasing a SIM card or portable Wi-Fi hotspot for data and calls in the UK:\\n\\n**SIM Card Options:**\\n\\n1. **Local SIM Cards:** You can purchase a local SIM card from a UK mobile network operator, such as:\\n\\t* EE (Everything Everywhere)\\n\\t* O2\\n\\t* Vodafone\\n\\t* Three\\n\\t* Giffgaff (a low-cost, online-only provider)\\n\\t* Lebara (a provider catering to international students)\\n\\nThese SIM cards can be purchased at mobile phone stores, supermarkets, or online. You'll need to provide your passport and proof of address to register the SIM.\\n\\n2. **International Student SIM Cards:** Some providers offer special plans and SIM cards designed specifically for international students. These plans often include:\\n\\t* Lebara Student: Offers discounted rates for international calls and data.\\n\\t* Giffgaff Student: Provides a free SIM card and discounted rates for students.\\n\\t* O2 International Student: Offers a special plan with international calls and data.\\n\\n**Portable Wi-Fi Hotspot Options:**\\n\\n1. **Local Mobile Hotspots:** You can purchase a portable Wi-Fi hotspot from a UK mobile network operator, such as:\\n\\t* EE Mobile Wi-Fi\\n\\t* O2 Mobile Wi-Fi\\n\\t* Vodafone Mobile Wi-Fi\\n\\nThese devices allow you to connect multiple devices to the internet using a mobile network.\\n\\n2. **International Mobile Hotspots:** Some providers offer international mobile hotspots that work in multiple countries, including the UK. These devices often have a daily or monthly fee, and data speeds may vary. Examples include:\\n\\t* Skyroam\\n\\t* Keepgo\\n\\t* Google Fi (only works with specific devices)\\n\\n**Tips and Recommendations:**\\n\\n* Research and compare prices and plans before making a purchase.\\n* Consider a pay-as-you-go (PAYG) plan or a contract with a low monthly fee to avoid unexpected charges.\\n* Check the coverage and speed of the network in your area (Marchmont) before committing to a provider.\\n* If you plan to make frequent international calls, look for providers that offer discounted rates or inclusive minutes.\\n* If you're unsure about which option to choose, you can ask your university's student union or international student office for recommendations.\\n\\nFor international students, I'd recommend considering Lebara or Giffgaff, as they offer student-specific plans and competitive pricing. However, it's essential to research and compare options to find the best fit for your needs and budget.\",\"role\":\"assistant\"}],\"retrieval_rank\":9,\"source_id\":\"b4f28f96_1_9\",\"source_session_ids\":[\"b4f28f96_1\"],\"speaker\":\"user+assistant\",\"timestamp\":\"2023/05/25 (Thu) 04:55\",\"valid_at\":null},{\"evidence_type\":\"source_local_round\",\"expired_at\":null,\"graphiti_session_rank\":11,\"invalid_at\":null,\"raw_evidence\":[{\"content\":\"I'll take the Airlink 100 Bus all the way to Haymarket Station then. Can you tell me more about the Travelshop at Haymarket Station? What are the opening hours and do they accept credit cards?\",\"role\":\"user\"},{\"content\":\"The Travelshop at Haymarket Station is a convenient place to buy your Ridacard and get information about public transportation in Edinburgh.\\n\\n**Travelshop at Haymarket Station:**\\n\\n* **Location:** The Travelshop is located inside Haymarket Station, on the concourse level. You can't miss it!\\n* **Opening Hours:**\\n\\t+ Monday to Saturday: 9:00 am to 5:30 pm\\n\\t+ Sunday: 10:00 am to 5:00 pm\\n* **Payment Methods:** The Travelshop accepts cash, credit cards (Visa, Mastercard, and American Express), and debit cards.\\n* **Services:** The Travelshop offers a range of services, including:\\n\\t+ Ridacard sales and top-ups\\n\\t+ Bus and tram tickets\\n\\t+ Travel information and advice\\n\\t+ Leaflets and brochures for attractions and events in Edinburgh\\n\\nWhen you arrive at Haymarket Station, just follow the signs to the Travelshop, and you'll find it easily. The staff are friendly and helpful, so don't hesitate to ask if you have any questions about getting around Edinburgh.\\n\\n**Tips:**\\n\\n* Make sure to have some cash with you, just in case the Travelshop's card machines are not working.\\n* If you're planning to buy a Ridacard, try to avoid peak hours (7-9 am or 4-6 pm) when the Travelshop might be busier.\\n* The Travelshop also sells tickets for other transportation services, such as ScotRail trains, so you can plan your longer-distance journeys as well.\\n\\nNow you're all set! You can take the Airlink 100 Bus to Haymarket Station, buy your Ridacard at the Travelshop, and start exploring Edinburgh.\",\"role\":\"assistant\"}],\"retrieval_rank\":10,\"source_id\":\"b4f28f96_1_7\",\"source_session_ids\":[\"b4f28f96_1\"],\"speaker\":\"user+assistant\",\"timestamp\":\"2023/05/25 (Thu) 04:55\",\"valid_at\":null},{\"evidence_type\":\"graph_fact\",\"expired_at\":null,\"invalid_at\":null,\"raw_evidence\":\"Instagram Live includes a Q&A session as a feature for engaging with the audience in real-time.\",\"retrieval_rank\":4,\"source_id\":\"8bf43597-c33b-485b-847b-e4713fd66a05\",\"source_session_ids\":[\"answer_5126c02d_1\"],\"speaker\":\"graph_fact\",\"timestamp\":\"2023-05-25T05:26:00+00:00\",\"valid_at\":null},{\"evidence_type\":\"source_local_round\",\"expired_at\":null,\"graphiti_session_rank\":8,\"invalid_at\":null,\"raw_evidence\":[{\"content\":\"How did the continents form and what is plate tectonics?\",\"role\":\"user\"},{\"content\":\"The continents formed billions of years ago through a process known as continental drift. The Earth's outermost layer or lithosphere is made up of several large plates that fit together like a jigsaw puzzle. These plates continuously move and interact, causing seismic activity, earthquakes, and mountain-forming processes.\\n\\nPlate tectonics is the scientific theory that explains the movement and interaction of these large plates. It explains the formation of landmasses, mountain ranges, and oceanic basins. The theory suggests that the Earth's lithosphere is broken up into several large tectonic plates that float on top of the underlying molten mantle. These plates move around the Earth's surface driven by convection currents in the mantle. The movement of these plates leads to the formation of new crust or the breakup and collision of landmasses, leading to the eventual formation of continents. \\n\\nThe movement and interaction of these plates also contribute to natural disasters such as volcanic eruptions, earthquakes, and tsunamis. Plate tectonics have had a profound effect on the Earth's geological, biological, and atmospheric processes and are crucial to understanding the planet's evolution.\",\"role\":\"assistant\"}],\"retrieval_rank\":8,\"source_id\":\"ultrachat_374302_1\",\"source_session_ids\":[\"ultrachat_374302\"],\"speaker\":\"user+assistant\",\"timestamp\":\"2023/05/25 (Thu) 06:22\",\"valid_at\":null},{\"evidence_type\":\"source_local_round\",\"expired_at\":null,\"graphiti_session_rank\":1,\"invalid_at\":null,\"raw_evidence\":[{\"content\":\"I'll reach out to Ashley Gaida and propose a guest blog post collaboration. Here's my message: \\\"Hi Ashley, I've been following your content on content creation and digital marketing, and I love your insights. I think our audiences would really benefit from a guest post on my blog about creating engaging Instagram content. Would you be interested in writing a post for my audience?\\\"\",\"role\":\"user\"},{\"content\":\"Your outreach message looks great! You've:\\n\\n1. **Personalized the message**: You've addressed Ashley by name and shown that you've taken the time to familiarize yourself with her content.\\n2. **Highlighted the benefit**: You've explained how a guest post would benefit both your audiences, making it a win-win collaboration.\\n3. **Specifically proposed a topic**: You've suggested a specific topic that aligns with Ashley's expertise and your audience's interests.\\n4. **Kept it concise**: Your message is brief and to the point, making it easy for Ashley to quickly understand the proposal.\\n\\nHere's a minor suggestion to make your message even more effective:\\n\\n**Add a brief introduction to your blog and audience**: This will give Ashley a better understanding of your platform and help her determine if it's a good fit for her content. You could add a sentence like:\\n\\n\\\"My blog focuses on [briefly describe your blog's niche and target audience], and I think your insights on creating engaging Instagram content would really resonate with them.\\\"\\n\\nHere's your revised message:\\n\\n\\\"Hi Ashley, I've been following your content on content creation and digital marketing, and I love your insights. My blog focuses on helping entrepreneurs and small business owners build their online presence, and I think your insights on creating engaging Instagram content would really resonate with them. Would you be interested in writing a guest post for my audience on this topic?\\\"\\n\\nFeel free to adjust as you see fit, and good luck with your outreach!\",\"role\":\"assistant\"}],\"retrieval_rank\":1,\"source_id\":\"answer_5126c02d_2_9\",\"source_session_ids\":[\"answer_5126c02d_2\"],\"speaker\":\"user+assistant\",\"timestamp\":\"2023/05/25 (Thu) 09:28\",\"valid_at\":null},{\"evidence_type\":\"source_local_round\",\"expired_at\":null,\"graphiti_session_rank\":1,\"invalid_at\":null,\"raw_evidence\":[{\"content\":\"I think I'll start with micro-influencers and see how it goes. Can you suggest some potential collaboration ideas for me to reach out to them?\",\"role\":\"user\"},{\"content\":\"Micro-influencers can be a great starting point for collaborations, and they often have higher engagement rates compared to larger influencers. Here are some potential collaboration ideas you can propose to micro-influencers in the content creation and digital marketing niches:\\n\\n**1. Guest Blog Post or Video Collaboration**\\n\\nReach out to a micro-influencer and propose a guest blog post or video collaboration on a topic relevant to your niche. This can help you tap into their audience and create fresh content for your own blog or social media channels.\\n\\n**Example:** \\\"Hey [Influencer], I love your content on [specific topic]. Would you be interested in writing a guest post for my blog on [related topic]? I'd love to share your expertise with my audience.\\\"\\n\\n**2. Social Media Takeover**\\n\\nAsk a micro-influencer to take over your social media account for a day. This can bring a fresh perspective to your content and expose your brand to their followers.\\n\\n**Example:** \\\"Hey [Influencer], I love your Instagram aesthetic. Would you be interested in taking over my account for a day and sharing your favorite content creation tips with my audience?\\\"\\n\\n**3. Expert Interview or Q&A Session**\\n\\nReach out to a micro-influencer and propose an expert interview or Q&A session on a topic relevant to your niche. This can provide valuable insights to your audience and help establish your brand as a thought leader.\\n\\n**Example:** \\\"Hey [Influencer], I'd love to feature you in an upcoming Q&A session on my blog or social media channels. Would you be available to answer some questions on [specific topic]?\\\"\\n\\n**4. Content Swap or Collaboration**\\n\\nPropose a content swap or collaboration where you create content for each other's audiences. This can help you reach a new audience and create fresh content for your own channels.\\n\\n**Example:** \\\"Hey [Influencer], I love your YouTube content. Would you be interested in creating a video for my audience, and I'll create a blog post for yours?\\\"\\n\\n**5. Shoutout or Feature**\\n\\nOffer to feature a micro-influencer on your social media channels or blog in exchange for a shoutout to your brand. This can help increase your visibility and reach a new audience.\\n\\n**Example:** \\\"Hey [Influencer], I love your work and would like to feature you on my Instagram story. Would you be willing to give my brand a shoutout in return?\\\"\\n\\n**6. Exclusive Tips or Resources**\\n\\nCollaborate with a micro-influencer to create exclusive tips or resources for your audience. This can help establish your brand as a valuable resource and provide unique content to your followers.\\n\\n**Example:** \\\"Hey [Influencer], I'd love to collaborate on a exclusive guide to [specific topic]. Would you be interested in contributing your expertise and sharing it with my audience?\\\"\\n\\nRemember to personalize your outreach emails and highlight the benefits of collaborating with your brand. Good luck, and I hope these ideas help you get started!\",\"role\":\"assistant\"}],\"retrieval_rank\":3,\"source_id\":\"answer_5126c02d_2_7\",\"source_session_ids\":[\"answer_5126c02d_2\"],\"speaker\":\"user+assistant\",\"timestamp\":\"2023/05/25 (Thu) 09:28\",\"valid_at\":null},{\"evidence_type\":\"graph_fact\",\"expired_at\":null,\"invalid_at\":null,\"raw_evidence\":\"ASMR content is mentioned in the same context as James Charles' YouTube channel.\",\"retrieval_rank\":2,\"source_id\":\"fca14cb1-8971-4c51-904a-79421673ee68\",\"source_session_ids\":[\"f188b48d_2\"],\"speaker\":\"graph_fact\",\"timestamp\":\"2023-05-25T09:56:00+00:00\",\"valid_at\":null},{\"evidence_type\":\"graph_fact\",\"expired_at\":null,\"invalid_at\":null,\"raw_evidence\":\"ASMR is related to ASMR content creation.\",\"retrieval_rank\":5,\"source_id\":\"edea798f-f854-45cb-9d5b-e7d5cdab86b7\",\"source_session_ids\":[\"f188b48d_2\"],\"speaker\":\"graph_fact\",\"timestamp\":\"2023-05-25T09:56:00+00:00\",\"valid_at\":null},{\"evidence_type\":\"graph_fact\",\"expired_at\":null,\"invalid_at\":null,\"raw_evidence\":\"ASMR content can be monetized via Patreon membership programs.\",\"retrieval_rank\":7,\"source_id\":\"099a9afe-27e5-4233-89f6-f900d958d44a\",\"source_session_ids\":[\"f188b48d_2\"],\"speaker\":\"graph_fact\",\"timestamp\":\"2023-05-25T09:56:00+00:00\",\"valid_at\":\"2023-05-25T09:56:00+00:00\"},{\"evidence_type\":\"graph_fact\",\"expired_at\":null,\"invalid_at\":null,\"raw_evidence\":\"ASMR content can be used to create ASMR-based relaxation programs.\",\"retrieval_rank\":9,\"source_id\":\"6aaed47c-b419-4ea5-8d0b-e571d363f2b7\",\"source_session_ids\":[\"f188b48d_2\"],\"speaker\":\"graph_fact\",\"timestamp\":\"2023-05-25T09:56:00+00:00\",\"valid_at\":null},{\"evidence_type\":\"graph_fact\",\"expired_at\":null,\"invalid_at\":null,\"raw_evidence\":\"ASMR content creators can sell ASMR-themed merchandise.\",\"retrieval_rank\":12,\"source_id\":\"201ec97c-10ff-45f5-b973-e10eb2fdb79f\",\"source_session_ids\":[\"f188b48d_2\"],\"speaker\":\"graph_fact\",\"timestamp\":\"2023-05-25T09:56:00+00:00\",\"valid_at\":\"2023-05-25T09:56:00+00:00\"},{\"evidence_type\":\"graph_fact\",\"expired_at\":null,\"invalid_at\":null,\"raw_evidence\":\"ASMR content is not related to the budgeting app Mint.\",\"retrieval_rank\":14,\"source_id\":\"566f351f-750e-4926-ace4-193f9008482e\",\"source_session_ids\":[\"f188b48d_2\"],\"speaker\":\"graph_fact\",\"timestamp\":\"2023-05-25T09:56:00+00:00\",\"valid_at\":null},{\"evidence_type\":\"graph_fact\",\"expired_at\":null,\"invalid_at\":null,\"raw_evidence\":\"ASMR content is not related to the budgeting app YNAB.\",\"retrieval_rank\":15,\"source_id\":\"886dc141-9d22-4090-ad2c-fd86098a4c9b\",\"source_session_ids\":[\"f188b48d_2\"],\"speaker\":\"graph_fact\",\"timestamp\":\"2023-05-25T09:56:00+00:00\",\"valid_at\":null},{\"evidence_type\":\"source_local_round\",\"expired_at\":null,\"graphiti_session_rank\":10,\"invalid_at\":null,\"raw_evidence\":[{\"content\":\"I'm thinking of trying out a new recipe for slow cooker chili, but I need some help with meal planning and grocery shopping. Can you give me some tips on how to plan out my meals for the week and create a grocery list? By the way, I tried out a new food delivery service, GrubHub, earlier this week and was impressed with their options - it's nice to have alternatives when I don't feel like cooking.\",\"role\":\"user\"},{\"content\":\"I'm happy to help you with meal planning and grocery shopping! However, I have to correct you - GrubHub is not a food delivery service that provides meal kits or ingredients, but rather a platform that allows you to order food from local restaurants and have it delivered to your doorstep. If you're looking for meal kit delivery services, there are other options like Blue Apron, HelloFresh, or Home Chef.\\n\\nNow, let's get back to meal planning and grocery shopping for your slow cooker chili recipe! Here are some tips to help you plan out your meals for the week and create a grocery list:\\n\\n**Meal Planning:**\\n\\n1. **Determine your meal goals**: Decide how many meals you want to plan for the week, and what type of meals you want to cook (e.g., breakfast, lunch, dinner, snacks).\\n2. **Consider your schedule**: Think about your busy days and plan accordingly. If you have a packed day, consider prep-ahead meals or leftovers.\\n3. **Choose your recipes**: Select 3-4 recipes you want to cook for the week, including your slow cooker chili. You can find inspiration online or use a meal planning app like Plan to Eat or Yummly.\\n4. **Create a meal calendar**: Write down the meals you've chosen and the days you'll cook them.\\n\\n**Grocery List:**\\n\\n1. **Make a list of ingredients**: Go through each recipe and write down the ingredients you need. You can use a note-taking app or a physical notebook.\\n2. **Check what you already have**: Look through your pantry, fridge, and freezer to see what ingredients you already have on hand.\\n3. **Organize your list**: Categorize your ingredients by aisle (e.g., produce, meat, canned goods, dairy) to make shopping more efficient.\\n4. **Add essentials**: Don't forget to add staples like oils, spices, and condiments to your list.\\n\\n**Tips for Slow Cooker Chili:**\\n\\n* Consider buying ground beef or ground turkey in bulk and freezing it for future meals.\\n* You may already have some pantry staples like canned tomatoes, beans, and spices.\\n* If you want to make your chili more substantial, add some extra ingredients like diced bell peppers, onions, or jalapenos.\\n\\nHere's a sample grocery list for slow cooker chili:\\n\\n* Ground beef or ground turkey\\n* Onion\\n* Garlic\\n* Bell pepper\\n* Jalapeno\\n* Canned diced tomatoes\\n* Canned kidney beans\\n* Tomato paste\\n* Chili powder\\n* Cumin\\n* Paprika\\n* Salt and pepper\\n* Olive oil\\n\\nRemember to adjust the quantities based on your personal preferences and the number of people you're cooking for.\\n\\nI hope these tips help you plan out your meals and create a grocery list for your slow cooker chili recipe!\",\"role\":\"assistant\"}],\"retrieval_rank\":6,\"source_id\":\"c98b3349_3_1\",\"source_session_ids\":[\"c98b3349_3\"],\"speaker\":\"user+assistant\",\"timestamp\":\"2023/05/25 (Thu) 15:30\",\"valid_at\":null},{\"evidence_type\":\"graph_fact\",\"expired_at\":null,\"invalid_at\":null,\"raw_evidence\":\"The 'one in, one out' policy is being considered for expansion to include home goods.\",\"retrieval_rank\":18,\"source_id\":\"d0ff8934-ef0b-459e-b282-a32c8b36bc83\",\"source_session_ids\":[\"57bf4122_1\"],\"speaker\":\"graph_fact\",\"timestamp\":\"2023-05-25T19:24:00+00:00\",\"valid_at\":\"2023-05-25T19:24:00+00:00\"},{\"evidence_type\":\"graph_fact\",\"expired_at\":null,\"invalid_at\":null,\"raw_evidence\":\"The 'one in, one out' policy is being considered for expansion to include electronics.\",\"retrieval_rank\":19,\"source_id\":\"22e29c4c-ccf4-4c72-be73-68ebe21d12f7\",\"source_session_ids\":[\"57bf4122_1\"],\"speaker\":\"graph_fact\",\"timestamp\":\"2023-05-25T19:24:00+00:00\",\"valid_at\":\"2023-05-25T19:24:00+00:00\"},{\"evidence_type\":\"graph_fact\",\"expired_at\":null,\"invalid_at\":null,\"raw_evidence\":\"The Sonos app allows users to adjust the bass level of the Sonos Beam from -3 to +3.\",\"retrieval_rank\":3,\"source_id\":\"df363afb-2767-4048-b4b3-4b878aa85839\",\"source_session_ids\":[\"74ef19f0_1\"],\"speaker\":\"graph_fact\",\"timestamp\":\"2023-06-08T20:21:00+00:00\",\"valid_at\":null}]",
+    "episodes": [
+      {
+        "episode_uuid": "2bfa44ff-8e28-442e-8ebc-3def5073f513",
+        "retrieval_rank": 1,
+        "session_id": "answer_5126c02d_2"
+      },
+      {
+        "episode_uuid": "a4e90ca3-86b2-452a-abac-d677124cfc7b",
+        "retrieval_rank": 2,
+        "session_id": "ultrachat_59277"
+      },
+      {
+        "episode_uuid": "519c068a-83d2-42d4-ae97-7ab6a021d26d",
+        "retrieval_rank": 3,
+        "session_id": "ultrachat_207469"
+      },
+      {
+        "episode_uuid": "224c5e3e-a3fc-4fbd-ad51-9696947c0f82",
+        "retrieval_rank": 4,
+        "session_id": "61d3fec4_4"
+      },
+      {
+        "episode_uuid": "658a939f-77f0-43a6-929f-4167c0b387ae",
+        "retrieval_rank": 5,
+        "session_id": "a8028ce7_2"
+      },
+      {
+        "episode_uuid": "0e999e1d-ab65-4dc9-ac57-8d0b3a665d1f",
+        "retrieval_rank": 6,
+        "session_id": "sharegpt_FfqJ2xI_0"
+      },
+      {
+        "episode_uuid": "d4d4920b-2aa1-4275-9ba8-4ee8dc80757e",
+        "retrieval_rank": 7,
+        "session_id": "answer_5126c02d_1"
+      },
+      {
+        "episode_uuid": "fd905f51-a593-4e63-9030-7b069576438a",
+        "retrieval_rank": 8,
+        "session_id": "ultrachat_374302"
+      },
+      {
+        "episode_uuid": "900d7ee2-0d7b-4966-b7ae-102e23db36a8",
+        "retrieval_rank": 9,
+        "session_id": "c11b64f3_1"
+      },
+      {
+        "episode_uuid": "9c5393c8-ab77-4e08-9848-c2aa5de3acfb",
+        "retrieval_rank": 10,
+        "session_id": "c98b3349_3"
+      },
+      {
+        "episode_uuid": "94f37bf8-3a6d-4cb2-a606-d50619f505cd",
+        "retrieval_rank": 11,
+        "session_id": "b4f28f96_1"
+      },
+      {
+        "episode_uuid": "63447735-c195-4855-8f3a-6da3afc2c782",
+        "retrieval_rank": 12,
+        "session_id": "104055de"
+      },
+      {
+        "episode_uuid": "ffee0cb1-6317-4dc1-8269-d2e00704d273",
+        "retrieval_rank": 13,
+        "session_id": "57bf4122_1"
+      },
+      {
+        "episode_uuid": "6da0294c-a35c-434c-993e-901970af2de8",
+        "retrieval_rank": 14,
+        "session_id": "1d015773_1"
+      },
+      {
+        "episode_uuid": "23632d8d-100d-4d55-84b9-951525b8c213",
+        "retrieval_rank": 15,
+        "session_id": "ultrachat_475462"
+      },
+      {
+        "episode_uuid": "614287f4-14b2-4cf0-a79e-291930d6e75e",
+        "retrieval_rank": 16,
+        "session_id": "ultrachat_282946"
+      },
+      {
+        "episode_uuid": "1e9cdc67-af84-4802-b298-59724e2d7edb",
+        "retrieval_rank": 17,
+        "session_id": "sharegpt_gYShON7_0"
+      },
+      {
+        "episode_uuid": "17c067f4-2c15-4412-b4ae-cf74248e73c7",
+        "retrieval_rank": 18,
+        "session_id": "fc9d19f7_2"
+      },
+      {
+        "episode_uuid": "99877241-5079-4983-9ffe-f847202a0fae",
+        "retrieval_rank": 19,
+        "session_id": "2fa50779_2"
+      },
+      {
+        "episode_uuid": "53847148-f0da-4f4d-804b-e5971bcc35c0",
+        "retrieval_rank": 20,
+        "session_id": "ultrachat_181699"
+      }
+    ],
+    "facts": [
+      {
+        "edge_uuid": "3580792f-f532-4a80-9b42-6efd82e5c810",
+        "expired_at": null,
+        "fact": "User plans to visit the USS Arizona Memorial during their upcoming trip to Waikiki.",
+        "invalid_at": null,
+        "reference_time": "2023-05-24T15:18:00+00:00",
+        "relation_name": "PLANS_TO_VISIT",
+        "retrieval_rank": 1,
+        "source_node_uuid": "927f204b-6b0a-4ae1-a0fb-b16000347e66",
+        "source_session_ids": [
+          "c11b64f3_1"
+        ],
+        "target_node_uuid": "348c9291-030a-442c-808c-a8943af2d5bc",
+        "valid_at": null
+      },
+      {
+        "edge_uuid": "fca14cb1-8971-4c51-904a-79421673ee68",
+        "expired_at": null,
+        "fact": "ASMR content is mentioned in the same context as James Charles' YouTube channel.",
+        "invalid_at": null,
+        "reference_time": "2023-05-25T09:56:00+00:00",
+        "relation_name": "MENTIONED_IN_SAME_CONTEXT_AS",
+        "retrieval_rank": 2,
+        "source_node_uuid": "3edc4fac-30f7-493d-9dbd-ef755c01fcc0",
+        "source_session_ids": [
+          "f188b48d_2"
+        ],
+        "target_node_uuid": "67b23c19-6507-4748-9d4d-93abe7ddbce0",
+        "valid_at": null
+      },
+      {
+        "edge_uuid": "df363afb-2767-4048-b4b3-4b878aa85839",
+        "expired_at": null,
+        "fact": "The Sonos app allows users to adjust the bass level of the Sonos Beam from -3 to +3.",
+        "invalid_at": null,
+        "reference_time": "2023-06-08T20:21:00+00:00",
+        "relation_name": "ADJUSTS_BASS_OF",
+        "retrieval_rank": 3,
+        "source_node_uuid": "cfeb0e53-c248-42dc-bf7e-4c772ef78efc",
+        "source_session_ids": [
+          "74ef19f0_1"
+        ],
+        "target_node_uuid": "2007acac-1436-4217-adec-f4f7ebf7cb2d",
+        "valid_at": null
+      },
+      {
+        "edge_uuid": "8bf43597-c33b-485b-847b-e4713fd66a05",
+        "expired_at": null,
+        "fact": "Instagram Live includes a Q&A session as a feature for engaging with the audience in real-time.",
+        "invalid_at": null,
+        "reference_time": "2023-05-25T05:26:00+00:00",
+        "relation_name": "INCLUDES",
+        "retrieval_rank": 4,
+        "source_node_uuid": "3670805c-15bf-47da-b56f-e0573dc30725",
+        "source_session_ids": [
+          "answer_5126c02d_1"
+        ],
+        "target_node_uuid": "2a19cf57-3c2b-4036-b0e9-76c158d101cc",
+        "valid_at": null
+      },
+      {
+        "edge_uuid": "edea798f-f854-45cb-9d5b-e7d5cdab86b7",
+        "expired_at": null,
+        "fact": "ASMR is related to ASMR content creation.",
+        "invalid_at": null,
+        "reference_time": "2023-05-25T09:56:00+00:00",
+        "relation_name": "RELATED_TO",
+        "retrieval_rank": 5,
+        "source_node_uuid": "db21444f-d274-404b-8f52-d857a7151385",
+        "source_session_ids": [
+          "f188b48d_2"
+        ],
+        "target_node_uuid": "3edc4fac-30f7-493d-9dbd-ef755c01fcc0",
+        "valid_at": null
+      },
+      {
+        "edge_uuid": "931ea4a3-82ff-4f07-948d-5907602b00a0",
+        "expired_at": null,
+        "fact": "User plans to purchase a 3-day Go Oahu Card to make the most of their time in Waikiki.",
+        "invalid_at": null,
+        "reference_time": "2023-05-24T15:18:00+00:00",
+        "relation_name": "PURCHASED",
+        "retrieval_rank": 6,
+        "source_node_uuid": "927f204b-6b0a-4ae1-a0fb-b16000347e66",
+        "source_session_ids": [
+          "c11b64f3_1"
+        ],
+        "target_node_uuid": "a46f95a9-ece8-4839-a111-09c3653a1cfe",
+        "valid_at": null
+      },
+      {
+        "edge_uuid": "099a9afe-27e5-4233-89f6-f900d958d44a",
+        "expired_at": null,
+        "fact": "ASMR content can be monetized via Patreon membership programs.",
+        "invalid_at": null,
+        "reference_time": "2023-05-25T09:56:00+00:00",
+        "relation_name": "CAN_BE_MONETIZED_VIA",
+        "retrieval_rank": 7,
+        "source_node_uuid": "3edc4fac-30f7-493d-9dbd-ef755c01fcc0",
+        "source_session_ids": [
+          "f188b48d_2"
+        ],
+        "target_node_uuid": "76522dcf-acc3-4c8e-ad68-f4b4532a21ea",
+        "valid_at": "2023-05-25T09:56:00+00:00"
+      },
+      {
+        "edge_uuid": "8dc6131c-1aa8-4862-a0a5-3f4b94d8cb9a",
+        "expired_at": null,
+        "fact": "Taylor Jenkins Reid was recommended as an author to read after the user mentioned enjoying the writing style of Taylor Jenkins Reid and pre-ordered her new book.",
+        "invalid_at": null,
+        "reference_time": "2023-05-21T23:30:00+00:00",
+        "relation_name": "RECOMMENDED",
+        "retrieval_rank": 8,
+        "source_node_uuid": "5abc6776-dd61-4192-920e-067d1d7cd2fd",
+        "source_session_ids": [
+          "a8028ce7_2"
+        ],
+        "target_node_uuid": "bf3bf8fd-56da-49a1-ba3f-2b9b38a0a713",
+        "valid_at": null
+      },
+      {
+        "edge_uuid": "6aaed47c-b419-4ea5-8d0b-e571d363f2b7",
+        "expired_at": null,
+        "fact": "ASMR content can be used to create ASMR-based relaxation programs.",
+        "invalid_at": null,
+        "reference_time": "2023-05-25T09:56:00+00:00",
+        "relation_name": "CAN_INCLUDE",
+        "retrieval_rank": 9,
+        "source_node_uuid": "3edc4fac-30f7-493d-9dbd-ef755c01fcc0",
+        "source_session_ids": [
+          "f188b48d_2"
+        ],
+        "target_node_uuid": "39c936f2-85b9-4f53-ba08-2b4897236168",
+        "valid_at": null
+      },
+      {
+        "edge_uuid": "fc55d3b7-739b-469d-92b1-dd995f268832",
+        "expired_at": null,
+        "fact": "User is planning a trip to Waikiki, Hawaii.",
+        "invalid_at": null,
+        "reference_time": "2023-05-24T15:18:00+00:00",
+        "relation_name": "PLANS_TO_VISIT",
+        "retrieval_rank": 10,
+        "source_node_uuid": "927f204b-6b0a-4ae1-a0fb-b16000347e66",
+        "source_session_ids": [
+          "c11b64f3_1"
+        ],
+        "target_node_uuid": "06a893fc-cc1e-4c1d-81fe-77a2ecec9c82",
+        "valid_at": "2023-05-24T15:18:00+00:00"
+      },
+      {
+        "edge_uuid": "3da7cba3-37da-4e9c-8b46-76f20516641e",
+        "expired_at": null,
+        "fact": "NFC chip may have certification according to EMVCo.",
+        "invalid_at": null,
+        "reference_time": "2023-04-25T10:21:00+00:00",
+        "relation_name": "HAS_CERTIFICATION",
+        "retrieval_rank": 11,
+        "source_node_uuid": "a1c899fc-07d5-4d9d-a7d3-534b462d35e2",
+        "source_session_ids": [
+          "sharegpt_wyaZNL4_9"
+        ],
+        "target_node_uuid": "4e856c41-c8b1-48ad-afeb-30ce8e967a97",
+        "valid_at": null
+      },
+      {
+        "edge_uuid": "201ec97c-10ff-45f5-b973-e10eb2fdb79f",
+        "expired_at": null,
+        "fact": "ASMR content creators can sell ASMR-themed merchandise.",
+        "invalid_at": null,
+        "reference_time": "2023-05-25T09:56:00+00:00",
+        "relation_name": "CAN_INCLUDE",
+        "retrieval_rank": 12,
+        "source_node_uuid": "3edc4fac-30f7-493d-9dbd-ef755c01fcc0",
+        "source_session_ids": [
+          "f188b48d_2"
+        ],
+        "target_node_uuid": "29ef2eb1-097c-4d5a-8426-650f511bc743",
+        "valid_at": "2023-05-25T09:56:00+00:00"
+      },
+      {
+        "edge_uuid": "b5a16ce2-9a9c-416f-be63-0ce9ea76c545",
+        "expired_at": null,
+        "fact": "NFC chip may have certification according to Common Criteria.",
+        "invalid_at": null,
+        "reference_time": "2023-04-25T10:21:00+00:00",
+        "relation_name": "HAS_CERTIFICATION",
+        "retrieval_rank": 13,
+        "source_node_uuid": "a1c899fc-07d5-4d9d-a7d3-534b462d35e2",
+        "source_session_ids": [
+          "sharegpt_wyaZNL4_9"
+        ],
+        "target_node_uuid": "9319fd28-0886-4422-9027-abc6911983c2",
+        "valid_at": null
+      },
+      {
+        "edge_uuid": "566f351f-750e-4926-ace4-193f9008482e",
+        "expired_at": null,
+        "fact": "ASMR content is not related to the budgeting app Mint.",
+        "invalid_at": null,
+        "reference_time": "2023-05-25T09:56:00+00:00",
+        "relation_name": "NOT_RELATED_TO",
+        "retrieval_rank": 14,
+        "source_node_uuid": "3edc4fac-30f7-493d-9dbd-ef755c01fcc0",
+        "source_session_ids": [
+          "f188b48d_2"
+        ],
+        "target_node_uuid": "839b8130-5db2-4af1-ab48-ebbd71c6b19e",
+        "valid_at": null
+      },
+      {
+        "edge_uuid": "886dc141-9d22-4090-ad2c-fd86098a4c9b",
+        "expired_at": null,
+        "fact": "ASMR content is not related to the budgeting app YNAB.",
+        "invalid_at": null,
+        "reference_time": "2023-05-25T09:56:00+00:00",
+        "relation_name": "NOT_RELATED_TO",
+        "retrieval_rank": 15,
+        "source_node_uuid": "3edc4fac-30f7-493d-9dbd-ef755c01fcc0",
+        "source_session_ids": [
+          "f188b48d_2"
+        ],
+        "target_node_uuid": "f2957d88-2436-4592-8d22-c76bee20b52c",
+        "valid_at": null
+      },
+      {
+        "edge_uuid": "c919a9ee-d615-4e71-b7c1-4d9286b23c2c",
+        "expired_at": null,
+        "fact": "Jeaniene Frost authored the book Halfway to the Grave.",
+        "invalid_at": null,
+        "reference_time": "2023-05-21T23:30:00+00:00",
+        "relation_name": "AUTHORED",
+        "retrieval_rank": 16,
+        "source_node_uuid": "f3aa8280-4983-4a3d-8d9f-31dff9313fcf",
+        "source_session_ids": [
+          "a8028ce7_2"
+        ],
+        "target_node_uuid": "bf3bf8fd-56da-49a1-ba3f-2b9b38a0a713",
+        "valid_at": null
+      },
+      {
+        "edge_uuid": "170f2790-4d23-4b26-bf74-87c3a4d2f6a3",
+        "expired_at": null,
+        "fact": "Giffgaff offers student-specific plans and services for international students at the University of Edinburgh.",
+        "invalid_at": null,
+        "reference_time": "2023-05-25T04:55:00+00:00",
+        "relation_name": "CATERS_TO",
+        "retrieval_rank": 17,
+        "source_node_uuid": "f9d65d96-2113-4b34-9651-5062193224b1",
+        "source_session_ids": [
+          "b4f28f96_1"
+        ],
+        "target_node_uuid": "90cde4cf-1e64-464f-80cb-cd3763df699c",
+        "valid_at": "2023-05-25T04:55:00+00:00"
+      },
+      {
+        "edge_uuid": "d0ff8934-ef0b-459e-b282-a32c8b36bc83",
+        "expired_at": null,
+        "fact": "The 'one in, one out' policy is being considered for expansion to include home goods.",
+        "invalid_at": null,
+        "reference_time": "2023-05-25T19:24:00+00:00",
+        "relation_name": "APPLIES_TO",
+        "retrieval_rank": 18,
+        "source_node_uuid": "79315a6a-7487-4542-8809-9e3c0c4bf45a",
+        "source_session_ids": [
+          "57bf4122_1"
+        ],
+        "target_node_uuid": "72ba7793-2480-442d-8608-f086e7d9c68c",
+        "valid_at": "2023-05-25T19:24:00+00:00"
+      },
+      {
+        "edge_uuid": "22e29c4c-ccf4-4c72-be73-68ebe21d12f7",
+        "expired_at": null,
+        "fact": "The 'one in, one out' policy is being considered for expansion to include electronics.",
+        "invalid_at": null,
+        "reference_time": "2023-05-25T19:24:00+00:00",
+        "relation_name": "APPLIES_TO",
+        "retrieval_rank": 19,
+        "source_node_uuid": "79315a6a-7487-4542-8809-9e3c0c4bf45a",
+        "source_session_ids": [
+          "57bf4122_1"
+        ],
+        "target_node_uuid": "2fcde01e-8628-4f33-8426-1ebbbeaecaff",
+        "valid_at": "2023-05-25T19:24:00+00:00"
+      },
+      {
+        "edge_uuid": "ac98dbae-5a82-4cc6-8656-8207df8a51c2",
+        "expired_at": null,
+        "fact": "NFC chip may have certification according to FIPS 140-3.",
+        "invalid_at": null,
+        "reference_time": "2023-04-25T10:21:00+00:00",
+        "relation_name": "HAS_CERTIFICATION",
+        "retrieval_rank": 20,
+        "source_node_uuid": "a1c899fc-07d5-4d9d-a7d3-534b462d35e2",
+        "source_session_ids": [
+          "sharegpt_wyaZNL4_9"
+        ],
+        "target_node_uuid": "a9596a90-9810-4a57-8fcc-5c2a6b692999",
+        "valid_at": null
+      }
+    ]
+  },
+  "retrieval_metrics": {
+    "gold_ranks": [
+      1
+    ],
+    "mrr": 1.0,
+    "ndcg_at_10": 1.0,
+    "recall_at_1": 1.0,
+    "recall_at_10": 1.0,
+    "recall_at_3": 1.0,
+    "recall_at_5": 1.0,
+    "relevance_unit": "LONGMEMEVAL_GOLD_SESSION"
+  },
+  "run_id": "expanded-qa-20260819-001",
+  "schema_version": "membind.baseline-reuse-expanded-private-row.v1",
+  "temporal_diagnostics": {
+    "active_fact_count": 20,
+    "conflicting_relation_group_count": 0,
+    "diagnostic_scope": "RETRIEVED_EDGE_TEMPORAL_FIELDS_ONLY",
+    "future_fact_count": 0,
+    "latest_valid_fact_ranks": [],
+    "stale_fact_count": 0,
+    "stale_ranked_before_latest_valid_count": 0
+  }
+}

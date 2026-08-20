@@ -3,6 +3,7 @@
 from __future__ import annotations
 
 import json
+import shutil
 from collections.abc import Callable
 from pathlib import Path
 
@@ -10,6 +11,7 @@ import pytest
 
 from paper_eval.artifacts import atomic_write_json, payload_sha256, sha256_file
 from paper_eval.membind_v4.reducer import V4ReducerError, reduce_candidate
+from paper_eval.membind_v4.production_runner import verify_a1_protocol_amendment
 
 
 def _seal(body: dict[str, object]) -> dict[str, object]:
@@ -189,3 +191,85 @@ def test_candidate_reduction_rejects_reference_prefix_source_count_drift(
 
     with pytest.raises(V4ReducerError, match="prefix_reference_identity_drift"):
         reduce_candidate(candidate_root=candidate_root, reference_path=reference_path)
+
+
+def _a1_fixture(tmp_path: Path) -> tuple[Path, Path]:
+    project = Path(__file__).resolve().parents[1]
+    source_root = project / "artifacts/paper_eval/membind_v4/protocol_amendment_a1"
+    audit = tmp_path / "a1" / "audit.json"
+    amendment = tmp_path / "a1" / "amendment.json"
+    reference = tmp_path / "a1" / "reference.json"
+    audit.parent.mkdir(parents=True)
+    shutil.copyfile(source_root / "V4_OPPORTUNITY_AUDIT_A1.json", audit)
+    shutil.copyfile(
+        source_root / "V4_PROTOCOL_AMENDMENT_A1_OPPORTUNITY_EXPOSURE.json", amendment
+    )
+    shutil.copyfile(source_root / "V4_A1_DEVELOPMENT_REFERENCE.json", reference)
+    binding = verify_a1_protocol_amendment(audit, amendment)
+    root = tmp_path / "candidates" / "c01"
+    root.mkdir(parents=True)
+    candidate = _seal(
+        {
+            "schema_version": "membind.paper-eval-v4.candidate.v1",
+            "status": "COMPLETED",
+            "candidate_id": "c01",
+            "source_count": 20,
+        }
+    )
+    summary = _seal(
+        {
+            "schema_version": "membind.paper-eval-v4.summary.v1",
+            "status": "PASS",
+            "candidate_id": "c01",
+            "history_id": "07741c45",
+            "source_count": 20,
+            "protocol_amendment": "A1",
+            "a1_binding": binding,
+            "publication_source_sequences": list(range(20)),
+            "publication_durable_count": 20,
+            "llm_failed_count": 0,
+            "persistent_speculative_write_count": 0,
+            "qualified_node_resolve_count": 0,
+            "speculation_launch_count": 0,
+            "exact_validation_completed_count": 0,
+            "semantic_hit_count": 0,
+            "semantic_miss_count": 0,
+            "overlap_count": 0,
+            "direct_violation_count": 0,
+            "result": {
+                "stream_id": "07741c45",
+                "source_count": 20,
+                "performance": {
+                    "makespan_ns": 852256782248,
+                    "p95_freshness_ns": 181620504073.7,
+                },
+            },
+        }
+    )
+    _write(root / "candidate.json", candidate)
+    _write(root / "summary.json", summary)
+    return root, reference
+
+
+def test_a1_candidate_reduction_binds_sidecars_and_uses_dev_reference(
+    tmp_path: Path,
+) -> None:
+    candidate_root, reference = _a1_fixture(tmp_path)
+    result = reduce_candidate(candidate_root=candidate_root, reference_path=reference)
+    assert result["source_count"] == 20
+    assert result["decision"]["decision"] == "STOP_RUNTIME_OPPORTUNITY_MISMATCH"
+    assert "a1" in result["input_bindings"]
+
+
+def test_a1_candidate_reduction_rejects_sidecar_tamper(tmp_path: Path) -> None:
+    candidate_root, reference = _a1_fixture(tmp_path)
+    amendment = Path(
+        json.loads((candidate_root / "summary.json").read_text())["a1_binding"][
+            "amendment_absolute_path"
+        ]
+    )
+    body = json.loads(amendment.read_text())
+    body["source_prefix"] = "0..18"
+    atomic_write_json(amendment, body)
+    with pytest.raises(V4ReducerError, match="a1_sidecar_binding_invalid|a1_candidate_sidecar_binding"):
+        reduce_candidate(candidate_root=candidate_root, reference_path=reference)

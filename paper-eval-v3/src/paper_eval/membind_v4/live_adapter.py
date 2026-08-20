@@ -24,6 +24,8 @@ from __future__ import annotations
 
 import asyncio
 import inspect
+import time
+from collections.abc import Mapping
 from dataclasses import dataclass
 from typing import Callable
 
@@ -133,6 +135,8 @@ class _Speculation:
     prepared: PreparedArtifact
     call: PreparedSemanticCall
     task: asyncio.Task[object]
+    started_timestamp_ns: int
+    timing: dict[str, int | None]
 
 
 class V4LiveNodeResolveBridge:
@@ -168,6 +172,7 @@ class V4LiveNodeResolveBridge:
         execute_request: Callable[[object], object],
         interpret_response: Callable[[object, PreparedSemanticCall], object],
         continue_native_bind: Callable[..., object],
+        clock_ns: Callable[[], int] = time.monotonic_ns,
     ) -> None:
         callbacks = (
             (materialize_request, "materialize_callback_invalid"),
@@ -178,6 +183,8 @@ class V4LiveNodeResolveBridge:
         for callback, code in callbacks:
             if not callable(callback):
                 raise _fail(code)
+        if not callable(clock_ns):
+            raise _fail("clock_invalid")
         self._adapter = NodeResolveV4Adapter(
             materialize_request=materialize_request,
             execute_request=execute_request,
@@ -190,6 +197,31 @@ class V4LiveNodeResolveBridge:
         self._miss_count = 0
         self._cancelled_count = 0
         self._continuation_count = 0
+        self._clock_ns = clock_ns
+        self._last_timestamp_ns = -1
+
+    def _timestamp_ns(self) -> int:
+        value = self._clock_ns()
+        if (
+            isinstance(value, bool)
+            or not isinstance(value, int)
+            or value < 0
+            or value < self._last_timestamp_ns
+        ):
+            raise _fail("clock_not_monotonic")
+        self._last_timestamp_ns = value
+        return value
+
+    async def _timed_execute(
+        self, call: PreparedSemanticCall, timing: dict[str, int | None]
+    ) -> object:
+        try:
+            return await self._adapter.execute(call)
+        finally:
+            # Record completion even for a failed/cancelled provider call.  A
+            # cancelled attempt is never eligible for hidden-time attribution,
+            # but the timestamp keeps the public trace diagnosable.
+            timing["completed_timestamp_ns"] = self._timestamp_ns()
 
     @property
     def active_speculation_count(self) -> int:
@@ -258,13 +290,23 @@ class V4LiveNodeResolveBridge:
             raise _fail(str(error) or "materialize_failed") from None
         except Exception as error:
             raise _fail(f"materialize_failed:{type(error).__qualname__}") from None
-        task = asyncio.create_task(self._adapter.execute(call))
-        self._active[source] = _Speculation(source, selected, call, task)
+        started = self._timestamp_ns()
+        timing: dict[str, int | None] = {
+            "started_timestamp_ns": started,
+            "completed_timestamp_ns": None,
+        }
+        task = asyncio.create_task(self._timed_execute(call, timing))
+        self._active[source] = _Speculation(
+            source, selected, call, task, started, timing
+        )
         self._emit(
             "speculation_launched",
             source_sequence=source,
             state_version=state_version,
             semantic_call_fingerprint=call.call.fingerprint,
+            token_sequence_hmac_sha256=call.call.token_sequence_sha256,
+            execution_mode=call.call.execution_mode,
+            timestamp_ns=started,
         )
         # Give the event loop one turn so a real transport starts while the
         # frontier continuation is running.  Do not await the task here.
@@ -304,6 +346,8 @@ class V4LiveNodeResolveBridge:
                 selected,
                 state_version=state_version,
             )
+            exact_ready = self._timestamp_ns()
+            validation_started = exact_ready
             if speculation is None:
                 # A caller may run a frontier without speculation.  It still
                 # uses the same exact interpretation and continuation fence.
@@ -322,6 +366,29 @@ class V4LiveNodeResolveBridge:
                     speculation.call,
                     exact,
                 )
+            validation_completed = self._timestamp_ns()
+            started = speculation.started_timestamp_ns if speculation else None
+            completed = (
+                speculation.timing.get("completed_timestamp_ns")
+                if speculation is not None
+                else None
+            )
+            service_span = (
+                max(0, completed - started)
+                if isinstance(started, int) and isinstance(completed, int)
+                else 0
+            )
+            lead = (
+                max(0, exact_ready - started)
+                if isinstance(started, int)
+                else 0
+            )
+            hidden = (
+                min(service_span, lead)
+                if speculation is not None and result.decision.decision == "REUSE"
+                else 0
+            )
+            usage = _response_usage(response)
             if speculation is None:
                 event_type = "exact_node_resolve"
             elif result.decision.decision == "REUSE":
@@ -338,6 +405,30 @@ class V4LiveNodeResolveBridge:
                 ),
                 exact_fingerprint=exact.call.fingerprint,
                 exact_execution_performed=result.exact_execution_performed,
+                timestamp_ns=validation_completed,
+                exact_ready_timestamp_ns=exact_ready,
+                validation_started_timestamp_ns=validation_started,
+                validation_completed_timestamp_ns=validation_completed,
+                validation_latency_ns=max(0, validation_completed - validation_started),
+                speculation_started_timestamp_ns=started,
+                speculation_completed_timestamp_ns=completed,
+                speculation_service_span_ns=service_span,
+                speculation_lead_time_ns=lead,
+                hidden_critical_time_ns=hidden,
+                token_sequence_hmac_sha256=exact.call.token_sequence_sha256,
+                # A MISS is validated against the exact successor call, but
+                # its provider trace belongs to the speculative call.  Keep
+                # both identities so post-run accounting can bind waste
+                # tokens to the request that actually consumed them.
+                speculative_token_sequence_hmac_sha256=(
+                    speculation.call.call.token_sequence_sha256
+                    if speculation is not None
+                    else None
+                ),
+                execution_mode=exact.call.execution_mode,
+                prompt_tokens=usage[0],
+                completion_tokens=usage[1],
+                total_tokens=usage[2],
             )
             continued = await self._adapter.continue_native_bind(
                 compile_input,
@@ -415,6 +506,22 @@ class V4LiveNodeResolveBridge:
     def telemetry(self) -> dict[str, object]:
         """Return content-safe lifecycle counters and immutable event rows."""
 
+        semantic = tuple(
+            event
+            for event in self._events
+            if event.get("event_type") in {"semantic_hit", "semantic_miss"}
+        )
+        hits = tuple(event for event in semantic if event["event_type"] == "semantic_hit")
+        misses = tuple(event for event in semantic if event["event_type"] == "semantic_miss")
+
+        def total(events: tuple[dict[str, object], ...], field: str) -> int:
+            return sum(
+                int(event[field])
+                for event in events
+                if isinstance(event.get(field), int)
+                and not isinstance(event.get(field), bool)
+            )
+
         return {
             "schema_version": "membind.paper-eval-v4.live-node-resolve-telemetry.v1",
             "active_speculation_count": len(self._active),
@@ -424,6 +531,16 @@ class V4LiveNodeResolveBridge:
             "speculation_cancelled_count": self._cancelled_count,
             "semantic_hit_count": self._hit_count,
             "semantic_miss_count": self._miss_count,
+            "qualified_node_resolve_count": self._hit_count + self._miss_count,
+            "exact_validation_completed_count": self._hit_count + self._miss_count,
+            "hidden_critical_time_ns": total(hits, "hidden_critical_time_ns"),
+            "weighted_hit_service_time_ns": total(hits, "speculation_service_span_ns"),
+            "speculation_lead_time_ns": total(hits, "speculation_lead_time_ns")
+            + total(misses, "speculation_lead_time_ns"),
+            "validation_latency_ns": total(semantic, "validation_latency_ns"),
+            "miss_prompt_tokens": total(misses, "prompt_tokens"),
+            "miss_completion_tokens": total(misses, "completion_tokens"),
+            "miss_service_span_ns": total(misses, "speculation_service_span_ns"),
             "native_continuation_count": self._continuation_count,
             "persistent_write_count": self._adapter.persistent_write_count,
             "events": tuple(dict(event) for event in self._events),
@@ -465,6 +582,17 @@ def _exact_decision(call: PreparedSemanticCall) -> SemanticCallDecision:
         speculative_fingerprint=call.call.fingerprint,
         exact_fingerprint=call.call.fingerprint,
     )
+
+
+def _response_usage(response: object) -> tuple[int | None, int | None, int | None]:
+    """Project provider usage without retaining the response payload."""
+
+    usage = response.get("usage") if isinstance(response, Mapping) else getattr(response, "usage", None)
+    values: list[int | None] = []
+    for field in ("prompt_tokens", "completion_tokens", "total_tokens"):
+        value = usage.get(field) if isinstance(usage, Mapping) else getattr(usage, field, None)
+        values.append(value if isinstance(value, int) and not isinstance(value, bool) else None)
+    return tuple(values)  # type: ignore[return-value]
 
 
 __all__ = [

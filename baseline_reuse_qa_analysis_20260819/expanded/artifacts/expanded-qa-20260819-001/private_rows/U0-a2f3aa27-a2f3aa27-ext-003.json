@@ -1,0 +1,487 @@
+{
+  "context_gold_session_coverage_posthoc": 1.0,
+  "edge_provenance_metrics": {
+    "edge_gold_source_precision_at_1": 0.0,
+    "edge_gold_source_precision_at_10": 0.0,
+    "edge_gold_source_precision_at_20": 0.0,
+    "edge_gold_source_precision_at_3": 0.0,
+    "edge_gold_source_precision_at_5": 0.0,
+    "gold_fact_labels_available": false,
+    "gold_session_edge_coverage_at_1": 0.0,
+    "gold_session_edge_coverage_at_10": 0.0,
+    "gold_session_edge_coverage_at_20": 0.0,
+    "gold_session_edge_coverage_at_3": 0.0,
+    "gold_session_edge_coverage_at_5": 0.0,
+    "metric_scope": "PROVENANCE_PROXY_NOT_GOLD_FACT_RECALL"
+  },
+  "failure_category": "SUCCESS",
+  "gold_evidence_quotes": [
+    "I'll create a spreadsheet to keep everything organized"
+  ],
+  "gold_session_ids": [
+    "b65f51fb_5"
+  ],
+  "history_id": "a2f3aa27",
+  "judge": {
+    "config_sha256": "74dc12563a8627582773fcc030a2ae66ff1eaff06334204f40917f21a2ba8907",
+    "error_class": null,
+    "label": true,
+    "model": "Qwen/Qwen3-32B",
+    "output_byte_count": 3,
+    "output_character_count": 3,
+    "output_sha256": "8a798890fe93817163b10b5f7bd2ca4d25d84c52739a645a889c173eee7d9d3d",
+    "parse_status": "YES",
+    "prompt_sha256": "9326c4674d8a771ce5c73202f1eb9e1b36453103bb9b0ded53db45e7622fdfab",
+    "raw_output": "yes",
+    "retry_count": 0,
+    "status": "SUCCESS"
+  },
+  "method": "U0",
+  "namespace": "nc-e1e2-98a47763f4982f11",
+  "payload_sha256": "ad5fff56f676d381fb467a9291654902146306a95840ddbd444a5ca02861c26b",
+  "predicted_answer": "You planned to use a spreadsheet to track updates to your online accounts.",
+  "question": "What did I plan to use to track updates to my online accounts?",
+  "question_date": "2023/06/23 (Fri) 07:31",
+  "question_id": "a2f3aa27-ext-003",
+  "question_type": "knowledge-update",
+  "reader": {
+    "answer": "You planned to use a spreadsheet to track updates to your online accounts.",
+    "completion_tokens": 14,
+    "config_sha256": "49b26ff4c523f609d55ca5a0808bb22518f9665cbc70edd98ea46398b62f0b74",
+    "finish_reason": "stop",
+    "model": "Qwen/Qwen3-32B",
+    "prompt_for_test": "Answer the question using only the provided memory evidence.\nConsider evidence in chronological order.\nWhen information changes, use the latest effective information before the\nquestion date and distinguish current facts from future plans.\nReturn only a concise final answer.\n\nMemory evidence (JSON):\n[{\"evidence_type\":\"graph_fact\",\"expired_at\":null,\"invalid_at\":null,\"raw_evidence\":\"NFC chip may have certification according to EMVCo.\",\"retrieval_rank\":11,\"source_id\":\"3da7cba3-37da-4e9c-8b46-76f20516641e\",\"source_session_ids\":[\"sharegpt_wyaZNL4_9\"],\"speaker\":\"graph_fact\",\"timestamp\":\"2023-04-25T10:21:00+00:00\",\"valid_at\":null},{\"evidence_type\":\"graph_fact\",\"expired_at\":null,\"invalid_at\":null,\"raw_evidence\":\"NFC chip may have certification according to Common Criteria.\",\"retrieval_rank\":18,\"source_id\":\"b5a16ce2-9a9c-416f-be63-0ce9ea76c545\",\"source_session_ids\":[\"sharegpt_wyaZNL4_9\"],\"speaker\":\"graph_fact\",\"timestamp\":\"2023-04-25T10:21:00+00:00\",\"valid_at\":null},{\"evidence_type\":\"source_local_round\",\"expired_at\":null,\"graphiti_session_rank\":7,\"invalid_at\":null,\"raw_evidence\":[{\"content\":\"I'm trying to organize my loyalty programs and rewards. Can you help me keep track of my rewards and remind me when they expire? By the way, I've earned a few bucks in rewards at CVS and I need to make sure I use them before they expire.\",\"role\":\"user\"},{\"content\":\"I'd be happy to help you keep track of your loyalty programs and rewards.\\n\\nLet's start with the CVS rewards. Can you please tell me more about the rewards you've earned? How much is the reward amount, and when do they expire? Additionally, do you have a CVS ExtraCare card or are these rewards from a specific promotion?\\n\\nOnce we get the CVS rewards sorted out, we can move on to other loyalty programs you're a part of. You can share the details of each program, such as:\\n\\n1. Program name (e.g., airline, hotel, credit card, store loyalty program)\\n2. Reward type (e.g., points, miles, cashback, discounts)\\n3. Current balance or available rewards\\n4. Expiration dates (if applicable)\\n\\nI can help you create a virtual \\\"wallet\\\" to keep track of your rewards and remind you when they're about to expire. We can also discuss strategies to maximize your rewards and make the most of your loyalty programs.\\n\\nLet's get started!\",\"role\":\"assistant\"}],\"retrieval_rank\":2,\"source_id\":\"2fa50779_2_1\",\"source_session_ids\":[\"2fa50779_2\"],\"speaker\":\"user+assistant\",\"timestamp\":\"2023/05/04 (Thu) 20:03\",\"valid_at\":null},{\"evidence_type\":\"source_local_round\",\"expired_at\":null,\"graphiti_session_rank\":7,\"invalid_at\":null,\"raw_evidence\":[{\"content\":\"I want to organize my loyalty programs and rewards better. Can I also track my Target RedCard rewards and Fetch Rewards points with you?\",\"role\":\"user\"},{\"content\":\"I'd be happy to help you track your Target RedCard rewards and Fetch Rewards points.\\n\\n**Target RedCard:**\\n\\n* Program: Target RedCard\\n* Reward type: 5% off on Target purchases\\n* Current balance: unknown (since it's a discount program, we'll focus on tracking your savings)\\n\\nTo track your Target RedCard rewards, I'll need to know when you make a purchase at Target using your RedCard. You can report your purchases to me, and I'll keep a running total of your savings.\\n\\n**Fetch Rewards:**\\n\\n* Program: Fetch Rewards\\n* Reward type: Points\\n* Current balance: unknown (let's start tracking your points from now on!)\\n\\nTo track your Fetch Rewards points, I'll need to know when you earn points from purchasing participating brands or submitting receipts. You can report your Fetch Rewards earnings to me, and I'll update your points balance.\\n\\nHere's how you can report your earnings:\\n\\n* For Target RedCard, simply tell me the date and amount of your purchase at Target using your RedCard.\\n* For Fetch Rewards, share the date, points earned, and any relevant details about the purchase (e.g., which brands or products you bought).\\n\\nI'll keep track of your rewards and provide reminders when you're close to earning a new reward or when your points are about to expire.\\n\\nNow, you have three loyalty programs tracked:\\n\\n1. CVS ExtraCare\\n2. Walgreens Balance Rewards\\n3. Target RedCard\\n4. Fetch Rewards\\n\\nFeel free to add more programs or rewards anytime you'd like!\\n\\nRemember, the more you report your earnings and purchases, the better I can assist you in maximizing your rewards and savings.\",\"role\":\"assistant\"}],\"retrieval_rank\":6,\"source_id\":\"2fa50779_2_9\",\"source_session_ids\":[\"2fa50779_2\"],\"speaker\":\"user+assistant\",\"timestamp\":\"2023/05/04 (Thu) 20:03\",\"valid_at\":null},{\"evidence_type\":\"source_local_round\",\"expired_at\":null,\"graphiti_session_rank\":14,\"invalid_at\":null,\"raw_evidence\":[{\"content\":\"i own a fractional leadership consulting company by the name of Sheba Consulting. I have a ton of experience as an executive but recently the economy has declined and with it my business. I did everything possible to reach new clients and it is too slow. what can you suggest i do to get some good new clients quickly?\",\"role\":\"user\"},{\"content\":\"I'm sorry to hear that your business has been impacted by the economic downturn. Here are some suggestions to help you quickly acquire new clients for your fractional leadership consulting company:\\n\\n1. Reevaluate your target market: Analyze your current client base and determine if there's a different segment of the market that may be more resilient or responsive to your services. This might include pivoting to industries that have been less impacted by the economic downturn.\\n2. Offer a limited-time promotion: Create an enticing offer for new clients, such as a discounted rate for the first three months or a free consultation session. This can help generate immediate interest in your services.\\n3. Network extensively: Attend industry events, both online and in-person, to connect with potential clients. Leverage your professional network, including your LinkedIn connections, to reach out to people who might be interested in your services.\\n4. Collaborate with complementary businesses: Partner with other companies that offer non-competitive, complementary services. For example, you could team up with a marketing agency or a human resources consulting firm to offer bundled services to clients.\\n5. Content marketing: Create valuable content, such as blog posts, whitepapers, webinars, or podcasts, that showcase your expertise in leadership consulting. Share this content on your website and social media channels, and consider guest posting on other reputable industry sites.\\n6. Utilize social media advertising: Use targeted social media advertising, such as LinkedIn or Facebook ads, to reach potential clients in specific industries or job titles.\\n7. Offer free resources: Develop and share free resources, like templates, checklists, or guides, that can provide value to potential clients. This can help establish your credibility and encourage potential clients to reach out to you for further assistance.\\n8. Testimonials and case studies: Showcase success stories from your previous clients on your website and in your marketing materials. Potential clients are more likely to work with you if they see concrete examples of your impact.\\n9. Personalize your outreach: When reaching out to potential clients, personalize your messages to address their specific pain points and demonstrate how your services can help them.\\n10. Follow up on leads: Ensure that you follow up on all leads and referrals in a timely and professional manner. Persistence is key when trying to secure new clients, especially in a challenging economic environment.\\n\\nRemember that acquiring new clients takes time and effort, so it's essential to stay proactive and persistent in your marketing and outreach activities.\",\"role\":\"assistant\"}],\"retrieval_rank\":8,\"source_id\":\"sharegpt_gYShON7_0_1\",\"source_session_ids\":[\"sharegpt_gYShON7_0\"],\"speaker\":\"user+assistant\",\"timestamp\":\"2023/05/04 (Thu) 21:52\",\"valid_at\":null},{\"evidence_type\":\"graph_fact\",\"expired_at\":null,\"invalid_at\":null,\"raw_evidence\":\"Jeaniene Frost authored the book Halfway to the Grave.\",\"retrieval_rank\":13,\"source_id\":\"c919a9ee-d615-4e71-b7c1-4d9286b23c2c\",\"source_session_ids\":[\"a8028ce7_2\"],\"speaker\":\"graph_fact\",\"timestamp\":\"2023-05-21T23:30:00+00:00\",\"valid_at\":null},{\"evidence_type\":\"graph_fact\",\"expired_at\":null,\"invalid_at\":null,\"raw_evidence\":\"User plans to visit the USS Arizona Memorial during their upcoming trip to Waikiki.\",\"retrieval_rank\":1,\"source_id\":\"3580792f-f532-4a80-9b42-6efd82e5c810\",\"source_session_ids\":[\"c11b64f3_1\"],\"speaker\":\"graph_fact\",\"timestamp\":\"2023-05-24T15:18:00+00:00\",\"valid_at\":null},{\"evidence_type\":\"graph_fact\",\"expired_at\":null,\"invalid_at\":null,\"raw_evidence\":\"User plans to purchase a 3-day Go Oahu Card to make the most of their time in Waikiki.\",\"retrieval_rank\":4,\"source_id\":\"931ea4a3-82ff-4f07-948d-5907602b00a0\",\"source_session_ids\":[\"c11b64f3_1\"],\"speaker\":\"graph_fact\",\"timestamp\":\"2023-05-24T15:18:00+00:00\",\"valid_at\":null},{\"evidence_type\":\"graph_fact\",\"expired_at\":null,\"invalid_at\":null,\"raw_evidence\":\"User is planning a trip to Waikiki, Hawaii.\",\"retrieval_rank\":7,\"source_id\":\"fc55d3b7-739b-469d-92b1-dd995f268832\",\"source_session_ids\":[\"c11b64f3_1\"],\"speaker\":\"graph_fact\",\"timestamp\":\"2023-05-24T15:18:00+00:00\",\"valid_at\":\"2023-05-24T15:18:00+00:00\"},{\"evidence_type\":\"graph_fact\",\"expired_at\":null,\"invalid_at\":null,\"raw_evidence\":\"User visited the island of Oahu during a previous trip to Hawaii with their family.\",\"retrieval_rank\":17,\"source_id\":\"45e29476-5405-4624-b6ff-c39b652defa3\",\"source_session_ids\":[\"c11b64f3_1\"],\"speaker\":\"graph_fact\",\"timestamp\":\"2023-05-24T15:18:00+00:00\",\"valid_at\":null},{\"evidence_type\":\"graph_fact\",\"expired_at\":null,\"invalid_at\":null,\"raw_evidence\":\"Instagram Live includes a Q&A session as a feature for engaging with the audience in real-time.\",\"retrieval_rank\":14,\"source_id\":\"8bf43597-c33b-485b-847b-e4713fd66a05\",\"source_session_ids\":[\"answer_5126c02d_1\"],\"speaker\":\"graph_fact\",\"timestamp\":\"2023-05-25T05:26:00+00:00\",\"valid_at\":null},{\"evidence_type\":\"graph_fact\",\"expired_at\":null,\"invalid_at\":null,\"raw_evidence\":\"User brings a Kindle on the hike to read books during downtime and reflection.\",\"retrieval_rank\":3,\"source_id\":\"6b1bda1b-2551-4efa-b00a-fc9c29721dae\",\"source_session_ids\":[\"fc9d19f7_2\"],\"speaker\":\"graph_fact\",\"timestamp\":\"2023-05-25T05:48:00+00:00\",\"valid_at\":\"2023-05-25T05:48:00+00:00\"},{\"evidence_type\":\"graph_fact\",\"expired_at\":null,\"invalid_at\":null,\"raw_evidence\":\"ASMR is related to ASMR content creation.\",\"retrieval_rank\":9,\"source_id\":\"edea798f-f854-45cb-9d5b-e7d5cdab86b7\",\"source_session_ids\":[\"f188b48d_2\"],\"speaker\":\"graph_fact\",\"timestamp\":\"2023-05-25T09:56:00+00:00\",\"valid_at\":null},{\"evidence_type\":\"graph_fact\",\"expired_at\":null,\"invalid_at\":null,\"raw_evidence\":\"ASMR content is not related to the budgeting app YNAB.\",\"retrieval_rank\":12,\"source_id\":\"886dc141-9d22-4090-ad2c-fd86098a4c9b\",\"source_session_ids\":[\"f188b48d_2\"],\"speaker\":\"graph_fact\",\"timestamp\":\"2023-05-25T09:56:00+00:00\",\"valid_at\":null},{\"evidence_type\":\"graph_fact\",\"expired_at\":null,\"invalid_at\":null,\"raw_evidence\":\"ASMR content is not related to the budgeting app Mint.\",\"retrieval_rank\":16,\"source_id\":\"566f351f-750e-4926-ace4-193f9008482e\",\"source_session_ids\":[\"f188b48d_2\"],\"speaker\":\"graph_fact\",\"timestamp\":\"2023-05-25T09:56:00+00:00\",\"valid_at\":null},{\"evidence_type\":\"source_local_round\",\"expired_at\":null,\"graphiti_session_rank\":1,\"invalid_at\":null,\"raw_evidence\":[{\"content\":\"That's really helpful! I think I can handle updating my credit card information now. For keeping track of updates, I think I'll create a spreadsheet to keep everything organized. One thing I'm still worried about is remembering to update all the online accounts, especially the less frequently used ones. Do you have any suggestions on how to make sure I don't miss any accounts?\",\"role\":\"user\"},{\"content\":\"I'm glad you're considering creating a spreadsheet to keep track of your updates!\\n\\n**Remembering to Update All Accounts:**\\n\\n1. **Make a list of all accounts**: Start by making a comprehensive list of all your online accounts, including social media, email, shopping, banking, and loyalty programs. You can use a spreadsheet or a note-taking app to create this list.\\n2. **Categorize and prioritize**: Categorize your accounts into groups, such as \\\"essential\\\" (e.g., email, banking, and credit cards), \\\"frequently used\\\" (e.g., social media, shopping), and \\\"less frequently used\\\" (e.g., hobby-related or subscription services). Prioritize updating the essential and frequently used accounts first.\\n3. **Break it down into chunks**: Divide your list into manageable chunks, such as updating 5-10 accounts per day or week, depending on your schedule and availability.\\n4. **Set reminders**: Set reminders for yourself to update specific accounts or categories of accounts. You can use a digital calendar, planner, or reminder app to set reminders.\\n5. **Check your password manager**: If you use a password manager, check your vault for accounts that need updating. Many password managers, like LastPass or 1Password, allow you to search for accounts with outdated information.\\n6. **Review your credit report**: Consider reviewing your credit report to identify any accounts that may be associated with your old information. You can request a free credit report from each of the three major credit bureaus (Experian, TransUnion, and Equifax) once a year from AnnualCreditReport.com.\\n7. **Ask a friend or family member**: Share your list with a trusted friend or family member and ask them to hold you accountable. This can provide an added motivation to complete the task.\\n8. **Celebrate milestones**: Celebrate your progress along the way! Update a few accounts, take a break, and then come back to it. This will help make the task less overwhelming.\\n\\n**Additional Tips:**\\n\\n* **Keep your list up-to-date**: As you update your accounts, remove them from your list. This will help you track your progress and avoid duplicate efforts.\\n* **Use two-factor authentication**: Enable two-factor authentication (2FA) whenever possible to add an extra layer of security to your accounts.\\n* **Monitor your accounts**: Regularly monitor your accounts for suspicious activity and update your information promptly if you notice any discrepancies.\\n\\nBy following these steps, you'll be able to update your online accounts methodically and ensure that you don't miss any important ones. Remember to stay organized, prioritize your accounts, and take breaks when needed. Good luck!\",\"role\":\"assistant\"}],\"retrieval_rank\":1,\"source_id\":\"b65f51fb_5_9\",\"source_session_ids\":[\"b65f51fb_5\"],\"speaker\":\"user+assistant\",\"timestamp\":\"2023/05/25 (Thu) 15:40\",\"valid_at\":null},{\"evidence_type\":\"source_local_round\",\"expired_at\":null,\"graphiti_session_rank\":1,\"invalid_at\":null,\"raw_evidence\":[{\"content\":\"I think I can handle updating my online accounts now. I'll create a spreadsheet to track my progress and set reminders to update specific accounts. I'll also review my credit report to identify any accounts that may be associated with my old information. Thanks for your help!\",\"role\":\"user\"},{\"content\":\"You're welcome! I'm glad I could assist you in updating your online presence and providing you with a plan to keep track of your progress. Creating a spreadsheet and setting reminders will definitely help you stay organized and on top of updating your accounts.\\n\\nRemember to take your time, and don't hesitate to reach out if you need any further assistance or have questions about a specific account. It's great that you're taking proactive steps to update your online presence and protect your personal information.\\n\\nReviewing your credit report is a fantastic idea, as it can help you identify any accounts that may have slipped under the radar. This will give you a comprehensive view of your online presence and help you ensure that all your accounts are up-to-date and secure.\\n\\nIf you have any other questions or concerns in the future, feel free to reach out. Otherwise, I wish you the best of luck in updating your online accounts and maintaining a secure online presence!\\n\\nStay safe and organized online!\",\"role\":\"assistant\"}],\"retrieval_rank\":3,\"source_id\":\"b65f51fb_5_11\",\"source_session_ids\":[\"b65f51fb_5\"],\"speaker\":\"user+assistant\",\"timestamp\":\"2023/05/25 (Thu) 15:40\",\"valid_at\":null},{\"evidence_type\":\"source_local_round\",\"expired_at\":null,\"graphiti_session_rank\":1,\"invalid_at\":null,\"raw_evidence\":[{\"content\":\"I'm trying to update my online presence, and I need some help with changing my name on a few websites. I recently set up a new email address with my new last name on February 12th, and I'm trying to use that for all my online accounts now. Can you walk me through the process of changing my username on some popular websites?\",\"role\":\"user\"},{\"content\":\"Congratulations on your recent name change! Updating your online presence can be a daunting task, but I'm happy to help you through the process. I'll provide step-by-step guides on how to change your username on popular websites. Please note that some websites may have slightly different procedures, and I'll do my best to provide the most up-to-date information.\\n\\n**Before we begin:**\\n\\n1. Make sure you have access to your new email address and password.\\n2. Have your old login credentials handy, as you'll need them to access your accounts.\\n3. Be prepared to verify your identity or provide additional information, if required.\\n\\n**Let's get started!**\\n\\nWhich websites do you need help with? Please select from the list below, and I'll provide the step-by-step guide for each:\\n\\n1. **Facebook**\\n2. **Twitter**\\n3. **Instagram**\\n4. **Google Account (Gmail, YouTube, etc.)**\\n5. **Amazon**\\n6. **eBay**\\n7. **LinkedIn**\\n8. **Other (please specify the website)**\\n\\nLet me know which ones you need help with, and I'll guide you through the process!\",\"role\":\"assistant\"}],\"retrieval_rank\":4,\"source_id\":\"b65f51fb_5_1\",\"source_session_ids\":[\"b65f51fb_5\"],\"speaker\":\"user+assistant\",\"timestamp\":\"2023/05/25 (Thu) 15:40\",\"valid_at\":null},{\"evidence_type\":\"source_local_round\",\"expired_at\":null,\"graphiti_session_rank\":1,\"invalid_at\":null,\"raw_evidence\":[{\"content\":\"I also need to update my credit card information on these websites. Can you provide some guidance on how to do that? And do you have any tips on how to keep track of all these updates?\",\"role\":\"user\"},{\"content\":\"**Updating Credit Card Information:**\\n\\n1. **Log in to your account**: Log in to your account on the website or mobile app using your current login credentials.\\n2. **Find the payment or billing section**: Look for the section related to payment or billing information, usually found in the account settings or profile area.\\n3. **Update credit card information**: Click on the \\\"Edit\\\" or \\\"Update\\\" button next to your credit card information.\\n4. **Enter new credit card details**: Enter your new credit card number, expiration date, security code, and billing address.\\n5. **Verify and save**: Verify that the information is correct and save the changes.\\n\\nSome popular websites may have slightly different steps:\\n\\n* **Amazon**: Go to \\\"Your Account\\\" > \\\"Payment options\\\" > \\\"Add a new credit card\\\" or \\\"Edit\\\" an existing card.\\n* **eBay**: Go to \\\"My eBay\\\" > \\\"Account\\\" > \\\"Payment\\\" > \\\"Add a credit card\\\" or \\\"Edit\\\" an existing card.\\n* **Store loyalty programs**: Go to the \\\"Account\\\" or \\\"Profile\\\" section and look for the \\\"Payment\\\" or \\\"Billing\\\" section.\\n\\n**Tips for Keeping Track of Updates:**\\n\\n1. **Create a spreadsheet**: Create a spreadsheet to track the websites you've updated, the new information you've provided, and the date you made the changes.\\n2. **Use a password manager**: Consider using a password manager like LastPass, 1Password, or Dashlane to securely store your login credentials and credit card information.\\n3. **Set reminders**: Set reminders for yourself to review and update your information periodically, especially if you have multiple accounts to manage.\\n4. **Keep a paper record**: Keep a paper record of your updates, including the websites, new information, and dates, in a secure location, such as a locked cabinet or safe.\\n5. **Prioritize sensitive information**: Prioritize updating sensitive information, such as credit card numbers and expiration dates, to minimize the risk of unauthorized access.\\n6. **Review account activity**: Regularly review your account activity and statements to ensure there are no suspicious transactions.\\n7. **Consider a credit monitoring service**: Consider using a credit monitoring service, such as Credit Karma or Credit Sesame, to track changes to your credit report and detect potential identity theft.\\n\\nBy following these steps and tips, you'll be able to update your credit card information and keep track of your online accounts more efficiently. Remember to stay organized, prioritize sensitive information, and review your accounts regularly to ensure your online presence is up-to-date and secure.\",\"role\":\"assistant\"}],\"retrieval_rank\":7,\"source_id\":\"b65f51fb_5_7\",\"source_session_ids\":[\"b65f51fb_5\"],\"speaker\":\"user+assistant\",\"timestamp\":\"2023/05/25 (Thu) 15:40\",\"valid_at\":null},{\"evidence_type\":\"source_local_round\",\"expired_at\":null,\"graphiti_session_rank\":1,\"invalid_at\":null,\"raw_evidence\":[{\"content\":\"That was really helpful, thanks! I think I can handle those updates. Another thing I need to do is update my online shopping accounts, like eBay and other store loyalty programs. Do you have any tips on how to update my information on those types of websites?\",\"role\":\"user\"},{\"content\":\"Updating your information on online shopping accounts and loyalty programs is an important step in keeping your online presence up-to-date. Here are some general tips and guidance on how to update your information on popular online shopping accounts and loyalty programs:\\n\\n**eBay:**\\n\\n1. Log in to your eBay account using your current login credentials.\\n2. Click on \\\"My eBay\\\" at the top of the page.\\n3. Click on \\\"Account\\\" and then \\\"Personal information.\\\"\\n4. Click on \\\"Edit\\\" next to \\\"Email address\\\" and update your email address to your new one.\\n5. Click \\\"Save\\\" to update your email address.\\n6. If you want to update your username, click on \\\"Edit\\\" next to \\\"Username\\\" and enter your new username. Click \\\"Save\\\" to update.\\n\\n**Store Loyalty Programs:**\\n\\n1. Log in to your loyalty program account using your current login credentials.\\n2. Look for the \\\"Account\\\" or \\\"Profile\\\" section, usually found at the top-right corner of the page or in a dropdown menu.\\n3. Click on \\\"Update profile\\\" or \\\"Edit profile\\\" and update your email address to your new one.\\n4. Review and update any other personal information, such as name, address, and phone number, if necessary.\\n5. Click \\\"Save\\\" or \\\"Update\\\" to confirm the changes.\\n\\n**General Tips:**\\n\\n1. **Log in to each account individually**: Make sure you log in to each account separately to update your information, as some websites may not allow you to update information across multiple accounts at once.\\n2. **Update your email address first**: Update your email address before changing your username or other information, as this will ensure you receive important notifications and can access your accounts smoothly.\\n3. **Review and update other information**: Take this opportunity to review and update other personal information, such as address, phone number, and payment information, if necessary.\\n4. **Save and verify**: After updating your information, make sure to save the changes and verify that they have been applied successfully.\\n5. **Keep track of your updates**: Keep a record of the websites you've updated and the new information you've provided, in case you need to refer to it later.\\n\\nSome popular store loyalty programs and online shopping accounts you may want to update include:\\n\\n* Walmart (Walmart.com and Walmart+)\\n* Target (Target.com and Target RedCard)\\n* Costco (Costco.com and Costco Anywhere Visa Card)\\n* Sephora (Sephora.com and Beauty Insider)\\n* Starbucks (Starbucks.com and Starbucks Rewards)\\n\\nRemember to update your information on each website individually, and don't hesitate to reach out to customer support if you encounter any issues.\",\"role\":\"assistant\"}],\"retrieval_rank\":10,\"source_id\":\"b65f51fb_5_5\",\"source_session_ids\":[\"b65f51fb_5\"],\"speaker\":\"user+assistant\",\"timestamp\":\"2023/05/25 (Thu) 15:40\",\"valid_at\":null},{\"evidence_type\":\"graph_fact\",\"expired_at\":null,\"invalid_at\":null,\"raw_evidence\":\"Slickdeals tracks prices for the Dell Inspiron 14 5000.\",\"retrieval_rank\":6,\"source_id\":\"837294e7-060e-4b4a-ba74-ff43ea217d32\",\"source_session_ids\":[\"ultrachat_75332\"],\"speaker\":\"graph_fact\",\"timestamp\":\"2023-05-25T16:57:00+00:00\",\"valid_at\":\"2023-05-25T16:57:00+00:00\"},{\"evidence_type\":\"graph_fact\",\"expired_at\":null,\"invalid_at\":null,\"raw_evidence\":\"CamelCamelCamel tracks prices for the Dell Inspiron 14 5000.\",\"retrieval_rank\":19,\"source_id\":\"b357a44f-6eb9-437e-90b3-1e8ba2a3b8f1\",\"source_session_ids\":[\"ultrachat_75332\"],\"speaker\":\"graph_fact\",\"timestamp\":\"2023-05-25T16:57:00+00:00\",\"valid_at\":\"2023-05-25T16:57:00+00:00\"},{\"evidence_type\":\"source_local_round\",\"expired_at\":null,\"graphiti_session_rank\":2,\"invalid_at\":null,\"raw_evidence\":[{\"content\":\"That's really helpful. I think I'll also add a column to track the shipping method and delivery time, so I can see which websites are the fastest and most reliable. And maybe a column for the product category, so I can see where I'm spending the most money. Do you have any suggestions on how to stay organized with my online shopping apps on my phone? I've got a bunch of shopping apps on my phone, and it's getting hard to keep track of which ones I've logged into and which ones I haven't.\",\"role\":\"user\"},{\"content\":\"Excellent ideas! Tracking shipping methods and delivery times can help you identify the most efficient retailers, and categorizing products will give you valuable insights into your spending habits.\\n\\nNow, let's tackle organizing your shopping apps on your phone:\\n\\n1. **Create a dedicated folder**: Designate a folder on your phone specifically for shopping apps. This will keep them separate from other apps and make it easier to find what you need.\\n2. **Categorize apps by type**: Within the shopping folder, create subfolders for different categories, such as:\\n\\t* Fashion (ASOS, Zappos, etc.)\\n\\t* Electronics (Amazon, Best Buy, etc.)\\n\\t* Home Goods (Wayfair, Bed Bath & Beyond, etc.)\\n\\t* Daily Deals (Groupon, LivingSocial, etc.)\\n3. **Prioritize frequently used apps**: Place your most frequently used shopping apps in a prominent position, such as the home screen or in the top row of the shopping folder.\\n4. **Use app widgets**: Many shopping apps offer widgets that allow you to quickly access specific features, like order tracking or coupons. Add these widgets to your home screen or shopping folder for easy access.\\n5. **Consider an app launcher**: If you have a large number of shopping apps, consider using an app launcher like Google's App Drawer or iOS's App Library to quickly find and access your apps.\\n6. **Log out of apps when not in use**: To maintain security and prevent unauthorized access, log out of shopping apps when you're not actively using them.\\n7. **Use a password manager**: As I mentioned earlier, consider using a password manager to securely store your login credentials for each app.\\n8. **Uninstall unused apps**: Periodically review your shopping apps and uninstall any that you no longer use or need.\\n9. **Keep apps updated**: Regularly update your shopping apps to ensure you have the latest features, security patches, and bug fixes.\\n10. **Use app features to your advantage**: Take advantage of features like push notifications, order tracking, and personalized offers to stay informed and save time.\\n\\nBy implementing these tips, you'll be able to efficiently manage your online shopping apps, reduce clutter, and make the most of your shopping experience.\\n\\nRemember, staying organized is all about creating systems that work for you and your unique needs. Experiment with different methods until you find what works best for your online shopping habits.\",\"role\":\"assistant\"}],\"retrieval_rank\":5,\"source_id\":\"57bf4122_1_5\",\"source_session_ids\":[\"57bf4122_1\"],\"speaker\":\"user+assistant\",\"timestamp\":\"2023/05/25 (Thu) 19:24\",\"valid_at\":null},{\"evidence_type\":\"source_local_round\",\"expired_at\":null,\"graphiti_session_rank\":2,\"invalid_at\":null,\"raw_evidence\":[{\"content\":\"I'm looking for some tips on how to stay organized with my online shopping. I've been making a lot of purchases lately - at least 10 in the past month from different websites like Amazon, ASOS, and Zappos. Do you have any suggestions on how to keep track of my orders and packages?\",\"role\":\"user\"},{\"content\":\"I'm happy to help! With online shopping becoming increasingly popular, it's easy to lose track of orders and packages. Here are some tips to help you stay organized:\\n\\n1. **Create a spreadsheet**: Make a spreadsheet with columns for:\\n\\t* Order date\\n\\t* Website/store\\n\\t* Order number\\n\\t* Item(s) purchased\\n\\t* Expected delivery date\\n\\t* Status (e.g., \\\"shipped,\\\" \\\"delivered,\\\" \\\"cancelled\\\")\\n\\t* Any notes (e.g., tracking numbers, customer service interactions)\\n2. **Use a package tracking app**: Consider using an app like:\\n\\t* Package Guard (iOS, Android)\\n\\t* ShipStation (iOS, Android)\\n\\t* Track packages (iOS, Android)\\n\\t* Slice (iOS, Android)\\n\\t* These apps allow you to track multiple packages from various retailers in one place.\\n3. **Designate an email folder**: Create a folder in your email inbox specifically for online shopping receipts and order updates. This will help you keep all your order confirmations and tracking updates in one place.\\n4. **Use a password manager**: Consider using a password manager like LastPass, 1Password, or Dashlane to store your login credentials for each website. This will help you avoid having to remember multiple usernames and passwords.\\n5. **Set up order notifications**: Many retailers offer the option to receive email or text notifications when your order ships or is delivered. Take advantage of these notifications to stay informed about your packages.\\n6. **Keep a physical notebook**: If you prefer a more analog approach, keep a dedicated notebook to jot down order details, tracking numbers, and expected delivery dates.\\n7. **Prioritize and categorize**: If you're making frequent purchases, consider categorizing your orders by type (e.g., clothing, electronics, home goods) or priority (e.g., urgent, non-essential). This will help you quickly identify which orders need attention.\\n8. **Check your accounts regularly**: Regularly log in to your accounts on each website to ensure you haven't missed any important updates or notifications.\\n9. **Consider a virtual assistant**: If you're really struggling to keep track of your orders, consider using a virtual assistant like Google Assistant, Siri, or Alexa to set reminders and keep you informed about your packages.\\n10. **Review and adjust**: At the end of each month, review your spreadsheet or notebook to ensure everything is up-to-date. Adjust your system as needed to make it more efficient and effective for you.\\n\\nBy implementing these tips, you'll be better equipped to manage your online shopping and stay on top of your orders and packages. Happy shopping!\",\"role\":\"assistant\"}],\"retrieval_rank\":9,\"source_id\":\"57bf4122_1_1\",\"source_session_ids\":[\"57bf4122_1\"],\"speaker\":\"user+assistant\",\"timestamp\":\"2023/05/25 (Thu) 19:24\",\"valid_at\":null},{\"evidence_type\":\"graph_fact\",\"expired_at\":null,\"invalid_at\":null,\"raw_evidence\":\"The user is organizing their computer files by creating a 'Personal' folder and a 'Someday' folder, indicating a structured approach to categorizing their digital life.\",\"retrieval_rank\":2,\"source_id\":\"96bc5d4a-d243-4201-9f6b-669f0d6c91ed\",\"source_session_ids\":[\"a135a911\"],\"speaker\":\"graph_fact\",\"timestamp\":\"2023-05-25T20:16:00+00:00\",\"valid_at\":\"2023-05-25T20:16:00+00:00\"},{\"evidence_type\":\"graph_fact\",\"expired_at\":null,\"invalid_at\":null,\"raw_evidence\":\"The user is organizing their computer files by creating a 'Work' folder and a 'Someday' folder, indicating a structured approach to categorizing their digital life.\",\"retrieval_rank\":8,\"source_id\":\"72b0306d-0c66-4b66-977e-dc2dc5ce4069\",\"source_session_ids\":[\"a135a911\"],\"speaker\":\"graph_fact\",\"timestamp\":\"2023-05-25T20:16:00+00:00\",\"valid_at\":\"2023-05-25T20:16:00+00:00\"},{\"evidence_type\":\"graph_fact\",\"expired_at\":null,\"invalid_at\":null,\"raw_evidence\":\"The user is organizing their computer files by creating a 'Work' folder and a 'Personal' folder, indicating a structured approach to categorizing their digital life.\",\"retrieval_rank\":10,\"source_id\":\"7b6aee40-8116-4de7-afa1-65a400f7a56b\",\"source_session_ids\":[\"a135a911\"],\"speaker\":\"graph_fact\",\"timestamp\":\"2023-05-25T20:16:00+00:00\",\"valid_at\":\"2023-05-25T20:16:00+00:00\"},{\"evidence_type\":\"graph_fact\",\"expired_at\":null,\"invalid_at\":null,\"raw_evidence\":\"The Sonos app allows users to adjust the bass level of the Sonos Beam from -3 to +3.\",\"retrieval_rank\":5,\"source_id\":\"df363afb-2767-4048-b4b3-4b878aa85839\",\"source_session_ids\":[\"74ef19f0_1\"],\"speaker\":\"graph_fact\",\"timestamp\":\"2023-06-08T20:21:00+00:00\",\"valid_at\":null},{\"evidence_type\":\"graph_fact\",\"expired_at\":null,\"invalid_at\":null,\"raw_evidence\":\"The Sonos app allows users to create and save custom sound profiles for the Sonos Beam for different types of content, such as movies, music, or podcasts.\",\"retrieval_rank\":15,\"source_id\":\"ca806580-2a7a-4bfc-afa7-ab079565cc17\",\"source_session_ids\":[\"74ef19f0_1\"],\"speaker\":\"graph_fact\",\"timestamp\":\"2023-06-08T20:21:00+00:00\",\"valid_at\":\"2023-06-08T20:21:00+00:00\"},{\"evidence_type\":\"graph_fact\",\"expired_at\":null,\"invalid_at\":null,\"raw_evidence\":\"The Sonos app allows users to adjust the speech enhancement level of the Sonos Beam.\",\"retrieval_rank\":20,\"source_id\":\"a5543a8c-d77f-4676-9d2b-3813513ca685\",\"source_session_ids\":[\"74ef19f0_1\"],\"speaker\":\"graph_fact\",\"timestamp\":\"2023-06-08T20:21:00+00:00\",\"valid_at\":\"2023-06-08T20:21:00+00:00\"}]\n\nQuestion date: 2023/06/23 (Fri) 07:31\nQuestion: What did I plan to use to track updates to my online accounts?\nAnswer:",
+    "prompt_tokens": 9130
+  },
+  "reference_answer": "A spreadsheet.",
+  "retrieval": {
+    "context_json": "[{\"evidence_type\":\"graph_fact\",\"expired_at\":null,\"invalid_at\":null,\"raw_evidence\":\"NFC chip may have certification according to EMVCo.\",\"retrieval_rank\":11,\"source_id\":\"3da7cba3-37da-4e9c-8b46-76f20516641e\",\"source_session_ids\":[\"sharegpt_wyaZNL4_9\"],\"speaker\":\"graph_fact\",\"timestamp\":\"2023-04-25T10:21:00+00:00\",\"valid_at\":null},{\"evidence_type\":\"graph_fact\",\"expired_at\":null,\"invalid_at\":null,\"raw_evidence\":\"NFC chip may have certification according to Common Criteria.\",\"retrieval_rank\":18,\"source_id\":\"b5a16ce2-9a9c-416f-be63-0ce9ea76c545\",\"source_session_ids\":[\"sharegpt_wyaZNL4_9\"],\"speaker\":\"graph_fact\",\"timestamp\":\"2023-04-25T10:21:00+00:00\",\"valid_at\":null},{\"evidence_type\":\"source_local_round\",\"expired_at\":null,\"graphiti_session_rank\":7,\"invalid_at\":null,\"raw_evidence\":[{\"content\":\"I'm trying to organize my loyalty programs and rewards. Can you help me keep track of my rewards and remind me when they expire? By the way, I've earned a few bucks in rewards at CVS and I need to make sure I use them before they expire.\",\"role\":\"user\"},{\"content\":\"I'd be happy to help you keep track of your loyalty programs and rewards.\\n\\nLet's start with the CVS rewards. Can you please tell me more about the rewards you've earned? How much is the reward amount, and when do they expire? Additionally, do you have a CVS ExtraCare card or are these rewards from a specific promotion?\\n\\nOnce we get the CVS rewards sorted out, we can move on to other loyalty programs you're a part of. You can share the details of each program, such as:\\n\\n1. Program name (e.g., airline, hotel, credit card, store loyalty program)\\n2. Reward type (e.g., points, miles, cashback, discounts)\\n3. Current balance or available rewards\\n4. Expiration dates (if applicable)\\n\\nI can help you create a virtual \\\"wallet\\\" to keep track of your rewards and remind you when they're about to expire. We can also discuss strategies to maximize your rewards and make the most of your loyalty programs.\\n\\nLet's get started!\",\"role\":\"assistant\"}],\"retrieval_rank\":2,\"source_id\":\"2fa50779_2_1\",\"source_session_ids\":[\"2fa50779_2\"],\"speaker\":\"user+assistant\",\"timestamp\":\"2023/05/04 (Thu) 20:03\",\"valid_at\":null},{\"evidence_type\":\"source_local_round\",\"expired_at\":null,\"graphiti_session_rank\":7,\"invalid_at\":null,\"raw_evidence\":[{\"content\":\"I want to organize my loyalty programs and rewards better. Can I also track my Target RedCard rewards and Fetch Rewards points with you?\",\"role\":\"user\"},{\"content\":\"I'd be happy to help you track your Target RedCard rewards and Fetch Rewards points.\\n\\n**Target RedCard:**\\n\\n* Program: Target RedCard\\n* Reward type: 5% off on Target purchases\\n* Current balance: unknown (since it's a discount program, we'll focus on tracking your savings)\\n\\nTo track your Target RedCard rewards, I'll need to know when you make a purchase at Target using your RedCard. You can report your purchases to me, and I'll keep a running total of your savings.\\n\\n**Fetch Rewards:**\\n\\n* Program: Fetch Rewards\\n* Reward type: Points\\n* Current balance: unknown (let's start tracking your points from now on!)\\n\\nTo track your Fetch Rewards points, I'll need to know when you earn points from purchasing participating brands or submitting receipts. You can report your Fetch Rewards earnings to me, and I'll update your points balance.\\n\\nHere's how you can report your earnings:\\n\\n* For Target RedCard, simply tell me the date and amount of your purchase at Target using your RedCard.\\n* For Fetch Rewards, share the date, points earned, and any relevant details about the purchase (e.g., which brands or products you bought).\\n\\nI'll keep track of your rewards and provide reminders when you're close to earning a new reward or when your points are about to expire.\\n\\nNow, you have three loyalty programs tracked:\\n\\n1. CVS ExtraCare\\n2. Walgreens Balance Rewards\\n3. Target RedCard\\n4. Fetch Rewards\\n\\nFeel free to add more programs or rewards anytime you'd like!\\n\\nRemember, the more you report your earnings and purchases, the better I can assist you in maximizing your rewards and savings.\",\"role\":\"assistant\"}],\"retrieval_rank\":6,\"source_id\":\"2fa50779_2_9\",\"source_session_ids\":[\"2fa50779_2\"],\"speaker\":\"user+assistant\",\"timestamp\":\"2023/05/04 (Thu) 20:03\",\"valid_at\":null},{\"evidence_type\":\"source_local_round\",\"expired_at\":null,\"graphiti_session_rank\":14,\"invalid_at\":null,\"raw_evidence\":[{\"content\":\"i own a fractional leadership consulting company by the name of Sheba Consulting. I have a ton of experience as an executive but recently the economy has declined and with it my business. I did everything possible to reach new clients and it is too slow. what can you suggest i do to get some good new clients quickly?\",\"role\":\"user\"},{\"content\":\"I'm sorry to hear that your business has been impacted by the economic downturn. Here are some suggestions to help you quickly acquire new clients for your fractional leadership consulting company:\\n\\n1. Reevaluate your target market: Analyze your current client base and determine if there's a different segment of the market that may be more resilient or responsive to your services. This might include pivoting to industries that have been less impacted by the economic downturn.\\n2. Offer a limited-time promotion: Create an enticing offer for new clients, such as a discounted rate for the first three months or a free consultation session. This can help generate immediate interest in your services.\\n3. Network extensively: Attend industry events, both online and in-person, to connect with potential clients. Leverage your professional network, including your LinkedIn connections, to reach out to people who might be interested in your services.\\n4. Collaborate with complementary businesses: Partner with other companies that offer non-competitive, complementary services. For example, you could team up with a marketing agency or a human resources consulting firm to offer bundled services to clients.\\n5. Content marketing: Create valuable content, such as blog posts, whitepapers, webinars, or podcasts, that showcase your expertise in leadership consulting. Share this content on your website and social media channels, and consider guest posting on other reputable industry sites.\\n6. Utilize social media advertising: Use targeted social media advertising, such as LinkedIn or Facebook ads, to reach potential clients in specific industries or job titles.\\n7. Offer free resources: Develop and share free resources, like templates, checklists, or guides, that can provide value to potential clients. This can help establish your credibility and encourage potential clients to reach out to you for further assistance.\\n8. Testimonials and case studies: Showcase success stories from your previous clients on your website and in your marketing materials. Potential clients are more likely to work with you if they see concrete examples of your impact.\\n9. Personalize your outreach: When reaching out to potential clients, personalize your messages to address their specific pain points and demonstrate how your services can help them.\\n10. Follow up on leads: Ensure that you follow up on all leads and referrals in a timely and professional manner. Persistence is key when trying to secure new clients, especially in a challenging economic environment.\\n\\nRemember that acquiring new clients takes time and effort, so it's essential to stay proactive and persistent in your marketing and outreach activities.\",\"role\":\"assistant\"}],\"retrieval_rank\":8,\"source_id\":\"sharegpt_gYShON7_0_1\",\"source_session_ids\":[\"sharegpt_gYShON7_0\"],\"speaker\":\"user+assistant\",\"timestamp\":\"2023/05/04 (Thu) 21:52\",\"valid_at\":null},{\"evidence_type\":\"graph_fact\",\"expired_at\":null,\"invalid_at\":null,\"raw_evidence\":\"Jeaniene Frost authored the book Halfway to the Grave.\",\"retrieval_rank\":13,\"source_id\":\"c919a9ee-d615-4e71-b7c1-4d9286b23c2c\",\"source_session_ids\":[\"a8028ce7_2\"],\"speaker\":\"graph_fact\",\"timestamp\":\"2023-05-21T23:30:00+00:00\",\"valid_at\":null},{\"evidence_type\":\"graph_fact\",\"expired_at\":null,\"invalid_at\":null,\"raw_evidence\":\"User plans to visit the USS Arizona Memorial during their upcoming trip to Waikiki.\",\"retrieval_rank\":1,\"source_id\":\"3580792f-f532-4a80-9b42-6efd82e5c810\",\"source_session_ids\":[\"c11b64f3_1\"],\"speaker\":\"graph_fact\",\"timestamp\":\"2023-05-24T15:18:00+00:00\",\"valid_at\":null},{\"evidence_type\":\"graph_fact\",\"expired_at\":null,\"invalid_at\":null,\"raw_evidence\":\"User plans to purchase a 3-day Go Oahu Card to make the most of their time in Waikiki.\",\"retrieval_rank\":4,\"source_id\":\"931ea4a3-82ff-4f07-948d-5907602b00a0\",\"source_session_ids\":[\"c11b64f3_1\"],\"speaker\":\"graph_fact\",\"timestamp\":\"2023-05-24T15:18:00+00:00\",\"valid_at\":null},{\"evidence_type\":\"graph_fact\",\"expired_at\":null,\"invalid_at\":null,\"raw_evidence\":\"User is planning a trip to Waikiki, Hawaii.\",\"retrieval_rank\":7,\"source_id\":\"fc55d3b7-739b-469d-92b1-dd995f268832\",\"source_session_ids\":[\"c11b64f3_1\"],\"speaker\":\"graph_fact\",\"timestamp\":\"2023-05-24T15:18:00+00:00\",\"valid_at\":\"2023-05-24T15:18:00+00:00\"},{\"evidence_type\":\"graph_fact\",\"expired_at\":null,\"invalid_at\":null,\"raw_evidence\":\"User visited the island of Oahu during a previous trip to Hawaii with their family.\",\"retrieval_rank\":17,\"source_id\":\"45e29476-5405-4624-b6ff-c39b652defa3\",\"source_session_ids\":[\"c11b64f3_1\"],\"speaker\":\"graph_fact\",\"timestamp\":\"2023-05-24T15:18:00+00:00\",\"valid_at\":null},{\"evidence_type\":\"graph_fact\",\"expired_at\":null,\"invalid_at\":null,\"raw_evidence\":\"Instagram Live includes a Q&A session as a feature for engaging with the audience in real-time.\",\"retrieval_rank\":14,\"source_id\":\"8bf43597-c33b-485b-847b-e4713fd66a05\",\"source_session_ids\":[\"answer_5126c02d_1\"],\"speaker\":\"graph_fact\",\"timestamp\":\"2023-05-25T05:26:00+00:00\",\"valid_at\":null},{\"evidence_type\":\"graph_fact\",\"expired_at\":null,\"invalid_at\":null,\"raw_evidence\":\"User brings a Kindle on the hike to read books during downtime and reflection.\",\"retrieval_rank\":3,\"source_id\":\"6b1bda1b-2551-4efa-b00a-fc9c29721dae\",\"source_session_ids\":[\"fc9d19f7_2\"],\"speaker\":\"graph_fact\",\"timestamp\":\"2023-05-25T05:48:00+00:00\",\"valid_at\":\"2023-05-25T05:48:00+00:00\"},{\"evidence_type\":\"graph_fact\",\"expired_at\":null,\"invalid_at\":null,\"raw_evidence\":\"ASMR is related to ASMR content creation.\",\"retrieval_rank\":9,\"source_id\":\"edea798f-f854-45cb-9d5b-e7d5cdab86b7\",\"source_session_ids\":[\"f188b48d_2\"],\"speaker\":\"graph_fact\",\"timestamp\":\"2023-05-25T09:56:00+00:00\",\"valid_at\":null},{\"evidence_type\":\"graph_fact\",\"expired_at\":null,\"invalid_at\":null,\"raw_evidence\":\"ASMR content is not related to the budgeting app YNAB.\",\"retrieval_rank\":12,\"source_id\":\"886dc141-9d22-4090-ad2c-fd86098a4c9b\",\"source_session_ids\":[\"f188b48d_2\"],\"speaker\":\"graph_fact\",\"timestamp\":\"2023-05-25T09:56:00+00:00\",\"valid_at\":null},{\"evidence_type\":\"graph_fact\",\"expired_at\":null,\"invalid_at\":null,\"raw_evidence\":\"ASMR content is not related to the budgeting app Mint.\",\"retrieval_rank\":16,\"source_id\":\"566f351f-750e-4926-ace4-193f9008482e\",\"source_session_ids\":[\"f188b48d_2\"],\"speaker\":\"graph_fact\",\"timestamp\":\"2023-05-25T09:56:00+00:00\",\"valid_at\":null},{\"evidence_type\":\"source_local_round\",\"expired_at\":null,\"graphiti_session_rank\":1,\"invalid_at\":null,\"raw_evidence\":[{\"content\":\"That's really helpful! I think I can handle updating my credit card information now. For keeping track of updates, I think I'll create a spreadsheet to keep everything organized. One thing I'm still worried about is remembering to update all the online accounts, especially the less frequently used ones. Do you have any suggestions on how to make sure I don't miss any accounts?\",\"role\":\"user\"},{\"content\":\"I'm glad you're considering creating a spreadsheet to keep track of your updates!\\n\\n**Remembering to Update All Accounts:**\\n\\n1. **Make a list of all accounts**: Start by making a comprehensive list of all your online accounts, including social media, email, shopping, banking, and loyalty programs. You can use a spreadsheet or a note-taking app to create this list.\\n2. **Categorize and prioritize**: Categorize your accounts into groups, such as \\\"essential\\\" (e.g., email, banking, and credit cards), \\\"frequently used\\\" (e.g., social media, shopping), and \\\"less frequently used\\\" (e.g., hobby-related or subscription services). Prioritize updating the essential and frequently used accounts first.\\n3. **Break it down into chunks**: Divide your list into manageable chunks, such as updating 5-10 accounts per day or week, depending on your schedule and availability.\\n4. **Set reminders**: Set reminders for yourself to update specific accounts or categories of accounts. You can use a digital calendar, planner, or reminder app to set reminders.\\n5. **Check your password manager**: If you use a password manager, check your vault for accounts that need updating. Many password managers, like LastPass or 1Password, allow you to search for accounts with outdated information.\\n6. **Review your credit report**: Consider reviewing your credit report to identify any accounts that may be associated with your old information. You can request a free credit report from each of the three major credit bureaus (Experian, TransUnion, and Equifax) once a year from AnnualCreditReport.com.\\n7. **Ask a friend or family member**: Share your list with a trusted friend or family member and ask them to hold you accountable. This can provide an added motivation to complete the task.\\n8. **Celebrate milestones**: Celebrate your progress along the way! Update a few accounts, take a break, and then come back to it. This will help make the task less overwhelming.\\n\\n**Additional Tips:**\\n\\n* **Keep your list up-to-date**: As you update your accounts, remove them from your list. This will help you track your progress and avoid duplicate efforts.\\n* **Use two-factor authentication**: Enable two-factor authentication (2FA) whenever possible to add an extra layer of security to your accounts.\\n* **Monitor your accounts**: Regularly monitor your accounts for suspicious activity and update your information promptly if you notice any discrepancies.\\n\\nBy following these steps, you'll be able to update your online accounts methodically and ensure that you don't miss any important ones. Remember to stay organized, prioritize your accounts, and take breaks when needed. Good luck!\",\"role\":\"assistant\"}],\"retrieval_rank\":1,\"source_id\":\"b65f51fb_5_9\",\"source_session_ids\":[\"b65f51fb_5\"],\"speaker\":\"user+assistant\",\"timestamp\":\"2023/05/25 (Thu) 15:40\",\"valid_at\":null},{\"evidence_type\":\"source_local_round\",\"expired_at\":null,\"graphiti_session_rank\":1,\"invalid_at\":null,\"raw_evidence\":[{\"content\":\"I think I can handle updating my online accounts now. I'll create a spreadsheet to track my progress and set reminders to update specific accounts. I'll also review my credit report to identify any accounts that may be associated with my old information. Thanks for your help!\",\"role\":\"user\"},{\"content\":\"You're welcome! I'm glad I could assist you in updating your online presence and providing you with a plan to keep track of your progress. Creating a spreadsheet and setting reminders will definitely help you stay organized and on top of updating your accounts.\\n\\nRemember to take your time, and don't hesitate to reach out if you need any further assistance or have questions about a specific account. It's great that you're taking proactive steps to update your online presence and protect your personal information.\\n\\nReviewing your credit report is a fantastic idea, as it can help you identify any accounts that may have slipped under the radar. This will give you a comprehensive view of your online presence and help you ensure that all your accounts are up-to-date and secure.\\n\\nIf you have any other questions or concerns in the future, feel free to reach out. Otherwise, I wish you the best of luck in updating your online accounts and maintaining a secure online presence!\\n\\nStay safe and organized online!\",\"role\":\"assistant\"}],\"retrieval_rank\":3,\"source_id\":\"b65f51fb_5_11\",\"source_session_ids\":[\"b65f51fb_5\"],\"speaker\":\"user+assistant\",\"timestamp\":\"2023/05/25 (Thu) 15:40\",\"valid_at\":null},{\"evidence_type\":\"source_local_round\",\"expired_at\":null,\"graphiti_session_rank\":1,\"invalid_at\":null,\"raw_evidence\":[{\"content\":\"I'm trying to update my online presence, and I need some help with changing my name on a few websites. I recently set up a new email address with my new last name on February 12th, and I'm trying to use that for all my online accounts now. Can you walk me through the process of changing my username on some popular websites?\",\"role\":\"user\"},{\"content\":\"Congratulations on your recent name change! Updating your online presence can be a daunting task, but I'm happy to help you through the process. I'll provide step-by-step guides on how to change your username on popular websites. Please note that some websites may have slightly different procedures, and I'll do my best to provide the most up-to-date information.\\n\\n**Before we begin:**\\n\\n1. Make sure you have access to your new email address and password.\\n2. Have your old login credentials handy, as you'll need them to access your accounts.\\n3. Be prepared to verify your identity or provide additional information, if required.\\n\\n**Let's get started!**\\n\\nWhich websites do you need help with? Please select from the list below, and I'll provide the step-by-step guide for each:\\n\\n1. **Facebook**\\n2. **Twitter**\\n3. **Instagram**\\n4. **Google Account (Gmail, YouTube, etc.)**\\n5. **Amazon**\\n6. **eBay**\\n7. **LinkedIn**\\n8. **Other (please specify the website)**\\n\\nLet me know which ones you need help with, and I'll guide you through the process!\",\"role\":\"assistant\"}],\"retrieval_rank\":4,\"source_id\":\"b65f51fb_5_1\",\"source_session_ids\":[\"b65f51fb_5\"],\"speaker\":\"user+assistant\",\"timestamp\":\"2023/05/25 (Thu) 15:40\",\"valid_at\":null},{\"evidence_type\":\"source_local_round\",\"expired_at\":null,\"graphiti_session_rank\":1,\"invalid_at\":null,\"raw_evidence\":[{\"content\":\"I also need to update my credit card information on these websites. Can you provide some guidance on how to do that? And do you have any tips on how to keep track of all these updates?\",\"role\":\"user\"},{\"content\":\"**Updating Credit Card Information:**\\n\\n1. **Log in to your account**: Log in to your account on the website or mobile app using your current login credentials.\\n2. **Find the payment or billing section**: Look for the section related to payment or billing information, usually found in the account settings or profile area.\\n3. **Update credit card information**: Click on the \\\"Edit\\\" or \\\"Update\\\" button next to your credit card information.\\n4. **Enter new credit card details**: Enter your new credit card number, expiration date, security code, and billing address.\\n5. **Verify and save**: Verify that the information is correct and save the changes.\\n\\nSome popular websites may have slightly different steps:\\n\\n* **Amazon**: Go to \\\"Your Account\\\" > \\\"Payment options\\\" > \\\"Add a new credit card\\\" or \\\"Edit\\\" an existing card.\\n* **eBay**: Go to \\\"My eBay\\\" > \\\"Account\\\" > \\\"Payment\\\" > \\\"Add a credit card\\\" or \\\"Edit\\\" an existing card.\\n* **Store loyalty programs**: Go to the \\\"Account\\\" or \\\"Profile\\\" section and look for the \\\"Payment\\\" or \\\"Billing\\\" section.\\n\\n**Tips for Keeping Track of Updates:**\\n\\n1. **Create a spreadsheet**: Create a spreadsheet to track the websites you've updated, the new information you've provided, and the date you made the changes.\\n2. **Use a password manager**: Consider using a password manager like LastPass, 1Password, or Dashlane to securely store your login credentials and credit card information.\\n3. **Set reminders**: Set reminders for yourself to review and update your information periodically, especially if you have multiple accounts to manage.\\n4. **Keep a paper record**: Keep a paper record of your updates, including the websites, new information, and dates, in a secure location, such as a locked cabinet or safe.\\n5. **Prioritize sensitive information**: Prioritize updating sensitive information, such as credit card numbers and expiration dates, to minimize the risk of unauthorized access.\\n6. **Review account activity**: Regularly review your account activity and statements to ensure there are no suspicious transactions.\\n7. **Consider a credit monitoring service**: Consider using a credit monitoring service, such as Credit Karma or Credit Sesame, to track changes to your credit report and detect potential identity theft.\\n\\nBy following these steps and tips, you'll be able to update your credit card information and keep track of your online accounts more efficiently. Remember to stay organized, prioritize sensitive information, and review your accounts regularly to ensure your online presence is up-to-date and secure.\",\"role\":\"assistant\"}],\"retrieval_rank\":7,\"source_id\":\"b65f51fb_5_7\",\"source_session_ids\":[\"b65f51fb_5\"],\"speaker\":\"user+assistant\",\"timestamp\":\"2023/05/25 (Thu) 15:40\",\"valid_at\":null},{\"evidence_type\":\"source_local_round\",\"expired_at\":null,\"graphiti_session_rank\":1,\"invalid_at\":null,\"raw_evidence\":[{\"content\":\"That was really helpful, thanks! I think I can handle those updates. Another thing I need to do is update my online shopping accounts, like eBay and other store loyalty programs. Do you have any tips on how to update my information on those types of websites?\",\"role\":\"user\"},{\"content\":\"Updating your information on online shopping accounts and loyalty programs is an important step in keeping your online presence up-to-date. Here are some general tips and guidance on how to update your information on popular online shopping accounts and loyalty programs:\\n\\n**eBay:**\\n\\n1. Log in to your eBay account using your current login credentials.\\n2. Click on \\\"My eBay\\\" at the top of the page.\\n3. Click on \\\"Account\\\" and then \\\"Personal information.\\\"\\n4. Click on \\\"Edit\\\" next to \\\"Email address\\\" and update your email address to your new one.\\n5. Click \\\"Save\\\" to update your email address.\\n6. If you want to update your username, click on \\\"Edit\\\" next to \\\"Username\\\" and enter your new username. Click \\\"Save\\\" to update.\\n\\n**Store Loyalty Programs:**\\n\\n1. Log in to your loyalty program account using your current login credentials.\\n2. Look for the \\\"Account\\\" or \\\"Profile\\\" section, usually found at the top-right corner of the page or in a dropdown menu.\\n3. Click on \\\"Update profile\\\" or \\\"Edit profile\\\" and update your email address to your new one.\\n4. Review and update any other personal information, such as name, address, and phone number, if necessary.\\n5. Click \\\"Save\\\" or \\\"Update\\\" to confirm the changes.\\n\\n**General Tips:**\\n\\n1. **Log in to each account individually**: Make sure you log in to each account separately to update your information, as some websites may not allow you to update information across multiple accounts at once.\\n2. **Update your email address first**: Update your email address before changing your username or other information, as this will ensure you receive important notifications and can access your accounts smoothly.\\n3. **Review and update other information**: Take this opportunity to review and update other personal information, such as address, phone number, and payment information, if necessary.\\n4. **Save and verify**: After updating your information, make sure to save the changes and verify that they have been applied successfully.\\n5. **Keep track of your updates**: Keep a record of the websites you've updated and the new information you've provided, in case you need to refer to it later.\\n\\nSome popular store loyalty programs and online shopping accounts you may want to update include:\\n\\n* Walmart (Walmart.com and Walmart+)\\n* Target (Target.com and Target RedCard)\\n* Costco (Costco.com and Costco Anywhere Visa Card)\\n* Sephora (Sephora.com and Beauty Insider)\\n* Starbucks (Starbucks.com and Starbucks Rewards)\\n\\nRemember to update your information on each website individually, and don't hesitate to reach out to customer support if you encounter any issues.\",\"role\":\"assistant\"}],\"retrieval_rank\":10,\"source_id\":\"b65f51fb_5_5\",\"source_session_ids\":[\"b65f51fb_5\"],\"speaker\":\"user+assistant\",\"timestamp\":\"2023/05/25 (Thu) 15:40\",\"valid_at\":null},{\"evidence_type\":\"graph_fact\",\"expired_at\":null,\"invalid_at\":null,\"raw_evidence\":\"Slickdeals tracks prices for the Dell Inspiron 14 5000.\",\"retrieval_rank\":6,\"source_id\":\"837294e7-060e-4b4a-ba74-ff43ea217d32\",\"source_session_ids\":[\"ultrachat_75332\"],\"speaker\":\"graph_fact\",\"timestamp\":\"2023-05-25T16:57:00+00:00\",\"valid_at\":\"2023-05-25T16:57:00+00:00\"},{\"evidence_type\":\"graph_fact\",\"expired_at\":null,\"invalid_at\":null,\"raw_evidence\":\"CamelCamelCamel tracks prices for the Dell Inspiron 14 5000.\",\"retrieval_rank\":19,\"source_id\":\"b357a44f-6eb9-437e-90b3-1e8ba2a3b8f1\",\"source_session_ids\":[\"ultrachat_75332\"],\"speaker\":\"graph_fact\",\"timestamp\":\"2023-05-25T16:57:00+00:00\",\"valid_at\":\"2023-05-25T16:57:00+00:00\"},{\"evidence_type\":\"source_local_round\",\"expired_at\":null,\"graphiti_session_rank\":2,\"invalid_at\":null,\"raw_evidence\":[{\"content\":\"That's really helpful. I think I'll also add a column to track the shipping method and delivery time, so I can see which websites are the fastest and most reliable. And maybe a column for the product category, so I can see where I'm spending the most money. Do you have any suggestions on how to stay organized with my online shopping apps on my phone? I've got a bunch of shopping apps on my phone, and it's getting hard to keep track of which ones I've logged into and which ones I haven't.\",\"role\":\"user\"},{\"content\":\"Excellent ideas! Tracking shipping methods and delivery times can help you identify the most efficient retailers, and categorizing products will give you valuable insights into your spending habits.\\n\\nNow, let's tackle organizing your shopping apps on your phone:\\n\\n1. **Create a dedicated folder**: Designate a folder on your phone specifically for shopping apps. This will keep them separate from other apps and make it easier to find what you need.\\n2. **Categorize apps by type**: Within the shopping folder, create subfolders for different categories, such as:\\n\\t* Fashion (ASOS, Zappos, etc.)\\n\\t* Electronics (Amazon, Best Buy, etc.)\\n\\t* Home Goods (Wayfair, Bed Bath & Beyond, etc.)\\n\\t* Daily Deals (Groupon, LivingSocial, etc.)\\n3. **Prioritize frequently used apps**: Place your most frequently used shopping apps in a prominent position, such as the home screen or in the top row of the shopping folder.\\n4. **Use app widgets**: Many shopping apps offer widgets that allow you to quickly access specific features, like order tracking or coupons. Add these widgets to your home screen or shopping folder for easy access.\\n5. **Consider an app launcher**: If you have a large number of shopping apps, consider using an app launcher like Google's App Drawer or iOS's App Library to quickly find and access your apps.\\n6. **Log out of apps when not in use**: To maintain security and prevent unauthorized access, log out of shopping apps when you're not actively using them.\\n7. **Use a password manager**: As I mentioned earlier, consider using a password manager to securely store your login credentials for each app.\\n8. **Uninstall unused apps**: Periodically review your shopping apps and uninstall any that you no longer use or need.\\n9. **Keep apps updated**: Regularly update your shopping apps to ensure you have the latest features, security patches, and bug fixes.\\n10. **Use app features to your advantage**: Take advantage of features like push notifications, order tracking, and personalized offers to stay informed and save time.\\n\\nBy implementing these tips, you'll be able to efficiently manage your online shopping apps, reduce clutter, and make the most of your shopping experience.\\n\\nRemember, staying organized is all about creating systems that work for you and your unique needs. Experiment with different methods until you find what works best for your online shopping habits.\",\"role\":\"assistant\"}],\"retrieval_rank\":5,\"source_id\":\"57bf4122_1_5\",\"source_session_ids\":[\"57bf4122_1\"],\"speaker\":\"user+assistant\",\"timestamp\":\"2023/05/25 (Thu) 19:24\",\"valid_at\":null},{\"evidence_type\":\"source_local_round\",\"expired_at\":null,\"graphiti_session_rank\":2,\"invalid_at\":null,\"raw_evidence\":[{\"content\":\"I'm looking for some tips on how to stay organized with my online shopping. I've been making a lot of purchases lately - at least 10 in the past month from different websites like Amazon, ASOS, and Zappos. Do you have any suggestions on how to keep track of my orders and packages?\",\"role\":\"user\"},{\"content\":\"I'm happy to help! With online shopping becoming increasingly popular, it's easy to lose track of orders and packages. Here are some tips to help you stay organized:\\n\\n1. **Create a spreadsheet**: Make a spreadsheet with columns for:\\n\\t* Order date\\n\\t* Website/store\\n\\t* Order number\\n\\t* Item(s) purchased\\n\\t* Expected delivery date\\n\\t* Status (e.g., \\\"shipped,\\\" \\\"delivered,\\\" \\\"cancelled\\\")\\n\\t* Any notes (e.g., tracking numbers, customer service interactions)\\n2. **Use a package tracking app**: Consider using an app like:\\n\\t* Package Guard (iOS, Android)\\n\\t* ShipStation (iOS, Android)\\n\\t* Track packages (iOS, Android)\\n\\t* Slice (iOS, Android)\\n\\t* These apps allow you to track multiple packages from various retailers in one place.\\n3. **Designate an email folder**: Create a folder in your email inbox specifically for online shopping receipts and order updates. This will help you keep all your order confirmations and tracking updates in one place.\\n4. **Use a password manager**: Consider using a password manager like LastPass, 1Password, or Dashlane to store your login credentials for each website. This will help you avoid having to remember multiple usernames and passwords.\\n5. **Set up order notifications**: Many retailers offer the option to receive email or text notifications when your order ships or is delivered. Take advantage of these notifications to stay informed about your packages.\\n6. **Keep a physical notebook**: If you prefer a more analog approach, keep a dedicated notebook to jot down order details, tracking numbers, and expected delivery dates.\\n7. **Prioritize and categorize**: If you're making frequent purchases, consider categorizing your orders by type (e.g., clothing, electronics, home goods) or priority (e.g., urgent, non-essential). This will help you quickly identify which orders need attention.\\n8. **Check your accounts regularly**: Regularly log in to your accounts on each website to ensure you haven't missed any important updates or notifications.\\n9. **Consider a virtual assistant**: If you're really struggling to keep track of your orders, consider using a virtual assistant like Google Assistant, Siri, or Alexa to set reminders and keep you informed about your packages.\\n10. **Review and adjust**: At the end of each month, review your spreadsheet or notebook to ensure everything is up-to-date. Adjust your system as needed to make it more efficient and effective for you.\\n\\nBy implementing these tips, you'll be better equipped to manage your online shopping and stay on top of your orders and packages. Happy shopping!\",\"role\":\"assistant\"}],\"retrieval_rank\":9,\"source_id\":\"57bf4122_1_1\",\"source_session_ids\":[\"57bf4122_1\"],\"speaker\":\"user+assistant\",\"timestamp\":\"2023/05/25 (Thu) 19:24\",\"valid_at\":null},{\"evidence_type\":\"graph_fact\",\"expired_at\":null,\"invalid_at\":null,\"raw_evidence\":\"The user is organizing their computer files by creating a 'Personal' folder and a 'Someday' folder, indicating a structured approach to categorizing their digital life.\",\"retrieval_rank\":2,\"source_id\":\"96bc5d4a-d243-4201-9f6b-669f0d6c91ed\",\"source_session_ids\":[\"a135a911\"],\"speaker\":\"graph_fact\",\"timestamp\":\"2023-05-25T20:16:00+00:00\",\"valid_at\":\"2023-05-25T20:16:00+00:00\"},{\"evidence_type\":\"graph_fact\",\"expired_at\":null,\"invalid_at\":null,\"raw_evidence\":\"The user is organizing their computer files by creating a 'Work' folder and a 'Someday' folder, indicating a structured approach to categorizing their digital life.\",\"retrieval_rank\":8,\"source_id\":\"72b0306d-0c66-4b66-977e-dc2dc5ce4069\",\"source_session_ids\":[\"a135a911\"],\"speaker\":\"graph_fact\",\"timestamp\":\"2023-05-25T20:16:00+00:00\",\"valid_at\":\"2023-05-25T20:16:00+00:00\"},{\"evidence_type\":\"graph_fact\",\"expired_at\":null,\"invalid_at\":null,\"raw_evidence\":\"The user is organizing their computer files by creating a 'Work' folder and a 'Personal' folder, indicating a structured approach to categorizing their digital life.\",\"retrieval_rank\":10,\"source_id\":\"7b6aee40-8116-4de7-afa1-65a400f7a56b\",\"source_session_ids\":[\"a135a911\"],\"speaker\":\"graph_fact\",\"timestamp\":\"2023-05-25T20:16:00+00:00\",\"valid_at\":\"2023-05-25T20:16:00+00:00\"},{\"evidence_type\":\"graph_fact\",\"expired_at\":null,\"invalid_at\":null,\"raw_evidence\":\"The Sonos app allows users to adjust the bass level of the Sonos Beam from -3 to +3.\",\"retrieval_rank\":5,\"source_id\":\"df363afb-2767-4048-b4b3-4b878aa85839\",\"source_session_ids\":[\"74ef19f0_1\"],\"speaker\":\"graph_fact\",\"timestamp\":\"2023-06-08T20:21:00+00:00\",\"valid_at\":null},{\"evidence_type\":\"graph_fact\",\"expired_at\":null,\"invalid_at\":null,\"raw_evidence\":\"The Sonos app allows users to create and save custom sound profiles for the Sonos Beam for different types of content, such as movies, music, or podcasts.\",\"retrieval_rank\":15,\"source_id\":\"ca806580-2a7a-4bfc-afa7-ab079565cc17\",\"source_session_ids\":[\"74ef19f0_1\"],\"speaker\":\"graph_fact\",\"timestamp\":\"2023-06-08T20:21:00+00:00\",\"valid_at\":\"2023-06-08T20:21:00+00:00\"},{\"evidence_type\":\"graph_fact\",\"expired_at\":null,\"invalid_at\":null,\"raw_evidence\":\"The Sonos app allows users to adjust the speech enhancement level of the Sonos Beam.\",\"retrieval_rank\":20,\"source_id\":\"a5543a8c-d77f-4676-9d2b-3813513ca685\",\"source_session_ids\":[\"74ef19f0_1\"],\"speaker\":\"graph_fact\",\"timestamp\":\"2023-06-08T20:21:00+00:00\",\"valid_at\":\"2023-06-08T20:21:00+00:00\"}]",
+    "episodes": [
+      {
+        "episode_uuid": "bfd6b884-cf6f-40e5-a96f-32fe9ac3f16b",
+        "retrieval_rank": 1,
+        "session_id": "b65f51fb_5"
+      },
+      {
+        "episode_uuid": "ffee0cb1-6317-4dc1-8269-d2e00704d273",
+        "retrieval_rank": 2,
+        "session_id": "57bf4122_1"
+      },
+      {
+        "episode_uuid": "bbd0672a-a950-4e09-bec2-5aa61c8e53c9",
+        "retrieval_rank": 3,
+        "session_id": "f188b48d_2"
+      },
+      {
+        "episode_uuid": "d4d4920b-2aa1-4275-9ba8-4ee8dc80757e",
+        "retrieval_rank": 4,
+        "session_id": "answer_5126c02d_1"
+      },
+      {
+        "episode_uuid": "9c5393c8-ab77-4e08-9848-c2aa5de3acfb",
+        "retrieval_rank": 5,
+        "session_id": "c98b3349_3"
+      },
+      {
+        "episode_uuid": "94f37bf8-3a6d-4cb2-a606-d50619f505cd",
+        "retrieval_rank": 6,
+        "session_id": "b4f28f96_1"
+      },
+      {
+        "episode_uuid": "99877241-5079-4983-9ffe-f847202a0fae",
+        "retrieval_rank": 7,
+        "session_id": "2fa50779_2"
+      },
+      {
+        "episode_uuid": "2bfa44ff-8e28-442e-8ebc-3def5073f513",
+        "retrieval_rank": 8,
+        "session_id": "answer_5126c02d_2"
+      },
+      {
+        "episode_uuid": "900d7ee2-0d7b-4966-b7ae-102e23db36a8",
+        "retrieval_rank": 9,
+        "session_id": "c11b64f3_1"
+      },
+      {
+        "episode_uuid": "23632d8d-100d-4d55-84b9-951525b8c213",
+        "retrieval_rank": 10,
+        "session_id": "ultrachat_475462"
+      },
+      {
+        "episode_uuid": "72ecc35d-342a-402b-99c3-0f903979908c",
+        "retrieval_rank": 11,
+        "session_id": "719a18dd_1"
+      },
+      {
+        "episode_uuid": "d84fed1b-2d40-4255-b009-b0ec62c802d4",
+        "retrieval_rank": 12,
+        "session_id": "01a467ee_2"
+      },
+      {
+        "episode_uuid": "ad8aae9c-9959-4906-b660-de4f0d7129fc",
+        "retrieval_rank": 13,
+        "session_id": "ultrachat_75332"
+      },
+      {
+        "episode_uuid": "1e9cdc67-af84-4802-b298-59724e2d7edb",
+        "retrieval_rank": 14,
+        "session_id": "sharegpt_gYShON7_0"
+      },
+      {
+        "episode_uuid": "2026acdd-74f9-44ab-b727-581cf7d89bd5",
+        "retrieval_rank": 15,
+        "session_id": "a135a911"
+      },
+      {
+        "episode_uuid": "63447735-c195-4855-8f3a-6da3afc2c782",
+        "retrieval_rank": 16,
+        "session_id": "104055de"
+      },
+      {
+        "episode_uuid": "6da0294c-a35c-434c-993e-901970af2de8",
+        "retrieval_rank": 17,
+        "session_id": "1d015773_1"
+      },
+      {
+        "episode_uuid": "a4e90ca3-86b2-452a-abac-d677124cfc7b",
+        "retrieval_rank": 18,
+        "session_id": "ultrachat_59277"
+      },
+      {
+        "episode_uuid": "60d56d97-bbc8-41e6-8777-7fa7c0a4d6bb",
+        "retrieval_rank": 19,
+        "session_id": "39709ef6_2"
+      },
+      {
+        "episode_uuid": "37232538-53a3-43e3-a806-c4a002a36a5e",
+        "retrieval_rank": 20,
+        "session_id": "842137f5_2"
+      }
+    ],
+    "facts": [
+      {
+        "edge_uuid": "3580792f-f532-4a80-9b42-6efd82e5c810",
+        "expired_at": null,
+        "fact": "User plans to visit the USS Arizona Memorial during their upcoming trip to Waikiki.",
+        "invalid_at": null,
+        "reference_time": "2023-05-24T15:18:00+00:00",
+        "relation_name": "PLANS_TO_VISIT",
+        "retrieval_rank": 1,
+        "source_node_uuid": "927f204b-6b0a-4ae1-a0fb-b16000347e66",
+        "source_session_ids": [
+          "c11b64f3_1"
+        ],
+        "target_node_uuid": "348c9291-030a-442c-808c-a8943af2d5bc",
+        "valid_at": null
+      },
+      {
+        "edge_uuid": "96bc5d4a-d243-4201-9f6b-669f0d6c91ed",
+        "expired_at": null,
+        "fact": "The user is organizing their computer files by creating a 'Personal' folder and a 'Someday' folder, indicating a structured approach to categorizing their digital life.",
+        "invalid_at": null,
+        "reference_time": "2023-05-25T20:16:00+00:00",
+        "relation_name": "ORGANIZATION_STRUCTURE",
+        "retrieval_rank": 2,
+        "source_node_uuid": "e55988ef-a573-47f4-ba7b-3cdb8035a525",
+        "source_session_ids": [
+          "a135a911"
+        ],
+        "target_node_uuid": "33408ae4-c2a2-4561-bdc3-e769a49816ea",
+        "valid_at": "2023-05-25T20:16:00+00:00"
+      },
+      {
+        "edge_uuid": "6b1bda1b-2551-4efa-b00a-fc9c29721dae",
+        "expired_at": null,
+        "fact": "User brings a Kindle on the hike to read books during downtime and reflection.",
+        "invalid_at": null,
+        "reference_time": "2023-05-25T05:48:00+00:00",
+        "relation_name": "BRINGS",
+        "retrieval_rank": 3,
+        "source_node_uuid": "927f204b-6b0a-4ae1-a0fb-b16000347e66",
+        "source_session_ids": [
+          "fc9d19f7_2"
+        ],
+        "target_node_uuid": "658c8097-6d87-4c35-8182-2e20f49bb5ae",
+        "valid_at": "2023-05-25T05:48:00+00:00"
+      },
+      {
+        "edge_uuid": "931ea4a3-82ff-4f07-948d-5907602b00a0",
+        "expired_at": null,
+        "fact": "User plans to purchase a 3-day Go Oahu Card to make the most of their time in Waikiki.",
+        "invalid_at": null,
+        "reference_time": "2023-05-24T15:18:00+00:00",
+        "relation_name": "PURCHASED",
+        "retrieval_rank": 4,
+        "source_node_uuid": "927f204b-6b0a-4ae1-a0fb-b16000347e66",
+        "source_session_ids": [
+          "c11b64f3_1"
+        ],
+        "target_node_uuid": "a46f95a9-ece8-4839-a111-09c3653a1cfe",
+        "valid_at": null
+      },
+      {
+        "edge_uuid": "df363afb-2767-4048-b4b3-4b878aa85839",
+        "expired_at": null,
+        "fact": "The Sonos app allows users to adjust the bass level of the Sonos Beam from -3 to +3.",
+        "invalid_at": null,
+        "reference_time": "2023-06-08T20:21:00+00:00",
+        "relation_name": "ADJUSTS_BASS_OF",
+        "retrieval_rank": 5,
+        "source_node_uuid": "cfeb0e53-c248-42dc-bf7e-4c772ef78efc",
+        "source_session_ids": [
+          "74ef19f0_1"
+        ],
+        "target_node_uuid": "2007acac-1436-4217-adec-f4f7ebf7cb2d",
+        "valid_at": null
+      },
+      {
+        "edge_uuid": "837294e7-060e-4b4a-ba74-ff43ea217d32",
+        "expired_at": null,
+        "fact": "Slickdeals tracks prices for the Dell Inspiron 14 5000.",
+        "invalid_at": null,
+        "reference_time": "2023-05-25T16:57:00+00:00",
+        "relation_name": "TRACKS_PRICE",
+        "retrieval_rank": 6,
+        "source_node_uuid": "38d60273-d192-44f9-ae57-4021373a3343",
+        "source_session_ids": [
+          "ultrachat_75332"
+        ],
+        "target_node_uuid": "7a65adc0-4e8f-4bb6-b0a8-5b875d8b788a",
+        "valid_at": "2023-05-25T16:57:00+00:00"
+      },
+      {
+        "edge_uuid": "fc55d3b7-739b-469d-92b1-dd995f268832",
+        "expired_at": null,
+        "fact": "User is planning a trip to Waikiki, Hawaii.",
+        "invalid_at": null,
+        "reference_time": "2023-05-24T15:18:00+00:00",
+        "relation_name": "PLANS_TO_VISIT",
+        "retrieval_rank": 7,
+        "source_node_uuid": "927f204b-6b0a-4ae1-a0fb-b16000347e66",
+        "source_session_ids": [
+          "c11b64f3_1"
+        ],
+        "target_node_uuid": "06a893fc-cc1e-4c1d-81fe-77a2ecec9c82",
+        "valid_at": "2023-05-24T15:18:00+00:00"
+      },
+      {
+        "edge_uuid": "72b0306d-0c66-4b66-977e-dc2dc5ce4069",
+        "expired_at": null,
+        "fact": "The user is organizing their computer files by creating a 'Work' folder and a 'Someday' folder, indicating a structured approach to categorizing their digital life.",
+        "invalid_at": null,
+        "reference_time": "2023-05-25T20:16:00+00:00",
+        "relation_name": "ORGANIZATION_STRUCTURE",
+        "retrieval_rank": 8,
+        "source_node_uuid": "94db2bae-9b10-4c2c-82ef-175e6c311536",
+        "source_session_ids": [
+          "a135a911"
+        ],
+        "target_node_uuid": "33408ae4-c2a2-4561-bdc3-e769a49816ea",
+        "valid_at": "2023-05-25T20:16:00+00:00"
+      },
+      {
+        "edge_uuid": "edea798f-f854-45cb-9d5b-e7d5cdab86b7",
+        "expired_at": null,
+        "fact": "ASMR is related to ASMR content creation.",
+        "invalid_at": null,
+        "reference_time": "2023-05-25T09:56:00+00:00",
+        "relation_name": "RELATED_TO",
+        "retrieval_rank": 9,
+        "source_node_uuid": "db21444f-d274-404b-8f52-d857a7151385",
+        "source_session_ids": [
+          "f188b48d_2"
+        ],
+        "target_node_uuid": "3edc4fac-30f7-493d-9dbd-ef755c01fcc0",
+        "valid_at": null
+      },
+      {
+        "edge_uuid": "7b6aee40-8116-4de7-afa1-65a400f7a56b",
+        "expired_at": null,
+        "fact": "The user is organizing their computer files by creating a 'Work' folder and a 'Personal' folder, indicating a structured approach to categorizing their digital life.",
+        "invalid_at": null,
+        "reference_time": "2023-05-25T20:16:00+00:00",
+        "relation_name": "ORGANIZATION_STRUCTURE",
+        "retrieval_rank": 10,
+        "source_node_uuid": "94db2bae-9b10-4c2c-82ef-175e6c311536",
+        "source_session_ids": [
+          "a135a911"
+        ],
+        "target_node_uuid": "e55988ef-a573-47f4-ba7b-3cdb8035a525",
+        "valid_at": "2023-05-25T20:16:00+00:00"
+      },
+      {
+        "edge_uuid": "3da7cba3-37da-4e9c-8b46-76f20516641e",
+        "expired_at": null,
+        "fact": "NFC chip may have certification according to EMVCo.",
+        "invalid_at": null,
+        "reference_time": "2023-04-25T10:21:00+00:00",
+        "relation_name": "HAS_CERTIFICATION",
+        "retrieval_rank": 11,
+        "source_node_uuid": "a1c899fc-07d5-4d9d-a7d3-534b462d35e2",
+        "source_session_ids": [
+          "sharegpt_wyaZNL4_9"
+        ],
+        "target_node_uuid": "4e856c41-c8b1-48ad-afeb-30ce8e967a97",
+        "valid_at": null
+      },
+      {
+        "edge_uuid": "886dc141-9d22-4090-ad2c-fd86098a4c9b",
+        "expired_at": null,
+        "fact": "ASMR content is not related to the budgeting app YNAB.",
+        "invalid_at": null,
+        "reference_time": "2023-05-25T09:56:00+00:00",
+        "relation_name": "NOT_RELATED_TO",
+        "retrieval_rank": 12,
+        "source_node_uuid": "3edc4fac-30f7-493d-9dbd-ef755c01fcc0",
+        "source_session_ids": [
+          "f188b48d_2"
+        ],
+        "target_node_uuid": "f2957d88-2436-4592-8d22-c76bee20b52c",
+        "valid_at": null
+      },
+      {
+        "edge_uuid": "c919a9ee-d615-4e71-b7c1-4d9286b23c2c",
+        "expired_at": null,
+        "fact": "Jeaniene Frost authored the book Halfway to the Grave.",
+        "invalid_at": null,
+        "reference_time": "2023-05-21T23:30:00+00:00",
+        "relation_name": "AUTHORED",
+        "retrieval_rank": 13,
+        "source_node_uuid": "f3aa8280-4983-4a3d-8d9f-31dff9313fcf",
+        "source_session_ids": [
+          "a8028ce7_2"
+        ],
+        "target_node_uuid": "bf3bf8fd-56da-49a1-ba3f-2b9b38a0a713",
+        "valid_at": null
+      },
+      {
+        "edge_uuid": "8bf43597-c33b-485b-847b-e4713fd66a05",
+        "expired_at": null,
+        "fact": "Instagram Live includes a Q&A session as a feature for engaging with the audience in real-time.",
+        "invalid_at": null,
+        "reference_time": "2023-05-25T05:26:00+00:00",
+        "relation_name": "INCLUDES",
+        "retrieval_rank": 14,
+        "source_node_uuid": "3670805c-15bf-47da-b56f-e0573dc30725",
+        "source_session_ids": [
+          "answer_5126c02d_1"
+        ],
+        "target_node_uuid": "2a19cf57-3c2b-4036-b0e9-76c158d101cc",
+        "valid_at": null
+      },
+      {
+        "edge_uuid": "ca806580-2a7a-4bfc-afa7-ab079565cc17",
+        "expired_at": null,
+        "fact": "The Sonos app allows users to create and save custom sound profiles for the Sonos Beam for different types of content, such as movies, music, or podcasts.",
+        "invalid_at": null,
+        "reference_time": "2023-06-08T20:21:00+00:00",
+        "relation_name": "CREATES_CUSTOM_SOUND_PROFILE_FOR",
+        "retrieval_rank": 15,
+        "source_node_uuid": "cfeb0e53-c248-42dc-bf7e-4c772ef78efc",
+        "source_session_ids": [
+          "74ef19f0_1"
+        ],
+        "target_node_uuid": "2007acac-1436-4217-adec-f4f7ebf7cb2d",
+        "valid_at": "2023-06-08T20:21:00+00:00"
+      },
+      {
+        "edge_uuid": "566f351f-750e-4926-ace4-193f9008482e",
+        "expired_at": null,
+        "fact": "ASMR content is not related to the budgeting app Mint.",
+        "invalid_at": null,
+        "reference_time": "2023-05-25T09:56:00+00:00",
+        "relation_name": "NOT_RELATED_TO",
+        "retrieval_rank": 16,
+        "source_node_uuid": "3edc4fac-30f7-493d-9dbd-ef755c01fcc0",
+        "source_session_ids": [
+          "f188b48d_2"
+        ],
+        "target_node_uuid": "839b8130-5db2-4af1-ab48-ebbd71c6b19e",
+        "valid_at": null
+      },
+      {
+        "edge_uuid": "45e29476-5405-4624-b6ff-c39b652defa3",
+        "expired_at": null,
+        "fact": "User visited the island of Oahu during a previous trip to Hawaii with their family.",
+        "invalid_at": null,
+        "reference_time": "2023-05-24T15:18:00+00:00",
+        "relation_name": "VISITED",
+        "retrieval_rank": 17,
+        "source_node_uuid": "927f204b-6b0a-4ae1-a0fb-b16000347e66",
+        "source_session_ids": [
+          "c11b64f3_1"
+        ],
+        "target_node_uuid": "3618d1da-191e-47af-aefb-b474b1006446",
+        "valid_at": null
+      },
+      {
+        "edge_uuid": "b5a16ce2-9a9c-416f-be63-0ce9ea76c545",
+        "expired_at": null,
+        "fact": "NFC chip may have certification according to Common Criteria.",
+        "invalid_at": null,
+        "reference_time": "2023-04-25T10:21:00+00:00",
+        "relation_name": "HAS_CERTIFICATION",
+        "retrieval_rank": 18,
+        "source_node_uuid": "a1c899fc-07d5-4d9d-a7d3-534b462d35e2",
+        "source_session_ids": [
+          "sharegpt_wyaZNL4_9"
+        ],
+        "target_node_uuid": "9319fd28-0886-4422-9027-abc6911983c2",
+        "valid_at": null
+      },
+      {
+        "edge_uuid": "b357a44f-6eb9-437e-90b3-1e8ba2a3b8f1",
+        "expired_at": null,
+        "fact": "CamelCamelCamel tracks prices for the Dell Inspiron 14 5000.",
+        "invalid_at": null,
+        "reference_time": "2023-05-25T16:57:00+00:00",
+        "relation_name": "TRACKS_PRICE",
+        "retrieval_rank": 19,
+        "source_node_uuid": "39bb8e8e-b0fe-4806-889a-6c64f878e220",
+        "source_session_ids": [
+          "ultrachat_75332"
+        ],
+        "target_node_uuid": "7a65adc0-4e8f-4bb6-b0a8-5b875d8b788a",
+        "valid_at": "2023-05-25T16:57:00+00:00"
+      },
+      {
+        "edge_uuid": "a5543a8c-d77f-4676-9d2b-3813513ca685",
+        "expired_at": null,
+        "fact": "The Sonos app allows users to adjust the speech enhancement level of the Sonos Beam.",
+        "invalid_at": null,
+        "reference_time": "2023-06-08T20:21:00+00:00",
+        "relation_name": "ADJUSTS_SPEECH_ENHANCEMENT_OF",
+        "retrieval_rank": 20,
+        "source_node_uuid": "cfeb0e53-c248-42dc-bf7e-4c772ef78efc",
+        "source_session_ids": [
+          "74ef19f0_1"
+        ],
+        "target_node_uuid": "2007acac-1436-4217-adec-f4f7ebf7cb2d",
+        "valid_at": "2023-06-08T20:21:00+00:00"
+      }
+    ]
+  },
+  "retrieval_metrics": {
+    "gold_ranks": [
+      1
+    ],
+    "mrr": 1.0,
+    "ndcg_at_10": 1.0,
+    "recall_at_1": 1.0,
+    "recall_at_10": 1.0,
+    "recall_at_3": 1.0,
+    "recall_at_5": 1.0,
+    "relevance_unit": "LONGMEMEVAL_GOLD_SESSION"
+  },
+  "run_id": "expanded-qa-20260819-001",
+  "schema_version": "membind.baseline-reuse-expanded-private-row.v1",
+  "temporal_diagnostics": {
+    "active_fact_count": 20,
+    "conflicting_relation_group_count": 0,
+    "diagnostic_scope": "RETRIEVED_EDGE_TEMPORAL_FIELDS_ONLY",
+    "future_fact_count": 0,
+    "latest_valid_fact_ranks": [],
+    "stale_fact_count": 0,
+    "stale_ranked_before_latest_valid_count": 0
+  }
+}

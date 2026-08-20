@@ -1,0 +1,469 @@
+{
+  "context_gold_session_coverage_posthoc": 1.0,
+  "edge_provenance_metrics": {
+    "edge_gold_source_precision_at_1": 0.0,
+    "edge_gold_source_precision_at_10": 0.0,
+    "edge_gold_source_precision_at_20": 0.0,
+    "edge_gold_source_precision_at_3": 0.0,
+    "edge_gold_source_precision_at_5": 0.0,
+    "gold_fact_labels_available": false,
+    "gold_session_edge_coverage_at_1": 0.0,
+    "gold_session_edge_coverage_at_10": 0.0,
+    "gold_session_edge_coverage_at_20": 0.0,
+    "gold_session_edge_coverage_at_3": 0.0,
+    "gold_session_edge_coverage_at_5": 0.0,
+    "metric_scope": "PROVENANCE_PROXY_NOT_GOLD_FACT_RECALL"
+  },
+  "failure_category": "READER_INVALID",
+  "gold_evidence_quotes": [
+    "I'll create a spreadsheet to keep everything organized"
+  ],
+  "gold_session_ids": [
+    "b65f51fb_5"
+  ],
+  "history_id": "a2f3aa27",
+  "judge": null,
+  "method": "P(C=2)",
+  "namespace": "pev3-bs-dev-20260816-001-pc2-a2f3aa27-a001",
+  "payload_sha256": "9c091de3b07dd9e1dd8354b8529efb4f7e7dc68d217f8e84e9994a90ab2bc557",
+  "predicted_answer": null,
+  "question": "What did I plan to use to track updates to my online accounts?",
+  "question_date": "2023/06/23 (Fri) 07:31",
+  "question_id": "a2f3aa27-ext-003",
+  "question_type": "knowledge-update",
+  "reader": {
+    "error_class": "paper_eval.quality_evaluation_v1_reader.QualityEvaluationV1ReaderError:Quality v1 Reader request failed: GraphQualityTransportError",
+    "status": "SERVICE_ERROR"
+  },
+  "reference_answer": "A spreadsheet.",
+  "retrieval": {
+    "context_json": "[{\"evidence_type\":\"graph_fact\",\"expired_at\":null,\"invalid_at\":null,\"raw_evidence\":\"The user wants to track their Fetch Rewards points.\",\"retrieval_rank\":1,\"source_id\":\"f221eefd-8cbe-498a-aca7-1e9362f61ee8\",\"source_session_ids\":[\"2fa50779_2\"],\"speaker\":\"graph_fact\",\"timestamp\":\"2023-05-04T20:03:00+00:00\",\"valid_at\":\"2023-05-04T20:03:00+00:00\"},{\"evidence_type\":\"graph_fact\",\"expired_at\":null,\"invalid_at\":null,\"raw_evidence\":\"The user wants to track their ShopRite Price Plus rewards and discounts.\",\"retrieval_rank\":2,\"source_id\":\"6d00da70-105a-41d3-aed9-f7c5a28f4585\",\"source_session_ids\":[\"2fa50779_2\"],\"speaker\":\"graph_fact\",\"timestamp\":\"2023-05-04T20:03:00+00:00\",\"valid_at\":\"2023-05-04T20:03:00+00:00\"},{\"evidence_type\":\"graph_fact\",\"expired_at\":null,\"invalid_at\":null,\"raw_evidence\":\"The user wants to track their Target RedCard rewards, which provide a 5% discount on Target purchases.\",\"retrieval_rank\":3,\"source_id\":\"9b95f7a0-a743-4bb6-b276-1685e7e77400\",\"source_session_ids\":[\"2fa50779_2\"],\"speaker\":\"graph_fact\",\"timestamp\":\"2023-05-04T20:03:00+00:00\",\"valid_at\":\"2023-05-04T20:03:00+00:00\"},{\"evidence_type\":\"source_local_round\",\"expired_at\":null,\"graphiti_session_rank\":7,\"invalid_at\":null,\"raw_evidence\":[{\"content\":\"I'm trying to organize my loyalty programs and rewards. Can you help me keep track of my rewards and remind me when they expire? By the way, I've earned a few bucks in rewards at CVS and I need to make sure I use them before they expire.\",\"role\":\"user\"},{\"content\":\"I'd be happy to help you keep track of your loyalty programs and rewards.\\n\\nLet's start with the CVS rewards. Can you please tell me more about the rewards you've earned? How much is the reward amount, and when do they expire? Additionally, do you have a CVS ExtraCare card or are these rewards from a specific promotion?\\n\\nOnce we get the CVS rewards sorted out, we can move on to other loyalty programs you're a part of. You can share the details of each program, such as:\\n\\n1. Program name (e.g., airline, hotel, credit card, store loyalty program)\\n2. Reward type (e.g., points, miles, cashback, discounts)\\n3. Current balance or available rewards\\n4. Expiration dates (if applicable)\\n\\nI can help you create a virtual \\\"wallet\\\" to keep track of your rewards and remind you when they're about to expire. We can also discuss strategies to maximize your rewards and make the most of your loyalty programs.\\n\\nLet's get started!\",\"role\":\"assistant\"}],\"retrieval_rank\":2,\"source_id\":\"2fa50779_2_1\",\"source_session_ids\":[\"2fa50779_2\"],\"speaker\":\"user+assistant\",\"timestamp\":\"2023/05/04 (Thu) 20:03\",\"valid_at\":null},{\"evidence_type\":\"source_local_round\",\"expired_at\":null,\"graphiti_session_rank\":7,\"invalid_at\":null,\"raw_evidence\":[{\"content\":\"I want to organize my loyalty programs and rewards better. Can I also track my Target RedCard rewards and Fetch Rewards points with you?\",\"role\":\"user\"},{\"content\":\"I'd be happy to help you track your Target RedCard rewards and Fetch Rewards points.\\n\\n**Target RedCard:**\\n\\n* Program: Target RedCard\\n* Reward type: 5% off on Target purchases\\n* Current balance: unknown (since it's a discount program, we'll focus on tracking your savings)\\n\\nTo track your Target RedCard rewards, I'll need to know when you make a purchase at Target using your RedCard. You can report your purchases to me, and I'll keep a running total of your savings.\\n\\n**Fetch Rewards:**\\n\\n* Program: Fetch Rewards\\n* Reward type: Points\\n* Current balance: unknown (let's start tracking your points from now on!)\\n\\nTo track your Fetch Rewards points, I'll need to know when you earn points from purchasing participating brands or submitting receipts. You can report your Fetch Rewards earnings to me, and I'll update your points balance.\\n\\nHere's how you can report your earnings:\\n\\n* For Target RedCard, simply tell me the date and amount of your purchase at Target using your RedCard.\\n* For Fetch Rewards, share the date, points earned, and any relevant details about the purchase (e.g., which brands or products you bought).\\n\\nI'll keep track of your rewards and provide reminders when you're close to earning a new reward or when your points are about to expire.\\n\\nNow, you have three loyalty programs tracked:\\n\\n1. CVS ExtraCare\\n2. Walgreens Balance Rewards\\n3. Target RedCard\\n4. Fetch Rewards\\n\\nFeel free to add more programs or rewards anytime you'd like!\\n\\nRemember, the more you report your earnings and purchases, the better I can assist you in maximizing your rewards and savings.\",\"role\":\"assistant\"}],\"retrieval_rank\":6,\"source_id\":\"2fa50779_2_9\",\"source_session_ids\":[\"2fa50779_2\"],\"speaker\":\"user+assistant\",\"timestamp\":\"2023/05/04 (Thu) 20:03\",\"valid_at\":null},{\"evidence_type\":\"graph_fact\",\"expired_at\":null,\"invalid_at\":null,\"raw_evidence\":\"Sheba Consulting contributes thought leadership content to Forbes.\",\"retrieval_rank\":10,\"source_id\":\"1af45164-15a1-4a73-918b-e420f4208f91\",\"source_session_ids\":[\"sharegpt_gYShON7_0\"],\"speaker\":\"graph_fact\",\"timestamp\":\"2023-05-04T21:52:00+00:00\",\"valid_at\":\"2023-05-04T21:52:00+00:00\"},{\"evidence_type\":\"graph_fact\",\"expired_at\":null,\"invalid_at\":null,\"raw_evidence\":\"Sheba Consulting contributes thought leadership content to Entrepreneur Magazine.\",\"retrieval_rank\":20,\"source_id\":\"bd0427d0-0adb-40b4-8060-8a95cfe91996\",\"source_session_ids\":[\"sharegpt_gYShON7_0\"],\"speaker\":\"graph_fact\",\"timestamp\":\"2023-05-04T21:52:00+00:00\",\"valid_at\":\"2023-05-04T21:52:00+00:00\"},{\"evidence_type\":\"source_local_round\",\"expired_at\":null,\"graphiti_session_rank\":14,\"invalid_at\":null,\"raw_evidence\":[{\"content\":\"i own a fractional leadership consulting company by the name of Sheba Consulting. I have a ton of experience as an executive but recently the economy has declined and with it my business. I did everything possible to reach new clients and it is too slow. what can you suggest i do to get some good new clients quickly?\",\"role\":\"user\"},{\"content\":\"I'm sorry to hear that your business has been impacted by the economic downturn. Here are some suggestions to help you quickly acquire new clients for your fractional leadership consulting company:\\n\\n1. Reevaluate your target market: Analyze your current client base and determine if there's a different segment of the market that may be more resilient or responsive to your services. This might include pivoting to industries that have been less impacted by the economic downturn.\\n2. Offer a limited-time promotion: Create an enticing offer for new clients, such as a discounted rate for the first three months or a free consultation session. This can help generate immediate interest in your services.\\n3. Network extensively: Attend industry events, both online and in-person, to connect with potential clients. Leverage your professional network, including your LinkedIn connections, to reach out to people who might be interested in your services.\\n4. Collaborate with complementary businesses: Partner with other companies that offer non-competitive, complementary services. For example, you could team up with a marketing agency or a human resources consulting firm to offer bundled services to clients.\\n5. Content marketing: Create valuable content, such as blog posts, whitepapers, webinars, or podcasts, that showcase your expertise in leadership consulting. Share this content on your website and social media channels, and consider guest posting on other reputable industry sites.\\n6. Utilize social media advertising: Use targeted social media advertising, such as LinkedIn or Facebook ads, to reach potential clients in specific industries or job titles.\\n7. Offer free resources: Develop and share free resources, like templates, checklists, or guides, that can provide value to potential clients. This can help establish your credibility and encourage potential clients to reach out to you for further assistance.\\n8. Testimonials and case studies: Showcase success stories from your previous clients on your website and in your marketing materials. Potential clients are more likely to work with you if they see concrete examples of your impact.\\n9. Personalize your outreach: When reaching out to potential clients, personalize your messages to address their specific pain points and demonstrate how your services can help them.\\n10. Follow up on leads: Ensure that you follow up on all leads and referrals in a timely and professional manner. Persistence is key when trying to secure new clients, especially in a challenging economic environment.\\n\\nRemember that acquiring new clients takes time and effort, so it's essential to stay proactive and persistent in your marketing and outreach activities.\",\"role\":\"assistant\"}],\"retrieval_rank\":8,\"source_id\":\"sharegpt_gYShON7_0_1\",\"source_session_ids\":[\"sharegpt_gYShON7_0\"],\"speaker\":\"user+assistant\",\"timestamp\":\"2023/05/04 (Thu) 21:52\",\"valid_at\":null},{\"evidence_type\":\"graph_fact\",\"expired_at\":null,\"invalid_at\":null,\"raw_evidence\":\"The user has been using their e-reader a lot lately.\",\"retrieval_rank\":4,\"source_id\":\"c970ecbf-64d1-4316-b5b3-9e0ace4e9337\",\"source_session_ids\":[\"a8028ce7_2\"],\"speaker\":\"graph_fact\",\"timestamp\":\"2023-05-21T23:30:00+00:00\",\"valid_at\":\"2023-05-21T23:30:00+00:00\"},{\"evidence_type\":\"graph_fact\",\"expired_at\":null,\"invalid_at\":null,\"raw_evidence\":\"The user plans to start reading 'Halfway to the Grave' soon.\",\"retrieval_rank\":7,\"source_id\":\"16afd9f8-29a9-4baf-bb04-1200f206a991\",\"source_session_ids\":[\"a8028ce7_2\"],\"speaker\":\"graph_fact\",\"timestamp\":\"2023-05-21T23:30:00+00:00\",\"valid_at\":\"2023-05-21T23:30:00+00:00\"},{\"evidence_type\":\"graph_fact\",\"expired_at\":null,\"invalid_at\":null,\"raw_evidence\":\"The user was recommended to read the Night Huntress series by Jeaniene Frost.\",\"retrieval_rank\":17,\"source_id\":\"45b63dd5-2f93-4a50-9662-b790cf66b02d\",\"source_session_ids\":[\"a8028ce7_2\"],\"speaker\":\"graph_fact\",\"timestamp\":\"2023-05-21T23:30:00+00:00\",\"valid_at\":null},{\"evidence_type\":\"graph_fact\",\"expired_at\":null,\"invalid_at\":null,\"raw_evidence\":\"Instagram Live includes a Q&A session as a feature for engaging with the audience in real-time.\",\"retrieval_rank\":18,\"source_id\":\"694ca670-3283-4589-bba7-c8c8bdcff8ed\",\"source_session_ids\":[\"answer_5126c02d_1\"],\"speaker\":\"graph_fact\",\"timestamp\":\"2023-05-25T05:26:00+00:00\",\"valid_at\":null},{\"evidence_type\":\"graph_fact\",\"expired_at\":null,\"invalid_at\":null,\"raw_evidence\":\"User brings Kindle with them on the hike to enjoy some downtime and reflection during the solo adventure.\",\"retrieval_rank\":6,\"source_id\":\"f01e36ac-aaeb-4626-8216-8743cc2aeba6\",\"source_session_ids\":[\"fc9d19f7_2\"],\"speaker\":\"graph_fact\",\"timestamp\":\"2023-05-25T05:48:00+00:00\",\"valid_at\":\"2023-05-25T05:48:00+00:00\"},{\"evidence_type\":\"graph_fact\",\"expired_at\":null,\"invalid_at\":null,\"raw_evidence\":\"Slow cooker chili ingredients can be ordered online from AmazonFresh.\",\"retrieval_rank\":5,\"source_id\":\"6c53b08f-8638-49b0-a44c-f0fe2b95e80a\",\"source_session_ids\":[\"c98b3349_3\"],\"speaker\":\"graph_fact\",\"timestamp\":\"2023-05-25T15:30:00+00:00\",\"valid_at\":\"2023-05-25T15:30:00+00:00\"},{\"evidence_type\":\"graph_fact\",\"expired_at\":null,\"invalid_at\":null,\"raw_evidence\":\"Slow cooker chili ingredients can be ordered online from Peapod.\",\"retrieval_rank\":8,\"source_id\":\"22fa9491-aaec-403a-a4a8-1d007726936c\",\"source_session_ids\":[\"c98b3349_3\"],\"speaker\":\"graph_fact\",\"timestamp\":\"2023-05-25T15:30:00+00:00\",\"valid_at\":\"2023-05-25T15:30:00+00:00\"},{\"evidence_type\":\"graph_fact\",\"expired_at\":null,\"invalid_at\":null,\"raw_evidence\":\"Slow cooker chili ingredients can be ordered online from Instacart.\",\"retrieval_rank\":9,\"source_id\":\"19b6cdd4-f590-49f9-b66c-1d45cd8ecea6\",\"source_session_ids\":[\"c98b3349_3\"],\"speaker\":\"graph_fact\",\"timestamp\":\"2023-05-25T15:30:00+00:00\",\"valid_at\":\"2023-05-25T15:30:00+00:00\"},{\"evidence_type\":\"graph_fact\",\"expired_at\":null,\"invalid_at\":null,\"raw_evidence\":\"Slow cooker chili ingredients can be ordered online from Target.\",\"retrieval_rank\":11,\"source_id\":\"4d684864-21dd-424f-b6db-f39b758b11ad\",\"source_session_ids\":[\"c98b3349_3\"],\"speaker\":\"graph_fact\",\"timestamp\":\"2023-05-25T15:30:00+00:00\",\"valid_at\":\"2023-05-25T15:30:00+00:00\"},{\"evidence_type\":\"graph_fact\",\"expired_at\":null,\"invalid_at\":null,\"raw_evidence\":\"Slow cooker chili ingredients can be ordered online from FreshDirect.\",\"retrieval_rank\":14,\"source_id\":\"3cafc38c-4533-481e-bb97-ee706a9ba00e\",\"source_session_ids\":[\"c98b3349_3\"],\"speaker\":\"graph_fact\",\"timestamp\":\"2023-05-25T15:30:00+00:00\",\"valid_at\":\"2023-05-25T15:30:00+00:00\"},{\"evidence_type\":\"graph_fact\",\"expired_at\":null,\"invalid_at\":null,\"raw_evidence\":\"Slow cooker chili ingredients can be ordered online from Shipt.\",\"retrieval_rank\":15,\"source_id\":\"63270e26-caa9-4117-bcc8-b08fc56930e8\",\"source_session_ids\":[\"c98b3349_3\"],\"speaker\":\"graph_fact\",\"timestamp\":\"2023-05-25T15:30:00+00:00\",\"valid_at\":\"2023-05-25T15:30:00+00:00\"},{\"evidence_type\":\"graph_fact\",\"expired_at\":null,\"invalid_at\":null,\"raw_evidence\":\"Slow cooker chili ingredients can be ordered online from Kroger.\",\"retrieval_rank\":16,\"source_id\":\"d7eff44d-688f-44ab-a8fd-3174614b91d6\",\"source_session_ids\":[\"c98b3349_3\"],\"speaker\":\"graph_fact\",\"timestamp\":\"2023-05-25T15:30:00+00:00\",\"valid_at\":\"2023-05-25T15:30:00+00:00\"},{\"evidence_type\":\"source_local_round\",\"expired_at\":null,\"graphiti_session_rank\":1,\"invalid_at\":null,\"raw_evidence\":[{\"content\":\"That's really helpful! I think I can handle updating my credit card information now. For keeping track of updates, I think I'll create a spreadsheet to keep everything organized. One thing I'm still worried about is remembering to update all the online accounts, especially the less frequently used ones. Do you have any suggestions on how to make sure I don't miss any accounts?\",\"role\":\"user\"},{\"content\":\"I'm glad you're considering creating a spreadsheet to keep track of your updates!\\n\\n**Remembering to Update All Accounts:**\\n\\n1. **Make a list of all accounts**: Start by making a comprehensive list of all your online accounts, including social media, email, shopping, banking, and loyalty programs. You can use a spreadsheet or a note-taking app to create this list.\\n2. **Categorize and prioritize**: Categorize your accounts into groups, such as \\\"essential\\\" (e.g., email, banking, and credit cards), \\\"frequently used\\\" (e.g., social media, shopping), and \\\"less frequently used\\\" (e.g., hobby-related or subscription services). Prioritize updating the essential and frequently used accounts first.\\n3. **Break it down into chunks**: Divide your list into manageable chunks, such as updating 5-10 accounts per day or week, depending on your schedule and availability.\\n4. **Set reminders**: Set reminders for yourself to update specific accounts or categories of accounts. You can use a digital calendar, planner, or reminder app to set reminders.\\n5. **Check your password manager**: If you use a password manager, check your vault for accounts that need updating. Many password managers, like LastPass or 1Password, allow you to search for accounts with outdated information.\\n6. **Review your credit report**: Consider reviewing your credit report to identify any accounts that may be associated with your old information. You can request a free credit report from each of the three major credit bureaus (Experian, TransUnion, and Equifax) once a year from AnnualCreditReport.com.\\n7. **Ask a friend or family member**: Share your list with a trusted friend or family member and ask them to hold you accountable. This can provide an added motivation to complete the task.\\n8. **Celebrate milestones**: Celebrate your progress along the way! Update a few accounts, take a break, and then come back to it. This will help make the task less overwhelming.\\n\\n**Additional Tips:**\\n\\n* **Keep your list up-to-date**: As you update your accounts, remove them from your list. This will help you track your progress and avoid duplicate efforts.\\n* **Use two-factor authentication**: Enable two-factor authentication (2FA) whenever possible to add an extra layer of security to your accounts.\\n* **Monitor your accounts**: Regularly monitor your accounts for suspicious activity and update your information promptly if you notice any discrepancies.\\n\\nBy following these steps, you'll be able to update your online accounts methodically and ensure that you don't miss any important ones. Remember to stay organized, prioritize your accounts, and take breaks when needed. Good luck!\",\"role\":\"assistant\"}],\"retrieval_rank\":1,\"source_id\":\"b65f51fb_5_9\",\"source_session_ids\":[\"b65f51fb_5\"],\"speaker\":\"user+assistant\",\"timestamp\":\"2023/05/25 (Thu) 15:40\",\"valid_at\":null},{\"evidence_type\":\"source_local_round\",\"expired_at\":null,\"graphiti_session_rank\":1,\"invalid_at\":null,\"raw_evidence\":[{\"content\":\"I think I can handle updating my online accounts now. I'll create a spreadsheet to track my progress and set reminders to update specific accounts. I'll also review my credit report to identify any accounts that may be associated with my old information. Thanks for your help!\",\"role\":\"user\"},{\"content\":\"You're welcome! I'm glad I could assist you in updating your online presence and providing you with a plan to keep track of your progress. Creating a spreadsheet and setting reminders will definitely help you stay organized and on top of updating your accounts.\\n\\nRemember to take your time, and don't hesitate to reach out if you need any further assistance or have questions about a specific account. It's great that you're taking proactive steps to update your online presence and protect your personal information.\\n\\nReviewing your credit report is a fantastic idea, as it can help you identify any accounts that may have slipped under the radar. This will give you a comprehensive view of your online presence and help you ensure that all your accounts are up-to-date and secure.\\n\\nIf you have any other questions or concerns in the future, feel free to reach out. Otherwise, I wish you the best of luck in updating your online accounts and maintaining a secure online presence!\\n\\nStay safe and organized online!\",\"role\":\"assistant\"}],\"retrieval_rank\":3,\"source_id\":\"b65f51fb_5_11\",\"source_session_ids\":[\"b65f51fb_5\"],\"speaker\":\"user+assistant\",\"timestamp\":\"2023/05/25 (Thu) 15:40\",\"valid_at\":null},{\"evidence_type\":\"source_local_round\",\"expired_at\":null,\"graphiti_session_rank\":1,\"invalid_at\":null,\"raw_evidence\":[{\"content\":\"I'm trying to update my online presence, and I need some help with changing my name on a few websites. I recently set up a new email address with my new last name on February 12th, and I'm trying to use that for all my online accounts now. Can you walk me through the process of changing my username on some popular websites?\",\"role\":\"user\"},{\"content\":\"Congratulations on your recent name change! Updating your online presence can be a daunting task, but I'm happy to help you through the process. I'll provide step-by-step guides on how to change your username on popular websites. Please note that some websites may have slightly different procedures, and I'll do my best to provide the most up-to-date information.\\n\\n**Before we begin:**\\n\\n1. Make sure you have access to your new email address and password.\\n2. Have your old login credentials handy, as you'll need them to access your accounts.\\n3. Be prepared to verify your identity or provide additional information, if required.\\n\\n**Let's get started!**\\n\\nWhich websites do you need help with? Please select from the list below, and I'll provide the step-by-step guide for each:\\n\\n1. **Facebook**\\n2. **Twitter**\\n3. **Instagram**\\n4. **Google Account (Gmail, YouTube, etc.)**\\n5. **Amazon**\\n6. **eBay**\\n7. **LinkedIn**\\n8. **Other (please specify the website)**\\n\\nLet me know which ones you need help with, and I'll guide you through the process!\",\"role\":\"assistant\"}],\"retrieval_rank\":4,\"source_id\":\"b65f51fb_5_1\",\"source_session_ids\":[\"b65f51fb_5\"],\"speaker\":\"user+assistant\",\"timestamp\":\"2023/05/25 (Thu) 15:40\",\"valid_at\":null},{\"evidence_type\":\"source_local_round\",\"expired_at\":null,\"graphiti_session_rank\":1,\"invalid_at\":null,\"raw_evidence\":[{\"content\":\"I also need to update my credit card information on these websites. Can you provide some guidance on how to do that? And do you have any tips on how to keep track of all these updates?\",\"role\":\"user\"},{\"content\":\"**Updating Credit Card Information:**\\n\\n1. **Log in to your account**: Log in to your account on the website or mobile app using your current login credentials.\\n2. **Find the payment or billing section**: Look for the section related to payment or billing information, usually found in the account settings or profile area.\\n3. **Update credit card information**: Click on the \\\"Edit\\\" or \\\"Update\\\" button next to your credit card information.\\n4. **Enter new credit card details**: Enter your new credit card number, expiration date, security code, and billing address.\\n5. **Verify and save**: Verify that the information is correct and save the changes.\\n\\nSome popular websites may have slightly different steps:\\n\\n* **Amazon**: Go to \\\"Your Account\\\" > \\\"Payment options\\\" > \\\"Add a new credit card\\\" or \\\"Edit\\\" an existing card.\\n* **eBay**: Go to \\\"My eBay\\\" > \\\"Account\\\" > \\\"Payment\\\" > \\\"Add a credit card\\\" or \\\"Edit\\\" an existing card.\\n* **Store loyalty programs**: Go to the \\\"Account\\\" or \\\"Profile\\\" section and look for the \\\"Payment\\\" or \\\"Billing\\\" section.\\n\\n**Tips for Keeping Track of Updates:**\\n\\n1. **Create a spreadsheet**: Create a spreadsheet to track the websites you've updated, the new information you've provided, and the date you made the changes.\\n2. **Use a password manager**: Consider using a password manager like LastPass, 1Password, or Dashlane to securely store your login credentials and credit card information.\\n3. **Set reminders**: Set reminders for yourself to review and update your information periodically, especially if you have multiple accounts to manage.\\n4. **Keep a paper record**: Keep a paper record of your updates, including the websites, new information, and dates, in a secure location, such as a locked cabinet or safe.\\n5. **Prioritize sensitive information**: Prioritize updating sensitive information, such as credit card numbers and expiration dates, to minimize the risk of unauthorized access.\\n6. **Review account activity**: Regularly review your account activity and statements to ensure there are no suspicious transactions.\\n7. **Consider a credit monitoring service**: Consider using a credit monitoring service, such as Credit Karma or Credit Sesame, to track changes to your credit report and detect potential identity theft.\\n\\nBy following these steps and tips, you'll be able to update your credit card information and keep track of your online accounts more efficiently. Remember to stay organized, prioritize sensitive information, and review your accounts regularly to ensure your online presence is up-to-date and secure.\",\"role\":\"assistant\"}],\"retrieval_rank\":7,\"source_id\":\"b65f51fb_5_7\",\"source_session_ids\":[\"b65f51fb_5\"],\"speaker\":\"user+assistant\",\"timestamp\":\"2023/05/25 (Thu) 15:40\",\"valid_at\":null},{\"evidence_type\":\"source_local_round\",\"expired_at\":null,\"graphiti_session_rank\":1,\"invalid_at\":null,\"raw_evidence\":[{\"content\":\"That was really helpful, thanks! I think I can handle those updates. Another thing I need to do is update my online shopping accounts, like eBay and other store loyalty programs. Do you have any tips on how to update my information on those types of websites?\",\"role\":\"user\"},{\"content\":\"Updating your information on online shopping accounts and loyalty programs is an important step in keeping your online presence up-to-date. Here are some general tips and guidance on how to update your information on popular online shopping accounts and loyalty programs:\\n\\n**eBay:**\\n\\n1. Log in to your eBay account using your current login credentials.\\n2. Click on \\\"My eBay\\\" at the top of the page.\\n3. Click on \\\"Account\\\" and then \\\"Personal information.\\\"\\n4. Click on \\\"Edit\\\" next to \\\"Email address\\\" and update your email address to your new one.\\n5. Click \\\"Save\\\" to update your email address.\\n6. If you want to update your username, click on \\\"Edit\\\" next to \\\"Username\\\" and enter your new username. Click \\\"Save\\\" to update.\\n\\n**Store Loyalty Programs:**\\n\\n1. Log in to your loyalty program account using your current login credentials.\\n2. Look for the \\\"Account\\\" or \\\"Profile\\\" section, usually found at the top-right corner of the page or in a dropdown menu.\\n3. Click on \\\"Update profile\\\" or \\\"Edit profile\\\" and update your email address to your new one.\\n4. Review and update any other personal information, such as name, address, and phone number, if necessary.\\n5. Click \\\"Save\\\" or \\\"Update\\\" to confirm the changes.\\n\\n**General Tips:**\\n\\n1. **Log in to each account individually**: Make sure you log in to each account separately to update your information, as some websites may not allow you to update information across multiple accounts at once.\\n2. **Update your email address first**: Update your email address before changing your username or other information, as this will ensure you receive important notifications and can access your accounts smoothly.\\n3. **Review and update other information**: Take this opportunity to review and update other personal information, such as address, phone number, and payment information, if necessary.\\n4. **Save and verify**: After updating your information, make sure to save the changes and verify that they have been applied successfully.\\n5. **Keep track of your updates**: Keep a record of the websites you've updated and the new information you've provided, in case you need to refer to it later.\\n\\nSome popular store loyalty programs and online shopping accounts you may want to update include:\\n\\n* Walmart (Walmart.com and Walmart+)\\n* Target (Target.com and Target RedCard)\\n* Costco (Costco.com and Costco Anywhere Visa Card)\\n* Sephora (Sephora.com and Beauty Insider)\\n* Starbucks (Starbucks.com and Starbucks Rewards)\\n\\nRemember to update your information on each website individually, and don't hesitate to reach out to customer support if you encounter any issues.\",\"role\":\"assistant\"}],\"retrieval_rank\":10,\"source_id\":\"b65f51fb_5_5\",\"source_session_ids\":[\"b65f51fb_5\"],\"speaker\":\"user+assistant\",\"timestamp\":\"2023/05/25 (Thu) 15:40\",\"valid_at\":null},{\"evidence_type\":\"graph_fact\",\"expired_at\":null,\"invalid_at\":null,\"raw_evidence\":\"Slickdeals tracks the price of the Dell Inspiron 14 5000.\",\"retrieval_rank\":13,\"source_id\":\"901aa55d-c2e5-4da1-802c-ac10071ee516\",\"source_session_ids\":[\"ultrachat_75332\"],\"speaker\":\"graph_fact\",\"timestamp\":\"2023-05-25T16:57:00+00:00\",\"valid_at\":\"2023-05-25T16:57:00+00:00\"},{\"evidence_type\":\"graph_fact\",\"expired_at\":null,\"invalid_at\":null,\"raw_evidence\":\"CamelCamelCamel tracks the price of the Dell Inspiron 14 5000.\",\"retrieval_rank\":19,\"source_id\":\"d6daa27a-ba19-4d63-a682-41176ad72d0f\",\"source_session_ids\":[\"ultrachat_75332\"],\"speaker\":\"graph_fact\",\"timestamp\":\"2023-05-25T16:57:00+00:00\",\"valid_at\":\"2023-05-25T16:57:00+00:00\"},{\"evidence_type\":\"source_local_round\",\"expired_at\":null,\"graphiti_session_rank\":2,\"invalid_at\":null,\"raw_evidence\":[{\"content\":\"That's really helpful. I think I'll also add a column to track the shipping method and delivery time, so I can see which websites are the fastest and most reliable. And maybe a column for the product category, so I can see where I'm spending the most money. Do you have any suggestions on how to stay organized with my online shopping apps on my phone? I've got a bunch of shopping apps on my phone, and it's getting hard to keep track of which ones I've logged into and which ones I haven't.\",\"role\":\"user\"},{\"content\":\"Excellent ideas! Tracking shipping methods and delivery times can help you identify the most efficient retailers, and categorizing products will give you valuable insights into your spending habits.\\n\\nNow, let's tackle organizing your shopping apps on your phone:\\n\\n1. **Create a dedicated folder**: Designate a folder on your phone specifically for shopping apps. This will keep them separate from other apps and make it easier to find what you need.\\n2. **Categorize apps by type**: Within the shopping folder, create subfolders for different categories, such as:\\n\\t* Fashion (ASOS, Zappos, etc.)\\n\\t* Electronics (Amazon, Best Buy, etc.)\\n\\t* Home Goods (Wayfair, Bed Bath & Beyond, etc.)\\n\\t* Daily Deals (Groupon, LivingSocial, etc.)\\n3. **Prioritize frequently used apps**: Place your most frequently used shopping apps in a prominent position, such as the home screen or in the top row of the shopping folder.\\n4. **Use app widgets**: Many shopping apps offer widgets that allow you to quickly access specific features, like order tracking or coupons. Add these widgets to your home screen or shopping folder for easy access.\\n5. **Consider an app launcher**: If you have a large number of shopping apps, consider using an app launcher like Google's App Drawer or iOS's App Library to quickly find and access your apps.\\n6. **Log out of apps when not in use**: To maintain security and prevent unauthorized access, log out of shopping apps when you're not actively using them.\\n7. **Use a password manager**: As I mentioned earlier, consider using a password manager to securely store your login credentials for each app.\\n8. **Uninstall unused apps**: Periodically review your shopping apps and uninstall any that you no longer use or need.\\n9. **Keep apps updated**: Regularly update your shopping apps to ensure you have the latest features, security patches, and bug fixes.\\n10. **Use app features to your advantage**: Take advantage of features like push notifications, order tracking, and personalized offers to stay informed and save time.\\n\\nBy implementing these tips, you'll be able to efficiently manage your online shopping apps, reduce clutter, and make the most of your shopping experience.\\n\\nRemember, staying organized is all about creating systems that work for you and your unique needs. Experiment with different methods until you find what works best for your online shopping habits.\",\"role\":\"assistant\"}],\"retrieval_rank\":5,\"source_id\":\"57bf4122_1_5\",\"source_session_ids\":[\"57bf4122_1\"],\"speaker\":\"user+assistant\",\"timestamp\":\"2023/05/25 (Thu) 19:24\",\"valid_at\":null},{\"evidence_type\":\"source_local_round\",\"expired_at\":null,\"graphiti_session_rank\":2,\"invalid_at\":null,\"raw_evidence\":[{\"content\":\"I'm looking for some tips on how to stay organized with my online shopping. I've been making a lot of purchases lately - at least 10 in the past month from different websites like Amazon, ASOS, and Zappos. Do you have any suggestions on how to keep track of my orders and packages?\",\"role\":\"user\"},{\"content\":\"I'm happy to help! With online shopping becoming increasingly popular, it's easy to lose track of orders and packages. Here are some tips to help you stay organized:\\n\\n1. **Create a spreadsheet**: Make a spreadsheet with columns for:\\n\\t* Order date\\n\\t* Website/store\\n\\t* Order number\\n\\t* Item(s) purchased\\n\\t* Expected delivery date\\n\\t* Status (e.g., \\\"shipped,\\\" \\\"delivered,\\\" \\\"cancelled\\\")\\n\\t* Any notes (e.g., tracking numbers, customer service interactions)\\n2. **Use a package tracking app**: Consider using an app like:\\n\\t* Package Guard (iOS, Android)\\n\\t* ShipStation (iOS, Android)\\n\\t* Track packages (iOS, Android)\\n\\t* Slice (iOS, Android)\\n\\t* These apps allow you to track multiple packages from various retailers in one place.\\n3. **Designate an email folder**: Create a folder in your email inbox specifically for online shopping receipts and order updates. This will help you keep all your order confirmations and tracking updates in one place.\\n4. **Use a password manager**: Consider using a password manager like LastPass, 1Password, or Dashlane to store your login credentials for each website. This will help you avoid having to remember multiple usernames and passwords.\\n5. **Set up order notifications**: Many retailers offer the option to receive email or text notifications when your order ships or is delivered. Take advantage of these notifications to stay informed about your packages.\\n6. **Keep a physical notebook**: If you prefer a more analog approach, keep a dedicated notebook to jot down order details, tracking numbers, and expected delivery dates.\\n7. **Prioritize and categorize**: If you're making frequent purchases, consider categorizing your orders by type (e.g., clothing, electronics, home goods) or priority (e.g., urgent, non-essential). This will help you quickly identify which orders need attention.\\n8. **Check your accounts regularly**: Regularly log in to your accounts on each website to ensure you haven't missed any important updates or notifications.\\n9. **Consider a virtual assistant**: If you're really struggling to keep track of your orders, consider using a virtual assistant like Google Assistant, Siri, or Alexa to set reminders and keep you informed about your packages.\\n10. **Review and adjust**: At the end of each month, review your spreadsheet or notebook to ensure everything is up-to-date. Adjust your system as needed to make it more efficient and effective for you.\\n\\nBy implementing these tips, you'll be better equipped to manage your online shopping and stay on top of your orders and packages. Happy shopping!\",\"role\":\"assistant\"}],\"retrieval_rank\":9,\"source_id\":\"57bf4122_1_1\",\"source_session_ids\":[\"57bf4122_1\"],\"speaker\":\"user+assistant\",\"timestamp\":\"2023/05/25 (Thu) 19:24\",\"valid_at\":null},{\"evidence_type\":\"graph_fact\",\"expired_at\":null,\"invalid_at\":null,\"raw_evidence\":\"The user created a 'Work' folder and a 'Personal' folder to categorize their computer files separately.\",\"retrieval_rank\":12,\"source_id\":\"6b2f06e2-5468-4827-b617-248c37d9c6a8\",\"source_session_ids\":[\"a135a911\"],\"speaker\":\"graph_fact\",\"timestamp\":\"2023-05-25T20:16:00+00:00\",\"valid_at\":null}]",
+    "episodes": [
+      {
+        "episode_uuid": "fc41bce2-fddd-479c-a66e-4cca8310d2ec",
+        "retrieval_rank": 1,
+        "session_id": "b65f51fb_5"
+      },
+      {
+        "episode_uuid": "f783aa94-7109-4f7a-9bd2-bfc3fe35bf16",
+        "retrieval_rank": 2,
+        "session_id": "57bf4122_1"
+      },
+      {
+        "episode_uuid": "7f20b1c5-2025-49ab-95e4-9727549b4568",
+        "retrieval_rank": 3,
+        "session_id": "f188b48d_2"
+      },
+      {
+        "episode_uuid": "557bc473-a2fb-48d6-afee-b64b019d310f",
+        "retrieval_rank": 4,
+        "session_id": "answer_5126c02d_1"
+      },
+      {
+        "episode_uuid": "16ce1314-a07a-4054-83bc-c181859ce7db",
+        "retrieval_rank": 5,
+        "session_id": "c98b3349_3"
+      },
+      {
+        "episode_uuid": "3106306d-b4b7-4630-8a9c-72336b2d3d71",
+        "retrieval_rank": 6,
+        "session_id": "b4f28f96_1"
+      },
+      {
+        "episode_uuid": "e5cc223d-4e28-4c25-be66-fb19d6768efd",
+        "retrieval_rank": 7,
+        "session_id": "2fa50779_2"
+      },
+      {
+        "episode_uuid": "1a9bc727-875c-4487-8a1c-cc6f3d683240",
+        "retrieval_rank": 8,
+        "session_id": "answer_5126c02d_2"
+      },
+      {
+        "episode_uuid": "1281d04e-55e2-485c-810f-c4f877b9c424",
+        "retrieval_rank": 9,
+        "session_id": "c11b64f3_1"
+      },
+      {
+        "episode_uuid": "6af2728d-363f-476d-8e7a-dee8c8980e88",
+        "retrieval_rank": 10,
+        "session_id": "ultrachat_475462"
+      },
+      {
+        "episode_uuid": "474b0736-f389-4d2f-be0c-cc3c447ed14b",
+        "retrieval_rank": 11,
+        "session_id": "719a18dd_1"
+      },
+      {
+        "episode_uuid": "e5578013-d885-4fdc-8753-ebc8143ffbc3",
+        "retrieval_rank": 12,
+        "session_id": "01a467ee_2"
+      },
+      {
+        "episode_uuid": "8bc39dc5-9860-4460-b173-a224bdfb8e0b",
+        "retrieval_rank": 13,
+        "session_id": "ultrachat_75332"
+      },
+      {
+        "episode_uuid": "ae9d35dc-ab28-4943-8883-3a8708c8deb0",
+        "retrieval_rank": 14,
+        "session_id": "sharegpt_gYShON7_0"
+      },
+      {
+        "episode_uuid": "f7e3d435-ce71-4112-a45b-8dad0ce2f378",
+        "retrieval_rank": 15,
+        "session_id": "a135a911"
+      },
+      {
+        "episode_uuid": "6d194cdf-f053-4f25-ac14-730b49e530fd",
+        "retrieval_rank": 16,
+        "session_id": "104055de"
+      },
+      {
+        "episode_uuid": "41674116-2a87-4e09-81e4-bd10ed199a3f",
+        "retrieval_rank": 17,
+        "session_id": "1d015773_1"
+      },
+      {
+        "episode_uuid": "b8efa1de-52df-41ad-9539-10978dabb345",
+        "retrieval_rank": 18,
+        "session_id": "ultrachat_59277"
+      },
+      {
+        "episode_uuid": "6427e6df-c900-447a-81f0-a6840f32fe29",
+        "retrieval_rank": 19,
+        "session_id": "39709ef6_2"
+      },
+      {
+        "episode_uuid": "2e2b999d-2128-4493-b200-44b3d9f05000",
+        "retrieval_rank": 20,
+        "session_id": "842137f5_2"
+      }
+    ],
+    "facts": [
+      {
+        "edge_uuid": "f221eefd-8cbe-498a-aca7-1e9362f61ee8",
+        "expired_at": null,
+        "fact": "The user wants to track their Fetch Rewards points.",
+        "invalid_at": null,
+        "reference_time": "2023-05-04T20:03:00+00:00",
+        "relation_name": "HAS_REWARDS",
+        "retrieval_rank": 1,
+        "source_node_uuid": "c1418890-6955-4d18-a421-d43a5e96096e",
+        "source_session_ids": [
+          "2fa50779_2"
+        ],
+        "target_node_uuid": "59cf5173-ed90-43c6-8d5c-1f9b72690881",
+        "valid_at": "2023-05-04T20:03:00+00:00"
+      },
+      {
+        "edge_uuid": "6d00da70-105a-41d3-aed9-f7c5a28f4585",
+        "expired_at": null,
+        "fact": "The user wants to track their ShopRite Price Plus rewards and discounts.",
+        "invalid_at": null,
+        "reference_time": "2023-05-04T20:03:00+00:00",
+        "relation_name": "HAS_REWARDS",
+        "retrieval_rank": 2,
+        "source_node_uuid": "c1418890-6955-4d18-a421-d43a5e96096e",
+        "source_session_ids": [
+          "2fa50779_2"
+        ],
+        "target_node_uuid": "49ab96f5-541c-4cd9-8192-f4aea7a0b3d9",
+        "valid_at": "2023-05-04T20:03:00+00:00"
+      },
+      {
+        "edge_uuid": "9b95f7a0-a743-4bb6-b276-1685e7e77400",
+        "expired_at": null,
+        "fact": "The user wants to track their Target RedCard rewards, which provide a 5% discount on Target purchases.",
+        "invalid_at": null,
+        "reference_time": "2023-05-04T20:03:00+00:00",
+        "relation_name": "HAS_REWARDS",
+        "retrieval_rank": 3,
+        "source_node_uuid": "c1418890-6955-4d18-a421-d43a5e96096e",
+        "source_session_ids": [
+          "2fa50779_2"
+        ],
+        "target_node_uuid": "efc069f8-e339-4557-bf7d-125d84d22eb7",
+        "valid_at": "2023-05-04T20:03:00+00:00"
+      },
+      {
+        "edge_uuid": "c970ecbf-64d1-4316-b5b3-9e0ace4e9337",
+        "expired_at": null,
+        "fact": "The user has been using their e-reader a lot lately.",
+        "invalid_at": null,
+        "reference_time": "2023-05-21T23:30:00+00:00",
+        "relation_name": "USES",
+        "retrieval_rank": 4,
+        "source_node_uuid": "c1418890-6955-4d18-a421-d43a5e96096e",
+        "source_session_ids": [
+          "a8028ce7_2"
+        ],
+        "target_node_uuid": "ecbffff5-2bf2-4157-bb45-5c49c14cb544",
+        "valid_at": "2023-05-21T23:30:00+00:00"
+      },
+      {
+        "edge_uuid": "6c53b08f-8638-49b0-a44c-f0fe2b95e80a",
+        "expired_at": null,
+        "fact": "Slow cooker chili ingredients can be ordered online from AmazonFresh.",
+        "invalid_at": null,
+        "reference_time": "2023-05-25T15:30:00+00:00",
+        "relation_name": "INGREDIENT_SOURCE",
+        "retrieval_rank": 5,
+        "source_node_uuid": "d3c9baf8-b4f4-4cff-80ef-ba4e26adaa47",
+        "source_session_ids": [
+          "c98b3349_3"
+        ],
+        "target_node_uuid": "06dc6c2f-8a82-4676-af93-da84410cb86b",
+        "valid_at": "2023-05-25T15:30:00+00:00"
+      },
+      {
+        "edge_uuid": "f01e36ac-aaeb-4626-8216-8743cc2aeba6",
+        "expired_at": null,
+        "fact": "User brings Kindle with them on the hike to enjoy some downtime and reflection during the solo adventure.",
+        "invalid_at": null,
+        "reference_time": "2023-05-25T05:48:00+00:00",
+        "relation_name": "BRINGS",
+        "retrieval_rank": 6,
+        "source_node_uuid": "c1418890-6955-4d18-a421-d43a5e96096e",
+        "source_session_ids": [
+          "fc9d19f7_2"
+        ],
+        "target_node_uuid": "b4ce3481-bf98-4762-8537-1260090e933a",
+        "valid_at": "2023-05-25T05:48:00+00:00"
+      },
+      {
+        "edge_uuid": "16afd9f8-29a9-4baf-bb04-1200f206a991",
+        "expired_at": null,
+        "fact": "The user plans to start reading 'Halfway to the Grave' soon.",
+        "invalid_at": null,
+        "reference_time": "2023-05-21T23:30:00+00:00",
+        "relation_name": "PLANS_TO_READ",
+        "retrieval_rank": 7,
+        "source_node_uuid": "c1418890-6955-4d18-a421-d43a5e96096e",
+        "source_session_ids": [
+          "a8028ce7_2"
+        ],
+        "target_node_uuid": "61061bfd-bcc7-4d41-9b8b-2739efaff95c",
+        "valid_at": "2023-05-21T23:30:00+00:00"
+      },
+      {
+        "edge_uuid": "22fa9491-aaec-403a-a4a8-1d007726936c",
+        "expired_at": null,
+        "fact": "Slow cooker chili ingredients can be ordered online from Peapod.",
+        "invalid_at": null,
+        "reference_time": "2023-05-25T15:30:00+00:00",
+        "relation_name": "INGREDIENT_SOURCE",
+        "retrieval_rank": 8,
+        "source_node_uuid": "d3c9baf8-b4f4-4cff-80ef-ba4e26adaa47",
+        "source_session_ids": [
+          "c98b3349_3"
+        ],
+        "target_node_uuid": "0c5299f5-935f-4def-88a3-469ad84fada0",
+        "valid_at": "2023-05-25T15:30:00+00:00"
+      },
+      {
+        "edge_uuid": "19b6cdd4-f590-49f9-b66c-1d45cd8ecea6",
+        "expired_at": null,
+        "fact": "Slow cooker chili ingredients can be ordered online from Instacart.",
+        "invalid_at": null,
+        "reference_time": "2023-05-25T15:30:00+00:00",
+        "relation_name": "INGREDIENT_SOURCE",
+        "retrieval_rank": 9,
+        "source_node_uuid": "d3c9baf8-b4f4-4cff-80ef-ba4e26adaa47",
+        "source_session_ids": [
+          "c98b3349_3"
+        ],
+        "target_node_uuid": "af882b99-d3fc-44b5-b7ee-958b4064ea6c",
+        "valid_at": "2023-05-25T15:30:00+00:00"
+      },
+      {
+        "edge_uuid": "1af45164-15a1-4a73-918b-e420f4208f91",
+        "expired_at": null,
+        "fact": "Sheba Consulting contributes thought leadership content to Forbes.",
+        "invalid_at": null,
+        "reference_time": "2023-05-04T21:52:00+00:00",
+        "relation_name": "CONTRIBUTES_TO",
+        "retrieval_rank": 10,
+        "source_node_uuid": "5e2c626e-b62f-42ba-83f5-79cd09914f6b",
+        "source_session_ids": [
+          "sharegpt_gYShON7_0"
+        ],
+        "target_node_uuid": "ee25379f-7a94-4fcc-9266-b51d51f74bb5",
+        "valid_at": "2023-05-04T21:52:00+00:00"
+      },
+      {
+        "edge_uuid": "4d684864-21dd-424f-b6db-f39b758b11ad",
+        "expired_at": null,
+        "fact": "Slow cooker chili ingredients can be ordered online from Target.",
+        "invalid_at": null,
+        "reference_time": "2023-05-25T15:30:00+00:00",
+        "relation_name": "INGREDIENT_SOURCE",
+        "retrieval_rank": 11,
+        "source_node_uuid": "d3c9baf8-b4f4-4cff-80ef-ba4e26adaa47",
+        "source_session_ids": [
+          "c98b3349_3"
+        ],
+        "target_node_uuid": "365ad238-2492-4286-8b1a-c3aacc532965",
+        "valid_at": "2023-05-25T15:30:00+00:00"
+      },
+      {
+        "edge_uuid": "6b2f06e2-5468-4827-b617-248c37d9c6a8",
+        "expired_at": null,
+        "fact": "The user created a 'Work' folder and a 'Personal' folder to categorize their computer files separately.",
+        "invalid_at": null,
+        "reference_time": "2023-05-25T20:16:00+00:00",
+        "relation_name": "CATEGORIZED_SEPARATELY",
+        "retrieval_rank": 12,
+        "source_node_uuid": "e251bded-0048-4f7d-a77e-c95b1716a1b4",
+        "source_session_ids": [
+          "a135a911"
+        ],
+        "target_node_uuid": "7c86ef12-aaf6-42db-9c5e-811eecc481c1",
+        "valid_at": null
+      },
+      {
+        "edge_uuid": "901aa55d-c2e5-4da1-802c-ac10071ee516",
+        "expired_at": null,
+        "fact": "Slickdeals tracks the price of the Dell Inspiron 14 5000.",
+        "invalid_at": null,
+        "reference_time": "2023-05-25T16:57:00+00:00",
+        "relation_name": "TRACKS_PRICE",
+        "retrieval_rank": 13,
+        "source_node_uuid": "cb2b020e-8df1-4800-a81a-d0abcfa78936",
+        "source_session_ids": [
+          "ultrachat_75332"
+        ],
+        "target_node_uuid": "9b9c9925-e4ce-4a32-963e-5fdbe5041e91",
+        "valid_at": "2023-05-25T16:57:00+00:00"
+      },
+      {
+        "edge_uuid": "3cafc38c-4533-481e-bb97-ee706a9ba00e",
+        "expired_at": null,
+        "fact": "Slow cooker chili ingredients can be ordered online from FreshDirect.",
+        "invalid_at": null,
+        "reference_time": "2023-05-25T15:30:00+00:00",
+        "relation_name": "INGREDIENT_SOURCE",
+        "retrieval_rank": 14,
+        "source_node_uuid": "d3c9baf8-b4f4-4cff-80ef-ba4e26adaa47",
+        "source_session_ids": [
+          "c98b3349_3"
+        ],
+        "target_node_uuid": "33191a19-36fd-4758-b23f-7083855d3b52",
+        "valid_at": "2023-05-25T15:30:00+00:00"
+      },
+      {
+        "edge_uuid": "63270e26-caa9-4117-bcc8-b08fc56930e8",
+        "expired_at": null,
+        "fact": "Slow cooker chili ingredients can be ordered online from Shipt.",
+        "invalid_at": null,
+        "reference_time": "2023-05-25T15:30:00+00:00",
+        "relation_name": "INGREDIENT_SOURCE",
+        "retrieval_rank": 15,
+        "source_node_uuid": "d3c9baf8-b4f4-4cff-80ef-ba4e26adaa47",
+        "source_session_ids": [
+          "c98b3349_3"
+        ],
+        "target_node_uuid": "541ce054-ff6a-411a-a4d8-7a3f02e9163f",
+        "valid_at": "2023-05-25T15:30:00+00:00"
+      },
+      {
+        "edge_uuid": "d7eff44d-688f-44ab-a8fd-3174614b91d6",
+        "expired_at": null,
+        "fact": "Slow cooker chili ingredients can be ordered online from Kroger.",
+        "invalid_at": null,
+        "reference_time": "2023-05-25T15:30:00+00:00",
+        "relation_name": "INGREDIENT_SOURCE",
+        "retrieval_rank": 16,
+        "source_node_uuid": "d3c9baf8-b4f4-4cff-80ef-ba4e26adaa47",
+        "source_session_ids": [
+          "c98b3349_3"
+        ],
+        "target_node_uuid": "40045391-820a-47a3-a9ad-b69d59751b11",
+        "valid_at": "2023-05-25T15:30:00+00:00"
+      },
+      {
+        "edge_uuid": "45b63dd5-2f93-4a50-9662-b790cf66b02d",
+        "expired_at": null,
+        "fact": "The user was recommended to read the Night Huntress series by Jeaniene Frost.",
+        "invalid_at": null,
+        "reference_time": "2023-05-21T23:30:00+00:00",
+        "relation_name": "RECOMMENDED_AUTHOR",
+        "retrieval_rank": 17,
+        "source_node_uuid": "c1418890-6955-4d18-a421-d43a5e96096e",
+        "source_session_ids": [
+          "a8028ce7_2"
+        ],
+        "target_node_uuid": "e24dcb5f-6f49-4308-b976-72181c229e12",
+        "valid_at": null
+      },
+      {
+        "edge_uuid": "694ca670-3283-4589-bba7-c8c8bdcff8ed",
+        "expired_at": null,
+        "fact": "Instagram Live includes a Q&A session as a feature for engaging with the audience in real-time.",
+        "invalid_at": null,
+        "reference_time": "2023-05-25T05:26:00+00:00",
+        "relation_name": "INCLUDES",
+        "retrieval_rank": 18,
+        "source_node_uuid": "13b2edb2-4024-4b15-964b-c4117cf2c76f",
+        "source_session_ids": [
+          "answer_5126c02d_1"
+        ],
+        "target_node_uuid": "253e4d30-b76a-4355-9622-a7c7757d2cee",
+        "valid_at": null
+      },
+      {
+        "edge_uuid": "d6daa27a-ba19-4d63-a682-41176ad72d0f",
+        "expired_at": null,
+        "fact": "CamelCamelCamel tracks the price of the Dell Inspiron 14 5000.",
+        "invalid_at": null,
+        "reference_time": "2023-05-25T16:57:00+00:00",
+        "relation_name": "TRACKS_PRICE",
+        "retrieval_rank": 19,
+        "source_node_uuid": "c8e9e59a-f573-45f3-a776-9aad441894a8",
+        "source_session_ids": [
+          "ultrachat_75332"
+        ],
+        "target_node_uuid": "9b9c9925-e4ce-4a32-963e-5fdbe5041e91",
+        "valid_at": "2023-05-25T16:57:00+00:00"
+      },
+      {
+        "edge_uuid": "bd0427d0-0adb-40b4-8060-8a95cfe91996",
+        "expired_at": null,
+        "fact": "Sheba Consulting contributes thought leadership content to Entrepreneur Magazine.",
+        "invalid_at": null,
+        "reference_time": "2023-05-04T21:52:00+00:00",
+        "relation_name": "CONTRIBUTES_TO",
+        "retrieval_rank": 20,
+        "source_node_uuid": "5e2c626e-b62f-42ba-83f5-79cd09914f6b",
+        "source_session_ids": [
+          "sharegpt_gYShON7_0"
+        ],
+        "target_node_uuid": "7af06df3-1792-4c63-be8f-8d53537c953c",
+        "valid_at": "2023-05-04T21:52:00+00:00"
+      }
+    ]
+  },
+  "retrieval_metrics": {
+    "gold_ranks": [
+      1
+    ],
+    "mrr": 1.0,
+    "ndcg_at_10": 1.0,
+    "recall_at_1": 1.0,
+    "recall_at_10": 1.0,
+    "recall_at_3": 1.0,
+    "recall_at_5": 1.0,
+    "relevance_unit": "LONGMEMEVAL_GOLD_SESSION"
+  },
+  "run_id": "expanded-qa-20260819-001",
+  "schema_version": "membind.baseline-reuse-expanded-private-row.v1",
+  "temporal_diagnostics": {
+    "active_fact_count": 20,
+    "conflicting_relation_group_count": 0,
+    "diagnostic_scope": "RETRIEVED_EDGE_TEMPORAL_FIELDS_ONLY",
+    "future_fact_count": 0,
+    "latest_valid_fact_ranks": [],
+    "stale_fact_count": 0,
+    "stale_ranked_before_latest_valid_count": 0
+  }
+}

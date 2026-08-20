@@ -78,11 +78,15 @@ from .reducer import (
 )
 from .runner import V4RunnerError, run_candidate
 from .production_runner import (
+    A1_PROTOCOL_AMENDMENT_ID,
+    A1_SOURCE_COUNT,
     CANDIDATE_HISTORY_ID,
     CANDIDATE_SOURCE_COUNTS,
     V4ProductionRunnerError,
     build_v4_candidate_live_runner,
     build_v4_candidate_plan,
+    verify_a1_amendment,
+    verify_a1_protocol_amendment,
     verify_prior_six_reduction,
 )
 from .live_runner import V4LiveRunnerError, V4PreparedSource, run_v4_live_prepared_stream
@@ -102,6 +106,16 @@ from .live_block import (
 )
 from .freeze import FORMAL_HISTORY_IDS, V4FreezeError, build_frozen_method, verify_frozen_method
 from .full_run import FORMAL_HISTORY_SOURCE_COUNTS, V4FullRunError, run_v4_full
+from .siliconflow_probe import (
+    SILICONFLOW_BASE_URL,
+    SILICONFLOW_CHAT_MODEL,
+    SILICONFLOW_EMBEDDING_DIMENSION,
+    SILICONFLOW_EMBEDDING_MODEL,
+    SILICONFLOW_PROBE_SCHEMA,
+    SiliconFlowProbeError,
+    normalize_siliconflow_chat_request,
+    run_siliconflow_probe,
+)
 
 __all__ = [
     "ExactNodeResolveResult",
@@ -160,9 +174,13 @@ __all__ = [
     "run_candidate",
     "CANDIDATE_HISTORY_ID",
     "CANDIDATE_SOURCE_COUNTS",
+    "A1_PROTOCOL_AMENDMENT_ID",
+    "A1_SOURCE_COUNT",
     "V4ProductionRunnerError",
     "build_v4_candidate_live_runner",
     "build_v4_candidate_plan",
+    "verify_a1_amendment",
+    "verify_a1_protocol_amendment",
     "verify_prior_six_reduction",
     "V4LiveRunnerError",
     "V4PreparedSource",
@@ -191,4 +209,12 @@ __all__ = [
     "build_frozen_method",
     "verify_frozen_method",
     "run_v4_full",
+    "SILICONFLOW_BASE_URL",
+    "SILICONFLOW_CHAT_MODEL",
+    "SILICONFLOW_EMBEDDING_DIMENSION",
+    "SILICONFLOW_EMBEDDING_MODEL",
+    "SILICONFLOW_PROBE_SCHEMA",
+    "SiliconFlowProbeError",
+    "normalize_siliconflow_chat_request",
+    "run_siliconflow_probe",
 ]

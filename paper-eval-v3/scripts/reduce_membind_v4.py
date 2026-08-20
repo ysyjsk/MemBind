@@ -29,6 +29,8 @@ def main(argv: list[str] | None = None) -> int:
         type=Path,
         default=PROJECT / "artifacts/paper_eval/membind_v4/PREFIX_REFERENCE.json",
     )
+    parser.add_argument("--a1-audit", type=Path, default=None)
+    parser.add_argument("--a1-amendment", type=Path, default=None)
     parser.add_argument("--full-run-result", type=Path)
     parser.add_argument(
         "--baseline-binding",
@@ -53,6 +55,8 @@ def main(argv: list[str] | None = None) -> int:
         result = reduce_candidate(
             candidate_root=args.candidate_root,
             reference_path=args.reference,
+            a1_audit_path=args.a1_audit,
+            a1_amendment_path=args.a1_amendment,
         )
         print(
             json.dumps(

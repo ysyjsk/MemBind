@@ -398,6 +398,197 @@ def test_v4_block_projects_per_source_freshness_from_durable_events(tmp_path: Pa
     }
 
 
+def test_v4_live_metrics_are_recomputed_from_lifecycle_and_sealed_llm_trace(
+    tmp_path: Path,
+) -> None:
+    """MISS tokens are waste; validated HIT and native tokens remain useful."""
+
+    from paper_eval.membind_v4.live_block import _derive_live_metrics
+
+    events = [
+        {"event_type": "ARRIVAL", "source_sequence": 0, "timestamp_ns": 0},
+        {"event_type": "BIND_STARTED", "source_sequence": 0, "timestamp_ns": 10},
+        {
+            "event_type": "PUBLICATION_DURABLE",
+            "source_sequence": 0,
+            "timestamp_ns": 50,
+        },
+        {"event_type": "ARRIVAL", "source_sequence": 1, "timestamp_ns": 60},
+        {"event_type": "BIND_STARTED", "source_sequence": 1, "timestamp_ns": 70},
+        {
+            "event_type": "PUBLICATION_DURABLE",
+            "source_sequence": 1,
+            "timestamp_ns": 160,
+        },
+    ]
+    llm_rows = [
+        {
+            "event_type": "llm_request_submitted",
+            "request_id": "v4:00000000",
+            "source_sequence": 0,
+            "timestamp_ns": 20,
+            "token_sequence_hmac_sha256": "a" * 64,
+        },
+        {
+            "event_type": "llm_transport_response",
+            "transport_attempt_index": 0,
+            "source_sequence": 0,
+            "prompt_tokens": 80,
+            "completion_tokens": 20,
+            "total_tokens": 100,
+        },
+        {
+            "event_type": "llm_request_submitted",
+            "request_id": "v4:00000001",
+            "source_sequence": 1,
+            "timestamp_ns": 80,
+            "token_sequence_hmac_sha256": "b" * 64,
+        },
+        {
+            "event_type": "llm_transport_response",
+            "transport_attempt_index": 1,
+            "source_sequence": 1,
+            "prompt_tokens": 40,
+            "completion_tokens": 10,
+            "total_tokens": 50,
+        },
+    ]
+    trace = tmp_path / "llm.jsonl"
+    with trace.open("w", encoding="utf-8") as handle:
+        for row in llm_rows:
+            record = {
+                "schema_version": "membind.paper-eval-v3.membind-v31-llm.v1",
+                "row": row,
+            }
+            wrapper = {"record": record, "record_sha256": payload_sha256(record)}
+            handle.write(json.dumps(wrapper, sort_keys=True) + "\n")
+    telemetry = {
+        "events": [
+            {
+                "event_type": "semantic_miss",
+                "source_sequence": 1,
+                "execution_mode": "LLM",
+                "token_sequence_hmac_sha256": "b" * 64,
+                "speculation_started_timestamp_ns": 75,
+                "speculation_completed_timestamp_ns": 140,
+            }
+        ]
+    }
+
+    metrics = _derive_live_metrics(
+        events=events,
+        telemetry=telemetry,
+        llm_path=trace,
+    )
+
+    assert metrics["frontier_service_ns"] == [40, 90]
+    assert metrics["frontier_p95_service_ns"] == pytest.approx(87.5)
+    assert metrics["llm_successful_token_count"] == 150
+    assert metrics["miss_speculative_token_count"] == 50
+    assert metrics["useful_token_count"] == 100
+    assert metrics["makespan_ns"] == 160
+    assert metrics["useful_token_throughput_tokens_per_second"] == pytest.approx(
+        625_000_000
+    )
+
+
+def test_v4_live_metrics_fail_closed_when_miss_hmac_is_not_in_trace(
+    tmp_path: Path,
+) -> None:
+    from paper_eval.membind_v4.live_block import V4LiveBlockError, _derive_live_metrics
+
+    trace = tmp_path / "llm.jsonl"
+    trace.write_text("", encoding="utf-8")
+    with pytest.raises(V4LiveBlockError, match="speculative_llm_trace_alignment_failed"):
+        _derive_live_metrics(
+            events=[
+                {"event_type": "ARRIVAL", "source_sequence": 0, "timestamp_ns": 0},
+                {"event_type": "BIND_STARTED", "source_sequence": 0, "timestamp_ns": 1},
+                {
+                    "event_type": "PUBLICATION_DURABLE",
+                    "source_sequence": 0,
+                    "timestamp_ns": 2,
+                },
+            ],
+            telemetry={
+                "events": [
+                    {
+                        "event_type": "semantic_miss",
+                        "source_sequence": 0,
+                        "execution_mode": "LLM",
+                        "token_sequence_hmac_sha256": "c" * 64,
+                        "speculation_started_timestamp_ns": 0,
+                        "speculation_completed_timestamp_ns": 2,
+                    }
+                ]
+            },
+            llm_path=trace,
+        )
+
+
+def test_v4_live_metrics_align_miss_using_speculative_hmac(
+    tmp_path: Path,
+) -> None:
+    """A MISS must charge the speculative request even when exact differs."""
+
+    from paper_eval.membind_v4.live_block import _derive_live_metrics
+
+    trace = tmp_path / "llm.jsonl"
+    rows = [
+        {
+            "event_type": "llm_request_submitted",
+            "request_id": "v4:00000000",
+            "source_sequence": 0,
+            "timestamp_ns": 10,
+            "token_sequence_hmac_sha256": "s" * 64,
+        },
+        {
+            "event_type": "llm_transport_response",
+            "transport_attempt_index": 0,
+            "source_sequence": 0,
+            "total_tokens": 7,
+        },
+    ]
+    with trace.open("w", encoding="utf-8") as handle:
+        for row in rows:
+            record = {
+                "schema_version": "membind.paper-eval-v3.membind-v31-llm.v1",
+                "row": row,
+            }
+            handle.write(
+                json.dumps(
+                    {"record": record, "record_sha256": payload_sha256(record)},
+                    sort_keys=True,
+                )
+                + "\n"
+            )
+
+    metrics = _derive_live_metrics(
+        events=[
+            {"event_type": "ARRIVAL", "source_sequence": 0, "timestamp_ns": 0},
+            {"event_type": "BIND_STARTED", "source_sequence": 0, "timestamp_ns": 1},
+            {"event_type": "PUBLICATION_DURABLE", "source_sequence": 0, "timestamp_ns": 20},
+        ],
+        telemetry={
+            "events": [
+                {
+                    "event_type": "semantic_miss",
+                    "source_sequence": 0,
+                    "execution_mode": "LLM",
+                    "token_sequence_hmac_sha256": "e" * 64,
+                    "speculative_token_sequence_hmac_sha256": "s" * 64,
+                    "speculation_started_timestamp_ns": 5,
+                    "speculation_completed_timestamp_ns": 15,
+                }
+            ]
+        },
+        llm_path=trace,
+    )
+
+    assert metrics["miss_speculative_token_count"] == 7
+    assert metrics["useful_token_count"] == 0
+
+
 def test_full_cli_default_history_runner_is_lazy_and_callable() -> None:
     script_path = Path(__file__).resolve().parents[1] / "scripts/run_membind_v4_full.py"
     spec = importlib.util.spec_from_file_location("membind_v4_full_cli_test", script_path)
