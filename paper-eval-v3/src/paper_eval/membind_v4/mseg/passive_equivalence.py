@@ -114,6 +114,70 @@ class PassiveEquivalenceCertificate:
         return self.status is PassiveEquivalenceStatus.PASS
 
 
+@dataclass(frozen=True, slots=True)
+class InstrumentationExecutionSnapshot:
+    """Observables required for shadow-instrumentation equivalence.
+
+    Response hashes are deliberately absent.  The qualification checks that
+    instrumentation preserves the exact request/model/schema/query/effect
+    envelope without requiring a live provider to return byte-identical text.
+    """
+
+    request_count: int
+    prompt_hashes: tuple[str, ...]
+    model_schema_hashes: tuple[str, ...]
+    db_query_semantics_hashes: tuple[str, ...]
+    persistent_mutation_hashes: tuple[str, ...]
+    source_sequences: tuple[int, ...]
+    publication_order: tuple[int, ...]
+    llm_call_count: int
+    shadow_llm_call_count: int
+    shadow_persistent_write_count: int
+    publication_modification_count: int
+
+    def __post_init__(self) -> None:
+        _count(self.request_count, "instrumentation_request_count_invalid")
+        _hashes(self.prompt_hashes, "instrumentation_prompt_hash_invalid")
+        _hashes(
+            self.model_schema_hashes,
+            "instrumentation_model_schema_hash_invalid",
+        )
+        _hashes(
+            self.db_query_semantics_hashes,
+            "instrumentation_db_query_hash_invalid",
+        )
+        _hashes(
+            self.persistent_mutation_hashes,
+            "instrumentation_mutation_hash_invalid",
+        )
+        _ordinals(self.source_sequences, "instrumentation_source_order_invalid")
+        _ordinals(
+            self.publication_order,
+            "instrumentation_publication_order_invalid",
+        )
+        _count(self.llm_call_count, "instrumentation_llm_count_invalid")
+        _count(self.shadow_llm_call_count, "shadow_llm_count_invalid")
+        _count(self.shadow_persistent_write_count, "shadow_write_count_invalid")
+        _count(
+            self.publication_modification_count,
+            "publication_modification_count_invalid",
+        )
+
+
+@dataclass(frozen=True, slots=True)
+class InstrumentationEquivalenceCertificate:
+    certificate_type: str
+    status: PassiveEquivalenceStatus
+    violations: tuple[str, ...]
+    compared_fields: tuple[str, ...]
+    baseline: InstrumentationExecutionSnapshot
+    instrumented: InstrumentationExecutionSnapshot
+
+    @property
+    def passed(self) -> bool:
+        return self.status is PassiveEquivalenceStatus.PASS
+
+
 def compare_passive_execution(
     baseline: PassiveExecutionSnapshot,
     instrumented: PassiveExecutionSnapshot,
@@ -175,10 +239,78 @@ def compare_passive_execution(
     )
 
 
+def compare_instrumentation_execution(
+    baseline: InstrumentationExecutionSnapshot,
+    instrumented: InstrumentationExecutionSnapshot,
+) -> InstrumentationEquivalenceCertificate:
+    """Qualify read-only instrumentation without comparing provider outputs."""
+
+    if not isinstance(baseline, InstrumentationExecutionSnapshot):
+        raise _fail("instrumentation_baseline_snapshot_invalid")
+    if not isinstance(instrumented, InstrumentationExecutionSnapshot):
+        raise _fail("instrumentation_candidate_snapshot_invalid")
+    compared_fields = (
+        "request_count",
+        "prompt_hashes",
+        "model_schema_hashes",
+        "db_query_semantics_hashes",
+        "persistent_mutation_hashes",
+        "source_sequences",
+        "publication_order",
+        "llm_call_count",
+        "shadow_llm_call_count",
+        "shadow_persistent_write_count",
+        "publication_modification_count",
+    )
+    violations: list[str] = []
+    for label, snapshot in (("baseline", baseline), ("instrumented", instrumented)):
+        if len(snapshot.prompt_hashes) != snapshot.request_count:
+            violations.append(f"{label}_prompt_evidence_count_mismatch")
+        if len(snapshot.model_schema_hashes) != snapshot.request_count:
+            violations.append(f"{label}_model_schema_evidence_count_mismatch")
+
+    for field, code in (
+        ("request_count", "request_count_changed"),
+        ("prompt_hashes", "prompt_hash_changed"),
+        ("model_schema_hashes", "model_schema_changed"),
+        ("db_query_semantics_hashes", "db_query_semantics_changed"),
+        ("persistent_mutation_hashes", "persistent_mutation_changed"),
+        ("source_sequences", "source_order_changed"),
+        ("publication_order", "publication_order_changed"),
+        ("llm_call_count", "llm_call_count_changed"),
+    ):
+        if getattr(baseline, field) != getattr(instrumented, field):
+            violations.append(code)
+    if instrumented.shadow_llm_call_count != 0:
+        violations.append("shadow_llm_call_detected")
+    if instrumented.shadow_persistent_write_count != 0:
+        violations.append("shadow_write_detected")
+    if instrumented.publication_modification_count != 0:
+        violations.append("publication_modification_detected")
+
+    stable_violations = tuple(dict.fromkeys(violations))
+    status = (
+        PassiveEquivalenceStatus.PASS
+        if not stable_violations
+        else PassiveEquivalenceStatus.FAIL
+    )
+    return InstrumentationEquivalenceCertificate(
+        certificate_type="MEG_INSTRUMENTATION_EQUIVALENCE_CERTIFICATE",
+        status=status,
+        violations=stable_violations,
+        compared_fields=compared_fields,
+        baseline=baseline,
+        instrumented=instrumented,
+    )
+
+
 __all__ = [
+    "InstrumentationEquivalenceCertificate",
+    "InstrumentationExecutionSnapshot",
     "PassiveEquivalenceCertificate",
     "PassiveEquivalenceError",
     "PassiveEquivalenceStatus",
     "PassiveExecutionSnapshot",
+    "compare_instrumentation_execution",
     "compare_passive_execution",
 ]

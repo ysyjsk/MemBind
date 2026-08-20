@@ -1,0 +1,52 @@
+{
+  "exact_rematerializations": 0,
+  "historical_capture_bundle_sha256": "cdede1683797125e85cb2482af6d294d9929a3cbf38ba83b2945a5ca6c685bf5",
+  "historical_exact_node_readviews_projected": 12,
+  "historical_llm_node_readviews_projected": 11,
+  "historical_replay_verification": {
+    "capture_bundle": "VDC_CAPTURE_BUNDLE.json",
+    "capture_bundle_sha256": "cdede1683797125e85cb2482af6d294d9929a3cbf38ba83b2945a5ca6c685bf5",
+    "effect_identity_match_count": 12,
+    "execution_mode_counts": {
+      "LLM": 11,
+      "NO_LLM": 1
+    },
+    "external_database_read_count": 0,
+    "external_provider_call_count": 0,
+    "graphiti_version": "0.29.3",
+    "interpretation": "Every captured NodeResolve request and interpreted effect was reproduced through the pinned helper path without Neo4j, embedding, or LLM calls. This verifies the capture/replay harness; it does not authorize a VDC execution candidate.",
+    "node_operations_module": "graphiti_core.utils.maintenance.node_operations",
+    "replayed_capture_count": 12,
+    "request_identity_match_count": 12,
+    "schema_version": "membind.paper-eval-v4.vdc-capture-replay-verification.v1",
+    "status": "PASS"
+  },
+  "historical_total_ordered_candidate_bindings": 178,
+  "opaque": 0,
+  "payload_sha256": "920df4adeaf095f0884cf24b35c3570dcf3b663d8f32ef6932cb893732c0da5a",
+  "projection_field_policy": {
+    "candidate_fields": [
+      "uuid",
+      "name",
+      "labels",
+      "attributes",
+      "summary[:120]",
+      "prompt_position"
+    ],
+    "explicitly_excluded": {
+      "candidate_created_at": "not consumed by deterministic dedup or dedupe_nodes.nodes prompt",
+      "candidate_embedding": "search output order is digested; embedding bytes are not consumed after candidate retrieval",
+      "candidate_group_id": "namespace is bound separately and not rendered into the decision context"
+    },
+    "mutable_context": [
+      "ordered candidate bindings",
+      "candidate order",
+      "ordered previous episodes"
+    ]
+  },
+  "schema_version": "membind.paper-eval-v4.meg-readview-capture.v1",
+  "shadow_probe_attempts": 0,
+  "stable_shadow_readviews": 0,
+  "status": "OFFLINE_PROJECTION_QUALIFIED_RUNTIME_CAPTURE_MISSING",
+  "unstable_discarded_readviews": 0
+}

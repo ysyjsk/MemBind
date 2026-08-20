@@ -1,0 +1,91 @@
+{
+  "historical_prepared_artifact_ready_count": 12,
+  "history_id": "07741c45",
+  "local_ready_before_exact_predecessor_publication": 0,
+  "local_ready_before_whole_prepared_artifact": 0,
+  "locally_ready_operators": 0,
+  "measurement_note": "No new live capture was authorized; historical exact timing is not local-ready lineage.",
+  "payload_sha256": "03acbac053dee644287e3ff67b34407ddf9700937dee0345f4e95584975b2b2f",
+  "readiness_advance_max_ns": null,
+  "readiness_advance_p50_ns": null,
+  "readiness_advance_p95_ns": null,
+  "schema_version": "membind.paper-eval-v4.meg-operator-readiness-audit.v1",
+  "source_audit": {
+    "edge_path": [
+      {
+        "direct_predecessors": [
+          "RelationExtraction",
+          "EdgePointerMaterialization",
+          "old_committed_state"
+        ],
+        "evidence": "edge_operations.py:365-418",
+        "operator": "EdgeCandidateRead"
+      },
+      {
+        "direct_predecessors": [
+          "EdgeCandidateRead"
+        ],
+        "evidence": "edge_operations.py:488-508, 623-847",
+        "identity_before_coroutine_required": true,
+        "operator": "EdgeResolutionChild"
+      }
+    ],
+    "graphiti_version": "0.29.3",
+    "node_path": [
+      {
+        "direct_predecessors": [
+          "EntityExtraction"
+        ],
+        "evidence": "node_operations.py:407-449, 627-641",
+        "operator": "NodeCandidateRead"
+      },
+      {
+        "direct_predecessors": [
+          "NodeCandidateRead",
+          "old_committed_state"
+        ],
+        "evidence": "node_operations.py:649-689; dedup_helpers.py:192-279",
+        "multi_input_batch": true,
+        "operator": "EntityResolutionDecision"
+      },
+      {
+        "direct_predecessors": [
+          "EntityResolutionDecision",
+          "EdgeResolutionDecision"
+        ],
+        "evidence": "node_operations.py:726-778",
+        "operator": "NodeAttributeAndSummary"
+      }
+    ],
+    "persistence_path": {
+      "required_epoch_rule": "advance after every successful transaction commit",
+      "saga": "graphiti.py:720-781",
+      "transaction": "bulk_utils.py:128-260",
+      "v31_saga_argument": "graphiti_adapter.py:558-570 (None)"
+    },
+    "source_sha256": {
+      "bulk_utils": "6c7314f24801f0936454b3344788528500432ac5f12692eb36b7d3ef5269f601",
+      "dedup_helpers": "3d9e09169d94b5a04709fa8dfff5d3471dda8b87329a79484afd92af4f7e6ecd",
+      "edge_operations": "b773ff4489968af2a996d5074e679cab9806cc0904a7ff9f2aecc74382325abe",
+      "graphiti": "7c65051a62982d8b510ebdbf37bae4d07020e74520e1f6d9bf8a0ffb26beeccb",
+      "node_operations": "14fc92a462bf7f1dd9b70d10a88e27e36a0ddc1594dc18381888209de7137fb4",
+      "v31_adapter": "b5b8d6e2afb407bf242d8ccde1e3137d847df9e9eab7dba9a90817fe8676e2bd"
+    }
+  },
+  "source_sequences": [
+    0,
+    1,
+    2,
+    3,
+    4,
+    5,
+    6,
+    7,
+    8,
+    9,
+    10,
+    11
+  ],
+  "status": "OFFLINE_STATIC_AUDIT_ONLY",
+  "total_semantic_operators": 0
+}

@@ -1,0 +1,51 @@
+{
+  "bounded_real_capture_started": false,
+  "correctness": {
+    "live_services_started": 0,
+    "publication_modifications": 0,
+    "shadow_llm_calls": 0,
+    "writes_from_shadow": 0
+  },
+  "exact_revalidation_ns": 0,
+  "hit_rate": null,
+  "offline_qualification": {
+    "historical_replay_status": "PASS",
+    "historical_replayed_capture_count": 12,
+    "passive_replay_compared_fields": [
+      "request_count",
+      "prompt_hashes",
+      "model_schema_hashes",
+      "db_query_semantics_hashes",
+      "persistent_mutation_hashes",
+      "source_sequences",
+      "publication_order",
+      "llm_call_count",
+      "shadow_llm_call_count",
+      "shadow_persistent_write_count",
+      "publication_modification_count"
+    ],
+    "passive_replay_equivalence": "PASS",
+    "provider_free_tests_passed": 133,
+    "replay_external_database_reads": 0,
+    "replay_external_provider_calls": 0,
+    "response_byte_identity_required": false,
+    "runtime_blockers": [
+      "operator_local_ready_runtime_lineage_not_captured",
+      "transaction_wide_mutation_epoch_hook_not_runtime_qualified",
+      "shadow_readview_probe_count_is_zero",
+      "edge_attribute_timestamp_summary_readviews_not_runtime_qualified",
+      "live_passive_equivalence_not_demonstrated"
+    ],
+    "runtime_gate_passed": false
+  },
+  "payload_sha256": "e3c88b02a15e668d075d6d09884a79cfc451334227063576c87d007b1131c177",
+  "potential_net_value_ns": 0,
+  "potentially_hideable_llm_service_ns": 0,
+  "readview_materialization_ns": 0,
+  "reason": "RUNTIME_SHADOW_INSTRUMENTATION_OFFLINE_GATE_NOT_GREEN",
+  "schema_version": "membind.paper-eval-v4.meg-validation-shadow-oracle.v1",
+  "status": "STOP_INSTRUMENTATION_FAILURE",
+  "validation_hit": 0,
+  "validation_miss": 0,
+  "value_label": "OFFLINE/SHADOW UPPER-BOUND DIAGNOSTIC"
+}
