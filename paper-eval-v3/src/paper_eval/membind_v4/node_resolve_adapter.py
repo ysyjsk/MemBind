@@ -201,6 +201,11 @@ class NodeResolveV4Adapter:
 
         if not isinstance(speculative_call, PreparedSemanticCall) or not isinstance(exact_call, PreparedSemanticCall):
             raise _fail("prepared_call_invalid")
+        owner = self._responses.get(id(response))
+        if owner is None:
+            raise _fail("response_execution_unknown")
+        if owner is not speculative_call:
+            raise _fail("response_execution_owner_mismatch")
         try:
             decision = validate_semantic_call_pair(speculative_call.call, exact_call.call)
         except SemanticCallError as error:

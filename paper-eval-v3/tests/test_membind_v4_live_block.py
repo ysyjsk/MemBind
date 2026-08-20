@@ -13,10 +13,17 @@ from types import SimpleNamespace
 import pytest
 
 from paper_eval.membind_v31.live_block import V31LiveHooks
+from paper_eval.membind_v31.admission import AdmissionPolicy
 from paper_eval.membind_v31.certification import StateCutCertification
+from paper_eval.membind_v31.prefix_affinity import PrefixMetadata
+from paper_eval.membind_v31.request_runtime import AdmittedLLMClientV31
 from paper_eval.membind_v31.production_executor import ProductionExecutorPaths
 from paper_eval.artifacts import atomic_write_json, payload_sha256
 from paper_eval.membind_v4.live_adapter import V4LiveNodeResolveError
+from paper_eval.membind_v4.admission import SpeculationValueEstimate
+from paper_eval.membind_v4.residual_controller import (
+    V4ResidualRequestAdmissionController,
+)
 from paper_eval.membind_v4.speculative_adapter import V4SpeculativeGraphitiAdapter
 from paper_eval.membind_v4.live_block import (
     V4ProductionLoaders,
@@ -24,7 +31,10 @@ from paper_eval.membind_v4.live_block import (
     _build_production_identity_metadata,
     _build_graphiti_semantic_encoder,
     build_v4_full_history_runner,
+    build_v4_conflict_aware_live_hooks,
     build_v4_live_hooks,
+    execute_v4_c01_ca_live_block,
+    execute_v4_live_block,
 )
 
 
@@ -96,6 +106,247 @@ def test_v4_hooks_inject_admission_observer_and_stream_identity() -> None:
 
     asyncio.run(hooks.close_runtime(runtime))
     assert calls[-1] == {"closed": True}
+
+
+def test_c01_ca_composition_installs_conflict_policy_and_residual_controller() -> None:
+    class Inner:
+        async def generate_response(self, *_args, **_kwargs):
+            return {}
+
+    metadata = PrefixMetadata.from_token_ids(
+        [1, 2, 3, 4],
+        prefix_match_unit=2,
+        tokenizer_identity_sha256="a" * 64,
+        cache_identity_sha256="b" * 64,
+        trace_hmac_key=b"k" * 32,
+    )
+    admitted = AdmittedLLMClientV31(
+        inner=Inner(),
+        limit=2,
+        policy=AdmissionPolicy.CACHE_AFFINE,
+        request_id_prefix="c01-ca-test",
+        prefix_encoder=lambda *_args, **_kwargs: metadata,
+    )
+    calls: list[dict[str, object]] = []
+    base = _base_hooks(calls)
+    base = V31LiveHooks(
+        runtime_builder=lambda **_kwargs: SimpleNamespace(
+            admitted_llm=admitted,
+            shared_execution_envelope_sha256="e" * 64,
+        ),
+        runtime_ready=base.runtime_ready,
+        namespace_probe=base.namespace_probe,
+        namespace_episode=base.namespace_episode,
+        source_visibility_probe=base.source_visibility_probe,
+        reference_time_to_ns=base.reference_time_to_ns,
+        adapter_factory=base.adapter_factory,
+        close_runtime=base.close_runtime,
+    )
+    hooks = build_v4_conflict_aware_live_hooks(
+        stream_id="history-a",
+        conflict_value_estimate=SpeculationValueEstimate(
+            expected_node_resolve_service_ms=25,
+            estimated_frontier_interference_ms=3,
+        ),
+        base_hooks=base,
+        factorized_adapter_factory=lambda *_args: _NativeWithFactorization(),
+    )
+
+    runtime = hooks.runtime_builder(env={}, policy=object(), request_id_prefix="v4")
+    adapter = hooks.adapter_factory(runtime, SimpleNamespace())
+
+    assert isinstance(admitted._controller, V4ResidualRequestAdmissionController)
+    assert adapter.telemetry()["conflict_policy"] == (
+        "CONFLICT_AWARE_VALIDATED_SPEC"
+    )
+    asyncio.run(hooks.close_runtime(runtime))
+
+
+def _live_entry_kwargs(tmp_path: Path) -> dict[str, object]:
+    project = Path(__file__).resolve().parents[1]
+    plan = json.loads(
+        (project / "artifacts/paper_eval/membind_v31/V31_METHOD_PLAN.json").read_text(
+            encoding="utf-8"
+        )
+    )
+    return {
+        "verified_plan": plan,
+        "block_index": 0,
+        "episodes": (),
+        "env": {},
+        "block_root": tmp_path / "block",
+        "state_cut_certification": object.__new__(StateCutCertification),
+        "compile_workers": int(plan["compile_workers"]),
+        "lookahead": int(plan["lookahead"]),
+    }
+
+
+def test_c01_ca_execution_requires_value_estimate_before_live_composition(
+    tmp_path: Path,
+) -> None:
+    with pytest.raises(V4LiveBlockError, match="conflict_value_estimate_required"):
+        asyncio.run(
+            execute_v4_c01_ca_live_block(
+                **_live_entry_kwargs(tmp_path),
+            )
+        )
+
+
+def test_c01_ca_execution_routes_estimate_to_conflict_aware_builder(
+    monkeypatch,
+    tmp_path: Path,
+) -> None:
+    import paper_eval.membind_v4.live_block as module
+
+    estimate = SpeculationValueEstimate(
+        expected_node_resolve_service_ms=25,
+        estimated_frontier_interference_ms=3,
+    )
+    captured: dict[str, object] = {}
+
+    class BuilderReached(Exception):
+        pass
+
+    def conflict_builder(**kwargs):
+        captured.update(kwargs)
+        raise BuilderReached
+
+    monkeypatch.setattr(
+        module,
+        "build_v4_conflict_aware_live_composition",
+        conflict_builder,
+    )
+    with pytest.raises(BuilderReached):
+        asyncio.run(
+            execute_v4_c01_ca_live_block(
+                conflict_value_estimate=estimate,
+                **_live_entry_kwargs(tmp_path),
+            )
+        )
+
+    assert captured["conflict_value_estimate"] is estimate
+
+
+def test_legacy_execution_without_estimate_keeps_generic_composition(
+    monkeypatch,
+    tmp_path: Path,
+) -> None:
+    import paper_eval.membind_v4.live_block as module
+
+    captured: dict[str, object] = {}
+
+    class BuilderReached(Exception):
+        pass
+
+    def generic_builder(**kwargs):
+        captured.update(kwargs)
+        raise BuilderReached
+
+    monkeypatch.setattr(module, "build_v4_live_composition", generic_builder)
+    monkeypatch.setattr(
+        module,
+        "build_v4_conflict_aware_live_composition",
+        lambda **_kwargs: pytest.fail("legacy entry selected conflict-aware builder"),
+    )
+    with pytest.raises(BuilderReached):
+        asyncio.run(execute_v4_live_block(**_live_entry_kwargs(tmp_path)))
+
+    assert "conflict_value_estimate" not in captured
+
+
+def test_production_v4_hooks_disabled_delegate_exactly_to_v31(monkeypatch) -> None:
+    import paper_eval.membind_v4.live_block as module
+
+    frozen_v31_hooks = _base_hooks([])
+    monkeypatch.setattr(
+        module,
+        "production_v31_live_hooks",
+        lambda: frozen_v31_hooks,
+    )
+    monkeypatch.setattr(
+        module,
+        "build_v4_conflict_aware_live_hooks",
+        lambda **_kwargs: pytest.fail("disabled v4 installed conflict-aware hooks"),
+    )
+
+    hooks = module.production_v4_live_hooks(
+        stream_id="history-a",
+        enabled=False,
+    )
+
+    assert hooks is frozen_v31_hooks
+
+
+def test_production_v4_hooks_disabled_reject_conflict_estimate(monkeypatch) -> None:
+    import paper_eval.membind_v4.live_block as module
+
+    monkeypatch.setattr(
+        module,
+        "production_v31_live_hooks",
+        lambda: pytest.fail("invalid feature-gate input reached v3.1 hooks"),
+    )
+    estimate = SpeculationValueEstimate(
+        expected_node_resolve_service_ms=25,
+        estimated_frontier_interference_ms=3,
+    )
+
+    with pytest.raises(
+        V4LiveBlockError,
+        match="conflict_value_estimate_requires_v4_enabled",
+    ):
+        module.production_v4_live_hooks(
+            stream_id="history-a",
+            enabled=False,
+            conflict_value_estimate=estimate,
+        )
+
+
+def test_production_v4_hooks_enabled_requires_estimate() -> None:
+    import paper_eval.membind_v4.live_block as module
+
+    with pytest.raises(V4LiveBlockError, match="conflict_value_estimate_required"):
+        module.production_v4_live_hooks(
+            stream_id="history-a",
+            enabled=True,
+        )
+
+
+def test_production_v4_hooks_enabled_select_conflict_aware_policy(monkeypatch) -> None:
+    import paper_eval.membind_v4.live_block as module
+
+    conflict_hooks = _base_hooks([])
+    estimate = SpeculationValueEstimate(
+        expected_node_resolve_service_ms=25,
+        estimated_frontier_interference_ms=3,
+    )
+    captured: dict[str, object] = {}
+
+    def conflict_builder(**kwargs):
+        captured.update(kwargs)
+        return conflict_hooks
+
+    monkeypatch.setattr(
+        module,
+        "production_v31_live_hooks",
+        lambda: pytest.fail("enabled v4 delegated to disabled v3.1 path"),
+    )
+    monkeypatch.setattr(
+        module,
+        "build_v4_conflict_aware_live_hooks",
+        conflict_builder,
+    )
+
+    hooks = module.production_v4_live_hooks(
+        stream_id="history-a",
+        enabled=True,
+        conflict_value_estimate=estimate,
+    )
+
+    assert hooks is conflict_hooks
+    assert captured == {
+        "stream_id": "history-a",
+        "conflict_value_estimate": estimate,
+    }
 
 
 def test_v4_hooks_fail_closed_when_graphiti_factorization_is_unavailable() -> None:

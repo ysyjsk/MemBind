@@ -118,6 +118,24 @@ def test_speculative_response_cannot_be_interpreted_or_committed_without_exact_v
     assert len(committed) == 1
 
 
+def test_exact_reuse_rejects_response_owned_by_a_different_call_object() -> None:
+    responses = iter(({"response": "first"}, {"response": "second"}))
+    adapter = NodeResolveV4Adapter(
+        execute_request=lambda _request: next(responses),
+        interpret_response=lambda response, _call: response,
+    )
+    expected_stale = PreparedSemanticCall(call=_call(1), request={"request": "a"})
+    other_stale = PreparedSemanticCall(call=_call(1), request={"request": "b"})
+    exact = PreparedSemanticCall(call=_call(2), request={"request": "exact"})
+    asyncio.run(adapter.execute(expected_stale))
+    wrong_response = asyncio.run(adapter.execute(other_stale))
+
+    with pytest.raises(NodeResolveAdapterError, match="response_execution_owner_mismatch"):
+        asyncio.run(
+            adapter.validate_and_interpret(wrong_response, expected_stale, exact)
+        )
+
+
 def test_provider_failure_never_enters_interpret_or_bind() -> None:
     called = {"interpret": 0, "bind": 0}
 

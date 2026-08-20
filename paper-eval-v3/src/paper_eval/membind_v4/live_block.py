@@ -42,7 +42,12 @@ from paper_eval.membind_v31.production_executor import (
     load_development_episodes,
 )
 from paper_eval.membind_v4.live_adapter import V4LiveNodeResolveError
+from paper_eval.membind_v4.admission import SpeculationValueEstimate
 from paper_eval.membind_v4.freeze import FORMAL_HISTORY_IDS, verify_frozen_method
+from paper_eval.membind_v4.residual_controller import (
+    V4ResidualReservation,
+    install_v4_residual_controller,
+)
 from paper_eval.membind_v4.speculative_adapter import (
     V4ResidualSlotSignal,
     V4SpeculativeGraphitiAdapter,
@@ -597,6 +602,7 @@ def build_v4_live_composition(
     stream_id: str,
     base_hooks: V31LiveHooks | None = None,
     factorized_adapter_factory: Callable[[object, StateCutCertification], object] | None = None,
+    conflict_value_estimate: SpeculationValueEstimate | None = None,
 ) -> V4LiveBlockComposition:
     """Compose one stream's v4 hooks around the unchanged v3.1 hooks.
 
@@ -608,6 +614,10 @@ def build_v4_live_composition(
 
     if not isinstance(stream_id, str) or not stream_id:
         raise _fail("stream_id_invalid")
+    if conflict_value_estimate is not None and not isinstance(
+        conflict_value_estimate, SpeculationValueEstimate
+    ):
+        raise _fail("conflict_value_estimate_invalid")
     selected = production_v31_live_hooks() if base_hooks is None else base_hooks
     if not isinstance(selected, V31LiveHooks):
         raise _fail("base_live_hooks_invalid")
@@ -621,6 +631,7 @@ def build_v4_live_composition(
         raise _fail("factorized_adapter_factory_invalid")
 
     signals: dict[int, V4ResidualSlotSignal] = {}
+    reservations: dict[int, V4ResidualReservation] = {}
     adapters: dict[int, V4SpeculativeGraphitiAdapter] = {}
     last_telemetry: dict[str, object] = {}
 
@@ -634,6 +645,9 @@ def build_v4_live_composition(
         if inspect.isawaitable(runtime):
             raise _fail("runtime_builder_must_be_synchronous")
         signals[id(runtime)] = signal
+        if conflict_value_estimate is not None:
+            admitted = getattr(runtime, "admitted_llm", None)
+            reservations[id(runtime)] = install_v4_residual_controller(admitted)
         return runtime
 
     def adapter_factory(runtime: object, certification: StateCutCertification) -> object:
@@ -646,6 +660,8 @@ def build_v4_live_composition(
                 factorized_adapter=native,
                 residual_slot_signal=signal,
                 stream_id=stream_id,
+                conflict_value_estimate=conflict_value_estimate,
+                residual_reservation=reservations.get(id(runtime)),
             )
         except V4LiveNodeResolveError:
             raise
@@ -663,6 +679,7 @@ def build_v4_live_composition(
                 last_telemetry.update(facade.telemetry())
         finally:
             signals.pop(id(runtime), None)
+            reservations.pop(id(runtime), None)
             await _await(selected.close_runtime(runtime), "runtime_close_must_be_async")
 
     hooks = V31LiveHooks(
@@ -683,11 +700,53 @@ def build_v4_live_hooks(
     stream_id: str,
     base_hooks: V31LiveHooks | None = None,
     factorized_adapter_factory: Callable[[object, StateCutCertification], object] | None = None,
+    conflict_value_estimate: SpeculationValueEstimate | None = None,
 ) -> V31LiveHooks:
     """Return only the v3.1-compatible hooks for callers that need that API."""
 
     return build_v4_live_composition(
         stream_id=stream_id,
+        base_hooks=base_hooks,
+        factorized_adapter_factory=factorized_adapter_factory,
+        conflict_value_estimate=conflict_value_estimate,
+    ).hooks
+
+
+def build_v4_conflict_aware_live_composition(
+    *,
+    stream_id: str,
+    conflict_value_estimate: SpeculationValueEstimate,
+    base_hooks: V31LiveHooks | None = None,
+    factorized_adapter_factory: Callable[
+        [object, StateCutCertification], object
+    ]
+    | None = None,
+) -> V4LiveBlockComposition:
+    """Build the only production composition authorized for candidate c01_ca."""
+
+    if not isinstance(conflict_value_estimate, SpeculationValueEstimate):
+        raise _fail("conflict_value_estimate_required")
+    return build_v4_live_composition(
+        stream_id=stream_id,
+        base_hooks=base_hooks,
+        factorized_adapter_factory=factorized_adapter_factory,
+        conflict_value_estimate=conflict_value_estimate,
+    )
+
+
+def build_v4_conflict_aware_live_hooks(
+    *,
+    stream_id: str,
+    conflict_value_estimate: SpeculationValueEstimate,
+    base_hooks: V31LiveHooks | None = None,
+    factorized_adapter_factory: Callable[
+        [object, StateCutCertification], object
+    ]
+    | None = None,
+) -> V31LiveHooks:
+    return build_v4_conflict_aware_live_composition(
+        stream_id=stream_id,
+        conflict_value_estimate=conflict_value_estimate,
         base_hooks=base_hooks,
         factorized_adapter_factory=factorized_adapter_factory,
     ).hooks
@@ -698,10 +757,31 @@ def build_v4_live_hooks(
 build_v4_live_block_hooks = build_v4_live_hooks
 
 
-def production_v4_live_hooks(*, stream_id: str) -> V31LiveHooks:
-    """Build the default production hooks for one history stream."""
+def production_v4_live_hooks(
+    *,
+    stream_id: str,
+    enabled: bool = False,
+    conflict_value_estimate: SpeculationValueEstimate | None = None,
+) -> V31LiveHooks:
+    """Select frozen v3.1 or the explicit c01_ca production policy.
 
-    return build_v4_live_hooks(stream_id=stream_id)
+    The disabled branch returns the original v3.1 hooks directly.  It does
+    not install a v4 facade, residual controller, observer, or telemetry
+    wrapper, which makes ``v4 disabled == v3.1`` an executable contract.
+    """
+
+    if not isinstance(enabled, bool):
+        raise _fail("v4_enabled_invalid")
+    if not enabled:
+        if conflict_value_estimate is not None:
+            raise _fail("conflict_value_estimate_requires_v4_enabled")
+        return production_v31_live_hooks()
+    if not isinstance(conflict_value_estimate, SpeculationValueEstimate):
+        raise _fail("conflict_value_estimate_required")
+    return build_v4_conflict_aware_live_hooks(
+        stream_id=stream_id,
+        conflict_value_estimate=conflict_value_estimate,
+    )
 
 
 async def execute_v4_live_block(
@@ -718,9 +798,18 @@ async def execute_v4_live_block(
     namespace_override: str | None = None,
     base_hooks: V31LiveHooks | None = None,
     factorized_adapter_factory: Callable[[object, StateCutCertification], object] | None = None,
+    conflict_value_estimate: SpeculationValueEstimate | None = None,
 ) -> dict[str, object]:
-    """Run one production v4 block through the unchanged v3.1 coordinator."""
+    """Run one production v4 block through the unchanged v3.1 coordinator.
 
+    Omitting ``conflict_value_estimate`` retains the legacy v4 composition.
+    Providing it explicitly selects the c01_ca conflict-aware composition.
+    """
+
+    if conflict_value_estimate is not None and not isinstance(
+        conflict_value_estimate, SpeculationValueEstimate
+    ):
+        raise _fail("conflict_value_estimate_invalid")
     try:
         plan = verify_membind_v31_method_plan(verified_plan)
     except ValueError:
@@ -731,11 +820,19 @@ async def execute_v4_live_block(
     selected_stream = selected_block["history_id"] if stream_id is None else stream_id
     if selected_stream != selected_block["history_id"]:
         raise _fail("stream_id_plan_mismatch")
-    composition = build_v4_live_composition(
-        stream_id=selected_stream,
-        base_hooks=base_hooks,
-        factorized_adapter_factory=factorized_adapter_factory,
-    )
+    if conflict_value_estimate is None:
+        composition = build_v4_live_composition(
+            stream_id=selected_stream,
+            base_hooks=base_hooks,
+            factorized_adapter_factory=factorized_adapter_factory,
+        )
+    else:
+        composition = build_v4_conflict_aware_live_composition(
+            stream_id=selected_stream,
+            conflict_value_estimate=conflict_value_estimate,
+            base_hooks=base_hooks,
+            factorized_adapter_factory=factorized_adapter_factory,
+        )
     result = await execute_v31_live_block(
         verified_plan=plan,
         block_index=block_index,
@@ -811,6 +908,46 @@ async def execute_v4_live_block(
     artifact["payload_sha256"] = payload_sha256(artifact)
     atomic_write_json(Path(block_root) / "V4_BLOCK_RESULT.json", artifact)
     return artifact
+
+
+async def execute_v4_c01_ca_live_block(
+    *,
+    verified_plan: Mapping[str, object],
+    block_index: int,
+    episodes: Sequence[object],
+    env: Mapping[str, str],
+    block_root: Path,
+    state_cut_certification: StateCutCertification,
+    compile_workers: int,
+    lookahead: int,
+    conflict_value_estimate: SpeculationValueEstimate | None = None,
+    stream_id: str | None = None,
+    namespace_override: str | None = None,
+    base_hooks: V31LiveHooks | None = None,
+    factorized_adapter_factory: Callable[
+        [object, StateCutCertification], object
+    ]
+    | None = None,
+) -> dict[str, object]:
+    """Execute only the c01_ca CONFLICT_AWARE_VALIDATED_SPEC policy."""
+
+    if not isinstance(conflict_value_estimate, SpeculationValueEstimate):
+        raise _fail("conflict_value_estimate_required")
+    return await execute_v4_live_block(
+        verified_plan=verified_plan,
+        block_index=block_index,
+        episodes=episodes,
+        env=env,
+        block_root=block_root,
+        state_cut_certification=state_cut_certification,
+        compile_workers=compile_workers,
+        lookahead=lookahead,
+        stream_id=stream_id,
+        namespace_override=namespace_override,
+        base_hooks=base_hooks,
+        factorized_adapter_factory=factorized_adapter_factory,
+        conflict_value_estimate=conflict_value_estimate,
+    )
 
 
 @dataclass(frozen=True, slots=True)
@@ -1120,10 +1257,13 @@ __all__ = [
     "V4LiveBlockError",
     "V4LiveBlockComposition",
     "V4ProductionLoaders",
+    "build_v4_conflict_aware_live_composition",
+    "build_v4_conflict_aware_live_hooks",
     "build_v4_live_composition",
     "build_v4_live_hooks",
     "build_v4_live_block_hooks",
     "production_v4_live_hooks",
+    "execute_v4_c01_ca_live_block",
     "execute_v4_live_block",
     "production_v4_loaders",
     "build_v4_production_block_runner",

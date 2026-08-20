@@ -7,9 +7,13 @@ through :meth:`finish` or :meth:`cancel`, so a permit cannot silently leak.
 
 from __future__ import annotations
 
+import math
 import re
+from collections.abc import Mapping
 from dataclasses import dataclass
 from enum import Enum
+
+from .conflict_classifier import ConflictClass
 from .resource_profile import Criticality, RequestProfile, ResourceClass
 
 
@@ -38,6 +42,184 @@ def _identity(value: object, code: str) -> str:
     if not isinstance(value, str) or _IDENTITY.fullmatch(value) is None:
         raise _fail(code)
     return value
+
+
+def _boolean(value: object, code: str) -> bool:
+    if not isinstance(value, bool):
+        raise _fail(code)
+    return value
+
+
+def _finite_nonnegative(value: object, code: str) -> float:
+    if isinstance(value, bool) or not isinstance(value, (int, float)):
+        raise _fail(code)
+    selected = float(value)
+    if not math.isfinite(selected) or selected < 0:
+        raise _fail(code)
+    return selected
+
+
+@dataclass(frozen=True, slots=True)
+class SemanticAdmissionFacts:
+    """State-free semantic prerequisites for one distance-1 candidate."""
+
+    future_arrived: bool
+    prepared_ready: bool
+    speculation_distance: int
+    node_resolve_materializable: bool
+    execution_mode: str
+
+    def __post_init__(self) -> None:
+        _boolean(self.future_arrived, "future_arrived_invalid")
+        _boolean(self.prepared_ready, "prepared_ready_invalid")
+        if isinstance(self.speculation_distance, bool) or not isinstance(
+            self.speculation_distance, int
+        ):
+            raise _fail("speculation_distance_invalid")
+        _boolean(
+            self.node_resolve_materializable,
+            "node_resolve_materializable_invalid",
+        )
+        if self.execution_mode not in {"LLM", "NO_LLM"}:
+            raise _fail("execution_mode_invalid")
+
+
+@dataclass(frozen=True, slots=True)
+class SpeculationValueEstimate:
+    """Frozen-baseline, non-learned service and interference estimates."""
+
+    expected_node_resolve_service_ms: float
+    estimated_frontier_interference_ms: float
+
+    def __post_init__(self) -> None:
+        object.__setattr__(
+            self,
+            "expected_node_resolve_service_ms",
+            _finite_nonnegative(
+                self.expected_node_resolve_service_ms,
+                "expected_node_resolve_service_ms_invalid",
+            ),
+        )
+        object.__setattr__(
+            self,
+            "estimated_frontier_interference_ms",
+            _finite_nonnegative(
+                self.estimated_frontier_interference_ms,
+                "estimated_frontier_interference_ms_invalid",
+            ),
+        )
+
+
+@dataclass(frozen=True, slots=True)
+class ConflictAwareAdmissionDecision:
+    admit: bool
+    reason: str
+    conflict_class: ConflictClass
+    expected_benefit_ms: float
+    expected_cost_ms: float
+
+    @property
+    def decision(self) -> AdmissionDecision:
+        return AdmissionDecision.ADMIT if self.admit else AdmissionDecision.REJECT
+
+
+def decide_conflict_aware_speculation(
+    *,
+    semantic: SemanticAdmissionFacts,
+    conflict_class: ConflictClass,
+    resource_snapshot: Mapping[str, object],
+    active_speculation_count: int,
+    value: SpeculationValueEstimate,
+) -> ConflictAwareAdmissionDecision:
+    """Apply c01_ca semantic, conflict, resource, and value gates.
+
+    ``waiting_compile_count`` is validated when present for telemetry hygiene,
+    but it is intentionally absent from every admission predicate.
+    """
+
+    if not isinstance(semantic, SemanticAdmissionFacts):
+        raise _fail("semantic_facts_invalid")
+    if not isinstance(conflict_class, ConflictClass):
+        raise _fail("conflict_class_invalid")
+    if not isinstance(resource_snapshot, Mapping):
+        raise _fail("resource_snapshot_invalid")
+    if (
+        isinstance(active_speculation_count, bool)
+        or not isinstance(active_speculation_count, int)
+        or active_speculation_count < 0
+    ):
+        raise _fail("active_speculation_count_invalid")
+    if not isinstance(value, SpeculationValueEstimate):
+        raise _fail("value_estimate_invalid")
+
+    effective_benefit = (
+        value.expected_node_resolve_service_ms
+        if conflict_class is ConflictClass.LOW_CONFLICT
+        else 0.0
+    )
+
+    def result(admit: bool, reason: str) -> ConflictAwareAdmissionDecision:
+        return ConflictAwareAdmissionDecision(
+            admit=admit,
+            reason=reason,
+            conflict_class=conflict_class,
+            expected_benefit_ms=effective_benefit,
+            expected_cost_ms=value.estimated_frontier_interference_ms,
+        )
+
+    if not (
+        semantic.future_arrived
+        and semantic.prepared_ready
+        and semantic.speculation_distance == 1
+        and semantic.node_resolve_materializable
+    ):
+        return result(False, "SEMANTIC_NOT_READY")
+    if semantic.execution_mode != "LLM":
+        return result(False, "EXECUTION_NOT_LLM")
+    if conflict_class is ConflictClass.HIGH_CONFLICT:
+        return result(False, "HIGH_CONFLICT")
+    if conflict_class is ConflictClass.UNKNOWN:
+        return result(False, "UNKNOWN_CONFLICT")
+    if active_speculation_count != 0:
+        return result(False, "ACTIVE_SPECULATION")
+
+    required_integer_fields = (
+        "configured_limit",
+        "active_count",
+        "active_frontier_count",
+        "waiting_frontier_count",
+        "frontier_bind_region_count",
+    )
+    selected: dict[str, int] = {}
+    for field in required_integer_fields:
+        raw = resource_snapshot.get(field)
+        if isinstance(raw, bool) or not isinstance(raw, int) or raw < 0:
+            return result(False, "RESOURCE_SNAPSHOT_INVALID")
+        selected[field] = raw
+    for telemetry_field in ("active_compile_count", "waiting_compile_count"):
+        raw = resource_snapshot.get(telemetry_field)
+        if raw is not None and (
+            isinstance(raw, bool) or not isinstance(raw, int) or raw < 0
+        ):
+            return result(False, "RESOURCE_SNAPSHOT_INVALID")
+
+    if selected["configured_limit"] != 2:
+        return result(False, "K_NOT_2")
+    if selected["waiting_frontier_count"] != 0:
+        return result(False, "FRONTIER_WAITER")
+    if selected["active_frontier_count"] != 1:
+        return result(False, "FRONTIER_NOT_ACTIVE")
+    if selected["active_count"] != 1:
+        return result(False, "NO_RESIDUAL_SLOT")
+    if (
+        selected["frontier_bind_region_count"] != 1
+        or resource_snapshot.get("frontier_transport_phase")
+        != "FRONTIER_LLM_PERMIT_ACTIVE"
+    ):
+        return result(False, "FRONTIER_PHASE_INACTIVE")
+    if effective_benefit <= value.estimated_frontier_interference_ms:
+        return result(False, "NOT_PROFITABLE")
+    return result(True, "ADMIT")
 
 
 @dataclass(frozen=True, slots=True)
@@ -299,8 +481,12 @@ ResourceGatedAdmissionController = ResourceGatedAdmission
 __all__ = [
     "AdmissionDecision",
     "AdmissionRequest",
+    "ConflictAwareAdmissionDecision",
     "RequestKind",
     "ResourceGatedAdmission",
     "ResourceGatedAdmissionController",
+    "SemanticAdmissionFacts",
+    "SpeculationValueEstimate",
     "V4AdmissionError",
+    "decide_conflict_aware_speculation",
 ]

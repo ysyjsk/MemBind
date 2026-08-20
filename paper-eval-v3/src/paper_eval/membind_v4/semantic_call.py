@@ -24,6 +24,8 @@ from paper_eval.artifacts import canonical_bytes, payload_sha256
 _SHA256 = re.compile(r"^[0-9a-f]{64}$")
 _SCHEMA = "membind.paper-eval-v4.semantic-call.v1"
 _FINGERPRINT_SCHEMA = "membind.paper-eval-v4.semantic-call-fingerprint.v1"
+_REQUEST_IDENTITY_SCHEMA = "membind.paper-eval-v4.node-resolve-request-identity.v1"
+_EFFECT_CONTEXT_SCHEMA = "membind.paper-eval-v4.node-resolve-effect-context.v1"
 _EXECUTION_MODES = {"LLM", "NO_LLM"}
 
 
@@ -219,9 +221,48 @@ class SemanticCall:
             "operator_revision": self.operator_revision,
         }
 
+    def request_identity_payload(self) -> dict[str, object]:
+        """Return exact provider-request inputs, excluding state provenance."""
+
+        return {
+            "schema_version": _REQUEST_IDENTITY_SCHEMA,
+            "operator_identity": self.operator_identity,
+            "model_identity": self.model_identity,
+            "decoding_identity": self.decoding_identity,
+            "response_schema": self.response_schema,
+            "rendered_request_sha256": self.rendered_request_sha256,
+            "token_sequence_sha256": self.token_sequence_sha256,
+            "prompt_tokens": self.prompt_tokens,
+            "execution_mode": self.execution_mode,
+            "operator_revision": self.operator_revision,
+        }
+
+    def effect_context_payload(self) -> dict[str, object]:
+        """Return exact state-derived inputs governing result interpretation."""
+
+        return {
+            "schema_version": _EFFECT_CONTEXT_SCHEMA,
+            "extracted_nodes": list(self.extracted_nodes),
+            "candidate_order": list(self.candidate_order),
+            "candidate_bindings": list(self.candidate_bindings),
+            "previous_episodes": list(self.previous_episodes),
+            "episode_context": self.episode_context,
+            "entity_types": list(self.entity_types),
+            "execution_mode": self.execution_mode,
+            "operator_revision": self.operator_revision,
+        }
+
     @property
     def fingerprint(self) -> str:
         return payload_sha256(self.fingerprint_payload())
+
+    @property
+    def request_identity(self) -> str:
+        return payload_sha256(self.request_identity_payload())
+
+    @property
+    def effect_context_identity(self) -> str:
+        return payload_sha256(self.effect_context_payload())
 
     def to_record(self) -> dict[str, object]:
         record = self.fingerprint_payload()
@@ -229,6 +270,8 @@ class SemanticCall:
         record["source_sequence"] = self.source_sequence
         record["state_version"] = self.state_version
         record["fingerprint"] = self.fingerprint
+        record["request_identity"] = self.request_identity
+        record["effect_context_identity"] = self.effect_context_identity
         return record
 
     def verify(self) -> "SemanticCall":
@@ -286,6 +329,13 @@ class SemanticCall:
             raise _fail("semantic_call_field_missing") from None
         if value.get("fingerprint") != selected.fingerprint:
             raise _fail("fingerprint_mismatch")
+        if value.get("request_identity", selected.request_identity) != selected.request_identity:
+            raise _fail("request_identity_mismatch")
+        if (
+            value.get("effect_context_identity", selected.effect_context_identity)
+            != selected.effect_context_identity
+        ):
+            raise _fail("effect_context_identity_mismatch")
         return selected
 
 
@@ -295,6 +345,12 @@ class SemanticCallDecision:
     reason: str
     speculative_fingerprint: str
     exact_fingerprint: str
+    request_identity_match: bool | None = None
+    effect_context_identity_match: bool | None = None
+    speculative_request_identity: str | None = None
+    exact_request_identity: str | None = None
+    speculative_effect_context_identity: str | None = None
+    exact_effect_context_identity: str | None = None
 
 
 def validate_semantic_call_pair(
@@ -310,7 +366,16 @@ def validate_semantic_call_pair(
         raise _fail("source_sequence_mismatch")
     if speculative.state_version >= exact.state_version:
         raise _fail("state_order_invalid")
-    decision = "REUSE" if speculative.fingerprint == exact.fingerprint else "REEXECUTE"
+    request_match = speculative.request_identity == exact.request_identity
+    effect_context_match = (
+        speculative.effect_context_identity == exact.effect_context_identity
+    )
+    fingerprint_match = speculative.fingerprint == exact.fingerprint
+    decision = (
+        "REUSE"
+        if request_match and effect_context_match and fingerprint_match
+        else "REEXECUTE"
+    )
     reason = (
         "SEMANTIC_CALL_FINGERPRINT_MATCH"
         if decision == "REUSE"
@@ -321,6 +386,12 @@ def validate_semantic_call_pair(
         reason=reason,
         speculative_fingerprint=speculative.fingerprint,
         exact_fingerprint=exact.fingerprint,
+        request_identity_match=request_match,
+        effect_context_identity_match=effect_context_match,
+        speculative_request_identity=speculative.request_identity,
+        exact_request_identity=exact.request_identity,
+        speculative_effect_context_identity=speculative.effect_context_identity,
+        exact_effect_context_identity=exact.effect_context_identity,
     )
 
 
@@ -331,6 +402,20 @@ def semantic_call_fingerprint(call: SemanticCall) -> str:
         raise _fail("semantic_call_type_invalid")
     call.verify()
     return call.fingerprint
+
+
+def semantic_effect_context_identity(call: SemanticCall) -> str:
+    if not isinstance(call, SemanticCall):
+        raise _fail("semantic_call_type_invalid")
+    call.verify()
+    return call.effect_context_identity
+
+
+def semantic_request_identity(call: SemanticCall) -> str:
+    if not isinstance(call, SemanticCall):
+        raise _fail("semantic_call_type_invalid")
+    call.verify()
+    return call.request_identity
 
 
 # Familiar names used by the v3.1 prototype are exported as compatibility
@@ -345,6 +430,8 @@ __all__ = [
     "SemanticCallError",
     "SpeculationDecision",
     "semantic_call_fingerprint",
+    "semantic_effect_context_identity",
+    "semantic_request_identity",
     "validate_semantic_call_pair",
     "validate_speculation",
 ]

@@ -56,6 +56,39 @@ def test_exact_semantic_call_fingerprint_reuses_across_state_versions() -> None:
     decision = validate_semantic_call_pair(_call(state_version=1), _call(state_version=2))
     assert decision.decision == "REUSE"
     assert decision.speculative_fingerprint == decision.exact_fingerprint
+    assert decision.request_identity_match is True
+    assert decision.effect_context_identity_match is True
+    assert decision.speculative_request_identity == decision.exact_request_identity
+    assert (
+        decision.speculative_effect_context_identity
+        == decision.exact_effect_context_identity
+    )
+
+
+def test_request_and_effect_context_identities_are_both_exact_gates() -> None:
+    stale = _call(state_version=1)
+    request_drift = replace(_call(state_version=2), token_sequence_sha256="c" * 64)
+    effect_drift = replace(
+        _call(state_version=2),
+        candidate_bindings=(
+            {
+                "candidate_id": "c0",
+                "uuid": "different-existing-uuid",
+                "projection": {"name": "c0"},
+            },
+            _call(state_version=2).candidate_bindings[1],
+        ),
+    )
+
+    request_decision = validate_semantic_call_pair(stale, request_drift)
+    effect_decision = validate_semantic_call_pair(stale, effect_drift)
+
+    assert request_decision.decision == "REEXECUTE"
+    assert request_decision.request_identity_match is False
+    assert request_decision.effect_context_identity_match is True
+    assert effect_decision.decision == "REEXECUTE"
+    assert effect_decision.request_identity_match is True
+    assert effect_decision.effect_context_identity_match is False
 
 
 @pytest.mark.parametrize(

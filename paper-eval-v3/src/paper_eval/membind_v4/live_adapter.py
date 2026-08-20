@@ -192,6 +192,7 @@ class V4LiveNodeResolveBridge:
             continue_native_bind=continue_native_bind,
         )
         self._active: dict[int, _Speculation] = {}
+        self._frontier_calls: dict[int, PreparedSemanticCall] = {}
         self._events: list[dict[str, object]] = []
         self._hit_count = 0
         self._miss_count = 0
@@ -229,6 +230,19 @@ class V4LiveNodeResolveBridge:
 
         return len(self._active)
 
+    def frontier_materialized_call(
+        self, source_sequence: int
+    ) -> PreparedSemanticCall | None:
+        """Expose an already materialized frontier call without reading state."""
+
+        if (
+            isinstance(source_sequence, bool)
+            or not isinstance(source_sequence, int)
+            or source_sequence < 0
+        ):
+            raise _fail("source_sequence_invalid")
+        return self._frontier_calls.get(source_sequence)
+
     @staticmethod
     def _validate_inputs(
         compile_input: object,
@@ -263,14 +277,14 @@ class V4LiveNodeResolveBridge:
             }
         )
 
-    async def launch_speculation(
+    async def materialize_speculation_request(
         self,
         compile_input: object,
         prepared: PreparedArtifact,
         *,
         state_version: int,
-    ) -> None:
-        """Materialise and launch one stale request in the background."""
+    ) -> PreparedSemanticCall:
+        """Materialize one stale call read-only, without starting transport."""
 
         selected = self._validate_inputs(compile_input, prepared, state_version)
         source = selected.source_sequence
@@ -290,6 +304,28 @@ class V4LiveNodeResolveBridge:
             raise _fail(str(error) or "materialize_failed") from None
         except Exception as error:
             raise _fail(f"materialize_failed:{type(error).__qualname__}") from None
+        return call
+
+    async def launch_materialized_speculation(
+        self,
+        prepared: PreparedArtifact,
+        call: PreparedSemanticCall,
+        *,
+        state_version: int,
+    ) -> None:
+        """Launch transport only after the caller has admitted a materialized call."""
+
+        selected = self._validate_inputs(None, prepared, state_version)
+        source = selected.source_sequence
+        if not isinstance(call, PreparedSemanticCall):
+            raise _fail("prepared_semantic_call_invalid")
+        if (
+            call.call.source_sequence != source
+            or call.call.state_version != state_version
+        ):
+            raise _fail("materialized_call_identity_mismatch")
+        if source in self._active:
+            raise _fail("speculation_duplicate")
         started = self._timestamp_ns()
         timing: dict[str, int | None] = {
             "started_timestamp_ns": started,
@@ -322,6 +358,26 @@ class V4LiveNodeResolveBridge:
                 self._emit("speculation_cancelled", source_sequence=source)
             raise
 
+    async def launch_speculation(
+        self,
+        compile_input: object,
+        prepared: PreparedArtifact,
+        *,
+        state_version: int,
+    ) -> None:
+        """Compatibility entry point: materialize, then launch immediately."""
+
+        call = await self.materialize_speculation_request(
+            compile_input,
+            prepared,
+            state_version=state_version,
+        )
+        await self.launch_materialized_speculation(
+            prepared,
+            call,
+            state_version=state_version,
+        )
+
     async def bind(
         self,
         compile_input: object,
@@ -346,8 +402,11 @@ class V4LiveNodeResolveBridge:
                 selected,
                 state_version=state_version,
             )
+            self._frontier_calls[source] = exact
             exact_ready = self._timestamp_ns()
             validation_started = exact_ready
+            speculation_failure_class: str | None = None
+            speculative_response: object | None = None
             if speculation is None:
                 # A caller may run a frontier without speculation.  It still
                 # uses the same exact interpretation and continuation fence.
@@ -360,12 +419,50 @@ class V4LiveNodeResolveBridge:
                     exact_execution_performed=True,
                 )
             else:
-                response = await speculation.task
-                result = await self._adapter.validate_and_interpret(
-                    response,
-                    speculation.call,
-                    exact,
-                )
+                try:
+                    speculative_response = await speculation.task
+                    response = speculative_response
+                except Exception as error:
+                    speculation_failure_class = (
+                        f"{type(error).__module__}.{type(error).__qualname__}"
+                    )
+                    response = await self._adapter.execute(exact)
+                    result = ExactNodeResolveResult(
+                        response=response,
+                        exact_call=exact,
+                        interpreted=await self._adapter.interpret(response, exact),
+                        decision=SemanticCallDecision(
+                            decision="REEXECUTE",
+                            reason="SPECULATION_EXECUTION_FAILED",
+                            speculative_fingerprint=speculation.call.call.fingerprint,
+                            exact_fingerprint=exact.call.fingerprint,
+                            request_identity_match=(
+                                speculation.call.call.request_identity
+                                == exact.call.request_identity
+                            ),
+                            effect_context_identity_match=(
+                                speculation.call.call.effect_context_identity
+                                == exact.call.effect_context_identity
+                            ),
+                            speculative_request_identity=(
+                                speculation.call.call.request_identity
+                            ),
+                            exact_request_identity=exact.call.request_identity,
+                            speculative_effect_context_identity=(
+                                speculation.call.call.effect_context_identity
+                            ),
+                            exact_effect_context_identity=(
+                                exact.call.effect_context_identity
+                            ),
+                        ),
+                        exact_execution_performed=True,
+                    )
+                else:
+                    result = await self._adapter.validate_and_interpret(
+                        response,
+                        speculation.call,
+                        exact,
+                    )
             validation_completed = self._timestamp_ns()
             started = speculation.started_timestamp_ns if speculation else None
             completed = (
@@ -388,7 +485,19 @@ class V4LiveNodeResolveBridge:
                 if speculation is not None and result.decision.decision == "REUSE"
                 else 0
             )
-            usage = _response_usage(response)
+            # Account tokens to the speculative transport only.  On a MISS,
+            # ``result.response`` may be the exact fallback response; on a
+            # transport failure it is always the exact fallback.  Neither is
+            # speculative waste and must not be attributed to the stale call.
+            usage = (
+                _response_usage(response)
+                if speculation is None
+                else (
+                    _response_usage(speculative_response)
+                    if speculative_response is not None
+                    else (None, None, None)
+                )
+            )
             if speculation is None:
                 event_type = "exact_node_resolve"
             elif result.decision.decision == "REUSE":
@@ -405,6 +514,22 @@ class V4LiveNodeResolveBridge:
                 ),
                 exact_fingerprint=exact.call.fingerprint,
                 exact_execution_performed=result.exact_execution_performed,
+                validation_reason=result.decision.reason,
+                request_identity_match=result.decision.request_identity_match,
+                effect_context_identity_match=(
+                    result.decision.effect_context_identity_match
+                ),
+                speculative_request_identity=(
+                    result.decision.speculative_request_identity
+                ),
+                exact_request_identity=result.decision.exact_request_identity,
+                speculative_effect_context_identity=(
+                    result.decision.speculative_effect_context_identity
+                ),
+                exact_effect_context_identity=(
+                    result.decision.exact_effect_context_identity
+                ),
+                speculation_failure_class=speculation_failure_class,
                 timestamp_ns=validation_completed,
                 exact_ready_timestamp_ns=exact_ready,
                 validation_started_timestamp_ns=validation_started,
@@ -446,6 +571,7 @@ class V4LiveNodeResolveBridge:
         except ValueError as error:
             raise _fail(str(error) or "live_adapter_failed") from None
         finally:
+            self._frontier_calls.pop(source, None)
             if speculation is not None and self._active.get(source) is speculation:
                 self._active.pop(source, None)
 
@@ -581,6 +707,12 @@ def _exact_decision(call: PreparedSemanticCall) -> SemanticCallDecision:
         reason="NO_SPECULATION",
         speculative_fingerprint=call.call.fingerprint,
         exact_fingerprint=call.call.fingerprint,
+        request_identity_match=True,
+        effect_context_identity_match=True,
+        speculative_request_identity=call.call.request_identity,
+        exact_request_identity=call.call.request_identity,
+        speculative_effect_context_identity=call.call.effect_context_identity,
+        exact_effect_context_identity=call.call.effect_context_identity,
     )
 
 

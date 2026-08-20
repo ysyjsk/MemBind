@@ -1,0 +1,392 @@
+{
+  "decision": {
+    "dominant_gain_source": "NONE_ORACLE_NOT_RECOVERABLE",
+    "live_authorized": false,
+    "mseg_recovered": false,
+    "next_mechanism": "STOP_V4_FINE_GRAINED",
+    "root_cause": "FINE_GRAINED_CAUSAL_IDENTITY_NOT_OBSERVABLE"
+  },
+  "gain_attribution": {
+    "Gain_ConflictOrdering_O2_minus_O1": "NOT_OBSERVABLE",
+    "Gain_CriticalityAdmission_O4_minus_O3": "NOT_OBSERVABLE",
+    "Gain_StateCut_O1_minus_O0": "NOT_OBSERVABLE",
+    "Gain_ValidatedExecution_O3_minus_O2": "NOT_OBSERVABLE"
+  },
+  "hypotheses": {
+    "H1_OVER_SERIALIZATION": "REJECTED_AT_EVIDENCE_GATE",
+    "H2_LATE_BOUND_DEPENDENCY": "REJECTED_AT_EVIDENCE_GATE",
+    "H3_CRITICALITY_HETEROGENEITY": "REJECTED_AT_EVIDENCE_GATE",
+    "H4_SEMANTIC_ADMISSION_OPPORTUNITY": "REJECTED_AT_EVIDENCE_GATE"
+  },
+  "input_binding": {
+    "graphiti": {
+      "metadata_file_sha256": "f9ef708c33fc91df9fd9015c9dd7694d4d18a1f706ce63598c6176364b6aa3dc",
+      "source_file_sha256s": {
+        "bulk_utils.py": "6c7314f24801f0936454b3344788528500432ac5f12692eb36b7d3ef5269f601",
+        "edge_operations.py": "b773ff4489968af2a996d5074e679cab9806cc0904a7ff9f2aecc74382325abe",
+        "graphiti.py": "7c65051a62982d8b510ebdbf37bae4d07020e74520e1f6d9bf8a0ffb26beeccb",
+        "node_operations.py": "14fc92a462bf7f1dd9b70d10a88e27e36a0ddc1594dc18381888209de7137fb4"
+      },
+      "version": "0.29.3"
+    },
+    "history_id": "07741c45",
+    "pilot_events_file_sha256": "54a76f5aac2ba4005036e441b74c1351de4ec20ad41ad17edd8e32116523bd38",
+    "pilot_llm_file_sha256": "55ff7d48c9ffba068b1ead781daf7bf5dd2bfe5681fa897937311e7f82dee6eb",
+    "pilot_manifest_file_sha256": "6a14cd4a32ae93afd83854613a84743d0f0dcce9fc0bc83dd631652a95c810dc",
+    "pilot_queue_file_sha256": "c33a9be35d0c5327617cc6769a8fa441b799020af2dc34303ab87deb0bda3f83",
+    "pilot_result_file_sha256": "a4440e2421add6dc74cf5708e6630785b516a980503d47cfeec39dc65c93a46c",
+    "pilot_root": "artifacts/paper_eval/membind_v31/optimization/pilots/membind-v31-opt-w4-20260818-001",
+    "sealed_artifacts": {
+      "V4_CONFLICT_OFFLINE_REPLAY.json": {
+        "expected_sha256": "d003baeca9858cbe91ec11b0d0216741aa2cc32529536bb5616ebe0d412c0834",
+        "observed_sha256": "d003baeca9858cbe91ec11b0d0216741aa2cc32529536bb5616ebe0d412c0834",
+        "unchanged": true
+      },
+      "V4_FINAL_DECISION.md": {
+        "expected_sha256": "7e971c32a278578ceff1ddbc0ca13486048e428c87d79c4a5d7fb4bcdf97b941",
+        "observed_sha256": "7e971c32a278578ceff1ddbc0ca13486048e428c87d79c4a5d7fb4bcdf97b941",
+        "unchanged": true
+      },
+      "V4_PARALLELISM_FUNNEL.json": {
+        "expected_sha256": "9735680b445e2aa93c623fce2314e3ea1ccf75254a2a772f0b9ef5c9ca0045a7",
+        "observed_sha256": "9735680b445e2aa93c623fce2314e3ea1ccf75254a2a772f0b9ef5c9ca0045a7",
+        "unchanged": true
+      },
+      "V4_READY_TASK_OPPORTUNITY_PROFILE.json": {
+        "expected_sha256": "5f33ca8c7e15627684e62b2f4e79b8a32ccb7d07c07a93e24c4da810b5081d65",
+        "observed_sha256": "5f33ca8c7e15627684e62b2f4e79b8a32ccb7d07c07a93e24c4da810b5081d65",
+        "unchanged": true
+      }
+    },
+    "source_scope": "0..11"
+  },
+  "mseg_recovered": false,
+  "oracles": {
+    "O0_CURRENT": {
+      "goodput_episodes_per_second": 0.017172846553637003,
+      "makespan_ns": 698777570889,
+      "name": "O0_CURRENT",
+      "p50_freshness_ns": 33115230273,
+      "p95_freshness_ns": 238840735985,
+      "published_episode_count": 12,
+      "resource_envelope": {
+        "bind_workers": 1,
+        "compile_workers": 2,
+        "global_llm_admission_k": 2,
+        "lookahead": 4
+      },
+      "status": "OBSERVED_DIAGNOSTIC_ONLY_NON_MERGEABLE"
+    },
+    "O1_CERTIFIED_EARLY": {
+      "goodput_episodes_per_second": "NOT_OBSERVABLE",
+      "makespan_ns": "NOT_OBSERVABLE",
+      "name": "O1_CERTIFIED_EARLY",
+      "p50_freshness_ns": "NOT_OBSERVABLE",
+      "p95_freshness_ns": "NOT_OBSERVABLE",
+      "reason": "The sealed W=4 trace has no direct operator role/parent identity, operator-ready or materialization time, exact memory version, dependency edge, effect scope, deterministic operator, persistent effect, or publication-instance records.",
+      "status": "NOT_OBSERVABLE"
+    },
+    "O2_CONFLICT_ORDERED": {
+      "goodput_episodes_per_second": "NOT_OBSERVABLE",
+      "makespan_ns": "NOT_OBSERVABLE",
+      "name": "O2_CONFLICT_ORDERED",
+      "p50_freshness_ns": "NOT_OBSERVABLE",
+      "p95_freshness_ns": "NOT_OBSERVABLE",
+      "reason": "The sealed W=4 trace has no direct operator role/parent identity, operator-ready or materialization time, exact memory version, dependency edge, effect scope, deterministic operator, persistent effect, or publication-instance records.",
+      "status": "NOT_OBSERVABLE"
+    },
+    "O3_VALIDATED_EXECUTION": {
+      "goodput_episodes_per_second": "NOT_OBSERVABLE",
+      "makespan_ns": "NOT_OBSERVABLE",
+      "name": "O3_VALIDATED_EXECUTION",
+      "p50_freshness_ns": "NOT_OBSERVABLE",
+      "p95_freshness_ns": "NOT_OBSERVABLE",
+      "reason": "The sealed W=4 trace has no direct operator role/parent identity, operator-ready or materialization time, exact memory version, dependency edge, effect scope, deterministic operator, persistent effect, or publication-instance records.",
+      "status": "NOT_OBSERVABLE"
+    },
+    "O4_PUBLICATION_CRITICAL": {
+      "goodput_episodes_per_second": "NOT_OBSERVABLE",
+      "makespan_ns": "NOT_OBSERVABLE",
+      "name": "O4_PUBLICATION_CRITICAL",
+      "p50_freshness_ns": "NOT_OBSERVABLE",
+      "p95_freshness_ns": "NOT_OBSERVABLE",
+      "reason": "The sealed W=4 trace has no direct operator role/parent identity, operator-ready or materialization time, exact memory version, dependency edge, effect scope, deterministic operator, persistent effect, or publication-instance records.",
+      "status": "NOT_OBSERVABLE"
+    }
+  },
+  "payload_sha256": "ec8b5f4b1e5fefba9b3161949dc97db176b63cab34f0f2899daabdf200a26118",
+  "schema_version": "membind.paper-eval-v4.mseg-oracle-comparison.v1",
+  "scope": {
+    "analysis_mode": "OFFLINE_READ_ONLY",
+    "formal_main_table_eligible": false,
+    "live_candidate_authorized": false,
+    "namespaces_created": 0,
+    "network_calls": 0,
+    "no_stage_scheduler_choice_preserved": true,
+    "persistent_writes": 0,
+    "runtime_instrumentation_installed": false,
+    "scheduler_implemented": false,
+    "services_started": 0,
+    "stop_v4_node_resolve_preserved": true
+  },
+  "status": "ORACLE_GATE_STOP",
+  "structural_metrics": {
+    "legal_choice_epochs": "NOT_OBSERVABLE",
+    "max_legal_ready_width": "NOT_OBSERVABLE",
+    "mean_legal_ready_set_size": "NOT_OBSERVABLE",
+    "p_legal_width_ge_2": "NOT_OBSERVABLE",
+    "p_legal_width_ge_4": "NOT_OBSERVABLE"
+  },
+  "trace_observability": {
+    "blocking_reasons": [
+      "operator_identity_missing",
+      "operator_ready_materialization_timing_missing",
+      "memory_version_evidence_missing",
+      "dependency_and_effect_scope_missing",
+      "deterministic_operator_trace_missing",
+      "persistent_effect_and_publication_trace_missing"
+    ],
+    "complete_client_lifecycle_count": 279,
+    "dependency_effect_scope_recovered": false,
+    "deterministic_operator_instances_observable": false,
+    "event_fields": {
+      "frontier_bind_region_end": [
+        "event_sequence",
+        "event_type",
+        "source_sequence",
+        "stream_id",
+        "timestamp_ns"
+      ],
+      "frontier_bind_region_start": [
+        "event_sequence",
+        "event_type",
+        "source_sequence",
+        "stream_id",
+        "timestamp_ns"
+      ],
+      "llm_request_start": [
+        "affinity_score",
+        "cohort_gain",
+        "eligible_prefix_tokens",
+        "event_sequence",
+        "event_type",
+        "provider_recency",
+        "request_id",
+        "request_kind",
+        "source_sequence",
+        "stream_id",
+        "timestamp_ns"
+      ],
+      "llm_request_submitted": [
+        "cache_identity_sha256",
+        "event_sequence",
+        "event_type",
+        "prefix_match_unit",
+        "prefix_metadata_sha256",
+        "request_id",
+        "request_kind",
+        "source_sequence",
+        "stream_id",
+        "timestamp_ns",
+        "token_count",
+        "token_prefix_block_hmac_sha256s",
+        "token_sequence_hmac_sha256",
+        "tokenizer_identity_sha256",
+        "trace_key_identity_sha256"
+      ],
+      "llm_request_terminal": [
+        "error_class",
+        "event_sequence",
+        "event_type",
+        "request_id",
+        "status",
+        "timestamp_ns"
+      ]
+    },
+    "field_coverage": {
+      "admission_enqueue_ns": {
+        "coverage_fraction": 0.0,
+        "observed_count": 0,
+        "request_count": 279,
+        "status": "NOT_OBSERVABLE"
+      },
+      "completion_tokens": {
+        "coverage_fraction": 0.0,
+        "observed_count": 0,
+        "request_count": 279,
+        "status": "NOT_OBSERVABLE"
+      },
+      "data_dependency_ids": {
+        "coverage_fraction": 0.0,
+        "observed_count": 0,
+        "request_count": 279,
+        "status": "NOT_OBSERVABLE"
+      },
+      "dependency_knowledge_state": {
+        "coverage_fraction": 0.0,
+        "observed_count": 0,
+        "request_count": 279,
+        "status": "NOT_OBSERVABLE"
+      },
+      "effect_conflict_dependency_ids": {
+        "coverage_fraction": 0.0,
+        "observed_count": 0,
+        "request_count": 279,
+        "status": "NOT_OBSERVABLE"
+      },
+      "effect_scope": {
+        "coverage_fraction": 0.0,
+        "observed_count": 0,
+        "request_count": 279,
+        "status": "NOT_OBSERVABLE"
+      },
+      "episode_arrival_ns": {
+        "coverage_fraction": 0.0,
+        "observed_count": 0,
+        "request_count": 279,
+        "status": "NOT_OBSERVABLE"
+      },
+      "execution_mode": {
+        "coverage_fraction": 0.0,
+        "observed_count": 0,
+        "request_count": 279,
+        "status": "NOT_OBSERVABLE"
+      },
+      "history_id": {
+        "coverage_fraction": 0.0,
+        "observed_count": 0,
+        "request_count": 279,
+        "status": "NOT_OBSERVABLE"
+      },
+      "memory_version_observed": {
+        "coverage_fraction": 0.0,
+        "observed_count": 0,
+        "request_count": 279,
+        "status": "NOT_OBSERVABLE"
+      },
+      "memory_version_required": {
+        "coverage_fraction": 0.0,
+        "observed_count": 0,
+        "request_count": 279,
+        "status": "NOT_OBSERVABLE"
+      },
+      "operator_end_ns": {
+        "coverage_fraction": 0.0,
+        "observed_count": 0,
+        "request_count": 279,
+        "status": "NOT_OBSERVABLE"
+      },
+      "operator_id": {
+        "coverage_fraction": 0.0,
+        "observed_count": 0,
+        "request_count": 279,
+        "status": "NOT_OBSERVABLE"
+      },
+      "operator_ready_ns": {
+        "coverage_fraction": 0.0,
+        "observed_count": 0,
+        "request_count": 279,
+        "status": "NOT_OBSERVABLE"
+      },
+      "operator_role": {
+        "coverage_fraction": 0.0,
+        "observed_count": 0,
+        "request_count": 279,
+        "status": "NOT_OBSERVABLE"
+      },
+      "operator_start_ns": {
+        "coverage_fraction": 0.0,
+        "observed_count": 0,
+        "request_count": 279,
+        "status": "NOT_OBSERVABLE"
+      },
+      "parent_bind_id": {
+        "coverage_fraction": 0.0,
+        "observed_count": 0,
+        "request_count": 279,
+        "status": "NOT_OBSERVABLE"
+      },
+      "parent_operator_id": {
+        "coverage_fraction": 0.0,
+        "observed_count": 0,
+        "request_count": 279,
+        "status": "NOT_OBSERVABLE"
+      },
+      "prompt_name": {
+        "coverage_fraction": 0.0,
+        "observed_count": 0,
+        "request_count": 279,
+        "status": "NOT_OBSERVABLE"
+      },
+      "prompt_tokens": {
+        "coverage_fraction": 0.0,
+        "observed_count": 0,
+        "request_count": 279,
+        "status": "NOT_OBSERVABLE"
+      },
+      "publication_dependency_ids": {
+        "coverage_fraction": 0.0,
+        "observed_count": 0,
+        "request_count": 279,
+        "status": "NOT_OBSERVABLE"
+      },
+      "publication_frontier_at_materialization": {
+        "coverage_fraction": 0.0,
+        "observed_count": 0,
+        "request_count": 279,
+        "status": "NOT_OBSERVABLE"
+      },
+      "publication_frontier_at_ready": {
+        "coverage_fraction": 0.0,
+        "observed_count": 0,
+        "request_count": 279,
+        "status": "NOT_OBSERVABLE"
+      },
+      "read_scope": {
+        "coverage_fraction": 0.0,
+        "observed_count": 0,
+        "request_count": 279,
+        "status": "NOT_OBSERVABLE"
+      },
+      "request_materialized_ns": {
+        "coverage_fraction": 0.0,
+        "observed_count": 0,
+        "request_count": 279,
+        "status": "NOT_OBSERVABLE"
+      },
+      "version_dependency_ids": {
+        "coverage_fraction": 0.0,
+        "observed_count": 0,
+        "request_count": 279,
+        "status": "NOT_OBSERVABLE"
+      }
+    },
+    "fine_grained_identity_recovered": false,
+    "history_id": "07741c45",
+    "interpretation_boundary": {
+      "client_running_is_gpu_execution": false,
+      "client_running_is_vllm_batch_membership": false,
+      "llm_request_is_complete_operator_graph": false,
+      "manifest_history_binding_is_direct_per_request_metadata": false
+    },
+    "memory_version_recovered": false,
+    "mseg_recovered": false,
+    "operator_timing_recovered": false,
+    "persistent_effect_instances_observable": false,
+    "prohibited_inferences": [
+      "prompt_or_token_length",
+      "request_order",
+      "prompt_or_prefix_similarity"
+    ],
+    "request_count": 279,
+    "request_kind_counts": {
+      "COMPILE": 24,
+      "FRONTIER": 255
+    },
+    "role_attribution_method": "NONE",
+    "role_count": "NOT_OBSERVABLE",
+    "schema_version": "membind.paper-eval-v4.mseg-trace-observability.v1",
+    "source_trace": "/data/predator/ly/MemBind/paper-eval-v3/artifacts/paper_eval/membind_v31/optimization/pilots/membind-v31-opt-w4-20260818-001/llm.jsonl",
+    "source_trace_sha256": "55ff7d48c9ffba068b1ead781daf7bf5dd2bfe5681fa897937311e7f82dee6eb"
+  }
+}

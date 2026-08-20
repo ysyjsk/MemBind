@@ -92,7 +92,18 @@ async def test_bridge_hit_never_continues_from_stale_result() -> None:
     assert result == "published"
     assert executed == [(1, 0)]
     assert continued == [(1, False, 9)]
-    assert bridge.telemetry()["semantic_hit_count"] == 1
+    telemetry = bridge.telemetry()
+    assert telemetry["semantic_hit_count"] == 1
+    event = next(
+        row for row in telemetry["events"] if row["event_type"] == "semantic_hit"
+    )
+    assert event["request_identity_match"] is True
+    assert event["effect_context_identity_match"] is True
+    assert event["speculative_request_identity"] == event["exact_request_identity"]
+    assert (
+        event["speculative_effect_context_identity"]
+        == event["exact_effect_context_identity"]
+    )
 
 
 @pytest.mark.asyncio
@@ -168,6 +179,8 @@ async def test_bridge_miss_never_reports_hidden_critical_time() -> None:
         if row["event_type"] == "semantic_miss"
     )
     assert event["hidden_critical_time_ns"] == 0
+    assert event["request_identity_match"] is True
+    assert event["effect_context_identity_match"] is False
     assert bridge.telemetry()["hidden_critical_time_ns"] == 0
 
 
@@ -196,6 +209,61 @@ async def test_bridge_miss_executes_exact_and_cleans_background_task() -> None:
     assert executed == [(1, 0), (1, 1)]
     assert bridge.active_speculation_count == 0
     assert bridge.telemetry()["semantic_miss_count"] == 1
+
+
+@pytest.mark.asyncio
+async def test_speculative_transport_failure_discards_and_runs_exact_fallback() -> None:
+    executed: list[tuple[int, int]] = []
+
+    async def materialize(_input, prepared, state_version):
+        return {
+            "call": _call(prepared.source_sequence, state_version),
+            "request": (prepared.source_sequence, state_version),
+        }
+
+    async def execute(request):
+        executed.append(request)
+        if request == (1, 0):
+            raise RuntimeError("speculative transport failed")
+        return {
+            "request": request,
+            "usage": {
+                "prompt_tokens": 70,
+                "completion_tokens": 11,
+                "total_tokens": 81,
+            },
+        }
+
+    bridge = V4LiveNodeResolveBridge(
+        materialize_request=materialize,
+        execute_request=execute,
+        interpret_response=lambda response, _call: response,
+        continue_native_bind=lambda *_args, **_kwargs: "published",
+    )
+    await bridge.launch_speculation({}, _prepared(1), state_version=0)
+
+    assert (
+        await bridge.bind({}, _prepared(1), state_version=1, logical_time_ns=10)
+        == "published"
+    )
+    assert executed == [(1, 0), (1, 1)]
+    event = next(
+        row
+        for row in bridge.telemetry()["events"]
+        if row["event_type"] == "semantic_miss"
+    )
+    assert event["exact_execution_performed"] is True
+    assert event["validation_reason"] == "SPECULATION_EXECUTION_FAILED"
+    assert event["speculation_failure_class"] == "builtins.RuntimeError"
+    assert event["request_identity_match"] is True
+    assert event["effect_context_identity_match"] is True
+    assert event["prompt_tokens"] is None
+    assert event["completion_tokens"] is None
+    assert event["total_tokens"] is None
+    assert bridge.telemetry()["semantic_miss_count"] == 1
+    assert bridge.telemetry()["miss_prompt_tokens"] == 0
+    assert bridge.telemetry()["miss_completion_tokens"] == 0
+    assert bridge.telemetry()["persistent_write_count"] == 0
 
 
 @pytest.mark.asyncio
