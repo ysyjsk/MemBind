@@ -10,10 +10,20 @@ from .offline_analyzer import (
     analyze_sealed_workload,
     write_analysis_artifacts,
 )
+from .first_divergence import (
+    FIRST_DIVERGENCE_ROOT_NAME,
+    STOP_GATE,
+    analyze_first_divergence,
+    write_first_divergence_artifacts,
+)
 
 __all__ = [
     "ANALYSIS_ROOT_NAME",
     "EXPECTED_BLOCKS",
     "analyze_sealed_workload",
     "write_analysis_artifacts",
+    "FIRST_DIVERGENCE_ROOT_NAME",
+    "STOP_GATE",
+    "analyze_first_divergence",
+    "write_first_divergence_artifacts",
 ]
