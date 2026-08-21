@@ -92,6 +92,18 @@ def test_provider_side_collector_is_dynamic_and_emits_canonical_json(
         assert str(forbidden_pid) not in source
 
 
+def test_provider_collector_does_not_redact_non_secret_token_count_flags(
+    repository_root: Path,
+) -> None:
+    source = (
+        repository_root
+        / "saturated_fixed_work_baseline_v1_2/scripts/provider/resource-evidence.sh"
+    ).read_text(encoding="utf-8")
+
+    assert 'r"(?i)(?:api[-_]?key|authorization|password|secret|token)"' not in source
+    assert "^(?:--?(?:api[-_]?key|authorization|password|secret|token))$" in source
+
+
 def _provider_snapshot(pid_8000: int = 41001, pid_8001: int = 42001, uuid: str = GPU_UUID,
                        *, nvidia_visible: str | None = "GPU-01234567-89ab-cdef-0123-456789abcdef") -> dict[str, Any]:
     def service(port: int, pid: int, engine_pid: int) -> dict[str, Any]:

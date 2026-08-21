@@ -241,6 +241,10 @@ class _SearchInterfaceProxy:
         self._inner = inner
         self._recorder = recorder
 
+    def __bool__(self) -> bool:
+        # Graphiti branches on the optional capability's truthiness.
+        return bool(self._inner)
+
     def __getattr__(self, name: str) -> object:
         value = getattr(self._inner, name)
         if not callable(value) or not name.endswith("_search"):
@@ -266,6 +270,11 @@ class _GraphOperationsProxy:
     def __init__(self, inner: object, recorder: MEGRuntimeRecorder) -> None:
         self._inner = inner
         self._recorder = recorder
+
+    def __bool__(self) -> bool:
+        # Preserve the native capability branch exactly, including falsey
+        # implementations supplied by a provider.
+        return bool(self._inner)
 
     def __getattr__(self, name: str) -> object:
         value = getattr(self._inner, name)
@@ -364,18 +373,26 @@ class _DriverProxy:
             self._inner.clone(*args, **kwargs), self._recorder, self._observer
         )
 
-    async def execute_query(self, query: object, **kwargs: object) -> object:
-        text = str(query).strip().upper()
+    async def execute_query(self, cypher_query_: object, **kwargs: object) -> object:
+        """Preserve Neo4jDriver's positional name and all Graphiti kwargs.
+
+        Graphiti 0.29.3's native fallback calls this as
+        ``execute_query(cypher, query=<search text>, limit=..., ...)``.
+        The native driver names its positional argument ``cypher_query_``;
+        using the same name here prevents the search ``query`` keyword from
+        colliding with the positional Cypher statement.
+        """
+        text = str(cypher_query_).strip().upper()
         write = any(
             token in text
             for token in (" CREATE ", " MERGE ", " DELETE ", " SET ", " REMOVE ", " DROP ")
         )
-        identity = {"query": str(query), "params": kwargs}
+        identity = {"query": str(cypher_query_), "params": kwargs}
         if write:
             self._recorder.record_write_intent(identity)
         else:
             self._recorder.record_db_read(identity)
-        return await self._inner.execute_query(query, **kwargs)
+        return await self._inner.execute_query(cypher_query_, **kwargs)
 
 
 class _ClientsProxy:

@@ -26,8 +26,10 @@ SELECTED_ENV = (
     "NVIDIA_VISIBLE_DEVICES",
     "CUDA_DEVICE_ORDER",
 )
+# Only redact options that carry credentials.  Substring matching would
+# incorrectly hide benign limits such as --max-num-batched-tokens.
 SECRET_FLAGS = re.compile(
-    r"(?i)(?:api[-_]?key|authorization|password|secret|token)"
+    r"(?i)^(?:--?(?:api[-_]?key|authorization|password|secret|token))$"
 )
 
 

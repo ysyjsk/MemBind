@@ -126,11 +126,14 @@ class Graphiti0293BindVerticalSlice:
     ) -> None:
         selected_facts = edge_facts if edge_facts is not None else (() if edge_fact is None else (edge_fact,))
         self.fixture = build_controlled_graphiti_fixture(
+            configured_database="neo4j",
+            group_id="native-driver-group",
             edge_types=("WorksAt",) if selected_facts else (),
             edge_fact=selected_facts[0] if selected_facts else None,
             canonical_candidate=canonical_candidate,
             invalidation_candidate=bool(selected_facts),
             reverse_edge_duplicate_completion=(reverse_edge_completion and len(selected_facts) > 1),
+            native_driver_shape=True,
         )
         if len(selected_facts) > 1:
             self.fixture.providers.llm_responses["ExtractedEdges"] = {

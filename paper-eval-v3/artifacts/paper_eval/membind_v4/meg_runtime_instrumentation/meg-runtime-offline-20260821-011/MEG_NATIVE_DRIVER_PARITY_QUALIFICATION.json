@@ -1,0 +1,85 @@
+{
+  "analysis_mode": "OFFLINE_PROVIDER_FREE_NATIVE_DRIVER_SHAPED",
+  "backend_contract": {
+    "clone_semantics": "GraphDriver.clone() returns self for Neo4j 0.29.3",
+    "database": "neo4j",
+    "group_id": "fresh-graphiti-group",
+    "isolation": "fixed Neo4j database + fresh Graphiti group_id",
+    "per_run_database": false,
+    "with_database_in_experiment_path": false
+  },
+  "decision": {
+    "admission_reorder": false,
+    "extra_llm_embedding_db_io": false,
+    "history_id": "07741c45",
+    "mode": "OBSERVE_ONLY",
+    "retry_authorized": true,
+    "scheduler_change": false,
+    "shadow_read": false,
+    "source_sequences": [
+      0,
+      1,
+      2
+    ],
+    "status": "GO_RETRY_REAL_MEG_OBSERVE_0_2"
+  },
+  "fallback_probe": {
+    "all_native_execute_query": true,
+    "call_count": 4,
+    "candidate_limit_preserved": true,
+    "fulltext_calls_preserved": true,
+    "group_ids_preserved": true,
+    "min_score_preserved": true,
+    "query_parameter_preserved": true,
+    "routing_preserved": true,
+    "similarity_calls_preserved": true
+  },
+  "gates": {
+    "native_clone_fixed_database_fresh_group_contract": true,
+    "native_optional_capability_shape": true,
+    "native_provider_unchanged": true,
+    "native_shaped_operator_ready": true,
+    "native_shaped_passive_equivalence": true,
+    "native_shaped_request_lineage_100_percent": true,
+    "native_shaped_vertical_slice_commit_publication": true,
+    "search_fallback_branch_unchanged": true,
+    "transaction_fallback_unchanged": true,
+    "zero_shadow_and_external_services": true
+  },
+  "graphiti_version": "0.29.3",
+  "historical_fixture_status": "OFFLINE_FIXTURE_PARITY_GAP",
+  "metrics": {
+    "native_fixture_execute_query_count": 7,
+    "native_fixture_transaction_run_count": 4,
+    "native_vertical_operator_count": 16,
+    "native_vertical_publication_count": 1,
+    "native_vertical_request_span_count": 9,
+    "native_vertical_transaction_commit_count": 1,
+    "observed_mutation_epoch": 1
+  },
+  "payload_sha256": "70face0e91950da56d7ccb3665823b0075a184d8726dd72fd1f8a42713da5216",
+  "pinned_native_shape": {
+    "clone_is_base_implementation": true,
+    "execute_query_signature": "(self, cypher_query_: LiteralString, **kwargs: Any) -> neo4j._work.eager_result.EagerResult",
+    "graph_operations_interface": null,
+    "provider": "neo4j",
+    "search_interface": null
+  },
+  "revision": "meg-runtime-offline-20260821-011",
+  "schema_version": "membind.meg.native-driver-parity.v1",
+  "scope": {
+    "live_database_connections": 0,
+    "live_model_calls": 0,
+    "network_calls": 0,
+    "persistent_writes": 0,
+    "sealed_artifacts_modified": false,
+    "services_started": 0
+  },
+  "source_hashes": {
+    "controlled_fixture": "316e097da40d90fac1bbfb20d590864bdcd712df221fa91b68054f947dc3f9fc",
+    "graphiti_adapter": "9fdebf8018b419aec97a91491e380456392c834164a8a83de41204c9ad5d0904",
+    "graphiti_runtime": "ffe6cb9e9b5b6c120f052288c8c52a8a440384b43231646bc1ef27f49910c7f4",
+    "vertical_slice": "69b27d489663b2c8fc2f14a41878b06373d6c846a75e70fb50dc76b8e67f3c8a"
+  },
+  "status": "PASS_NATIVE_GRAPHITI_0293_BACKEND_CONTRACT_PARITY"
+}

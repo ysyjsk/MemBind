@@ -1,0 +1,49 @@
+{
+  "backend_contract": {
+    "clone_semantics": "GraphDriver.clone() returns self for Neo4j 0.29.3",
+    "database": "neo4j",
+    "group_id": "fresh-graphiti-group",
+    "isolation": "fixed Neo4j database + fresh Graphiti group_id",
+    "per_run_database": false,
+    "with_database_in_experiment_path": false
+  },
+  "fallback_probe": {
+    "all_native_execute_query": true,
+    "call_count": 4,
+    "candidate_limit_preserved": true,
+    "fulltext_calls_preserved": true,
+    "group_ids_preserved": true,
+    "min_score_preserved": true,
+    "query_parameter_preserved": true,
+    "routing_preserved": true,
+    "similarity_calls_preserved": true
+  },
+  "historical_fixture_status": "OFFLINE_FIXTURE_PARITY_GAP",
+  "native_driver_capability_shape": {
+    "clone_is_base_implementation": true,
+    "execute_query_signature": "(self, cypher_query_: LiteralString, **kwargs: Any) -> neo4j._work.eager_result.EagerResult",
+    "graph_operations_interface": null,
+    "provider": "neo4j",
+    "search_interface": null
+  },
+  "native_fixture_events": {
+    "execute_query": 7,
+    "tx_run": 4
+  },
+  "passive_equivalence": {
+    "passed": true,
+    "violations": []
+  },
+  "payload_sha256": "780385097e6f2faa11fb7beceff597c9d681a7def48b009381aefa1b66a26269",
+  "revision": "meg-runtime-offline-20260821-011",
+  "schema_version": "membind.meg.native-driver-parity-report.v1",
+  "scope": {
+    "live_database_connections": 0,
+    "live_model_calls": 0,
+    "network_calls": 0,
+    "persistent_writes": 0,
+    "sealed_artifacts_modified": false,
+    "services_started": 0
+  },
+  "status": "PASS_NATIVE_GRAPHITI_0293_BACKEND_CONTRACT_PARITY"
+}

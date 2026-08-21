@@ -13,7 +13,7 @@ from __future__ import annotations
 import asyncio
 import inspect
 from contextlib import contextmanager
-from copy import deepcopy
+from copy import copy, deepcopy
 from dataclasses import dataclass, field
 from datetime import datetime, timezone
 from typing import Any
@@ -283,6 +283,16 @@ class _Transaction:
 
     async def run(self, query: str, **kwargs: Any) -> None:
         self.fixture.events.append({"event": "tx_run", "query_sha256": str(hash(query)), "keys": sorted(kwargs)})
+        if self.fixture.native_driver_shape:
+            for kind, key in (
+                ("episodes", "episodes"),
+                ("nodes", "nodes"),
+                ("episodic_edges", "episodic_edges"),
+                ("edges", "entity_edges"),
+            ):
+                rows = kwargs.get(key)
+                if rows:
+                    self.fixture._record_durable(kind, rows)
 
 
 class _Session(GraphDriverSession):
@@ -371,15 +381,38 @@ class _GraphDriver(GraphDriver):
     fulltext_syntax = ""
     default_group_id = "default-db"
 
-    def __init__(self, fixture: "ControlledGraphitiFixture", database: str) -> None:
+    def __init__(
+        self,
+        fixture: "ControlledGraphitiFixture",
+        database: str,
+        *,
+        native_driver_shape: bool = False,
+    ) -> None:
         self.fixture = fixture
         self._database = database
-        self.search_interface = _SearchInterface(fixture)
-        self.graph_operations_interface = _GraphOperations(fixture)
+        self.native_driver_shape = native_driver_shape
+        self.search_interface = None if native_driver_shape else _SearchInterface(fixture)
+        self.graph_operations_interface = None if native_driver_shape else _GraphOperations(fixture)
         self.clone_calls: list[str] = []
 
     async def execute_query(self, cypher_query_: str, **kwargs: Any) -> tuple[list[Any], Any, Any]:
-        del cypher_query_, kwargs
+        self.fixture.events.append(
+            {
+                "event": "execute_query",
+                "query_sha256": str(hash(cypher_query_)),
+                "keys": sorted(kwargs),
+                "limit": kwargs.get("limit"),
+                "group_ids": kwargs.get("group_ids"),
+            }
+        )
+        if not self.native_driver_shape:
+            return [], None, None
+        query = str(cypher_query_)
+        if "RELATES_TO" in query or "edge_name_and_fact" in query or "fact_embedding" in query:
+            return [self.fixture._edge_record(edge) for edge in self.fixture.invalidation_edges], None, None
+        if "MATCH (n:Entity)" in query or "node_name_and_summary" in query or "name_embedding" in query:
+            candidates = self.fixture._next_native_candidate_nodes()
+            return [self.fixture._node_record(node) for node in candidates], None, None
         return [], None, None
 
     def session(self, database: str | None = None) -> GraphDriverSession:
@@ -398,8 +431,15 @@ class _GraphDriver(GraphDriver):
 
     def clone(self, database: str) -> "_GraphDriver":
         self.clone_calls.append(database)
+        if self.native_driver_shape:
+            return self
         cloned = _GraphDriver(self.fixture, database)
         cloned.clone_calls = self.clone_calls
+        return cloned
+
+    def with_database(self, database: str) -> "_GraphDriver":
+        cloned = copy(self)
+        cloned._database = database
         return cloned
 
 
@@ -421,6 +461,7 @@ class ControlledGraphitiFixture:
 
     group_id: str = "controlled-db"
     configured_database: str = "controlled-db"
+    native_driver_shape: bool = False
     edge_types: tuple[str, ...] = ()
     edge_fact: str | None = None
     canonical_candidate: bool = False
@@ -501,7 +542,11 @@ class ControlledGraphitiFixture:
                 )
             )
         self.providers = self._make_providers()
-        self.driver = _GraphDriver(self, self.configured_database)
+        self.driver = _GraphDriver(
+            self,
+            self.configured_database,
+            native_driver_shape=self.native_driver_shape,
+        )
         self._initial_candidate_nodes = deepcopy(self.candidate_nodes)
         self._initial_candidate_node_sets = deepcopy(self.candidate_node_sets)
         self._initial_invalidation_edges = deepcopy(self.invalidation_edges)
@@ -579,6 +624,51 @@ class ControlledGraphitiFixture:
             if not isinstance(key, str) or not key:
                 key = f"row-{index}"
             self.durable_records[kind][key] = deepcopy(row)
+
+    @staticmethod
+    def _node_record(node: Any) -> dict[str, Any]:
+        return {
+            "uuid": node.uuid,
+            "name": node.name,
+            "group_id": node.group_id,
+            "summary": node.summary,
+            "created_at": node.created_at,
+            "name_embedding": node.name_embedding,
+            "labels": list(node.labels),
+            "attributes": dict(node.attributes or {}),
+        }
+
+    @staticmethod
+    def _edge_record(edge: Any) -> dict[str, Any]:
+        return {
+            "uuid": edge.uuid,
+            "source_node_uuid": edge.source_node_uuid,
+            "target_node_uuid": edge.target_node_uuid,
+            "fact": edge.fact,
+            "fact_embedding": edge.fact_embedding,
+            "name": edge.name,
+            "group_id": edge.group_id,
+            "episodes": list(edge.episodes),
+            "created_at": edge.created_at,
+            "expired_at": edge.expired_at,
+            "valid_at": edge.valid_at,
+            "invalid_at": edge.invalid_at,
+            "reference_time": edge.reference_time,
+            "attributes": dict(edge.attributes or {}),
+        }
+
+    def _next_native_candidate_nodes(self) -> list[Any]:
+        providers = self.active_providers
+        if providers is None:
+            raise ControlledGraphitiFixtureError("CANDIDATE_SCOPE_MISSING")
+        if providers.candidate_node_sets:
+            index = self.candidate_query_index
+            self.candidate_query_index += 1
+            if index >= len(providers.candidate_node_sets):
+                raise ControlledGraphitiFixtureError("CANDIDATE_SET_EXHAUSTED")
+            return list(providers.candidate_node_sets[index])
+        self.candidate_query_index += 1
+        return list(providers.candidate_nodes)
 
     def durable_projection(self) -> dict[str, tuple[str, ...]]:
         def normalize(value: Any) -> Any:
@@ -818,6 +908,7 @@ def build_controlled_graphiti_fixture(**kwargs: Any) -> ControlledGraphitiFixtur
     unknown = set(kwargs) - {
         "group_id",
         "configured_database",
+        "native_driver_shape",
         "edge_types",
         "edge_fact",
         "fail_transaction",
