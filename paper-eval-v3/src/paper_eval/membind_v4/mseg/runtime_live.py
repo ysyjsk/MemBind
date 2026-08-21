@@ -52,6 +52,7 @@ from .runtime_instrumentation import (
     OperatorEventType,
     SemanticOperatorClass,
     WriterDomainCertificate,
+    current_runtime_request_metadata,
 )
 
 
@@ -260,6 +261,13 @@ def build_meg_observe_only_live_composition(
         raise _fail("meg_runtime_base_hooks_invalid")
     selected_loader = semantic_binding_loader or load_graphiti_semantic_binding
 
+    def runtime_builder(**kwargs: object) -> object:
+        selected = dict(kwargs)
+        if "causal_metadata_provider" in selected:
+            raise _fail("meg_runtime_causal_metadata_provider_reserved")
+        selected["causal_metadata_provider"] = current_runtime_request_metadata
+        return selected_base.runtime_builder(**selected)
+
     def default_inner(
         runtime: object,
         certification: StateCutCertification,
@@ -300,7 +308,7 @@ def build_meg_observe_only_live_composition(
         return MEGRuntimeInstrumentedAdapter(inner=inner, stream_id=stream_id)
 
     hooks = V31LiveHooks(
-        runtime_builder=selected_base.runtime_builder,
+        runtime_builder=runtime_builder,
         runtime_ready=selected_base.runtime_ready,
         namespace_probe=selected_base.namespace_probe,
         namespace_episode=selected_base.namespace_episode,
@@ -657,6 +665,10 @@ async def execute_meg_observe_capture(
         )
         return result
     except BaseException as error:
+        # Preserve the recorder state reached before a fail-closed capture so
+        # offline audit can distinguish an opaque event from an absent event.
+        partial = _seal(_capture_payload(composition.recorder, composition.writer_domain))
+        atomic_write_json(root / "MEG_RUNTIME_CAPTURE_PARTIAL.json", partial)
         failure = {
             "schema_version": "membind.meg.runtime-observe-capture-failure.v1",
             "status": "STOP_REAL_RUNTIME_SEMANTIC_LINEAGE",

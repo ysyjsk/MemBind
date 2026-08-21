@@ -1,0 +1,163 @@
+{
+  "failure_classification": "B_SEMANTIC_LINEAGE_FAILURE",
+  "identity": {
+    "contract_payload_sha256": "8c5fc43a3ff11920b624088f4e578db6eac78e05d688f39383bf4a75f1d9541d",
+    "failure_payload_sha256": "6e050ba8db95fed2757a3daf6ff37746a9f57618077b63b9a3bad3dbecd22ff6",
+    "graphiti_version": "0.29.3",
+    "history": "07741c45",
+    "namespace": "pev3-opt-membind-v31-w4-meg-runtime-observe-20260821-002-07741c45",
+    "run_id": "membind-v31-opt-w4-meg-runtime-observe-20260821-002",
+    "run_root": "/data/predator/ly/MemBind/paper-eval-v3/artifacts/paper_eval/membind_v4/meg_runtime_instrumentation/membind-v31-opt-w4-meg-runtime-observe-20260821-002",
+    "run_root_sha256": "4f2116e945611187b44167a61ed3a4156133d778ab737e52c70a07f08df0a393",
+    "seam_hash": "edbb7321ce10f50ee0ede913fe9f5d80fcd236377bdc074c321e1f487e703aab",
+    "sources": [
+      0,
+      1,
+      2
+    ]
+  },
+  "observed_failure": {
+    "error_class": "paper_eval.membind_v31.coordinator.MemBindV31CoordinatorError",
+    "error_code": "bind_failed",
+    "observed_warning": "Graphiti 0.29.3 extract_edges logged missing target entities and skipped those edges; source code does not establish this warning as the bind exception",
+    "root_cause": "OPAQUE: FAILURE.json preserves only the coordinator-level bind_failed code",
+    "root_cause_boundary": "production bind after compile and two successful LLM requests"
+  },
+  "passive_equivalence": {
+    "extra_writes": 0,
+    "reorder": false,
+    "shadow_db_reads": 0,
+    "shadow_embeddings": 0,
+    "shadow_llm_calls": 0,
+    "status": "NOT_CERTIFIED"
+  },
+  "payload_sha256": "f1336095d0cb4778cff9e55c9688a7c3f7153d6dd2d3c1eb356d65d2c069fbcd",
+  "schema_version": "membind.meg.real-runtime-capture-summary.v1",
+  "semantic_lineage": {
+    "event_evidence_complete": false,
+    "opaque_lineage_count": 2,
+    "opaque_request_ids": [
+      "meg-runtime-membind-v31-opt-w4-meg-runtime-observe-20260821-002:00000000",
+      "meg-runtime-membind-v31-opt-w4-meg-runtime-observe-20260821-002:00000001"
+    ],
+    "operator_ready_count": null,
+    "operator_ready_status": "OPAQUE",
+    "production_request_submitted_count": 2,
+    "production_request_terminal_ok_count": 2,
+    "reason": "capture failed before complete MEG_RUNTIME_CAPTURE.json materialization",
+    "request_lineage_coverage": "OPAQUE",
+    "request_lineage_coverage_fraction": 0.0,
+    "request_span_count_before_failure": 2,
+    "semantic_operator_count_before_failure": 3,
+    "source_completion": [
+      {
+        "completion": {
+          "arrival": true,
+          "bind_end": false,
+          "bind_start": true,
+          "compile_end": false,
+          "compile_start": true,
+          "prepared_durable": true,
+          "publication_durable": false
+        },
+        "durable_publication": false,
+        "events": [
+          "arrival",
+          "bind_failure",
+          "bind_start",
+          "compile_start",
+          "prepared_durable"
+        ],
+        "source_sequence": 0
+      },
+      {
+        "completion": {
+          "arrival": false,
+          "bind_end": false,
+          "bind_start": false,
+          "compile_end": false,
+          "compile_start": false,
+          "prepared_durable": false,
+          "publication_durable": false
+        },
+        "durable_publication": false,
+        "events": [],
+        "source_sequence": 1
+      },
+      {
+        "completion": {
+          "arrival": false,
+          "bind_end": false,
+          "bind_start": false,
+          "compile_end": false,
+          "compile_start": false,
+          "prepared_durable": false,
+          "publication_durable": false
+        },
+        "durable_publication": false,
+        "events": [],
+        "source_sequence": 2
+      }
+    ]
+  },
+  "source_completion": [
+    {
+      "completion": {
+        "arrival": true,
+        "bind_end": false,
+        "bind_start": true,
+        "compile_end": false,
+        "compile_start": true,
+        "prepared_durable": true,
+        "publication_durable": false
+      },
+      "durable_publication": false,
+      "events": [
+        "arrival",
+        "bind_failure",
+        "bind_start",
+        "compile_start",
+        "prepared_durable"
+      ],
+      "source_sequence": 0
+    },
+    {
+      "completion": {
+        "arrival": false,
+        "bind_end": false,
+        "bind_start": false,
+        "compile_end": false,
+        "compile_start": false,
+        "prepared_durable": false,
+        "publication_durable": false
+      },
+      "durable_publication": false,
+      "events": [],
+      "source_sequence": 1
+    },
+    {
+      "completion": {
+        "arrival": false,
+        "bind_end": false,
+        "bind_start": false,
+        "compile_end": false,
+        "compile_start": false,
+        "prepared_durable": false,
+        "publication_durable": false
+      },
+      "durable_publication": false,
+      "events": [],
+      "source_sequence": 2
+    }
+  ],
+  "state_transaction": {
+    "mutation_epoch_transition_count_observed": 0,
+    "opaque_publication_count": 0,
+    "publication_causal_coverage": "OPAQUE",
+    "publication_event_count_observed": 0,
+    "transaction_commit_count_observed": 0,
+    "transaction_observability": "OPAQUE",
+    "writer_domain_status": "OPAQUE_UNOBSERVED_AFTER_CAPTURE_FAILURE"
+  },
+  "status": "STOP_REAL_RUNTIME_SEMANTIC_LINEAGE"
+}

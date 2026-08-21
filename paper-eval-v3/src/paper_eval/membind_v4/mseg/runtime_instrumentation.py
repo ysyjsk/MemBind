@@ -483,6 +483,33 @@ class SemanticDependencyTracker:
 _CURRENT_OPERATOR: ContextVar[str | None] = ContextVar(
     "meg_runtime_current_operator", default=None
 )
+_CURRENT_OPERATOR_INSTANCE: ContextVar[SemanticOperatorInstance | None] = ContextVar(
+    "meg_runtime_current_operator_instance", default=None
+)
+
+
+def current_runtime_request_metadata() -> dict[str, object]:
+    """Expose only the current semantic operator as v3.1 causal metadata.
+
+    The request runtime validates this projection before publishing it.  An
+    unscoped request remains an empty mapping and is therefore handled by the
+    existing fail-closed request contract rather than being guessed here.
+    """
+
+    operator = _CURRENT_OPERATOR_INSTANCE.get()
+    if operator is None:
+        return {}
+    return {
+        "operator_role": f"meg.{operator.semantic_operator_type}",
+        "operator_id": operator.semantic_operator_id,
+        "parent_bind_id": f"meg-runtime-bind-{canonical_sha256({'graph_id': operator.graph_id, 'stream_id': operator.stream_id, 'source_sequence': operator.source_sequence})}",
+        "parent_operator_id": (
+            operator.parent_semantic_operator_ids[0]
+            if operator.parent_semantic_operator_ids
+            else None
+        ),
+        "operator_phase": "MEG_RUNTIME",
+    }
 
 
 class MEGRuntimeRecorder:
@@ -596,7 +623,18 @@ class MEGRuntimeRecorder:
     @contextmanager
     def operator_scope(self, operator_id: str):
         self.start(operator_id)
+        operator = next(
+            (
+                item
+                for item in self._operators
+                if item.semantic_operator_id == operator_id
+            ),
+            None,
+        )
+        if operator is None:
+            raise _fail("runtime_operator_unknown")
         token = _CURRENT_OPERATOR.set(operator_id)
+        instance_token = _CURRENT_OPERATOR_INSTANCE.set(operator)
         try:
             yield
         except BaseException:
@@ -606,6 +644,7 @@ class MEGRuntimeRecorder:
             self.end(operator_id)
         finally:
             _CURRENT_OPERATOR.reset(token)
+            _CURRENT_OPERATOR_INSTANCE.reset(instance_token)
 
     def record_request(
         self,
@@ -618,6 +657,7 @@ class MEGRuntimeRecorder:
         submit_ns: int | None = None,
         start_ns: int | None = None,
         end_ns: int | None = None,
+        request_id: str | None = None,
     ) -> RequestSpan:
         operator_id = _CURRENT_OPERATOR.get() or self._manual_operator_id
         if operator_id is None:
@@ -631,9 +671,14 @@ class MEGRuntimeRecorder:
         if start < submit or end < start:
             raise _fail("request_timeline_invalid")
         subrole = semantic_subrequest_role or prompt_name
-        request_id = f"meg-runtime-request-{canonical_sha256({'operator': operator_id, 'ordinal': ordinal, 'role': subrole})}"
+        selected_request_id = (
+            request_id
+            if request_id is not None
+            else f"meg-runtime-request-{canonical_sha256({'operator': operator_id, 'ordinal': ordinal, 'role': subrole})}"
+        )
+        selected_request_id = _text(selected_request_id, "request_id_invalid")
         span = RequestSpan(
-            request_id=request_id,
+            request_id=selected_request_id,
             semantic_operator_id=operator_id,
             semantic_subrequest_role=subrole,
             prompt_name=prompt_name,
@@ -849,6 +894,7 @@ __all__ = [
     "SemanticOperatorInstance",
     "TransactionCommitObserver",
     "WriterDomainCertificate",
+    "current_runtime_request_metadata",
     "WriterDomainStatus",
     "canonical_sha256",
     "capture_runtime_read_view",

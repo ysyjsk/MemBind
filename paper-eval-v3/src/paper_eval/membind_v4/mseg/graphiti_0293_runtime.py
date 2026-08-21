@@ -21,6 +21,10 @@ from dataclasses import dataclass
 from typing import Any
 
 from paper_eval.s5_graphiti_semantic_binding import S5GraphitiSemanticBinding
+from paper_eval.membind_v31.request_runtime import (
+    consume_completed_request_id,
+    current_request_id,
+)
 
 from .mutation_epoch import MutationEpochToken, StateMutationEpoch
 from .passive_equivalence import RuntimeExecutionSnapshot
@@ -224,6 +228,7 @@ class _LLMProxy:
                 kwargs.get("response_model"), self._inner, kwargs
             ),
             response_hash=canonical_sha256(response),
+            request_id=consume_completed_request_id() or current_request_id(),
             submit_ns=submit,
             start_ns=start,
             end_ns=end,

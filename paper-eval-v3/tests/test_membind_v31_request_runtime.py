@@ -717,6 +717,38 @@ def test_opt_in_causal_metadata_is_snapshotted_across_complete_transport_lifecyc
     asyncio.run(scenario())
 
 
+def test_opt_in_request_telemetry_carries_prompt_name_without_changing_default_shape() -> None:
+    async def scenario() -> None:
+        events: list[dict[str, object]] = []
+        gate = AdmittedLLMClientV31(
+            inner=_ControlledLLM(),
+            limit=1,
+            policy=AdmissionPolicy.FIFO,
+            request_id_prefix="prompt-telemetry",
+            observer=events.append,
+            causal_metadata_provider=_causal_metadata,
+            prefix_encoder=_tokenizer,
+        )
+        task = asyncio.create_task(
+            _request(gate, RequestKind.FRONTIER, 0, "prompt-visible-only-in-overlay")
+        )
+        await asyncio.sleep(0)
+        gate._inner.release["prompt-visible-only-in-overlay"].set()
+        await task
+        correlated = [
+            row
+            for row in events
+            if row["event_type"] in {"llm_request_submitted", "llm_request_terminal"}
+        ]
+        assert correlated
+        assert all(
+            row["prompt_name"] == "prompt-visible-only-in-overlay"
+            for row in correlated
+        )
+
+    asyncio.run(scenario())
+
+
 @pytest.mark.parametrize(
     ("metadata", "error_code"),
     [

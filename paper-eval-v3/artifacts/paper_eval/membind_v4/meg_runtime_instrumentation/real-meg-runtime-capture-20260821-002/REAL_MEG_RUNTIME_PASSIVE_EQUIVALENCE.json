@@ -1,0 +1,43 @@
+{
+  "certificate": {
+    "certificate_type": "PASSIVE_EQUIVALENCE_CERTIFICATE",
+    "extra_writes": 0,
+    "persistent_effect_projection": "OPAQUE",
+    "production_model_schema": "OPAQUE",
+    "production_prompt_hashes": "OPAQUE",
+    "production_request_count_observed": 0,
+    "reorder": false,
+    "shadow_db_reads": 0,
+    "shadow_embeddings": 0,
+    "shadow_llm_calls": 0,
+    "source_exactly_once": false,
+    "source_publication_order": [],
+    "status": "NOT_CERTIFIED",
+    "violations": [
+      "capture_incomplete_before_three_source_completion",
+      "baseline_execution_not_materialized_for_this_real_attempt",
+      "semantic_request_lineage_opaque",
+      "persistent_effect_projection_not_materialized"
+    ]
+  },
+  "identity": {
+    "contract_payload_sha256": "8c5fc43a3ff11920b624088f4e578db6eac78e05d688f39383bf4a75f1d9541d",
+    "failure_payload_sha256": "6e050ba8db95fed2757a3daf6ff37746a9f57618077b63b9a3bad3dbecd22ff6",
+    "graphiti_version": "0.29.3",
+    "history": "07741c45",
+    "namespace": "pev3-opt-membind-v31-w4-meg-runtime-observe-20260821-002-07741c45",
+    "run_id": "membind-v31-opt-w4-meg-runtime-observe-20260821-002",
+    "run_root": "/data/predator/ly/MemBind/paper-eval-v3/artifacts/paper_eval/membind_v4/meg_runtime_instrumentation/membind-v31-opt-w4-meg-runtime-observe-20260821-002",
+    "run_root_sha256": "4f2116e945611187b44167a61ed3a4156133d778ab737e52c70a07f08df0a393",
+    "seam_hash": "edbb7321ce10f50ee0ede913fe9f5d80fcd236377bdc074c321e1f487e703aab",
+    "sources": [
+      0,
+      1,
+      2
+    ]
+  },
+  "payload_sha256": "5616d72bbc54801f7713de819b4a4bfcd9585628a6827dd4f37254a32cffa739",
+  "reason": "A failed partial production execution cannot establish equality against the v3.1 baseline.",
+  "schema_version": "membind.meg.real-runtime-passive-equivalence.v1",
+  "status": "NOT_CERTIFIED"
+}

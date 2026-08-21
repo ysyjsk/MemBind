@@ -13,6 +13,8 @@ from paper_eval.membind_v4.mseg.mutation_epoch import StateMutationEpoch
 from paper_eval.membind_v4.mseg.runtime_instrumentation import (
     InstrumentationMode,
     MEGRuntimeRecorder,
+    SemanticOperatorClass,
+    SemanticOperatorInstance,
     WriterDomainCertificate,
 )
 from paper_eval.membind_v4.mseg.runtime_live import (
@@ -100,7 +102,6 @@ def test_live_composition_replaces_only_adapter_factory() -> None:
         inner_adapter_factory=inner_factory,
     )
     for name in (
-        "runtime_builder",
         "runtime_ready",
         "namespace_probe",
         "namespace_episode",
@@ -109,10 +110,67 @@ def test_live_composition_replaces_only_adapter_factory() -> None:
         "close_runtime",
     ):
         assert getattr(composition.hooks, name) is getattr(base, name)
+    assert composition.hooks.runtime_builder is not base.runtime_builder
     adapter = composition.hooks.adapter_factory(object(), object())
     assert callable(adapter.prepare) and callable(adapter.bind)
     assert captured["binding"] is not fixture.binding
     assert composition.execution_policy_changed is False
+
+
+def test_live_runtime_builder_adds_only_passive_semantic_causal_metadata() -> None:
+    namespace = derive_observe_namespace(RUN_ID)
+    writer = _writer(namespace)
+    recorder = MEGRuntimeRecorder(
+        mode=InstrumentationMode.OBSERVE_ONLY, writer_domain=writer
+    )
+    epoch = StateMutationEpoch(
+        namespace=namespace, backend_id="neo4j", epoch="test-epoch"
+    )
+    base = _hooks(lambda **kwargs: kwargs)
+    composition = build_meg_observe_only_live_composition(
+        recorder=recorder,
+        mutation_epoch=epoch,
+        writer_domain=writer,
+        stream_id="07741c45",
+        base_hooks=base,
+        semantic_binding_loader=lambda: build_controlled_graphiti_fixture().binding,
+        inner_adapter_factory=lambda _runtime, _certification, _binding: object(),
+    )
+    operator = SemanticOperatorInstance.create(
+        graph_id=namespace,
+        stream_id="07741c45",
+        source_sequence=0,
+        semantic_operator_type="NODE_EXTRACTION",
+        classification=SemanticOperatorClass.EVIDENCE_DERIVED,
+        parent_semantic_operator_ids=(),
+        child_ordinal=0,
+        semantic_input_identity={"fixture": "causal"},
+    )
+    recorder.materialize(operator, immutable_inputs_exist=True, state_satisfiable=True)
+    recorder.start(operator.semantic_operator_id)
+    recorder.end(operator.semantic_operator_id)
+    # Start/end above completes the operator; use a direct scope on a fresh
+    # instance to exercise the provider while preserving readiness semantics.
+    operator2 = SemanticOperatorInstance.create(
+        graph_id=namespace,
+        stream_id="07741c45",
+        source_sequence=0,
+        semantic_operator_type="NODE_EXTRACTION",
+        classification=SemanticOperatorClass.EVIDENCE_DERIVED,
+        parent_semantic_operator_ids=(),
+        child_ordinal=1,
+        semantic_input_identity={"fixture": "causal-2"},
+    )
+    recorder.materialize(operator2, immutable_inputs_exist=True, state_satisfiable=True)
+    with recorder.operator_scope(operator2.semantic_operator_id):
+        runtime_value = composition.hooks.runtime_builder(policy="CACHE_AFFINE")
+        provider = runtime_value["causal_metadata_provider"]
+        metadata = provider()
+    assert callable(provider)
+    assert metadata["operator_id"] == operator2.semantic_operator_id
+    assert metadata["operator_role"] == "meg.NODE_EXTRACTION"
+    assert metadata["operator_phase"] == "MEG_RUNTIME"
+    assert runtime_value["policy"] == "CACHE_AFFINE"
 
 
 def test_capture_contract_pins_normal_v31_configuration_and_prefix() -> None:

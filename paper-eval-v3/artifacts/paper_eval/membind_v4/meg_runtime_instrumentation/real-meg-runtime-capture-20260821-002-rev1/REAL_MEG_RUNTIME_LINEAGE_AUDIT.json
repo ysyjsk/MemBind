@@ -1,0 +1,136 @@
+{
+  "audit_status": "NOT_CERTIFIED",
+  "identity": {
+    "contract_payload_sha256": "8c5fc43a3ff11920b624088f4e578db6eac78e05d688f39383bf4a75f1d9541d",
+    "failure_payload_sha256": "6e050ba8db95fed2757a3daf6ff37746a9f57618077b63b9a3bad3dbecd22ff6",
+    "graphiti_version": "0.29.3",
+    "history": "07741c45",
+    "namespace": "pev3-opt-membind-v31-w4-meg-runtime-observe-20260821-002-07741c45",
+    "run_id": "membind-v31-opt-w4-meg-runtime-observe-20260821-002",
+    "run_root": "/data/predator/ly/MemBind/paper-eval-v3/artifacts/paper_eval/membind_v4/meg_runtime_instrumentation/membind-v31-opt-w4-meg-runtime-observe-20260821-002",
+    "run_root_sha256": "4f2116e945611187b44167a61ed3a4156133d778ab737e52c70a07f08df0a393",
+    "seam_hash": "edbb7321ce10f50ee0ede913fe9f5d80fcd236377bdc074c321e1f487e703aab",
+    "sources": [
+      0,
+      1,
+      2
+    ]
+  },
+  "lifecycle_event_types": [
+    "arrival",
+    "bind_failure",
+    "bind_start",
+    "compile_start",
+    "prepared_durable"
+  ],
+  "payload_sha256": "77cb03dc7deb347e93db2d1f20f4cc679320e6ef6ddb763a9f50a298b70d0f94",
+  "queue_event_count": 13,
+  "reason": "The failed capture did not persist a complete semantic capture payload; missing fields remain OPAQUE.",
+  "request_events": [
+    {
+      "event_type": "llm_request_submitted",
+      "prompt_name": null,
+      "request_id": "meg-runtime-membind-v31-opt-w4-meg-runtime-observe-20260821-002:00000000",
+      "request_kind": "COMPILE",
+      "semantic_operator_id": null,
+      "semantic_subrequest_role": null,
+      "source_sequence": 0
+    },
+    {
+      "event_type": "llm_request_terminal",
+      "prompt_name": null,
+      "request_id": "meg-runtime-membind-v31-opt-w4-meg-runtime-observe-20260821-002:00000000",
+      "request_kind": null,
+      "semantic_operator_id": null,
+      "semantic_subrequest_role": null,
+      "source_sequence": null
+    },
+    {
+      "event_type": "llm_request_submitted",
+      "prompt_name": null,
+      "request_id": "meg-runtime-membind-v31-opt-w4-meg-runtime-observe-20260821-002:00000001",
+      "request_kind": "COMPILE",
+      "semantic_operator_id": null,
+      "semantic_subrequest_role": null,
+      "source_sequence": 0
+    },
+    {
+      "event_type": "llm_request_terminal",
+      "prompt_name": null,
+      "request_id": "meg-runtime-membind-v31-opt-w4-meg-runtime-observe-20260821-002:00000001",
+      "request_kind": null,
+      "semantic_operator_id": null,
+      "semantic_subrequest_role": null,
+      "source_sequence": null
+    }
+  ],
+  "schema_version": "membind.meg.real-runtime-lineage-audit.v1",
+  "semantic_lineage": {
+    "event_evidence_complete": false,
+    "opaque_lineage_count": 2,
+    "opaque_request_ids": [
+      "meg-runtime-membind-v31-opt-w4-meg-runtime-observe-20260821-002:00000000",
+      "meg-runtime-membind-v31-opt-w4-meg-runtime-observe-20260821-002:00000001"
+    ],
+    "operator_ready_count": null,
+    "operator_ready_status": "OPAQUE",
+    "production_request_submitted_count": 2,
+    "production_request_terminal_ok_count": 2,
+    "reason": "capture failed before complete MEG_RUNTIME_CAPTURE.json materialization",
+    "request_lineage_coverage": "OPAQUE",
+    "request_lineage_coverage_fraction": 0.0,
+    "request_span_count_before_failure": 2,
+    "semantic_operator_count_before_failure": 3,
+    "source_completion": [
+      {
+        "completion": {
+          "arrival": true,
+          "bind_end": false,
+          "bind_start": true,
+          "compile_end": false,
+          "compile_start": true,
+          "prepared_durable": true,
+          "publication_durable": false
+        },
+        "durable_publication": false,
+        "events": [
+          "arrival",
+          "bind_failure",
+          "bind_start",
+          "compile_start",
+          "prepared_durable"
+        ],
+        "source_sequence": 0
+      },
+      {
+        "completion": {
+          "arrival": false,
+          "bind_end": false,
+          "bind_start": false,
+          "compile_end": false,
+          "compile_start": false,
+          "prepared_durable": false,
+          "publication_durable": false
+        },
+        "durable_publication": false,
+        "events": [],
+        "source_sequence": 1
+      },
+      {
+        "completion": {
+          "arrival": false,
+          "bind_end": false,
+          "bind_start": false,
+          "compile_end": false,
+          "compile_start": false,
+          "prepared_durable": false,
+          "publication_durable": false
+        },
+        "durable_publication": false,
+        "events": [],
+        "source_sequence": 2
+      }
+    ]
+  },
+  "status": "STOP_REAL_RUNTIME_SEMANTIC_LINEAGE"
+}

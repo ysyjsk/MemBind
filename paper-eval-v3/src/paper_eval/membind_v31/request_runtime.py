@@ -128,6 +128,28 @@ _FRONTIER_GROUP: contextvars.ContextVar[str | None] = contextvars.ContextVar(
     "membind_v31_frontier_group",
     default=None,
 )
+_CURRENT_REQUEST_ID: contextvars.ContextVar[str | None] = contextvars.ContextVar(
+    "membind_v31_current_request_id",
+    default=None,
+)
+_COMPLETED_REQUEST_ID: contextvars.ContextVar[str | None] = contextvars.ContextVar(
+    "membind_v31_completed_request_id",
+    default=None,
+)
+
+
+def current_request_id() -> str | None:
+    """Return the admitted production request ID inside its transport call."""
+
+    return _CURRENT_REQUEST_ID.get()
+
+
+def consume_completed_request_id() -> str | None:
+    """Consume the request ID completed by the innermost admitted call."""
+
+    value = _COMPLETED_REQUEST_ID.get()
+    _COMPLETED_REQUEST_ID.set(None)
+    return value
 
 
 @contextmanager
@@ -200,6 +222,7 @@ class AdmittedLLMClientV31:
         self._admission_events: list[dict[str, object]] = []
         self._prefix_metadata: dict[str, PrefixMetadata] = {}
         self._causal_metadata: dict[str, dict[str, object]] = {}
+        self._request_prompt_names: dict[str, str] = {}
         self._provider_index: PrefixProviderIndex | None = None
         self._completion_sequence = 1
 
@@ -377,6 +400,7 @@ class AdmittedLLMClientV31:
         *,
         metadata: PrefixMetadata,
         causal_metadata: Mapping[str, object],
+        prompt_name: str | None = None,
     ) -> tuple[str, asyncio.Event]:
         async with self._lock:
             if self._provider_index is None:
@@ -397,26 +421,29 @@ class AdmittedLLMClientV31:
                     _FRONTIER_GROUP.get() if scope.kind is RequestKind.FRONTIER else None
                 ),
             )
-            event = asyncio.Event()
-            self._waiters[request_id] = (spec, event)
+            waiter = asyncio.Event()
+            self._waiters[request_id] = (spec, waiter)
             self._prefix_metadata[request_id] = metadata
             selected_causal_metadata = dict(causal_metadata)
             self._causal_metadata[request_id] = selected_causal_metadata
+            if prompt_name is not None:
+                self._request_prompt_names[request_id] = prompt_name
             self._controller.submit(spec)
-            self._emit(
-                {
-                    "event_type": "llm_request_submitted",
-                    "request_id": request_id,
-                    "request_kind": scope.kind.value,
-                    "stream_id": scope.stream_id,
-                    "source_sequence": scope.source_sequence,
-                    **selected_causal_metadata,
-                    **metadata.public_projection(),
-                }
-            )
+            telemetry_event = {
+                "event_type": "llm_request_submitted",
+                "request_id": request_id,
+                "request_kind": scope.kind.value,
+                "stream_id": scope.stream_id,
+                "source_sequence": scope.source_sequence,
+                **selected_causal_metadata,
+                **metadata.public_projection(),
+            }
+            if self._causal_metadata_provider is not None and prompt_name is not None:
+                telemetry_event["prompt_name"] = prompt_name
+            self._emit(telemetry_event)
             self._dispatch_locked()
             self._emit_admission_snapshot_locked("SUBMIT_DISPATCH")
-            return request_id, event
+            return request_id, waiter
 
     async def _terminal(
         self,
@@ -446,20 +473,24 @@ class AdmittedLLMClientV31:
                 )
                 self._completion_sequence += 1
             causal_metadata = self._causal_metadata[request_id]
+            prompt_name = self._request_prompt_names.get(request_id)
             self._waiters.pop(request_id, None)
             self._prefix_metadata.pop(request_id, None)
             self._causal_metadata.pop(request_id, None)
-            self._emit(
-                {
-                    "event_type": "llm_request_terminal",
-                    "request_id": request_id,
-                    **causal_metadata,
-                    "status": terminal,
-                    "error_class": None
-                    if error is None
-                    else f"{type(error).__module__}.{type(error).__qualname__}",
-                }
-            )
+            self._request_prompt_names.pop(request_id, None)
+            telemetry_event = {
+                "event_type": "llm_request_terminal",
+                "request_id": request_id,
+                **causal_metadata,
+                "status": terminal,
+                "error_class": None
+                if error is None
+                else f"{type(error).__module__}.{type(error).__qualname__}",
+            }
+            if self._causal_metadata_provider is not None and prompt_name is not None:
+                telemetry_event["prompt_name"] = prompt_name
+            self._emit(telemetry_event)
+            _COMPLETED_REQUEST_ID.set(request_id)
             self._dispatch_locked()
             self._emit_admission_snapshot_locked("TERMINAL_DISPATCH")
 
@@ -491,6 +522,11 @@ class AdmittedLLMClientV31:
             scope,
             metadata=metadata,
             causal_metadata=selected_causal_metadata,
+            prompt_name=(
+                kwargs.get("prompt_name")
+                if isinstance(kwargs.get("prompt_name"), str)
+                else None
+            ),
         )
         try:
             await admitted.wait()
@@ -508,10 +544,15 @@ class AdmittedLLMClientV31:
                     "eligible_prefix_tokens": self._waiters[request_id][0].affinity_score,
                 }
             )
-            result = operation(*args, **kwargs)
-            if not hasattr(result, "__await__"):
-                raise TypeError("admitted operation must be async")
-            selected = await result
+            request_token = _CURRENT_REQUEST_ID.set(request_id)
+            _COMPLETED_REQUEST_ID.set(None)
+            try:
+                result = operation(*args, **kwargs)
+                if not hasattr(result, "__await__"):
+                    raise TypeError("admitted operation must be async")
+                selected = await result
+            finally:
+                _CURRENT_REQUEST_ID.reset(request_token)
         except asyncio.CancelledError:
             await asyncio.shield(self._terminal(request_id, cancelled=True))
             raise
@@ -719,5 +760,7 @@ __all__ = [
     "AdmittedChatCompletionsV31",
     "LLMRequestScope",
     "MemBindV31RequestRuntimeError",
+    "current_request_id",
+    "consume_completed_request_id",
     "llm_request_scope",
 ]

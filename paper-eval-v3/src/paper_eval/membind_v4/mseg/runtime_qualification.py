@@ -222,6 +222,8 @@ def build_runtime_instrumentation_documents(
         "read_view": project / "src/paper_eval/membind_v4/mseg/read_view.py",
         "runtime_instrumentation": project
         / "src/paper_eval/membind_v4/mseg/runtime_instrumentation.py",
+        "runtime_live": project
+        / "src/paper_eval/membind_v4/mseg/runtime_live.py",
         "runtime_qualification": project
         / "src/paper_eval/membind_v4/mseg/runtime_qualification.py",
         "controlled_fixture": project
