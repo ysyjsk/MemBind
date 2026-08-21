@@ -475,7 +475,10 @@ async def run_membind_v31_stream(
                 await condition.wait()
         if failure is not None:
             code, _error = failure
-            raise _fail(code)
+            # Keep the nested adapter/transaction exception available to the
+            # offline failure recorder while preserving the coordinator's
+            # stable top-level classification.
+            raise _fail(code) from _error
         await asyncio.gather(*arrival_tasks)
         await asyncio.gather(*compile_tasks.values())
         if bind_task is not None:

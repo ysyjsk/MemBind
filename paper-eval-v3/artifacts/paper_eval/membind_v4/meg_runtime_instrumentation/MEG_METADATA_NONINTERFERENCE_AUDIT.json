@@ -1,0 +1,41 @@
+{
+  "checks": {
+    "causal_provider_is_opt_in": true,
+    "graphiti_runtime_ast_parses": true,
+    "live_runtime_ast_parses": true,
+    "metadata_emits_telemetry_only": true,
+    "metadata_is_context_local": true,
+    "metadata_not_added_to_graphiti_objects": true,
+    "metadata_not_added_to_graphiti_prompt": true,
+    "metadata_not_used_for_candidate_computation": true,
+    "metadata_not_used_for_db_mutation": true,
+    "metadata_not_used_for_schema": true,
+    "request_runtime_ast_parses": true,
+    "runtime_builder_only_injects_provider": true
+  },
+  "data_plane": {
+    "observability_metadata": [
+      "causal_metadata_provider",
+      "task-local request context",
+      "prompt_name telemetry",
+      "RequestSpan metadata",
+      "request runtime events"
+    ],
+    "production_semantic": [
+      "prompt input",
+      "Graphiti entities/edges",
+      "candidate computation",
+      "DB mutation payload",
+      "structured-output schema",
+      "request ordering",
+      "admission policy"
+    ]
+  },
+  "schema_version": "membind.meg.metadata-noninterference.v1",
+  "source_files": [
+    "src/paper_eval/membind_v31/request_runtime.py",
+    "src/paper_eval/membind_v4/mseg/graphiti_0293_runtime.py",
+    "src/paper_eval/membind_v4/mseg/runtime_live.py"
+  ],
+  "status": "PASS"
+}

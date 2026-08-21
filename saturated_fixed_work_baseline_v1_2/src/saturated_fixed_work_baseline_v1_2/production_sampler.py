@@ -8,10 +8,9 @@ import json
 import math
 import os
 import re
-import shlex
 import subprocess
 import time
-from collections.abc import Awaitable, Callable, Mapping
+from collections.abc import Awaitable, Callable, Mapping, Sequence
 from pathlib import Path
 from typing import Any
 
@@ -35,112 +34,7 @@ REQUIRED_PROBE_SOURCES = (
 _GPU_UUID = re.compile(
     r"^GPU-[0-9A-Fa-f]{8}(?:-[0-9A-Fa-f]{4}){3}-[0-9A-Fa-f]{12}$"
 )
-_PROVIDER_GPU_QUERY = (
-    "nvidia-smi --query-gpu=index,name,uuid,pci.bus_id,memory.total,memory.used,"
-    "utilization.gpu,power.draw,clocks.sm,clocks.mem,temperature.gpu,"
-    "mig.mode.current --format=csv,noheader,nounits"
-)
-
-_DYNAMIC_PROVIDER_SCRIPT = r'''
-import json, os, re, subprocess
-
-port = int(os.environ["SFWB_PORT"])
-
-def run(command):
-    return subprocess.run(command, check=False, capture_output=True, text=True,
-                          encoding="utf-8", errors="replace").stdout
-
-def argv(pid):
-    with open(f"/proc/{pid}/cmdline", "rb") as handle:
-        return [item.decode("utf-8", "replace") for item in handle.read().split(b"\\0") if item]
-
-def environ(pid):
-    with open(f"/proc/{pid}/environ", "rb") as handle:
-        result = {}
-        for item in handle.read().split(b"\\0"):
-            if b"=" in item:
-                key, value = item.split(b"=", 1)
-                result[key.decode("utf-8", "replace")] = value.decode("utf-8", "replace")
-        return result
-
-def process_rows():
-    rows = []
-    for name in os.listdir("/proc"):
-        if not name.isdigit():
-            continue
-        try:
-            with open(f"/proc/{name}/stat", encoding="utf-8") as handle:
-                fields = handle.read().split()
-            rows.append({"pid": int(name), "ppid": int(fields[3]),
-                         "argv": argv(int(name))})
-        except (OSError, ValueError, IndexError):
-            continue
-    return rows
-
-def listener_pid():
-    text = run(["ss", "-ltnp", f"sport = :{port}"])
-    matches = re.findall(r"pid=(\\d+)", text)
-    if not matches:
-        text = run(["lsof", "-nP", f"-iTCP:{port}", "-sTCP:LISTEN", "-t"])
-        matches = re.findall(r"\\b(\\d+)\\b", text)
-    if not matches:
-        raise RuntimeError("listener_pid_unavailable")
-    return int(matches[0])
-
-listener = listener_pid()
-listener_argv = argv(listener)
-listener_env = environ(listener)
-rows = process_rows()
-by_parent = {}
-for row in rows:
-    by_parent.setdefault(row["ppid"], []).append(row)
-descendants = []
-frontier = [listener]
-seen = set()
-while frontier:
-    parent = frontier.pop()
-    for row in by_parent.get(parent, []):
-        if row["pid"] in seen:
-            continue
-        seen.add(row["pid"])
-        descendants.append(row)
-        frontier.append(row["pid"])
-engine_rows = [row for row in descendants
-               if any("enginecore" in item.lower().replace("_", "")
-                      or "engine.core" in item.lower()
-                      or "engine_core" in item.lower()
-                      for item in row["argv"])]
-if not engine_rows:
-    raise RuntimeError("engine_core_pid_unavailable")
-engine = sorted(engine_rows, key=lambda row: row["pid"])[0]
-engine_env = environ(engine["pid"])
-compute = run(["nvidia-smi", "--query-compute-apps=pid,gpu_uuid",
-               "--format=csv,noheader,nounits"])
-compute_rows = []
-for line in compute.splitlines():
-    fields = [item.strip() for item in line.split(",")]
-    if len(fields) != 2:
-        continue
-    try:
-        compute_rows.append({"pid": int(fields[0]), "gpu_uuid": fields[1]})
-    except ValueError:
-        continue
-print(json.dumps({
-    "hostname": run(["hostname"]).strip(),
-    "hostname_f": run(["hostname", "-f"]).strip(),
-    "machine_id": open("/etc/machine-id", encoding="utf-8").read().strip(),
-    "boot_id": open("/proc/sys/kernel/random/boot_id", encoding="utf-8").read().strip(),
-    "listener_pid": listener,
-    "argv": listener_argv,
-    "environ": listener_env,
-    "process_tree": [{"pid": row["pid"], "ppid": row["ppid"], "argv": row["argv"]}
-                      for row in descendants],
-    "engine_core_pid": engine["pid"],
-    "engine_core_argv": engine["argv"],
-    "engine_core_environ": engine_env,
-    "compute_processes": compute_rows,
-}, sort_keys=True))
-'''
+_RESOURCE_EVIDENCE_COMMAND = "resource-evidence"
 
 HttpGetter = Callable[[str, float], Mapping[str, Any]]
 CommandRunner = Callable[[tuple[str, ...], float], tuple[int, str, str]]
@@ -248,140 +142,125 @@ def parse_provider_gpu_csv(text: str) -> list[dict[str, Any]]:
     return sorted(rows, key=lambda row: int(row["index"]))
 
 
-def _provider_command(
+def parse_provider_resource_snapshot(
+    text: str,
     *,
-    ssh_alias: str,
-    command: str,
-    provider_command_runner: CommandRunner,
-    timeout_s: float,
-    error_prefix: str,
-) -> str:
-    exit_code, stdout, stderr = provider_command_runner(
-        ("ssh", ssh_alias, command), float(timeout_s)
-    )
-    if exit_code != 0:
-        del stderr
-        raise ProductionSamplerError(f"{error_prefix}:{exit_code}")
-    return stdout
-
-
-def _service_resource_evidence(
-    *,
-    port: int,
-    payload: Mapping[str, Any],
-    gpu_uuids: set[str],
+    expected_ports: tuple[int, ...] = (8000, 8001),
+    expected_gpu_uuids: Sequence[str] | None = None,
 ) -> dict[str, Any]:
-    listener_pid = payload.get("listener_pid")
-    listener_argv = payload.get("argv")
-    listener_env = payload.get("environ")
-    engine_pid = payload.get("engine_core_pid")
-    engine_argv = payload.get("engine_core_argv")
-    engine_env = payload.get("engine_core_environ")
-    compute = payload.get("compute_processes")
-    if (
-        isinstance(listener_pid, bool)
-        or not isinstance(listener_pid, int)
-        or listener_pid <= 0
-        or not isinstance(listener_argv, list)
-        or not listener_argv
-        or not all(isinstance(item, str) and item for item in listener_argv)
-        or not isinstance(listener_env, Mapping)
-        or not isinstance(engine_pid, int)
-        or isinstance(engine_pid, bool)
-        or engine_pid <= 0
-        or not isinstance(engine_argv, list)
-        or not engine_argv
-        or not all(isinstance(item, str) and item for item in engine_argv)
-        or not isinstance(engine_env, Mapping)
-        or not isinstance(compute, list)
-    ):
-        raise ProductionSamplerError(f"PROVIDER_SERVICE_EVIDENCE_INVALID:{port}")
-    cuda = listener_env.get("CUDA_VISIBLE_DEVICES") or engine_env.get(
-        "CUDA_VISIBLE_DEVICES"
-    )
-    nvidia = listener_env.get("NVIDIA_VISIBLE_DEVICES") or engine_env.get(
-        "NVIDIA_VISIBLE_DEVICES"
-    )
-    if not isinstance(cuda, str) or not cuda.strip() or not isinstance(nvidia, str) or not nvidia.strip():
-        raise ProductionSamplerError("PROVIDER_CUDA_ENV_INVALID")
-    mapped = [
-        row.get("gpu_uuid")
-        for row in compute
-        if isinstance(row, Mapping) and row.get("pid") == engine_pid
-    ]
-    if not mapped or any(not isinstance(uuid, str) or uuid not in gpu_uuids for uuid in mapped):
-        raise ProductionSamplerError(f"PROVIDER_ENGINE_GPU_MAPPING_INVALID:{port}")
-    return {
-        "pid": listener_pid,
-        "argv": list(listener_argv),
-        "cuda_visible_devices": cuda,
-        "nvidia_visible_devices": nvidia,
-        "gpu_uuids": sorted(set(mapped)),
-        "engine_core_pid": engine_pid,
-        "engine_core_argv": list(engine_argv),
-        "engine_core_environ": dict(engine_env),
-        "process_tree": payload.get("process_tree", []),
-    }
+    """Validate the provider-side canonical snapshot returned by one RPC.
+
+    PID discovery, procfs reads, and CUDA process inspection belong to the
+    provider-side collector. The controller only parses and cross-checks its
+    signed-shaped JSON response; it never constructs a remote shell command.
+    """
+    try:
+        value = json.loads(text)
+    except (TypeError, json.JSONDecodeError):
+        raise ProductionSamplerError("PROVIDER_RESOURCE_SNAPSHOT_INVALID") from None
+    if not isinstance(value, Mapping) or not isinstance(value.get("schema_version"), str):
+        raise ProductionSamplerError("PROVIDER_RESOURCE_SNAPSHOT_INVALID")
+    for field in ("hostname", "machine_id", "boot_id", "gpus", "services"):
+        if not isinstance(value.get(field), (str, list, Mapping)) or not value.get(field):
+            raise ProductionSamplerError(f"PROVIDER_RESOURCE_{field.upper()}_INVALID")
+    gpus = value["gpus"]
+    if not isinstance(gpus, list) or not gpus:
+        raise ProductionSamplerError("PROVIDER_GPU_INVENTORY_INVALID")
+    uuids: set[str] = set()
+    for gpu in gpus:
+        if not isinstance(gpu, Mapping):
+            raise ProductionSamplerError("PROVIDER_GPU_INVENTORY_INVALID")
+        uuid = gpu.get("uuid")
+        if not isinstance(uuid, str) or _GPU_UUID.fullmatch(uuid) is None:
+            raise ProductionSamplerError("PROVIDER_GPU_UUID_INVALID")
+        if uuid in uuids:
+            raise ProductionSamplerError("PROVIDER_GPU_INVENTORY_INVALID")
+        uuids.add(uuid)
+        for field in ("index", "name", "pci_bus_id"):
+            if field not in gpu or not str(gpu[field]).strip():
+                raise ProductionSamplerError("PROVIDER_GPU_INVENTORY_INVALID")
+    if expected_gpu_uuids is not None:
+        expected = set(expected_gpu_uuids)
+        if not expected or expected != uuids:
+            raise ProductionSamplerError("PROVIDER_GPU_UUID_IDENTITY_CHANGED")
+    services = value["services"]
+    if not isinstance(services, Mapping):
+        raise ProductionSamplerError("PROVIDER_SERVICES_INVALID")
+    compute = value.get("compute_processes", [])
+    if not isinstance(compute, list):
+        raise ProductionSamplerError("PROVIDER_COMPUTE_PROCESSES_INVALID")
+    compute_by_pid: dict[int, list[str]] = {}
+    for row in compute:
+        if not isinstance(row, Mapping):
+            raise ProductionSamplerError("PROVIDER_COMPUTE_PROCESSES_INVALID")
+        pid, uuid = row.get("pid"), row.get("gpu_uuid")
+        if isinstance(pid, bool) or not isinstance(pid, int) or pid <= 0:
+            raise ProductionSamplerError("PROVIDER_COMPUTE_PROCESSES_INVALID")
+        if not isinstance(uuid, str) or _GPU_UUID.fullmatch(uuid) is None or uuid not in uuids:
+            raise ProductionSamplerError("PROVIDER_COMPUTE_GPU_UUID_INVALID")
+        compute_by_pid.setdefault(pid, []).append(uuid)
+    for port in expected_ports:
+        service = services.get(str(port))
+        if not isinstance(service, Mapping):
+            raise ProductionSamplerError(f"PROVIDER_SERVICE_{port}_INVALID")
+        listener_pid = service.get("listener_pid", service.get("pid"))
+        engine_pid = service.get("engine_core_pid")
+        if (
+            isinstance(listener_pid, bool)
+            or not isinstance(listener_pid, int)
+            or listener_pid <= 0
+            or isinstance(engine_pid, bool)
+            or not isinstance(engine_pid, int)
+            or engine_pid <= 0
+        ):
+            raise ProductionSamplerError(f"PROVIDER_SERVICE_{port}_PID_INVALID")
+        for field in ("argv", "engine_core_argv"):
+            argv = service.get(field)
+            if not isinstance(argv, list) or not argv or not all(
+                isinstance(item, str) and item for item in argv
+            ):
+                raise ProductionSamplerError(f"PROVIDER_SERVICE_{port}_ARGV_INVALID")
+        cuda = service.get("cuda_visible_devices")
+        if not isinstance(cuda, str) or not cuda.strip():
+            raise ProductionSamplerError("PROVIDER_CUDA_ENV_INVALID")
+        engine_cuda = service.get("engine_core_cuda_visible_devices")
+        if not isinstance(engine_cuda, str) or not engine_cuda.strip():
+            raise ProductionSamplerError("PROVIDER_ENGINE_CUDA_ENV_INVALID")
+        nvidia = service.get("nvidia_visible_devices")
+        if nvidia is not None and not isinstance(nvidia, str):
+            raise ProductionSamplerError("PROVIDER_NVIDIA_ENV_INVALID")
+        mapped = compute_by_pid.get(engine_pid)
+        declared = service.get("gpu_uuids")
+        if not mapped or not isinstance(declared, list) or not declared:
+            raise ProductionSamplerError(f"PROVIDER_ENGINE_GPU_MAPPING_INVALID:{port}")
+        if sorted(set(mapped)) != sorted(set(declared)):
+            raise ProductionSamplerError(f"PROVIDER_ENGINE_GPU_MAPPING_MISMATCH:{port}")
+    return dict(value)
 
 
 def collect_dynamic_provider_resource_evidence(
     *,
     ssh_alias: str,
-    ports: tuple[int, ...] = (8000, 8001),
     provider_command_runner: CommandRunner = _default_command_runner,
     timeout_s: float = 10.0,
+    expected_gpu_uuids: Sequence[str] | None = None,
 ) -> dict[str, Any]:
     if (
         not isinstance(ssh_alias, str)
         or not ssh_alias
-        or not ports
-        or any(isinstance(port, bool) or not isinstance(port, int) or port <= 0 for port in ports)
         or isinstance(timeout_s, bool)
         or not isinstance(timeout_s, (int, float))
         or not math.isfinite(timeout_s)
         or timeout_s <= 0
     ):
         raise ProductionSamplerError("PROVIDER_RESOURCE_CONFIGURATION_INVALID")
-    inventory = parse_provider_gpu_csv(
-        _provider_command(
-            ssh_alias=ssh_alias,
-            command=_PROVIDER_GPU_QUERY,
-            provider_command_runner=provider_command_runner,
-            timeout_s=timeout_s,
-            error_prefix="PROVIDER_GPU_REMOTE_COMMAND_REJECTED",
-        )
+    args = ("ssh", ssh_alias, _RESOURCE_EVIDENCE_COMMAND)
+    exit_code, stdout, _stderr = provider_command_runner(args, float(timeout_s))
+    if exit_code != 0:
+        raise ProductionSamplerError(f"PROVIDER_RESOURCE_COMMAND_REJECTED:{exit_code}")
+    return parse_provider_resource_snapshot(
+        stdout, expected_gpu_uuids=expected_gpu_uuids
     )
-    physical_uuids = {row["uuid"] for row in inventory}
-    services: dict[str, dict[str, Any]] = {}
-    for port in ports:
-        command = (
-            "SFWB_PORT="
-            + str(port)
-            + " python3 -c "
-            + shlex.quote(_DYNAMIC_PROVIDER_SCRIPT)
-        )
-        raw = _provider_command(
-            ssh_alias=ssh_alias,
-            command=command,
-            provider_command_runner=provider_command_runner,
-            timeout_s=timeout_s,
-            error_prefix=f"PROVIDER_SERVICE_COMMAND_REJECTED:{port}",
-        )
-        try:
-            payload = json.loads(raw)
-        except (TypeError, json.JSONDecodeError):
-            raise ProductionSamplerError(f"PROVIDER_SERVICE_OUTPUT_INVALID:{port}") from None
-        if not isinstance(payload, Mapping):
-            raise ProductionSamplerError(f"PROVIDER_SERVICE_OUTPUT_INVALID:{port}")
-        services[str(port)] = _service_resource_evidence(
-            port=port, payload=payload, gpu_uuids=physical_uuids
-        )
-    return {
-        "hostname": services[str(ports[0])].get("hostname", ""),
-        "gpus": inventory,
-        "services": services,
-        "dynamic": True,
-    }
 
 
 def _read_proc_status(pid: int) -> dict[str, str]:
@@ -535,14 +414,15 @@ def build_production_probes(
         }
 
     def provider_gpu() -> list[dict[str, Any]]:
-        exit_code, stdout, _stderr = provider_command_runner(
-            ("ssh", ssh_alias, _PROVIDER_GPU_QUERY), float(timeout_s)
+        snapshot = collect_dynamic_provider_resource_evidence(
+            ssh_alias=ssh_alias,
+            provider_command_runner=provider_command_runner,
+            timeout_s=timeout_s,
         )
-        if exit_code != 0:
-            raise ProductionSamplerError(
-                f"PROVIDER_GPU_REMOTE_COMMAND_REJECTED:{exit_code}"
-            )
-        return parse_provider_gpu_csv(stdout)
+        # The fixed RPC may carry both identity and current telemetry. Keep
+        # the sampler source stable while exposing only the GPU observations
+        # to the high-frequency reducer.
+        return list(snapshot["gpus"])
 
     return {
         "construction_vllm": lambda: vllm(8000),
@@ -667,7 +547,9 @@ __all__ = [
     "REQUIRED_PROBE_SOURCES",
     "ProductionSamplerError",
     "build_production_probes",
+    "collect_dynamic_provider_resource_evidence",
     "parse_provider_gpu_csv",
+    "parse_provider_resource_snapshot",
     "probe_process",
     "probe_runner_host",
     "qualify_sampler_summary",

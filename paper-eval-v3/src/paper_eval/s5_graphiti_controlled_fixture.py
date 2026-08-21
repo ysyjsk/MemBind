@@ -178,6 +178,13 @@ class _ControlledLLM(LLMClient):
         response = providers.llm_responses.get(name)
         if response is None:
             raise ControlledGraphitiFixtureError(f"LLM_RESPONSE_MISSING:{name}")
+        if name == "EdgeDuplicate" and self.fixture.reverse_edge_duplicate_completion:
+            self.fixture.edge_duplicate_arrivals += 1
+            arrival = self.fixture.edge_duplicate_arrivals
+            if arrival == 1:
+                await self.fixture.edge_duplicate_second_arrival.wait()
+            elif arrival == 2:
+                self.fixture.edge_duplicate_second_arrival.set()
         self.request_evidence.append(
             {
                 "request_identity": payload_sha256(
@@ -426,6 +433,7 @@ class ControlledGraphitiFixture:
     idempotent_retry: bool = False
     mutate_retry_payload: bool = False
     missing_llm_response: str | None = None
+    reverse_edge_duplicate_completion: bool = False
     events: list[dict[str, Any]] = field(default_factory=list)
     transaction_attempts: int = 0
 
@@ -444,6 +452,8 @@ class ControlledGraphitiFixture:
         self.prepare_rendezvous_parties = 0
         self.prepare_rendezvous_arrivals = 0
         self.prepare_rendezvous_event = asyncio.Event()
+        self.edge_duplicate_arrivals = 0
+        self.edge_duplicate_second_arrival = asyncio.Event()
         self.candidate_query_index = 0
         self.candidate_nodes: list[EntityNode] = []
         self.candidate_node_sets: list[list[EntityNode]] = []
@@ -679,6 +689,8 @@ class ControlledGraphitiFixture:
         self.candidate_query_index = 0
         self.prepare_rendezvous_arrivals = 0
         self.prepare_rendezvous_event = asyncio.Event()
+        self.edge_duplicate_arrivals = 0
+        self.edge_duplicate_second_arrival = asyncio.Event()
         self.llm.calls.clear()
         self.llm.request_evidence.clear()
         self.embedder.calls.clear()
@@ -814,6 +826,7 @@ def build_controlled_graphiti_fixture(**kwargs: Any) -> ControlledGraphitiFixtur
         "idempotent_retry",
         "mutate_retry_payload",
         "missing_llm_response",
+        "reverse_edge_duplicate_completion",
         "canonical_candidate",
         "duplicate_entity",
         "conflicting_candidate_projections",

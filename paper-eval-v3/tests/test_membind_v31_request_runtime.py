@@ -745,6 +745,10 @@ def test_opt_in_request_telemetry_carries_prompt_name_without_changing_default_s
             row["prompt_name"] == "prompt-visible-only-in-overlay"
             for row in correlated
         )
+        assert all(
+            row["semantic_subrequest_role"] == "prompt-visible-only-in-overlay"
+            for row in correlated
+        )
 
     asyncio.run(scenario())
 
@@ -816,5 +820,7 @@ def test_default_request_events_retain_frozen_v31_shape_without_provider() -> No
 
         causal_keys = set(_causal_metadata())
         assert all(causal_keys.isdisjoint(event) for event in client.public_events)
+        assert all("prompt_name" not in event for event in client.public_events)
+        assert all("semantic_subrequest_role" not in event for event in client.public_events)
 
     asyncio.run(scenario())

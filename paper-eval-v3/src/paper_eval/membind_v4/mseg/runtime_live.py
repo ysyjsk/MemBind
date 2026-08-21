@@ -54,6 +54,7 @@ from .runtime_instrumentation import (
     WriterDomainCertificate,
     current_runtime_request_metadata,
 )
+from .failure import OPAQUE, SemanticFailureRecord
 
 
 _RUN_ID = re.compile(r"^membind-v31-opt-w4-meg-runtime-observe-[a-z0-9-]{3,40}$")
@@ -357,6 +358,7 @@ def _capture_payload(
         ),
         "persistent_effect_hashes": list(recorder.persistent_effect_hashes),
         "publication_order": list(recorder.publication_order),
+        "failure_records": [item.to_dict() for item in recorder.failure_records],
     }
 
 
@@ -667,6 +669,21 @@ async def execute_meg_observe_capture(
     except BaseException as error:
         # Preserve the recorder state reached before a fail-closed capture so
         # offline audit can distinguish an opaque event from an absent event.
+        # The coordinator intentionally raises a sanitized classification.  The
+        # original exception is available here only when the call boundary
+        # preserved it; otherwise the record remains explicitly OPAQUE.
+        operator = composition.recorder.operators[-1] if composition.recorder.operators else None
+        failure_record = SemanticFailureRecord.from_exception(
+            error,
+            run_id=str(selected["run_id"]),
+            source_sequence=(operator.source_sequence if operator is not None else None),
+            phase="BIND",
+            semantic_operator_id=(operator.semantic_operator_id if operator is not None else None),
+            semantic_operator_type=(operator.semantic_operator_type if operator is not None else None),
+            implementation_seam_hash=selected.get("composition_proof", {}).get("source_hashes", {}).get("meg_runtime_seam") if isinstance(selected.get("composition_proof"), Mapping) else None,
+            top_level_classification=(str(error) if isinstance(error, Exception) else OPAQUE),
+        )
+        composition.recorder.record_failure(failure_record)
         partial = _seal(_capture_payload(composition.recorder, composition.writer_domain))
         atomic_write_json(root / "MEG_RUNTIME_CAPTURE_PARTIAL.json", partial)
         failure = {
@@ -677,6 +694,7 @@ async def execute_meg_observe_capture(
             "operator_count_before_failure": len(composition.recorder.operators),
             "request_span_count_before_failure": len(composition.recorder.request_spans),
             "publication_count_before_failure": len(composition.recorder.publication_order),
+            "failure_record": failure_record.to_dict(),
         }
         atomic_write_json(root / "FAILURE.json", _seal(failure))
         raise

@@ -440,6 +440,7 @@ class AdmittedLLMClientV31:
             }
             if self._causal_metadata_provider is not None and prompt_name is not None:
                 telemetry_event["prompt_name"] = prompt_name
+                telemetry_event["semantic_subrequest_role"] = prompt_name
             self._emit(telemetry_event)
             self._dispatch_locked()
             self._emit_admission_snapshot_locked("SUBMIT_DISPATCH")
@@ -489,6 +490,7 @@ class AdmittedLLMClientV31:
             }
             if self._causal_metadata_provider is not None and prompt_name is not None:
                 telemetry_event["prompt_name"] = prompt_name
+                telemetry_event["semantic_subrequest_role"] = prompt_name
             self._emit(telemetry_event)
             _COMPLETED_REQUEST_ID.set(request_id)
             self._dispatch_locked()

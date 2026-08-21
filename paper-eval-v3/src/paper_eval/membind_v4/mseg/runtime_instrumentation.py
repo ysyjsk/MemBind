@@ -18,6 +18,7 @@ from dataclasses import dataclass, replace
 from enum import Enum
 from typing import Generic, TypeVar
 
+from .failure import SemanticFailureRecord
 from .mutation_epoch import MutationEpochToken, StateMutationEpoch
 from .read_view import (
     ReadKind,
@@ -98,6 +99,7 @@ class OperatorEventType(str, Enum):
     OPERATOR_READY = "OPERATOR_READY"
     OPERATOR_START = "OPERATOR_START"
     OPERATOR_END = "OPERATOR_END"
+    TRANSACTION_START = "TRANSACTION_START"
     TRANSACTION_COMMIT = "TRANSACTION_COMMIT"
     PUBLICATION = "PUBLICATION"
 
@@ -544,6 +546,7 @@ class MEGRuntimeRecorder:
         self.production_write_intent_hashes: list[str] = []
         self.persistent_effect_hashes: list[str] = []
         self.publication_order: list[int] = []
+        self._failure_records: list[SemanticFailureRecord] = []
         self.tracker = SemanticDependencyTracker(
             clock_ns=clock_ns, event_observer=self._record_tracker_event
         )
@@ -724,6 +727,10 @@ class MEGRuntimeRecorder:
             ),
         )
 
+    def record_transaction_start(self, *, transaction_id: str) -> None:
+        selected = _text(transaction_id, "transaction_id_invalid")
+        self._emit(OperatorEventType.TRANSACTION_START, transaction_id=selected)
+
     def record_publication(self, *, source_sequence: int, transaction_id: str) -> None:
         sequence = _ordinal(source_sequence, "publication_source_sequence_invalid")
         transaction = _text(transaction_id, "publication_transaction_invalid")
@@ -741,6 +748,13 @@ class MEGRuntimeRecorder:
             status=status,
         )
 
+    def record_failure(self, record: SemanticFailureRecord) -> None:
+        """Append failure causality evidence as a passive side-channel."""
+
+        if not isinstance(record, SemanticFailureRecord):
+            raise _fail("runtime_failure_record_invalid")
+        self._failure_records.append(record)
+
     @property
     def events(self) -> tuple[RuntimeEvent, ...]:
         return tuple(self._events)
@@ -756,6 +770,10 @@ class MEGRuntimeRecorder:
     @property
     def read_views(self) -> tuple[RuntimeSemanticReadView, ...]:
         return tuple(self._read_views[operator.semantic_operator_id] for operator in self._operators if operator.semantic_operator_id in self._read_views)
+
+    @property
+    def failure_records(self) -> tuple[SemanticFailureRecord, ...]:
+        return tuple(self._failure_records)
 
 
 T = TypeVar("T")
@@ -792,6 +810,8 @@ class TransactionCommitObserver(Generic[T]):
         transaction_id = (
             f"meg-managed-tx-{canonical_sha256({'namespace': self.mutation_epoch.namespace, 'ordinal': ordinal})}"
         )
+        if self.recorder is not None:
+            self.recorder.record_transaction_start(transaction_id=transaction_id)
         result = execute_write(callback, *args, **kwargs)
         if not inspect.isawaitable(result):
             raise _fail("managed_transaction_not_awaitable")
@@ -881,6 +901,7 @@ def runtime_read_view_from_epoch_window(
 
 
 __all__ = [
+    "SemanticFailureRecord",
     "InstrumentationMode",
     "MEGRuntimeRecorder",
     "OperatorEventType",

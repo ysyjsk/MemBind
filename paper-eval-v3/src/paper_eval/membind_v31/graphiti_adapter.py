@@ -81,16 +81,16 @@ def _canonical_projection(value: object, *, code: str) -> dict[str, object]:
         except TypeError:
             try:
                 selected = model_dump()
-            except Exception:
-                raise _fail(code) from None
-        except Exception:
-            raise _fail(code) from None
+            except Exception as error:
+                raise _fail(code) from error
+        except Exception as error:
+            raise _fail(code) from error
     if not isinstance(selected, Mapping):
         raise _fail(code)
     try:
         decoded = json.loads(canonical_bytes(dict(selected)).decode("utf-8"))
-    except (TypeError, ValueError, UnicodeError, json.JSONDecodeError):
-        raise _fail(code) from None
+    except (TypeError, ValueError, UnicodeError, json.JSONDecodeError) as error:
+        raise _fail(code) from error
     if not isinstance(decoded, dict):
         raise _fail(code)
     return decoded
@@ -235,8 +235,8 @@ class MemBindV31GraphitiAdapter:
             return
         try:
             self._call_observer(operation)
-        except Exception:
-            raise _fail("call_observer_failed") from None
+        except Exception as error:
+            raise _fail("call_observer_failed") from error
 
     @staticmethod
     async def _await(value: object, code: str) -> object:
@@ -249,7 +249,7 @@ class MemBindV31GraphitiAdapter:
         except _ForbiddenCompileCapability:
             raise _fail("certified_compile_forbidden_capability") from None
         except Exception as error:
-            raise _fail(code, upstream_error_class=_qualified_error_class(error)) from None
+            raise _fail(code, upstream_error_class=_qualified_error_class(error)) from error
 
     def _materialize_episode(self, source: SourceRecord, *, code: str) -> object:
         try:
@@ -257,7 +257,7 @@ class MemBindV31GraphitiAdapter:
         except MemBindV31GraphitiAdapterError:
             raise
         except Exception as error:
-            raise _fail(code, upstream_error_class=_qualified_error_class(error)) from None
+            raise _fail(code, upstream_error_class=_qualified_error_class(error)) from error
 
     @staticmethod
     def _edge_type_map(
@@ -277,7 +277,7 @@ class MemBindV31GraphitiAdapter:
             raise _fail(
                 "extracted_node_materialization_failed",
                 upstream_error_class=_qualified_error_class(error),
-            ) from None
+            ) from error
 
     def _materialize_edges(self, artifact: PreparedArtifact) -> list[object]:
         raw = artifact.raw_edges
@@ -289,7 +289,7 @@ class MemBindV31GraphitiAdapter:
             raise _fail(
                 "extracted_edge_materialization_failed",
                 upstream_error_class=_qualified_error_class(error),
-            ) from None
+            ) from error
 
     def _assert_artifact(self, compile_input: CompileInput, artifact: PreparedArtifact) -> None:
         if not isinstance(artifact, PreparedArtifact):
@@ -301,7 +301,7 @@ class MemBindV31GraphitiAdapter:
                 expected_certification_sha256=self.state_cut_certification_sha256,
             )
         except PreparedArtifactError as error:
-            raise _fail(str(error)) from None
+            raise _fail(str(error)) from error
         if artifact.source_sequence != compile_input.source.source_sequence:
             raise _fail("artifact_source_sequence_mismatch")
         if (artifact.raw_edges is not None) != self._compile_edges:
@@ -330,7 +330,7 @@ class MemBindV31GraphitiAdapter:
             raise _fail(
                 "graphiti_driver_routing_failed",
                 upstream_error_class=_qualified_error_class(error),
-            ) from None
+            ) from error
 
     async def _retrieve_latest(self, episode: object, source: SourceRecord) -> list[object]:
         try:
@@ -434,10 +434,10 @@ class MemBindV31GraphitiAdapter:
             )
         except _ForbiddenCompileCapability:
             raise _fail("certified_compile_forbidden_capability") from None
-        except S5GraphitiSemanticBindingError:
-            raise _fail("semantic_binding_failed") from None
+        except S5GraphitiSemanticBindingError as error:
+            raise _fail("semantic_binding_failed") from error
         except PreparedArtifactError as error:
-            raise _fail(str(error)) from None
+            raise _fail(str(error)) from error
 
     async def bind(
         self,
@@ -507,7 +507,7 @@ class MemBindV31GraphitiAdapter:
                 raise _fail(
                     "resolve_edge_pointers_failed",
                     upstream_error_class=_qualified_error_class(error),
-                ) from None
+                ) from error
             if isinstance(pointer_edges, (str, bytes)) or not isinstance(
                 pointer_edges, Sequence
             ):
@@ -572,8 +572,8 @@ class MemBindV31GraphitiAdapter:
             )
             if self._require_native_commit_shape:
                 self._validate_commit(committed)
-        except S5GraphitiSemanticBindingError:
-            raise _fail("semantic_binding_failed") from None
+        except S5GraphitiSemanticBindingError as error:
+            raise _fail("semantic_binding_failed") from error
 
         return MemBindV31BindObservation(
             source_sequence=source.source_sequence,
