@@ -122,6 +122,66 @@ async def test_production_qa_runs_exactly_32_rows_without_gold_leak_or_construct
 
 
 @pytest.mark.asyncio
+async def test_production_qa_accepts_one_history_after_its_two_methods(
+    repository_root: Path, tmp_path: Path
+) -> None:
+    inventory = load_and_validate_qa_inventory(repository_root)
+    history = next(iter(EXPECTED_EPISODE_COUNTS))
+    seals = tuple(seal for seal in _seals() if seal.history_id == history)
+    questions = tuple(
+        row for row in inventory["questions"] if row["history_id"] == history
+    )
+    graph = {seal.namespace: {"history": history} for seal in seals}
+    closed: list[str] = []
+
+    def runtime_factory(seal: NamespaceSeal) -> Any:
+        async def close() -> None:
+            closed.append(seal.namespace)
+
+        return SimpleNamespace(graphiti=SimpleNamespace(close=close), seal=seal)
+
+    async def snapshot(runtime: Any, seal: NamespaceSeal) -> dict[str, Any]:
+        del runtime
+        return copy.deepcopy(graph[seal.namespace])
+
+    async def question_runner(**kwargs: Any) -> dict[str, Any]:
+        del kwargs
+        return {
+            "recall_at_1": 1.0,
+            "recall_at_3": 1.0,
+            "recall_at_5": 1.0,
+            "recall_at_10": 1.0,
+            "mrr": 1.0,
+            "ndcg_at_10": 1.0,
+            "correct": True,
+            "invalid": False,
+            "invalid_reason": None,
+            "failure_layer": None,
+            "construction_calls": 0,
+            "graph_write_attempts": 0,
+        }
+
+    rows = await execute_production_qa(
+        seals=seals,
+        questions=questions,
+        expected_histories=(history,),
+        construction_calls=2,
+        output_path=tmp_path / "qa" / history / "qa_rows.jsonl",
+        dependencies=ProductionQADependencies(
+            runtime_factory=runtime_factory,
+            snapshot_graph=snapshot,
+            question_runner=question_runner,
+        ),
+    )
+
+    assert len(rows) == 8
+    assert len(closed) == 2
+    assert {row["history_id"] for row in rows} == {history}
+    assert {row["method"] for row in rows} == {method.value for method in Method}
+    assert all(row["graph_write_attempts"] == 0 for row in rows)
+
+
+@pytest.mark.asyncio
 async def test_production_qa_fails_closed_on_namespace_mutation(
     repository_root: Path, tmp_path: Path
 ) -> None:

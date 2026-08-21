@@ -1,4 +1,4 @@
-"""Read-only production QA over the eight sealed formal namespaces."""
+"""Read-only production QA over full or explicitly scoped sealed namespaces."""
 
 from __future__ import annotations
 
@@ -20,6 +20,7 @@ from .qa_lane import (
 )
 from .dataset import load_episode_inputs, load_frozen_qa_source_record
 from .reuse import import_paper_eval_module, import_validation_module
+from .schedules import Method
 
 
 class ProductionQAError(ValueError):
@@ -93,6 +94,43 @@ def _normalize_question_result(value: Mapping[str, Any]) -> dict[str, Any]:
     return result
 
 
+def _validate_scoped_namespace_inventory(
+    seals: Sequence[NamespaceSeal],
+    *,
+    expected_histories: Sequence[str],
+    construction_calls: int,
+) -> tuple[NamespaceSeal, ...]:
+    """Validate a deliberate per-history QA checkpoint.
+
+    The existing L4 validator remains the authority for the complete eight
+    namespace lane. This narrower contract is only for a checkpoint after all
+    methods of one or more explicitly selected histories have sealed.
+    """
+
+    histories = tuple(str(history) for history in expected_histories)
+    if not histories or len(set(histories)) != len(histories):
+        raise ProductionQAError("QA_HISTORY_SCOPE_INVALID")
+    selected = tuple(seals)
+    expected = {
+        (method.value, history)
+        for method in Method
+        for history in histories
+    }
+    observed = {(seal.method, seal.history_id) for seal in selected}
+    if len(selected) != len(expected) or observed != expected:
+        raise ProductionQAError("L4_NAMESPACE_COVERAGE_INVALID")
+    if len({seal.namespace for seal in selected}) != len(selected):
+        raise ProductionQAError("L4_NAMESPACE_NOT_UNIQUE")
+    if construction_calls != len(expected):
+        raise ProductionQAError("QA_EXTRA_CONSTRUCTION_CALLS")
+    ordinals = [seal.construction_call_ordinal for seal in selected]
+    if any(isinstance(value, bool) or not isinstance(value, int) or value < 1 for value in ordinals):
+        raise ProductionQAError("L4_CONSTRUCTION_ORDINAL_INVALID")
+    if len(set(ordinals)) != len(ordinals):
+        raise ProductionQAError("L4_CONSTRUCTION_ORDINAL_INVALID")
+    return selected
+
+
 async def execute_production_qa(
     *,
     seals: Sequence[NamespaceSeal],
@@ -102,19 +140,28 @@ async def execute_production_qa(
     output_path: Path,
     dependencies: ProductionQADependencies,
 ) -> list[dict[str, Any]]:
-    selected_seals = validate_l4_namespace_inventory(
-        seals,
-        expected_histories=expected_histories,
-        construction_calls=construction_calls,
-    )
+    histories = tuple(str(history) for history in expected_histories)
+    if len(histories) == 4 and len(tuple(seals)) == 8 and construction_calls == 8:
+        selected_seals = validate_l4_namespace_inventory(
+            seals,
+            expected_histories=histories,
+            construction_calls=construction_calls,
+        )
+    else:
+        selected_seals = _validate_scoped_namespace_inventory(
+            seals,
+            expected_histories=histories,
+            construction_calls=construction_calls,
+        )
     selected_questions = tuple(questions)
     question_ids = [str(row.get("question_id") or "") for row in selected_questions]
+    expected_question_count = 4 * len(histories)
     if (
-        len(selected_questions) != 16
-        or len(set(question_ids)) != 16
+        len(selected_questions) != expected_question_count
+        or len(set(question_ids)) != expected_question_count
         or any(
             sum(row.get("history_id") == history for row in selected_questions) != 4
-            for history in expected_histories
+            for history in histories
         )
     ):
         raise ProductionQAError("QA_INVENTORY_INVALID")
@@ -221,7 +268,7 @@ async def execute_production_qa(
     finally:
         if dependencies.close is not None:
             await _await(dependencies.close())
-    if len(rows) != 32:
+    if len(rows) != expected_question_count * len({seal.method for seal in selected_seals}):
         raise ProductionQAError("QA_ROW_COVERAGE_INVALID")
     # Materialize final rows only after all namespace guards pass. The raw
     # partial journal is retained as append-only execution evidence.

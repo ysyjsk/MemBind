@@ -60,9 +60,14 @@ inside `T_build`. A fresh namespace is required for every block.
 ## Qualification order
 
 The current qualification prefix is the fixed 12-episode sequence
-`B0-A -> B0-B -> B1`. It is a readiness check, not the formal table. Future
-development execution follows the four histories and eight method-history
-blocks; QA is read-only and reuses the existing quality framework.
+`B0-A -> B0-B -> B1`. It is a readiness check, not the formal table. Formal
+development execution is history-scoped: for each history, run
+`B0_NATIVE_SERIAL`, then `B1_NAIVE_WHOLE_UPDATE_ASYNC`, then immediately run
+the read-only QA checkpoint over that history's two sealed namespaces before
+starting the next history. Each checkpoint evaluates four questions per
+method (eight rows total), writes under `qa/<history>/`, and makes no
+construction or graph-write calls. The four checkpoints are aggregated into
+the final 32-row quality table.
 
 ## Validity and reporting
 

@@ -20,6 +20,12 @@ and all sealed artifacts remain untouched. The v5 modules provide offline
 semantic analysis and passive fingerprint primitives; they do not authorize a
 runtime mechanism or a live diagnostic.
 
+The formal baseline runner executes one history at a time: B0 and B1 are both
+sealed, then that history's read-only QA checkpoint runs before the next
+history is admitted. Per-history QA evidence is written to
+`qa/<history>/qa_rows.jsonl` and `qa/<history>/qa_decision.json`; the final
+qualification table still contains 32 QA rows.
+
 Targeted tests:
 
 ```bash

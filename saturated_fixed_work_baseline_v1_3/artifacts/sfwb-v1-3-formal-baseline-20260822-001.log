@@ -1,0 +1,35 @@
+Traceback (most recent call last):
+  File "/data/predator/ly/MemBind/saturated_fixed_work_baseline_v1_3/scripts/run_formal_baseline.py", line 22, in <module>
+    raise SystemExit(main())
+                     ^^^^^^
+  File "/data/predator/ly/MemBind/saturated_fixed_work_baseline_v1_3/scripts/run_formal_baseline.py", line 16, in main
+    result = run_formal_baseline(args.run_root)
+             ^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^
+  File "/data/predator/ly/MemBind/saturated_fixed_work_baseline_v1_3/src/saturated_fixed_work_baseline_v1_3/formal_baseline.py", line 455, in run_formal_baseline
+    return asyncio.run(run_formal_baseline_async(run_root))
+           ^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^
+  File "/usr/lib/python3.12/asyncio/runners.py", line 194, in run
+    return runner.run(main)
+           ^^^^^^^^^^^^^^^^
+  File "/usr/lib/python3.12/asyncio/runners.py", line 118, in run
+    return self._loop.run_until_complete(task)
+           ^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^
+  File "/usr/lib/python3.12/asyncio/base_events.py", line 687, in run_until_complete
+    return future.result()
+           ^^^^^^^^^^^^^^^
+  File "/data/predator/ly/MemBind/saturated_fixed_work_baseline_v1_3/src/saturated_fixed_work_baseline_v1_3/formal_baseline.py", line 349, in run_formal_baseline_async
+    construction = await asyncio.to_thread(probe_model_catalog, "http://10.87.5.247:8000/v1/models", expected_model="qwen3-32b-fp8", expected_max_model_len=65536)
+                   ^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^
+  File "/usr/lib/python3.12/asyncio/threads.py", line 25, in to_thread
+    return await loop.run_in_executor(None, func_call)
+           ^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^
+  File "/usr/lib/python3.12/concurrent/futures/thread.py", line 58, in run
+    result = self.fn(*self.args, **self.kwargs)
+             ^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^
+  File "/data/predator/ly/MemBind/saturated_fixed_work_baseline_v1_2/src/saturated_fixed_work_baseline_v1_2/services.py", line 102, in probe_model_catalog
+    response = direct_get_text(endpoint, timeout_s=timeout_s)
+               ^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^
+  File "/data/predator/ly/MemBind/saturated_fixed_work_baseline_v1_2/src/saturated_fixed_work_baseline_v1_2/services.py", line 34, in direct_get_text
+    raise ServiceEvidenceError("SERVICE_DIRECT_GET_FAILED") from None
+saturated_fixed_work_baseline_v1_2.services.ServiceEvidenceError: SERVICE_DIRECT_GET_FAILED
+sys:1: RuntimeWarning: coroutine 'Neo4jDriver._execute_index_query' was never awaited
