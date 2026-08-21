@@ -1,0 +1,160 @@
+{
+  "audit_status": "NOT_CERTIFIED",
+  "identity": {
+    "contract_payload_sha256": "062e9182578530e8b3a6ce7cec3609dcef1b881811eb792f670c9f6f395fcbcd",
+    "failure_payload_sha256": "e9702e7f7ef48eb95913c36354ab02006598e4b5259a9ed0400ee6f8d46d7d3c",
+    "graphiti_version": "0.29.3",
+    "history": "07741c45",
+    "namespace": "pev3-opt-membind-v31-w4-meg-runtime-observe-20260821-009-07741c45",
+    "run_id": "membind-v31-opt-w4-meg-runtime-observe-20260821-009",
+    "run_root": "/data/predator/ly/MemBind/paper-eval-v3/artifacts/paper_eval/membind_v4/meg_runtime_instrumentation/membind-v31-opt-w4-meg-runtime-observe-20260821-009",
+    "run_root_sha256": "8df038d768ed7cffb9ec84b5c342786fbec51887503dbceb842358b5dda93092",
+    "seam_hash": "e46da9e1f49beb52ed22fff27899518aad9f1344250d358ab900b6de4b8bdfa9",
+    "sources": [
+      0,
+      1,
+      2
+    ]
+  },
+  "lifecycle_event_types": [
+    "arrival",
+    "bind_failure",
+    "bind_start",
+    "compile_start",
+    "prepared_durable"
+  ],
+  "partial_operator_count": 3,
+  "partial_request_spans": [
+    {
+      "end_ns": 607648890157013,
+      "model_schema_hash": "95ca6237e4149a7c312c117cef0b47548251b9e5130c00b5037bb385e041b7d1",
+      "prompt_hash": "00a2c8fd0e227e42ea3e4b8ea5439b43d1e6e01418d437710a1dc77e5af182b1",
+      "prompt_name": "extract_nodes.extract_message",
+      "request_id": "meg-runtime-membind-v31-opt-w4-meg-runtime-observe-20260821-009:00000000",
+      "response_hash": "fdbbc1adf058787eee145e4419d7b6487d342c451f4a81bfb12ea01b52c6f29d",
+      "semantic_operator_id": "meg-runtime-op-9f81bb61abffbc59ad71f915a55fedcb053dae797b4c18a2a3b0d313d09c834a",
+      "semantic_subrequest_role": "extract_nodes.extract_message",
+      "start_ns": 607647198103932,
+      "submit_ns": 607647198102194
+    },
+    {
+      "end_ns": 607654211162590,
+      "model_schema_hash": "d05e816e61c9ac5c02c8ed9b9fa3169110f88264f41a6051e586a0abba3f83bf",
+      "prompt_hash": "a4ef9581673ec9e21660b646975c2f8ffe6ba584ed1d879f45928f3545d1e97e",
+      "prompt_name": "extract_edges.edge",
+      "request_id": "meg-runtime-membind-v31-opt-w4-meg-runtime-observe-20260821-009:00000001",
+      "response_hash": "a78cc30d6a5a7766b4cef794abe6261464c25b7d2d5360fe755ce8f5cffef772",
+      "semantic_operator_id": "meg-runtime-op-e3e6f8ae9cace42b023a4fc84a3018fcbc8311d5a3ad753bc1c094d555667b96",
+      "semantic_subrequest_role": "extract_edges.edge",
+      "start_ns": 607648891069075,
+      "submit_ns": 607648891067484
+    }
+  ],
+  "payload_sha256": "a9f5ad800655815f67f5097221d06891f476e80be9c408d345ade334923d0e51",
+  "queue_event_count": 13,
+  "reason": "The failed capture did not persist a complete semantic capture payload; missing fields remain OPAQUE.",
+  "request_events": [
+    {
+      "event_type": "llm_request_submitted",
+      "prompt_name": null,
+      "request_id": "meg-runtime-membind-v31-opt-w4-meg-runtime-observe-20260821-009:00000000",
+      "request_kind": "COMPILE",
+      "semantic_operator_id": null,
+      "semantic_subrequest_role": null,
+      "source_sequence": 0
+    },
+    {
+      "event_type": "llm_request_terminal",
+      "prompt_name": null,
+      "request_id": "meg-runtime-membind-v31-opt-w4-meg-runtime-observe-20260821-009:00000000",
+      "request_kind": null,
+      "semantic_operator_id": null,
+      "semantic_subrequest_role": null,
+      "source_sequence": null
+    },
+    {
+      "event_type": "llm_request_submitted",
+      "prompt_name": null,
+      "request_id": "meg-runtime-membind-v31-opt-w4-meg-runtime-observe-20260821-009:00000001",
+      "request_kind": "COMPILE",
+      "semantic_operator_id": null,
+      "semantic_subrequest_role": null,
+      "source_sequence": 0
+    },
+    {
+      "event_type": "llm_request_terminal",
+      "prompt_name": null,
+      "request_id": "meg-runtime-membind-v31-opt-w4-meg-runtime-observe-20260821-009:00000001",
+      "request_kind": null,
+      "semantic_operator_id": null,
+      "semantic_subrequest_role": null,
+      "source_sequence": null
+    }
+  ],
+  "schema_version": "membind.meg.real-runtime-lineage-audit.v1",
+  "semantic_lineage": {
+    "event_evidence_complete": false,
+    "opaque_lineage_count": 0,
+    "opaque_request_ids": [],
+    "operator_ready_count": null,
+    "operator_ready_status": "OPAQUE",
+    "production_request_submitted_count": 2,
+    "production_request_terminal_ok_count": 2,
+    "reason": "capture failed before complete MEG_RUNTIME_CAPTURE.json materialization",
+    "request_lineage_coverage": 1.0,
+    "request_lineage_coverage_fraction": 1.0,
+    "request_span_count_before_failure": 2,
+    "semantic_operator_count_before_failure": 3,
+    "source_completion": [
+      {
+        "completion": {
+          "arrival": true,
+          "bind_end": false,
+          "bind_start": true,
+          "compile_end": false,
+          "compile_start": true,
+          "prepared_durable": true,
+          "publication_durable": false
+        },
+        "durable_publication": false,
+        "events": [
+          "arrival",
+          "bind_failure",
+          "bind_start",
+          "compile_start",
+          "prepared_durable"
+        ],
+        "source_sequence": 0
+      },
+      {
+        "completion": {
+          "arrival": false,
+          "bind_end": false,
+          "bind_start": false,
+          "compile_end": false,
+          "compile_start": false,
+          "prepared_durable": false,
+          "publication_durable": false
+        },
+        "durable_publication": false,
+        "events": [],
+        "source_sequence": 1
+      },
+      {
+        "completion": {
+          "arrival": false,
+          "bind_end": false,
+          "bind_start": false,
+          "compile_end": false,
+          "compile_start": false,
+          "prepared_durable": false,
+          "publication_durable": false
+        },
+        "durable_publication": false,
+        "events": [],
+        "source_sequence": 2
+      }
+    ]
+  },
+  "status": "STOP_REAL_RUNTIME_SEMANTIC_LINEAGE"
+}

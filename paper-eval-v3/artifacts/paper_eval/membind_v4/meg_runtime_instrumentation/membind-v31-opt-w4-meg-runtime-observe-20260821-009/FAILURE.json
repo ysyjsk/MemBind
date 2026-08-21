@@ -1,0 +1,48 @@
+{
+  "error_class": "paper_eval.membind_v31.coordinator.MemBindV31CoordinatorError",
+  "error_code": "bind_failed",
+  "failure_record": {
+    "exception_chain": [
+      {
+        "exception_message": "bind_failed",
+        "exception_type": "paper_eval.membind_v31.coordinator.MemBindV31CoordinatorError"
+      },
+      {
+        "exception_message": "resolve_nodes_failed",
+        "exception_type": "paper_eval.membind_v31.graphiti_adapter.MemBindV31GraphitiAdapterError"
+      },
+      {
+        "exception_message": "'NoneType' object has no attribute 'node_similarity_search'",
+        "exception_type": "builtins.AttributeError"
+      }
+    ],
+    "exception_message": "bind_failed",
+    "exception_type": "paper_eval.membind_v31.coordinator.MemBindV31CoordinatorError",
+    "implementation_seam_hash": "e46da9e1f49beb52ed22fff27899518aad9f1344250d358ab900b6de4b8bdfa9",
+    "last_completed_semantic_predecessors": [],
+    "memory_version_token": "OPAQUE",
+    "mutation_epoch": "OPAQUE",
+    "parent_semantic_operator_id": "OPAQUE",
+    "persistent_effect_started": "OPAQUE",
+    "phase": "BIND",
+    "publication_started": "OPAQUE",
+    "request_id": "OPAQUE",
+    "root_exception_message": "'NoneType' object has no attribute 'node_similarity_search'",
+    "root_exception_type": "builtins.AttributeError",
+    "run_id": "membind-v31-opt-w4-meg-runtime-observe-20260821-009",
+    "semantic_operator_id": "meg-runtime-op-eeab13c77326d577f1ec9cc1642a6f97f461e03b43b6ebf60b04836e62b23679",
+    "semantic_operator_type": "NODE_CANDIDATE_READ",
+    "semantic_subrequest_role": "OPAQUE",
+    "source_sequence": 0,
+    "top_level_classification": "bind_failed",
+    "traceback_hash": "3bd915c5bbd0fcb1bea9f18cc2db5811bd0c1971bebe24e1589d88396449f880",
+    "transaction_committed": "OPAQUE",
+    "transaction_started": "OPAQUE"
+  },
+  "operator_count_before_failure": 3,
+  "payload_sha256": "e9702e7f7ef48eb95913c36354ab02006598e4b5259a9ed0400ee6f8d46d7d3c",
+  "publication_count_before_failure": 0,
+  "request_span_count_before_failure": 2,
+  "schema_version": "membind.meg.runtime-observe-capture-failure.v1",
+  "status": "STOP_REAL_RUNTIME_SEMANTIC_LINEAGE"
+}

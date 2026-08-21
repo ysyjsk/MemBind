@@ -344,7 +344,11 @@ class _DriverProxy:
 
     def __getattr__(self, name: str) -> object:
         if name == "search_interface":
-            return _SearchInterfaceProxy(getattr(self._inner, name), self._recorder)
+            selected = getattr(self._inner, name)
+            # Graphiti 0.29.3 leaves this optional capability unset for the
+            # native Neo4j driver; preserve that absence instead of creating
+            # a truthy proxy around ``None``.
+            return None if selected is None else _SearchInterfaceProxy(selected, self._recorder)
         if name == "graph_operations_interface":
             selected = getattr(self._inner, name)
             return None if selected is None else _GraphOperationsProxy(selected, self._recorder)

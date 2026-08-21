@@ -1,0 +1,399 @@
+{
+  "effect_events": [],
+  "events": [
+    {
+      "detail_hash": null,
+      "event_sequence": 0,
+      "event_type": "OPERATOR_MATERIALIZED",
+      "semantic_operator_id": "meg-runtime-op-9f81bb61abffbc59ad71f915a55fedcb053dae797b4c18a2a3b0d313d09c834a",
+      "source_sequence": 0,
+      "status": "OK",
+      "timestamp_ns": 607647197993085,
+      "transaction_id": null
+    },
+    {
+      "detail_hash": null,
+      "event_sequence": 1,
+      "event_type": "OPERATOR_READY",
+      "semantic_operator_id": "meg-runtime-op-9f81bb61abffbc59ad71f915a55fedcb053dae797b4c18a2a3b0d313d09c834a",
+      "source_sequence": 0,
+      "status": "OK",
+      "timestamp_ns": 607647198010536,
+      "transaction_id": null
+    },
+    {
+      "detail_hash": null,
+      "event_sequence": 2,
+      "event_type": "OPERATOR_START",
+      "semantic_operator_id": "meg-runtime-op-9f81bb61abffbc59ad71f915a55fedcb053dae797b4c18a2a3b0d313d09c834a",
+      "source_sequence": null,
+      "status": "OK",
+      "timestamp_ns": 607647198030450,
+      "transaction_id": null
+    },
+    {
+      "detail_hash": null,
+      "event_sequence": 3,
+      "event_type": "OPERATOR_END",
+      "semantic_operator_id": "meg-runtime-op-9f81bb61abffbc59ad71f915a55fedcb053dae797b4c18a2a3b0d313d09c834a",
+      "source_sequence": null,
+      "status": "OK",
+      "timestamp_ns": 607648890826933,
+      "transaction_id": null
+    },
+    {
+      "detail_hash": null,
+      "event_sequence": 4,
+      "event_type": "OPERATOR_MATERIALIZED",
+      "semantic_operator_id": "meg-runtime-op-e3e6f8ae9cace42b023a4fc84a3018fcbc8311d5a3ad753bc1c094d555667b96",
+      "source_sequence": 0,
+      "status": "OK",
+      "timestamp_ns": 607648890983101,
+      "transaction_id": null
+    },
+    {
+      "detail_hash": null,
+      "event_sequence": 5,
+      "event_type": "OPERATOR_READY",
+      "semantic_operator_id": "meg-runtime-op-e3e6f8ae9cace42b023a4fc84a3018fcbc8311d5a3ad753bc1c094d555667b96",
+      "source_sequence": 0,
+      "status": "OK",
+      "timestamp_ns": 607648890992988,
+      "transaction_id": null
+    },
+    {
+      "detail_hash": null,
+      "event_sequence": 6,
+      "event_type": "OPERATOR_START",
+      "semantic_operator_id": "meg-runtime-op-e3e6f8ae9cace42b023a4fc84a3018fcbc8311d5a3ad753bc1c094d555667b96",
+      "source_sequence": null,
+      "status": "OK",
+      "timestamp_ns": 607648891016077,
+      "transaction_id": null
+    },
+    {
+      "detail_hash": null,
+      "event_sequence": 7,
+      "event_type": "OPERATOR_END",
+      "semantic_operator_id": "meg-runtime-op-e3e6f8ae9cace42b023a4fc84a3018fcbc8311d5a3ad753bc1c094d555667b96",
+      "source_sequence": null,
+      "status": "OK",
+      "timestamp_ns": 607654212088178,
+      "transaction_id": null
+    },
+    {
+      "detail_hash": null,
+      "event_sequence": 8,
+      "event_type": "OPERATOR_MATERIALIZED",
+      "semantic_operator_id": "meg-runtime-op-eeab13c77326d577f1ec9cc1642a6f97f461e03b43b6ebf60b04836e62b23679",
+      "source_sequence": 0,
+      "status": "OK",
+      "timestamp_ns": 607654217450737,
+      "transaction_id": null
+    },
+    {
+      "detail_hash": null,
+      "event_sequence": 9,
+      "event_type": "OPERATOR_READY",
+      "semantic_operator_id": "meg-runtime-op-eeab13c77326d577f1ec9cc1642a6f97f461e03b43b6ebf60b04836e62b23679",
+      "source_sequence": 0,
+      "status": "OK",
+      "timestamp_ns": 607654217463239,
+      "transaction_id": null
+    },
+    {
+      "detail_hash": null,
+      "event_sequence": 10,
+      "event_type": "OPERATOR_START",
+      "semantic_operator_id": "meg-runtime-op-eeab13c77326d577f1ec9cc1642a6f97f461e03b43b6ebf60b04836e62b23679",
+      "source_sequence": null,
+      "status": "OK",
+      "timestamp_ns": 607654217499685,
+      "transaction_id": null
+    },
+    {
+      "detail_hash": null,
+      "event_sequence": 11,
+      "event_type": "OPERATOR_END",
+      "semantic_operator_id": "meg-runtime-op-eeab13c77326d577f1ec9cc1642a6f97f461e03b43b6ebf60b04836e62b23679",
+      "source_sequence": null,
+      "status": "ERROR",
+      "timestamp_ns": 607654684343115,
+      "transaction_id": null
+    }
+  ],
+  "failure_records": [
+    {
+      "exception_chain": [
+        {
+          "exception_message": "bind_failed",
+          "exception_type": "paper_eval.membind_v31.coordinator.MemBindV31CoordinatorError"
+        },
+        {
+          "exception_message": "resolve_nodes_failed",
+          "exception_type": "paper_eval.membind_v31.graphiti_adapter.MemBindV31GraphitiAdapterError"
+        },
+        {
+          "exception_message": "'NoneType' object has no attribute 'node_similarity_search'",
+          "exception_type": "builtins.AttributeError"
+        }
+      ],
+      "exception_message": "bind_failed",
+      "exception_type": "paper_eval.membind_v31.coordinator.MemBindV31CoordinatorError",
+      "implementation_seam_hash": "e46da9e1f49beb52ed22fff27899518aad9f1344250d358ab900b6de4b8bdfa9",
+      "last_completed_semantic_predecessors": [],
+      "memory_version_token": "OPAQUE",
+      "mutation_epoch": "OPAQUE",
+      "parent_semantic_operator_id": "OPAQUE",
+      "persistent_effect_started": "OPAQUE",
+      "phase": "BIND",
+      "publication_started": "OPAQUE",
+      "request_id": "OPAQUE",
+      "root_exception_message": "'NoneType' object has no attribute 'node_similarity_search'",
+      "root_exception_type": "builtins.AttributeError",
+      "run_id": "membind-v31-opt-w4-meg-runtime-observe-20260821-009",
+      "semantic_operator_id": "meg-runtime-op-eeab13c77326d577f1ec9cc1642a6f97f461e03b43b6ebf60b04836e62b23679",
+      "semantic_operator_type": "NODE_CANDIDATE_READ",
+      "semantic_subrequest_role": "OPAQUE",
+      "source_sequence": 0,
+      "top_level_classification": "bind_failed",
+      "traceback_hash": "3bd915c5bbd0fcb1bea9f18cc2db5811bd0c1971bebe24e1589d88396449f880",
+      "transaction_committed": "OPAQUE",
+      "transaction_started": "OPAQUE"
+    }
+  ],
+  "mode": "OBSERVE_ONLY",
+  "operator_ready_events": [
+    {
+      "detail_hash": null,
+      "event_sequence": 1,
+      "event_type": "OPERATOR_READY",
+      "semantic_operator_id": "meg-runtime-op-9f81bb61abffbc59ad71f915a55fedcb053dae797b4c18a2a3b0d313d09c834a",
+      "source_sequence": 0,
+      "status": "OK",
+      "timestamp_ns": 607647198010536,
+      "transaction_id": null
+    },
+    {
+      "detail_hash": null,
+      "event_sequence": 5,
+      "event_type": "OPERATOR_READY",
+      "semantic_operator_id": "meg-runtime-op-e3e6f8ae9cace42b023a4fc84a3018fcbc8311d5a3ad753bc1c094d555667b96",
+      "source_sequence": 0,
+      "status": "OK",
+      "timestamp_ns": 607648890992988,
+      "transaction_id": null
+    },
+    {
+      "detail_hash": null,
+      "event_sequence": 9,
+      "event_type": "OPERATOR_READY",
+      "semantic_operator_id": "meg-runtime-op-eeab13c77326d577f1ec9cc1642a6f97f461e03b43b6ebf60b04836e62b23679",
+      "source_sequence": 0,
+      "status": "OK",
+      "timestamp_ns": 607654217463239,
+      "transaction_id": null
+    }
+  ],
+  "operators": [
+    {
+      "child_ordinal": 0,
+      "classification": "EVIDENCE_DERIVED",
+      "graph_id": "pev3-opt-membind-v31-w4-meg-runtime-observe-20260821-009-07741c45",
+      "materialized_before_coroutine": true,
+      "parent_semantic_operator_ids": [],
+      "semantic_input_identity": "900014867f1ed572387358c5807845e24de529a8cea1daea7c7a782b77f76985",
+      "semantic_operator_id": "meg-runtime-op-9f81bb61abffbc59ad71f915a55fedcb053dae797b4c18a2a3b0d313d09c834a",
+      "semantic_operator_type": "NODE_EXTRACTION",
+      "source_sequence": 0,
+      "stream_id": "07741c45"
+    },
+    {
+      "child_ordinal": 0,
+      "classification": "EVIDENCE_DERIVED",
+      "graph_id": "pev3-opt-membind-v31-w4-meg-runtime-observe-20260821-009-07741c45",
+      "materialized_before_coroutine": true,
+      "parent_semantic_operator_ids": [
+        "meg-runtime-op-9f81bb61abffbc59ad71f915a55fedcb053dae797b4c18a2a3b0d313d09c834a"
+      ],
+      "semantic_input_identity": "900014867f1ed572387358c5807845e24de529a8cea1daea7c7a782b77f76985",
+      "semantic_operator_id": "meg-runtime-op-e3e6f8ae9cace42b023a4fc84a3018fcbc8311d5a3ad753bc1c094d555667b96",
+      "semantic_operator_type": "EDGE_EXTRACTION",
+      "source_sequence": 0,
+      "stream_id": "07741c45"
+    },
+    {
+      "child_ordinal": 0,
+      "classification": "STATE_DERIVED",
+      "graph_id": "pev3-opt-membind-v31-w4-meg-runtime-observe-20260821-009-07741c45",
+      "materialized_before_coroutine": true,
+      "parent_semantic_operator_ids": [
+        "meg-runtime-op-9f81bb61abffbc59ad71f915a55fedcb053dae797b4c18a2a3b0d313d09c834a"
+      ],
+      "semantic_input_identity": "2232747af1fc21f1b63d57417a711290cc03c35167b53adb3727720e73627b4d",
+      "semantic_operator_id": "meg-runtime-op-eeab13c77326d577f1ec9cc1642a6f97f461e03b43b6ebf60b04836e62b23679",
+      "semantic_operator_type": "NODE_CANDIDATE_READ",
+      "source_sequence": 0,
+      "stream_id": "07741c45"
+    }
+  ],
+  "payload_sha256": "345ba4887cc32feefc5acf53b05b5c4224d4657e823286698c4fc4cfac5bd2e2",
+  "persistent_effect_hashes": [],
+  "production_db_read_hashes": [],
+  "production_write_intent_hashes": [],
+  "publication_events": [],
+  "publication_order": [],
+  "read_views": [],
+  "request_spans": [
+    {
+      "end_ns": 607648890157013,
+      "model_schema_hash": "95ca6237e4149a7c312c117cef0b47548251b9e5130c00b5037bb385e041b7d1",
+      "prompt_hash": "00a2c8fd0e227e42ea3e4b8ea5439b43d1e6e01418d437710a1dc77e5af182b1",
+      "prompt_name": "extract_nodes.extract_message",
+      "request_id": "meg-runtime-membind-v31-opt-w4-meg-runtime-observe-20260821-009:00000000",
+      "response_hash": "fdbbc1adf058787eee145e4419d7b6487d342c451f4a81bfb12ea01b52c6f29d",
+      "semantic_operator_id": "meg-runtime-op-9f81bb61abffbc59ad71f915a55fedcb053dae797b4c18a2a3b0d313d09c834a",
+      "semantic_subrequest_role": "extract_nodes.extract_message",
+      "start_ns": 607647198103932,
+      "submit_ns": 607647198102194
+    },
+    {
+      "end_ns": 607654211162590,
+      "model_schema_hash": "d05e816e61c9ac5c02c8ed9b9fa3169110f88264f41a6051e586a0abba3f83bf",
+      "prompt_hash": "a4ef9581673ec9e21660b646975c2f8ffe6ba584ed1d879f45928f3545d1e97e",
+      "prompt_name": "extract_edges.edge",
+      "request_id": "meg-runtime-membind-v31-opt-w4-meg-runtime-observe-20260821-009:00000001",
+      "response_hash": "a78cc30d6a5a7766b4cef794abe6261464c25b7d2d5360fe755ce8f5cffef772",
+      "semantic_operator_id": "meg-runtime-op-e3e6f8ae9cace42b023a4fc84a3018fcbc8311d5a3ad753bc1c094d555667b96",
+      "semantic_subrequest_role": "extract_edges.edge",
+      "start_ns": 607648891069075,
+      "submit_ns": 607648891067484
+    }
+  ],
+  "schema_version": "membind.meg.runtime-observe-capture.v1",
+  "semantic_operators": [
+    {
+      "child_ordinal": 0,
+      "classification": "EVIDENCE_DERIVED",
+      "graph_id": "pev3-opt-membind-v31-w4-meg-runtime-observe-20260821-009-07741c45",
+      "materialized_before_coroutine": true,
+      "parent_semantic_operator_ids": [],
+      "semantic_input_identity": "900014867f1ed572387358c5807845e24de529a8cea1daea7c7a782b77f76985",
+      "semantic_operator_id": "meg-runtime-op-9f81bb61abffbc59ad71f915a55fedcb053dae797b4c18a2a3b0d313d09c834a",
+      "semantic_operator_type": "NODE_EXTRACTION",
+      "source_sequence": 0,
+      "stream_id": "07741c45"
+    },
+    {
+      "child_ordinal": 0,
+      "classification": "EVIDENCE_DERIVED",
+      "graph_id": "pev3-opt-membind-v31-w4-meg-runtime-observe-20260821-009-07741c45",
+      "materialized_before_coroutine": true,
+      "parent_semantic_operator_ids": [
+        "meg-runtime-op-9f81bb61abffbc59ad71f915a55fedcb053dae797b4c18a2a3b0d313d09c834a"
+      ],
+      "semantic_input_identity": "900014867f1ed572387358c5807845e24de529a8cea1daea7c7a782b77f76985",
+      "semantic_operator_id": "meg-runtime-op-e3e6f8ae9cace42b023a4fc84a3018fcbc8311d5a3ad753bc1c094d555667b96",
+      "semantic_operator_type": "EDGE_EXTRACTION",
+      "source_sequence": 0,
+      "stream_id": "07741c45"
+    },
+    {
+      "child_ordinal": 0,
+      "classification": "STATE_DERIVED",
+      "graph_id": "pev3-opt-membind-v31-w4-meg-runtime-observe-20260821-009-07741c45",
+      "materialized_before_coroutine": true,
+      "parent_semantic_operator_ids": [
+        "meg-runtime-op-9f81bb61abffbc59ad71f915a55fedcb053dae797b4c18a2a3b0d313d09c834a"
+      ],
+      "semantic_input_identity": "2232747af1fc21f1b63d57417a711290cc03c35167b53adb3727720e73627b4d",
+      "semantic_operator_id": "meg-runtime-op-eeab13c77326d577f1ec9cc1642a6f97f461e03b43b6ebf60b04836e62b23679",
+      "semantic_operator_type": "NODE_CANDIDATE_READ",
+      "source_sequence": 0,
+      "stream_id": "07741c45"
+    }
+  ],
+  "shadow_db_read_hashes": [],
+  "transaction_events": [],
+  "writer_domain": {
+    "authorized_writer_identity": "membind-v31-opt-w4-meg-runtime-observe-20260821-009",
+    "certificate_hash": "8bb9be304b0da745f9cec5204b92d2fda2751fcbda15f0f3f0755edcb1bb17e1",
+    "commit_observer_coverage": "ALL_MANAGED_COMMITS",
+    "expected_write_paths": [
+      "utils/bulk_utils.py:138:add_nodes_and_edges_bulk:execute_write",
+      "utils/bulk_utils.py:226:add_nodes_and_edges_bulk_tx:episodic_node_save_bulk",
+      "utils/bulk_utils.py:227:add_nodes_and_edges_bulk_tx:node_save_bulk",
+      "utils/bulk_utils.py:228:add_nodes_and_edges_bulk_tx:episodic_edge_save_bulk",
+      "utils/bulk_utils.py:231:add_nodes_and_edges_bulk_tx:edge_save_bulk",
+      "utils/bulk_utils.py:235:add_nodes_and_edges_bulk_tx:get_episode_node_save_bulk_query",
+      "utils/bulk_utils.py:237:add_nodes_and_edges_bulk_tx:run",
+      "utils/bulk_utils.py:238:add_nodes_and_edges_bulk_tx:get_entity_node_save_bulk_query",
+      "utils/bulk_utils.py:240:add_nodes_and_edges_bulk_tx:run",
+      "utils/bulk_utils.py:241:add_nodes_and_edges_bulk_tx:get_entity_edge_save_bulk_query",
+      "utils/bulk_utils.py:243:add_nodes_and_edges_bulk_tx:run",
+      "utils/bulk_utils.py:244:add_nodes_and_edges_bulk_tx:get_episodic_edge_save_bulk_query",
+      "utils/bulk_utils.py:246:add_nodes_and_edges_bulk_tx:run",
+      "utils/bulk_utils.py:248:add_nodes_and_edges_bulk_tx:run",
+      "utils/bulk_utils.py:248:add_nodes_and_edges_bulk_tx:get_episode_node_save_bulk_query",
+      "utils/bulk_utils.py:249:add_nodes_and_edges_bulk_tx:run",
+      "utils/bulk_utils.py:250:add_nodes_and_edges_bulk_tx:get_entity_node_save_bulk_query",
+      "utils/bulk_utils.py:253:add_nodes_and_edges_bulk_tx:run",
+      "utils/bulk_utils.py:254:add_nodes_and_edges_bulk_tx:get_episodic_edge_save_bulk_query",
+      "utils/bulk_utils.py:257:add_nodes_and_edges_bulk_tx:run",
+      "utils/bulk_utils.py:258:add_nodes_and_edges_bulk_tx:get_entity_edge_save_bulk_query",
+      "driver/neo4j/operations/entity_edge_ops.py:92:save_bulk:get_entity_edge_save_bulk_query",
+      "driver/neo4j/operations/entity_edge_ops.py:94:save_bulk:run",
+      "driver/neo4j/operations/entity_edge_ops.py:96:save_bulk:execute_query",
+      "driver/neo4j/operations/entity_node_ops.py:83:save_bulk:get_entity_node_save_bulk_query",
+      "driver/neo4j/operations/entity_node_ops.py:86:save_bulk:run",
+      "driver/neo4j/operations/entity_node_ops.py:88:save_bulk:execute_query",
+      "driver/neo4j/operations/episode_node_ops.py:76:save_bulk:get_episode_node_save_bulk_query",
+      "driver/neo4j/operations/episode_node_ops.py:78:save_bulk:run",
+      "driver/neo4j/operations/episode_node_ops.py:80:save_bulk:execute_query",
+      "driver/neo4j/operations/episodic_edge_ops.py:73:save_bulk:get_episodic_edge_save_bulk_query",
+      "driver/neo4j/operations/episodic_edge_ops.py:76:save_bulk:run",
+      "driver/neo4j/operations/episodic_edge_ops.py:78:save_bulk:execute_query"
+    ],
+    "external_writer_policy": "DENY",
+    "fresh_namespace": true,
+    "graph_backend": "neo4j",
+    "namespace": "pev3-opt-membind-v31-w4-meg-runtime-observe-20260821-009-07741c45",
+    "no_background_mutation": true,
+    "status": "CERTIFIED_SINGLE_WRITER_DOMAIN",
+    "write_path_coverage": [
+      "utils/bulk_utils.py:138:add_nodes_and_edges_bulk:execute_write",
+      "utils/bulk_utils.py:226:add_nodes_and_edges_bulk_tx:episodic_node_save_bulk",
+      "utils/bulk_utils.py:227:add_nodes_and_edges_bulk_tx:node_save_bulk",
+      "utils/bulk_utils.py:228:add_nodes_and_edges_bulk_tx:episodic_edge_save_bulk",
+      "utils/bulk_utils.py:231:add_nodes_and_edges_bulk_tx:edge_save_bulk",
+      "utils/bulk_utils.py:235:add_nodes_and_edges_bulk_tx:get_episode_node_save_bulk_query",
+      "utils/bulk_utils.py:237:add_nodes_and_edges_bulk_tx:run",
+      "utils/bulk_utils.py:238:add_nodes_and_edges_bulk_tx:get_entity_node_save_bulk_query",
+      "utils/bulk_utils.py:240:add_nodes_and_edges_bulk_tx:run",
+      "utils/bulk_utils.py:241:add_nodes_and_edges_bulk_tx:get_entity_edge_save_bulk_query",
+      "utils/bulk_utils.py:243:add_nodes_and_edges_bulk_tx:run",
+      "utils/bulk_utils.py:244:add_nodes_and_edges_bulk_tx:get_episodic_edge_save_bulk_query",
+      "utils/bulk_utils.py:246:add_nodes_and_edges_bulk_tx:run",
+      "utils/bulk_utils.py:248:add_nodes_and_edges_bulk_tx:run",
+      "utils/bulk_utils.py:248:add_nodes_and_edges_bulk_tx:get_episode_node_save_bulk_query",
+      "utils/bulk_utils.py:249:add_nodes_and_edges_bulk_tx:run",
+      "utils/bulk_utils.py:250:add_nodes_and_edges_bulk_tx:get_entity_node_save_bulk_query",
+      "utils/bulk_utils.py:253:add_nodes_and_edges_bulk_tx:run",
+      "utils/bulk_utils.py:254:add_nodes_and_edges_bulk_tx:get_episodic_edge_save_bulk_query",
+      "utils/bulk_utils.py:257:add_nodes_and_edges_bulk_tx:run",
+      "utils/bulk_utils.py:258:add_nodes_and_edges_bulk_tx:get_entity_edge_save_bulk_query",
+      "driver/neo4j/operations/entity_edge_ops.py:92:save_bulk:get_entity_edge_save_bulk_query",
+      "driver/neo4j/operations/entity_edge_ops.py:94:save_bulk:run",
+      "driver/neo4j/operations/entity_edge_ops.py:96:save_bulk:execute_query",
+      "driver/neo4j/operations/entity_node_ops.py:83:save_bulk:get_entity_node_save_bulk_query",
+      "driver/neo4j/operations/entity_node_ops.py:86:save_bulk:run",
+      "driver/neo4j/operations/entity_node_ops.py:88:save_bulk:execute_query",
+      "driver/neo4j/operations/episode_node_ops.py:76:save_bulk:get_episode_node_save_bulk_query",
+      "driver/neo4j/operations/episode_node_ops.py:78:save_bulk:run",
+      "driver/neo4j/operations/episode_node_ops.py:80:save_bulk:execute_query",
+      "driver/neo4j/operations/episodic_edge_ops.py:73:save_bulk:get_episodic_edge_save_bulk_query",
+      "driver/neo4j/operations/episodic_edge_ops.py:76:save_bulk:run",
+      "driver/neo4j/operations/episodic_edge_ops.py:78:save_bulk:execute_query"
+    ]
+  }
+}

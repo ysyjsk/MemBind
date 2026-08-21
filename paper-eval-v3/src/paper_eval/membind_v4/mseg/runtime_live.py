@@ -343,6 +343,9 @@ async def _await(value: object, code: str) -> object:
 def _capture_payload(
     recorder: MEGRuntimeRecorder, writer: WriterDomainCertificate
 ) -> dict[str, object]:
+    events = _jsonable(recorder.events)
+    if not isinstance(events, list):
+        events = []
     return {
         "schema_version": "membind.meg.runtime-observe-capture.v1",
         "mode": recorder.mode.value,
@@ -350,7 +353,21 @@ def _capture_payload(
         "operators": _jsonable(recorder.operators),
         "request_spans": _jsonable(recorder.request_spans),
         "read_views": _jsonable(recorder.read_views),
-        "events": _jsonable(recorder.events),
+        "events": events,
+        "semantic_operators": _jsonable(recorder.operators),
+        "operator_ready_events": [
+            item for item in events if isinstance(item, dict) and item.get("event_type") == OperatorEventType.OPERATOR_READY.value
+        ],
+        "transaction_events": [
+            item for item in events if isinstance(item, dict) and item.get("event_type") in {
+                OperatorEventType.TRANSACTION_START.value,
+                OperatorEventType.TRANSACTION_COMMIT.value,
+            }
+        ],
+        "effect_events": list(recorder.persistent_effect_hashes),
+        "publication_events": [
+            item for item in events if isinstance(item, dict) and item.get("event_type") == OperatorEventType.PUBLICATION.value
+        ],
         "production_db_read_hashes": list(recorder.production_db_read_hashes),
         "shadow_db_read_hashes": list(recorder.shadow_db_read_hashes),
         "production_write_intent_hashes": list(
@@ -688,7 +705,11 @@ async def execute_meg_observe_capture(
         atomic_write_json(root / "MEG_RUNTIME_CAPTURE_PARTIAL.json", partial)
         failure = {
             "schema_version": "membind.meg.runtime-observe-capture-failure.v1",
-            "status": "STOP_REAL_RUNTIME_SEMANTIC_LINEAGE",
+            "status": (
+                "STOP_REAL_RUNTIME_SEMANTIC_LINEAGE"
+                if failure_record.causality_observable
+                else "STOP_FAILURE_CAUSALITY_OPAQUE"
+            ),
             "error_class": f"{type(error).__module__}.{type(error).__qualname__}",
             "error_code": str(error),
             "operator_count_before_failure": len(composition.recorder.operators),

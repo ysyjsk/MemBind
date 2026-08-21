@@ -1,0 +1,63 @@
+protocol_version: SATURATED_FIXED_WORK_CONSTRUCTION_PROTOCOL_V1_3
+result_scope: development / protocol-qualified / one run per method-history
+histories:
+  07741c45: 49
+  b6019101: 49
+  6071bd76: 46
+  a2f3aa27: 44
+episode_count: 188
+methods:
+  - B0_NATIVE_SERIAL
+  - B1_NAIVE_WHOLE_UPDATE_ASYNC
+submission_model: ordered_saturated_fixed_work
+synthetic_arrival: false
+rho: null
+application_think_time: null
+warmup_disjoint_from_formal_data: true
+qualification:
+  episode_count: 12
+  order: [B0-A, B0-B, B1]
+  new_regression_count_must_equal: 0
+formal_blocks: 8
+qa_rows: 32
+resource_gate:
+  historical_resource_parity_required: false
+  same_current_campaign_envelope_required: true
+  stable_identity_fields:
+    - provider_hostname
+    - gpu_model
+    - gpu_uuid
+    - gpu_memory
+    - model_checkpoint
+    - software_versions
+    - launch_configuration
+    - resource_limits
+  ephemeral_fields:
+    - pid
+    - engine_core_pid
+    - boot_id
+    - process_tree
+    - telemetry
+services:
+  construction:
+    model: Qwen3-32B-FP8
+    served_model_name: Qwen3-32B-FP8
+    port: 8000
+    max_model_len: 65536
+    gpu_memory_utilization: 0.75
+    structured_outputs_backend: xgrammar
+    prefix_caching: true
+    chunked_prefill: true
+    scheduling_policy: fcfs
+  embedding:
+    model: Qwen3-Embedding-0.6B
+    served_model_name: Qwen3-Embedding-0.6B
+    port: 8001
+    max_model_len: 32768
+    gpu_memory_utilization: 0.15
+    max_num_batched_tokens: 32768
+    max_num_seqs: 128
+sampler:
+  period_seconds: 1.0
+  identity: campaign_preflight_and_restart_boundary
+  telemetry: gpu_utilization_memory_power_clock_temperature

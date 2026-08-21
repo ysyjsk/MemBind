@@ -208,6 +208,25 @@ def main(argv: list[str] | None = None) -> int:
         "publication_causal_coverage": "OPAQUE",
         "opaque_publication_count": publication_count,
     }
+    failure_record = failure.get("failure_record")
+    if not isinstance(failure_record, dict):
+        failure_record = {
+            "exception_type": failure.get("error_class", "OPAQUE"),
+            "exception_message": failure.get("error_code", "OPAQUE"),
+            "root_exception_type": "OPAQUE",
+            "root_exception_message": "OPAQUE",
+            "semantic_operator_id": "OPAQUE",
+            "semantic_subrequest_role": "OPAQUE",
+            "request_id": "OPAQUE",
+            "causality_status": "OPAQUE",
+        }
+    else:
+        failure_record = dict(failure_record)
+        failure_record["causality_status"] = (
+            "OBSERVABLE"
+            if failure_record.get("root_exception_type") not in {None, "OPAQUE"}
+            else "OPAQUE"
+        )
 
     passive = {
         "certificate_type": "PASSIVE_EQUIVALENCE_CERTIFICATE",
@@ -270,6 +289,7 @@ def main(argv: list[str] | None = None) -> int:
                 "root_cause_boundary": "production bind after compile and two successful LLM requests",
                 "root_cause": "OPAQUE: FAILURE.json preserves only the coordinator-level bind_failed code",
                 "observed_warning": "Graphiti 0.29.3 extract_edges logged missing target entities and skipped those edges; source code does not establish this warning as the bind exception",
+                "failure_record": failure_record,
             },
         }
     )

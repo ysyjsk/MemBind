@@ -1,0 +1,59 @@
+{
+  "analysis_mode": "OFFLINE_PROVIDER_FREE",
+  "decision": {
+    "live_retry_authorized": false,
+    "next_gate": "NONE",
+    "sealed_states_unchanged": true,
+    "status": "STOP_REAL_RUNTIME_SEMANTIC_LINEAGE"
+  },
+  "gates": {
+    "commit_precedes_publication": true,
+    "edge_child_identity_precreated": true,
+    "edge_child_lineage_100_percent": true,
+    "failure_causality_qualified": true,
+    "metadata_noninterference": true,
+    "mutation_epoch_increment_once": true,
+    "node_batch_operator_observed": true,
+    "operator_ready_observed": true,
+    "passive_equivalence": true,
+    "prepared_artifact_observed": true,
+    "production_graphiti_bind_returned": true,
+    "publication_observed": true,
+    "request_lineage_100_percent": true,
+    "transaction_start_observed": true,
+    "zero_network_services": true
+  },
+  "graphiti_version": "0.29.3",
+  "metrics": {
+    "edge_child_count": 2,
+    "mutation_epoch": 1,
+    "operator_count": 16,
+    "publication_count": 1,
+    "ready_event_count": 16,
+    "request_lineage_coverage": 1.0,
+    "request_span_count": 9,
+    "shadow_db_reads": 0,
+    "transaction_commit_count": 1,
+    "transaction_start_count": 1
+  },
+  "payload_sha256": "3df854301e23ecbb4be0bf2844b39bc927a5649dbaeff7b619db5a232a45f1cc",
+  "revision": "meg-runtime-offline-20260821-007",
+  "schema_version": "membind.meg.bind-vertical-slice-qualification.v1",
+  "scope": {
+    "live_database_connections": 0,
+    "live_model_calls": 0,
+    "network_calls": 0,
+    "persistent_writes": 0,
+    "services_started": 0
+  },
+  "source_hashes": {
+    "failure": "865a926a8d0ad9fef0f9b2d7bb9a7e5057569447d37d4331f55dffe3064b02a9",
+    "graphiti_0293_runtime": "e46da9e1f49beb52ed22fff27899518aad9f1344250d358ab900b6de4b8bdfa9",
+    "metadata_audit": "fc192b44c5acc403903c84398907859e92f063fe5fb90c5b89e1530fad2bff01",
+    "request_runtime": "5e5f28502246d16b5f8737a1cde7d98a94de1093df103991f0c5a1226f3ecd6f",
+    "runtime_instrumentation": "f1147ebc77d0d8c26e7dfe5b5fc4eedb8bbe520f11823a3ff93a4735507f4cb8",
+    "runtime_live": "e3b2021d77aef081ed604590ca73ace77bd1121941c53b66adebb7f84f5dd310",
+    "vertical_slice": "ed98200ef79f144bd65bea4595fc4899b844ed9ce4c3c62a674ea283132979cf"
+  },
+  "status": "PASS_OFFLINE_MEG_BIND_VERTICAL_SLICE"
+}

@@ -1,0 +1,150 @@
+{
+  "cases": [
+    {
+      "exception_chain": [
+        {
+          "exception_message": "adapter wrapper STATE_DERIVED_GRAPHITI_HELPER",
+          "exception_type": "builtins.RuntimeError"
+        },
+        {
+          "exception_message": "candidate helper failed",
+          "exception_type": "builtins.LookupError"
+        }
+      ],
+      "exception_message": "adapter wrapper STATE_DERIVED_GRAPHITI_HELPER",
+      "exception_type": "builtins.RuntimeError",
+      "implementation_seam_hash": "e46da9e1f49beb52ed22fff27899518aad9f1344250d358ab900b6de4b8bdfa9",
+      "last_completed_semantic_predecessors": [],
+      "memory_version_token": "OPAQUE",
+      "mutation_epoch": "OPAQUE",
+      "parent_semantic_operator_id": "OPAQUE",
+      "persistent_effect_started": false,
+      "phase": "STATE_DERIVED_GRAPHITI_HELPER",
+      "publication_started": false,
+      "request_id": "offline-request-0",
+      "root_exception_message": "candidate helper failed",
+      "root_exception_type": "builtins.LookupError",
+      "run_id": "meg-runtime-offline-20260821-008",
+      "semantic_operator_id": "offline-failure-op-0",
+      "semantic_operator_type": "STATE_DERIVED",
+      "semantic_subrequest_role": "state_derived_graphiti_helper",
+      "source_sequence": 0,
+      "top_level_classification": "bind_failed",
+      "traceback_hash": "ade42266091c78ad1e6eb2955654378562f8087d4ed6629d328954469fa73277",
+      "transaction_committed": false,
+      "transaction_started": false
+    },
+    {
+      "exception_chain": [
+        {
+          "exception_message": "adapter wrapper LLM_RESPONSE_PARSE",
+          "exception_type": "builtins.RuntimeError"
+        },
+        {
+          "exception_message": "structured response parse failed",
+          "exception_type": "builtins.ValueError"
+        }
+      ],
+      "exception_message": "adapter wrapper LLM_RESPONSE_PARSE",
+      "exception_type": "builtins.RuntimeError",
+      "implementation_seam_hash": "e46da9e1f49beb52ed22fff27899518aad9f1344250d358ab900b6de4b8bdfa9",
+      "last_completed_semantic_predecessors": [],
+      "memory_version_token": "OPAQUE",
+      "mutation_epoch": "OPAQUE",
+      "parent_semantic_operator_id": "OPAQUE",
+      "persistent_effect_started": false,
+      "phase": "LLM_RESPONSE_PARSE",
+      "publication_started": false,
+      "request_id": "offline-request-1",
+      "root_exception_message": "structured response parse failed",
+      "root_exception_type": "builtins.ValueError",
+      "run_id": "meg-runtime-offline-20260821-008",
+      "semantic_operator_id": "offline-failure-op-1",
+      "semantic_operator_type": "STATE_DERIVED",
+      "semantic_subrequest_role": "llm_response_parse",
+      "source_sequence": 0,
+      "top_level_classification": "bind_failed",
+      "traceback_hash": "62f8127d39fc964738fcfd1986c1f666b941b8e1c94aa54788f9aacc118b559a",
+      "transaction_committed": false,
+      "transaction_started": false
+    },
+    {
+      "exception_chain": [
+        {
+          "exception_message": "adapter wrapper TRANSACTION_BEFORE_COMMIT",
+          "exception_type": "builtins.RuntimeError"
+        },
+        {
+          "exception_message": "controlled transaction failed",
+          "exception_type": "builtins.RuntimeError"
+        }
+      ],
+      "exception_message": "adapter wrapper TRANSACTION_BEFORE_COMMIT",
+      "exception_type": "builtins.RuntimeError",
+      "implementation_seam_hash": "e46da9e1f49beb52ed22fff27899518aad9f1344250d358ab900b6de4b8bdfa9",
+      "last_completed_semantic_predecessors": [],
+      "memory_version_token": "OPAQUE",
+      "mutation_epoch": "OPAQUE",
+      "parent_semantic_operator_id": "OPAQUE",
+      "persistent_effect_started": true,
+      "phase": "TRANSACTION_BEFORE_COMMIT",
+      "publication_started": false,
+      "request_id": "offline-request-2",
+      "root_exception_message": "controlled transaction failed",
+      "root_exception_type": "builtins.RuntimeError",
+      "run_id": "meg-runtime-offline-20260821-008",
+      "semantic_operator_id": "offline-failure-op-2",
+      "semantic_operator_type": "PERSIST_AND_PUBLISH",
+      "semantic_subrequest_role": "transaction_before_commit",
+      "source_sequence": 0,
+      "top_level_classification": "bind_failed",
+      "traceback_hash": "d53cc794c8078fb6c65e5d52a61ff15d38c0f73849193d52364a1f2f4ee2bba0",
+      "transaction_committed": false,
+      "transaction_started": true
+    },
+    {
+      "exception_chain": [
+        {
+          "exception_message": "adapter wrapper PUBLICATION_INSTRUMENTATION",
+          "exception_type": "builtins.RuntimeError"
+        },
+        {
+          "exception_message": "publication observer failed",
+          "exception_type": "builtins.RuntimeError"
+        }
+      ],
+      "exception_message": "adapter wrapper PUBLICATION_INSTRUMENTATION",
+      "exception_type": "builtins.RuntimeError",
+      "implementation_seam_hash": "e46da9e1f49beb52ed22fff27899518aad9f1344250d358ab900b6de4b8bdfa9",
+      "last_completed_semantic_predecessors": [],
+      "memory_version_token": "OPAQUE",
+      "mutation_epoch": "OPAQUE",
+      "parent_semantic_operator_id": "OPAQUE",
+      "persistent_effect_started": false,
+      "phase": "PUBLICATION_INSTRUMENTATION",
+      "publication_started": true,
+      "request_id": "offline-request-3",
+      "root_exception_message": "publication observer failed",
+      "root_exception_type": "builtins.RuntimeError",
+      "run_id": "meg-runtime-offline-20260821-008",
+      "semantic_operator_id": "offline-failure-op-3",
+      "semantic_operator_type": "STATE_DERIVED",
+      "semantic_subrequest_role": "publication_instrumentation",
+      "source_sequence": 0,
+      "top_level_classification": "bind_failed",
+      "traceback_hash": "4a29fb31f960e420a523c737f8db339dfc30b082b5cee9aef4674177c7d4f6a9",
+      "transaction_committed": false,
+      "transaction_started": true
+    }
+  ],
+  "historical_capture_policy": {
+    "nested_exception": "OPAQUE",
+    "prompt_name": "OPAQUE",
+    "retroactive_inference": false,
+    "root_exception": "OPAQUE",
+    "semantic_operator_id": "OPAQUE"
+  },
+  "payload_sha256": "42a7aba6662d8e8e974a3aee0dd90b5dd8a717fbb7202d6a9421820d093d327c",
+  "schema_version": "membind.meg.failure-causality-qualification.v1",
+  "status": "PASS"
+}

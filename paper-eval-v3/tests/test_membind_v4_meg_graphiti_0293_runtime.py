@@ -11,6 +11,7 @@ import pytest
 
 from paper_eval.membind_v4.mseg.graphiti_0293_audit import audit_graphiti_0293
 from paper_eval.membind_v4.mseg.graphiti_0293_runtime import (
+    _DriverProxy,
     build_observe_only_binding,
     snapshot_controlled_execution,
 )
@@ -41,6 +42,15 @@ def _writer() -> WriterDomainCertificate:
         fresh_namespace=True,
         no_background_mutation=True,
     )
+
+
+def test_driver_proxy_preserves_absent_optional_search_interface() -> None:
+    class DriverWithoutSearchInterface:
+        search_interface = None
+
+    proxy = _DriverProxy(DriverWithoutSearchInterface(), None, None)  # type: ignore[arg-type]
+
+    assert proxy.search_interface is None
 
 
 def test_actual_graphiti_0293_observe_only_passive_equivalence() -> None:

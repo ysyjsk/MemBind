@@ -1,0 +1,199 @@
+{
+  "failure_classification": "B_SEMANTIC_LINEAGE_FAILURE",
+  "identity": {
+    "contract_payload_sha256": "062e9182578530e8b3a6ce7cec3609dcef1b881811eb792f670c9f6f395fcbcd",
+    "failure_payload_sha256": "e9702e7f7ef48eb95913c36354ab02006598e4b5259a9ed0400ee6f8d46d7d3c",
+    "graphiti_version": "0.29.3",
+    "history": "07741c45",
+    "namespace": "pev3-opt-membind-v31-w4-meg-runtime-observe-20260821-009-07741c45",
+    "run_id": "membind-v31-opt-w4-meg-runtime-observe-20260821-009",
+    "run_root": "/data/predator/ly/MemBind/paper-eval-v3/artifacts/paper_eval/membind_v4/meg_runtime_instrumentation/membind-v31-opt-w4-meg-runtime-observe-20260821-009",
+    "run_root_sha256": "8df038d768ed7cffb9ec84b5c342786fbec51887503dbceb842358b5dda93092",
+    "seam_hash": "e46da9e1f49beb52ed22fff27899518aad9f1344250d358ab900b6de4b8bdfa9",
+    "sources": [
+      0,
+      1,
+      2
+    ]
+  },
+  "observed_failure": {
+    "error_class": "paper_eval.membind_v31.coordinator.MemBindV31CoordinatorError",
+    "error_code": "bind_failed",
+    "failure_record": {
+      "causality_status": "OBSERVABLE",
+      "exception_chain": [
+        {
+          "exception_message": "bind_failed",
+          "exception_type": "paper_eval.membind_v31.coordinator.MemBindV31CoordinatorError"
+        },
+        {
+          "exception_message": "resolve_nodes_failed",
+          "exception_type": "paper_eval.membind_v31.graphiti_adapter.MemBindV31GraphitiAdapterError"
+        },
+        {
+          "exception_message": "'NoneType' object has no attribute 'node_similarity_search'",
+          "exception_type": "builtins.AttributeError"
+        }
+      ],
+      "exception_message": "bind_failed",
+      "exception_type": "paper_eval.membind_v31.coordinator.MemBindV31CoordinatorError",
+      "implementation_seam_hash": "e46da9e1f49beb52ed22fff27899518aad9f1344250d358ab900b6de4b8bdfa9",
+      "last_completed_semantic_predecessors": [],
+      "memory_version_token": "OPAQUE",
+      "mutation_epoch": "OPAQUE",
+      "parent_semantic_operator_id": "OPAQUE",
+      "persistent_effect_started": "OPAQUE",
+      "phase": "BIND",
+      "publication_started": "OPAQUE",
+      "request_id": "OPAQUE",
+      "root_exception_message": "'NoneType' object has no attribute 'node_similarity_search'",
+      "root_exception_type": "builtins.AttributeError",
+      "run_id": "membind-v31-opt-w4-meg-runtime-observe-20260821-009",
+      "semantic_operator_id": "meg-runtime-op-eeab13c77326d577f1ec9cc1642a6f97f461e03b43b6ebf60b04836e62b23679",
+      "semantic_operator_type": "NODE_CANDIDATE_READ",
+      "semantic_subrequest_role": "OPAQUE",
+      "source_sequence": 0,
+      "top_level_classification": "bind_failed",
+      "traceback_hash": "3bd915c5bbd0fcb1bea9f18cc2db5811bd0c1971bebe24e1589d88396449f880",
+      "transaction_committed": "OPAQUE",
+      "transaction_started": "OPAQUE"
+    },
+    "observed_warning": "Graphiti 0.29.3 extract_edges logged missing target entities and skipped those edges; source code does not establish this warning as the bind exception",
+    "root_cause": "OPAQUE: FAILURE.json preserves only the coordinator-level bind_failed code",
+    "root_cause_boundary": "production bind after compile and two successful LLM requests"
+  },
+  "passive_equivalence": {
+    "extra_writes": 0,
+    "reorder": false,
+    "shadow_db_reads": 0,
+    "shadow_embeddings": 0,
+    "shadow_llm_calls": 0,
+    "status": "NOT_CERTIFIED"
+  },
+  "payload_sha256": "4bd50c4a1582c5470636f9ad796db32bcb15bcf1a7d0add719e2565630db542d",
+  "schema_version": "membind.meg.real-runtime-capture-summary.v1",
+  "semantic_lineage": {
+    "event_evidence_complete": false,
+    "opaque_lineage_count": 0,
+    "opaque_request_ids": [],
+    "operator_ready_count": null,
+    "operator_ready_status": "OPAQUE",
+    "production_request_submitted_count": 2,
+    "production_request_terminal_ok_count": 2,
+    "reason": "capture failed before complete MEG_RUNTIME_CAPTURE.json materialization",
+    "request_lineage_coverage": 1.0,
+    "request_lineage_coverage_fraction": 1.0,
+    "request_span_count_before_failure": 2,
+    "semantic_operator_count_before_failure": 3,
+    "source_completion": [
+      {
+        "completion": {
+          "arrival": true,
+          "bind_end": false,
+          "bind_start": true,
+          "compile_end": false,
+          "compile_start": true,
+          "prepared_durable": true,
+          "publication_durable": false
+        },
+        "durable_publication": false,
+        "events": [
+          "arrival",
+          "bind_failure",
+          "bind_start",
+          "compile_start",
+          "prepared_durable"
+        ],
+        "source_sequence": 0
+      },
+      {
+        "completion": {
+          "arrival": false,
+          "bind_end": false,
+          "bind_start": false,
+          "compile_end": false,
+          "compile_start": false,
+          "prepared_durable": false,
+          "publication_durable": false
+        },
+        "durable_publication": false,
+        "events": [],
+        "source_sequence": 1
+      },
+      {
+        "completion": {
+          "arrival": false,
+          "bind_end": false,
+          "bind_start": false,
+          "compile_end": false,
+          "compile_start": false,
+          "prepared_durable": false,
+          "publication_durable": false
+        },
+        "durable_publication": false,
+        "events": [],
+        "source_sequence": 2
+      }
+    ]
+  },
+  "source_completion": [
+    {
+      "completion": {
+        "arrival": true,
+        "bind_end": false,
+        "bind_start": true,
+        "compile_end": false,
+        "compile_start": true,
+        "prepared_durable": true,
+        "publication_durable": false
+      },
+      "durable_publication": false,
+      "events": [
+        "arrival",
+        "bind_failure",
+        "bind_start",
+        "compile_start",
+        "prepared_durable"
+      ],
+      "source_sequence": 0
+    },
+    {
+      "completion": {
+        "arrival": false,
+        "bind_end": false,
+        "bind_start": false,
+        "compile_end": false,
+        "compile_start": false,
+        "prepared_durable": false,
+        "publication_durable": false
+      },
+      "durable_publication": false,
+      "events": [],
+      "source_sequence": 1
+    },
+    {
+      "completion": {
+        "arrival": false,
+        "bind_end": false,
+        "bind_start": false,
+        "compile_end": false,
+        "compile_start": false,
+        "prepared_durable": false,
+        "publication_durable": false
+      },
+      "durable_publication": false,
+      "events": [],
+      "source_sequence": 2
+    }
+  ],
+  "state_transaction": {
+    "mutation_epoch_transition_count_observed": 0,
+    "opaque_publication_count": 0,
+    "publication_causal_coverage": "OPAQUE",
+    "publication_event_count_observed": 0,
+    "transaction_commit_count_observed": 0,
+    "transaction_observability": "OPAQUE",
+    "writer_domain_status": "OPAQUE_UNOBSERVED_AFTER_CAPTURE_FAILURE"
+  },
+  "status": "STOP_REAL_RUNTIME_SEMANTIC_LINEAGE"
+}
