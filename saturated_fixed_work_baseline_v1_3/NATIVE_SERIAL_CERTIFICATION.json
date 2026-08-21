@@ -1,0 +1,18 @@
+{
+  "schema_version": "sfwb.v1.3.native-serial-certification.v1",
+  "provider_free": true,
+  "official_style_loop": "for episode in source_order: await graphiti.add_episode(episode)",
+  "harness": "saturated_fixed_work_baseline_v1_3 B0",
+  "source_count": 2,
+  "checks": {
+    "canonical_effect_digest_equal": true,
+    "effect_cardinality_equal": true,
+    "operator_lineage_equal": true,
+    "publication_order_equal": true,
+    "source_coverage_equal": true,
+    "work_cardinality_equal": true
+  },
+  "status": "PASS",
+  "decision": "NATIVE_SERIAL_REFERENCE_CERTIFIED",
+  "fixture_scope": "captured provider-free operator/effect lineage; no live result"
+}

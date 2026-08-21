@@ -1,0 +1,30 @@
+{
+  "schema_version": "sfwb.v1.3.real-seam-fingerprint-noninterference.v1",
+  "provider_free": true,
+  "seam_scope": [
+    "graphiti.extract_nodes",
+    "graphiti.extract_edges",
+    "graphiti.resolve_extracted_nodes",
+    "graphiti.resolve_edge_pointers",
+    "graphiti.resolve_extracted_edges",
+    "graphiti.extract_attributes_from_nodes",
+    "graphiti.persistence",
+    "graphiti.publish"
+  ],
+  "checks": {
+    "args_unchanged": true,
+    "return_value_unchanged": true,
+    "call_count_unchanged": true,
+    "batch_membership_unchanged": true,
+    "effect_unchanged": true,
+    "publication_unchanged": true,
+    "minimum_fingerprint_fields_present": true,
+    "zero_extra_provider_calls": true,
+    "zero_extra_db_io": true
+  },
+  "status": "PASSIVE_FINGERPRINT_NONINTERFERENCE_PASS",
+  "live_execution": false,
+  "paired_sealed_fingerprint_telemetry": false,
+  "source_0_diagnostic_authorized": false,
+  "scope_note": "The observer is attached only to captured callable seams; it does not retroactively alter sealed blocks."
+}

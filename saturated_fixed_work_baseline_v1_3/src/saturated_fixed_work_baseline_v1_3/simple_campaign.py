@@ -420,8 +420,8 @@ async def _run_live_qualification(root: Path) -> dict[str, Any]:
 
     from saturated_fixed_work_baseline_v1_2.dataset import load_episode_inputs
     from saturated_fixed_work_baseline_v1_2.live import FormalBlock, derive_cache_salt
-    from saturated_fixed_work_baseline_v1_2.production_dependencies import (
-        build_live_dependencies,
+    from saturated_fixed_work_baseline_v1_3.live_dependencies import (
+        build_v13_live_dependencies,
     )
     from saturated_fixed_work_baseline_v1_2.production_workflow import _load_env
     from saturated_fixed_work_baseline_v1_2.reuse import import_validation_module, import_paper_eval_module
@@ -444,10 +444,9 @@ async def _run_live_qualification(root: Path) -> dict[str, Any]:
     env = _load_env(repository_root)
     driver_module = import_validation_module(repository_root, "graphiti_core.driver.neo4j_driver")
     driver = driver_module.Neo4jDriver(env["NEO4J_URI"], env["NEO4J_USER"], env["NEO4J_PASSWORD"])
-    neo4j_probe = __import__(
-        "saturated_fixed_work_baseline_v1_2.production_dependencies",
-        fromlist=["build_neo4j_idle_probe"],
-    ).build_neo4j_idle_probe(driver)
+    from saturated_fixed_work_baseline_v1_3.live_dependencies import build_v13_neo4j_idle_probe
+
+    neo4j_probe = build_v13_neo4j_idle_probe(driver)
 
     async def service_idle() -> bool:
         for port in (8000, 8001):
@@ -519,10 +518,9 @@ async def _run_live_qualification(root: Path) -> dict[str, Any]:
     base_episodes = load_episode_inputs(repository_root, "07741c45", "sfwb-v1-3-simple-qualification")[:12]
     if len(base_episodes) != 12:
         raise SimplifiedCampaignError("WORKLOAD_UNAVAILABLE")
-    dependencies = build_live_dependencies(
+    dependencies = build_v13_live_dependencies(
         repository_root=repository_root,
         service_idle=service_idle,
-        sampler_probes=None,
     )
     workload_hash = _hash_json(
         [{"source_sequence": row.source_sequence, "source_hash": row.source_hash} for row in base_episodes]
@@ -685,9 +683,9 @@ async def _run_live_membind_extension(
     from saturated_fixed_work_baseline_v1_2.canonical_diff import canonical_diff
     from saturated_fixed_work_baseline_v1_2.dataset import load_episode_inputs
     from saturated_fixed_work_baseline_v1_2.live import derive_cache_salt
-    from saturated_fixed_work_baseline_v1_2.production_dependencies import (
-        build_live_dependencies,
-        build_neo4j_idle_probe,
+    from saturated_fixed_work_baseline_v1_3.live_dependencies import (
+        build_v13_live_dependencies,
+        build_v13_neo4j_idle_probe,
     )
     from saturated_fixed_work_baseline_v1_2.production_workflow import (
         _load_env,
@@ -716,7 +714,7 @@ async def _run_live_membind_extension(
     driver = driver_module.Neo4jDriver(
         env["NEO4J_URI"], env["NEO4J_USER"], env["NEO4J_PASSWORD"]
     )
-    neo4j_probe = build_neo4j_idle_probe(driver)
+    neo4j_probe = build_v13_neo4j_idle_probe(driver)
 
     async def service_idle() -> bool:
         for port in (8000, 8001):
@@ -842,10 +840,9 @@ async def _run_live_membind_extension(
         ):
             raise SimplifiedCampaignError("BLOCK_PREPARATION_FAILED")
 
-        live_dependencies = build_live_dependencies(
+        live_dependencies = build_v13_live_dependencies(
             repository_root=repository_root,
             service_idle=service_idle,
-            sampler_probes=None,
         )
         membind_dependencies = build_production_membind_dependencies(
             repository_root=repository_root,

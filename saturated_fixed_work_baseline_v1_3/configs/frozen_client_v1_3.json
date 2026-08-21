@@ -1,0 +1,74 @@
+{
+  "schema_version": "sfwb.v1.3.frozen-client.v1",
+  "protocol_version": "SATURATED_FIXED_WORK_CONSTRUCTION_PROTOCOL_V1_3",
+  "source": "audited-v1.2-native-graphiti-qwen-client",
+  "method_overrides": {},
+  "common": {
+    "llm": {
+      "temperature": 0,
+      "top_p": 1.0,
+      "max_tokens": 16384,
+      "seed": 20260806,
+      "structured_output_request_mode": "json_schema",
+      "default_chat_template_kwargs": {
+        "enable_thinking": false
+      }
+    },
+    "embedding": {
+      "encoding_format": "float",
+      "dimensions": 1024
+    },
+    "transport": {
+      "http_timeout_seconds": "Graphiti pinned-client default (not overridden)",
+      "max_attempts": "Graphiti pinned-client default",
+      "retry_policy": "Graphiti pinned-client policy; terminal failure is recorded",
+      "sdk_hidden_retries": "Graphiti pinned-client default"
+    }
+  },
+  "methods": {
+    "B0_NATIVE_SERIAL": {
+      "llm": {
+        "temperature": 0,
+        "top_p": 1.0,
+        "max_tokens": 16384,
+        "seed": 20260806,
+        "structured_output_request_mode": "json_schema",
+        "default_chat_template_kwargs": {
+          "enable_thinking": false
+        }
+      },
+      "embedding": {
+        "encoding_format": "float",
+        "dimensions": 1024
+      },
+      "transport": {
+        "http_timeout_seconds": "Graphiti pinned-client default (not overridden)",
+        "max_attempts": "Graphiti pinned-client default",
+        "retry_policy": "Graphiti pinned-client policy; terminal failure is recorded",
+        "sdk_hidden_retries": "Graphiti pinned-client default"
+      }
+    },
+    "B1_NAIVE_WHOLE_UPDATE_ASYNC": {
+      "llm": {
+        "temperature": 0,
+        "top_p": 1.0,
+        "max_tokens": 16384,
+        "seed": 20260806,
+        "structured_output_request_mode": "json_schema",
+        "default_chat_template_kwargs": {
+          "enable_thinking": false
+        }
+      },
+      "embedding": {
+        "encoding_format": "float",
+        "dimensions": 1024
+      },
+      "transport": {
+        "http_timeout_seconds": "Graphiti pinned-client default (not overridden)",
+        "max_attempts": "Graphiti pinned-client default",
+        "retry_policy": "Graphiti pinned-client policy; terminal failure is recorded",
+        "sdk_hidden_retries": "Graphiti pinned-client default"
+      }
+    }
+  }
+}

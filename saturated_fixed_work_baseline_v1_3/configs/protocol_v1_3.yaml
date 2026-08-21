@@ -49,3 +49,19 @@ services:
     max_num_seqs: 128
 measurement:
   existing_instrumentation_only: true
+  performance_lane: monotonic_lifecycle_and_work_volume
+  semantic_qualification_lane: passive_fingerprint_only
+development_scope:
+  histories:
+    - 07741c45
+    - b6019101
+    - 6071bd76
+    - a2f3aa27
+  status: DEVELOPMENT_EXPOSED
+  heldout_execution_authorized: false
+lifecycle:
+  timer_clock: CLOCK_MONOTONIC
+  timer_start: after_formal_backend_idle_before_formal_e0
+  timer_stop: after_last_durable_write_ack
+  validation_outside_build_timer: true
+  fresh_namespace_per_block: true
