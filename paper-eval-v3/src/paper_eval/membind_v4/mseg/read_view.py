@@ -365,6 +365,45 @@ def capture_semantic_read_view(
     if not isinstance(materialized, ReadMaterialization):
         raise _fail("read_materialization_invalid")
 
+    return semantic_read_view_from_materialization(
+        graph_id=graph_id,
+        stream_id=stream_id,
+        source_sequence=source_sequence,
+        operator_instance_id=operator_instance_id,
+        memory_version_token=memory_version_token,
+        mutation_epoch_before=before,
+        mutation_epoch_after=after,
+        read_kind=read_kind,
+        materialized=materialized,
+    )
+
+
+def semantic_read_view_from_materialization(
+    *,
+    graph_id: str,
+    stream_id: str,
+    source_sequence: int,
+    operator_instance_id: str,
+    memory_version_token: MemoryVersionToken,
+    mutation_epoch_before: MutationEpochToken,
+    mutation_epoch_after: MutationEpochToken,
+    read_kind: ReadKind,
+    materialized: ReadMaterialization,
+) -> SemanticReadView:
+    """Build a view from epoch tokens captured around the actual async read."""
+
+    if not isinstance(memory_version_token, MemoryVersionToken):
+        raise _fail("memory_version_token_invalid")
+    if not isinstance(mutation_epoch_before, MutationEpochToken) or not isinstance(
+        mutation_epoch_after, MutationEpochToken
+    ):
+        raise _fail("mutation_epoch_token_invalid")
+    if not isinstance(read_kind, ReadKind):
+        raise _fail("read_kind_invalid")
+    if not isinstance(materialized, ReadMaterialization):
+        raise _fail("read_materialization_invalid")
+    before = mutation_epoch_before
+    after = mutation_epoch_after
     graph = _text(graph_id, "read_view_graph_id_invalid")
     stream = _text(stream_id, "read_view_stream_id_invalid")
     sequence = _sequence(source_sequence, "read_view_source_sequence_invalid")
@@ -427,4 +466,5 @@ __all__ = [
     "SemanticReadView",
     "SemanticReadViewError",
     "capture_semantic_read_view",
+    "semantic_read_view_from_materialization",
 ]

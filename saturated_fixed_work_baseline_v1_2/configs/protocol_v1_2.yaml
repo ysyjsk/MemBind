@@ -1,0 +1,44 @@
+{
+  "protocol_version": "SATURATED_FIXED_WORK_CONSTRUCTION_PROTOCOL_V1_2",
+  "result_scope": "development / protocol-qualified / one run per method-history",
+  "methods": [
+    "B0_NATIVE_SERIAL",
+    "B1_NAIVE_WHOLE_UPDATE_ASYNC"
+  ],
+  "histories": {
+    "07741c45": 49,
+    "b6019101": 49,
+    "6071bd76": 46,
+    "a2f3aa27": 44
+  },
+  "formal_order": [
+    ["07741c45", "B0_NATIVE_SERIAL"],
+    ["07741c45", "B1_NAIVE_WHOLE_UPDATE_ASYNC"],
+    ["b6019101", "B1_NAIVE_WHOLE_UPDATE_ASYNC"],
+    ["b6019101", "B0_NATIVE_SERIAL"],
+    ["6071bd76", "B0_NATIVE_SERIAL"],
+    ["6071bd76", "B1_NAIVE_WHOLE_UPDATE_ASYNC"],
+    ["a2f3aa27", "B1_NAIVE_WHOLE_UPDATE_ASYNC"],
+    ["a2f3aa27", "B0_NATIVE_SERIAL"]
+  ],
+  "cache_isolation": "UNIQUE_REQUEST_CACHE_SALT_PER_BLOCK",
+  "warmup": {
+    "construction": "Synthetic protocol warmup: identify Alice as a person.",
+    "embedding": "Synthetic protocol embedding warmup.",
+    "disjoint_from_formal_data": true
+  },
+  "sampler_period_seconds": 1.0,
+  "sampler_preflight_seconds": 60,
+  "instrumentation_max_overhead_fraction": 0.02,
+  "qualification_episode_count": 12,
+  "qualification_history": "07741c45",
+  "rehearsal_history": "07741c45",
+  "qa_questions_per_history": 4,
+  "expected_formal_blocks": 8,
+  "expected_qa_rows": 32,
+  "selection_rule": "FIRST_VALID_ATTEMPT",
+  "application_max_inflight": null,
+  "artificial_arrival_gap": null,
+  "repair_or_replay": false
+}
+

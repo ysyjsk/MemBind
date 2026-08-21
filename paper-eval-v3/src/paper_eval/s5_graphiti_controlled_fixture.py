@@ -152,6 +152,7 @@ class _ControlledLLM(LLMClient):
     ) -> None:
         super().__init__(LLMConfig(model="controlled", small_model="controlled"))
         self.calls: list[str] = []
+        self.request_evidence: list[dict[str, str]] = []
         self.fixture = fixture
 
     async def _generate_response(
@@ -161,7 +162,7 @@ class _ControlledLLM(LLMClient):
         max_tokens: int = 16384,
         model_size: ModelSize = ModelSize.medium,
     ) -> dict[str, Any]:
-        del messages, max_tokens, model_size
+        del max_tokens, model_size
         self.fixture.provider_ledger.consume("llm")
         name = response_model.__name__ if response_model is not None else ""
         self.calls.append(name)
@@ -177,6 +178,22 @@ class _ControlledLLM(LLMClient):
         response = providers.llm_responses.get(name)
         if response is None:
             raise ControlledGraphitiFixtureError(f"LLM_RESPONSE_MISSING:{name}")
+        self.request_evidence.append(
+            {
+                "request_identity": payload_sha256(
+                    {"ordinal": len(self.request_evidence), "response_model": name}
+                ),
+                "prompt_sha256": payload_sha256(
+                    [message.model_dump(mode="json") for message in messages]
+                ),
+                "model_schema_sha256": payload_sha256(
+                    None
+                    if response_model is None
+                    else response_model.model_json_schema()
+                ),
+                "response_sha256": payload_sha256(response),
+            }
+        )
         return deepcopy(response)
 
 
@@ -663,6 +680,7 @@ class ControlledGraphitiFixture:
         self.prepare_rendezvous_arrivals = 0
         self.prepare_rendezvous_event = asyncio.Event()
         self.llm.calls.clear()
+        self.llm.request_evidence.clear()
         self.embedder.calls.clear()
         for rows in self.durable_records.values():
             rows.clear()

@@ -178,6 +178,148 @@ class InstrumentationEquivalenceCertificate:
         return self.status is PassiveEquivalenceStatus.PASS
 
 
+@dataclass(frozen=True, slots=True)
+class RuntimeExecutionSnapshot:
+    """Production and shadow observables for the two qualified runtime modes."""
+
+    production_request_ids: tuple[str, ...]
+    production_prompt_hashes: tuple[str, ...]
+    production_model_schema_hashes: tuple[str, ...]
+    captured_response_hashes: tuple[str, ...]
+    production_db_read_hashes: tuple[str, ...]
+    shadow_db_read_hashes: tuple[str, ...]
+    production_write_intent_hashes: tuple[str, ...]
+    persistent_effect_hashes: tuple[str, ...]
+    source_publication_order: tuple[int, ...]
+    source_sequences: tuple[int, ...]
+    source_exactly_once: bool
+    production_llm_call_count: int
+    production_embedding_call_count: int
+    shadow_llm_call_count: int
+    shadow_embedding_call_count: int
+    shadow_persistent_write_count: int
+    publication_modification_count: int
+
+    def __post_init__(self) -> None:
+        _texts(self.production_request_ids, "runtime_request_id_invalid")
+        for values, code in (
+            (self.production_prompt_hashes, "runtime_prompt_hash_invalid"),
+            (self.production_model_schema_hashes, "runtime_model_schema_hash_invalid"),
+            (self.captured_response_hashes, "runtime_response_hash_invalid"),
+            (self.production_db_read_hashes, "runtime_db_read_hash_invalid"),
+            (self.shadow_db_read_hashes, "runtime_shadow_read_hash_invalid"),
+            (self.production_write_intent_hashes, "runtime_write_hash_invalid"),
+            (self.persistent_effect_hashes, "runtime_effect_hash_invalid"),
+        ):
+            _hashes(values, code)
+        _ordinals(self.source_publication_order, "runtime_publication_order_invalid")
+        _ordinals(self.source_sequences, "runtime_source_sequence_invalid")
+        if not isinstance(self.source_exactly_once, bool):
+            raise _fail("runtime_exactly_once_invalid")
+        for value, code in (
+            (self.production_llm_call_count, "runtime_llm_count_invalid"),
+            (self.production_embedding_call_count, "runtime_embedding_count_invalid"),
+            (self.shadow_llm_call_count, "runtime_shadow_llm_count_invalid"),
+            (self.shadow_embedding_call_count, "runtime_shadow_embedding_count_invalid"),
+            (self.shadow_persistent_write_count, "runtime_shadow_write_count_invalid"),
+            (self.publication_modification_count, "runtime_publication_modification_invalid"),
+        ):
+            _count(value, code)
+
+
+@dataclass(frozen=True, slots=True)
+class RuntimeEquivalenceCertificate:
+    certificate_type: str
+    status: PassiveEquivalenceStatus
+    violations: tuple[str, ...]
+    baseline: RuntimeExecutionSnapshot
+    instrumented: RuntimeExecutionSnapshot
+
+    @property
+    def passed(self) -> bool:
+        return self.status is PassiveEquivalenceStatus.PASS
+
+
+def _compare_runtime(
+    baseline: RuntimeExecutionSnapshot,
+    instrumented: RuntimeExecutionSnapshot,
+    *,
+    shadow_reads_allowed: bool,
+) -> RuntimeEquivalenceCertificate:
+    if not isinstance(baseline, RuntimeExecutionSnapshot) or not isinstance(
+        instrumented, RuntimeExecutionSnapshot
+    ):
+        raise _fail("runtime_snapshot_invalid")
+    violations: list[str] = []
+    request_count_fields = (
+        "production_request_ids",
+        "production_prompt_hashes",
+        "production_model_schema_hashes",
+        "captured_response_hashes",
+    )
+    for label, snapshot in (("baseline", baseline), ("instrumented", instrumented)):
+        counts = {len(getattr(snapshot, field)) for field in request_count_fields}
+        if len(counts) != 1:
+            violations.append(f"{label}_request_evidence_count_mismatch")
+    compared = (
+        "production_request_ids",
+        "production_prompt_hashes",
+        "production_model_schema_hashes",
+        "captured_response_hashes",
+        "production_db_read_hashes",
+        "production_write_intent_hashes",
+        "persistent_effect_hashes",
+        "source_publication_order",
+        "source_sequences",
+        "source_exactly_once",
+        "production_llm_call_count",
+        "production_embedding_call_count",
+    )
+    for field in compared:
+        if getattr(baseline, field) != getattr(instrumented, field):
+            violations.append(f"{field}_changed")
+    if not shadow_reads_allowed and instrumented.shadow_db_read_hashes:
+        violations.append("observe_only_extra_db_read")
+    if instrumented.shadow_llm_call_count:
+        violations.append("shadow_llm_call_detected")
+    if instrumented.shadow_embedding_call_count:
+        violations.append("shadow_embedding_call_detected")
+    if instrumented.shadow_persistent_write_count:
+        violations.append("shadow_write_detected")
+    if instrumented.publication_modification_count:
+        violations.append("publication_modification_detected")
+    stable = tuple(dict.fromkeys(violations))
+    return RuntimeEquivalenceCertificate(
+        certificate_type=(
+            "SEMANTIC_NONINTERFERENCE_CERTIFICATE"
+            if shadow_reads_allowed
+            else "PASSIVE_EQUIVALENCE_CERTIFICATE"
+        ),
+        status=(
+            PassiveEquivalenceStatus.PASS
+            if not stable
+            else PassiveEquivalenceStatus.FAIL
+        ),
+        violations=stable,
+        baseline=baseline,
+        instrumented=instrumented,
+    )
+
+
+def compare_observe_only_execution(
+    baseline: RuntimeExecutionSnapshot,
+    instrumented: RuntimeExecutionSnapshot,
+) -> RuntimeEquivalenceCertificate:
+    return _compare_runtime(baseline, instrumented, shadow_reads_allowed=False)
+
+
+def compare_shadow_read_execution(
+    baseline: RuntimeExecutionSnapshot,
+    instrumented: RuntimeExecutionSnapshot,
+) -> RuntimeEquivalenceCertificate:
+    return _compare_runtime(baseline, instrumented, shadow_reads_allowed=True)
+
+
 def compare_passive_execution(
     baseline: PassiveExecutionSnapshot,
     instrumented: PassiveExecutionSnapshot,
@@ -311,6 +453,10 @@ __all__ = [
     "PassiveEquivalenceError",
     "PassiveEquivalenceStatus",
     "PassiveExecutionSnapshot",
+    "RuntimeEquivalenceCertificate",
+    "RuntimeExecutionSnapshot",
+    "compare_observe_only_execution",
+    "compare_shadow_read_execution",
     "compare_instrumentation_execution",
     "compare_passive_execution",
 ]

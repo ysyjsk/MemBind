@@ -1,0 +1,43 @@
+{
+  "schema_version": "membind.saturated-fixed-work.provider-reference.v1",
+  "source_path": "paper-eval-v3/artifacts/paper_eval/membind_v31/PROVIDER_EXECUTION_ENVELOPE_XGRAMMAR_20260819.json",
+  "source_payload_sha256": "31f1a8476650767bc391215675924ceed972e10153df02feeaf44eb9fa54e0ee",
+  "construction": {
+    "base_url": "http://10.87.5.247:8000/v1",
+    "model": "qwen3-32b-fp8",
+    "model_revision": "aa55da1ecc13d006e8b8e4f54579b1ea8c3db2df",
+    "vllm_version": "0.26.0",
+    "max_model_len": 65536,
+    "max_tokens": 16384,
+    "seed": 20260806,
+    "temperature": 0.0,
+    "top_p": 1.0,
+    "enable_thinking": false,
+    "structured_output": "json_schema+xgrammar",
+    "scheduler": "fcfs",
+    "prefix_caching": true,
+    "chunked_prefill": true,
+    "gpu_memory_utilization": 0.75
+  },
+  "embedding": {
+    "base_url": "http://10.87.5.247:8001/v1",
+    "model": "qwen3-embedding-0.6b",
+    "deployment_fingerprint": "5f5a8400eeaa2f07d167d8b5b7e63d615945a8f54f506e02342840cd4e3fe626",
+    "dimension": 1024,
+    "max_model_len": 32768,
+    "max_num_batched_tokens": 32768,
+    "max_num_seqs": 128,
+    "gpu_memory_utilization": 0.15
+  },
+  "graphiti": {
+    "version": "0.29.3",
+    "commit": "021d3a57d511f21b10adaf7fa923bd5c1fce5e9d"
+  },
+  "neo4j": {
+    "version": "5.26.0",
+    "edition": "community",
+    "bolt": "bolt://localhost:7687",
+    "http": "http://localhost:7474"
+  }
+}
+
