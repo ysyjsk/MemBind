@@ -14,7 +14,22 @@ from .first_divergence import (
     FIRST_DIVERGENCE_ROOT_NAME,
     STOP_GATE,
     analyze_first_divergence,
+    write_first_semantic_divergence_artifacts,
     write_first_divergence_artifacts,
+)
+from .semantic_fingerprint import (
+    FINGERPRINT_SCHEMA_VERSION,
+    SemanticFingerprintError,
+    fingerprint_records,
+    semantic_fingerprint,
+    semantic_projection,
+)
+from .fingerprint_qualification import (
+    FAIL_GATE as FINGERPRINT_QUALIFICATION_FAIL_GATE,
+    PASS_GATE as FINGERPRINT_QUALIFICATION_PASS_GATE,
+    QUALIFICATION_ROOT_NAME,
+    qualify_fingerprint_noninterference,
+    write_fingerprint_qualification_artifacts,
 )
 
 __all__ = [
@@ -26,4 +41,15 @@ __all__ = [
     "STOP_GATE",
     "analyze_first_divergence",
     "write_first_divergence_artifacts",
+    "write_first_semantic_divergence_artifacts",
+    "FINGERPRINT_SCHEMA_VERSION",
+    "SemanticFingerprintError",
+    "fingerprint_records",
+    "semantic_fingerprint",
+    "semantic_projection",
+    "FINGERPRINT_QUALIFICATION_FAIL_GATE",
+    "FINGERPRINT_QUALIFICATION_PASS_GATE",
+    "QUALIFICATION_ROOT_NAME",
+    "qualify_fingerprint_noninterference",
+    "write_fingerprint_qualification_artifacts",
 ]

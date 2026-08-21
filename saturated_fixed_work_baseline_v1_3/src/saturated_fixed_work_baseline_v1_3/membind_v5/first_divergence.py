@@ -52,6 +52,36 @@ _STAGE_ORDER = (
     "publication",
 )
 
+_FINGERPRINT_BOUNDARIES = {
+    "NODE_EXTRACTION_OUTPUT",
+    "EDGE_EXTRACTION_OUTPUT",
+    "NODE_CANDIDATE_SET",
+    "NODE_RESOLUTION_BATCH",
+    "NODE_RESOLUTION_DECISION",
+    "EDGE_CANDIDATE_SET",
+    "EDGE_RESOLUTION_INPUT",
+    "EDGE_RESOLUTION_DECISION",
+    "PERSISTENCE_EFFECT",
+}
+
+_FINGERPRINT_CANDIDATES_FOR_REPORT = (
+    ("node_extraction", "NODE_EXTRACTION_OUTPUT"),
+    ("edge_extraction", "EDGE_EXTRACTION_OUTPUT"),
+    ("node_candidate_formation", "NODE_CANDIDATE_SET"),
+    ("node_resolution_batch", "NODE_RESOLUTION_BATCH"),
+    ("node_resolution_batch", "NODE_RESOLUTION_DECISION"),
+    ("edge_candidate_formation", "EDGE_CANDIDATE_SET"),
+    ("edge_resolution_fan_out", "EDGE_RESOLUTION_INPUT"),
+    ("edge_resolution_fan_out", "EDGE_RESOLUTION_DECISION"),
+    ("persistence", "PERSISTENCE_EFFECT"),
+)
+
+_FINGERPRINT_FILES = (
+    "semantic_fingerprints.jsonl",
+    "semantic_fingerprint_telemetry.jsonl",
+    "semantic_fingerprint.jsonl",
+)
+
 
 class FirstDivergenceError(ValueError):
     """The sealed inputs do not satisfy this analysis contract."""
@@ -160,6 +190,115 @@ def _event_rows(path: Path) -> list[dict[str, Any]]:
         elif isinstance(value, Mapping):
             rows.append(dict(value))
     return rows
+
+
+def _fingerprint_candidate_rows(block: Mapping[str, Any], source: int) -> list[Mapping[str, Any]]:
+    """Read optional passive fingerprint records without touching providers."""
+
+    rows: list[Mapping[str, Any]] = []
+    direct = block.get("semantic_fingerprints")
+    if isinstance(direct, Sequence) and not isinstance(direct, (str, bytes)):
+        rows.extend(value for value in direct if isinstance(value, Mapping))
+    attempt = block.get("path")
+    if isinstance(attempt, Path):
+        for filename in _FINGERPRINT_FILES:
+            path = attempt / filename
+            if path.exists():
+                rows.extend(_jsonl(path))
+        event_path = attempt / "raw_events.jsonl"
+        for event in _event_rows(event_path):
+            event_type = str(event.get("event_type") or event.get("event") or "")
+            payload = event.get("semantic_fingerprint")
+            if event_type in {"semantic_fingerprint", "semantic_fingerprint_record", "semantic_fingerprint_telemetry"}:
+                rows.append(payload if isinstance(payload, Mapping) else event)
+    selected: list[Mapping[str, Any]] = []
+    for row in rows:
+        value = row.get("record") if isinstance(row.get("record"), Mapping) else row
+        if isinstance(value, Mapping) and value.get("source_sequence") == source:
+            selected.append(value)
+    return selected
+
+
+def _normalize_fingerprint_row(row: Mapping[str, Any], boundary: str) -> dict[str, Any] | None:
+    value = row.get("fingerprint") if isinstance(row.get("fingerprint"), Mapping) else row
+    if not isinstance(value, Mapping):
+        return None
+    selected_boundary = value.get("boundary") or value.get("stage")
+    if selected_boundary != boundary:
+        return None
+    if boundary not in _FINGERPRINT_BOUNDARIES:
+        return None
+    count = next(
+        (value.get(key) for key in ("count", "cardinality", "output_count", "candidate_count", "batch_size", "decision_count", "child_count", "effect_cardinality") if value.get(key) is not None),
+        None,
+    )
+    if isinstance(count, bool) or not isinstance(count, int) or count < 0:
+        count = None
+    digests = {
+        key: value.get(key)
+        for key in (
+            "semantic_fingerprint",
+            "ordered_identity_sha256",
+            "ordered_semantic_identity_sha256",
+            "ordering_preserving_sha256",
+            "membership_identity_sha256",
+            "content_identity_sha256",
+            "input_identity_sha256",
+            "decision_identity_sha256",
+            "effect_identity_sha256",
+        )
+        if isinstance(value.get(key), str)
+    }
+    if not digests:
+        return None
+    return {"boundary": boundary, "count": count, **digests}
+
+
+def _fingerprint_detail(block: Mapping[str, Any], source: int, boundary: str) -> dict[str, Any]:
+    records = []
+    for row in _fingerprint_candidate_rows(block, source):
+        normalized = _normalize_fingerprint_row(row, boundary)
+        if normalized is not None:
+            records.append(normalized)
+    return {
+        "available": bool(records),
+        "boundary": boundary,
+        "records": records,
+        "record_count": len(records),
+    }
+
+
+def _fingerprint_signature(detail: Mapping[str, Any]) -> list[dict[str, Any]]:
+    records = detail.get("records")
+    if not isinstance(records, Sequence) or isinstance(records, (str, bytes)):
+        return []
+    signatures = []
+    for row in records:
+        if not isinstance(row, Mapping):
+            continue
+        signature: dict[str, Any] = {
+            "boundary": row.get("boundary"),
+            "count": row.get("count"),
+        }
+        for canonical, aliases in (
+            ("semantic_fingerprint", ("semantic_fingerprint",)),
+            ("ordered_identity_sha256", ("ordered_identity_sha256", "ordered_semantic_identity_sha256", "ordering_preserving_sha256")),
+            ("membership_identity_sha256", ("membership_identity_sha256", "content_identity_sha256")),
+            ("input_identity_sha256", ("input_identity_sha256",)),
+            ("decision_identity_sha256", ("decision_identity_sha256",)),
+            ("effect_identity_sha256", ("effect_identity_sha256",)),
+        ):
+            selected = next((row.get(alias) for alias in aliases if isinstance(row.get(alias), str)), None)
+            if selected is not None:
+                signature[canonical] = selected
+        signatures.append(signature)
+    return signatures
+
+
+def _fingerprint_status(left: Mapping[str, Any], right: Mapping[str, Any]) -> str:
+    if not left.get("available") or not right.get("available"):
+        return "NOT_COMPARABLE"
+    return "EQUAL" if _stable(_fingerprint_signature(left)) == _stable(_fingerprint_signature(right)) else "DIFFERENT"
 
 
 def _event_detail(events: Sequence[Mapping[str, Any]], source: int) -> dict[str, Any]:
@@ -283,19 +422,66 @@ def _source_chain(b0_block: Mapping[str, Any], mb_block: Mapping[str, Any], sour
     b0_publication_events = sum(1 for event in b0_events if event.get("event_type") == "PUBLICATION_DURABLE" and event.get("source_sequence") == source)
     mb_publication_events = sum(1 for event in mb_events if event.get("event_type") == "PUBLICATION_DURABLE" and event.get("source_sequence") == source)
 
+    fingerprint_boundaries = {
+        boundary: {
+            "b0_a": _fingerprint_detail(b0_block, source, boundary),
+            "membind_v3_1": _fingerprint_detail(mb_block, source, boundary),
+        }
+        for boundary in _FINGERPRINT_BOUNDARIES
+    }
+
+    def fingerprint_pair(boundary: str) -> dict[str, Any]:
+        pair = fingerprint_boundaries[boundary]
+        return {
+            "boundary": boundary,
+            "b0_a": pair["b0_a"],
+            "membind_v3_1": pair["membind_v3_1"],
+            "status": _fingerprint_status(pair["b0_a"], pair["membind_v3_1"]),
+        }
+
     stages = {
         "source_evidence": _stage_record("source_evidence", evidence, evidence, note="Immutable source identity is equal; this is not a divergence."),
-        "node_extraction": _stage_record("node_extraction", {"call_count": len(b0_node_extract), "input_token_vector": b0_node_extract, "prompt_hash_available": False}, {"call_count": len(mb_node_extract), "input_token_vector": mb_node_extract, "prompt_hash_available": False}, note="Native trace exposes token counts but not serialized extraction outputs or full prompt identity."),
-        "edge_extraction": _stage_record("edge_extraction", {"call_count": len(b0_edge_extract), "input_token_vector": b0_edge_extract, "prompt_hash_available": False}, {"call_count": len(mb_edge_extract), "input_token_vector": mb_edge_extract, "prompt_hash_available": False}, note="Token-vector differences are request-shape observations, not proof of different extracted edges."),
+        "node_extraction": _stage_record("node_extraction", {"call_count": len(b0_node_extract), "input_token_vector": b0_node_extract, "prompt_hash_available": False, "semantic_fingerprint": fingerprint_boundaries["NODE_EXTRACTION_OUTPUT"]["b0_a"]}, {"call_count": len(mb_node_extract), "input_token_vector": mb_node_extract, "prompt_hash_available": False, "semantic_fingerprint": fingerprint_boundaries["NODE_EXTRACTION_OUTPUT"]["membind_v3_1"]}, note="Native trace exposes token counts; an optional passive output fingerprint is preferred when present."),
+        "edge_extraction": _stage_record("edge_extraction", {"call_count": len(b0_edge_extract), "input_token_vector": b0_edge_extract, "prompt_hash_available": False, "semantic_fingerprint": fingerprint_boundaries["EDGE_EXTRACTION_OUTPUT"]["b0_a"]}, {"call_count": len(mb_edge_extract), "input_token_vector": mb_edge_extract, "prompt_hash_available": False, "semantic_fingerprint": fingerprint_boundaries["EDGE_EXTRACTION_OUTPUT"]["membind_v3_1"]}, note="Token vectors remain observations; paired output fingerprints are causal only when both sides are available."),
         "prepared_extraction_outputs": _stage_record("prepared_extraction_outputs", b0_prepared, mb_prepared, comparable=False, note="B0-A has no prepared artifact; MemBind-only prepared cardinality/identity cannot be paired."),
-        "node_candidate_formation": _stage_record("node_candidate_formation", {**b0_node_candidate, "all_candidate_search_span_count": _phase_count(b0_spans, "candidate-search")}, {**mb_node_candidate, "all_candidate_search_span_count": _phase_count(mb_spans, "candidate-search")}, note="Candidate count is observable; identity, order, and state-version are absent."),
-        "node_resolution_batch": _stage_record("node_resolution_batch", {"input_token_vector": _token_vector(b0_logical, _PROMPTS["node_resolution"]), "call_count": _count_prompt(b0_logical, _PROMPTS["node_resolution"])}, {"input_token_vector": _token_vector(mb_logical, _PROMPTS["node_resolution"]), "call_count": _count_prompt(mb_logical, _PROMPTS["node_resolution"])}, note="No resolution decision/output digest or batch membership is present."),
-        "edge_candidate_formation": _stage_record("edge_candidate_formation", b0_edge_candidate, mb_edge_candidate, note="Candidate cardinality is exposed, but candidate identity/order is not."),
-        "edge_resolution_fan_out": _stage_record("edge_resolution_fan_out", {"input_token_vector": b0_edge_resolution, "call_count": len(b0_edge_resolution), "edge_dedup_spans": _operation_count(b0_spans, "edge-dedup"), "edge_invalidation_spans": _operation_count(b0_spans, "edge-invalidation")}, {"input_token_vector": mb_edge_resolution, "call_count": len(mb_edge_resolution), "edge_dedup_spans": _operation_count(mb_spans, "edge-dedup"), "edge_invalidation_spans": _operation_count(mb_spans, "edge-invalidation")}, note="Fan-out is directly counted, but it cannot be distinguished as duplicate consumption versus changed upstream branch."),
+        "node_candidate_formation": _stage_record("node_candidate_formation", {**b0_node_candidate, "all_candidate_search_span_count": _phase_count(b0_spans, "candidate-search"), "semantic_fingerprint": fingerprint_boundaries["NODE_CANDIDATE_SET"]["b0_a"]}, {**mb_node_candidate, "all_candidate_search_span_count": _phase_count(mb_spans, "candidate-search"), "semantic_fingerprint": fingerprint_boundaries["NODE_CANDIDATE_SET"]["membind_v3_1"]}, note="Candidate count is observable; an ordered candidate identity fingerprint is used when supplied."),
+        "node_resolution_batch": _stage_record("node_resolution_batch", {"input_token_vector": _token_vector(b0_logical, _PROMPTS["node_resolution"]), "call_count": _count_prompt(b0_logical, _PROMPTS["node_resolution"]), "semantic_fingerprint_batch": fingerprint_boundaries["NODE_RESOLUTION_BATCH"]["b0_a"], "semantic_fingerprint_decision": fingerprint_boundaries["NODE_RESOLUTION_DECISION"]["b0_a"]}, {"input_token_vector": _token_vector(mb_logical, _PROMPTS["node_resolution"]), "call_count": _count_prompt(mb_logical, _PROMPTS["node_resolution"]), "semantic_fingerprint_batch": fingerprint_boundaries["NODE_RESOLUTION_BATCH"]["membind_v3_1"], "semantic_fingerprint_decision": fingerprint_boundaries["NODE_RESOLUTION_DECISION"]["membind_v3_1"]}, note="Batch membership and normalized decisions are preferred when paired passive fingerprints exist."),
+        "edge_candidate_formation": _stage_record("edge_candidate_formation", {**b0_edge_candidate, "semantic_fingerprint": fingerprint_boundaries["EDGE_CANDIDATE_SET"]["b0_a"]}, {**mb_edge_candidate, "semantic_fingerprint": fingerprint_boundaries["EDGE_CANDIDATE_SET"]["membind_v3_1"]}, note="Candidate cardinality is exposed; ordered identity is available only from optional passive telemetry."),
+        "edge_resolution_fan_out": _stage_record("edge_resolution_fan_out", {"input_token_vector": b0_edge_resolution, "call_count": len(b0_edge_resolution), "edge_dedup_spans": _operation_count(b0_spans, "edge-dedup"), "edge_invalidation_spans": _operation_count(b0_spans, "edge-invalidation"), "semantic_fingerprint_input": fingerprint_boundaries["EDGE_RESOLUTION_INPUT"]["b0_a"], "semantic_fingerprint_decision": fingerprint_boundaries["EDGE_RESOLUTION_DECISION"]["b0_a"]}, {"input_token_vector": mb_edge_resolution, "call_count": len(mb_edge_resolution), "edge_dedup_spans": _operation_count(mb_spans, "edge-dedup"), "edge_invalidation_spans": _operation_count(mb_spans, "edge-invalidation"), "semantic_fingerprint_input": fingerprint_boundaries["EDGE_RESOLUTION_INPUT"]["membind_v3_1"], "semantic_fingerprint_decision": fingerprint_boundaries["EDGE_RESOLUTION_DECISION"]["membind_v3_1"]}, note="Fan-out remains downstream; paired edge input/decision fingerprints can localize a divergence."),
         "attribute_summary_timestamp": _stage_record("attribute_summary_timestamp", {"summary_calls": _count_prompt(b0_logical, _PROMPTS["summary"]), "timestamp_calls": len(b0_timestamp), "timestamp_input_token_vector": b0_timestamp}, {"summary_calls": _count_prompt(mb_logical, _PROMPTS["summary"]), "timestamp_calls": len(mb_timestamp), "timestamp_input_token_vector": mb_timestamp}, note="Downstream work is observable only as request counts and token vectors."),
-        "persistence": _stage_record("persistence", {"write_spans": _operation_count(b0_spans, "write"), "invalidation_spans": _operation_count(b0_spans, "edge-invalidation"), "mutation_spans": _operation_count(b0_spans, "existing-edge-mutation") + _operation_count(b0_spans, "new-edge-expiration-observation")}, {"write_spans": _operation_count(mb_spans, "write"), "invalidation_spans": _operation_count(mb_spans, "edge-invalidation"), "mutation_spans": _operation_count(mb_spans, "existing-edge-mutation") + _operation_count(mb_spans, "new-edge-expiration-observation")}, note="Transaction/write spans are present; semantic effect identity is not."),
+        "persistence": _stage_record("persistence", {"write_spans": _operation_count(b0_spans, "write"), "invalidation_spans": _operation_count(b0_spans, "edge-invalidation"), "mutation_spans": _operation_count(b0_spans, "existing-edge-mutation") + _operation_count(b0_spans, "new-edge-expiration-observation"), "semantic_fingerprint": fingerprint_boundaries["PERSISTENCE_EFFECT"]["b0_a"]}, {"write_spans": _operation_count(mb_spans, "write"), "invalidation_spans": _operation_count(mb_spans, "edge-invalidation"), "mutation_spans": _operation_count(mb_spans, "existing-edge-mutation") + _operation_count(mb_spans, "new-edge-expiration-observation"), "semantic_fingerprint": fingerprint_boundaries["PERSISTENCE_EFFECT"]["membind_v3_1"]}, note="Transaction/write spans are present; effect identity is consumed only when optional passive fingerprints are paired."),
         "publication": _stage_record("publication", {"publication_events": b0_publication_events, "complete": b0_publication_events == 1 and b0_block["seal"].get("status") == "VALIDATED_SEALED"}, {"publication_events": mb_publication_events, "complete": mb_publication_events == 1 and mb_block["seal"].get("status") == "VALIDATED_SEALED"}, note="Publication completion is sealed for both paths; it is downstream evidence, not a cause."),
     }
+
+    # A paired passive fingerprint is the only signal promoted to a semantic
+    # cause.  Missing fingerprints intentionally fall through to the legacy
+    # request/span observations below.
+    fingerprint_candidates = (
+        ("node_extraction", "NODE_EXTRACTION_OUTPUT", "EXTRACTION_DIVERGENCE", "extraction_output_fingerprint"),
+        ("edge_extraction", "EDGE_EXTRACTION_OUTPUT", "EXTRACTION_DIVERGENCE", "extraction_output_fingerprint"),
+        ("node_candidate_formation", "NODE_CANDIDATE_SET", "STATE_SNAPSHOT_OR_CANDIDATE_DIVERGENCE", "candidate_set_fingerprint"),
+        ("node_resolution_batch", "NODE_RESOLUTION_BATCH", "BATCHING_DIVERGENCE", "batch_fingerprint"),
+        ("node_resolution_batch", "NODE_RESOLUTION_DECISION", "RESOLUTION_DECISION_DIVERGENCE", "resolution_decision_fingerprint"),
+        ("edge_candidate_formation", "EDGE_CANDIDATE_SET", "STATE_SNAPSHOT_OR_CANDIDATE_DIVERGENCE", "candidate_set_fingerprint"),
+        ("edge_resolution_fan_out", "EDGE_RESOLUTION_INPUT", "RESOLUTION_DECISION_DIVERGENCE", "resolution_input_fingerprint"),
+        ("edge_resolution_fan_out", "EDGE_RESOLUTION_DECISION", "RESOLUTION_DECISION_DIVERGENCE", "resolution_decision_fingerprint"),
+        ("persistence", "PERSISTENCE_EFFECT", "PERSISTENCE_DIVERGENCE", "effect_fingerprint"),
+    )
+    first_semantic_fingerprint: dict[str, Any] | None = None
+    for stage_name, boundary, classification, kind in fingerprint_candidates:
+        pair = fingerprint_boundaries[boundary]
+        status = _fingerprint_status(pair["b0_a"], pair["membind_v3_1"])
+        if status == "DIFFERENT":
+            first_semantic_fingerprint = {
+                "stage": stage_name,
+                "boundary": boundary,
+                "kind": kind,
+                "classification": classification,
+                "status": status,
+                "semantic_cause_provable": True,
+                "details": fingerprint_pair(boundary),
+            }
+            break
 
     # Find the earliest measured request/span-shape mismatch in the registered
     # semantic order.  A missing B0 prepared artifact is reported separately,
@@ -327,14 +513,27 @@ def _source_chain(b0_block: Mapping[str, Any], mb_block: Mapping[str, Any], sour
         observable_candidates.append({"stage": "persistence", "kind": "effect_span_count", "classification_candidate": "PERSISTENCE_DIVERGENCE", "details": persistence_stage})
     first_observable = observable_candidates[0] if observable_candidates else {"stage": "publication", "kind": "none", "classification_candidate": "OBSERVABILITY_INSUFFICIENT", "details": stages["publication"]}
     first_observable = {**first_observable, "semantic_cause_provable": False}
-    first_provable = {
-        "stage": first_observable["stage"],
-        "classification": "OBSERVABILITY_INSUFFICIENT",
-        "observed_signal_kind": first_observable["kind"],
-        "observed_signal_classification_candidate": first_observable["classification_candidate"],
-        "semantic_cause_provable": False,
-        "reason": "The first signal is request/span shape only; the sealed inputs do not contain paired extraction outputs, candidate identities/order, state version, batch membership, or resolution decision digests.",
-    }
+    if first_semantic_fingerprint is not None:
+        first_provable = {
+            "stage": first_semantic_fingerprint["stage"],
+            "status": "FIRST_PROVABLE_SEMANTIC_DIVERGENCE",
+            "classification": first_semantic_fingerprint["classification"],
+            "observed_signal_kind": first_semantic_fingerprint["kind"],
+            "semantic_fingerprint_boundary": first_semantic_fingerprint["boundary"],
+            "semantic_cause_provable": True,
+            "reason": "Both paths supplied passive canonical semantic fingerprints and the first ordered boundary differs.",
+            "details": first_semantic_fingerprint["details"],
+        }
+    else:
+        first_provable = {
+            "stage": first_observable["stage"],
+            "status": "OBSERVABILITY_INSUFFICIENT",
+            "classification": "OBSERVABILITY_INSUFFICIENT",
+            "observed_signal_kind": first_observable["kind"],
+            "observed_signal_classification_candidate": first_observable["classification_candidate"],
+            "semantic_cause_provable": False,
+            "reason": "The first signal is request/span shape only; the sealed inputs do not contain paired extraction outputs, candidate identities/order, state version, batch membership, or resolution decision digests.",
+        }
     fanout = {
         "edge_resolution_delta": len(mb_edge_resolution) - len(b0_edge_resolution),
         "timestamp_delta": len(mb_timestamp) - len(b0_timestamp),
@@ -345,16 +544,74 @@ def _source_chain(b0_block: Mapping[str, Any], mb_block: Mapping[str, Any], sour
     observability = {
         "b0_prepared_outputs": b0_prepared["available"],
         "membind_prepared_outputs": mb_prepared["available"],
-        "extraction_output_parity": False,
+        "extraction_output_parity": all(
+            _fingerprint_status(
+                fingerprint_boundaries[boundary]["b0_a"],
+                fingerprint_boundaries[boundary]["membind_v3_1"],
+            ) == "EQUAL"
+            for boundary in ("NODE_EXTRACTION_OUTPUT", "EDGE_EXTRACTION_OUTPUT")
+        ),
         "prompt_hash_parity": False,
-        "candidate_identity_parity": False,
-        "candidate_order_parity": False,
-        "batch_membership_parity": False,
-        "resolution_decision_parity": False,
-        "effect_identity_parity": False,
+        "candidate_identity_parity": all(
+            _fingerprint_status(
+                fingerprint_boundaries[boundary]["b0_a"],
+                fingerprint_boundaries[boundary]["membind_v3_1"],
+            ) == "EQUAL"
+            for boundary in ("NODE_CANDIDATE_SET", "EDGE_CANDIDATE_SET")
+        ),
+        "candidate_order_parity": all(
+            _fingerprint_status(
+                fingerprint_boundaries[boundary]["b0_a"],
+                fingerprint_boundaries[boundary]["membind_v3_1"],
+            ) == "EQUAL"
+            for boundary in ("NODE_CANDIDATE_SET", "EDGE_CANDIDATE_SET")
+        ),
+        "batch_membership_parity": _fingerprint_status(
+            fingerprint_boundaries["NODE_RESOLUTION_BATCH"]["b0_a"],
+            fingerprint_boundaries["NODE_RESOLUTION_BATCH"]["membind_v3_1"],
+        ) == "EQUAL",
+        "resolution_decision_parity": all(
+            _fingerprint_status(
+                fingerprint_boundaries[boundary]["b0_a"],
+                fingerprint_boundaries[boundary]["membind_v3_1"],
+            ) == "EQUAL"
+            for boundary in ("NODE_RESOLUTION_DECISION", "EDGE_RESOLUTION_DECISION")
+        ),
+        "effect_identity_parity": _fingerprint_status(
+            fingerprint_boundaries["PERSISTENCE_EFFECT"]["b0_a"],
+            fingerprint_boundaries["PERSISTENCE_EFFECT"]["membind_v3_1"],
+        ) == "EQUAL",
         "membind_llm_auxiliary": _llm_auxiliary_detail(mb_block, source),
         "b0_llm_auxiliary": _llm_auxiliary_detail(b0_block, source),
     }
+    semantic_observability = {}
+    for boundary in _FINGERPRINT_BOUNDARIES:
+        pair = fingerprint_boundaries[boundary]
+        semantic_observability[boundary] = {
+            "b0_available": pair["b0_a"]["available"],
+            "membind_available": pair["membind_v3_1"]["available"],
+            "status": _fingerprint_status(pair["b0_a"], pair["membind_v3_1"]),
+        }
+    observability["semantic_fingerprints"] = semantic_observability
+    observability["semantic_fingerprint_coverage"] = sum(
+        1 for row in semantic_observability.values() if row["status"] in {"EQUAL", "DIFFERENT"}
+    )
+    causal_chain = [
+        {"from": "source_evidence", "to": first_observable["stage"], "relation": "same immutable source enters both paths; first request/span-shape signal appears downstream"},
+        {"from": first_observable["stage"], "to": "edge_resolution_fan_out", "relation": "observed downstream fan-out changes; causal transfer is not provable"},
+        {"from": "edge_resolution_fan_out", "to": "attribute_summary_timestamp", "relation": "timestamp/summary request counts follow observed edge fan-out"},
+        {"from": "attribute_summary_timestamp", "to": "persistence", "relation": "effect span counts are observed after semantic requests"},
+        {"from": "persistence", "to": "publication", "relation": "both paths reach sealed publication; publication is not a causal explanation"},
+    ]
+    if first_semantic_fingerprint is not None:
+        causal_chain.insert(
+            1,
+            {
+                "from": "source_evidence",
+                "to": first_semantic_fingerprint["stage"],
+                "relation": "paired passive semantic fingerprints first differ at this ordered boundary",
+            },
+        )
     return {
         "source_sequence": source,
         "source_evidence": evidence,
@@ -362,6 +619,7 @@ def _source_chain(b0_block: Mapping[str, Any], mb_block: Mapping[str, Any], sour
         "stages": stages,
         "first_observable_signal": first_observable,
         "first_provable_divergence": first_provable,
+        "first_semantic_fingerprint": first_semantic_fingerprint,
         "fan_out": fanout,
         "batching": {
             "b0_a": {"batch_ids": None, "membership": None, "batch_sizes": None},
@@ -372,13 +630,7 @@ def _source_chain(b0_block: Mapping[str, Any], mb_block: Mapping[str, Any], sour
         "persistence": stages["persistence"],
         "publication": {"b0_complete": stages["publication"]["b0_a"]["complete"], "membind_complete": stages["publication"]["membind_v3_1"]["complete"], "b0_events": _event_detail(b0_events, source), "membind_events": _event_detail(mb_events, source)},
         "observability": observability,
-        "causal_chain": [
-            {"from": "source_evidence", "to": first_observable["stage"], "relation": "same immutable source enters both paths; first request/span-shape signal appears downstream"},
-            {"from": first_observable["stage"], "to": "edge_resolution_fan_out", "relation": "observed downstream fan-out changes; causal transfer is not provable"},
-            {"from": "edge_resolution_fan_out", "to": "attribute_summary_timestamp", "relation": "timestamp/summary request counts follow observed edge fan-out"},
-            {"from": "attribute_summary_timestamp", "to": "persistence", "relation": "effect span counts are observed after semantic requests"},
-            {"from": "persistence", "to": "publication", "relation": "both paths reach sealed publication; publication is not a causal explanation"},
-        ],
+        "causal_chain": causal_chain,
     }
 
 
@@ -404,10 +656,31 @@ def analyze_first_divergence(sfw_root: Path | str) -> dict[str, Any]:
     edge_resolution_delta = sum(row["fan_out"]["edge_resolution_delta"] for row in sources.values())
     timestamp_delta = sum(row["fan_out"]["timestamp_delta"] for row in sources.values())
     source_first_signals = Counter(row["first_observable_signal"]["stage"] for row in sources.values())
+    proven = [
+        row["first_provable_divergence"]
+        for row in sources.values()
+        if row["first_provable_divergence"].get("semantic_cause_provable")
+    ]
+    proven_classifications = Counter(str(row.get("classification")) for row in proven)
+    if proven_classifications.get("EXTRACTION_DIVERGENCE"):
+        gate = "GO_V5_NATIVE_EQUIVALENT_COMPILE"
+        primary = "EXTRACTION_OUTPUT_FINGERPRINT_DIVERGENCE"
+    elif proven_classifications.get("STATE_SNAPSHOT_OR_CANDIDATE_DIVERGENCE"):
+        gate = "GO_V5_SERIAL_EQUIVALENT_STATE_BIND"
+        primary = "CANDIDATE_SET_FINGERPRINT_DIVERGENCE"
+    elif proven_classifications.get("BATCHING_DIVERGENCE"):
+        gate = "GO_V5_NATIVE_BATCH_PRESERVATION"
+        primary = "BATCH_MEMBERSHIP_FINGERPRINT_DIVERGENCE"
+    elif proven_classifications:
+        gate = "STOP_V5_FIRST_SEMANTIC_DIVERGENCE_UNRESOLVED"
+        primary = "SEMANTIC_FINGERPRINT_DIVERGENCE_AFTER_UPSTREAM_BOUNDARY"
+    else:
+        gate = STOP_GATE
+        primary = "FIRST_DIVERGENCE_NOT_PROVABLE_FROM_SEALED_TELEMETRY"
     return {
-        "schema_version": "sfwb.v1.3.v5.first-divergence-analysis.v1",
+        "schema_version": "sfwb.v1.3.v5.first-divergence-analysis.v2",
         "analysis_scope": {"benchmark": "saturated_fixed_work_baseline_v1_3", "history_id": "07741c45", "source_count": 12, "reference": "B0-A", "candidate": "MemBind-v3.1", "live_execution": False, "sealed_artifacts_mutated": False, "final_graph_used_for_causality": False},
-        "decision": {"gate": STOP_GATE, "primary_root_cause": "FIRST_DIVERGENCE_NOT_PROVABLE_FROM_SEALED_TELEMETRY", "semantic_cause_provable": False},
+        "decision": {"gate": gate, "primary_root_cause": primary, "semantic_cause_provable": bool(proven)},
         "sources": sources,
         "aggregate": {
             "logical_operator_delta": operator_delta,
@@ -416,6 +689,11 @@ def analyze_first_divergence(sfw_root: Path | str) -> dict[str, Any]:
             "first_observable_signal_stage_counts": dict(sorted(source_first_signals.items())),
             "extra_work_explanation": {"duplicate_consumption_provable": False, "changed_upstream_branch_provable": False, "observed_as_downstream_fan_out": True, "reason": "The telemetry has counts and token vectors but no paired semantic output, candidate identity/order, batch membership, state version, or resolution decision identity."},
             "publication_complete_source_count": sum(1 for row in sources.values() if row["publication"]["b0_complete"] and row["publication"]["membind_complete"]),
+            "semantic_fingerprint": {
+                "sources_with_first_provable_divergence": len(proven),
+                "classification_counts": dict(sorted(proven_classifications.items())),
+                "boundary_order": [item[1] for item in _FINGERPRINT_CANDIDATES_FOR_REPORT],
+            },
         },
         "minimum_additional_observability": [
             {"requirement": "paired_extraction_output_digest", "fields": ["source_sequence", "operator_id", "canonical_node_output_digest", "canonical_edge_output_digest", "cardinality"]},
@@ -443,29 +721,31 @@ def write_first_divergence_artifacts(result: Mapping[str, Any], output_root: Pat
     chain = out / "SFWB_V13_V5_SOURCE_CAUSAL_CHAIN.json"
     analysis.write_text(json.dumps(result, ensure_ascii=False, sort_keys=True, indent=2, allow_nan=False) + "\n", encoding="utf-8")
     chain_payload = {
-        "schema_version": "sfwb.v1.3.v5.source-causal-chain.v1",
+        "schema_version": "sfwb.v1.3.v5.source-causal-chain.v2",
         "analysis_scope": result["analysis_scope"],
         "aggregate_chain": result["aggregate"],
-        "sources": {source: {"source_evidence": row["source_evidence"], "first_observable_signal": row["first_observable_signal"], "first_provable_divergence": row["first_provable_divergence"], "fan_out": row["fan_out"], "causal_chain": row["causal_chain"]} for source, row in result["sources"].items()},
+        "sources": {source: {"source_evidence": row["source_evidence"], "first_observable_signal": row["first_observable_signal"], "first_semantic_fingerprint": row.get("first_semantic_fingerprint"), "first_provable_divergence": row["first_provable_divergence"], "fan_out": row["fan_out"], "causal_chain": row["causal_chain"]} for source, row in result["sources"].items()},
         "v5_contract_if_only_timing_changes": result["v5_contract_if_only_timing_changes"],
     }
     chain.write_text(json.dumps(chain_payload, ensure_ascii=False, sort_keys=True, indent=2, allow_nan=False) + "\n", encoding="utf-8")
     rows = []
     for source, row in result["sources"].items():
         rows.append("| {} | {} | {} | {} | {} | {} |".format(source, row["first_observable_signal"]["stage"], row["first_observable_signal"]["kind"], row["first_provable_divergence"]["classification"], row["fan_out"]["edge_resolution_delta"], row["fan_out"]["timestamp_delta"]))
-    md = """# SFWB v1.3 V5 first-divergence analysis
+    md = (
+        "# SFWB v1.3 V5 first-divergence analysis\n\n"
+        "## Decision\n\n"
+        f"`{result['decision']['gate']}`\n\n"
+        "The semantic fingerprint gate is derived only from paired passive records.\n\n"
+    )
 
-## Decision
-
-`STOP_V5_FIRST_DIVERGENCE_INSUFFICIENT_OBSERVABILITY`
-
-The analysis does not use final graph differences to infer a cause. It aligns the same 12 source hashes through request/span-level stages and records the earliest observable request-shape or candidate-cardinality signal. A signal is not promoted to a semantic cause unless paired payload, output, candidate identity, state version, and batch lineage are present; those fields are absent from the sealed telemetry.
+    md += """The analysis does not use final graph differences to infer a cause. It aligns the same 12 source hashes through request/span-level stages and records the earliest observable request-shape or candidate-cardinality signal. A signal is not promoted to a semantic cause unless paired payload, output, candidate identity, state version, and batch lineage are present; those fields are absent from the sealed telemetry.
 
 ## Per-source earliest observable signal
 
 | source | first observable stage | signal | FIRST_PROVABLE_DIVERGENCE | edge-resolution delta | timestamp delta |
 | --- | --- | --- | --- | ---: | ---: |
-""" + "\n".join(rows) + "\n\n"
+"""
+    md += "\n".join(rows) + "\n\n"
     md += """## Causal interpretation
 
 The aggregate `+32 EDGE_RESOLUTION` and `+30 TIMESTAMP` calls are real downstream fan-out observations. The sealed traces do not prove that they are duplicate consumption, and do not prove which earlier extraction, state snapshot, candidate set, or batch decision caused them. Several sources show an earlier edge-extraction input-token mismatch; others first show node-candidate cardinality or node-resolution request-shape differences. Source 0 has equal extraction token vectors and only a candidate-span-shape difference. These are distinct observations, not a single proven root cause.
@@ -483,9 +763,9 @@ No runtime mechanism, scheduler, admission change, or live retry is authorized b
 """
     md_path = out / "SFWB_V13_V5_FIRST_DIVERGENCE_ANALYSIS.md"
     md_path.write_text(md, encoding="utf-8")
-    decision = """# SFWB v1.3 V5 root-cause decision
+    decision = f"""# SFWB v1.3 V5 root-cause decision
 
-`STOP_V5_FIRST_DIVERGENCE_INSUFFICIENT_OBSERVABILITY`
+`{result['decision']['gate']}`
 
 ## What is proven
 
@@ -502,11 +782,57 @@ The current sealed inputs cannot establish the first semantic output divergence.
 
 Before any mechanism is implemented, V5 must preserve Native Serial operator lineage and partial order, exact extraction input/output identity, batch membership, state-version-bound candidate/resolution decisions, effect identity/cardinality, and durable publication lineage when only execution timing is changed.
 
-No `GO_V5_NATIVE_EQUIVALENT_COMPILE`, `GO_V5_SERIAL_EQUIVALENT_STATE_BIND`, `GO_V5_NATIVE_BATCH_PRESERVATION`, or `GO_V5_SEMANTIC_WORK_DEDUPLICATION` is justified yet. The next step is limited to provider-free observability contract design and fixture qualification; no live run or runtime change is authorized.
+No runtime mechanism, scheduler, admission change, or live retry is authorized by this offline artifact. The current sealed-input result remains `STOP_V5_FIRST_DIVERGENCE_INSUFFICIENT_OBSERVABILITY` unless paired fingerprint telemetry is supplied in a future separately authorized diagnostic.
 """
     decision_path = out / "SFWB_V13_V5_ROOT_CAUSE_DECISION.md"
     decision_path.write_text(decision, encoding="utf-8")
     return [analysis, md_path, chain, decision_path]
+
+
+def write_first_semantic_divergence_artifacts(
+    result: Mapping[str, Any], output_root: Path | str, *, overwrite: bool = False
+) -> list[Path]:
+    """Write the fingerprint-aware report without replacing sealed history."""
+
+    out = Path(output_root)
+    if out.exists() and not overwrite:
+        raise FirstDivergenceError("FIRST_SEMANTIC_DIVERGENCE_ROOT_ALREADY_EXISTS")
+    out.mkdir(parents=True, exist_ok=True)
+    analysis = out / "SFWB_V13_V5_FIRST_SEMANTIC_DIVERGENCE.json"
+    markdown = out / "SFWB_V13_V5_FIRST_SEMANTIC_DIVERGENCE.md"
+    mechanism = out / "SFWB_V13_V5_MECHANISM_DECISION.md"
+    payload = {
+        "schema_version": "sfwb.v1.3.v5.first-semantic-divergence.v1",
+        "analysis": dict(result),
+        "historical_sealed_decision": STOP_GATE,
+        "live_execution": False,
+        "sealed_artifacts_mutated": False,
+    }
+    analysis.write_text(json.dumps(payload, ensure_ascii=False, sort_keys=True, indent=2, allow_nan=False) + "\n", encoding="utf-8")
+    rows = []
+    for source, row in result["sources"].items():
+        first = row["first_provable_divergence"]
+        rows.append(
+            f"| {source} | {first.get('stage')} | {first.get('classification')} | {str(first.get('semantic_cause_provable')).upper()} | {row['observability'].get('semantic_fingerprint_coverage', 0)} |"
+        )
+    markdown.write_text(
+        "# SFWB v1.3 V5 first semantic divergence\n\n"
+        f"Offline gate: `{result['decision']['gate']}`\n\n"
+        "No new live diagnostic was run. Existing sealed telemetry contains no paired semantic fingerprint records, so the prior fail-closed conclusion remains authoritative.\n\n"
+        "| source | first boundary | classification | semantic cause provable | fingerprint boundary coverage |\n"
+        "| --- | --- | --- | --- | ---: |\n"
+        + "\n".join(rows)
+        + "\n\nThe request/token and span/cardinality signals remain fallback observations only. Final graph differences were not used for causality.\n",
+        encoding="utf-8",
+    )
+    mechanism.write_text(
+        "# SFWB v1.3 V5 mechanism decision\n\n"
+        f"`{result['decision']['gate']}`\n\n"
+        "The passive fingerprint contract is qualified provider-free, but it has not been attached to a live B0/MemBind source-0 diagnostic in this turn. Therefore no V5 mechanism is authorized and no first semantic boundary is claimed.\n\n"
+        f"Historical sealed state is preserved as `{STOP_GATE}`. The only next-step authorization condition is a separately approved source-0 diagnostic using the already qualified passive observer; it must not expand automatically to source 1 or sources 0..11.\n",
+        encoding="utf-8",
+    )
+    return [analysis, markdown, mechanism]
 
 
 if __name__ == "__main__":
@@ -516,4 +842,4 @@ if __name__ == "__main__":
     write_first_divergence_artifacts(result, root / "artifacts" / FIRST_DIVERGENCE_ROOT_NAME)
 
 
-__all__ = ["FIRST_DIVERGENCE_ROOT_NAME", "STOP_GATE", "FirstDivergenceError", "analyze_first_divergence", "write_first_divergence_artifacts"]
+__all__ = ["FIRST_DIVERGENCE_ROOT_NAME", "STOP_GATE", "FirstDivergenceError", "analyze_first_divergence", "write_first_divergence_artifacts", "write_first_semantic_divergence_artifacts"]

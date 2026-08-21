@@ -1,0 +1,23 @@
+{
+  "benchmark": "saturated_fixed_work_baseline_v1_3",
+  "checks": {
+    "batch_membership_unchanged": true,
+    "effect_unchanged": true,
+    "fixture_snapshot_unchanged": true,
+    "prompt_input_unchanged": true,
+    "publication_unchanged": true,
+    "request_count_unchanged": true,
+    "zero_extra_db_io": true,
+    "zero_extra_provider_calls": true
+  },
+  "decision": {
+    "gate": "PASSIVE_FINGERPRINT_NONINTERFERENCE_PASS",
+    "reason": "Passive canonical serialization changed no request, batch, effect, publication, provider, or DB observation.",
+    "source_0_diagnostic_may_be_considered": true
+  },
+  "fingerprint_records_emitted": 4,
+  "live_execution": false,
+  "provider_free": true,
+  "schema_version": "sfwb.v1.3.v5.semantic-fingerprint-qualification.v1",
+  "sealed_artifacts_mutated": false
+}

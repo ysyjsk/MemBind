@@ -1,0 +1,1191 @@
+{
+  "aggregate_chain": {
+    "edge_resolution_delta": 32,
+    "extra_work_explanation": {
+      "changed_upstream_branch_provable": false,
+      "duplicate_consumption_provable": false,
+      "observed_as_downstream_fan_out": true,
+      "reason": "The telemetry has counts and token vectors but no paired semantic output, candidate identity/order, batch membership, state version, or resolution decision identity."
+    },
+    "first_observable_signal_stage_counts": {
+      "edge_extraction": 7,
+      "node_candidate_formation": 4,
+      "node_resolution_batch": 1
+    },
+    "logical_operator_delta": {
+      "EDGE_EXTRACTION": 0,
+      "EDGE_RESOLUTION": 32,
+      "NODE_EXTRACTION": 0,
+      "NODE_RESOLUTION": -1,
+      "SUMMARY": 0,
+      "TIMESTAMP": 30
+    },
+    "publication_complete_source_count": 12,
+    "semantic_fingerprint": {
+      "boundary_order": [
+        "NODE_EXTRACTION_OUTPUT",
+        "EDGE_EXTRACTION_OUTPUT",
+        "NODE_CANDIDATE_SET",
+        "NODE_RESOLUTION_BATCH",
+        "NODE_RESOLUTION_DECISION",
+        "EDGE_CANDIDATE_SET",
+        "EDGE_RESOLUTION_INPUT",
+        "EDGE_RESOLUTION_DECISION",
+        "PERSISTENCE_EFFECT"
+      ],
+      "classification_counts": {},
+      "sources_with_first_provable_divergence": 0
+    },
+    "timestamp_delta": 30
+  },
+  "analysis_scope": {
+    "benchmark": "saturated_fixed_work_baseline_v1_3",
+    "candidate": "MemBind-v3.1",
+    "final_graph_used_for_causality": false,
+    "history_id": "07741c45",
+    "live_execution": false,
+    "reference": "B0-A",
+    "sealed_artifacts_mutated": false,
+    "source_count": 12
+  },
+  "schema_version": "sfwb.v1.3.v5.source-causal-chain.v1",
+  "sources": {
+    "0": {
+      "causal_chain": [
+        {
+          "from": "source_evidence",
+          "relation": "same immutable source enters both paths; first request/span-shape signal appears downstream",
+          "to": "node_candidate_formation"
+        },
+        {
+          "from": "node_candidate_formation",
+          "relation": "observed downstream fan-out changes; causal transfer is not provable",
+          "to": "edge_resolution_fan_out"
+        },
+        {
+          "from": "edge_resolution_fan_out",
+          "relation": "timestamp/summary request counts follow observed edge fan-out",
+          "to": "attribute_summary_timestamp"
+        },
+        {
+          "from": "attribute_summary_timestamp",
+          "relation": "effect span counts are observed after semantic requests",
+          "to": "persistence"
+        },
+        {
+          "from": "persistence",
+          "relation": "both paths reach sealed publication; publication is not a causal explanation",
+          "to": "publication"
+        }
+      ],
+      "fan_out": {
+        "edge_dedup_span_delta": 0,
+        "edge_invalidation_span_delta": 0,
+        "edge_resolution_delta": 0,
+        "summary_delta": 0,
+        "timestamp_delta": 0
+      },
+      "first_observable_signal": {
+        "classification_candidate": "STATE_SNAPSHOT_OR_CANDIDATE_DIVERGENCE",
+        "details": {
+          "b0_a": {
+            "all_candidate_search_span_count": 2,
+            "candidate_counts": [
+              0
+            ],
+            "candidate_query_counts": [
+              1
+            ],
+            "identity_available": false,
+            "order_available": false,
+            "semantic_fingerprint": {
+              "available": false,
+              "boundary": "NODE_CANDIDATE_SET",
+              "record_count": 0,
+              "records": []
+            },
+            "span_count": 1
+          },
+          "membind_v3_1": {
+            "all_candidate_search_span_count": 1,
+            "candidate_counts": [
+              0
+            ],
+            "candidate_query_counts": [
+              1
+            ],
+            "identity_available": false,
+            "order_available": false,
+            "semantic_fingerprint": {
+              "available": false,
+              "boundary": "NODE_CANDIDATE_SET",
+              "record_count": 0,
+              "records": []
+            },
+            "span_count": 1
+          },
+          "note": "Candidate count is observable; an ordered candidate identity fingerprint is used when supplied.",
+          "semantic_cause_provable": false,
+          "stage": "node_candidate_formation",
+          "status": "DIFFERENT"
+        },
+        "kind": "candidate_span_or_cardinality",
+        "semantic_cause_provable": false,
+        "stage": "node_candidate_formation"
+      },
+      "first_provable_divergence": {
+        "classification": "OBSERVABILITY_INSUFFICIENT",
+        "observed_signal_classification_candidate": "STATE_SNAPSHOT_OR_CANDIDATE_DIVERGENCE",
+        "observed_signal_kind": "candidate_span_or_cardinality",
+        "reason": "The first signal is request/span shape only; the sealed inputs do not contain paired extraction outputs, candidate identities/order, state version, batch membership, or resolution decision digests.",
+        "semantic_cause_provable": false,
+        "stage": "node_candidate_formation"
+      },
+      "first_semantic_fingerprint": null,
+      "source_evidence": {
+        "b0_source_hash": "be983c489b10deea9c4d860f1e3203e4fa5d964154e004b814b2b5fee410156a",
+        "episode_id_equal": true,
+        "hash_equal": true,
+        "history_id_equal": true,
+        "membind_source_hash": "be983c489b10deea9c4d860f1e3203e4fa5d964154e004b814b2b5fee410156a"
+      }
+    },
+    "1": {
+      "causal_chain": [
+        {
+          "from": "source_evidence",
+          "relation": "same immutable source enters both paths; first request/span-shape signal appears downstream",
+          "to": "edge_extraction"
+        },
+        {
+          "from": "edge_extraction",
+          "relation": "observed downstream fan-out changes; causal transfer is not provable",
+          "to": "edge_resolution_fan_out"
+        },
+        {
+          "from": "edge_resolution_fan_out",
+          "relation": "timestamp/summary request counts follow observed edge fan-out",
+          "to": "attribute_summary_timestamp"
+        },
+        {
+          "from": "attribute_summary_timestamp",
+          "relation": "effect span counts are observed after semantic requests",
+          "to": "persistence"
+        },
+        {
+          "from": "persistence",
+          "relation": "both paths reach sealed publication; publication is not a causal explanation",
+          "to": "publication"
+        }
+      ],
+      "fan_out": {
+        "edge_dedup_span_delta": 8,
+        "edge_invalidation_span_delta": 8,
+        "edge_resolution_delta": 0,
+        "summary_delta": 0,
+        "timestamp_delta": 4
+      },
+      "first_observable_signal": {
+        "classification_candidate": "EXTRACTION_DIVERGENCE",
+        "details": {
+          "b0_a": {
+            "call_count": 1,
+            "input_token_vector": [
+              5296
+            ],
+            "prompt_hash_available": false,
+            "semantic_fingerprint": {
+              "available": false,
+              "boundary": "EDGE_EXTRACTION_OUTPUT",
+              "record_count": 0,
+              "records": []
+            }
+          },
+          "membind_v3_1": {
+            "call_count": 1,
+            "input_token_vector": [
+              5291
+            ],
+            "prompt_hash_available": false,
+            "semantic_fingerprint": {
+              "available": false,
+              "boundary": "EDGE_EXTRACTION_OUTPUT",
+              "record_count": 0,
+              "records": []
+            }
+          },
+          "note": "Token vectors remain observations; paired output fingerprints are causal only when both sides are available.",
+          "semantic_cause_provable": false,
+          "stage": "edge_extraction",
+          "status": "DIFFERENT"
+        },
+        "kind": "input_token_vector",
+        "semantic_cause_provable": false,
+        "stage": "edge_extraction"
+      },
+      "first_provable_divergence": {
+        "classification": "OBSERVABILITY_INSUFFICIENT",
+        "observed_signal_classification_candidate": "EXTRACTION_DIVERGENCE",
+        "observed_signal_kind": "input_token_vector",
+        "reason": "The first signal is request/span shape only; the sealed inputs do not contain paired extraction outputs, candidate identities/order, state version, batch membership, or resolution decision digests.",
+        "semantic_cause_provable": false,
+        "stage": "edge_extraction"
+      },
+      "first_semantic_fingerprint": null,
+      "source_evidence": {
+        "b0_source_hash": "14a4788ec703a9d0d331993b7b4afd6ac6836a734644764d0e2746a6a52bd448",
+        "episode_id_equal": true,
+        "hash_equal": true,
+        "history_id_equal": true,
+        "membind_source_hash": "14a4788ec703a9d0d331993b7b4afd6ac6836a734644764d0e2746a6a52bd448"
+      }
+    },
+    "10": {
+      "causal_chain": [
+        {
+          "from": "source_evidence",
+          "relation": "same immutable source enters both paths; first request/span-shape signal appears downstream",
+          "to": "edge_extraction"
+        },
+        {
+          "from": "edge_extraction",
+          "relation": "observed downstream fan-out changes; causal transfer is not provable",
+          "to": "edge_resolution_fan_out"
+        },
+        {
+          "from": "edge_resolution_fan_out",
+          "relation": "timestamp/summary request counts follow observed edge fan-out",
+          "to": "attribute_summary_timestamp"
+        },
+        {
+          "from": "attribute_summary_timestamp",
+          "relation": "effect span counts are observed after semantic requests",
+          "to": "persistence"
+        },
+        {
+          "from": "persistence",
+          "relation": "both paths reach sealed publication; publication is not a causal explanation",
+          "to": "publication"
+        }
+      ],
+      "fan_out": {
+        "edge_dedup_span_delta": 6,
+        "edge_invalidation_span_delta": 6,
+        "edge_resolution_delta": 3,
+        "summary_delta": 1,
+        "timestamp_delta": 3
+      },
+      "first_observable_signal": {
+        "classification_candidate": "EXTRACTION_DIVERGENCE",
+        "details": {
+          "b0_a": {
+            "call_count": 1,
+            "input_token_vector": [
+              23912
+            ],
+            "prompt_hash_available": false,
+            "semantic_fingerprint": {
+              "available": false,
+              "boundary": "EDGE_EXTRACTION_OUTPUT",
+              "record_count": 0,
+              "records": []
+            }
+          },
+          "membind_v3_1": {
+            "call_count": 1,
+            "input_token_vector": [
+              23977
+            ],
+            "prompt_hash_available": false,
+            "semantic_fingerprint": {
+              "available": false,
+              "boundary": "EDGE_EXTRACTION_OUTPUT",
+              "record_count": 0,
+              "records": []
+            }
+          },
+          "note": "Token vectors remain observations; paired output fingerprints are causal only when both sides are available.",
+          "semantic_cause_provable": false,
+          "stage": "edge_extraction",
+          "status": "DIFFERENT"
+        },
+        "kind": "input_token_vector",
+        "semantic_cause_provable": false,
+        "stage": "edge_extraction"
+      },
+      "first_provable_divergence": {
+        "classification": "OBSERVABILITY_INSUFFICIENT",
+        "observed_signal_classification_candidate": "EXTRACTION_DIVERGENCE",
+        "observed_signal_kind": "input_token_vector",
+        "reason": "The first signal is request/span shape only; the sealed inputs do not contain paired extraction outputs, candidate identities/order, state version, batch membership, or resolution decision digests.",
+        "semantic_cause_provable": false,
+        "stage": "edge_extraction"
+      },
+      "first_semantic_fingerprint": null,
+      "source_evidence": {
+        "b0_source_hash": "221540f21708f04e6ad8997f26f5c9c7bf6926abe4f6a049448b106c504b6d6d",
+        "episode_id_equal": true,
+        "hash_equal": true,
+        "history_id_equal": true,
+        "membind_source_hash": "221540f21708f04e6ad8997f26f5c9c7bf6926abe4f6a049448b106c504b6d6d"
+      }
+    },
+    "11": {
+      "causal_chain": [
+        {
+          "from": "source_evidence",
+          "relation": "same immutable source enters both paths; first request/span-shape signal appears downstream",
+          "to": "edge_extraction"
+        },
+        {
+          "from": "edge_extraction",
+          "relation": "observed downstream fan-out changes; causal transfer is not provable",
+          "to": "edge_resolution_fan_out"
+        },
+        {
+          "from": "edge_resolution_fan_out",
+          "relation": "timestamp/summary request counts follow observed edge fan-out",
+          "to": "attribute_summary_timestamp"
+        },
+        {
+          "from": "attribute_summary_timestamp",
+          "relation": "effect span counts are observed after semantic requests",
+          "to": "persistence"
+        },
+        {
+          "from": "persistence",
+          "relation": "both paths reach sealed publication; publication is not a causal explanation",
+          "to": "publication"
+        }
+      ],
+      "fan_out": {
+        "edge_dedup_span_delta": -32,
+        "edge_invalidation_span_delta": -32,
+        "edge_resolution_delta": -16,
+        "summary_delta": 0,
+        "timestamp_delta": -16
+      },
+      "first_observable_signal": {
+        "classification_candidate": "EXTRACTION_DIVERGENCE",
+        "details": {
+          "b0_a": {
+            "call_count": 1,
+            "input_token_vector": [
+              26049
+            ],
+            "prompt_hash_available": false,
+            "semantic_fingerprint": {
+              "available": false,
+              "boundary": "EDGE_EXTRACTION_OUTPUT",
+              "record_count": 0,
+              "records": []
+            }
+          },
+          "membind_v3_1": {
+            "call_count": 1,
+            "input_token_vector": [
+              26009
+            ],
+            "prompt_hash_available": false,
+            "semantic_fingerprint": {
+              "available": false,
+              "boundary": "EDGE_EXTRACTION_OUTPUT",
+              "record_count": 0,
+              "records": []
+            }
+          },
+          "note": "Token vectors remain observations; paired output fingerprints are causal only when both sides are available.",
+          "semantic_cause_provable": false,
+          "stage": "edge_extraction",
+          "status": "DIFFERENT"
+        },
+        "kind": "input_token_vector",
+        "semantic_cause_provable": false,
+        "stage": "edge_extraction"
+      },
+      "first_provable_divergence": {
+        "classification": "OBSERVABILITY_INSUFFICIENT",
+        "observed_signal_classification_candidate": "EXTRACTION_DIVERGENCE",
+        "observed_signal_kind": "input_token_vector",
+        "reason": "The first signal is request/span shape only; the sealed inputs do not contain paired extraction outputs, candidate identities/order, state version, batch membership, or resolution decision digests.",
+        "semantic_cause_provable": false,
+        "stage": "edge_extraction"
+      },
+      "first_semantic_fingerprint": null,
+      "source_evidence": {
+        "b0_source_hash": "193ecd0e913d861c544d303bb2867d0cbeed917abd8fda19950d3bce080a357b",
+        "episode_id_equal": true,
+        "hash_equal": true,
+        "history_id_equal": true,
+        "membind_source_hash": "193ecd0e913d861c544d303bb2867d0cbeed917abd8fda19950d3bce080a357b"
+      }
+    },
+    "2": {
+      "causal_chain": [
+        {
+          "from": "source_evidence",
+          "relation": "same immutable source enters both paths; first request/span-shape signal appears downstream",
+          "to": "edge_extraction"
+        },
+        {
+          "from": "edge_extraction",
+          "relation": "observed downstream fan-out changes; causal transfer is not provable",
+          "to": "edge_resolution_fan_out"
+        },
+        {
+          "from": "edge_resolution_fan_out",
+          "relation": "timestamp/summary request counts follow observed edge fan-out",
+          "to": "attribute_summary_timestamp"
+        },
+        {
+          "from": "attribute_summary_timestamp",
+          "relation": "effect span counts are observed after semantic requests",
+          "to": "persistence"
+        },
+        {
+          "from": "persistence",
+          "relation": "both paths reach sealed publication; publication is not a causal explanation",
+          "to": "publication"
+        }
+      ],
+      "fan_out": {
+        "edge_dedup_span_delta": 14,
+        "edge_invalidation_span_delta": 14,
+        "edge_resolution_delta": 7,
+        "summary_delta": 1,
+        "timestamp_delta": 7
+      },
+      "first_observable_signal": {
+        "classification_candidate": "EXTRACTION_DIVERGENCE",
+        "details": {
+          "b0_a": {
+            "call_count": 1,
+            "input_token_vector": [
+              8104
+            ],
+            "prompt_hash_available": false,
+            "semantic_fingerprint": {
+              "available": false,
+              "boundary": "EDGE_EXTRACTION_OUTPUT",
+              "record_count": 0,
+              "records": []
+            }
+          },
+          "membind_v3_1": {
+            "call_count": 1,
+            "input_token_vector": [
+              8215
+            ],
+            "prompt_hash_available": false,
+            "semantic_fingerprint": {
+              "available": false,
+              "boundary": "EDGE_EXTRACTION_OUTPUT",
+              "record_count": 0,
+              "records": []
+            }
+          },
+          "note": "Token vectors remain observations; paired output fingerprints are causal only when both sides are available.",
+          "semantic_cause_provable": false,
+          "stage": "edge_extraction",
+          "status": "DIFFERENT"
+        },
+        "kind": "input_token_vector",
+        "semantic_cause_provable": false,
+        "stage": "edge_extraction"
+      },
+      "first_provable_divergence": {
+        "classification": "OBSERVABILITY_INSUFFICIENT",
+        "observed_signal_classification_candidate": "EXTRACTION_DIVERGENCE",
+        "observed_signal_kind": "input_token_vector",
+        "reason": "The first signal is request/span shape only; the sealed inputs do not contain paired extraction outputs, candidate identities/order, state version, batch membership, or resolution decision digests.",
+        "semantic_cause_provable": false,
+        "stage": "edge_extraction"
+      },
+      "first_semantic_fingerprint": null,
+      "source_evidence": {
+        "b0_source_hash": "4a82c0669b99d02b0851b43dec36761afea159a77f8530785fedf13032fc596f",
+        "episode_id_equal": true,
+        "hash_equal": true,
+        "history_id_equal": true,
+        "membind_source_hash": "4a82c0669b99d02b0851b43dec36761afea159a77f8530785fedf13032fc596f"
+      }
+    },
+    "3": {
+      "causal_chain": [
+        {
+          "from": "source_evidence",
+          "relation": "same immutable source enters both paths; first request/span-shape signal appears downstream",
+          "to": "node_candidate_formation"
+        },
+        {
+          "from": "node_candidate_formation",
+          "relation": "observed downstream fan-out changes; causal transfer is not provable",
+          "to": "edge_resolution_fan_out"
+        },
+        {
+          "from": "edge_resolution_fan_out",
+          "relation": "timestamp/summary request counts follow observed edge fan-out",
+          "to": "attribute_summary_timestamp"
+        },
+        {
+          "from": "attribute_summary_timestamp",
+          "relation": "effect span counts are observed after semantic requests",
+          "to": "persistence"
+        },
+        {
+          "from": "persistence",
+          "relation": "both paths reach sealed publication; publication is not a causal explanation",
+          "to": "publication"
+        }
+      ],
+      "fan_out": {
+        "edge_dedup_span_delta": 0,
+        "edge_invalidation_span_delta": 0,
+        "edge_resolution_delta": 0,
+        "summary_delta": 0,
+        "timestamp_delta": 0
+      },
+      "first_observable_signal": {
+        "classification_candidate": "STATE_SNAPSHOT_OR_CANDIDATE_DIVERGENCE",
+        "details": {
+          "b0_a": {
+            "all_candidate_search_span_count": 2,
+            "candidate_counts": [
+              24
+            ],
+            "candidate_query_counts": [
+              6
+            ],
+            "identity_available": false,
+            "order_available": false,
+            "semantic_fingerprint": {
+              "available": false,
+              "boundary": "NODE_CANDIDATE_SET",
+              "record_count": 0,
+              "records": []
+            },
+            "span_count": 1
+          },
+          "membind_v3_1": {
+            "all_candidate_search_span_count": 1,
+            "candidate_counts": [
+              66
+            ],
+            "candidate_query_counts": [
+              6
+            ],
+            "identity_available": false,
+            "order_available": false,
+            "semantic_fingerprint": {
+              "available": false,
+              "boundary": "NODE_CANDIDATE_SET",
+              "record_count": 0,
+              "records": []
+            },
+            "span_count": 1
+          },
+          "note": "Candidate count is observable; an ordered candidate identity fingerprint is used when supplied.",
+          "semantic_cause_provable": false,
+          "stage": "node_candidate_formation",
+          "status": "DIFFERENT"
+        },
+        "kind": "candidate_span_or_cardinality",
+        "semantic_cause_provable": false,
+        "stage": "node_candidate_formation"
+      },
+      "first_provable_divergence": {
+        "classification": "OBSERVABILITY_INSUFFICIENT",
+        "observed_signal_classification_candidate": "STATE_SNAPSHOT_OR_CANDIDATE_DIVERGENCE",
+        "observed_signal_kind": "candidate_span_or_cardinality",
+        "reason": "The first signal is request/span shape only; the sealed inputs do not contain paired extraction outputs, candidate identities/order, state version, batch membership, or resolution decision digests.",
+        "semantic_cause_provable": false,
+        "stage": "node_candidate_formation"
+      },
+      "first_semantic_fingerprint": null,
+      "source_evidence": {
+        "b0_source_hash": "62af947c5abab99cfcbd613b9d1dec9e2e8ae9174c23275b77ec46ccd3d8a5b0",
+        "episode_id_equal": true,
+        "hash_equal": true,
+        "history_id_equal": true,
+        "membind_source_hash": "62af947c5abab99cfcbd613b9d1dec9e2e8ae9174c23275b77ec46ccd3d8a5b0"
+      }
+    },
+    "4": {
+      "causal_chain": [
+        {
+          "from": "source_evidence",
+          "relation": "same immutable source enters both paths; first request/span-shape signal appears downstream",
+          "to": "node_candidate_formation"
+        },
+        {
+          "from": "node_candidate_formation",
+          "relation": "observed downstream fan-out changes; causal transfer is not provable",
+          "to": "edge_resolution_fan_out"
+        },
+        {
+          "from": "edge_resolution_fan_out",
+          "relation": "timestamp/summary request counts follow observed edge fan-out",
+          "to": "attribute_summary_timestamp"
+        },
+        {
+          "from": "attribute_summary_timestamp",
+          "relation": "effect span counts are observed after semantic requests",
+          "to": "persistence"
+        },
+        {
+          "from": "persistence",
+          "relation": "both paths reach sealed publication; publication is not a causal explanation",
+          "to": "publication"
+        }
+      ],
+      "fan_out": {
+        "edge_dedup_span_delta": 0,
+        "edge_invalidation_span_delta": 0,
+        "edge_resolution_delta": 0,
+        "summary_delta": 0,
+        "timestamp_delta": 0
+      },
+      "first_observable_signal": {
+        "classification_candidate": "STATE_SNAPSHOT_OR_CANDIDATE_DIVERGENCE",
+        "details": {
+          "b0_a": {
+            "all_candidate_search_span_count": 2,
+            "candidate_counts": [
+              10
+            ],
+            "candidate_query_counts": [
+              1
+            ],
+            "identity_available": false,
+            "order_available": false,
+            "semantic_fingerprint": {
+              "available": false,
+              "boundary": "NODE_CANDIDATE_SET",
+              "record_count": 0,
+              "records": []
+            },
+            "span_count": 1
+          },
+          "membind_v3_1": {
+            "all_candidate_search_span_count": 1,
+            "candidate_counts": [
+              15
+            ],
+            "candidate_query_counts": [
+              1
+            ],
+            "identity_available": false,
+            "order_available": false,
+            "semantic_fingerprint": {
+              "available": false,
+              "boundary": "NODE_CANDIDATE_SET",
+              "record_count": 0,
+              "records": []
+            },
+            "span_count": 1
+          },
+          "note": "Candidate count is observable; an ordered candidate identity fingerprint is used when supplied.",
+          "semantic_cause_provable": false,
+          "stage": "node_candidate_formation",
+          "status": "DIFFERENT"
+        },
+        "kind": "candidate_span_or_cardinality",
+        "semantic_cause_provable": false,
+        "stage": "node_candidate_formation"
+      },
+      "first_provable_divergence": {
+        "classification": "OBSERVABILITY_INSUFFICIENT",
+        "observed_signal_classification_candidate": "STATE_SNAPSHOT_OR_CANDIDATE_DIVERGENCE",
+        "observed_signal_kind": "candidate_span_or_cardinality",
+        "reason": "The first signal is request/span shape only; the sealed inputs do not contain paired extraction outputs, candidate identities/order, state version, batch membership, or resolution decision digests.",
+        "semantic_cause_provable": false,
+        "stage": "node_candidate_formation"
+      },
+      "first_semantic_fingerprint": null,
+      "source_evidence": {
+        "b0_source_hash": "e0f0073e38daafcd502077f1c4d5971300a9d643cdf854ecc1e233587f7d9ee7",
+        "episode_id_equal": true,
+        "hash_equal": true,
+        "history_id_equal": true,
+        "membind_source_hash": "e0f0073e38daafcd502077f1c4d5971300a9d643cdf854ecc1e233587f7d9ee7"
+      }
+    },
+    "5": {
+      "causal_chain": [
+        {
+          "from": "source_evidence",
+          "relation": "same immutable source enters both paths; first request/span-shape signal appears downstream",
+          "to": "edge_extraction"
+        },
+        {
+          "from": "edge_extraction",
+          "relation": "observed downstream fan-out changes; causal transfer is not provable",
+          "to": "edge_resolution_fan_out"
+        },
+        {
+          "from": "edge_resolution_fan_out",
+          "relation": "timestamp/summary request counts follow observed edge fan-out",
+          "to": "attribute_summary_timestamp"
+        },
+        {
+          "from": "attribute_summary_timestamp",
+          "relation": "effect span counts are observed after semantic requests",
+          "to": "persistence"
+        },
+        {
+          "from": "persistence",
+          "relation": "both paths reach sealed publication; publication is not a causal explanation",
+          "to": "publication"
+        }
+      ],
+      "fan_out": {
+        "edge_dedup_span_delta": -16,
+        "edge_invalidation_span_delta": -16,
+        "edge_resolution_delta": -8,
+        "summary_delta": 0,
+        "timestamp_delta": -8
+      },
+      "first_observable_signal": {
+        "classification_candidate": "EXTRACTION_DIVERGENCE",
+        "details": {
+          "b0_a": {
+            "call_count": 1,
+            "input_token_vector": [
+              9138
+            ],
+            "prompt_hash_available": false,
+            "semantic_fingerprint": {
+              "available": false,
+              "boundary": "EDGE_EXTRACTION_OUTPUT",
+              "record_count": 0,
+              "records": []
+            }
+          },
+          "membind_v3_1": {
+            "call_count": 1,
+            "input_token_vector": [
+              9119
+            ],
+            "prompt_hash_available": false,
+            "semantic_fingerprint": {
+              "available": false,
+              "boundary": "EDGE_EXTRACTION_OUTPUT",
+              "record_count": 0,
+              "records": []
+            }
+          },
+          "note": "Token vectors remain observations; paired output fingerprints are causal only when both sides are available.",
+          "semantic_cause_provable": false,
+          "stage": "edge_extraction",
+          "status": "DIFFERENT"
+        },
+        "kind": "input_token_vector",
+        "semantic_cause_provable": false,
+        "stage": "edge_extraction"
+      },
+      "first_provable_divergence": {
+        "classification": "OBSERVABILITY_INSUFFICIENT",
+        "observed_signal_classification_candidate": "EXTRACTION_DIVERGENCE",
+        "observed_signal_kind": "input_token_vector",
+        "reason": "The first signal is request/span shape only; the sealed inputs do not contain paired extraction outputs, candidate identities/order, state version, batch membership, or resolution decision digests.",
+        "semantic_cause_provable": false,
+        "stage": "edge_extraction"
+      },
+      "first_semantic_fingerprint": null,
+      "source_evidence": {
+        "b0_source_hash": "974e5efa89631fa5ce33a7ef00f3423ca8416665c241e9a00c42b98309907ee5",
+        "episode_id_equal": true,
+        "hash_equal": true,
+        "history_id_equal": true,
+        "membind_source_hash": "974e5efa89631fa5ce33a7ef00f3423ca8416665c241e9a00c42b98309907ee5"
+      }
+    },
+    "6": {
+      "causal_chain": [
+        {
+          "from": "source_evidence",
+          "relation": "same immutable source enters both paths; first request/span-shape signal appears downstream",
+          "to": "node_candidate_formation"
+        },
+        {
+          "from": "node_candidate_formation",
+          "relation": "observed downstream fan-out changes; causal transfer is not provable",
+          "to": "edge_resolution_fan_out"
+        },
+        {
+          "from": "edge_resolution_fan_out",
+          "relation": "timestamp/summary request counts follow observed edge fan-out",
+          "to": "attribute_summary_timestamp"
+        },
+        {
+          "from": "attribute_summary_timestamp",
+          "relation": "effect span counts are observed after semantic requests",
+          "to": "persistence"
+        },
+        {
+          "from": "persistence",
+          "relation": "both paths reach sealed publication; publication is not a causal explanation",
+          "to": "publication"
+        }
+      ],
+      "fan_out": {
+        "edge_dedup_span_delta": 10,
+        "edge_invalidation_span_delta": 10,
+        "edge_resolution_delta": 5,
+        "summary_delta": -1,
+        "timestamp_delta": 5
+      },
+      "first_observable_signal": {
+        "classification_candidate": "STATE_SNAPSHOT_OR_CANDIDATE_DIVERGENCE",
+        "details": {
+          "b0_a": {
+            "all_candidate_search_span_count": 13,
+            "candidate_counts": [
+              65
+            ],
+            "candidate_query_counts": [
+              5
+            ],
+            "identity_available": false,
+            "order_available": false,
+            "semantic_fingerprint": {
+              "available": false,
+              "boundary": "NODE_CANDIDATE_SET",
+              "record_count": 0,
+              "records": []
+            },
+            "span_count": 1
+          },
+          "membind_v3_1": {
+            "all_candidate_search_span_count": 23,
+            "candidate_counts": [
+              75
+            ],
+            "candidate_query_counts": [
+              5
+            ],
+            "identity_available": false,
+            "order_available": false,
+            "semantic_fingerprint": {
+              "available": false,
+              "boundary": "NODE_CANDIDATE_SET",
+              "record_count": 0,
+              "records": []
+            },
+            "span_count": 1
+          },
+          "note": "Candidate count is observable; an ordered candidate identity fingerprint is used when supplied.",
+          "semantic_cause_provable": false,
+          "stage": "node_candidate_formation",
+          "status": "DIFFERENT"
+        },
+        "kind": "candidate_span_or_cardinality",
+        "semantic_cause_provable": false,
+        "stage": "node_candidate_formation"
+      },
+      "first_provable_divergence": {
+        "classification": "OBSERVABILITY_INSUFFICIENT",
+        "observed_signal_classification_candidate": "STATE_SNAPSHOT_OR_CANDIDATE_DIVERGENCE",
+        "observed_signal_kind": "candidate_span_or_cardinality",
+        "reason": "The first signal is request/span shape only; the sealed inputs do not contain paired extraction outputs, candidate identities/order, state version, batch membership, or resolution decision digests.",
+        "semantic_cause_provable": false,
+        "stage": "node_candidate_formation"
+      },
+      "first_semantic_fingerprint": null,
+      "source_evidence": {
+        "b0_source_hash": "660d5a22ab4c0c9cc1909861aaff1ea5313f4b5823440ac2bedc91c3a413bb1e",
+        "episode_id_equal": true,
+        "hash_equal": true,
+        "history_id_equal": true,
+        "membind_source_hash": "660d5a22ab4c0c9cc1909861aaff1ea5313f4b5823440ac2bedc91c3a413bb1e"
+      }
+    },
+    "7": {
+      "causal_chain": [
+        {
+          "from": "source_evidence",
+          "relation": "same immutable source enters both paths; first request/span-shape signal appears downstream",
+          "to": "node_resolution_batch"
+        },
+        {
+          "from": "node_resolution_batch",
+          "relation": "observed downstream fan-out changes; causal transfer is not provable",
+          "to": "edge_resolution_fan_out"
+        },
+        {
+          "from": "edge_resolution_fan_out",
+          "relation": "timestamp/summary request counts follow observed edge fan-out",
+          "to": "attribute_summary_timestamp"
+        },
+        {
+          "from": "attribute_summary_timestamp",
+          "relation": "effect span counts are observed after semantic requests",
+          "to": "persistence"
+        },
+        {
+          "from": "persistence",
+          "relation": "both paths reach sealed publication; publication is not a causal explanation",
+          "to": "publication"
+        }
+      ],
+      "fan_out": {
+        "edge_dedup_span_delta": 0,
+        "edge_invalidation_span_delta": 0,
+        "edge_resolution_delta": 0,
+        "summary_delta": 0,
+        "timestamp_delta": -6
+      },
+      "first_observable_signal": {
+        "classification_candidate": "RESOLUTION_DECISION_DIVERGENCE",
+        "details": {
+          "b0_a": {
+            "call_count": 1,
+            "input_token_vector": [
+              14535
+            ],
+            "semantic_fingerprint_batch": {
+              "available": false,
+              "boundary": "NODE_RESOLUTION_BATCH",
+              "record_count": 0,
+              "records": []
+            },
+            "semantic_fingerprint_decision": {
+              "available": false,
+              "boundary": "NODE_RESOLUTION_DECISION",
+              "record_count": 0,
+              "records": []
+            }
+          },
+          "membind_v3_1": {
+            "call_count": 1,
+            "input_token_vector": [
+              14803
+            ],
+            "semantic_fingerprint_batch": {
+              "available": false,
+              "boundary": "NODE_RESOLUTION_BATCH",
+              "record_count": 0,
+              "records": []
+            },
+            "semantic_fingerprint_decision": {
+              "available": false,
+              "boundary": "NODE_RESOLUTION_DECISION",
+              "record_count": 0,
+              "records": []
+            }
+          },
+          "note": "Batch membership and normalized decisions are preferred when paired passive fingerprints exist.",
+          "semantic_cause_provable": false,
+          "stage": "node_resolution_batch",
+          "status": "DIFFERENT"
+        },
+        "kind": "input_token_or_call_vector",
+        "semantic_cause_provable": false,
+        "stage": "node_resolution_batch"
+      },
+      "first_provable_divergence": {
+        "classification": "OBSERVABILITY_INSUFFICIENT",
+        "observed_signal_classification_candidate": "RESOLUTION_DECISION_DIVERGENCE",
+        "observed_signal_kind": "input_token_or_call_vector",
+        "reason": "The first signal is request/span shape only; the sealed inputs do not contain paired extraction outputs, candidate identities/order, state version, batch membership, or resolution decision digests.",
+        "semantic_cause_provable": false,
+        "stage": "node_resolution_batch"
+      },
+      "first_semantic_fingerprint": null,
+      "source_evidence": {
+        "b0_source_hash": "73183d2712ec3c22ad7484f27c121ae31ff465ddb169673e1bd795d12c11bc82",
+        "episode_id_equal": true,
+        "hash_equal": true,
+        "history_id_equal": true,
+        "membind_source_hash": "73183d2712ec3c22ad7484f27c121ae31ff465ddb169673e1bd795d12c11bc82"
+      }
+    },
+    "8": {
+      "causal_chain": [
+        {
+          "from": "source_evidence",
+          "relation": "same immutable source enters both paths; first request/span-shape signal appears downstream",
+          "to": "edge_extraction"
+        },
+        {
+          "from": "edge_extraction",
+          "relation": "observed downstream fan-out changes; causal transfer is not provable",
+          "to": "edge_resolution_fan_out"
+        },
+        {
+          "from": "edge_resolution_fan_out",
+          "relation": "timestamp/summary request counts follow observed edge fan-out",
+          "to": "attribute_summary_timestamp"
+        },
+        {
+          "from": "attribute_summary_timestamp",
+          "relation": "effect span counts are observed after semantic requests",
+          "to": "persistence"
+        },
+        {
+          "from": "persistence",
+          "relation": "both paths reach sealed publication; publication is not a causal explanation",
+          "to": "publication"
+        }
+      ],
+      "fan_out": {
+        "edge_dedup_span_delta": 66,
+        "edge_invalidation_span_delta": 66,
+        "edge_resolution_delta": 33,
+        "summary_delta": 0,
+        "timestamp_delta": 33
+      },
+      "first_observable_signal": {
+        "classification_candidate": "EXTRACTION_DIVERGENCE",
+        "details": {
+          "b0_a": {
+            "call_count": 1,
+            "input_token_vector": [
+              38530
+            ],
+            "prompt_hash_available": false,
+            "semantic_fingerprint": {
+              "available": false,
+              "boundary": "EDGE_EXTRACTION_OUTPUT",
+              "record_count": 0,
+              "records": []
+            }
+          },
+          "membind_v3_1": {
+            "call_count": 1,
+            "input_token_vector": [
+              19265
+            ],
+            "prompt_hash_available": false,
+            "semantic_fingerprint": {
+              "available": false,
+              "boundary": "EDGE_EXTRACTION_OUTPUT",
+              "record_count": 0,
+              "records": []
+            }
+          },
+          "note": "Token vectors remain observations; paired output fingerprints are causal only when both sides are available.",
+          "semantic_cause_provable": false,
+          "stage": "edge_extraction",
+          "status": "DIFFERENT"
+        },
+        "kind": "input_token_vector",
+        "semantic_cause_provable": false,
+        "stage": "edge_extraction"
+      },
+      "first_provable_divergence": {
+        "classification": "OBSERVABILITY_INSUFFICIENT",
+        "observed_signal_classification_candidate": "EXTRACTION_DIVERGENCE",
+        "observed_signal_kind": "input_token_vector",
+        "reason": "The first signal is request/span shape only; the sealed inputs do not contain paired extraction outputs, candidate identities/order, state version, batch membership, or resolution decision digests.",
+        "semantic_cause_provable": false,
+        "stage": "edge_extraction"
+      },
+      "first_semantic_fingerprint": null,
+      "source_evidence": {
+        "b0_source_hash": "b137719421febc1caa83cd5476bc5bb22ac3f584c6f94c9f79a2cf848b9365a3",
+        "episode_id_equal": true,
+        "hash_equal": true,
+        "history_id_equal": true,
+        "membind_source_hash": "b137719421febc1caa83cd5476bc5bb22ac3f584c6f94c9f79a2cf848b9365a3"
+      }
+    },
+    "9": {
+      "causal_chain": [
+        {
+          "from": "source_evidence",
+          "relation": "same immutable source enters both paths; first request/span-shape signal appears downstream",
+          "to": "edge_extraction"
+        },
+        {
+          "from": "edge_extraction",
+          "relation": "observed downstream fan-out changes; causal transfer is not provable",
+          "to": "edge_resolution_fan_out"
+        },
+        {
+          "from": "edge_resolution_fan_out",
+          "relation": "timestamp/summary request counts follow observed edge fan-out",
+          "to": "attribute_summary_timestamp"
+        },
+        {
+          "from": "attribute_summary_timestamp",
+          "relation": "effect span counts are observed after semantic requests",
+          "to": "persistence"
+        },
+        {
+          "from": "persistence",
+          "relation": "both paths reach sealed publication; publication is not a causal explanation",
+          "to": "publication"
+        }
+      ],
+      "fan_out": {
+        "edge_dedup_span_delta": 16,
+        "edge_invalidation_span_delta": 16,
+        "edge_resolution_delta": 8,
+        "summary_delta": -1,
+        "timestamp_delta": 8
+      },
+      "first_observable_signal": {
+        "classification_candidate": "EXTRACTION_DIVERGENCE",
+        "details": {
+          "b0_a": {
+            "call_count": 1,
+            "input_token_vector": [
+              18724
+            ],
+            "prompt_hash_available": false,
+            "semantic_fingerprint": {
+              "available": false,
+              "boundary": "EDGE_EXTRACTION_OUTPUT",
+              "record_count": 0,
+              "records": []
+            }
+          },
+          "membind_v3_1": {
+            "call_count": 1,
+            "input_token_vector": [
+              18855
+            ],
+            "prompt_hash_available": false,
+            "semantic_fingerprint": {
+              "available": false,
+              "boundary": "EDGE_EXTRACTION_OUTPUT",
+              "record_count": 0,
+              "records": []
+            }
+          },
+          "note": "Token vectors remain observations; paired output fingerprints are causal only when both sides are available.",
+          "semantic_cause_provable": false,
+          "stage": "edge_extraction",
+          "status": "DIFFERENT"
+        },
+        "kind": "input_token_vector",
+        "semantic_cause_provable": false,
+        "stage": "edge_extraction"
+      },
+      "first_provable_divergence": {
+        "classification": "OBSERVABILITY_INSUFFICIENT",
+        "observed_signal_classification_candidate": "EXTRACTION_DIVERGENCE",
+        "observed_signal_kind": "input_token_vector",
+        "reason": "The first signal is request/span shape only; the sealed inputs do not contain paired extraction outputs, candidate identities/order, state version, batch membership, or resolution decision digests.",
+        "semantic_cause_provable": false,
+        "stage": "edge_extraction"
+      },
+      "first_semantic_fingerprint": null,
+      "source_evidence": {
+        "b0_source_hash": "50d899e4968c3b6567de80393424cfbfc5137db058bc4b3e6d05a754279b3475",
+        "episode_id_equal": true,
+        "hash_equal": true,
+        "history_id_equal": true,
+        "membind_source_hash": "50d899e4968c3b6567de80393424cfbfc5137db058bc4b3e6d05a754279b3475"
+      }
+    }
+  },
+  "v5_contract_if_only_timing_changes": [
+    "preserve the Native Serial logical operator partial order and one-to-one operator lineage",
+    "preserve exact extraction input/output identity and batching membership",
+    "bind every state-derived operation to the same exact predecessor state version",
+    "preserve candidate set identity/order and resolution decision identity",
+    "preserve effect cardinality/content and ordered durable publication"
+  ]
+}
