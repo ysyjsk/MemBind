@@ -1,0 +1,72 @@
+{
+  "decision": "STOP_VALIDATED_SEMANTIC_CONTINUATION_NO_CROSS_VERSION_WINDOW",
+  "decision_reason": "Positive local readiness exists before the whole PreparedArtifact barrier, but zero STATE_DERIVED operators are READY before exact predecessor publication. This is Case B; do not enter SHADOW_READ.",
+  "legal_ready_set": {
+    "definition": "The certified legal STATE_DERIVED ready set is the union of [OPERATOR_READY, OPERATOR_START) intervals whose exact ReadView is STABLE_READVIEW. Width is a count of simultaneously legal operators, never queue depth or active-request count.",
+    "duration_ns_ready_width_ge_2": 18528340650,
+    "max_certified_state_derived_ready_width": 29,
+    "ready_set_interval_count": 409,
+    "time_weighted_ready_width_p50": 3,
+    "time_weighted_ready_width_p95": 5
+  },
+  "next_action": "GO_ANALYZE_WITHIN_VERSION_MEG_OPPORTUNITY",
+  "payload_sha256": "5861c0c52a214993e1a30d88390eca067447e1d3d2a9405f92d9913d9e177c51",
+  "prepared_barrier": {
+    "fraction": 0.06153846153846154,
+    "operators_ready_early": 24
+  },
+  "prohibited_next_actions": [
+    "SHADOW_READ",
+    "stale-state probe",
+    "speculative LLM",
+    "scheduler change",
+    "admission reorder",
+    "performance main-table claim"
+  ],
+  "run_id": "membind-v31-opt-w4-meg-runtime-observe-20260821-011",
+  "runtime_validity": {
+    "admission_reorder": false,
+    "commit_publication_causality_complete": true,
+    "history_id": "07741c45",
+    "mode": "OBSERVE_ONLY",
+    "mutation_epoch_valid": true,
+    "publications": 12,
+    "request_lineage_coverage": 1.0,
+    "run_id": "membind-v31-opt-w4-meg-runtime-observe-20260821-011",
+    "scheduler_unchanged": true,
+    "semantic_operator_lineage_complete": true,
+    "semantic_path_unchanged": true,
+    "source_sequences": [
+      0,
+      1,
+      2,
+      3,
+      4,
+      5,
+      6,
+      7,
+      8,
+      9,
+      10,
+      11
+    ],
+    "sources_completed": true,
+    "status": "PASS_REAL_MEG_RUNTIME_OBSERVE_ONLY",
+    "transaction_commits": 12,
+    "zero_extra_llm_embedding_db_io": true,
+    "zero_shadow_reads": true
+  },
+  "schema_version": "membind.meg.real-0-11.readiness-decision.v1",
+  "state_frontier": {
+    "fraction": 0.0,
+    "frontier_lead_ns": {
+      "count": 0,
+      "max": null,
+      "p50": null,
+      "p95": null,
+      "sum": 0
+    },
+    "ready_before_predecessor": 0,
+    "state_derived_total": 231
+  }
+}

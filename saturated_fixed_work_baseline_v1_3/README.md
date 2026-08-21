@@ -1,22 +1,24 @@
 # Saturated Fixed-Work Baseline v1.3
 
-This is the prospective protocol and adapter layer for a new formal campaign.
-It deliberately reuses the stable v1.2 implementation while removing two
-historical gates:
+This is the prospective fixed-work baseline adapter for a new campaign. It
+reuses stable v1.2 workload and execution primitives while keeping live
+preflight focused on experiment-critical checks:
 
-1. current-campaign resource identity is sufficient; historical provider
-   parity is `NOT_APPLICABLE`;
-2. test qualification is based on exact clean-HEAD reproduction and
-   `NEW_REGRESSION_COUNT == 0`, not a repository-wide zero-failure boolean.
+* both vLLM endpoints complete requests;
+* Neo4j read/write canaries pass;
+* workload, runner, instrumentation, fixed warmup, and backend idle pass.
 
-The executable prospective gate adapter lives in
-`saturated_fixed_work_baseline_v1_2/src/saturated_fixed_work_baseline_v1_2/v1_3.py`.
-The v1.2 run root and all sealed artifacts remain untouched.  No script in this
-directory starts a service or an experiment.
+The simplified execution path does not collect or gate on resource forensic
+fields. The old v1.2 resource modules and sealed root remain untouched as
+historical data only.
 
-Targeted migration tests:
+The executable live adapter is
+`saturated_fixed_work_baseline_v1_3/src/saturated_fixed_work_baseline_v1_3/simple_campaign.py`.
+The v1.2 run root and all sealed artifacts remain untouched.
+
+Targeted simplified-path tests:
 
 ```bash
 ../paper-eval-v3/.venv/bin/pytest -q \
-  saturated_fixed_work_baseline_v1_2/tests/unit/test_p44_v1_3_migration.py
+  saturated_fixed_work_baseline_v1_3/tests/test_simple_campaign.py
 ```

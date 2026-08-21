@@ -1,17 +1,17 @@
 # MemBind Saturated Fixed-Work Construction Baseline Workplan v1.3
 
-**Status:** prospective formal protocol frozen for minimal migration review.
-No formal run, live result, STOP seal, or experiment is created by this file.
+**Status:** prospective fixed-work baseline with a simplified live execution
+path. The old v1.2 development root remains historical and immutable.
 The executable companion is
 [`saturated_fixed_work_baseline_v1_3/PROTOCOL.md`](/data/predator/ly/MemBind/saturated_fixed_work_baseline_v1_3/PROTOCOL.md).
 
 ## Decision
 
-The v1.2 development run is permanently frozen as development evidence.  Its
-performance numbers do not enter the v1.3 main table, and its provider UUID,
-PID, ordinal, or historical resource envelope is not a v1.3 gate.  v1.3
-reuses the v1.2 frozen workload and stable execution stack, then runs B0 and B1
-again in one new campaign.
+The v1.2 development run is permanently frozen as development evidence. Its
+performance numbers do not enter the v1.3 main table. v1.3 reuses the frozen
+workload and stable execution stack, then runs B0 and B1 again in a new
+campaign. Physical resource consistency is an operator-controlled experimental
+condition, not a protocol gate.
 
 ## Unchanged protocol surface
 
@@ -24,42 +24,42 @@ semantic violations, Multi-QA, counterbalance, first-valid attempt,
 failed-attempt preservation, namespace isolation, L1 qualification, L2
 rehearsal, eight L3 blocks, 32 L4 QA rows, and the L5 reducer.
 
-## Two protocol corrections
+## Simplified execution contract
 
-1. **Historical parity removed.**  L0 freezes a new current-campaign
-   `RESOURCE_ENVELOPE_ID`; it requires the same stable physical/software/config
-   identity for B0 and B1 (and later MemBind), but makes no claim about the old
-   development host.  GPU UUID/model/checkpoint/version/config/limits are
-   stable identity.  PID, EngineCore PID, boot ID, process tree, and telemetry
-   are ephemeral.  A restart requires a fresh identity snapshot; unchanged
-   stable identity permits a new attempt, drift fails closed.
-2. **Test qualification clarified.**  SFWB-owned and affected targeted tests
-   must have zero unexpected failures.  The repository-wide suite is run and
-   recorded.  A repository failure is pre-existing only when clean HEAD has the
-   exact same test ID and failure signature and it is outside the branch
-   change.  The gate is `NEW_REGRESSION_COUNT == 0`; `tests_all_green` is not a
-   v1.3 semantic.
+L0 checks only conditions that determine whether a credible construction
+measurement can run: both HTTP services complete requests, Neo4j can perform a
+read and a write/delete canary, the frozen workload loads, the B0/B1 runner and
+instrumentation compose, fixed disjoint warmup completes, and all backends are
+idle before measurement.
+
+The v1.3 execution path does not collect or gate on resource-evidence,
+physical GPU identity, PID/EngineCore identity, CUDA environment, boot or
+machine identity, collector deployment hashes, or historical resource parity.
+Those older modules remain only for reading immutable v1.2 history.
+
+Qualification runs the fixed 12-episode sequence `B0-A -> B0-B -> B1` and
+records existing makespan, throughput, work volume, concurrency, ordering,
+canonical graph, and direct semantic evidence. A semantic or ordering
+difference is a result to report. Only incomplete execution, runner failure,
+missing core instrumentation, or a correctness accounting defect blocks the
+qualification.
 
 ## Execution and stop boundary
 
-The future campaign order is `P0 -> P1 -> L0 -> L1 -> L2 -> L3 -> L4 -> L5`.
-L1 is the fixed 12-episode `B0-A, B0-B, B1` qualification, followed by the
-one-history rehearsal and the eight preregistered B0/B1 blocks.  This migration
-only delivers the frozen v1.3 protocol, the prospective gate adapter, targeted
-RED-to-GREEN tests, and a pure L0 readiness contract.  It does not execute
-L0-L5 or create a new formal run.
+The live qualification boundary is `L0 -> L1`; the simplified qualification
+command stops after the three qualification blocks. L2-L5 remain separately
+authorized stages and are not started by this command.
 
 ## Implementation mapping
 
 * Stable v1.2 runner, dataset, namespace, instrumentation, telemetry, QA, and
   reducer modules remain the dependency closure.
-* New current-envelope and regression gates are implemented in
-  `saturated_fixed_work_baseline_v1_2/.../v1_3.py` and re-exported by the v1.3
-  adapter package.
-* Identity discovery is a low-frequency lane; the 1 Hz sampler receives only
-  lightweight provider telemetry.
-* Migration tests are in
-  `saturated_fixed_work_baseline_v1_2/tests/unit/test_p44_v1_3_migration.py`.
+* The simplified live adapter is
+  `saturated_fixed_work_baseline_v1_3/.../simple_campaign.py`.
+* Targeted adapter tests are in
+  `saturated_fixed_work_baseline_v1_3/tests/test_simple_campaign.py`.
+* Existing v1.2 instrumentation and reducer primitives are reused without
+  adding a scheduler or a new measurement family.
 
 The old v1.2 STOP SHA-256 remains bound and unchanged:
 `2cd5f9043136865df71085cd92840fa86512982c5fc77be01026fab244af5426`.

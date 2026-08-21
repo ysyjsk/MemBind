@@ -20,24 +20,14 @@ qualification:
   new_regression_count_must_equal: 0
 formal_blocks: 8
 qa_rows: 32
-resource_gate:
-  historical_resource_parity_required: false
-  same_current_campaign_envelope_required: true
-  stable_identity_fields:
-    - provider_hostname
-    - gpu_model
-    - gpu_uuid
-    - gpu_memory
-    - model_checkpoint
-    - software_versions
-    - launch_configuration
-    - resource_limits
-  ephemeral_fields:
-    - pid
-    - engine_core_pid
-    - boot_id
-    - process_tree
-    - telemetry
+live_gate:
+  construction_endpoint_required: true
+  embedding_endpoint_required: true
+  neo4j_read_write_required: true
+  frozen_workload_required: true
+  runner_instrumentation_required: true
+  fixed_disjoint_warmup_required: true
+  backend_idle_required: true
 services:
   construction:
     model: Qwen3-32B-FP8
@@ -57,7 +47,5 @@ services:
     gpu_memory_utilization: 0.15
     max_num_batched_tokens: 32768
     max_num_seqs: 128
-sampler:
-  period_seconds: 1.0
-  identity: campaign_preflight_and_restart_boundary
-  telemetry: gpu_utilization_memory_power_clock_temperature
+measurement:
+  existing_instrumentation_only: true

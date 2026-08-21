@@ -1,0 +1,665 @@
+{
+  "by_classification": {
+    "DERIVED_PRIVATE": {
+      "exposed_ready_window_ns": 0,
+      "prepared_lead_ns": {
+        "count": 0,
+        "max": null,
+        "p50": null,
+        "p95": null,
+        "sum": 0
+      },
+      "ready_before_prepared_count": 0,
+      "ready_before_prepared_fraction": 0.0,
+      "total": 111
+    },
+    "EVIDENCE_DERIVED": {
+      "exposed_ready_window_ns": 681487760407,
+      "prepared_lead_ns": {
+        "count": 24,
+        "max": 109682661838,
+        "p50": 19480911366,
+        "p95": 82499027067,
+        "sum": 681487760407
+      },
+      "ready_before_prepared_count": 24,
+      "ready_before_prepared_fraction": 1.0,
+      "total": 24
+    },
+    "PERSISTENT_EFFECT": {
+      "exposed_ready_window_ns": 0,
+      "prepared_lead_ns": {
+        "count": 0,
+        "max": null,
+        "p50": null,
+        "p95": null,
+        "sum": 0
+      },
+      "ready_before_prepared_count": 0,
+      "ready_before_prepared_fraction": 0.0,
+      "total": 12
+    },
+    "PUBLICATION": {
+      "exposed_ready_window_ns": 0,
+      "prepared_lead_ns": {
+        "count": 0,
+        "max": null,
+        "p50": null,
+        "p95": null,
+        "sum": 0
+      },
+      "ready_before_prepared_count": 0,
+      "ready_before_prepared_fraction": 0.0,
+      "total": 12
+    },
+    "STATE_DERIVED": {
+      "exposed_ready_window_ns": 0,
+      "prepared_lead_ns": {
+        "count": 0,
+        "max": null,
+        "p50": null,
+        "p95": null,
+        "sum": 0
+      },
+      "ready_before_prepared_count": 0,
+      "ready_before_prepared_fraction": 0.0,
+      "total": 231
+    }
+  },
+  "formula": "prepared_lead_ns = t_prepared(source) - t_ready(operator)",
+  "fraction": 0.06153846153846154,
+  "input_capture_payload_sha256": "085ddf5ce667f8bd9e9c92956312bedbf8456bc8334e5c51fb26039ed9fea1d7",
+  "interpretation": "PreparedArtifact is a coarse barrier for this capture: early operators are evidence-derived extraction operators, while no STATE_DERIVED operator is in the positive predecessor frontier.",
+  "operator_rows": [
+    {
+      "classification": "EVIDENCE_DERIVED",
+      "exact_read_view_stable": false,
+      "frontier_lead_ns": null,
+      "llm_service_ns": 1292332109,
+      "prepared_lead_ns": 1834497587,
+      "production_request_count": 1,
+      "ready_before_predecessor_publication": false,
+      "ready_before_prepared": true,
+      "request_intervals_ns": [
+        [
+          612022736239938,
+          612024028572047
+        ]
+      ],
+      "semantic_operator_id": "meg-runtime-op-c71d3d002afc6b0ef025ce63786aa0b90bc7622b26cced77f6037990f1e01e6a",
+      "semantic_operator_type": "NODE_EXTRACTION",
+      "source_sequence": 0,
+      "t_end_ns": 612024029175993,
+      "t_materialized_ns": 612022736151522,
+      "t_ready_ns": 612022736164332,
+      "t_start_ns": 612022736181719,
+      "window_service_ratio": null
+    },
+    {
+      "classification": "EVIDENCE_DERIVED",
+      "exact_read_view_stable": false,
+      "frontier_lead_ns": null,
+      "llm_service_ns": 540578618,
+      "prepared_lead_ns": 541350029,
+      "production_request_count": 1,
+      "ready_before_predecessor_publication": false,
+      "ready_before_prepared": true,
+      "request_intervals_ns": [
+        [
+          612024029367428,
+          612024569946046
+        ]
+      ],
+      "semantic_operator_id": "meg-runtime-op-bc9380362b96d2a494be0dd1a0a7bf999bb82e020777f950fb7da915643680f2",
+      "semantic_operator_type": "EDGE_EXTRACTION",
+      "source_sequence": 0,
+      "t_end_ns": 612024570583385,
+      "t_materialized_ns": 612024029303023,
+      "t_ready_ns": 612024029311890,
+      "t_start_ns": 612024029325820,
+      "window_service_ratio": null
+    },
+    {
+      "classification": "EVIDENCE_DERIVED",
+      "exact_read_view_stable": false,
+      "frontier_lead_ns": -37795855560,
+      "llm_service_ns": 1868380455,
+      "prepared_lead_ns": 19149936216,
+      "production_request_count": 1,
+      "ready_before_predecessor_publication": false,
+      "ready_before_prepared": true,
+      "request_intervals_ns": [
+        [
+          612064585380642,
+          612066453761097
+        ]
+      ],
+      "semantic_operator_id": "meg-runtime-op-c6a1a777a5573003f4ac284fe050d825f815e03c018f92befe63d07c037e8278",
+      "semantic_operator_type": "NODE_EXTRACTION",
+      "source_sequence": 1,
+      "t_end_ns": 612066454642521,
+      "t_materialized_ns": 612064585230827,
+      "t_ready_ns": 612064585247213,
+      "t_start_ns": 612064585267078,
+      "window_service_ratio": null
+    },
+    {
+      "classification": "EVIDENCE_DERIVED",
+      "exact_read_view_stable": false,
+      "frontier_lead_ns": -39665407055,
+      "llm_service_ns": 17279120947,
+      "prepared_lead_ns": 17280384721,
+      "production_request_count": 1,
+      "ready_before_predecessor_publication": false,
+      "ready_before_prepared": true,
+      "request_intervals_ns": [
+        [
+          612066454948516,
+          612083734069463
+        ]
+      ],
+      "semantic_operator_id": "meg-runtime-op-6150e6b8b6a3e7bc09cae168226a8fd7ce6bd8eddb23bddecf04e622b0974c56",
+      "semantic_operator_type": "EDGE_EXTRACTION",
+      "source_sequence": 1,
+      "t_end_ns": 612083734915534,
+      "t_materialized_ns": 612066454785122,
+      "t_ready_ns": 612066454798708,
+      "t_start_ns": 612066454817517,
+      "window_service_ratio": null
+    },
+    {
+      "classification": "EVIDENCE_DERIVED",
+      "exact_read_view_stable": false,
+      "frontier_lead_ns": -20608309566,
+      "llm_service_ns": 2299637562,
+      "prepared_lead_ns": 6669552020,
+      "production_request_count": 1,
+      "ready_before_predecessor_publication": false,
+      "ready_before_prepared": true,
+      "request_intervals_ns": [
+        [
+          612106379132792,
+          612108678770354
+        ]
+      ],
+      "semantic_operator_id": "meg-runtime-op-a67e760c7e5b1a9efa2972e0b501bfe1834e7a086ed0bf85f2b6446a3670379c",
+      "semantic_operator_type": "NODE_EXTRACTION",
+      "source_sequence": 2,
+      "t_end_ns": 612108679676362,
+      "t_materialized_ns": 612106378926744,
+      "t_ready_ns": 612106378948041,
+      "t_start_ns": 612106378967908,
+      "window_service_ratio": null
+    },
+    {
+      "classification": "EVIDENCE_DERIVED",
+      "exact_read_view_stable": false,
+      "frontier_lead_ns": -22909228775,
+      "llm_service_ns": 4367427863,
+      "prepared_lead_ns": 4368632811,
+      "production_request_count": 1,
+      "ready_before_predecessor_publication": false,
+      "ready_before_prepared": true,
+      "request_intervals_ns": [
+        [
+          612108680080163,
+          612113047508026
+        ]
+      ],
+      "semantic_operator_id": "meg-runtime-op-d92d7cd3811a9f04e4510847fde0865fcf6bac9bb0100a6c67158bddc888f730",
+      "semantic_operator_type": "EDGE_EXTRACTION",
+      "source_sequence": 2,
+      "t_end_ns": 612113048323274,
+      "t_materialized_ns": 612108679850822,
+      "t_ready_ns": 612108679867250,
+      "t_start_ns": 612108679890424,
+      "window_service_ratio": null
+    },
+    {
+      "classification": "EVIDENCE_DERIVED",
+      "exact_read_view_stable": false,
+      "frontier_lead_ns": -31290264804,
+      "llm_service_ns": 4538295365,
+      "prepared_lead_ns": 5052534726,
+      "production_request_count": 1,
+      "ready_before_predecessor_publication": false,
+      "ready_before_prepared": true,
+      "request_intervals_ns": [
+        [
+          612148201727643,
+          612152740023008
+        ]
+      ],
+      "semantic_operator_id": "meg-runtime-op-bd4968d1a82a4a4965eac3d1ec3999c3e41fc08b906dceea9aa2279cb8943f30",
+      "semantic_operator_type": "NODE_EXTRACTION",
+      "source_sequence": 3,
+      "t_end_ns": 612152740688409,
+      "t_materialized_ns": 612148201471939,
+      "t_ready_ns": 612148201510293,
+      "t_start_ns": 612148201540165,
+      "window_service_ratio": null
+    },
+    {
+      "classification": "EVIDENCE_DERIVED",
+      "exact_read_view_stable": false,
+      "frontier_lead_ns": -35829601200,
+      "llm_service_ns": 511493387,
+      "prepared_lead_ns": 513198330,
+      "production_request_count": 1,
+      "ready_before_predecessor_publication": false,
+      "ready_before_prepared": true,
+      "request_intervals_ns": [
+        [
+          612152741018057,
+          612153252511444
+        ]
+      ],
+      "semantic_operator_id": "meg-runtime-op-e0246c4cea8b02dfd06c06ba6feb6afc81e38e8c2f014bc3cc9a6af9daee0824",
+      "semantic_operator_type": "EDGE_EXTRACTION",
+      "source_sequence": 3,
+      "t_end_ns": 612153253750514,
+      "t_materialized_ns": 612152740835142,
+      "t_ready_ns": 612152740846689,
+      "t_start_ns": 612152740862591,
+      "window_service_ratio": null
+    },
+    {
+      "classification": "EVIDENCE_DERIVED",
+      "exact_read_view_stable": false,
+      "frontier_lead_ns": -24187045102,
+      "llm_service_ns": 1596830411,
+      "prepared_lead_ns": 2445023776,
+      "production_request_count": 1,
+      "ready_before_predecessor_publication": false,
+      "ready_before_prepared": true,
+      "request_intervals_ns": [
+        [
+          612190006758094,
+          612191603588505
+        ]
+      ],
+      "semantic_operator_id": "meg-runtime-op-07305291928db39fae12a1e20cda41c0b057c9cf23e91d322982d7d03143ece1",
+      "semantic_operator_type": "NODE_EXTRACTION",
+      "source_sequence": 4,
+      "t_end_ns": 612191604158126,
+      "t_materialized_ns": 612190006464296,
+      "t_ready_ns": 612190006497493,
+      "t_start_ns": 612190006532790,
+      "window_service_ratio": null
+    },
+    {
+      "classification": "EVIDENCE_DERIVED",
+      "exact_read_view_stable": false,
+      "frontier_lead_ns": -25784805764,
+      "llm_service_ns": 846225819,
+      "prepared_lead_ns": 847263114,
+      "production_request_count": 1,
+      "ready_before_predecessor_publication": false,
+      "ready_before_prepared": true,
+      "request_intervals_ns": [
+        [
+          612191604422481,
+          612192450648300
+        ]
+      ],
+      "semantic_operator_id": "meg-runtime-op-944f9c2d5f3a5bea2a24ee96b3d7d3808f4b868df1b0c5b804ef67ca7eb1572a",
+      "semantic_operator_type": "EDGE_EXTRACTION",
+      "source_sequence": 4,
+      "t_end_ns": 612192451423006,
+      "t_materialized_ns": 612191604248217,
+      "t_ready_ns": 612191604258155,
+      "t_start_ns": 612191604272019,
+      "window_service_ratio": null
+    },
+    {
+      "classification": "EVIDENCE_DERIVED",
+      "exact_read_view_stable": false,
+      "frontier_lead_ns": -32429538844,
+      "llm_service_ns": 1912361698,
+      "prepared_lead_ns": 20686225875,
+      "production_request_count": 1,
+      "ready_before_predecessor_publication": false,
+      "ready_before_prepared": true,
+      "request_intervals_ns": [
+        [
+          612231827520880,
+          612233739882578
+        ]
+      ],
+      "semantic_operator_id": "meg-runtime-op-2818c5c8f5aa8b0e130ebc864d2682b98fba0fe72ded11dfe6e30075e73b5641",
+      "semantic_operator_type": "NODE_EXTRACTION",
+      "source_sequence": 5,
+      "t_end_ns": 612233740713631,
+      "t_materialized_ns": 612231827262476,
+      "t_ready_ns": 612231827298678,
+      "t_start_ns": 612231827326612,
+      "window_service_ratio": null
+    },
+    {
+      "classification": "EVIDENCE_DERIVED",
+      "exact_read_view_stable": false,
+      "frontier_lead_ns": -34343121820,
+      "llm_service_ns": 18769061622,
+      "prepared_lead_ns": 18772642899,
+      "production_request_count": 1,
+      "ready_before_predecessor_publication": false,
+      "ready_before_prepared": true,
+      "request_intervals_ns": [
+        [
+          612233741099731,
+          612252510161353
+        ]
+      ],
+      "semantic_operator_id": "meg-runtime-op-66b61d5c885c06248ccaa71eb955eb6cd141e97d47827e60e4c6212d3d6d0405",
+      "semantic_operator_type": "EDGE_EXTRACTION",
+      "source_sequence": 5,
+      "t_end_ns": 612252512787424,
+      "t_materialized_ns": 612233740865808,
+      "t_ready_ns": 612233740881654,
+      "t_start_ns": 612233740904962,
+      "window_service_ratio": null
+    },
+    {
+      "classification": "EVIDENCE_DERIVED",
+      "exact_read_view_stable": false,
+      "frontier_lead_ns": -13906486684,
+      "llm_service_ns": 4843964302,
+      "prepared_lead_ns": 26349214212,
+      "production_request_count": 1,
+      "ready_before_predecessor_publication": false,
+      "ready_before_prepared": true,
+      "request_intervals_ns": [
+        [
+          612273623115816,
+          612278467080118
+        ]
+      ],
+      "semantic_operator_id": "meg-runtime-op-6fd8dee3ac2257cab56d09243fd062ff3f467e04e8034423fed8bb508fffe859",
+      "semantic_operator_type": "NODE_EXTRACTION",
+      "source_sequence": 6,
+      "t_end_ns": 612278467997393,
+      "t_materialized_ns": 612273622269086,
+      "t_ready_ns": 612273622344651,
+      "t_start_ns": 612273622395535,
+      "window_service_ratio": null
+    },
+    {
+      "classification": "EVIDENCE_DERIVED",
+      "exact_read_view_stable": false,
+      "frontier_lead_ns": -18752377635,
+      "llm_service_ns": 21500253811,
+      "prepared_lead_ns": 21503323261,
+      "production_request_count": 1,
+      "ready_before_predecessor_publication": false,
+      "ready_before_prepared": true,
+      "request_intervals_ns": [
+        [
+          612278468665087,
+          612299968918898
+        ]
+      ],
+      "semantic_operator_id": "meg-runtime-op-9db55b8ffbe0dd0b7596f01bee71c8c2c481a5f061912eccaf0bf3de6a53fb9d",
+      "semantic_operator_type": "EDGE_EXTRACTION",
+      "source_sequence": 6,
+      "t_end_ns": 612299970731101,
+      "t_materialized_ns": 612278468217531,
+      "t_ready_ns": 612278468235602,
+      "t_start_ns": 612278468260404,
+      "window_service_ratio": null
+    },
+    {
+      "classification": "EVIDENCE_DERIVED",
+      "exact_read_view_stable": false,
+      "frontier_lead_ns": -309005935,
+      "llm_service_ns": 4569410906,
+      "prepared_lead_ns": 22366178505,
+      "production_request_count": 1,
+      "ready_before_predecessor_publication": false,
+      "ready_before_prepared": true,
+      "request_intervals_ns": [
+        [
+          612315418454820,
+          612319987865726
+        ]
+      ],
+      "semantic_operator_id": "meg-runtime-op-148efcaab26ad080ea78f04473bf4d8b6a7d03eb7738dda1989c67a937ea834f",
+      "semantic_operator_type": "NODE_EXTRACTION",
+      "source_sequence": 7,
+      "t_end_ns": 612319989262680,
+      "t_materialized_ns": 612315418006155,
+      "t_ready_ns": 612315418067914,
+      "t_start_ns": 612315418099223,
+      "window_service_ratio": null
+    },
+    {
+      "classification": "EVIDENCE_DERIVED",
+      "exact_read_view_stable": false,
+      "frontier_lead_ns": -4880463666,
+      "llm_service_ns": 17792235071,
+      "prepared_lead_ns": 17794720774,
+      "production_request_count": 1,
+      "ready_before_predecessor_publication": false,
+      "ready_before_prepared": true,
+      "request_intervals_ns": [
+        [
+          612319990113091,
+          612337782348162
+        ]
+      ],
+      "semantic_operator_id": "meg-runtime-op-154bad933b68586756e6cdfb2fa5a48490e1a24b32dd93b9b72c2e41fa541224",
+      "semantic_operator_type": "EDGE_EXTRACTION",
+      "source_sequence": 7,
+      "t_end_ns": 612337783747605,
+      "t_materialized_ns": 612319989505586,
+      "t_ready_ns": 612319989525645,
+      "t_start_ns": 612319989554545,
+      "window_service_ratio": null
+    },
+    {
+      "classification": "EVIDENCE_DERIVED",
+      "exact_read_view_stable": false,
+      "frontier_lead_ns": -8556913240,
+      "llm_service_ns": 3713809330,
+      "prepared_lead_ns": 82824952646,
+      "production_request_count": 1,
+      "ready_before_predecessor_publication": false,
+      "ready_before_prepared": true,
+      "request_intervals_ns": [
+        [
+          612357240293703,
+          612360954103033
+        ]
+      ],
+      "semantic_operator_id": "meg-runtime-op-89c3e542406ff261ebe5fc96dd1ad6bf007c410cb7ff5c98658f7c70bf24af97",
+      "semantic_operator_type": "NODE_EXTRACTION",
+      "source_sequence": 8,
+      "t_end_ns": 612360955744879,
+      "t_materialized_ns": 612357239487149,
+      "t_ready_ns": 612357239602935,
+      "t_start_ns": 612357239649866,
+      "window_service_ratio": null
+    },
+    {
+      "classification": "EVIDENCE_DERIVED",
+      "exact_read_view_stable": false,
+      "frontier_lead_ns": -12273500308,
+      "llm_service_ns": 79102205677,
+      "prepared_lead_ns": 79108365578,
+      "production_request_count": 1,
+      "ready_before_predecessor_publication": false,
+      "ready_before_prepared": true,
+      "request_intervals_ns": [
+        [
+          612360957099906,
+          612440059305583
+        ]
+      ],
+      "semantic_operator_id": "meg-runtime-op-4f9213c09ce39374f1b638a0ffbb684d1e6b0edac5357608a012af5f593211da",
+      "semantic_operator_type": "EDGE_EXTRACTION",
+      "source_sequence": 8,
+      "t_end_ns": 612440062118791,
+      "t_materialized_ns": 612360956146327,
+      "t_ready_ns": 612360956190003,
+      "t_start_ns": 612360956237651,
+      "window_service_ratio": null
+    },
+    {
+      "classification": "EVIDENCE_DERIVED",
+      "exact_read_view_stable": false,
+      "frontier_lead_ns": 66837610668,
+      "llm_service_ns": 5469237539,
+      "prepared_lead_ns": 25282710126,
+      "production_request_count": 1,
+      "ready_before_predecessor_publication": true,
+      "ready_before_prepared": true,
+      "request_intervals_ns": [
+        [
+          612399079904126,
+          612404549141665
+        ]
+      ],
+      "semantic_operator_id": "meg-runtime-op-bfbab56c283bc4d497666a40d4f897ea6a06562c43ec18535a3f2c2b91723a80",
+      "semantic_operator_type": "NODE_EXTRACTION",
+      "source_sequence": 9,
+      "t_end_ns": 612404549894329,
+      "t_materialized_ns": 612399079207746,
+      "t_ready_ns": 612399079281130,
+      "t_start_ns": 612399079312783,
+      "window_service_ratio": null
+    },
+    {
+      "classification": "EVIDENCE_DERIVED",
+      "exact_read_view_stable": false,
+      "frontier_lead_ns": 61366787057,
+      "llm_service_ns": 19809140205,
+      "prepared_lead_ns": 19811886515,
+      "production_request_count": 1,
+      "ready_before_predecessor_publication": true,
+      "ready_before_prepared": true,
+      "request_intervals_ns": [
+        [
+          612404550563257,
+          612424359703462
+        ]
+      ],
+      "semantic_operator_id": "meg-runtime-op-831d6522c6d404927b499fca9ce4a9e12c094eb9d049a302ca434f854a20d3b4",
+      "semantic_operator_type": "EDGE_EXTRACTION",
+      "source_sequence": 9,
+      "t_end_ns": 612424361487976,
+      "t_materialized_ns": 612404550091373,
+      "t_ready_ns": 612404550104741,
+      "t_start_ns": 612404550123728,
+      "window_service_ratio": null
+    },
+    {
+      "classification": "EVIDENCE_DERIVED",
+      "exact_read_view_stable": false,
+      "frontier_lead_ns": 47427873485,
+      "llm_service_ns": 10079082691,
+      "prepared_lead_ns": 54017005892,
+      "production_request_count": 1,
+      "ready_before_predecessor_publication": true,
+      "ready_before_prepared": true,
+      "request_intervals_ns": [
+        [
+          612440856384049,
+          612450935466740
+        ]
+      ],
+      "semantic_operator_id": "meg-runtime-op-f36a71b1e31b4da8647e535f2921604a730d6c7117a28dc648ce55cfae8cdca2",
+      "semantic_operator_type": "NODE_EXTRACTION",
+      "source_sequence": 10,
+      "t_end_ns": 612450938942169,
+      "t_materialized_ns": 612440855671946,
+      "t_ready_ns": 612440855735950,
+      "t_start_ns": 612440855765911,
+      "window_service_ratio": null
+    },
+    {
+      "classification": "EVIDENCE_DERIVED",
+      "exact_read_view_stable": false,
+      "frontier_lead_ns": 37344251096,
+      "llm_service_ns": 43928923742,
+      "prepared_lead_ns": 43933383503,
+      "production_request_count": 1,
+      "ready_before_predecessor_publication": true,
+      "ready_before_prepared": true,
+      "request_intervals_ns": [
+        [
+          612450940229209,
+          612494869152951
+        ]
+      ],
+      "semantic_operator_id": "meg-runtime-op-0dc5486b606fbef14b72dfc1f291936a50b1e9490ab6d7b827ddacae32332b56",
+      "semantic_operator_type": "EDGE_EXTRACTION",
+      "source_sequence": 10,
+      "t_end_ns": 612494871454032,
+      "t_materialized_ns": 612450939333529,
+      "t_ready_ns": 612450939358339,
+      "t_start_ns": 612450939395237,
+      "window_service_ratio": null
+    },
+    {
+      "classification": "EVIDENCE_DERIVED",
+      "exact_read_view_stable": false,
+      "frontier_lead_ns": 53047817172,
+      "llm_service_ns": 29026015098,
+      "prepared_lead_ns": 109682661838,
+      "production_request_count": 1,
+      "ready_before_predecessor_publication": true,
+      "ready_before_prepared": true,
+      "request_intervals_ns": [
+        [
+          612482663361545,
+          612511689376643
+        ]
+      ],
+      "semantic_operator_id": "meg-runtime-op-d68558049422dea1570cab6cfdade706739c05b2940a787c5a82237b020c1cd3",
+      "semantic_operator_type": "NODE_EXTRACTION",
+      "source_sequence": 11,
+      "t_end_ns": 612511691934639,
+      "t_materialized_ns": 612482662403920,
+      "t_ready_ns": 612482662471152,
+      "t_start_ns": 612482662500246,
+      "window_service_ratio": null
+    },
+    {
+      "classification": "EVIDENCE_DERIVED",
+      "exact_read_view_stable": false,
+      "frontier_lead_ns": 24017270787,
+      "llm_service_ns": 80645840773,
+      "prepared_lead_ns": 80652115453,
+      "production_request_count": 1,
+      "ready_before_predecessor_publication": true,
+      "ready_before_prepared": true,
+      "request_intervals_ns": [
+        [
+          612511694509271,
+          612592340350044
+        ]
+      ],
+      "semantic_operator_id": "meg-runtime-op-52e945deea37ed990c0e58a16a5f9c0b546d22a902fbf00831a76ae645f4b7b6",
+      "semantic_operator_type": "EDGE_EXTRACTION",
+      "source_sequence": 11,
+      "t_end_ns": 612592343019511,
+      "t_materialized_ns": 612511692967727,
+      "t_ready_ns": 612511693017537,
+      "t_start_ns": 612511693088636,
+      "window_service_ratio": null
+    }
+  ],
+  "operators_ready_before_prepared": 24,
+  "payload_sha256": "81d2a6c254d2e754773a7a6602afd60be3f89709ad9875b0e19923d4ce6cfb52",
+  "positive_lead_means": "The semantic operator was certified READY before the v3.1 whole PreparedArtifact became durable.",
+  "prepared_lead_ns": {
+    "count": 24,
+    "max": 109682661838,
+    "p50": 19480911366,
+    "p95": 82499027067,
+    "sum": 681487760407
+  },
+  "run_id": "membind-v31-opt-w4-meg-runtime-observe-20260821-011",
+  "schema_version": "membind.meg.real-0-11.prepared-barrier-analysis.v1",
+  "total_exposed_ready_window_ns": 681487760407,
+  "total_semantic_operators": 390
+}

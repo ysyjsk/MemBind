@@ -1,0 +1,82 @@
+{
+  "capture_payload_sha256": "085ddf5ce667f8bd9e9c92956312bedbf8456bc8334e5c51fb26039ed9fea1d7",
+  "gates": {
+    "coordinator_direct_violation_free": true,
+    "coordinator_publication_complete": true,
+    "event_sequence_global_and_contiguous": true,
+    "operator_ready_observed": true,
+    "publication_count_exact_and_certified": true,
+    "request_lineage_coverage_complete": true,
+    "semantic_operators_observed": true,
+    "state_readview_coverage_complete": true,
+    "transaction_epoch_count_exact": true,
+    "writer_domain_certified": true,
+    "zero_shadow_reads": true
+  },
+  "history_id": "07741c45",
+  "metrics": {
+    "local_ready_before_exact_predecessor_publication_count": 6,
+    "local_ready_before_prepared_count": 24,
+    "operator_count": 390,
+    "operator_counts_by_class": {
+      "DERIVED_PRIVATE": 111,
+      "EVIDENCE_DERIVED": 24,
+      "PERSISTENT_EFFECT": 12,
+      "PUBLICATION": 12,
+      "STATE_DERIVED": 231
+    },
+    "operator_counts_by_type": {
+      "DETERMINISTIC_SIMILARITY": 76,
+      "EDGE_CANDIDATE_READ": 98,
+      "EDGE_EXTRACTION": 12,
+      "EDGE_RESOLUTION_CHILD": 98,
+      "EDGE_RESOLUTION_GROUP": 12,
+      "IDENTITY_MATERIALIZATION": 12,
+      "NODE_ATTRIBUTE_SUMMARY_BATCH": 12,
+      "NODE_BATCH_RESOLUTION_DECISION": 11,
+      "NODE_CANDIDATE_READ": 12,
+      "NODE_EXTRACTION": 12,
+      "PERSIST_AND_PUBLISH": 12,
+      "SOURCE_PUBLICATION": 12,
+      "UNRESOLVED_SET_FORMATION": 11
+    },
+    "production_request_count": 236,
+    "publication_count": 12,
+    "read_view_count": 231,
+    "read_view_status_counts": {
+      "STABLE_READVIEW": 231
+    },
+    "ready_event_count": 390,
+    "request_lineage_coverage": 1.0,
+    "request_span_count": 236,
+    "state_derived_count": 231,
+    "transaction_commit_count": 12
+  },
+  "mode": "OBSERVE_ONLY",
+  "namespace": "pev3-opt-membind-v31-w4-meg-runtime-observe-20260821-011-07741c45",
+  "payload_sha256": "99d83c3e4221e60200d9290ec7be5534d050f1b5883388f967335c86c6d6b6e6",
+  "run_id": "membind-v31-opt-w4-meg-runtime-observe-20260821-011",
+  "schema_version": "membind.meg.runtime-observe-capture-result.v1",
+  "scope": {
+    "formal_main_table_eligible": false,
+    "scheduler_changed": false,
+    "semantic_path_changed": false,
+    "shadow_llm_calls": 0,
+    "shadow_reads": 0
+  },
+  "source_sequences": [
+    0,
+    1,
+    2,
+    3,
+    4,
+    5,
+    6,
+    7,
+    8,
+    9,
+    10,
+    11
+  ],
+  "status": "PASS_REAL_MEG_RUNTIME_OBSERVE_ONLY"
+}

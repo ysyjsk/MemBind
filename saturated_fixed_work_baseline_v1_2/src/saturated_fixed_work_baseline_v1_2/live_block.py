@@ -207,9 +207,12 @@ async def execute_live_block(
     dependencies: LiveBlockDependencies,
     source_tokens: int,
     clock: Callable[[], int] = time.monotonic_ns,
+    attempt_store_factory: Callable[[Path, Any], Any] = AttemptStore.create,
 ) -> dict[str, Any]:
     del repository_root
-    if not isinstance(block, FormalBlock) or not isinstance(identity, ResumeIdentity):
+    if not isinstance(block, FormalBlock) or not isinstance(
+        getattr(identity, "namespace", None), str
+    ):
         raise LiveBlockError("LIVE_BLOCK_IDENTITY_INVALID")
     selected = tuple(episodes)
     if not selected or any(not isinstance(row, EpisodeInput) for row in selected):
@@ -226,7 +229,7 @@ async def execute_live_block(
     if isinstance(source_tokens, bool) or not isinstance(source_tokens, int) or source_tokens <= 0:
         raise LiveBlockError("LIVE_BLOCK_SOURCE_TOKENS_INVALID")
 
-    store = AttemptStore.create(run_root / "blocks" / block.block_id, identity)
+    store = attempt_store_factory(run_root / "blocks" / block.block_id, identity)
     expected_attempt_id = f"attempt-{block.attempt_ordinal:03d}"
     if store.root.name != expected_attempt_id:
         store.record_failure(
@@ -393,7 +396,6 @@ async def execute_live_block(
             "block_id": block.block_id,
             "attempt_id": store.root.name,
             "attempt_ordinal": block.attempt_ordinal,
-            "resource_envelope_id": identity.resource_sha256,
             "source_tokens": source_tokens,
             "build_makespan_s": result["build_makespan_ns"] / 1_000_000_000,
             "source_tokens_per_s": source_tokens
@@ -433,6 +435,10 @@ async def execute_live_block(
                 else None
             ),
         }
+        if hasattr(identity, "resource_sha256"):
+            block_metrics["resource_envelope_id"] = identity.resource_sha256
+        elif hasattr(identity, "execution_sha256"):
+            block_metrics["execution_identity_sha256"] = identity.execution_sha256
         _write_new_json(
             store.root / "canonical_graph.json", dict(canonical_graph)
         )

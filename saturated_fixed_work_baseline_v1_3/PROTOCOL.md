@@ -1,9 +1,8 @@
 # MemBind Saturated Fixed-Work Construction Baseline v1.3
 
-Status: prospective protocol, frozen for migration review.  This directory is
-not a new formal run and contains no live result.  The v1.2 implementation is
-the reusable runner, dataset, namespace, instrumentation, QA, and reducer
-dependency; v1.3 changes only the resource and test-qualification contracts.
+Status: prospective fixed-work baseline with a simplified live execution path.
+The v1.2 implementation remains the reusable runner, dataset, namespace,
+instrumentation, QA, and reducer dependency.
 
 ## 1. Scientific question
 
@@ -34,45 +33,23 @@ to reconstruct historical PIDs, ordinals, or UUIDs.
 Old performance numbers are not reused.  The old protocol design is reused
 only as an input to this prospective protocol.
 
-## 3. Current campaign resource envelope
+## 3. Simplified live gate
 
-At campaign preflight, capture one `RESOURCE_ENVELOPE_ID` from live evidence.
-It must bind, at minimum:
+L0 checks only the conditions that determine whether a credible construction
+measurement can run:
 
-* provider hostname and physical GPU model, UUID, and memory;
-* construction Qwen3-32B-FP8, served name, port 8000, max model length
-  65536, GPU memory utilization 0.75, structured outputs backend, prefix
-  caching, chunked prefill, and FCFS;
-* embedding Qwen3-Embedding-0.6B, port 8001, max model length 32768, GPU
-  memory utilization 0.15, max batched tokens 32768, and max sequences 128;
-* vLLM, Graphiti, and Neo4j versions; checkpoint/model identity; runner commit;
-  workload manifest hash; protocol/config hash.
+* both HTTP services complete requests;
+* Neo4j performs a read and a write/delete canary;
+* the frozen workload loads and the B0/B1 runner and instrumentation compose;
+* fixed disjoint warmup completes and all backends are idle.
 
-The gate proves `R(B0) == R(B1)` and, for later MemBind comparison,
-`R(B0) == R(B1) == R(MemBind)` within this campaign.  It does not require
-equality with a historical development host.
+The v1.3 execution path does not collect or gate on resource-evidence,
+physical GPU identity, PID/EngineCore identity, CUDA environment, collector
+hashes, or historical resource parity. Those older modules remain only for
+reading immutable v1.2 history.
 
-Stable identity consists of physical UUID/model, model revision, software
-versions, launch configuration, and resource limits.  PID, EngineCore PID,
-boot-specific process identity, process tree, and telemetry are ephemeral.
-After a vLLM restart, the identity lane is recollected before a new attempt:
-unchanged stable identity permits the attempt; UUID/model/config/resource-limit
-drift fails closed.
 
-## 4. Identity and telemetry lanes
-
-`ResourceIdentitySnapshot` is collected at campaign preflight and restart
-boundaries.  `ProviderTelemetrySample` is collected at 1 Hz and contains only
-GPU utilization, memory used, power, clocks, and temperature (plus the pinned
-vLLM/runner/Neo4j lightweight metrics).  The 1 Hz sampler must not scan
-`/proc`, hash model files, query package versions, or rebuild the envelope.
-
-The provider-side `resource-evidence` collector remains a prospective live
-identity source.  It is not a historical-forensics system.  The controller
-uses the authorized fixed RPC and validates its canonical response; no
-arbitrary remote shell command is constructed.
-
-## 5. Test qualification
+## 4. Test qualification
 
 The v1.3 gate is not the ambiguous historical `tests_all_green` boolean.  It
 records and requires:
@@ -91,14 +68,14 @@ Deleting tests, weakening assertions, or relabeling a new failure as existing
 is forbidden.  `evaluate_test_qualification` is the executable contract and
 `require_test_qualification` is the fail-closed gate.
 
-## 6. L0 current campaign preflight
+## 5. L0/L1 qualification
 
-L0 checks only the new campaign: frozen workload manifest; captured and shared
-resource envelope; healthy ports 8000/8001 and Neo4j; exact models/config;
-idle services; fixed disjoint warmup; available telemetry; and test
-qualification with `NEW_REGRESSION_COUNT == 0`.  Historical parity is not a
-gate.  A passing readiness result authorizes a future new run but does not
-create one here.
+L0 checks the simplified live prerequisites. L1 then runs the fixed 12-episode
+sequence `B0-A -> B0-B -> B1` and records existing makespan, throughput, work
+volume, concurrency, ordering, canonical graph, and direct semantic evidence.
+A semantic or ordering difference is a result to report; only incomplete
+execution, runner failure, missing core instrumentation, or a correctness
+accounting defect blocks qualification.
 
 ## 7. Execution stages
 

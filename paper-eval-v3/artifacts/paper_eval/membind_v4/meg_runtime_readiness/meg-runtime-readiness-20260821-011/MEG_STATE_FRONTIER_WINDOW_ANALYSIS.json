@@ -1,0 +1,30 @@
+{
+  "formula": "frontier_lead_ns = t_publication(source-1) - t_ready(operator), for STATE_DERIVED source > 0",
+  "fraction_over_state_derived_source_gt_0": 0.0,
+  "frontier_lead_ns": {
+    "count": 0,
+    "max": null,
+    "p50": null,
+    "p95": null,
+    "sum": 0
+  },
+  "input_capture_payload_sha256": "085ddf5ce667f8bd9e9c92956312bedbf8456bc8334e5c51fb26039ed9fea1d7",
+  "interpretation": "No STATE_DERIVED operator became READY before exact predecessor publication in this capture; therefore no cross-version frontier window is certified.",
+  "operator_rows": [],
+  "payload_sha256": "3c6ff21c0d0672fae779ca5cd1558c0a00eec8bc9dfc6aec0b94562795505120",
+  "ready_before_predecessor_count": 0,
+  "run_id": "membind-v31-opt-w4-meg-runtime-observe-20260821-011",
+  "schema_version": "membind.meg.real-0-11.state-frontier-window-analysis.v1",
+  "service_ratio": {
+    "all_state_derived_with_llm_count": 114,
+    "definition": "max(frontier_lead_ns, 0) / union duration of the operator's real production request intervals; diagnostic only, not speedup",
+    "max": 0.0,
+    "p50": 0.0,
+    "p95": 0.0,
+    "ratio_ge_0_25_count": 0,
+    "ratio_ge_0_5_count": 0,
+    "ratio_ge_1_count": 0
+  },
+  "state_derived_total": 231,
+  "sum_frontier_lead_ns": 0
+}
