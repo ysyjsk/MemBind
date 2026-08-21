@@ -11,6 +11,7 @@ from saturated_fixed_work_baseline_v1_2.production_sampler import (
     REQUIRED_PROBE_SOURCES,
     ProductionSamplerError,
     build_production_probes,
+    collect_dynamic_provider_resource_evidence,
     parse_provider_gpu_csv,
     qualify_sampler_summary,
     run_sampler_qualification,
@@ -59,6 +60,114 @@ def test_provider_gpu_csv_requires_physical_uuid_and_numeric_fields() -> None:
     with pytest.raises(ProductionSamplerError, match="PROVIDER_GPU_UUID_INVALID"):
         parse_provider_gpu_csv(
             "0, NVIDIA H100, gpu1, 81559, 1024, 41, 22, 1980, 1593, 40, Disabled\n"
+        )
+
+
+def test_dynamic_provider_evidence_discovers_each_port_and_maps_engine_pid_to_uuid() -> None:
+    gpu_csv = (
+        "0, NVIDIA RTX PRO 6000 Blackwell, GPU-01234567-89ab-cdef-0123-456789abcdef, "
+        "49140, 1024, 1, 100, 1000, 1000, 45, Disabled\n"
+    )
+    service_payloads = {
+        8000: {
+            "listener_pid": 41001,
+            "argv": ["python", "-m", "vllm.entrypoints.openai.api_server", "--port", "8000"],
+            "environ": {
+                "CUDA_VISIBLE_DEVICES": "1",
+                "NVIDIA_VISIBLE_DEVICES": "GPU-01234567-89ab-cdef-0123-456789abcdef",
+            },
+            "process_tree": [
+                {"pid": 41001, "ppid": 1, "argv": ["python", "-m", "vllm.entrypoints.openai.api_server", "--port", "8000"], "start_time_ticks": 100},
+                {"pid": 41077, "ppid": 41001, "argv": ["python", "-m", "vllm.v1.engine.core", "--port", "8000"], "start_time_ticks": 101},
+            ],
+            "engine_core_pid": 41077,
+            "engine_core_argv": ["python", "-m", "vllm.v1.engine.core", "--port", "8000"],
+            "engine_core_environ": {
+                "CUDA_VISIBLE_DEVICES": "1",
+                "NVIDIA_VISIBLE_DEVICES": "GPU-01234567-89ab-cdef-0123-456789abcdef",
+            },
+            "compute_processes": [
+                {"pid": 41077, "gpu_uuid": "GPU-01234567-89ab-cdef-0123-456789abcdef"}
+            ],
+        },
+        8001: {
+            "listener_pid": 42001,
+            "argv": ["python", "-m", "vllm.entrypoints.openai.api_server", "--port", "8001"],
+            "environ": {
+                "CUDA_VISIBLE_DEVICES": "1",
+                "NVIDIA_VISIBLE_DEVICES": "GPU-01234567-89ab-cdef-0123-456789abcdef",
+            },
+            "process_tree": [
+                {"pid": 42001, "ppid": 1, "argv": ["python", "-m", "vllm.entrypoints.openai.api_server", "--port", "8001"], "start_time_ticks": 200},
+                {"pid": 42077, "ppid": 42001, "argv": ["python", "-m", "vllm.v1.engine.core", "--port", "8001"], "start_time_ticks": 201},
+            ],
+            "engine_core_pid": 42077,
+            "engine_core_argv": ["python", "-m", "vllm.v1.engine.core", "--port", "8001"],
+            "engine_core_environ": {
+                "CUDA_VISIBLE_DEVICES": "1",
+                "NVIDIA_VISIBLE_DEVICES": "GPU-01234567-89ab-cdef-0123-456789abcdef",
+            },
+            "compute_processes": [
+                {"pid": 42077, "gpu_uuid": "GPU-01234567-89ab-cdef-0123-456789abcdef"}
+            ],
+        },
+    }
+    commands: list[tuple[str, ...]] = []
+
+    def runner(args: tuple[str, ...], timeout_s: float) -> tuple[int, str, str]:
+        del timeout_s
+        commands.append(args)
+        command = args[-1]
+        if "--query-gpu=" in command:
+            return 0, gpu_csv, ""
+        for port, payload in service_payloads.items():
+            if f"PORT={port}" in command:
+                return 0, json.dumps(payload), ""
+        raise AssertionError(f"unexpected provider command: {command}")
+
+    evidence = collect_dynamic_provider_resource_evidence(
+        ssh_alias="zju-liuyi",
+        provider_command_runner=runner,
+    )
+
+    assert evidence["gpus"][0]["uuid"] == GPU_UUID
+    assert evidence["services"]["8000"]["pid"] == 41001
+    assert evidence["services"]["8000"]["engine_core_pid"] == 41077
+    assert evidence["services"]["8000"]["gpu_uuids"] == [GPU_UUID]
+    assert evidence["services"]["8001"]["pid"] == 42001
+    assert evidence["services"]["8001"]["engine_core_pid"] == 42077
+    assert all("1645134" not in " ".join(command) for command in commands)
+    assert any("ss" in command[-1] or "lsof" in command[-1] for command in commands)
+    assert any("/proc" in command[-1] for command in commands)
+    assert any("query-compute-apps" in command[-1] for command in commands)
+
+
+def test_dynamic_provider_evidence_fails_closed_when_cuda_environment_is_missing() -> None:
+    def runner(args: tuple[str, ...], timeout_s: float) -> tuple[int, str, str]:
+        del timeout_s
+        if "--query-gpu=" in args[-1]:
+            return 0, (
+                "0, NVIDIA RTX PRO 6000 Blackwell, "
+                f"{GPU_UUID}, 49140, 1024, 1, 100, 1000, 1000, 45, Disabled\n"
+            ), ""
+        return 0, json.dumps(
+            {
+                "listener_pid": 41001,
+                "argv": ["python", "-m", "vllm", "serve", "--port", "8000"],
+                "environ": {},
+                "process_tree": [],
+                "engine_core_pid": 41077,
+                "engine_core_argv": ["python", "-m", "vllm", "engine"],
+                "engine_core_environ": {},
+                "compute_processes": [{"pid": 41077, "gpu_uuid": GPU_UUID}],
+            }
+        ), ""
+
+    with pytest.raises(ProductionSamplerError, match="PROVIDER_CUDA_ENV_INVALID"):
+        collect_dynamic_provider_resource_evidence(
+            ssh_alias="zju-liuyi",
+            ports=(8000,),
+            provider_command_runner=runner,
         )
 
 
