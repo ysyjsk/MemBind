@@ -1,0 +1,2131 @@
+{
+  "analysis_scope": {
+    "benchmark": "saturated_fixed_work_baseline_v1_3",
+    "episode_count": 12,
+    "history_id": "07741c45",
+    "live_execution": false,
+    "sealed_roots_mutated": false
+  },
+  "attribution": {
+    "B0-B": {
+      "candidate": "B0_NATIVE_SERIAL",
+      "operator_delta_records": [
+        {
+          "category": "UNKNOWN",
+          "evidence": "Logical call count is unchanged but sealed prompt token totals differ; no payload identity or causal explanation is available.",
+          "input_token_delta": 51,
+          "logical_call_delta": 0,
+          "operator": "EDGE_RESOLUTION"
+        },
+        {
+          "category": "retry_difference",
+          "evidence": "Request-attempt spans are directly counted; retry overhead is attempts minus logical calls, so call-plan changes are not mislabeled as retries.",
+          "input_token_delta": null,
+          "logical_call_delta": null,
+          "operator": "TRANSPORT",
+          "retry_overhead_delta": 0,
+          "transport_attempt_delta": 0
+        }
+      ],
+      "unresolved_categories": [
+        {
+          "category": "decomposition-created_duplicate_work",
+          "reason": "Sealed native trace has no cross-policy logical-operation identity or decomposition parent join.",
+          "status": "UNKNOWN"
+        },
+        {
+          "category": "instrumentation_artifact",
+          "reason": "All four attempts are validated sealed and trace counts cross-check block metrics.",
+          "status": "NOT_OBSERVED"
+        }
+      ],
+      "vs": "B0_NATIVE_SERIAL",
+      "work_delta": {
+        "embedding_items_delta": 0,
+        "input_tokens_delta": 51,
+        "logical_calls_delta": 0,
+        "output_tokens_delta": 23,
+        "transport_attempts_delta": 0
+      }
+    },
+    "B1": {
+      "candidate": "B1_NAIVE_WHOLE_UPDATE_ASYNC",
+      "operator_delta_records": [
+        {
+          "category": "UNKNOWN",
+          "evidence": "Logical call count is unchanged but sealed prompt token totals differ; no payload identity or causal explanation is available.",
+          "input_token_delta": -117576,
+          "logical_call_delta": 0,
+          "operator": "NODE_EXTRACTION"
+        },
+        {
+          "category": "UNKNOWN",
+          "evidence": "Logical call count is unchanged but sealed prompt token totals differ; no payload identity or causal explanation is available.",
+          "input_token_delta": -133431,
+          "logical_call_delta": 0,
+          "operator": "EDGE_EXTRACTION"
+        },
+        {
+          "category": "changed_state/candidate_set_branch_divergence",
+          "evidence": "Resolution prompt/span count and candidate-search branch shape differ; causal state choice is not separately instrumented.",
+          "input_token_delta": -146331,
+          "logical_call_delta": -8,
+          "operator": "NODE_RESOLUTION"
+        },
+        {
+          "category": "changed_state/candidate_set_branch_divergence",
+          "evidence": "Resolution prompt/span count and candidate-search branch shape differ; causal state choice is not separately instrumented.",
+          "input_token_delta": -24396,
+          "logical_call_delta": -33,
+          "operator": "EDGE_RESOLUTION"
+        },
+        {
+          "category": "different_batching_granularity",
+          "evidence": "Summary prompt count differs; exact batch boundaries are not represented in the sealed trace.",
+          "input_token_delta": -73042,
+          "logical_call_delta": 1,
+          "operator": "SUMMARY"
+        },
+        {
+          "category": "repeated_summary/attribute/timestamp_work",
+          "evidence": "Prompt-level timestamp call count is directly observed in native_trace.jsonl.",
+          "input_token_delta": -9617,
+          "logical_call_delta": -31,
+          "operator": "TIMESTAMP"
+        },
+        {
+          "category": "retry_difference",
+          "evidence": "Request-attempt spans are directly counted; retry overhead is attempts minus logical calls, so call-plan changes are not mislabeled as retries.",
+          "input_token_delta": null,
+          "logical_call_delta": null,
+          "operator": "TRANSPORT",
+          "retry_overhead_delta": 0,
+          "transport_attempt_delta": -71
+        }
+      ],
+      "unresolved_categories": [
+        {
+          "category": "decomposition-created_duplicate_work",
+          "reason": "Sealed native trace has no cross-policy logical-operation identity or decomposition parent join.",
+          "status": "UNKNOWN"
+        },
+        {
+          "category": "instrumentation_artifact",
+          "reason": "All four attempts are validated sealed and trace counts cross-check block metrics.",
+          "status": "NOT_OBSERVED"
+        }
+      ],
+      "vs": "B0_NATIVE_SERIAL",
+      "work_delta": {
+        "embedding_items_delta": -124,
+        "input_tokens_delta": -504393,
+        "logical_calls_delta": -71,
+        "output_tokens_delta": -3956,
+        "transport_attempts_delta": -71
+      }
+    },
+    "MemBind-v3.1": {
+      "candidate": "MEMBIND_V31",
+      "operator_delta_records": [
+        {
+          "category": "UNKNOWN",
+          "evidence": "Logical call count is unchanged but sealed prompt token totals differ; no payload identity or causal explanation is available.",
+          "input_token_delta": -19022,
+          "logical_call_delta": 0,
+          "operator": "EDGE_EXTRACTION"
+        },
+        {
+          "category": "changed_state/candidate_set_branch_divergence",
+          "evidence": "Resolution prompt/span count and candidate-search branch shape differ; causal state choice is not separately instrumented.",
+          "input_token_delta": -5715,
+          "logical_call_delta": -1,
+          "operator": "NODE_RESOLUTION"
+        },
+        {
+          "category": "changed_state/candidate_set_branch_divergence",
+          "evidence": "Resolution prompt/span count and candidate-search branch shape differ; causal state choice is not separately instrumented.",
+          "input_token_delta": 29874,
+          "logical_call_delta": 32,
+          "operator": "EDGE_RESOLUTION"
+        },
+        {
+          "category": "UNKNOWN",
+          "evidence": "Logical call count is unchanged but sealed prompt token totals differ; no payload identity or causal explanation is available.",
+          "input_token_delta": -2805,
+          "logical_call_delta": 0,
+          "operator": "SUMMARY"
+        },
+        {
+          "category": "repeated_summary/attribute/timestamp_work",
+          "evidence": "Prompt-level timestamp call count is directly observed in native_trace.jsonl.",
+          "input_token_delta": 9035,
+          "logical_call_delta": 30,
+          "operator": "TIMESTAMP"
+        },
+        {
+          "category": "retry_difference",
+          "evidence": "Request-attempt spans are directly counted; retry overhead is attempts minus logical calls, so call-plan changes are not mislabeled as retries.",
+          "input_token_delta": null,
+          "logical_call_delta": null,
+          "operator": "TRANSPORT",
+          "retry_overhead_delta": -1,
+          "transport_attempt_delta": 60
+        }
+      ],
+      "unresolved_categories": [
+        {
+          "category": "decomposition-created_duplicate_work",
+          "reason": "Sealed native trace has no cross-policy logical-operation identity or decomposition parent join.",
+          "status": "UNKNOWN"
+        },
+        {
+          "category": "instrumentation_artifact",
+          "reason": "All four attempts are validated sealed and trace counts cross-check block metrics.",
+          "status": "NOT_OBSERVED"
+        }
+      ],
+      "vs": "B0_NATIVE_SERIAL",
+      "work_delta": {
+        "embedding_items_delta": 175,
+        "input_tokens_delta": 11367,
+        "logical_calls_delta": 61,
+        "output_tokens_delta": -12144,
+        "transport_attempts_delta": 60
+      }
+    }
+  },
+  "blocks": {
+    "B0-A": {
+      "attempt_root": "sfwb-v1-3-simple-20260821-004/qualification/blocks/qualification-b0-a/attempt-001",
+      "auxiliary_llm_event_counts": {},
+      "by_source": {
+        "0": {
+          "by_operator": {
+            "EDGE_EXTRACTION": 1,
+            "NODE_EXTRACTION": 1,
+            "SUMMARY": 1
+          },
+          "db_queries": 2,
+          "db_writes": 5,
+          "embedding_items": 2,
+          "input_tokens": 8833,
+          "logical_calls": 3,
+          "output_tokens": 101,
+          "span_count": 28,
+          "transport_attempts": 3
+        },
+        "1": {
+          "by_operator": {
+            "EDGE_EXTRACTION": 1,
+            "NODE_EXTRACTION": 1,
+            "NODE_RESOLUTION": 1,
+            "TIMESTAMP": 1
+          },
+          "db_queries": 8,
+          "db_writes": 5,
+          "embedding_items": 8,
+          "input_tokens": 16132,
+          "logical_calls": 4,
+          "output_tokens": 779,
+          "span_count": 43,
+          "transport_attempts": 4
+        },
+        "10": {
+          "by_operator": {
+            "EDGE_EXTRACTION": 1,
+            "EDGE_RESOLUTION": 8,
+            "NODE_EXTRACTION": 1,
+            "NODE_RESOLUTION": 1,
+            "TIMESTAMP": 8
+          },
+          "db_queries": 50,
+          "db_writes": 5,
+          "embedding_items": 50,
+          "input_tokens": 82049,
+          "logical_calls": 19,
+          "output_tokens": 1393,
+          "span_count": 172,
+          "transport_attempts": 19
+        },
+        "11": {
+          "by_operator": {
+            "EDGE_EXTRACTION": 1,
+            "EDGE_RESOLUTION": 39,
+            "NODE_EXTRACTION": 1,
+            "NODE_RESOLUTION": 1,
+            "SUMMARY": 1,
+            "TIMESTAMP": 39
+          },
+          "db_queries": 231,
+          "db_writes": 5,
+          "embedding_items": 226,
+          "input_tokens": 152209,
+          "logical_calls": 82,
+          "output_tokens": 6716,
+          "span_count": 727,
+          "transport_attempts": 82
+        },
+        "2": {
+          "by_operator": {
+            "EDGE_EXTRACTION": 1,
+            "EDGE_RESOLUTION": 2,
+            "NODE_EXTRACTION": 1,
+            "NODE_RESOLUTION": 1,
+            "TIMESTAMP": 2
+          },
+          "db_queries": 14,
+          "db_writes": 5,
+          "embedding_items": 14,
+          "input_tokens": 26162,
+          "logical_calls": 7,
+          "output_tokens": 342,
+          "span_count": 64,
+          "transport_attempts": 7
+        },
+        "3": {
+          "by_operator": {
+            "EDGE_EXTRACTION": 1,
+            "NODE_EXTRACTION": 1,
+            "NODE_RESOLUTION": 1,
+            "SUMMARY": 1
+          },
+          "db_queries": 7,
+          "db_writes": 5,
+          "embedding_items": 12,
+          "input_tokens": 24011,
+          "logical_calls": 4,
+          "output_tokens": 650,
+          "span_count": 35,
+          "transport_attempts": 4
+        },
+        "4": {
+          "by_operator": {
+            "EDGE_EXTRACTION": 1,
+            "NODE_EXTRACTION": 1,
+            "NODE_RESOLUTION": 1,
+            "SUMMARY": 1
+          },
+          "db_queries": 2,
+          "db_writes": 5,
+          "embedding_items": 2,
+          "input_tokens": 32780,
+          "logical_calls": 4,
+          "output_tokens": 269,
+          "span_count": 30,
+          "transport_attempts": 4
+        },
+        "5": {
+          "by_operator": {
+            "EDGE_EXTRACTION": 1,
+            "EDGE_RESOLUTION": 8,
+            "NODE_EXTRACTION": 1,
+            "NODE_RESOLUTION": 1,
+            "TIMESTAMP": 8
+          },
+          "db_queries": 43,
+          "db_writes": 5,
+          "embedding_items": 36,
+          "input_tokens": 35980,
+          "logical_calls": 19,
+          "output_tokens": 1114,
+          "span_count": 165,
+          "transport_attempts": 19
+        },
+        "6": {
+          "by_operator": {
+            "EDGE_EXTRACTION": 1,
+            "EDGE_RESOLUTION": 6,
+            "NODE_EXTRACTION": 1,
+            "NODE_RESOLUTION": 1,
+            "SUMMARY": 1,
+            "TIMESTAMP": 6
+          },
+          "db_queries": 36,
+          "db_writes": 5,
+          "embedding_items": 34,
+          "input_tokens": 73855,
+          "logical_calls": 16,
+          "output_tokens": 1303,
+          "span_count": 136,
+          "transport_attempts": 16
+        },
+        "7": {
+          "by_operator": {
+            "EDGE_EXTRACTION": 1,
+            "EDGE_RESOLUTION": 9,
+            "NODE_EXTRACTION": 1,
+            "NODE_RESOLUTION": 1,
+            "TIMESTAMP": 9
+          },
+          "db_queries": 51,
+          "db_writes": 5,
+          "embedding_items": 46,
+          "input_tokens": 54325,
+          "logical_calls": 21,
+          "output_tokens": 1340,
+          "span_count": 185,
+          "transport_attempts": 21
+        },
+        "8": {
+          "by_operator": {
+            "EDGE_EXTRACTION": 1,
+            "EDGE_RESOLUTION": 34,
+            "NODE_EXTRACTION": 1,
+            "NODE_RESOLUTION": 1,
+            "SUMMARY": 1,
+            "TIMESTAMP": 34
+          },
+          "db_queries": 173,
+          "db_writes": 5,
+          "embedding_items": 140,
+          "input_tokens": 136463,
+          "logical_calls": 72,
+          "output_tokens": 21087,
+          "span_count": 610,
+          "transport_attempts": 73
+        },
+        "9": {
+          "by_operator": {
+            "EDGE_EXTRACTION": 1,
+            "NODE_EXTRACTION": 1,
+            "NODE_RESOLUTION": 1,
+            "SUMMARY": 1
+          },
+          "db_queries": 2,
+          "db_writes": 5,
+          "embedding_items": 2,
+          "input_tokens": 74882,
+          "logical_calls": 4,
+          "output_tokens": 1001,
+          "span_count": 30,
+          "transport_attempts": 4
+        }
+      },
+      "candidate_search_evidence": {
+        "candidate_count_max": 525,
+        "candidate_count_sum": 1891,
+        "candidate_query_count_sum": 286,
+        "candidate_search_span_count": 230
+      },
+      "method": "B0_NATIVE_SERIAL",
+      "metrics": {
+        "build_makespan_s": 983.458708667,
+        "canonical_graph_hash": "2e00b327efe17aaf587d1f697ad475c7818aac416862a7b4dc7d9e54a9553bca",
+        "complete_publication_coverage": true,
+        "direct_semantic_violations": 0,
+        "inversion_count": 0,
+        "inversion_density": 0.0,
+        "kendall_tau": 1.0,
+        "resource_availability": "NOT_EVALUATED"
+      },
+      "operation_counts": {
+        "UNCLASSIFIED": 96,
+        "create": 214,
+        "create_batch": 40,
+        "edge-dedup": 214,
+        "edge-empty": 8,
+        "edge-invalidation": 214,
+        "edge-presearch": 12,
+        "existing-edge-mutation": 106,
+        "logical-call": 255,
+        "new-edge-expiration-observation": 107,
+        "node-dedup": 24,
+        "query": 619,
+        "request-attempt": 256,
+        "write": 60
+      },
+      "operator_counts": {
+        "ATTRIBUTE": {
+          "embedding_items": 0,
+          "input_tokens": 0,
+          "logical_calls": 0,
+          "output_tokens": 0,
+          "service_time_s": 0.0,
+          "span_count": 0
+        },
+        "EDGE_CANDIDATE_READ": {
+          "embedding_items": 0,
+          "input_tokens": 0,
+          "logical_calls": 0,
+          "output_tokens": 0,
+          "service_time_s": 48.39330841700001,
+          "span_count": 218
+        },
+        "EDGE_DEDUPE": {
+          "embedding_items": 0,
+          "input_tokens": 0,
+          "logical_calls": 0,
+          "output_tokens": 0,
+          "service_time_s": 9.725568363,
+          "span_count": 214
+        },
+        "EDGE_EXTRACTION": {
+          "embedding_items": 0,
+          "input_tokens": 178065,
+          "logical_calls": 12,
+          "output_tokens": 26856,
+          "service_time_s": 762.260925522,
+          "span_count": 0
+        },
+        "EDGE_RESOLUTION": {
+          "embedding_items": 0,
+          "input_tokens": 92019,
+          "logical_calls": 106,
+          "output_tokens": 1975,
+          "service_time_s": 174.5694126850001,
+          "span_count": 0
+        },
+        "EMBEDDING": {
+          "embedding_items": 572,
+          "input_tokens": 0,
+          "logical_calls": 0,
+          "output_tokens": 0,
+          "service_time_s": 8.517955844999998,
+          "span_count": 254
+        },
+        "NODE_CANDIDATE_READ": {
+          "embedding_items": 0,
+          "input_tokens": 0,
+          "logical_calls": 0,
+          "output_tokens": 0,
+          "service_time_s": 0.780712671,
+          "span_count": 12
+        },
+        "NODE_EXTRACTION": {
+          "embedding_items": 0,
+          "input_tokens": 164819,
+          "logical_calls": 12,
+          "output_tokens": 1900,
+          "service_time_s": 72.32239132000001,
+          "span_count": 0
+        },
+        "NODE_RESOLUTION": {
+          "embedding_items": 0,
+          "input_tokens": 156372,
+          "logical_calls": 11,
+          "output_tokens": 2052,
+          "service_time_s": 77.377194042,
+          "span_count": 24
+        },
+        "OTHER": {
+          "embedding_items": 0,
+          "input_tokens": 0,
+          "logical_calls": 0,
+          "output_tokens": 0,
+          "service_time_s": 0.0,
+          "span_count": 0
+        },
+        "PERSISTENCE": {
+          "embedding_items": 0,
+          "input_tokens": 0,
+          "logical_calls": 0,
+          "output_tokens": 0,
+          "service_time_s": 47.361677468000025,
+          "span_count": 499
+        },
+        "SUMMARY": {
+          "embedding_items": 0,
+          "input_tokens": 92956,
+          "logical_calls": 7,
+          "output_tokens": 1254,
+          "service_time_s": 45.773629363999994,
+          "span_count": 0
+        },
+        "TIMESTAMP": {
+          "embedding_items": 0,
+          "input_tokens": 33450,
+          "logical_calls": 107,
+          "output_tokens": 2058,
+          "service_time_s": 84.47919789299998,
+          "span_count": 0
+        }
+      },
+      "phase_counts": {
+        "add-episode": 12,
+        "attributes-summary": 12,
+        "candidate-embedding": 238,
+        "candidate-search": 230,
+        "database": 667,
+        "database-transaction": 12,
+        "edge-extraction": 12,
+        "edge-resolution": 12,
+        "embedding": 254,
+        "invalidation-update": 217,
+        "llm": 255,
+        "llm-transport": 256,
+        "node-extraction": 12,
+        "node-resolution": 12,
+        "previous-context": 12,
+        "publication": 12
+      },
+      "phase_duration_s": {
+        "add-episode": 983.407493592,
+        "attributes-summary": 45.965078429,
+        "candidate-embedding": 8.166848987,
+        "candidate-search": 49.174021088,
+        "database": 66.775786331,
+        "database-transaction": 0.248814754,
+        "edge-extraction": 762.267452847,
+        "edge-resolution": 25.033923104,
+        "embedding": 8.517955845,
+        "invalidation-update": 0.000412097,
+        "llm": 1215.79733881,
+        "llm-transport": 1205.696256469,
+        "node-extraction": 72.32763935,
+        "node-resolution": 77.336861327,
+        "previous-context": 0.035576025,
+        "publication": 0.438223131
+      },
+      "prompt_counts": {
+        "dedupe_edges.resolve_edge": 106,
+        "dedupe_nodes.nodes": 11,
+        "extract_edges.edge": 12,
+        "extract_edges.extract_timestamps": 107,
+        "extract_nodes.extract_message": 12,
+        "extract_nodes.extract_summaries_batch": 7
+      },
+      "prompt_stats": {
+        "dedupe_edges.resolve_edge": {
+          "input_tokens": 92019,
+          "logical_calls": 106,
+          "output_tokens": 1975,
+          "retry_count": 0,
+          "semantic_operator_type": "EDGE_RESOLUTION",
+          "service_time_s": 174.5694126850001
+        },
+        "dedupe_nodes.nodes": {
+          "input_tokens": 156372,
+          "logical_calls": 11,
+          "output_tokens": 2052,
+          "retry_count": 0,
+          "semantic_operator_type": "NODE_RESOLUTION/BATCH_RESOLUTION",
+          "service_time_s": 76.39178202599999
+        },
+        "extract_edges.edge": {
+          "input_tokens": 178065,
+          "logical_calls": 12,
+          "output_tokens": 26856,
+          "retry_count": 1,
+          "semantic_operator_type": "EDGE_EXTRACTION",
+          "service_time_s": 762.260925522
+        },
+        "extract_edges.extract_timestamps": {
+          "input_tokens": 33450,
+          "logical_calls": 107,
+          "output_tokens": 2058,
+          "retry_count": 0,
+          "semantic_operator_type": "TIMESTAMP",
+          "service_time_s": 84.47919789299998
+        },
+        "extract_nodes.extract_message": {
+          "input_tokens": 164819,
+          "logical_calls": 12,
+          "output_tokens": 1900,
+          "retry_count": 0,
+          "semantic_operator_type": "NODE_EXTRACTION",
+          "service_time_s": 72.32239132000001
+        },
+        "extract_nodes.extract_summaries_batch": {
+          "input_tokens": 92956,
+          "logical_calls": 7,
+          "output_tokens": 1254,
+          "retry_count": 0,
+          "semantic_operator_type": "ATTRIBUTE/SUMMARY",
+          "service_time_s": 45.773629363999994
+        }
+      },
+      "sealed": {
+        "payload_sha256": "3eec399c575ba2639047eec2a3507d0f3d646a83ba1b60849c6a552eccc984e8",
+        "seal_sha256": "724bb3dad1546ed429d69f3085d40e9e98f8fbec2eac46bfa6f0c37cc0920cf3",
+        "status": "VALIDATED_SEALED"
+      },
+      "work": {
+        "db_queries": 619,
+        "db_writes": 60,
+        "embedding_items": 572,
+        "embedding_operations": {
+          "create": 214,
+          "create_batch": 40
+        },
+        "input_tokens": 717681,
+        "logical_calls": 255,
+        "native_span_count": 2225,
+        "output_tokens": 36095,
+        "request_service_time": {
+          "count": 255,
+          "max_s": 550.267421544,
+          "p50_s": 1.234772365,
+          "p95_s": 8.941680324,
+          "p99_s": 35.486019322,
+          "total_s": 1215.79733881
+        },
+        "retry_count_sum": 1,
+        "sealed_metric_crosscheck": {
+          "embedding_items": 572,
+          "llm_input_tokens": 717681,
+          "llm_logical_calls": 255,
+          "llm_transport_attempts": 256,
+          "makespan_s": 983.458708667
+        },
+        "trace_episode_count": 12,
+        "transport_attempts": 256,
+        "transport_service_time": {
+          "count": 256,
+          "max_s": 456.843969914,
+          "p50_s": 1.234498064,
+          "p95_s": 10.363657067,
+          "p99_s": 83.517783394,
+          "total_s": 1205.696256469
+        }
+      }
+    },
+    "B0-B": {
+      "attempt_root": "sfwb-v1-3-simple-20260821-004/qualification/blocks/qualification-b0-b/attempt-001",
+      "auxiliary_llm_event_counts": {},
+      "by_source": {
+        "0": {
+          "by_operator": {
+            "EDGE_EXTRACTION": 1,
+            "NODE_EXTRACTION": 1,
+            "SUMMARY": 1
+          },
+          "db_queries": 2,
+          "db_writes": 5,
+          "embedding_items": 2,
+          "input_tokens": 8833,
+          "logical_calls": 3,
+          "output_tokens": 101,
+          "span_count": 28,
+          "transport_attempts": 3
+        },
+        "1": {
+          "by_operator": {
+            "EDGE_EXTRACTION": 1,
+            "NODE_EXTRACTION": 1,
+            "NODE_RESOLUTION": 1,
+            "TIMESTAMP": 1
+          },
+          "db_queries": 8,
+          "db_writes": 5,
+          "embedding_items": 8,
+          "input_tokens": 16132,
+          "logical_calls": 4,
+          "output_tokens": 779,
+          "span_count": 43,
+          "transport_attempts": 4
+        },
+        "10": {
+          "by_operator": {
+            "EDGE_EXTRACTION": 1,
+            "EDGE_RESOLUTION": 8,
+            "NODE_EXTRACTION": 1,
+            "NODE_RESOLUTION": 1,
+            "TIMESTAMP": 8
+          },
+          "db_queries": 50,
+          "db_writes": 5,
+          "embedding_items": 50,
+          "input_tokens": 82049,
+          "logical_calls": 19,
+          "output_tokens": 1393,
+          "span_count": 172,
+          "transport_attempts": 19
+        },
+        "11": {
+          "by_operator": {
+            "EDGE_EXTRACTION": 1,
+            "EDGE_RESOLUTION": 39,
+            "NODE_EXTRACTION": 1,
+            "NODE_RESOLUTION": 1,
+            "SUMMARY": 1,
+            "TIMESTAMP": 39
+          },
+          "db_queries": 231,
+          "db_writes": 5,
+          "embedding_items": 226,
+          "input_tokens": 152255,
+          "logical_calls": 82,
+          "output_tokens": 6736,
+          "span_count": 727,
+          "transport_attempts": 82
+        },
+        "2": {
+          "by_operator": {
+            "EDGE_EXTRACTION": 1,
+            "EDGE_RESOLUTION": 2,
+            "NODE_EXTRACTION": 1,
+            "NODE_RESOLUTION": 1,
+            "TIMESTAMP": 2
+          },
+          "db_queries": 14,
+          "db_writes": 5,
+          "embedding_items": 14,
+          "input_tokens": 26162,
+          "logical_calls": 7,
+          "output_tokens": 342,
+          "span_count": 64,
+          "transport_attempts": 7
+        },
+        "3": {
+          "by_operator": {
+            "EDGE_EXTRACTION": 1,
+            "NODE_EXTRACTION": 1,
+            "NODE_RESOLUTION": 1,
+            "SUMMARY": 1
+          },
+          "db_queries": 7,
+          "db_writes": 5,
+          "embedding_items": 12,
+          "input_tokens": 24011,
+          "logical_calls": 4,
+          "output_tokens": 650,
+          "span_count": 35,
+          "transport_attempts": 4
+        },
+        "4": {
+          "by_operator": {
+            "EDGE_EXTRACTION": 1,
+            "NODE_EXTRACTION": 1,
+            "NODE_RESOLUTION": 1,
+            "SUMMARY": 1
+          },
+          "db_queries": 2,
+          "db_writes": 5,
+          "embedding_items": 2,
+          "input_tokens": 32780,
+          "logical_calls": 4,
+          "output_tokens": 269,
+          "span_count": 30,
+          "transport_attempts": 4
+        },
+        "5": {
+          "by_operator": {
+            "EDGE_EXTRACTION": 1,
+            "EDGE_RESOLUTION": 8,
+            "NODE_EXTRACTION": 1,
+            "NODE_RESOLUTION": 1,
+            "TIMESTAMP": 8
+          },
+          "db_queries": 43,
+          "db_writes": 5,
+          "embedding_items": 36,
+          "input_tokens": 35980,
+          "logical_calls": 19,
+          "output_tokens": 1114,
+          "span_count": 165,
+          "transport_attempts": 19
+        },
+        "6": {
+          "by_operator": {
+            "EDGE_EXTRACTION": 1,
+            "EDGE_RESOLUTION": 6,
+            "NODE_EXTRACTION": 1,
+            "NODE_RESOLUTION": 1,
+            "SUMMARY": 1,
+            "TIMESTAMP": 6
+          },
+          "db_queries": 36,
+          "db_writes": 5,
+          "embedding_items": 34,
+          "input_tokens": 73855,
+          "logical_calls": 16,
+          "output_tokens": 1303,
+          "span_count": 136,
+          "transport_attempts": 16
+        },
+        "7": {
+          "by_operator": {
+            "EDGE_EXTRACTION": 1,
+            "EDGE_RESOLUTION": 9,
+            "NODE_EXTRACTION": 1,
+            "NODE_RESOLUTION": 1,
+            "TIMESTAMP": 9
+          },
+          "db_queries": 51,
+          "db_writes": 5,
+          "embedding_items": 46,
+          "input_tokens": 54325,
+          "logical_calls": 21,
+          "output_tokens": 1343,
+          "span_count": 185,
+          "transport_attempts": 21
+        },
+        "8": {
+          "by_operator": {
+            "EDGE_EXTRACTION": 1,
+            "EDGE_RESOLUTION": 34,
+            "NODE_EXTRACTION": 1,
+            "NODE_RESOLUTION": 1,
+            "SUMMARY": 1,
+            "TIMESTAMP": 34
+          },
+          "db_queries": 173,
+          "db_writes": 5,
+          "embedding_items": 140,
+          "input_tokens": 136468,
+          "logical_calls": 72,
+          "output_tokens": 21087,
+          "span_count": 610,
+          "transport_attempts": 73
+        },
+        "9": {
+          "by_operator": {
+            "EDGE_EXTRACTION": 1,
+            "NODE_EXTRACTION": 1,
+            "NODE_RESOLUTION": 1,
+            "SUMMARY": 1
+          },
+          "db_queries": 2,
+          "db_writes": 5,
+          "embedding_items": 2,
+          "input_tokens": 74882,
+          "logical_calls": 4,
+          "output_tokens": 1001,
+          "span_count": 30,
+          "transport_attempts": 4
+        }
+      },
+      "candidate_search_evidence": {
+        "candidate_count_max": 525,
+        "candidate_count_sum": 1891,
+        "candidate_query_count_sum": 286,
+        "candidate_search_span_count": 230
+      },
+      "method": "B0_NATIVE_SERIAL",
+      "metrics": {
+        "build_makespan_s": 980.727772183,
+        "canonical_graph_hash": "735ffcbe1796b591d98422db0703ec26be101f29e21e39a9e721238d3f5854e6",
+        "complete_publication_coverage": true,
+        "direct_semantic_violations": 0,
+        "inversion_count": 0,
+        "inversion_density": 0.0,
+        "kendall_tau": 1.0,
+        "resource_availability": "NOT_EVALUATED"
+      },
+      "operation_counts": {
+        "UNCLASSIFIED": 96,
+        "create": 214,
+        "create_batch": 40,
+        "edge-dedup": 214,
+        "edge-empty": 8,
+        "edge-invalidation": 214,
+        "edge-presearch": 12,
+        "existing-edge-mutation": 106,
+        "logical-call": 255,
+        "new-edge-expiration-observation": 107,
+        "node-dedup": 24,
+        "query": 619,
+        "request-attempt": 256,
+        "write": 60
+      },
+      "operator_counts": {
+        "ATTRIBUTE": {
+          "embedding_items": 0,
+          "input_tokens": 0,
+          "logical_calls": 0,
+          "output_tokens": 0,
+          "service_time_s": 0.0,
+          "span_count": 0
+        },
+        "EDGE_CANDIDATE_READ": {
+          "embedding_items": 0,
+          "input_tokens": 0,
+          "logical_calls": 0,
+          "output_tokens": 0,
+          "service_time_s": 39.154966382,
+          "span_count": 218
+        },
+        "EDGE_DEDUPE": {
+          "embedding_items": 0,
+          "input_tokens": 0,
+          "logical_calls": 0,
+          "output_tokens": 0,
+          "service_time_s": 7.585639776000006,
+          "span_count": 214
+        },
+        "EDGE_EXTRACTION": {
+          "embedding_items": 0,
+          "input_tokens": 178065,
+          "logical_calls": 12,
+          "output_tokens": 26856,
+          "service_time_s": 758.985667783,
+          "span_count": 0
+        },
+        "EDGE_RESOLUTION": {
+          "embedding_items": 0,
+          "input_tokens": 92070,
+          "logical_calls": 106,
+          "output_tokens": 1981,
+          "service_time_s": 174.955441456,
+          "span_count": 0
+        },
+        "EMBEDDING": {
+          "embedding_items": 572,
+          "input_tokens": 0,
+          "logical_calls": 0,
+          "output_tokens": 0,
+          "service_time_s": 9.095185647000006,
+          "span_count": 254
+        },
+        "NODE_CANDIDATE_READ": {
+          "embedding_items": 0,
+          "input_tokens": 0,
+          "logical_calls": 0,
+          "output_tokens": 0,
+          "service_time_s": 0.689129266,
+          "span_count": 12
+        },
+        "NODE_EXTRACTION": {
+          "embedding_items": 0,
+          "input_tokens": 164819,
+          "logical_calls": 12,
+          "output_tokens": 1900,
+          "service_time_s": 72.560300135,
+          "span_count": 0
+        },
+        "NODE_RESOLUTION": {
+          "embedding_items": 0,
+          "input_tokens": 156372,
+          "logical_calls": 11,
+          "output_tokens": 2053,
+          "service_time_s": 77.402251563,
+          "span_count": 24
+        },
+        "OTHER": {
+          "embedding_items": 0,
+          "input_tokens": 0,
+          "logical_calls": 0,
+          "output_tokens": 0,
+          "service_time_s": 0.0,
+          "span_count": 0
+        },
+        "PERSISTENCE": {
+          "embedding_items": 0,
+          "input_tokens": 0,
+          "logical_calls": 0,
+          "output_tokens": 0,
+          "service_time_s": 41.48644208399999,
+          "span_count": 499
+        },
+        "SUMMARY": {
+          "embedding_items": 0,
+          "input_tokens": 92956,
+          "logical_calls": 7,
+          "output_tokens": 1254,
+          "service_time_s": 45.882030301,
+          "span_count": 0
+        },
+        "TIMESTAMP": {
+          "embedding_items": 0,
+          "input_tokens": 33450,
+          "logical_calls": 107,
+          "output_tokens": 2074,
+          "service_time_s": 85.16879719300003,
+          "span_count": 0
+        }
+      },
+      "phase_counts": {
+        "add-episode": 12,
+        "attributes-summary": 12,
+        "candidate-embedding": 238,
+        "candidate-search": 230,
+        "database": 667,
+        "database-transaction": 12,
+        "edge-extraction": 12,
+        "edge-resolution": 12,
+        "embedding": 254,
+        "invalidation-update": 217,
+        "llm": 255,
+        "llm-transport": 256,
+        "node-extraction": 12,
+        "node-resolution": 12,
+        "previous-context": 12,
+        "publication": 12
+      },
+      "phase_duration_s": {
+        "add-episode": 980.662986577,
+        "attributes-summary": 46.042786212,
+        "candidate-embedding": 8.786180287,
+        "candidate-search": 39.844095648,
+        "database": 54.519305432,
+        "database-transaction": 0.377023058,
+        "edge-extraction": 758.992159844,
+        "edge-resolution": 24.854881501,
+        "embedding": 9.095185647,
+        "invalidation-update": 0.000368148,
+        "llm": 1214.093982154,
+        "llm-transport": 1207.706049372,
+        "node-extraction": 72.565319606,
+        "node-resolution": 77.378386254,
+        "previous-context": 0.076922241,
+        "publication": 0.749227515
+      },
+      "prompt_counts": {
+        "dedupe_edges.resolve_edge": 106,
+        "dedupe_nodes.nodes": 11,
+        "extract_edges.edge": 12,
+        "extract_edges.extract_timestamps": 107,
+        "extract_nodes.extract_message": 12,
+        "extract_nodes.extract_summaries_batch": 7
+      },
+      "prompt_stats": {
+        "dedupe_edges.resolve_edge": {
+          "input_tokens": 92070,
+          "logical_calls": 106,
+          "output_tokens": 1981,
+          "retry_count": 0,
+          "semantic_operator_type": "EDGE_RESOLUTION",
+          "service_time_s": 174.955441456
+        },
+        "dedupe_nodes.nodes": {
+          "input_tokens": 156372,
+          "logical_calls": 11,
+          "output_tokens": 2053,
+          "retry_count": 0,
+          "semantic_operator_type": "NODE_RESOLUTION/BATCH_RESOLUTION",
+          "service_time_s": 76.541745286
+        },
+        "extract_edges.edge": {
+          "input_tokens": 178065,
+          "logical_calls": 12,
+          "output_tokens": 26856,
+          "retry_count": 1,
+          "semantic_operator_type": "EDGE_EXTRACTION",
+          "service_time_s": 758.985667783
+        },
+        "extract_edges.extract_timestamps": {
+          "input_tokens": 33450,
+          "logical_calls": 107,
+          "output_tokens": 2074,
+          "retry_count": 0,
+          "semantic_operator_type": "TIMESTAMP",
+          "service_time_s": 85.16879719300003
+        },
+        "extract_nodes.extract_message": {
+          "input_tokens": 164819,
+          "logical_calls": 12,
+          "output_tokens": 1900,
+          "retry_count": 0,
+          "semantic_operator_type": "NODE_EXTRACTION",
+          "service_time_s": 72.560300135
+        },
+        "extract_nodes.extract_summaries_batch": {
+          "input_tokens": 92956,
+          "logical_calls": 7,
+          "output_tokens": 1254,
+          "retry_count": 0,
+          "semantic_operator_type": "ATTRIBUTE/SUMMARY",
+          "service_time_s": 45.882030301
+        }
+      },
+      "sealed": {
+        "payload_sha256": "7306f68cc321ca150f6b0e5dd96337b68c4fb8df3e27e5951b77416cb963ebb5",
+        "seal_sha256": "ff7c5accf99c4be86d718c55d76055174462be51c7fd222c7bc350793bcb7431",
+        "status": "VALIDATED_SEALED"
+      },
+      "work": {
+        "db_queries": 619,
+        "db_writes": 60,
+        "embedding_items": 572,
+        "embedding_operations": {
+          "create": 214,
+          "create_batch": 40
+        },
+        "input_tokens": 717732,
+        "logical_calls": 255,
+        "native_span_count": 2225,
+        "output_tokens": 36118,
+        "request_service_time": {
+          "count": 255,
+          "max_s": 546.735276459,
+          "p50_s": 1.243309298,
+          "p95_s": 8.941533971,
+          "p99_s": 35.504082987,
+          "total_s": 1214.093982154
+        },
+        "retry_count_sum": 1,
+        "sealed_metric_crosscheck": {
+          "embedding_items": 572,
+          "llm_input_tokens": 717732,
+          "llm_logical_calls": 255,
+          "llm_transport_attempts": 256,
+          "makespan_s": 980.727772183
+        },
+        "trace_episode_count": 12,
+        "transport_attempts": 256,
+        "transport_service_time": {
+          "count": 256,
+          "max_s": 456.984328091,
+          "p50_s": 1.243033507,
+          "p95_s": 10.369436144,
+          "p99_s": 83.543648953,
+          "total_s": 1207.706049372
+        }
+      }
+    },
+    "B1": {
+      "attempt_root": "sfwb-v1-3-simple-20260821-004/qualification/blocks/qualification-b1/attempt-001",
+      "auxiliary_llm_event_counts": {},
+      "by_source": {
+        "0": {
+          "by_operator": {
+            "EDGE_EXTRACTION": 1,
+            "NODE_EXTRACTION": 1,
+            "SUMMARY": 1
+          },
+          "db_queries": 2,
+          "db_writes": 5,
+          "embedding_items": 2,
+          "input_tokens": 8833,
+          "logical_calls": 3,
+          "output_tokens": 101,
+          "span_count": 28,
+          "transport_attempts": 3
+        },
+        "1": {
+          "by_operator": {
+            "EDGE_EXTRACTION": 1,
+            "NODE_EXTRACTION": 1,
+            "TIMESTAMP": 1
+          },
+          "db_queries": 8,
+          "db_writes": 5,
+          "embedding_items": 8,
+          "input_tokens": 7946,
+          "logical_calls": 3,
+          "output_tokens": 183,
+          "span_count": 41,
+          "transport_attempts": 3
+        },
+        "10": {
+          "by_operator": {
+            "EDGE_EXTRACTION": 1,
+            "NODE_EXTRACTION": 1,
+            "SUMMARY": 1
+          },
+          "db_queries": 2,
+          "db_writes": 5,
+          "embedding_items": 2,
+          "input_tokens": 7365,
+          "logical_calls": 3,
+          "output_tokens": 121,
+          "span_count": 28,
+          "transport_attempts": 3
+        },
+        "11": {
+          "by_operator": {
+            "EDGE_EXTRACTION": 1,
+            "EDGE_RESOLUTION": 30,
+            "NODE_EXTRACTION": 1,
+            "NODE_RESOLUTION": 1,
+            "SUMMARY": 1,
+            "TIMESTAMP": 30
+          },
+          "db_queries": 182,
+          "db_writes": 5,
+          "embedding_items": 182,
+          "input_tokens": 58654,
+          "logical_calls": 64,
+          "output_tokens": 4938,
+          "span_count": 570,
+          "transport_attempts": 64
+        },
+        "2": {
+          "by_operator": {
+            "EDGE_EXTRACTION": 1,
+            "NODE_EXTRACTION": 1,
+            "SUMMARY": 1
+          },
+          "db_queries": 2,
+          "db_writes": 5,
+          "embedding_items": 2,
+          "input_tokens": 11835,
+          "logical_calls": 3,
+          "output_tokens": 533,
+          "span_count": 28,
+          "transport_attempts": 3
+        },
+        "3": {
+          "by_operator": {
+            "EDGE_EXTRACTION": 1,
+            "NODE_EXTRACTION": 1,
+            "NODE_RESOLUTION": 1,
+            "SUMMARY": 1
+          },
+          "db_queries": 7,
+          "db_writes": 5,
+          "embedding_items": 12,
+          "input_tokens": 7527,
+          "logical_calls": 4,
+          "output_tokens": 1056,
+          "span_count": 35,
+          "transport_attempts": 4
+        },
+        "4": {
+          "by_operator": {
+            "EDGE_EXTRACTION": 1,
+            "NODE_EXTRACTION": 1,
+            "SUMMARY": 1
+          },
+          "db_queries": 2,
+          "db_writes": 5,
+          "embedding_items": 2,
+          "input_tokens": 10190,
+          "logical_calls": 3,
+          "output_tokens": 1735,
+          "span_count": 28,
+          "transport_attempts": 3
+        },
+        "5": {
+          "by_operator": {
+            "EDGE_EXTRACTION": 1,
+            "EDGE_RESOLUTION": 6,
+            "NODE_EXTRACTION": 1,
+            "TIMESTAMP": 6
+          },
+          "db_queries": 33,
+          "db_writes": 5,
+          "embedding_items": 28,
+          "input_tokens": 16582,
+          "logical_calls": 14,
+          "output_tokens": 761,
+          "span_count": 129,
+          "transport_attempts": 14
+        },
+        "6": {
+          "by_operator": {
+            "EDGE_EXTRACTION": 1,
+            "NODE_EXTRACTION": 1,
+            "SUMMARY": 1
+          },
+          "db_queries": 2,
+          "db_writes": 5,
+          "embedding_items": 2,
+          "input_tokens": 8156,
+          "logical_calls": 3,
+          "output_tokens": 147,
+          "span_count": 28,
+          "transport_attempts": 3
+        },
+        "7": {
+          "by_operator": {
+            "EDGE_EXTRACTION": 1,
+            "NODE_EXTRACTION": 1,
+            "TIMESTAMP": 2
+          },
+          "db_queries": 13,
+          "db_writes": 5,
+          "embedding_items": 12,
+          "input_tokens": 7802,
+          "logical_calls": 4,
+          "output_tokens": 223,
+          "span_count": 55,
+          "transport_attempts": 4
+        },
+        "8": {
+          "by_operator": {
+            "EDGE_EXTRACTION": 1,
+            "EDGE_RESOLUTION": 19,
+            "NODE_EXTRACTION": 1,
+            "TIMESTAMP": 19
+          },
+          "db_queries": 98,
+          "db_writes": 5,
+          "embedding_items": 80,
+          "input_tokens": 34230,
+          "logical_calls": 40,
+          "output_tokens": 18290,
+          "span_count": 351,
+          "transport_attempts": 41
+        },
+        "9": {
+          "by_operator": {
+            "EDGE_EXTRACTION": 1,
+            "EDGE_RESOLUTION": 18,
+            "NODE_EXTRACTION": 1,
+            "NODE_RESOLUTION": 1,
+            "SUMMARY": 1,
+            "TIMESTAMP": 18
+          },
+          "db_queries": 113,
+          "db_writes": 5,
+          "embedding_items": 116,
+          "input_tokens": 34168,
+          "logical_calls": 40,
+          "output_tokens": 4051,
+          "span_count": 357,
+          "transport_attempts": 40
+        }
+      },
+      "candidate_search_evidence": {
+        "candidate_count_max": 217,
+        "candidate_count_sum": 1053,
+        "candidate_query_count_sum": 224,
+        "candidate_search_span_count": 170
+      },
+      "method": "B1_NAIVE_WHOLE_UPDATE_ASYNC",
+      "metrics": {
+        "build_makespan_s": 482.967151862,
+        "canonical_graph_hash": "94a308108e486a72ffc8222f4e6ad97240c6077195b8c1cb61fb654fc9fbecdb",
+        "complete_publication_coverage": true,
+        "direct_semantic_violations": 0,
+        "inversion_count": 22,
+        "inversion_density": 0.3333333333333333,
+        "kendall_tau": 0.33333333333333337,
+        "resource_availability": "NOT_EVALUATED"
+      },
+      "operation_counts": {
+        "UNCLASSIFIED": 96,
+        "create": 152,
+        "create_batch": 36,
+        "edge-dedup": 152,
+        "edge-empty": 12,
+        "edge-invalidation": 152,
+        "edge-presearch": 12,
+        "existing-edge-mutation": 73,
+        "logical-call": 184,
+        "new-edge-expiration-observation": 76,
+        "node-dedup": 24,
+        "query": 464,
+        "request-attempt": 185,
+        "write": 60
+      },
+      "operator_counts": {
+        "ATTRIBUTE": {
+          "embedding_items": 0,
+          "input_tokens": 0,
+          "logical_calls": 0,
+          "output_tokens": 0,
+          "service_time_s": 0.0,
+          "span_count": 0
+        },
+        "EDGE_CANDIDATE_READ": {
+          "embedding_items": 0,
+          "input_tokens": 0,
+          "logical_calls": 0,
+          "output_tokens": 0,
+          "service_time_s": 28.510469952999983,
+          "span_count": 158
+        },
+        "EDGE_DEDUPE": {
+          "embedding_items": 0,
+          "input_tokens": 0,
+          "logical_calls": 0,
+          "output_tokens": 0,
+          "service_time_s": 5.707652138,
+          "span_count": 152
+        },
+        "EDGE_EXTRACTION": {
+          "embedding_items": 0,
+          "input_tokens": 44634,
+          "logical_calls": 12,
+          "output_tokens": 24640,
+          "service_time_s": 688.0627579110001,
+          "span_count": 0
+        },
+        "EDGE_RESOLUTION": {
+          "embedding_items": 0,
+          "input_tokens": 67623,
+          "logical_calls": 73,
+          "output_tokens": 1357,
+          "service_time_s": 149.80210506999998,
+          "span_count": 0
+        },
+        "EMBEDDING": {
+          "embedding_items": 448,
+          "input_tokens": 0,
+          "logical_calls": 0,
+          "output_tokens": 0,
+          "service_time_s": 5.60039398,
+          "span_count": 188
+        },
+        "NODE_CANDIDATE_READ": {
+          "embedding_items": 0,
+          "input_tokens": 0,
+          "logical_calls": 0,
+          "output_tokens": 0,
+          "service_time_s": 0.4295883749999999,
+          "span_count": 12
+        },
+        "NODE_EXTRACTION": {
+          "embedding_items": 0,
+          "input_tokens": 47243,
+          "logical_calls": 12,
+          "output_tokens": 1332,
+          "service_time_s": 142.11035994399998,
+          "span_count": 0
+        },
+        "NODE_RESOLUTION": {
+          "embedding_items": 0,
+          "input_tokens": 10041,
+          "logical_calls": 3,
+          "output_tokens": 1820,
+          "service_time_s": 53.562611777,
+          "span_count": 24
+        },
+        "OTHER": {
+          "embedding_items": 0,
+          "input_tokens": 0,
+          "logical_calls": 0,
+          "output_tokens": 0,
+          "service_time_s": 0.0,
+          "span_count": 0
+        },
+        "PERSISTENCE": {
+          "embedding_items": 0,
+          "input_tokens": 0,
+          "logical_calls": 0,
+          "output_tokens": 0,
+          "service_time_s": 28.804729348000006,
+          "span_count": 373
+        },
+        "SUMMARY": {
+          "embedding_items": 0,
+          "input_tokens": 19914,
+          "logical_calls": 8,
+          "output_tokens": 1502,
+          "service_time_s": 51.474086183000004,
+          "span_count": 0
+        },
+        "TIMESTAMP": {
+          "embedding_items": 0,
+          "input_tokens": 23833,
+          "logical_calls": 76,
+          "output_tokens": 1488,
+          "service_time_s": 67.92597021299999,
+          "span_count": 0
+        }
+      },
+      "phase_counts": {
+        "add-episode": 12,
+        "attributes-summary": 12,
+        "candidate-embedding": 176,
+        "candidate-search": 170,
+        "database": 512,
+        "database-transaction": 12,
+        "edge-extraction": 12,
+        "edge-resolution": 12,
+        "embedding": 188,
+        "invalidation-update": 155,
+        "llm": 184,
+        "llm-transport": 185,
+        "node-extraction": 12,
+        "node-resolution": 12,
+        "previous-context": 12,
+        "publication": 12
+      },
+      "phase_duration_s": {
+        "add-episode": 955.629224976,
+        "attributes-summary": 51.640529443,
+        "candidate-embedding": 5.336545922,
+        "candidate-search": 28.940058328,
+        "database": 39.175389532,
+        "database-transaction": 0.268068233,
+        "edge-extraction": 688.065067482,
+        "edge-resolution": 19.739928101,
+        "embedding": 5.60039398,
+        "invalidation-update": 0.000245508,
+        "llm": 1152.356002782,
+        "llm-transport": 1146.746667373,
+        "node-extraction": 142.112007304,
+        "node-resolution": 53.482007253,
+        "previous-context": 0.165828691,
+        "publication": 0.421786538
+      },
+      "prompt_counts": {
+        "dedupe_edges.resolve_edge": 73,
+        "dedupe_nodes.nodes": 3,
+        "extract_edges.edge": 12,
+        "extract_edges.extract_timestamps": 76,
+        "extract_nodes.extract_message": 12,
+        "extract_nodes.extract_summaries_batch": 8
+      },
+      "prompt_stats": {
+        "dedupe_edges.resolve_edge": {
+          "input_tokens": 67623,
+          "logical_calls": 73,
+          "output_tokens": 1357,
+          "retry_count": 0,
+          "semantic_operator_type": "EDGE_RESOLUTION",
+          "service_time_s": 149.80210506999998
+        },
+        "dedupe_nodes.nodes": {
+          "input_tokens": 10041,
+          "logical_calls": 3,
+          "output_tokens": 1820,
+          "retry_count": 0,
+          "semantic_operator_type": "NODE_RESOLUTION/BATCH_RESOLUTION",
+          "service_time_s": 52.980723461
+        },
+        "extract_edges.edge": {
+          "input_tokens": 44634,
+          "logical_calls": 12,
+          "output_tokens": 24640,
+          "retry_count": 1,
+          "semantic_operator_type": "EDGE_EXTRACTION",
+          "service_time_s": 688.0627579110001
+        },
+        "extract_edges.extract_timestamps": {
+          "input_tokens": 23833,
+          "logical_calls": 76,
+          "output_tokens": 1488,
+          "retry_count": 0,
+          "semantic_operator_type": "TIMESTAMP",
+          "service_time_s": 67.92597021299999
+        },
+        "extract_nodes.extract_message": {
+          "input_tokens": 47243,
+          "logical_calls": 12,
+          "output_tokens": 1332,
+          "retry_count": 0,
+          "semantic_operator_type": "NODE_EXTRACTION",
+          "service_time_s": 142.11035994399998
+        },
+        "extract_nodes.extract_summaries_batch": {
+          "input_tokens": 19914,
+          "logical_calls": 8,
+          "output_tokens": 1502,
+          "retry_count": 0,
+          "semantic_operator_type": "ATTRIBUTE/SUMMARY",
+          "service_time_s": 51.474086183000004
+        }
+      },
+      "sealed": {
+        "payload_sha256": "e697ee767048864bc166ecf349bcbe1eece02f847914c838ab2eb668a09c20be",
+        "seal_sha256": "6b62976ac5d5a52479e28eab77af02494f1ae36ff3e321de61c56912ccaa530b",
+        "status": "VALIDATED_SEALED"
+      },
+      "work": {
+        "db_queries": 464,
+        "db_writes": 60,
+        "embedding_items": 448,
+        "embedding_operations": {
+          "create": 152,
+          "create_batch": 36
+        },
+        "input_tokens": 213288,
+        "logical_calls": 184,
+        "native_span_count": 1678,
+        "output_tokens": 32139,
+        "request_service_time": {
+          "count": 184,
+          "max_s": 469.150091026,
+          "p50_s": 2.040638816,
+          "p95_s": 15.937058972,
+          "p99_s": 61.4559579,
+          "total_s": 1152.356002782
+        },
+        "retry_count_sum": 1,
+        "sealed_metric_crosscheck": {
+          "embedding_items": 448,
+          "llm_input_tokens": 213288,
+          "llm_logical_calls": 184,
+          "llm_transport_attempts": 185,
+          "makespan_s": 482.967151862
+        },
+        "trace_episode_count": 12,
+        "transport_attempts": 185,
+        "transport_service_time": {
+          "count": 185,
+          "max_s": 433.509115232,
+          "p50_s": 2.040599257,
+          "p95_s": 17.84278319,
+          "p99_s": 61.454589693,
+          "total_s": 1146.746667373
+        }
+      }
+    },
+    "MemBind-v3.1": {
+      "attempt_root": "sfwb-v1-3-membind-ext-20260821-001/qualification/blocks/qualification-membind/attempt-001",
+      "auxiliary_llm_event_counts": {
+        "frontier_bind_region_end": 12,
+        "frontier_bind_region_start": 12,
+        "llm_request_start": 316,
+        "llm_request_submitted": 316,
+        "llm_request_terminal": 316,
+        "llm_transport_response": 316
+      },
+      "by_source": {
+        "0": {
+          "by_operator": {
+            "EDGE_EXTRACTION": 1,
+            "NODE_EXTRACTION": 1,
+            "SUMMARY": 1
+          },
+          "db_queries": 2,
+          "db_writes": 5,
+          "embedding_items": 2,
+          "input_tokens": 8833,
+          "logical_calls": 3,
+          "output_tokens": 101,
+          "span_count": 18,
+          "transport_attempts": 3
+        },
+        "1": {
+          "by_operator": {
+            "EDGE_EXTRACTION": 1,
+            "NODE_EXTRACTION": 1,
+            "NODE_RESOLUTION": 1,
+            "TIMESTAMP": 5
+          },
+          "db_queries": 28,
+          "db_writes": 5,
+          "embedding_items": 24,
+          "input_tokens": 17382,
+          "logical_calls": 8,
+          "output_tokens": 571,
+          "span_count": 91,
+          "transport_attempts": 8
+        },
+        "10": {
+          "by_operator": {
+            "EDGE_EXTRACTION": 1,
+            "EDGE_RESOLUTION": 11,
+            "NODE_EXTRACTION": 1,
+            "NODE_RESOLUTION": 1,
+            "SUMMARY": 1,
+            "TIMESTAMP": 11
+          },
+          "db_queries": 69,
+          "db_writes": 5,
+          "embedding_items": 70,
+          "input_tokens": 109985,
+          "logical_calls": 26,
+          "output_tokens": 2102,
+          "span_count": 221,
+          "transport_attempts": 26
+        },
+        "11": {
+          "by_operator": {
+            "EDGE_EXTRACTION": 1,
+            "EDGE_RESOLUTION": 23,
+            "NODE_EXTRACTION": 1,
+            "NODE_RESOLUTION": 1,
+            "SUMMARY": 1,
+            "TIMESTAMP": 23
+          },
+          "db_queries": 149,
+          "db_writes": 5,
+          "embedding_items": 157,
+          "input_tokens": 133937,
+          "logical_calls": 50,
+          "output_tokens": 4499,
+          "span_count": 445,
+          "transport_attempts": 50
+        },
+        "2": {
+          "by_operator": {
+            "EDGE_EXTRACTION": 1,
+            "EDGE_RESOLUTION": 9,
+            "NODE_EXTRACTION": 1,
+            "NODE_RESOLUTION": 1,
+            "SUMMARY": 1,
+            "TIMESTAMP": 9
+          },
+          "db_queries": 56,
+          "db_writes": 5,
+          "embedding_items": 56,
+          "input_tokens": 42091,
+          "logical_calls": 22,
+          "output_tokens": 1695,
+          "span_count": 184,
+          "transport_attempts": 22
+        },
+        "3": {
+          "by_operator": {
+            "EDGE_EXTRACTION": 1,
+            "NODE_EXTRACTION": 1,
+            "NODE_RESOLUTION": 1,
+            "SUMMARY": 1
+          },
+          "db_queries": 7,
+          "db_writes": 5,
+          "embedding_items": 12,
+          "input_tokens": 24372,
+          "logical_calls": 4,
+          "output_tokens": 651,
+          "span_count": 25,
+          "transport_attempts": 4
+        },
+        "4": {
+          "by_operator": {
+            "EDGE_EXTRACTION": 1,
+            "NODE_EXTRACTION": 1,
+            "NODE_RESOLUTION": 1,
+            "SUMMARY": 1
+          },
+          "db_queries": 2,
+          "db_writes": 5,
+          "embedding_items": 2,
+          "input_tokens": 33042,
+          "logical_calls": 4,
+          "output_tokens": 251,
+          "span_count": 20,
+          "transport_attempts": 4
+        },
+        "5": {
+          "by_operator": {
+            "EDGE_EXTRACTION": 1,
+            "NODE_EXTRACTION": 1
+          },
+          "db_queries": 2,
+          "db_writes": 5,
+          "embedding_items": 2,
+          "input_tokens": 18823,
+          "logical_calls": 2,
+          "output_tokens": 1197,
+          "span_count": 16,
+          "transport_attempts": 2
+        },
+        "6": {
+          "by_operator": {
+            "EDGE_EXTRACTION": 1,
+            "EDGE_RESOLUTION": 11,
+            "NODE_EXTRACTION": 1,
+            "NODE_RESOLUTION": 1,
+            "TIMESTAMP": 11
+          },
+          "db_queries": 61,
+          "db_writes": 5,
+          "embedding_items": 54,
+          "input_tokens": 64188,
+          "logical_calls": 25,
+          "output_tokens": 1874,
+          "span_count": 211,
+          "transport_attempts": 25
+        },
+        "7": {
+          "by_operator": {
+            "EDGE_EXTRACTION": 1,
+            "EDGE_RESOLUTION": 9,
+            "NODE_EXTRACTION": 1,
+            "NODE_RESOLUTION": 1,
+            "TIMESTAMP": 3
+          },
+          "db_queries": 51,
+          "db_writes": 5,
+          "embedding_items": 46,
+          "input_tokens": 52688,
+          "logical_calls": 15,
+          "output_tokens": 1330,
+          "span_count": 165,
+          "transport_attempts": 15
+        },
+        "8": {
+          "by_operator": {
+            "EDGE_EXTRACTION": 1,
+            "EDGE_RESOLUTION": 67,
+            "NODE_EXTRACTION": 1,
+            "NODE_RESOLUTION": 1,
+            "SUMMARY": 1,
+            "TIMESTAMP": 67
+          },
+          "db_queries": 338,
+          "db_writes": 5,
+          "embedding_items": 272,
+          "input_tokens": 156213,
+          "logical_calls": 138,
+          "output_tokens": 8193,
+          "span_count": 1162,
+          "transport_attempts": 138
+        },
+        "9": {
+          "by_operator": {
+            "EDGE_EXTRACTION": 1,
+            "EDGE_RESOLUTION": 8,
+            "NODE_EXTRACTION": 1,
+            "NODE_RESOLUTION": 1,
+            "TIMESTAMP": 8
+          },
+          "db_queries": 50,
+          "db_writes": 5,
+          "embedding_items": 50,
+          "input_tokens": 67494,
+          "logical_calls": 19,
+          "output_tokens": 1487,
+          "span_count": 164,
+          "transport_attempts": 19
+        }
+      },
+      "candidate_search_evidence": {
+        "candidate_count_max": 495,
+        "candidate_count_sum": 2462,
+        "candidate_query_count_sum": 374,
+        "candidate_search_span_count": 298
+      },
+      "method": "MEMBIND_V31",
+      "metrics": {
+        "build_makespan_s": 487.613315059,
+        "canonical_graph_hash": "262aefc0d7517d734c335e068b26addf3f07d59187811149cf74d345df504680",
+        "complete_publication_coverage": true,
+        "direct_semantic_violations": 0,
+        "global_llm_admission_k": 2,
+        "resource_availability": "NOT_EVALUATED"
+      },
+      "operation_counts": {
+        "UNCLASSIFIED": 12,
+        "create": 286,
+        "create_batch": 40,
+        "edge-dedup": 286,
+        "edge-invalidation": 286,
+        "existing-edge-mutation": 138,
+        "logical-call": 316,
+        "new-edge-expiration-observation": 143,
+        "node-dedup": 24,
+        "query": 815,
+        "request-attempt": 316,
+        "write": 60
+      },
+      "operator_counts": {
+        "ATTRIBUTE": {
+          "embedding_items": 0,
+          "input_tokens": 0,
+          "logical_calls": 0,
+          "output_tokens": 0,
+          "service_time_s": 0.0,
+          "span_count": 0
+        },
+        "EDGE_CANDIDATE_READ": {
+          "embedding_items": 0,
+          "input_tokens": 0,
+          "logical_calls": 0,
+          "output_tokens": 0,
+          "service_time_s": 65.42339440300003,
+          "span_count": 286
+        },
+        "EDGE_DEDUPE": {
+          "embedding_items": 0,
+          "input_tokens": 0,
+          "logical_calls": 0,
+          "output_tokens": 0,
+          "service_time_s": 26.670089769000004,
+          "span_count": 286
+        },
+        "EDGE_EXTRACTION": {
+          "embedding_items": 0,
+          "input_tokens": 159043,
+          "logical_calls": 12,
+          "output_tokens": 12687,
+          "service_time_s": 424.240182134,
+          "span_count": 0
+        },
+        "EDGE_RESOLUTION": {
+          "embedding_items": 0,
+          "input_tokens": 121893,
+          "logical_calls": 138,
+          "output_tokens": 2583,
+          "service_time_s": 873.826402401,
+          "span_count": 0
+        },
+        "EMBEDDING": {
+          "embedding_items": 747,
+          "input_tokens": 0,
+          "logical_calls": 0,
+          "output_tokens": 0,
+          "service_time_s": 39.092165048999995,
+          "span_count": 326
+        },
+        "NODE_CANDIDATE_READ": {
+          "embedding_items": 0,
+          "input_tokens": 0,
+          "logical_calls": 0,
+          "output_tokens": 0,
+          "service_time_s": 1.050521415,
+          "span_count": 12
+        },
+        "NODE_EXTRACTION": {
+          "embedding_items": 0,
+          "input_tokens": 164819,
+          "logical_calls": 12,
+          "output_tokens": 1667,
+          "service_time_s": 74.912572671,
+          "span_count": 0
+        },
+        "NODE_RESOLUTION": {
+          "embedding_items": 0,
+          "input_tokens": 150657,
+          "logical_calls": 10,
+          "output_tokens": 2527,
+          "service_time_s": 121.41842115300001,
+          "span_count": 24
+        },
+        "OTHER": {
+          "embedding_items": 0,
+          "input_tokens": 0,
+          "logical_calls": 0,
+          "output_tokens": 0,
+          "service_time_s": 0.0,
+          "span_count": 0
+        },
+        "PERSISTENCE": {
+          "embedding_items": 0,
+          "input_tokens": 0,
+          "logical_calls": 0,
+          "output_tokens": 0,
+          "service_time_s": 77.05585117900013,
+          "span_count": 627
+        },
+        "SUMMARY": {
+          "embedding_items": 0,
+          "input_tokens": 90151,
+          "logical_calls": 7,
+          "output_tokens": 1543,
+          "service_time_s": 77.824578032,
+          "span_count": 0
+        },
+        "TIMESTAMP": {
+          "embedding_items": 0,
+          "input_tokens": 42485,
+          "logical_calls": 137,
+          "output_tokens": 2944,
+          "service_time_s": 767.5639792909998,
+          "span_count": 0
+        }
+      },
+      "phase_counts": {
+        "candidate-embedding": 298,
+        "candidate-search": 298,
+        "database": 863,
+        "database-transaction": 12,
+        "embedding": 326,
+        "invalidation-update": 281,
+        "llm": 316,
+        "llm-transport": 316,
+        "previous-context": 12
+      },
+      "phase_duration_s": {
+        "candidate-embedding": 37.725246326,
+        "candidate-search": 66.473915818,
+        "database": 45.195402631,
+        "database-transaction": 0.468121378,
+        "embedding": 39.092165049,
+        "invalidation-update": 0.000682033,
+        "llm": 2338.378059058,
+        "llm-transport": 2337.996732316,
+        "previous-context": 0.02969385
+      },
+      "prompt_counts": {
+        "dedupe_edges.resolve_edge": 138,
+        "dedupe_nodes.nodes": 10,
+        "extract_edges.edge": 12,
+        "extract_edges.extract_timestamps": 137,
+        "extract_nodes.extract_message": 12,
+        "extract_nodes.extract_summaries_batch": 7
+      },
+      "prompt_stats": {
+        "dedupe_edges.resolve_edge": {
+          "input_tokens": 121893,
+          "logical_calls": 138,
+          "output_tokens": 2583,
+          "retry_count": 0,
+          "semantic_operator_type": "EDGE_RESOLUTION",
+          "service_time_s": 873.826402401
+        },
+        "dedupe_nodes.nodes": {
+          "input_tokens": 150657,
+          "logical_calls": 10,
+          "output_tokens": 2527,
+          "retry_count": 0,
+          "semantic_operator_type": "NODE_RESOLUTION/BATCH_RESOLUTION",
+          "service_time_s": 120.01034452900001
+        },
+        "extract_edges.edge": {
+          "input_tokens": 159043,
+          "logical_calls": 12,
+          "output_tokens": 12687,
+          "retry_count": 0,
+          "semantic_operator_type": "EDGE_EXTRACTION",
+          "service_time_s": 424.240182134
+        },
+        "extract_edges.extract_timestamps": {
+          "input_tokens": 42485,
+          "logical_calls": 137,
+          "output_tokens": 2944,
+          "retry_count": 0,
+          "semantic_operator_type": "TIMESTAMP",
+          "service_time_s": 767.5639792909998
+        },
+        "extract_nodes.extract_message": {
+          "input_tokens": 164819,
+          "logical_calls": 12,
+          "output_tokens": 1667,
+          "retry_count": 0,
+          "semantic_operator_type": "NODE_EXTRACTION",
+          "service_time_s": 74.912572671
+        },
+        "extract_nodes.extract_summaries_batch": {
+          "input_tokens": 90151,
+          "logical_calls": 7,
+          "output_tokens": 1543,
+          "retry_count": 0,
+          "semantic_operator_type": "ATTRIBUTE/SUMMARY",
+          "service_time_s": 77.824578032
+        }
+      },
+      "sealed": {
+        "payload_sha256": "b2c76380354a8c0bf72130367cb13a9e26f684c86c3003f75304c254c538b7d8",
+        "seal_sha256": "aa63aa624f4dc3e9a364461a2e37c2f915d31ec8135241e7cab2301d1cdbc317",
+        "status": "VALIDATED_SEALED"
+      },
+      "work": {
+        "db_queries": 815,
+        "db_writes": 60,
+        "embedding_items": 747,
+        "embedding_operations": {
+          "create": 286,
+          "create_batch": 40
+        },
+        "input_tokens": 729048,
+        "logical_calls": 316,
+        "native_span_count": 2722,
+        "output_tokens": 23951,
+        "request_service_time": {
+          "count": 316,
+          "max_s": 163.161887577,
+          "p50_s": 5.813552204,
+          "p95_s": 22.076792136,
+          "p99_s": 37.512209198,
+          "total_s": 2338.378059058
+        },
+        "retry_count_sum": 0,
+        "sealed_metric_crosscheck": {
+          "embedding_items": 747,
+          "llm_input_tokens": 729048,
+          "llm_logical_calls": 316,
+          "llm_transport_attempts": 316,
+          "makespan_s": 487.613315059
+        },
+        "trace_episode_count": 12,
+        "transport_attempts": 316,
+        "transport_service_time": {
+          "count": 316,
+          "max_s": 163.159213083,
+          "p50_s": 5.81311524,
+          "p95_s": 22.076441174,
+          "p99_s": 37.509771792,
+          "total_s": 2337.996732316
+        }
+      }
+    }
+  },
+  "decision_evidence": {
+    "b1_logical_calls_vs_b0_a": -71,
+    "membind_extra_logical_calls_vs_b0_a": 61,
+    "membind_graph_difference_counts": {
+      "attribute": 129,
+      "edge_key": 242,
+      "entity_key": 47,
+      "source_link": 242,
+      "temporal": 242
+    },
+    "resource_capacity_evidence": "NOT_EVALUATED_IN_SEALED_BLOCKS",
+    "serial_floor_difference_counts": {
+      "attribute": 6,
+      "edge_key": 4,
+      "entity_key": 2,
+      "source_link": 4,
+      "temporal": 6
+    }
+  },
+  "schema_version": "sfwb.v1.3.v5.realized-work-attribution.v1"
+}

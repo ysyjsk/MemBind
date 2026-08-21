@@ -1,0 +1,206 @@
+{
+  "analysis_scope": {
+    "benchmark": "saturated_fixed_work_baseline_v1_3",
+    "episode_count": 12,
+    "history_id": "07741c45",
+    "live_execution": false,
+    "sealed_roots_mutated": false
+  },
+  "comparisons": {
+    "B0-A_vs_B0-B": {
+      "candidate": "B0_NATIVE_SERIAL",
+      "direct_semantic_safety": {
+        "candidate_violations": 0,
+        "reference_violations": 0
+      },
+      "graph": {
+        "candidate_counts": {
+          "edges": 107,
+          "entities": 67,
+          "episodes": 12
+        },
+        "candidate_hash": "43b788a24161cd988e9599a15ab6cc8cad73c5269dfb8ce2873450ff5465d985",
+        "difference_counts": {
+          "attribute": 6,
+          "edge_key": 4,
+          "entity_key": 2,
+          "source_link": 4,
+          "temporal": 6
+        },
+        "exact_match": false,
+        "namespace_projection": {
+          "applied": true,
+          "logical_group_id": "__FORMAL_HISTORY_NAMESPACE__"
+        },
+        "reference_counts": {
+          "edges": 107,
+          "entities": 67,
+          "episodes": 12
+        },
+        "reference_hash": "dad6f039b5672e2c4744e6e333b9bda0143bbd031635cd58b04987528306dfe8"
+      },
+      "protocol_validity": {
+        "candidate_complete_publication_coverage": true,
+        "candidate_sealed": true,
+        "reference_sealed": true
+      },
+      "reference": "B0_NATIVE_SERIAL",
+      "semantic_outcome_equivalence": {
+        "candidate_edge_count": 107,
+        "candidate_entity_count": 67,
+        "canonical_exact": false,
+        "reference_edge_count": 107,
+        "reference_entity_count": 67
+      },
+      "work": {
+        "embedding_items_delta": 0,
+        "input_tokens_delta": 51,
+        "logical_calls_delta": 0,
+        "output_tokens_delta": 23,
+        "transport_attempts_delta": 0
+      }
+    },
+    "B0-A_vs_B1": {
+      "candidate": "B1_NAIVE_WHOLE_UPDATE_ASYNC",
+      "direct_semantic_safety": {
+        "candidate_violations": 0,
+        "reference_violations": 0
+      },
+      "graph": {
+        "candidate_counts": {
+          "edges": 76,
+          "entities": 72,
+          "episodes": 12
+        },
+        "candidate_hash": "f08f82c6402017e265fab0efe01396a383d013d63150887c1ca5b919db1f517e",
+        "difference_counts": {
+          "attribute": 133,
+          "edge_key": 181,
+          "entity_key": 50,
+          "source_link": 181,
+          "temporal": 183
+        },
+        "exact_match": false,
+        "namespace_projection": {
+          "applied": true,
+          "logical_group_id": "__FORMAL_HISTORY_NAMESPACE__"
+        },
+        "reference_counts": {
+          "edges": 107,
+          "entities": 67,
+          "episodes": 12
+        },
+        "reference_hash": "dad6f039b5672e2c4744e6e333b9bda0143bbd031635cd58b04987528306dfe8"
+      },
+      "protocol_validity": {
+        "candidate_complete_publication_coverage": true,
+        "candidate_sealed": true,
+        "reference_sealed": true
+      },
+      "reference": "B0_NATIVE_SERIAL",
+      "semantic_outcome_equivalence": {
+        "candidate_edge_count": 76,
+        "candidate_entity_count": 72,
+        "canonical_exact": false,
+        "reference_edge_count": 107,
+        "reference_entity_count": 67
+      },
+      "work": {
+        "embedding_items_delta": -124,
+        "input_tokens_delta": -504393,
+        "logical_calls_delta": -71,
+        "output_tokens_delta": -3956,
+        "transport_attempts_delta": -71
+      }
+    },
+    "B0-A_vs_MemBind-v3.1": {
+      "candidate": "MEMBIND_V31",
+      "direct_semantic_safety": {
+        "candidate_violations": 0,
+        "reference_violations": 0
+      },
+      "graph": {
+        "candidate_counts": {
+          "edges": 143,
+          "entities": 68,
+          "episodes": 12
+        },
+        "candidate_hash": "c6756d9ea33654745f39e354648fad4aef441020770df5250502808259701ba2",
+        "difference_counts": {
+          "attribute": 129,
+          "edge_key": 242,
+          "entity_key": 47,
+          "source_link": 242,
+          "temporal": 242
+        },
+        "exact_match": false,
+        "namespace_projection": {
+          "applied": true,
+          "logical_group_id": "__FORMAL_HISTORY_NAMESPACE__"
+        },
+        "reference_counts": {
+          "edges": 107,
+          "entities": 67,
+          "episodes": 12
+        },
+        "reference_hash": "dad6f039b5672e2c4744e6e333b9bda0143bbd031635cd58b04987528306dfe8"
+      },
+      "protocol_validity": {
+        "candidate_complete_publication_coverage": true,
+        "candidate_sealed": true,
+        "reference_sealed": true
+      },
+      "reference": "B0_NATIVE_SERIAL",
+      "semantic_outcome_equivalence": {
+        "candidate_edge_count": 143,
+        "candidate_entity_count": 68,
+        "canonical_exact": false,
+        "reference_edge_count": 107,
+        "reference_entity_count": 67
+      },
+      "work": {
+        "embedding_items_delta": 175,
+        "input_tokens_delta": 11367,
+        "logical_calls_delta": 61,
+        "output_tokens_delta": -12144,
+        "transport_attempts_delta": 60
+      }
+    }
+  },
+  "schema_version": "sfwb.v1.3.v5.semantic-divergence-analysis.v1",
+  "serial_self_divergence_floor": {
+    "graph": {
+      "candidate_counts": {
+        "edges": 107,
+        "entities": 67,
+        "episodes": 12
+      },
+      "candidate_hash": "43b788a24161cd988e9599a15ab6cc8cad73c5269dfb8ce2873450ff5465d985",
+      "difference_counts": {
+        "attribute": 6,
+        "edge_key": 4,
+        "entity_key": 2,
+        "source_link": 4,
+        "temporal": 6
+      },
+      "exact_match": false,
+      "namespace_projection": {
+        "applied": true,
+        "logical_group_id": "__FORMAL_HISTORY_NAMESPACE__"
+      },
+      "reference_counts": {
+        "edges": 107,
+        "entities": 67,
+        "episodes": 12
+      },
+      "reference_hash": "dad6f039b5672e2c4744e6e333b9bda0143bbd031635cd58b04987528306dfe8"
+    },
+    "work": {
+      "embedding_items_delta": 0,
+      "input_tokens_delta": 51,
+      "logical_calls_delta": 0,
+      "output_tokens_delta": 23,
+      "transport_attempts_delta": 0
+    }
+  }
+}
