@@ -168,6 +168,19 @@ async def run_p8_minimal_live_async(
     graphiti = runtime.graphiti
     recorder = recorder_factory()
     instrumentation = instrumentation_installer(graphiti, recorder)
+    closed = False
+
+    async def close_runtime() -> None:
+        nonlocal closed
+        if closed:
+            return
+        closed = True
+        if instrumentation is not None:
+            instrumentation.restore()
+        close = getattr(graphiti, "close", None)
+        if callable(close):
+            await _maybe_await(close())
+
     original_llm = runtime.llm_client
     authority = CapacityAuthority.from_protocol_runtime(runtime)
     arbiter = AdmissionArbiter(authority)
@@ -193,6 +206,7 @@ async def run_p8_minimal_live_async(
     prepare_rows: dict[int, Any] = {}
     prep_events: list[dict[str, Any]] = []
     publication_events: list[dict[str, Any]] = []
+    replay_clients: list[FrontierAwareLLMClient] = []
     timer_start = time.monotonic_ns()
 
     async def prepare(sequence: int) -> Any:
@@ -225,8 +239,14 @@ async def run_p8_minimal_live_async(
 
     prep_tasks = [asyncio.create_task(prepare(index)) for index in range(config.source_count)]
     try:
+        # Preparation tasks share Graphiti's client container.  Complete the
+        # concurrent capture phase before swapping that container to replay;
+        # otherwise a slower future task could observe the native proxy outside
+        # its binding scope.  This preserves concurrent preparation while making
+        # the capture/replay handoff deterministic and fail-closed.
+        prepared_values = await asyncio.gather(*prep_tasks)
         for sequence, episode in enumerate(episodes):
-            prepared = await prep_tasks[sequence]
+            prepared = prepared_values[sequence]
             prepare_rows[sequence] = prepared
             replay = FrontierAwareLLMClient(
                 original_llm,
@@ -236,6 +256,7 @@ async def run_p8_minimal_live_async(
                 durable_frontier=lambda: frontier["value"],
                 client_identity=identity,
             )
+            replay_clients.append(replay)
             graphiti.llm_client = replay
             graphiti.clients.llm_client = replay
             with recorder.episode_scope(config.run_id, episode.name, sequence):
@@ -246,6 +267,9 @@ async def run_p8_minimal_live_async(
             publication_events.append({"event": "PUBLICATION_DURABLE", "source_sequence": sequence, "monotonic_ns": time.monotonic_ns()})
             prepare_rows[sequence]["native_node_count"] = len(getattr(result, "nodes", ()) or ())
             prepare_rows[sequence]["native_edge_count"] = len(getattr(result, "edges", ()) or ())
+    except BaseException:
+        await close_runtime()
+        raise
     finally:
         for task in prep_tasks:
             if not task.done():
@@ -255,12 +279,15 @@ async def run_p8_minimal_live_async(
     timer_stop = publication_events[-1]["monotonic_ns"] if publication_events else time.monotonic_ns()
     graph = await _maybe_await(graph_exporter(graphiti, list(episodes), namespace))
     if not isinstance(graph, Mapping):
+        await close_runtime()
         raise V5LiveRunnerError("canonical graph export invalid")
     native_trace = [recorder.episode_envelope(config.run_id, episode.name, episode.source_sequence) for episode in episodes]
     admission_rows = list(capture.provider_calls)
-    admission_rows.extend(getattr(replay, "provider_calls", []))
+    for replay_client in replay_clients:
+        admission_rows.extend(replay_client.provider_calls)
     logical_summary = store.summary()
     if int(logical_summary.get("captured", logical_summary.get("logical_captured", 0))) <= 0:
+        await close_runtime()
         raise V5LiveRunnerError("no captured logical transcript")
     manifest = {
         "schema_version": "membind.v5.p8-manifest.v1",
@@ -278,7 +305,14 @@ async def run_p8_minimal_live_async(
         "manifest": manifest,
         "live_authority": {"action": LiveAction.MEMBIND_V5.value, "state_path": str(config.state_path), "native_characterization_c5_reused": False},
         "capacity_authority": authority.to_dict(),
-        "oracle_binding_summary": {"logical_captured": logical_summary.get("logical_captured", logical_summary.get("captured", 0)), "logical_consumed": logical_summary.get("logical_consumed", logical_summary.get("consumed", 0)), "provider_replay_calls": 0},
+        "oracle_binding_summary": {
+            "logical_captured": logical_summary.get("logical_captured", logical_summary.get("captured", 0)),
+            "logical_consumed": logical_summary.get("logical_consumed", logical_summary.get("consumed", 0)),
+            "provider_replay_calls": 0,
+            "replay_binding_calls": sum(1 for row in admission_rows if row.get("replay") is True and row.get("admitted") is False),
+            "provider_native_calls": sum(1 for row in admission_rows if row.get("region") == "NATIVE" and row.get("admitted") is True),
+            "replay_sources": sorted({int(row["source_sequence"]) for row in admission_rows if row.get("replay") is True}),
+        },
         "frontier": publication_events,
         "admission": admission_rows,
         "logical_work_summary": logical_summary,
@@ -287,6 +321,7 @@ async def run_p8_minimal_live_async(
         "canonical_graph": dict(graph),
         "lifecycle": {"status": "DURABLE", "timer_start_ns": timer_start, "timer_stop_ns": timer_stop},
     }
+    await close_runtime()
     root.mkdir(parents=True, exist_ok=False)
     _write_new(root / "manifest.json", manifest)
     _write_new(root / "live_authority.json", body["live_authority"])
@@ -301,11 +336,7 @@ async def run_p8_minimal_live_async(
     _write_new(root / "lifecycle.json", body["lifecycle"])
     seal = {"schema_version": "membind.v5.p8-seal.v1", "status": "P8_LIVE_SEALED", "method": V5_METHOD, "namespace": namespace, "source_count": config.source_count, "build_makespan_ns": timer_stop - timer_start}
     _write_new(root / "seal.json", seal)
-    if instrumentation is not None:
-        instrumentation.restore()
-    close = getattr(graphiti, "close", None)
-    if callable(close):
-        await _maybe_await(close())
+    await close_runtime()
     return {**body, "seal": seal, "root": str(root)}
 
 

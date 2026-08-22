@@ -1,0 +1,62 @@
+{
+  "authorization": {
+    "action": "membind_v5",
+    "native_characterization_c5_reused": false,
+    "reason": "authorized"
+  },
+  "baseline": {
+    "baseline_results_sha256": "afef231b89bbd163347f9c2aa50757ac10386566a06a957bd0142d3a9800bbc6",
+    "baseline_root": "/data/predator/ly/MemBind/saturated_fixed_work_baseline_v1_3/artifacts/sfwb-v1-3-formal-baseline-20260822-002",
+    "baseline_root_mutated": false,
+    "baseline_seal_identity": "sfwb.v1.3.formal-run-seal.v1",
+    "formal_run_seal_sha256": "695cb71c9b6e305ad9c3e26b90c1b9d9487c54e32200fed65e40ff9a1205e8c2",
+    "histories": [
+      "07741c45",
+      "b6019101",
+      "6071bd76",
+      "a2f3aa27"
+    ],
+    "methods": [
+      "B0_NATIVE_SERIAL",
+      "B1_NAIVE_WHOLE_UPDATE_ASYNC"
+    ],
+    "qa_contract_status": "INVALID_RETAINED",
+    "qa_correctness_is_not_claimed": true,
+    "schema_version": "membind.v5.baseline-reference.v1"
+  },
+  "construction": {
+    "body_sha256": "ade424d6eaaa90ca27a018952603dfa9d09ee0b337491d76f9ddf6a7321aadc4",
+    "expected_max_model_len": 65536,
+    "expected_model": "qwen3-32b-fp8",
+    "model_ids": [
+      "qwen3-32b-fp8"
+    ],
+    "status": "PASS",
+    "url": "http://10.87.5.247:8000/v1/models"
+  },
+  "created_at": "2026-08-22T05:35:19.054186+00:00",
+  "embedding": {
+    "body_sha256": "b0d09e9d16badc6df0ae5bf735e4c5784ebac60d96a7b2a748ca0337d744d233",
+    "expected_max_model_len": 32768,
+    "expected_model": "qwen3-embedding-0.6b",
+    "model_ids": [
+      "qwen3-embedding-0.6b"
+    ],
+    "status": "PASS",
+    "url": "http://10.87.5.247:8001/v1/models"
+  },
+  "live_result": {
+    "root": "/data/predator/ly/MemBind/saturated_fixed_work_baseline_v1_3/artifacts/sfwb-v1-3-v5-queue-20260822-032328/minimal-9",
+    "seal": {
+      "build_makespan_ns": 6360710874,
+      "method": "V5_VERSIONED_ORACLE_HOIST",
+      "namespace": "membind-v5-p8-minimal-9-bc06ac97a2",
+      "schema_version": "membind.v5.p8-seal.v1",
+      "source_count": 2,
+      "status": "P8_LIVE_SEALED"
+    }
+  },
+  "schema_version": "membind.v5.p8-minimal-preflight.v1",
+  "state_path": "/data/predator/ly/MemBind/saturated_fixed_work_baseline_v1_3/artifacts/sfwb-v1-3-v5-queue-20260822-032328/V5_CURRENT_STATE.json",
+  "status": "P8_LIVE_SEALED"
+}

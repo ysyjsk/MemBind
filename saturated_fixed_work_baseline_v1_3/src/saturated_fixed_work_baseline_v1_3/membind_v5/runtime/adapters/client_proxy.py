@@ -85,6 +85,19 @@ class V5LLMClientProxy:
         *,
         attribute_extraction: bool = False,
     ) -> Any:
+        # The proxy must preserve Graphiti's client default.  Its explicit
+        # ``None`` default would otherwise replace ``ModelSize.medium`` and
+        # fail inside the pinned OpenAI generic client before any provider call.
+        if model_size is None:
+            # ``None`` is the proxy's ergonomic sentinel, not the delegate's
+            # semantic default. Preserve whatever default the wrapped client
+            # declares (Graphiti 0.29.3 declares ``ModelSize.medium``).
+            try:
+                default = inspect.signature(self.delegate.generate_response).parameters["model_size"].default
+            except (AttributeError, KeyError, TypeError, ValueError):
+                default = inspect.Parameter.empty
+            if default is not inspect.Parameter.empty and default is not None:
+                model_size = default
         identity = self._identity(messages, response_model, max_tokens, model_size, group_id, prompt_name, attribute_extraction)
         immutable_messages = copy.deepcopy(messages)
 

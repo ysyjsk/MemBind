@@ -87,6 +87,65 @@ def validate_queue_manifest(manifest: dict[str, Any]) -> None:
         raise QueueContractError("full campaign dependency gate missing")
 
 
+def promote_queue_after_p8(
+    *,
+    queue_root: str | Path,
+    p8_seal: str | Path,
+    baseline_root: str | Path,
+    command: str = "run_v5_campaign.py --baseline-root <sealed-baseline>",
+    output_name: str = "p9_full_queue.json",
+    readiness_name: str = "p8_ready.json",
+) -> Path:
+    """Append a P9 full-campaign queue record to the existing unique queue.
+
+    This never rewrites ``queue_manifest.json`` and refuses a second promotion,
+    so the gated-minimal queue remains an auditable predecessor of P9.
+    """
+    root = Path(queue_root).resolve()
+    manifest_path = root / "queue_manifest.json"
+    if not readiness_name or Path(readiness_name).name != readiness_name:
+        raise QueueContractError("P8 readiness name invalid")
+    ready_path = root / readiness_name
+    if not output_name or Path(output_name).name != output_name or not output_name.endswith(".json"):
+        raise QueueContractError("P9 queue output name invalid")
+    target = root / output_name
+    if not manifest_path.is_file() or not ready_path.is_file():
+        raise QueueContractError("P8 queue readiness evidence is required")
+    if target.exists():
+        raise QueueContractError("P9 queue promotion already recorded")
+    try:
+        manifest = json.loads(manifest_path.read_text(encoding="utf-8"))
+        ready = json.loads(ready_path.read_text(encoding="utf-8"))
+        seal = json.loads(Path(p8_seal).read_text(encoding="utf-8"))
+    except (OSError, UnicodeDecodeError, json.JSONDecodeError) as exc:
+        raise QueueContractError("P8 queue evidence is unreadable") from exc
+    validate_queue_manifest(manifest)
+    if ready.get("status") != "P8_SEAL_READY" or seal.get("status") != "P8_LIVE_SEALED":
+        raise QueueContractError("P8 seal is not valid")
+    if ready.get("seal_path") != str(Path(p8_seal).resolve()):
+        raise QueueContractError("P8 readiness path mismatch")
+    baseline = __import__(
+        "saturated_fixed_work_baseline_v1_3.membind_v5.campaign",
+        fromlist=["verify_baseline_reference"],
+    ).verify_baseline_reference(baseline_root, allow_invalid_qa=True)
+    body = {
+        "schema_version": "membind.v5.p9-full-queue.v1",
+        "status": "QUEUED_P9_FULL_AFTER_P8",
+        "method": V5_METHOD,
+        "queue_root": str(root),
+        "baseline_reference": baseline,
+        "p8_seal_path": str(Path(p8_seal).resolve()),
+        "p8_source_count": seal.get("source_count"),
+        "full_command": command,
+        "full_start_gate": "p8_seal_verified",
+        "native_characterization_c5_reused": False,
+        "queued_at": datetime.now(timezone.utc).isoformat(),
+    }
+    root.mkdir(parents=True, exist_ok=True)
+    target.write_text(json.dumps(body, ensure_ascii=True, indent=2, sort_keys=True) + "\n", encoding="utf-8")
+    return target
+
+
 def mark_queue_failure(queue_root: str | Path, *, reason: str, superseded_by: str | None = None) -> Path:
     """Record an invalid/superseded queue without rewriting its manifest."""
 

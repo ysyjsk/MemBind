@@ -17,13 +17,23 @@ def main() -> int:
     args = parser.parse_args()
     queue = Path(args.queue_root).resolve()
     while True:
-        p8 = queue / "minimal" / "seal.json"
-        if p8.is_file():
-            (queue / "p8_ready.json").write_text(json.dumps({"schema_version": "membind.v5.p8-ready.v1", "status": "P8_SEAL_READY", "observed_at": datetime.now(timezone.utc).isoformat(), "seal_path": str(p8)}, ensure_ascii=True, indent=2, sort_keys=True) + "\n", encoding="utf-8")
+        candidates = [queue / "minimal" / "seal.json", *sorted(queue.glob("minimal-*/seal.json"))]
+        p8 = next((path for path in candidates if path.is_file()), None)
+        if p8 is not None:
+            try:
+                seal = json.loads(p8.read_text(encoding="utf-8"))
+            except (OSError, UnicodeDecodeError, json.JSONDecodeError):
+                seal = {}
+            if seal.get("status") != "P8_LIVE_SEALED":
+                time.sleep(max(1.0, args.poll_seconds))
+                continue
+            ready = queue / "p8_ready.json"
+            if ready.exists():
+                return 0
+            ready.write_text(json.dumps({"schema_version": "membind.v5.p8-ready.v1", "status": "P8_SEAL_READY", "observed_at": datetime.now(timezone.utc).isoformat(), "seal_path": str(p8), "source_count": seal.get("source_count"), "method": seal.get("method")}, ensure_ascii=True, indent=2, sort_keys=True) + "\n", encoding="utf-8")
             return 0
         time.sleep(max(1.0, args.poll_seconds))
 
 
 if __name__ == "__main__":
     raise SystemExit(main())
-
