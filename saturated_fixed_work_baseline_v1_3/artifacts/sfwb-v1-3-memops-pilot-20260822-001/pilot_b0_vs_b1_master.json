@@ -1,0 +1,1613 @@
+{
+  "b0_gate_required_for_b1": false,
+  "b0_status": "LIVE_COMPLETE",
+  "b1_status": "LIVE_COMPLETE",
+  "canonical_semantic_diff_scope": {
+    "canonical_hash": "retained as an auxiliary exact-export indicator",
+    "causal_claim": "none; one run per policy cannot separate LLM stochasticity/service variance from policy effects",
+    "semantic_normalization": "entity name/summary/attributes and edge source/target/relation/fact/valid_at/invalid_at/source episode/attributes; runtime group_id and expired_at excluded"
+  },
+  "method_summary": {
+    "B0_NATIVE_SERIAL": {
+      "active_concurrency_max": 1,
+      "active_concurrency_mean": 1.0,
+      "aggregate_makespan_s": 373.082175208,
+      "aggregate_source_tokens": 14293,
+      "aggregate_source_tokens_per_s": 38.31059468877439,
+      "backlog": {
+        "proxy_fields": [
+          "drain_tail_ns",
+          "whole_update_active_max",
+          "whole_update_active_mean",
+          "feeder_workload_await_count"
+        ],
+        "status": "NOT_DIRECTLY_RECORDED"
+      },
+      "completed_count": 5,
+      "configured_max_inflight": [
+        null
+      ],
+      "current_state_pass_count": 4,
+      "db_latency_s": {
+        "db_duration_p50_s": {
+          "interpretation": "Existing per-sample summary metric; not a pooled call-level percentile.",
+          "sample_count": 5,
+          "sample_summary_mean": 0.0047047126,
+          "sample_summary_p50": 0.00530513,
+          "sample_summary_p95": 0.0061223228
+        },
+        "db_duration_p95_s": {
+          "interpretation": "Existing per-sample summary metric; not a pooled call-level percentile.",
+          "sample_count": 5,
+          "sample_summary_mean": 0.054110397600000006,
+          "sample_summary_p50": 0.034129724,
+          "sample_summary_p95": 0.090241667
+        },
+        "db_duration_p99_s": {
+          "interpretation": "Existing per-sample summary metric; not a pooled call-level percentile.",
+          "sample_count": 5,
+          "sample_summary_mean": 0.0582033064,
+          "sample_summary_p50": 0.040643596,
+          "sample_summary_p95": 0.0942503746
+        }
+      },
+      "db_writes_total": 15,
+      "drain_tail_s": {
+        "interpretation": "Recorded drain tail after feeder/construction; not a direct queue-delay measurement.",
+        "sample_summary_mean": 28.9445739322,
+        "sample_summary_p50": 28.635506262,
+        "sample_summary_p95": 50.7427530576
+      },
+      "embedding_items_total": 489,
+      "embedding_latency_s": {
+        "embedding_duration_p50_s": {
+          "interpretation": "Existing per-sample summary metric; not a pooled call-level percentile.",
+          "sample_count": 5,
+          "sample_summary_mean": 0.017919589399999998,
+          "sample_summary_p50": 0.01723014,
+          "sample_summary_p95": 0.026383761
+        },
+        "embedding_duration_p95_s": {
+          "interpretation": "Existing per-sample summary metric; not a pooled call-level percentile.",
+          "sample_count": 5,
+          "sample_summary_mean": 0.03863407,
+          "sample_summary_p50": 0.028061247,
+          "sample_summary_p95": 0.07791664679999999
+        },
+        "embedding_duration_p99_s": {
+          "interpretation": "Existing per-sample summary metric; not a pooled call-level percentile.",
+          "sample_count": 5,
+          "sample_summary_mean": 0.0435448248,
+          "sample_summary_p50": 0.033935316,
+          "sample_summary_p95": 0.08299191219999999
+        }
+      },
+      "feeder_workload_await_count_total": 15,
+      "freshness": {
+        "definition": "MemOps inspect_current_state status plus stale_value_errors",
+        "pass_count": 4
+      },
+      "goodput_definition": "semantic_pass samples / aggregate build makespan; not a replacement for QA accuracy",
+      "llm_input_tokens_total": 200371,
+      "llm_latency_s": {
+        "llm_duration_p50_s": {
+          "interpretation": "Existing per-sample summary metric; not a pooled call-level percentile.",
+          "sample_count": 5,
+          "sample_summary_mean": 1.4030041112,
+          "sample_summary_p50": 1.421325433,
+          "sample_summary_p95": 1.964240365
+        },
+        "llm_duration_p95_s": {
+          "interpretation": "Existing per-sample summary metric; not a pooled call-level percentile.",
+          "sample_count": 5,
+          "sample_summary_mean": 21.6387533716,
+          "sample_summary_p50": 22.119186852,
+          "sample_summary_p95": 28.903445690199998
+        },
+        "llm_duration_p99_s": {
+          "interpretation": "Existing per-sample summary metric; not a pooled call-level percentile.",
+          "sample_count": 5,
+          "sample_summary_mean": 24.1877502576,
+          "sample_summary_p50": 22.119186852,
+          "sample_summary_p95": 35.3493459066
+        }
+      },
+      "llm_logical_calls_total": 109,
+      "llm_transport_attempts_total": 109,
+      "makespan_mean_s": 74.6164350416,
+      "makespan_p50_s": 68.658505541,
+      "makespan_p95_s": 111.66030891579999,
+      "publication_complete_count": 5,
+      "qa_all_correct_count": 5,
+      "queue_delay": {
+        "field": null,
+        "status": "NOT_DIRECTLY_RECORDED"
+      },
+      "readonly_pass_count": 5,
+      "sample_count": 5,
+      "semantic_goodput_samples_per_s": 0.010721498548597044,
+      "semantic_pass_count": 4,
+      "stale_value_error_total": 0,
+      "throughput_definition": "sum(source_tokens) / sum(build_makespan_s)",
+      "valid_sealed_count": 5
+    },
+    "B1_NAIVE_WHOLE_UPDATE_ASYNC": {
+      "active_concurrency_max": 3,
+      "active_concurrency_mean": 2.1052015702812827,
+      "aggregate_makespan_s": 246.670716614,
+      "aggregate_source_tokens": 14293,
+      "aggregate_source_tokens_per_s": 57.9436432349862,
+      "backlog": {
+        "proxy_fields": [
+          "drain_tail_ns",
+          "whole_update_active_max",
+          "whole_update_active_mean",
+          "feeder_workload_await_count"
+        ],
+        "status": "NOT_DIRECTLY_RECORDED"
+      },
+      "completed_count": 5,
+      "configured_max_inflight": [
+        null
+      ],
+      "current_state_pass_count": 4,
+      "db_latency_s": {
+        "db_duration_p50_s": {
+          "interpretation": "Existing per-sample summary metric; not a pooled call-level percentile.",
+          "sample_count": 5,
+          "sample_summary_mean": 0.0075961588,
+          "sample_summary_p50": 0.00800672,
+          "sample_summary_p95": 0.0094404886
+        },
+        "db_duration_p95_s": {
+          "interpretation": "Existing per-sample summary metric; not a pooled call-level percentile.",
+          "sample_count": 5,
+          "sample_summary_mean": 0.1433019368,
+          "sample_summary_p50": 0.124937559,
+          "sample_summary_p95": 0.2516318112
+        },
+        "db_duration_p99_s": {
+          "interpretation": "Existing per-sample summary metric; not a pooled call-level percentile.",
+          "sample_count": 5,
+          "sample_summary_mean": 0.20502035799999999,
+          "sample_summary_p50": 0.183198754,
+          "sample_summary_p95": 0.3774172594
+        }
+      },
+      "db_writes_total": 15,
+      "drain_tail_s": {
+        "interpretation": "Recorded drain tail after feeder/construction; not a direct queue-delay measurement.",
+        "sample_summary_mean": 49.331396376200004,
+        "sample_summary_p50": 48.34401487,
+        "sample_summary_p95": 61.13685585819999
+      },
+      "embedding_items_total": 898,
+      "embedding_latency_s": {
+        "embedding_duration_p50_s": {
+          "interpretation": "Existing per-sample summary metric; not a pooled call-level percentile.",
+          "sample_count": 5,
+          "sample_summary_mean": 0.0225704038,
+          "sample_summary_p50": 0.020808045,
+          "sample_summary_p95": 0.0319481426
+        },
+        "embedding_duration_p95_s": {
+          "interpretation": "Existing per-sample summary metric; not a pooled call-level percentile.",
+          "sample_count": 5,
+          "sample_summary_mean": 0.0729499566,
+          "sample_summary_p50": 0.035631141,
+          "sample_summary_p95": 0.20077256699999999
+        },
+        "embedding_duration_p99_s": {
+          "interpretation": "Existing per-sample summary metric; not a pooled call-level percentile.",
+          "sample_count": 5,
+          "sample_summary_mean": 0.0833986924,
+          "sample_summary_p50": 0.038392967,
+          "sample_summary_p95": 0.23746610079999997
+        }
+      },
+      "feeder_workload_await_count_total": 0,
+      "freshness": {
+        "definition": "MemOps inspect_current_state status plus stale_value_errors",
+        "pass_count": 4
+      },
+      "goodput_definition": "semantic_pass samples / aggregate build makespan; not a replacement for QA accuracy",
+      "llm_input_tokens_total": 224580,
+      "llm_latency_s": {
+        "llm_duration_p50_s": {
+          "interpretation": "Existing per-sample summary metric; not a pooled call-level percentile.",
+          "sample_count": 5,
+          "sample_summary_mean": 1.2687916628,
+          "sample_summary_p50": 1.281992374,
+          "sample_summary_p95": 1.466450249
+        },
+        "llm_duration_p95_s": {
+          "interpretation": "Existing per-sample summary metric; not a pooled call-level percentile.",
+          "sample_count": 5,
+          "sample_summary_mean": 14.436632659,
+          "sample_summary_p50": 11.078551227,
+          "sample_summary_p95": 20.8582973104
+        },
+        "llm_duration_p99_s": {
+          "interpretation": "Existing per-sample summary metric; not a pooled call-level percentile.",
+          "sample_count": 5,
+          "sample_summary_mean": 33.4500190226,
+          "sample_summary_p50": 32.229918447,
+          "sample_summary_p95": 44.0883496528
+        }
+      },
+      "llm_logical_calls_total": 248,
+      "llm_transport_attempts_total": 248,
+      "makespan_mean_s": 49.3341433228,
+      "makespan_p50_s": 48.347451032,
+      "makespan_p95_s": 61.1390247682,
+      "publication_complete_count": 5,
+      "qa_all_correct_count": 5,
+      "queue_delay": {
+        "field": null,
+        "status": "NOT_DIRECTLY_RECORDED"
+      },
+      "readonly_pass_count": 5,
+      "sample_count": 5,
+      "semantic_goodput_samples_per_s": 0.016215949971310768,
+      "semantic_pass_count": 4,
+      "stale_value_error_total": 0,
+      "throughput_definition": "sum(source_tokens) / sum(build_makespan_s)",
+      "valid_sealed_count": 5
+    }
+  },
+  "methods": [
+    "B0_NATIVE_SERIAL",
+    "B1_NAIVE_WHOLE_UPDATE_ASYNC"
+  ],
+  "paired_counts": {
+    "FF": 0,
+    "FP": 1,
+    "PF": 1,
+    "PP": 3
+  },
+  "paired_samples": [
+    {
+      "b0_active_max": 1,
+      "b0_calls": 17,
+      "b0_db_latency": {
+        "db_duration_p50_s": 0.005492942,
+        "db_duration_p95_s": 0.028628514,
+        "db_duration_p99_s": 0.031382959
+      },
+      "b0_drain_tail_s": 30.155946548,
+      "b0_embedding_latency": {
+        "embedding_duration_p50_s": 0.01723014,
+        "embedding_duration_p95_s": 0.029850518,
+        "embedding_duration_p99_s": 0.033935316
+      },
+      "b0_llm_latency": {
+        "llm_duration_p50_s": 1.998675827,
+        "llm_duration_p95_s": 22.119186852,
+        "llm_duration_p99_s": 22.119186852
+      },
+      "b0_makespan": 68.658505541,
+      "b0_namespace": "b0-run-MEMOPS-A01__Update-B0_NATIVE_SERIAL-attempt-001",
+      "b0_publication_complete": true,
+      "b0_qa": {
+        "all_correct": true,
+        "correct_rows": 2,
+        "rows": 2,
+        "stale_value_errors": 0
+      },
+      "b0_readonly_pass": true,
+      "b0_semantic": true,
+      "b0_source_tokens_per_s": 38.815292861400444,
+      "b0_state": "PASS",
+      "b0_workload_sha256": "23935553bb0435f1b13783259b039c72cada6ae52d81a06c87b56628bc56a7ab",
+      "b1_active_max": 3,
+      "b1_calls": 20,
+      "b1_db_latency": {
+        "db_duration_p50_s": 0.005837329,
+        "db_duration_p95_s": 0.070944712,
+        "db_duration_p99_s": 0.072214682
+      },
+      "b1_drain_tail_s": 31.844795516,
+      "b1_embedding_latency": {
+        "embedding_duration_p50_s": 0.016996272,
+        "embedding_duration_p95_s": 0.020971029,
+        "embedding_duration_p99_s": 0.021295942
+      },
+      "b1_llm_latency": {
+        "llm_duration_p50_s": 1.227412326,
+        "llm_duration_p95_s": 20.903929408,
+        "llm_duration_p99_s": 24.367810727
+      },
+      "b1_makespan": 31.846862552,
+      "b1_namespace": "b1-run-MEMOPS-A01__Update-B1_NAIVE_WHOLE_UPDATE_ASYNC-attempt-001",
+      "b1_publication_complete": true,
+      "b1_qa": {
+        "all_correct": true,
+        "correct_rows": 2,
+        "rows": 2,
+        "stale_value_errors": 0
+      },
+      "b1_readonly_pass": true,
+      "b1_semantic": true,
+      "b1_source_tokens_per_s": 83.68171262235175,
+      "b1_state": "PASS",
+      "b1_workload_sha256": "23935553bb0435f1b13783259b039c72cada6ae52d81a06c87b56628bc56a7ab",
+      "canonical_hash_equal": false,
+      "edge_added": 17,
+      "edge_removed": 9,
+      "entity_added": 18,
+      "entity_removed": 12,
+      "operation_type": "Update",
+      "paired_outcome": "PP",
+      "sample_id": "A01__Update",
+      "semantic_diff": {
+        "canonical_hash_equal": false,
+        "runtime_only_fields_excluded": [
+          "canonical_graph_hash",
+          "group_id",
+          "expired_at"
+        ],
+        "sections": {
+          "edges": {
+            "added_count": 17,
+            "added_examples": [
+              [
+                "hr",
+                "lead data analyst",
+                "planning_title_change_to",
+                "hr is planning a title consolidation to lead data analyst for all analyst roles, targeted for next quarter.",
+                "2000-01-01T00:02:00.000000000+00:00",
+                null,
+                2,
+                "{}"
+              ],
+              [
+                "raj patel",
+                "mount hood",
+                "presented_at",
+                "raj patel presented a dashboard prototype at a team offsite near mount hood last week, which received attention from upper management.",
+                "2025-04-23T00:00:00.000000000+00:00",
+                null,
+                1,
+                "{}"
+              ],
+              [
+                "user",
+                "$74,500",
+                "has_salary",
+                "user has an annual salary of $74,500.",
+                "2000-01-01T00:02:00.000000000+00:00",
+                null,
+                2,
+                "{}"
+              ],
+              [
+                "user",
+                "bridgemark",
+                "fully_focused_on",
+                "user is now fully focused on bridgemark after a freelance visualization gig for a friend's startup ended at the end of february.",
+                "2025-03-31T00:00:00.000000000+00:00",
+                null,
+                1,
+                "{}"
+              ],
+              [
+                "user",
+                "bridgemark",
+                "works_at",
+                "user has an annual base salary of $74,500 at bridgemark. the original offer was $72,000, but it was adjusted upward before the user signed. the compensation does not include bonuses or equity.",
+                null,
+                null,
+                1,
+                "{}"
+              ]
+            ],
+            "b0_count": 9,
+            "b1_count": 17,
+            "removed_count": 9,
+            "removed_examples": [
+              [
+                "bridgemark solutions",
+                "lead data analyst",
+                "planned_title_change",
+                "bridgemark solutions is planning to consolidate all analyst roles under the title lead data analyst by next quarter.",
+                "2000-01-01T00:02:00.000000000+00:00",
+                null,
+                2,
+                "{}"
+              ],
+              [
+                "raj patel",
+                "mount hood",
+                "presented_at",
+                "raj patel presented a dashboard prototype at a team offsite near mount hood last week, which received attention from upper management.",
+                "2000-01-07T00:00:00.000000000+00:00",
+                null,
+                1,
+                "{}"
+              ],
+              [
+                "user",
+                "$74,500",
+                "has_salary",
+                "user has an annual salary of $74,500 at bridgemark solutions.",
+                "2000-01-01T00:02:00.000000000+00:00",
+                null,
+                2,
+                "{}"
+              ],
+              [
+                "user",
+                "data engineering",
+                "has_aspration",
+                "user has a vague aspiration to move toward data engineering as a specialization in the future, though it is not a concrete plan or actionable at this time.",
+                null,
+                null,
+                1,
+                "{}"
+              ],
+              [
+                "user",
+                "diane kowalski",
+                "reports_to",
+                "user reports to diane kowalski, who heads the analytics team at bridgemark solutions.",
+                "2000-01-01T00:02:00.000000000+00:00",
+                null,
+                2,
+                "{}"
+              ]
+            ]
+          },
+          "entities": {
+            "added_count": 18,
+            "added_examples": [
+              [
+                "$74,500",
+                "user has an annual salary of $74,500.",
+                "{}"
+              ],
+              [
+                "bridgemark",
+                "user has an annual base salary of $74,500 at bridgemark. the original offer was $72,000, but it was adjusted upward before the user signed. the compensation does not include bonuses or equity. user is now fully focused on bridgemark after a freelance visualization gig for a friend's startup ended at the end of february.",
+                "{}"
+              ],
+              [
+                "data analyst",
+                "user previously held the title of data analyst before being promoted to senior data analyst.",
+                "{}"
+              ],
+              [
+                "diane kowalski",
+                "user reports to diane kowalski.",
+                "{}"
+              ],
+              [
+                "february restructuring",
+                "user's title changed from junior data analyst to data analyst during the february restructuring.",
+                "{}"
+              ]
+            ],
+            "b0_count": 12,
+            "b1_count": 18,
+            "removed_count": 12,
+            "removed_examples": [
+              [
+                "$74,500",
+                "user has an annual salary of $74,500 at bridgemark solutions.",
+                "{}"
+              ],
+              [
+                "analytics team",
+                "the analytics team at bridgemark solutions is led by diane kowalski, who has been with the company for about seven years. the team is collaborative, but some members, like the user, prefer independent problem-solving. raj patel is a colleague on the team who presented a dashboard prototype at a recent offsite near mount hood, which received attention from upper management. the team previously underwent a title restructuring in february, removing junior and senior distinctions, but senior titles were later reinstated for certain members, including the user, who was promoted to senior data analyst.",
+                "{}"
+              ],
+              [
+                "bridgemark solutions",
+                "bridgemark solutions is planning to consolidate all analyst roles under the title lead data analyst by next quarter.",
+                "{}"
+              ],
+              [
+                "data engineering",
+                "user has a vague aspiration to move toward data engineering as a specialization in the future, though it is not a concrete plan or actionable at this time.",
+                "{}"
+              ],
+              [
+                "diane kowalski",
+                "user reports to diane kowalski, who heads the analytics team at bridgemark solutions.",
+                "{}"
+              ]
+            ]
+          },
+          "episodes": {
+            "added_count": 0,
+            "added_examples": [],
+            "b0_count": 3,
+            "b1_count": 3,
+            "removed_count": 0,
+            "removed_examples": []
+          }
+        },
+        "semantic_normalized_equal": false
+      },
+      "semantic_normalized_equal": false,
+      "workload_identity_match": true
+    },
+    {
+      "b0_active_max": 1,
+      "b0_calls": 33,
+      "b0_db_latency": {
+        "db_duration_p50_s": 0.006279668,
+        "db_duration_p95_s": 0.087554839,
+        "db_duration_p99_s": 0.091563101
+      },
+      "b0_drain_tail_s": 55.889454685,
+      "b0_embedding_latency": {
+        "embedding_duration_p50_s": 0.028387473,
+        "embedding_duration_p95_s": 0.089933179,
+        "embedding_duration_p99_s": 0.093253042
+      },
+      "b0_llm_latency": {
+        "llm_duration_p50_s": 1.826498517,
+        "llm_duration_p95_s": 30.268986738,
+        "llm_duration_p99_s": 38.182083184
+      },
+      "b0_makespan": 121.346886935,
+      "b0_namespace": "b0-run-MEMOPS-A05__Update-B0_NATIVE_SERIAL-attempt-001",
+      "b0_publication_complete": true,
+      "b0_qa": {
+        "all_correct": true,
+        "correct_rows": 2,
+        "rows": 2,
+        "stale_value_errors": 0
+      },
+      "b0_readonly_pass": true,
+      "b0_semantic": true,
+      "b0_source_tokens_per_s": 25.629005230813092,
+      "b0_state": "PASS",
+      "b0_workload_sha256": "16a925be4b7eefe5b3aa1d3ab4b2dc302adc25a834f717b6800cb126d536b9e2",
+      "b1_active_max": 3,
+      "b1_calls": 56,
+      "b1_db_latency": {
+        "db_duration_p50_s": 0.009072227,
+        "db_duration_p95_s": 0.061001214,
+        "db_duration_p99_s": 0.103215108
+      },
+      "b1_drain_tail_s": 48.214224047,
+      "b1_embedding_latency": {
+        "embedding_duration_p50_s": 0.020808045,
+        "embedding_duration_p95_s": 0.027179454,
+        "embedding_duration_p99_s": 0.02887761
+      },
+      "b1_llm_latency": {
+        "llm_duration_p50_s": 1.281992374,
+        "llm_duration_p95_s": 10.681708509,
+        "llm_duration_p99_s": 32.229918447
+      },
+      "b1_makespan": 48.218180528,
+      "b1_namespace": "b1-run-MEMOPS-A05__Update-B1_NAIVE_WHOLE_UPDATE_ASYNC-attempt-001",
+      "b1_publication_complete": true,
+      "b1_qa": {
+        "all_correct": true,
+        "correct_rows": 2,
+        "rows": 2,
+        "stale_value_errors": 0
+      },
+      "b1_readonly_pass": true,
+      "b1_semantic": false,
+      "b1_source_tokens_per_s": 64.49849343017085,
+      "b1_state": "AMBIGUOUS",
+      "b1_workload_sha256": "16a925be4b7eefe5b3aa1d3ab4b2dc302adc25a834f717b6800cb126d536b9e2",
+      "canonical_hash_equal": false,
+      "edge_added": 30,
+      "edge_removed": 22,
+      "entity_added": 33,
+      "entity_removed": 20,
+      "operation_type": "Update",
+      "paired_outcome": "PF",
+      "sample_id": "A05__Update",
+      "semantic_diff": {
+        "canonical_hash_equal": false,
+        "runtime_only_fields_excluded": [
+          "canonical_graph_hash",
+          "group_id",
+          "expired_at"
+        ],
+        "sections": {
+          "edges": {
+            "added_count": 30,
+            "added_examples": [
+              [
+                "4010 greenleaf boulevard",
+                "westbrook",
+                "located_in",
+                "4010 greenleaf boulevard is located in westbrook.",
+                null,
+                null,
+                1,
+                "{}"
+              ],
+              [
+                "742 birchwood lane, unit 3a, ashford heights, zip 60143",
+                "ashford heights",
+                "located_in",
+                "742 birchwood lane, unit 3a, ashford heights, zip 60143 is located in ashford heights.",
+                null,
+                null,
+                0,
+                "{}"
+              ],
+              [
+                "742 birchwood lane, unit 3a, ashford heights, zip 60143",
+                "user",
+                "has_attribute",
+                "742 birchwood lane, unit 3a, ashford heights, zip 60143 is the primary address for the user.",
+                "2000-01-01T00:00:00.000000000+00:00",
+                "2025-04-05T00:00:00.000000000+00:00",
+                0,
+                "{}"
+              ],
+              [
+                "742 birchwood lane, unit 4a, ashford heights, 60143",
+                "60143",
+                "has_zip_code",
+                "742 birchwood lane, unit 4a, ashford heights, 60143 has zip code 60143.",
+                null,
+                null,
+                1,
+                "{}"
+              ],
+              [
+                "742 birchwood lane, unit 4a, ashford heights, 60143",
+                "ashford heights",
+                "located_in",
+                "742 birchwood lane, unit 4a, ashford heights, 60143 is located in ashford heights.",
+                null,
+                null,
+                1,
+                "{}"
+              ]
+            ],
+            "b0_count": 22,
+            "b1_count": 30,
+            "removed_count": 22,
+            "removed_examples": [
+              [
+                "118 caldwell street, apartment 12",
+                "60148",
+                "has_zip_code",
+                "118 caldwell street, apartment 12 has zip code 60148.",
+                "2000-01-01T00:02:00.000000000+00:00",
+                "2000-01-31T00:00:00.000000000+00:00",
+                2,
+                "{}"
+              ],
+              [
+                "118 caldwell street, apartment 12",
+                "maplewood",
+                "located_in",
+                "118 caldwell street, apartment 12 is located in maplewood.",
+                "2000-01-01T00:02:00.000000000+00:00",
+                "2000-01-31T00:00:00.000000000+00:00",
+                2,
+                "{}"
+              ],
+              [
+                "742 birchwood lane, unit 3a, ashford heights, zip 60143",
+                "742 birchwood lane, unit 3a, ashford heights, zip 60143",
+                "has_zip_code",
+                "742 birchwood lane, unit 3a has zip code 60143.",
+                "2000-01-01T00:01:00.000000000+00:00",
+                "2000-01-01T00:02:00.000000000+00:00",
+                2,
+                "{}"
+              ],
+              [
+                "742 birchwood lane, unit 3a, ashford heights, zip 60143",
+                "ashford heights",
+                "located_in",
+                "742 birchwood lane, unit 3a, ashford heights, zip 60143 is located in ashford heights.",
+                null,
+                null,
+                "[0,2]",
+                "{}"
+              ],
+              [
+                "742 birchwood lane, unit 4a",
+                "742 birchwood lane, unit 3a, ashford heights, zip 60143",
+                "has_zip_code",
+                "742 birchwood lane, unit 4a has zip code 60143.",
+                "2000-01-01T00:02:00.000000000+00:00",
+                null,
+                2,
+                "{}"
+              ]
+            ]
+          },
+          "entities": {
+            "added_count": 33,
+            "added_examples": [
+              [
+                "90 days' written notice",
+                "user's lease requires 90 days' written notice before the lease end date if they want to renew.",
+                "{}"
+              ],
+              [
+                "118 caldwell street, apartment 12, maplewood",
+                "the user previously lived at 118 caldwell street, apartment 12, maplewood, but has not lived there since january 31st. the address 742 birchwood lane, unit 4a, ashford heights, zip 60143 replaced 118 caldwell street, apartment 12, maplewood as the user's current residence.",
+                "{}"
+              ],
+              [
+                "4010 greenleaf boulevard",
+                "user's mother lives at 4010 greenleaf boulevard in westbrook. 4010 greenleaf boulevard is located in westbrook.",
+                "{}"
+              ],
+              [
+                "60143",
+                "742 birchwood lane, unit 4a, ashford heights, 60143 has zip code 60143.",
+                "{}"
+              ],
+              [
+                "742 birchwood lane, unit 3a, ashford heights, zip 60143",
+                "user lives in 742 birchwood lane, unit 3a, ashford heights, zip 60143. 742 birchwood lane, unit 3a, ashford heights, zip 60143 is located in ashford heights. 742 birchwood lane, unit 3a, ashford heights, zip 60143 is the primary address for the user.",
+                "{}"
+              ]
+            ],
+            "b0_count": 21,
+            "b1_count": 34,
+            "removed_count": 20,
+            "removed_examples": [
+              [
+                "user's mom",
+                "lives at 4010 greenleaf boulevard in westbrook. the user occasionally sends her packages.",
+                "{}"
+              ],
+              [
+                "118 caldwell street, apartment 12",
+                "the user previously lived at 118 caldwell street, apartment 12 in maplewood. 118 caldwell street, apartment 12 is located in maplewood. 118 caldwell street, apartment 12 has zip code 60148.",
+                "{}"
+              ],
+              [
+                "4010 greenleaf boulevard",
+                "address of the user's mom in westbrook. the user sends her packages and has it on file for reference.",
+                "{}"
+              ],
+              [
+                "60148",
+                "118 caldwell street, apartment 12 has zip code 60148.",
+                "{}"
+              ],
+              [
+                "742 birchwood lane, unit 3a, ashford heights, zip 60143",
+                "user lives in 742 birchwood lane, unit 3a, ashford heights, zip 60143. 742 birchwood lane, unit 3a, ashford heights, zip 60143 is located in ashford heights. user has 742 birchwood lane, unit 3a, ashford heights, zip 60143 as their primary address. 742 birchwood lane, unit 4a has zip code 60143. 742 birchwood lane, unit 3a has zip code 60143. 742 birchwood lane, unit 3a has zip code 60143. 742 birchwood lane, unit 4a has zip code 60143. 742 birchwood lane, unit 3a has zip code 60143. 742 birchwood lane, unit 3a has zip code 60143.",
+                "{}"
+              ]
+            ]
+          },
+          "episodes": {
+            "added_count": 0,
+            "added_examples": [],
+            "b0_count": 3,
+            "b1_count": 3,
+            "removed_count": 0,
+            "removed_examples": []
+          }
+        },
+        "semantic_normalized_equal": false
+      },
+      "semantic_normalized_equal": false,
+      "workload_identity_match": true
+    },
+    {
+      "b0_active_max": 1,
+      "b0_calls": 20,
+      "b0_db_latency": {
+        "db_duration_p50_s": 0.00530513,
+        "db_duration_p95_s": 0.090913374,
+        "db_duration_p99_s": 0.094922193
+      },
+      "b0_drain_tail_s": 13.814617566,
+      "b0_embedding_latency": {
+        "embedding_duration_p50_s": 0.018368913,
+        "embedding_duration_p95_s": 0.028061247,
+        "embedding_duration_p99_s": 0.041947393
+      },
+      "b0_llm_latency": {
+        "llm_duration_p50_s": 1.421325433,
+        "llm_duration_p95_s": 23.441281499,
+        "llm_duration_p99_s": 24.018396797
+      },
+      "b0_makespan": 72.913996839,
+      "b0_namespace": "b0-run-MEMOPS-A13__Update-B0_NATIVE_SERIAL-attempt-001",
+      "b0_publication_complete": true,
+      "b0_qa": {
+        "all_correct": true,
+        "correct_rows": 2,
+        "rows": 2,
+        "stale_value_errors": 0
+      },
+      "b0_readonly_pass": true,
+      "b0_semantic": true,
+      "b0_source_tokens_per_s": 37.92138848327494,
+      "b0_state": "PASS",
+      "b0_workload_sha256": "844dc2b4805757725a3552a2031785065fca26d24bcd8715f5ea4d75e44527a9",
+      "b1_active_max": 3,
+      "b1_calls": 61,
+      "b1_db_latency": {
+        "db_duration_p50_s": 0.00800672,
+        "db_duration_p95_s": 0.266177619,
+        "db_duration_p99_s": 0.406871017
+      },
+      "b1_drain_tail_s": 48.34401487,
+      "b1_embedding_latency": {
+        "embedding_duration_p50_s": 0.023688509,
+        "embedding_duration_p95_s": 0.035631141,
+        "embedding_duration_p99_s": 0.038392967
+      },
+      "b1_llm_latency": {
+        "llm_duration_p50_s": 1.487711633,
+        "llm_duration_p95_s": 8.843205231,
+        "llm_duration_p99_s": 34.012797868
+      },
+      "b1_makespan": 48.347451032,
+      "b1_namespace": "b1-run-MEMOPS-A13__Update-B1_NAIVE_WHOLE_UPDATE_ASYNC-attempt-001",
+      "b1_publication_complete": true,
+      "b1_qa": {
+        "all_correct": true,
+        "correct_rows": 2,
+        "rows": 2,
+        "stale_value_errors": 0
+      },
+      "b1_readonly_pass": true,
+      "b1_semantic": true,
+      "b1_source_tokens_per_s": 57.19019185044344,
+      "b1_state": "PASS",
+      "b1_workload_sha256": "844dc2b4805757725a3552a2031785065fca26d24bcd8715f5ea4d75e44527a9",
+      "canonical_hash_equal": false,
+      "edge_added": 34,
+      "edge_removed": 17,
+      "entity_added": 35,
+      "entity_removed": 9,
+      "operation_type": "Update",
+      "paired_outcome": "PP",
+      "sample_id": "A13__Update",
+      "semantic_diff": {
+        "canonical_hash_equal": false,
+        "runtime_only_fields_excluded": [
+          "canonical_graph_hash",
+          "group_id",
+          "expired_at"
+        ],
+        "sections": {
+          "edges": {
+            "added_count": 34,
+            "added_examples": [
+              [
+                "dr. patel",
+                "metformin 500mg twice a day",
+                "prescribed_medication",
+                "dr. patel prescribed metformin 500mg twice a day to the user on march 4th.",
+                "2025-03-04T00:00:00.000000000+00:00",
+                "2025-04-15T00:00:00.000000000+00:00",
+                0,
+                "{}"
+              ],
+              [
+                "dr. patel",
+                "metformin 750mg twice daily",
+                "prescribed_medication",
+                "dr. patel prescribed metformin 750mg twice daily to the user around mid-april due to insufficient improvement in fasting glucose.",
+                "2025-04-15T00:00:00.000000000+00:00",
+                null,
+                0,
+                "{}"
+              ],
+              [
+                "dr. patel",
+                "omeprazole 20mg once a day before breakfast",
+                "prescribed_medication",
+                "dr. patel prescribed omeprazole 20mg once a day before breakfast to the user for acid reflux.",
+                "2025-04-01T00:00:00.000000000+00:00",
+                null,
+                0,
+                "{}"
+              ],
+              [
+                "emily",
+                "emily's metformin 750mg label",
+                "has_document",
+                "emily has a metformin 750mg label on one of her pharmacy bags, which is a mistake since she is not on metformin.",
+                "2000-01-01T00:02:00.000000000+00:00",
+                null,
+                2,
+                "{}"
+              ],
+              [
+                "emily",
+                "lisinopril 10mg",
+                "takes_medication",
+                "emily started taking lisinopril 10mg recently for blood pressure.",
+                "2000-01-01T00:01:00.000000000+00:00",
+                null,
+                1,
+                "{}"
+              ]
+            ],
+            "b0_count": 19,
+            "b1_count": 36,
+            "removed_count": 17,
+            "removed_examples": [
+              [
+                "dr. patel",
+                "metformin 1000mg",
+                "prescribed",
+                "dr. patel prescribed metformin 1000mg twice daily as of last monday after reviewing the user's latest labs and determining that fasting glucose is still not at the desired level.",
+                "2000-01-01T00:01:00.000000000+00:00",
+                "2025-03-04T00:00:00.000000000+00:00",
+                1,
+                "{}"
+              ],
+              [
+                "dr. patel",
+                "metformin 500mg twice a day",
+                "prescribed",
+                "dr. patel prescribed metformin 500mg twice a day on march 4th for the user.",
+                "2025-03-04T00:00:00.000000000+00:00",
+                "2025-04-15T00:00:00.000000000+00:00",
+                0,
+                "{}"
+              ],
+              [
+                "dr. patel",
+                "metformin 750mg twice daily",
+                "prescribed",
+                "dr. patel prescribed metformin 750mg twice daily around mid-april for the user due to insufficient improvement in fasting glucose levels.",
+                "2025-04-15T00:00:00.000000000+00:00",
+                null,
+                0,
+                "{}"
+              ],
+              [
+                "dr. patel",
+                "omeprazole 20mg once a day before breakfast",
+                "prescribed",
+                "dr. patel prescribed omeprazole 20mg once a day before breakfast for the user's acid reflux, starting a few days before the conversation.",
+                "2025-04-15T00:00:00.000000000+00:00",
+                null,
+                "[0,1]",
+                "{}"
+              ],
+              [
+                "dr. patel",
+                "vitamin d3 2000 iu",
+                "recommended",
+                "dr. patel recommended vitamin d3 2000 iu daily in the morning after the user's annual checkup revealed low vitamin d levels.",
+                "2000-01-01T00:00:00.000000000+00:00",
+                null,
+                1,
+                "{}"
+              ]
+            ]
+          },
+          "entities": {
+            "added_count": 35,
+            "added_examples": [
+              [
+                "emily's metformin 750mg label",
+                "emily has a metformin 750mg label on one of her pharmacy bags, which is a mistake since she is not on metformin.",
+                "{}"
+              ],
+              [
+                "122/78",
+                "user has a blood pressure reading of 122/78, which dr. patel said was fine.",
+                "{}"
+              ],
+              [
+                "allergies",
+                "the user takes loratadine 10mg as needed for allergies but has not used it in a couple of weeks due to lower pollen levels. it is a seasonal medication, not a daily one.",
+                "{}"
+              ],
+              [
+                "annual checkup",
+                "vitamin d levels came back low at the annual checkup last fall, prompting the start of vitamin d3 2000 iu daily supplementation. the user plans to recheck vitamin d levels at the next annual visit.",
+                "{}"
+              ],
+              [
+                "blood pressure",
+                "the user's blood pressure has been normal, with the last reading at 122/78, which dr. patel said was fine. the user's sister emily started on lisinopril 10mg for blood pressure, and the user is monitoring for family patterns of hypertension.",
+                "{}"
+              ]
+            ],
+            "b0_count": 9,
+            "b1_count": 35,
+            "removed_count": 9,
+            "removed_examples": [
+              [
+                "dr. patel",
+                "dr. patel prescribed metformin 500mg twice a day on march 4th for the user. dr. patel prescribed metformin 750mg twice daily around mid-april for the user due to insufficient improvement in fasting glucose levels. dr. patel prescribed omeprazole 20mg once a day before breakfast for the user's acid reflux, starting a few days before the conversation. dr. patel prescribed metformin 1000mg twice daily as of last monday after reviewing the user's latest labs and determining that fasting glucose is still not at the desired level. dr. patel recommended vitamin d3 2000 iu daily in the morning after the user's annual checkup revealed low vitamin d levels. user has a family history of high blood pressure, as the user's sister emily started on lisinopril 10mg for blood pressure. user has a blood pressure reading of 122 over 78, which dr. patel said was fine. dr. patel prescribed metformin 1000mg twice daily as of last monday dr. patel plans to switch the user to metformin 850mg extended-release once daily at the next visit emily is not on metformin, but a pharmacy mistakenly labeled one of her bags with metformin 750mg",
+                "{}"
+              ],
+              [
+                "emily",
+                "emily is not on metformin, but a pharmacy mistakenly labeled one of her bags with metformin 750mg",
+                "{}"
+              ],
+              [
+                "loratadine 10mg",
+                "user takes loratadine 10mg as needed for seasonal allergies, but has not needed it in a couple of weeks since pollen levels have dropped.",
+                "{}"
+              ],
+              [
+                "metformin 1000mg",
+                "user takes metformin 1000mg twice daily with breakfast and dinner as of last monday. dr. patel prescribed metformin 1000mg twice daily as of last monday after reviewing the user's latest labs and determining that fasting glucose is still not at the desired level.",
+                "{}"
+              ],
+              [
+                "metformin 500mg twice a day",
+                "user takes metformin 500mg twice a day with breakfast and dinner, starting on march 4th. dr. patel prescribed metformin 500mg twice a day on march 4th for the user. user changed from taking metformin 500mg twice a day to metformin 750mg twice daily around mid-april due to insufficient improvement in fasting glucose levels.",
+                "{}"
+              ]
+            ]
+          },
+          "episodes": {
+            "added_count": 0,
+            "added_examples": [],
+            "b0_count": 3,
+            "b1_count": 3,
+            "removed_count": 0,
+            "removed_examples": []
+          }
+        },
+        "semantic_normalized_equal": false
+      },
+      "semantic_normalized_equal": false,
+      "workload_identity_match": true
+    },
+    {
+      "b0_active_max": 1,
+      "b0_calls": 20,
+      "b0_db_latency": {
+        "db_duration_p50_s": 0.003485737,
+        "db_duration_p95_s": 0.029325537,
+        "db_duration_p99_s": 0.032504683
+      },
+      "b0_drain_tail_s": 28.635506262,
+      "b0_embedding_latency": {
+        "embedding_duration_p50_s": 0.01251059,
+        "embedding_duration_p95_s": 0.022995579,
+        "embedding_duration_p99_s": 0.024597198
+      },
+      "b0_llm_latency": {
+        "llm_duration_p50_s": 0.827443237,
+        "llm_duration_p95_s": 13.958666192,
+        "llm_duration_p99_s": 18.213438878
+      },
+      "b0_makespan": 60.214976541,
+      "b0_namespace": "b0-run-MEMOPS-A14__Update-B0_NATIVE_SERIAL-attempt-001",
+      "b0_publication_complete": true,
+      "b0_qa": {
+        "all_correct": true,
+        "correct_rows": 2,
+        "rows": 2,
+        "stale_value_errors": 0
+      },
+      "b0_readonly_pass": true,
+      "b0_semantic": true,
+      "b0_source_tokens_per_s": 47.57952530379613,
+      "b0_state": "PASS",
+      "b0_workload_sha256": "548ca9a8691106e3e1c0914193e1fdc1fcdecb5a57c6d1ec473280df403c7f46",
+      "b1_active_max": 3,
+      "b1_calls": 54,
+      "b1_db_latency": {
+        "db_duration_p50_s": 0.009532554,
+        "db_duration_p95_s": 0.124937559,
+        "db_duration_p99_s": 0.183198754
+      },
+      "b1_drain_tail_s": 55.777170167,
+      "b1_embedding_latency": {
+        "embedding_duration_p50_s": 0.017346142,
+        "embedding_duration_p95_s": 0.040003267,
+        "embedding_duration_p99_s": 0.042125756
+      },
+      "b1_llm_latency": {
+        "llm_duration_p50_s": 0.965437268,
+        "llm_duration_p95_s": 11.078551227,
+        "llm_duration_p99_s": 30.032330472
+      },
+      "b1_makespan": 55.779255389,
+      "b1_namespace": "b1-run-MEMOPS-A14__Update-B1_NAIVE_WHOLE_UPDATE_ASYNC-attempt-001",
+      "b1_publication_complete": true,
+      "b1_qa": {
+        "all_correct": true,
+        "correct_rows": 2,
+        "rows": 2,
+        "stale_value_errors": 0
+      },
+      "b1_readonly_pass": true,
+      "b1_semantic": true,
+      "b1_source_tokens_per_s": 51.36318116869296,
+      "b1_state": "PASS",
+      "b1_workload_sha256": "548ca9a8691106e3e1c0914193e1fdc1fcdecb5a57c6d1ec473280df403c7f46",
+      "canonical_hash_equal": false,
+      "edge_added": 24,
+      "edge_removed": 10,
+      "entity_added": 30,
+      "entity_removed": 10,
+      "operation_type": "Update",
+      "paired_outcome": "PP",
+      "sample_id": "A14__Update",
+      "semantic_diff": {
+        "canonical_hash_equal": false,
+        "runtime_only_fields_excluded": [
+          "canonical_graph_hash",
+          "group_id",
+          "expired_at"
+        ],
+        "sections": {
+          "edges": {
+            "added_count": 24,
+            "added_examples": [
+              [
+                "brazilian passport",
+                "hg284139",
+                "has_number",
+                "brazilian passport has the number hg284139.",
+                null,
+                null,
+                1,
+                "{}"
+              ],
+              [
+                "clerk",
+                "consulate",
+                "works_at",
+                "clerk works at the consulate.",
+                null,
+                null,
+                2,
+                "{}"
+              ],
+              [
+                "clerk",
+                "hg284931",
+                "recorded_passport_number",
+                "clerk recorded the passport number hg284931 for the portuguese citizenship application with reference pt-2025-04417.",
+                "2000-01-01T00:02:00.000000000+00:00",
+                "2025-03-03T00:00:00.000000000+00:00",
+                2,
+                "{}"
+              ],
+              [
+                "clerk",
+                "portuguese citizenship application",
+                "has_access_to",
+                "clerk has access to the portuguese citizenship application with reference pt-2025-04417.",
+                null,
+                null,
+                2,
+                "{}"
+              ],
+              [
+                "clerk",
+                "supervisor",
+                "escalated_to",
+                "clerk escalated the passport number correction request to a supervisor.",
+                "2000-01-01T00:02:00.000000000+00:00",
+                null,
+                2,
+                "{}"
+              ]
+            ],
+            "b0_count": 11,
+            "b1_count": 25,
+            "removed_count": 10,
+            "removed_examples": [
+              [
+                "mariana",
+                "spanish citizenship",
+                "obtained",
+                "mariana obtained her spanish citizenship after waiting over two years.",
+                "2000-01-01T00:01:00.000000000+00:00",
+                null,
+                1,
+                "{}"
+              ],
+              [
+                "user",
+                "lucas's dual citizenship process with italy",
+                "ancestral_origin",
+                "user's portuguese citizenship application is based on their maternal grandmother's birth in porto before she emigrated to brazil.",
+                "2000-01-01T00:02:00.000000000+00:00",
+                null,
+                2,
+                "{}"
+              ],
+              [
+                "user",
+                "hg284139",
+                "has_passport_number",
+                "user's actual brazilian passport number is hg284139, as confirmed from the physical passport page.",
+                "2000-01-01T00:02:00.000000000+00:00",
+                null,
+                2,
+                "{}"
+              ],
+              [
+                "user",
+                "hg284931",
+                "has_incorrect_record",
+                "the consulate's system currently has an incorrect passport number hg284931 linked to user's application, which is not the number on their physical passport.",
+                "2000-01-01T00:02:00.000000000+00:00",
+                null,
+                2,
+                "{}"
+              ],
+              [
+                "user",
+                "lucas",
+                "mentions",
+                "user mentions that lucas went through a dual citizenship process with italy last year.",
+                "1999-01-01T00:00:00.000000000+00:00",
+                null,
+                0,
+                "{}"
+              ]
+            ]
+          },
+          "entities": {
+            "added_count": 30,
+            "added_examples": [
+              [
+                "another applicant's paperwork",
+                "the paperwork had a passport number hg284319, which the user noticed while at the consulate. the number appeared similar to the user's own passport number, hg284139.",
+                "{}"
+              ],
+              [
+                "clerk's desk",
+                "the user noticed another applicant's paperwork on the clerk's desk during a visit to the consulate. the paperwork had a passport number hg284319, which the user initially mistook for their own.",
+                "{}"
+              ],
+              [
+                "lucas's dual citizenship process with italy",
+                "user mentions that lucas's dual citizenship process with italy took about 14 months from application to approval.",
+                "{}"
+              ],
+              [
+                "assistant",
+                "",
+                "{}"
+              ],
+              [
+                "brazilian passport",
+                "user's brazilian passport has the number hg284139.",
+                "{}"
+              ]
+            ],
+            "b0_count": 10,
+            "b1_count": 30,
+            "removed_count": 10,
+            "removed_examples": [
+              [
+                "lucas's dual citizenship process with italy",
+                "user mentions that lucas's dual citizenship process with italy took about 14 months from application to approval. user's portuguese citizenship application is based on their maternal grandmother's birth in porto before she emigrated to brazil.",
+                "{}"
+              ],
+              [
+                "assistant",
+                "tracked brazilian passport number hg284193 then updated to hg284139 after user corrections. maintained portuguese citizenship application reference pt-2025-04417 submitted march 3rd at são paulo consulate for user's maternal grandmother's porto birth. noted consulate data entry error showing hg284931 instead of correct hg284139 and advised user to request correction. recorded user's travel preferences for portuguese/spanish-speaking destinations including lisbon (november) and montevideo. monitored citizenship timeline concerns based on lucas's 14-month italian process and mariana's 2-year spanish process. offered to draft correction notes and status inquiries for consulate communications.",
+                "{}"
+              ],
+              [
+                "hg284139",
+                "user's actual brazilian passport number is hg284139, as confirmed from the physical passport page.",
+                "{}"
+              ],
+              [
+                "hg284931",
+                "the consulate's system currently has an incorrect passport number hg284931 linked to user's application, which is not the number on their physical passport.",
+                "{}"
+              ],
+              [
+                "lucas",
+                "user mentions that lucas went through a dual citizenship process with italy last year.",
+                "{}"
+              ]
+            ]
+          },
+          "episodes": {
+            "added_count": 0,
+            "added_examples": [],
+            "b0_count": 3,
+            "b1_count": 3,
+            "removed_count": 0,
+            "removed_examples": []
+          }
+        },
+        "semantic_normalized_equal": false
+      },
+      "semantic_normalized_equal": false,
+      "workload_identity_match": true
+    },
+    {
+      "b0_active_max": 1,
+      "b0_calls": 19,
+      "b0_db_latency": {
+        "db_duration_p50_s": 0.002960086,
+        "db_duration_p95_s": 0.034129724,
+        "db_duration_p99_s": 0.040643596
+      },
+      "b0_drain_tail_s": 16.2273446,
+      "b0_embedding_latency": {
+        "embedding_duration_p50_s": 0.013100831,
+        "embedding_duration_p95_s": 0.022329827,
+        "embedding_duration_p99_s": 0.023991175
+      },
+      "b0_llm_latency": {
+        "llm_duration_p50_s": 0.941077542,
+        "llm_duration_p95_s": 18.405645577,
+        "llm_duration_p99_s": 18.405645577
+      },
+      "b0_makespan": 49.947809352,
+      "b0_namespace": "b0-run-MEMOPS-A28__Update-B0_NATIVE_SERIAL-attempt-001",
+      "b0_publication_complete": true,
+      "b0_qa": {
+        "all_correct": true,
+        "correct_rows": 2,
+        "rows": 2,
+        "stale_value_errors": 0
+      },
+      "b0_readonly_pass": true,
+      "b0_semantic": false,
+      "b0_source_tokens_per_s": 57.820353634475445,
+      "b0_state": "FAIL",
+      "b0_workload_sha256": "61a89ef67dab2d496091756de4c824d1fc33b4f0861ee7e7c76b0f914fe0965e",
+      "b1_active_max": 3,
+      "b1_calls": 57,
+      "b1_db_latency": {
+        "db_duration_p50_s": 0.005531964,
+        "db_duration_p95_s": 0.19344858,
+        "db_duration_p99_s": 0.259602229
+      },
+      "b1_drain_tail_s": 62.476777281,
+      "b1_embedding_latency": {
+        "embedding_duration_p50_s": 0.034013051,
+        "embedding_duration_p95_s": 0.240964892,
+        "embedding_duration_p99_s": 0.286301187
+      },
+      "b1_llm_latency": {
+        "llm_duration_p50_s": 1.381404713,
+        "llm_duration_p95_s": 20.67576892,
+        "llm_duration_p99_s": 46.607237599
+      },
+      "b1_makespan": 62.478967113,
+      "b1_namespace": "b1-run-MEMOPS-A28__Update-B1_NAIVE_WHOLE_UPDATE_ASYNC-attempt-001",
+      "b1_publication_complete": true,
+      "b1_qa": {
+        "all_correct": true,
+        "correct_rows": 2,
+        "rows": 2,
+        "stale_value_errors": 0
+      },
+      "b1_readonly_pass": true,
+      "b1_semantic": true,
+      "b1_source_tokens_per_s": 46.223555437091946,
+      "b1_state": "PASS",
+      "b1_workload_sha256": "61a89ef67dab2d496091756de4c824d1fc33b4f0861ee7e7c76b0f914fe0965e",
+      "canonical_hash_equal": false,
+      "edge_added": 36,
+      "edge_removed": 9,
+      "entity_added": 23,
+      "entity_removed": 7,
+      "operation_type": "Update",
+      "paired_outcome": "FP",
+      "sample_id": "A28__Update",
+      "semantic_diff": {
+        "canonical_hash_equal": false,
+        "runtime_only_fields_excluded": [
+          "canonical_graph_hash",
+          "group_id",
+          "expired_at"
+        ],
+        "sections": {
+          "edges": {
+            "added_count": 36,
+            "added_examples": [
+              [
+                "dr. adriaan van der berg",
+                "eth zurich",
+                "going_on_sabbatical_to",
+                "dr. adriaan van der berg is going on sabbatical to eth zurich, with a listed start date of june 1st.",
+                "2000-01-01T00:02:00.000000000+00:00",
+                null,
+                2,
+                "{}"
+              ],
+              [
+                "dr. kim",
+                "sara",
+                "advisor_of",
+                "dr. kim is the advisor of sara.",
+                "2000-01-01T00:01:00.000000000+00:00",
+                null,
+                1,
+                "{}"
+              ],
+              [
+                "dr. voss",
+                "dr. brandt",
+                "handoff_to",
+                "dr. voss will hand off supervision to dr. brandt after her sabbatical.",
+                null,
+                null,
+                1,
+                "{}"
+              ],
+              [
+                "dr. voss",
+                "dr. lena brandt",
+                "designates_as_interim_advisor",
+                "dr. voss designates dr. lena brandt as the interim advisor for the user starting on june 15th.",
+                "2025-06-15T00:00:00.000000000+00:00",
+                "2025-07-01T00:00:00.000000000+00:00",
+                0,
+                "{}"
+              ],
+              [
+                "dr. voss",
+                "the structure of scientific revolutions",
+                "recommends_reading",
+                "dr. voss recommended the user to read 'the structure of scientific revolutions' by kuhn.",
+                "2025-04-01T00:00:00.000000000+00:00",
+                null,
+                1,
+                "{}"
+              ]
+            ],
+            "b0_count": 12,
+            "b1_count": 39,
+            "removed_count": 9,
+            "removed_examples": [
+              [
+                "dr. adriaan van der berg",
+                "eth zurich",
+                "going_on_sabbatical_to",
+                "dr. adriaan van der berg is going on sabbatical to eth zurich, with a listed start date of june 1st.",
+                null,
+                null,
+                2,
+                "{}"
+              ],
+              [
+                "dr. voss",
+                "dr. lena brandt",
+                "named_as_interim_advisor",
+                "dr. voss named dr. lena brandt as the interim advisor for the user.",
+                "2025-03-27T00:00:00.000000000+00:00",
+                null,
+                0,
+                "{}"
+              ],
+              [
+                "dr. voss",
+                "uc san diego",
+                "has_sabbatical_at",
+                "dr. voss has a sabbatical at uc san diego starting on june 15th.",
+                "2025-06-15T00:00:00.000000000+00:00",
+                "2025-12-01T00:00:00.000000000+00:00",
+                0,
+                "{}"
+              ],
+              [
+                "dr. voss",
+                "user",
+                "corrected_sabbatical_date_for",
+                "dr. voss corrected the user about the sabbatical date during the march 27th meeting.",
+                "2025-03-27T00:00:00.000000000+00:00",
+                null,
+                0,
+                "{}"
+              ],
+              [
+                "dr. voss",
+                "user",
+                "meets_committee_member",
+                "dr. voss meets with the user's committee on may 8th for a methodology chapter presentation.",
+                "2025-05-08T00:00:00.000000000+00:00",
+                null,
+                0,
+                "{}"
+              ]
+            ]
+          },
+          "entities": {
+            "added_count": 23,
+            "added_examples": [
+              [
+                "assistant",
+                "",
+                "{}"
+              ],
+              [
+                "bayesian approach",
+                "the user uses the bayesian approach in their statistical modeling.",
+                "{}"
+              ],
+              [
+                "cognitive science",
+                "cognitive science is the field of study for the user and their friend sara. the user is working on a thesis that may involve paradigm shifts or theoretical frameworks, and is considering adding targeted citations from the structure of scientific revolutions by kuhn to their literature review.",
+                "{}"
+              ],
+              [
+                "dr. brandt",
+                "dr. voss will hand off supervision to dr. brandt after her sabbatical. the user plans to get acquainted with dr. brandt's communication style.",
+                "{}"
+              ],
+              [
+                "dr. brandt",
+                "user is compiling a summary document of all progress, key decisions, and open questions for dr. brandt to get up to speed quickly.",
+                "{}"
+              ]
+            ],
+            "b0_count": 10,
+            "b1_count": 26,
+            "removed_count": 7,
+            "removed_examples": [
+              [
+                "dr. kim",
+                "sara's advisor is dr. kim.",
+                "{}"
+              ],
+              [
+                "dr. lena brandt",
+                "dr. voss named dr. lena brandt as the interim advisor for the user.",
+                "{}"
+              ],
+              [
+                "dr. voss",
+                "dr. voss has a sabbatical at uc san diego starting on june 15th. dr. voss provides weekly feedback to the user. dr. voss meets with the user on thursday mornings. dr. voss meets with the user's committee on may 8th for a methodology chapter presentation. dr. voss named dr. lena brandt as the interim advisor for the user. dr. voss corrected the user about the sabbatical date during the march 27th meeting. user plans to ask dr. voss about the sabbatical date during their next thursday meeting.",
+                "{}"
+              ],
+              [
+                "james okoro",
+                "james okoro helps the user with the statistical modeling section of the methodology chapter. user met with james okoro today and they went through the full statistical modeling section. james okoro will send user some example code by friday to implement a robustness check using a different prior distribution.",
+                "{}"
+              ],
+              [
+                "sara",
+                "sara's advisor is dr. kim.",
+                "{}"
+              ]
+            ]
+          },
+          "episodes": {
+            "added_count": 0,
+            "added_examples": [],
+            "b0_count": 3,
+            "b1_count": 3,
+            "removed_count": 0,
+            "removed_examples": []
+          }
+        },
+        "semantic_normalized_equal": false
+      },
+      "semantic_normalized_equal": false,
+      "workload_identity_match": true
+    }
+  ],
+  "payload_sha256": "f6dc4483bdaabd97a0ee730d1086e9cadefe8f2701952da68e3aaffacef15b94",
+  "pilot_id": "sfwb-v1-3-memops-pilot-20260822-001",
+  "pilot_root": "/data/predator/ly/MemBind/saturated_fixed_work_baseline_v1_3/artifacts/sfwb-v1-3-memops-pilot-20260822-001",
+  "protocol_assessment": {
+    "operationally_reproducible": true,
+    "reason": "one paired run per method plus normalized semantic graph differences and stochastic LLM work; follow-up replication is required before attributing semantic differences to async scheduling",
+    "semantic_causal_comparison_ready": false
+  },
+  "sample_count": 5,
+  "sample_ids": [
+    "A01__Update",
+    "A05__Update",
+    "A13__Update",
+    "A14__Update",
+    "A28__Update"
+  ],
+  "schema_version": "sfwb.v1.3.memops-pilot-b0-vs-b1.v1",
+  "workload_identity_mismatches": []
+}
