@@ -1,0 +1,165 @@
+{
+  "payload_sha256": "2810583a565575042a6349cd09aea19ded886f2a8e05227f97b6026619bcd7ce",
+  "rows": [
+    {
+      "construction_calls": 0,
+      "correct": true,
+      "evaluation_setting": "adjacent_operation",
+      "evaluation_type": "CandidateDisambiguation",
+      "expected_answer": "July 1st",
+      "failure_layer": null,
+      "gold_memory_state": "Dr. Voss's confirmed sabbatical start date is July 1st. June 1st and June 15th are superseded earlier values. June 20th is an unconfirmed rumor from a third party.",
+      "gold_provenance": [
+        {
+          "quote": "her sabbatical has been pushed back to July 1st because of some administrative delay at UCSD",
+          "segment_index": 2,
+          "turn_index": 3
+        },
+        {
+          "quote": "James mentioned that the department secretary told him Dr. Voss might actually leave as early as June 20th because UCSD resolved the paperwork faster than expected",
+          "segment_index": 3,
+          "turn_index": 5
+        }
+      ],
+      "gold_ranks": [
+        2,
+        3
+      ],
+      "graph_write_attempts": 0,
+      "invalid": false,
+      "invalid_reason": null,
+      "judge_rubric": {
+        "acceptable_paraphrases": [
+          "July 1"
+        ],
+        "harmful_extra": [
+          "Selecting June 20th because it is the most recently mentioned date in the conversation"
+        ],
+        "harmless_extra": [
+          "Noting that June 20th was mentioned as a possibility but unconfirmed"
+        ],
+        "must_include": [
+          "July 1st"
+        ],
+        "must_not_include": [
+          "June 15th as current",
+          "June 20th as current",
+          "June 1st as current"
+        ]
+      },
+      "memops_official_judge": {
+        "answer_score": 1,
+        "completion_tokens": 162,
+        "extra_detail_postcheck_action": "none",
+        "extra_detail_postcheck_applied": false,
+        "extra_detail_type": "harmless",
+        "finish_reason": "stop",
+        "judge_operation_detection": {
+          "fn": 1,
+          "fp": 0,
+          "tp": 3
+        },
+        "judge_provenance_support": 1,
+        "official_prompt_builder": "build_evaluation_prompt",
+        "official_result_parser": "parse_judge_metrics",
+        "prompt_sha256": "c30a3d877b984cedc0b55878aed4d31b5914fb200f5a17bad8c5b2aeb88e1b63",
+        "prompt_tokens": 6244,
+        "raw_prompt_persisted": false,
+        "raw_response_persisted": false,
+        "reason": "The model correctly selects the most recent confirmed value (July 1st) and explains why it is the correct choice, citing Dr. Voss's direct communication. It also appropriately notes the June 20th rumor as unconfirmed, which is harmless extra detail. The model does not select any of the superseded or tentative values. One Gold operation (op4) is not detected, but this does not affect the correctness of the final answer.",
+        "response_sha256": "c0db30ea70b9c535462ba68d37d98105b1fa82dab064fb6a980eb7aa56dedb37",
+        "stale_value": 0
+      },
+      "mrr": 0.5,
+      "ndcg_at_10": 0.6934264036172708,
+      "question_id": "A28__Update:p4_candidate_disambiguation:adjacent_operation",
+      "question_pair_id": "p4_candidate_disambiguation",
+      "recall_at_1": 0.0,
+      "recall_at_10": 1.0,
+      "recall_at_3": 1.0,
+      "recall_at_5": 1.0,
+      "relevance_unit": "LONGMEMEVAL_GOLD_SESSION",
+      "sample_id": "A28__Update"
+    },
+    {
+      "construction_calls": 0,
+      "correct": true,
+      "evaluation_setting": "longitudinal_operation",
+      "evaluation_type": "CandidateDisambiguation",
+      "expected_answer": "July 1st",
+      "failure_layer": null,
+      "gold_memory_state": "Dr. Voss's confirmed sabbatical start date is July 1st. June 1st and June 15th are superseded earlier values. June 20th is an unconfirmed rumor from a third party.",
+      "gold_provenance": [
+        {
+          "quote": "her sabbatical has been pushed back to July 1st because of some administrative delay at UCSD",
+          "segment_index": 2,
+          "turn_index": 3
+        },
+        {
+          "quote": "James mentioned that the department secretary told him Dr. Voss might actually leave as early as June 20th because UCSD resolved the paperwork faster than expected",
+          "segment_index": 3,
+          "turn_index": 5
+        }
+      ],
+      "gold_ranks": [
+        2,
+        3
+      ],
+      "graph_write_attempts": 0,
+      "invalid": false,
+      "invalid_reason": null,
+      "judge_rubric": {
+        "acceptable_paraphrases": [
+          "July 1"
+        ],
+        "harmful_extra": [
+          "Selecting June 20th because it is the most recently mentioned date in the conversation"
+        ],
+        "harmless_extra": [
+          "Noting that June 20th was mentioned as a possibility but unconfirmed"
+        ],
+        "must_include": [
+          "July 1st"
+        ],
+        "must_not_include": [
+          "June 15th as current",
+          "June 20th as current",
+          "June 1st as current"
+        ]
+      },
+      "memops_official_judge": {
+        "answer_score": 1,
+        "completion_tokens": 131,
+        "extra_detail_postcheck_action": "none",
+        "extra_detail_postcheck_applied": false,
+        "extra_detail_type": "harmless",
+        "finish_reason": "stop",
+        "judge_operation_detection": {
+          "fn": 0,
+          "fp": 0,
+          "tp": 1
+        },
+        "judge_provenance_support": 1,
+        "official_prompt_builder": "build_evaluation_prompt",
+        "official_result_parser": "parse_judge_metrics",
+        "prompt_sha256": "5a16f848e6984ec8a2cbb09ace5bdfe8965d307c2db7151d89abdfdb907f8b33",
+        "prompt_tokens": 6249,
+        "raw_prompt_persisted": false,
+        "raw_response_persisted": false,
+        "reason": "The model correctly selects the confirmed and most recent value (July 1st) as the sabbatical start date. It also appropriately notes that earlier dates (June 15th and June 20th) were either corrected or unconfirmed, which is harmless and supported by the evidence.",
+        "response_sha256": "505c3d6031112c5b2cc26427473ca33ad6f5a5fde893e4cfbe168e5e304dc77f",
+        "stale_value": 0
+      },
+      "mrr": 0.5,
+      "ndcg_at_10": 0.6934264036172708,
+      "question_id": "A28__Update:p4_candidate_disambiguation:longitudinal_operation",
+      "question_pair_id": "p4_candidate_disambiguation",
+      "recall_at_1": 0.0,
+      "recall_at_10": 1.0,
+      "recall_at_3": 1.0,
+      "recall_at_5": 1.0,
+      "relevance_unit": "LONGMEMEVAL_GOLD_SESSION",
+      "sample_id": "A28__Update"
+    }
+  ]
+}

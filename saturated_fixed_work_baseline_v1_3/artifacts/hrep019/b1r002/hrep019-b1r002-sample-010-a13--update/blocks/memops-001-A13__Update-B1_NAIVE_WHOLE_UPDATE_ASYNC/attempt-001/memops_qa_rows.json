@@ -1,0 +1,163 @@
+{
+  "payload_sha256": "377391f593026b9f6d6452a873ebe4aa547b18640309dabc68cd9b506996353f",
+  "rows": [
+    {
+      "construction_calls": 0,
+      "correct": true,
+      "evaluation_setting": "adjacent_operation",
+      "evaluation_type": "CandidateDisambiguation",
+      "expected_answer": "1000mg twice daily",
+      "failure_layer": null,
+      "gold_memory_state": "Current confirmed metformin dosage is 1000mg twice daily. Previous dosages of 500mg twice daily and 750mg twice daily are superseded. The 850mg extended-release once daily is a tentative future possibility that has not been enacted.",
+      "gold_provenance": [
+        {
+          "quote": "Dr. Patel actually bumped the metformin up again to 1000mg twice daily as of last Monday",
+          "segment_index": 2,
+          "turn_index": 3
+        },
+        {
+          "quote": "Dr. Patel said at my next visit she'll likely switch me to 850mg extended-release once daily instead",
+          "segment_index": 3,
+          "turn_index": 5
+        }
+      ],
+      "gold_ranks": [
+        1,
+        3
+      ],
+      "graph_write_attempts": 0,
+      "invalid": false,
+      "invalid_reason": null,
+      "judge_rubric": {
+        "acceptable_paraphrases": [
+          "1000 mg two times a day",
+          "1000mg BID"
+        ],
+        "harmful_extra": [
+          "Selecting any option other than 1000mg twice daily"
+        ],
+        "harmless_extra": [],
+        "must_include": [
+          "1000mg twice daily"
+        ],
+        "must_not_include": [
+          "750mg twice daily as current",
+          "500mg twice daily as current",
+          "850mg extended-release once daily as current"
+        ]
+      },
+      "memops_official_judge": {
+        "answer_score": 1,
+        "completion_tokens": 112,
+        "extra_detail_postcheck_action": "none",
+        "extra_detail_postcheck_applied": false,
+        "extra_detail_type": "none",
+        "finish_reason": "stop",
+        "judge_operation_detection": {
+          "fn": 0,
+          "fp": 0,
+          "tp": 1
+        },
+        "judge_provenance_support": 1,
+        "official_prompt_builder": "build_evaluation_prompt",
+        "official_result_parser": "parse_judge_metrics",
+        "prompt_sha256": "0b83e1c07bbf051f10810b826074c21782febe3d814093feed2f5f17492db549",
+        "prompt_tokens": 6243,
+        "raw_prompt_persisted": false,
+        "raw_response_persisted": false,
+        "reason": "The model correctly selected the confirmed current metformin dosage of 1000mg twice daily, which is the expected answer. It did not include any harmful extra details or select a stale or tentative value.",
+        "response_sha256": "5f960ef72e455f46a7bf330fc40fa1ad4c0349a9ebd51b6e766af7b7f24515a3",
+        "stale_value": 0
+      },
+      "mrr": 1.0,
+      "ndcg_at_10": 0.9197207891481876,
+      "question_id": "A13__Update:p4_candidate_disambiguation:adjacent_operation",
+      "question_pair_id": "p4_candidate_disambiguation",
+      "recall_at_1": 0.5,
+      "recall_at_10": 1.0,
+      "recall_at_3": 1.0,
+      "recall_at_5": 1.0,
+      "relevance_unit": "LONGMEMEVAL_GOLD_SESSION",
+      "sample_id": "A13__Update"
+    },
+    {
+      "construction_calls": 0,
+      "correct": true,
+      "evaluation_setting": "longitudinal_operation",
+      "evaluation_type": "CandidateDisambiguation",
+      "expected_answer": "1000mg twice daily",
+      "failure_layer": null,
+      "gold_memory_state": "Current confirmed metformin dosage is 1000mg twice daily. Previous dosages of 500mg twice daily and 750mg twice daily are superseded. The 850mg extended-release once daily is a tentative future possibility that has not been enacted.",
+      "gold_provenance": [
+        {
+          "quote": "Dr. Patel actually bumped the metformin up again to 1000mg twice daily as of last Monday",
+          "segment_index": 2,
+          "turn_index": 3
+        },
+        {
+          "quote": "Dr. Patel said at my next visit she'll likely switch me to 850mg extended-release once daily instead",
+          "segment_index": 3,
+          "turn_index": 5
+        }
+      ],
+      "gold_ranks": [
+        1,
+        3
+      ],
+      "graph_write_attempts": 0,
+      "invalid": false,
+      "invalid_reason": null,
+      "judge_rubric": {
+        "acceptable_paraphrases": [
+          "1000 mg two times a day",
+          "1000mg BID"
+        ],
+        "harmful_extra": [
+          "Selecting any option other than 1000mg twice daily"
+        ],
+        "harmless_extra": [],
+        "must_include": [
+          "1000mg twice daily"
+        ],
+        "must_not_include": [
+          "750mg twice daily as current",
+          "500mg twice daily as current",
+          "850mg extended-release once daily as current"
+        ]
+      },
+      "memops_official_judge": {
+        "answer_score": 1,
+        "completion_tokens": 112,
+        "extra_detail_postcheck_action": "none",
+        "extra_detail_postcheck_applied": false,
+        "extra_detail_type": "none",
+        "finish_reason": "stop",
+        "judge_operation_detection": {
+          "fn": 0,
+          "fp": 0,
+          "tp": 1
+        },
+        "judge_provenance_support": 1,
+        "official_prompt_builder": "build_evaluation_prompt",
+        "official_result_parser": "parse_judge_metrics",
+        "prompt_sha256": "0b83e1c07bbf051f10810b826074c21782febe3d814093feed2f5f17492db549",
+        "prompt_tokens": 6243,
+        "raw_prompt_persisted": false,
+        "raw_response_persisted": false,
+        "reason": "The model correctly selected the current confirmed metformin dosage of 1000mg twice daily, which is the expected answer. It did not include any harmful extra details or select a stale or tentative value.",
+        "response_sha256": "bf0bc45cd9b28596a9770999e6b703ad0f013e55232095057f6ecc6c661021e5",
+        "stale_value": 0
+      },
+      "mrr": 1.0,
+      "ndcg_at_10": 0.9197207891481876,
+      "question_id": "A13__Update:p4_candidate_disambiguation:longitudinal_operation",
+      "question_pair_id": "p4_candidate_disambiguation",
+      "recall_at_1": 0.5,
+      "recall_at_10": 1.0,
+      "recall_at_3": 1.0,
+      "recall_at_5": 1.0,
+      "relevance_unit": "LONGMEMEVAL_GOLD_SESSION",
+      "sample_id": "A13__Update"
+    }
+  ]
+}

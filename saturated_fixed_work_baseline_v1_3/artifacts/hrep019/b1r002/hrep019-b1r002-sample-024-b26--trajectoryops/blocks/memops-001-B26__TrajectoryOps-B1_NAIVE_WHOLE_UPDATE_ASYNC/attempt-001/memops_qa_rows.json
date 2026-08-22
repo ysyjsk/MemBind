@@ -1,0 +1,307 @@
+{
+  "payload_sha256": "e4b8d78e74ef128eb29b6b85848f13f34a0bcd8d832f19e8f4b49ffb44302863",
+  "rows": [
+    {
+      "construction_calls": 0,
+      "correct": false,
+      "evaluation_setting": "adjacent_operation",
+      "evaluation_type": "StateTransition",
+      "expected_answer": "Eugene.",
+      "failure_layer": null,
+      "gold_memory_state": "Chloe's confirmed current city of residence is Eugene. A future relocation to Portland was announced by her nonprofit for next month, but this move has not yet occurred and remains tentative/planned. The tentative Portland value must not override the confirmed Eugene residence. Prior confirmed cities (Denver, Portland) are superseded.",
+      "gold_provenance": [
+        {
+          "quote": "Chloe ended up transferring to the nonprofit's satellite office in Eugene. She moved there last week",
+          "segment_index": 2,
+          "turn_index": 3
+        },
+        {
+          "quote": "Chloe's nonprofit confirmed she'll be relocating back to Portland next month to run their main office programs",
+          "segment_index": 3,
+          "turn_index": 5
+        }
+      ],
+      "gold_ranks": [
+        1,
+        3
+      ],
+      "graph_write_attempts": 0,
+      "invalid": false,
+      "invalid_reason": null,
+      "judge_rubric": {
+        "acceptable_paraphrases": [
+          "Eugene, Oregon"
+        ],
+        "harmful_extra": [
+          "listing Portland as the current city because of the planned relocation"
+        ],
+        "harmless_extra": [
+          "noting that a Portland move is planned for next month but hasn't happened yet"
+        ],
+        "must_include": [
+          "Eugene"
+        ],
+        "must_not_include": [
+          "Portland as current residence",
+          "Denver as current residence"
+        ]
+      },
+      "memops_official_judge": {
+        "answer_score": 0,
+        "completion_tokens": 128,
+        "extra_detail_postcheck_action": "none",
+        "extra_detail_postcheck_applied": false,
+        "extra_detail_type": "harmful",
+        "final_state": 0,
+        "finish_reason": "stop",
+        "intermediate_state": null,
+        "judge_operation_detection": {
+          "fn": 0,
+          "fp": 0,
+          "tp": 0
+        },
+        "judge_provenance_support": null,
+        "official_prompt_builder": "build_evaluation_prompt",
+        "official_result_parser": "parse_judge_metrics",
+        "prompt_sha256": "37ce8272503d26a99eaf9ff831db23d1e634492d66036f9042f4644d72d9752e",
+        "prompt_tokens": 5658,
+        "raw_prompt_persisted": false,
+        "raw_response_persisted": false,
+        "reason": "The model incorrectly lists Portland as Chloe's current residence, which is a tentative future value and not the confirmed current one. The correct current residence is Eugene.",
+        "response_sha256": "50b0081153c707e39f901259252eb80cbbd93447fd4543bbf737f011637744cd",
+        "trajectory_order": null,
+        "trajectory_provenance": null
+      },
+      "mrr": 1.0,
+      "ndcg_at_10": 0.9197207891481876,
+      "question_id": "B26__TrajectoryOps:p3_state_transition:adjacent_operation",
+      "question_pair_id": "p3_state_transition",
+      "recall_at_1": 0.5,
+      "recall_at_10": 1.0,
+      "recall_at_3": 1.0,
+      "recall_at_5": 1.0,
+      "relevance_unit": "LONGMEMEVAL_GOLD_SESSION",
+      "sample_id": "B26__TrajectoryOps"
+    },
+    {
+      "construction_calls": 0,
+      "correct": false,
+      "evaluation_setting": "longitudinal_operation",
+      "evaluation_type": "StateTransition",
+      "expected_answer": "Eugene.",
+      "failure_layer": null,
+      "gold_memory_state": "Chloe's confirmed current city of residence is Eugene. A future relocation to Portland was announced by her nonprofit for next month, but this move has not yet occurred and remains tentative/planned. The tentative Portland value must not override the confirmed Eugene residence. Prior confirmed cities (Denver, Portland) are superseded.",
+      "gold_provenance": [
+        {
+          "quote": "Chloe ended up transferring to the nonprofit's satellite office in Eugene. She moved there last week",
+          "segment_index": 2,
+          "turn_index": 3
+        },
+        {
+          "quote": "Chloe's nonprofit confirmed she'll be relocating back to Portland next month to run their main office programs",
+          "segment_index": 3,
+          "turn_index": 5
+        }
+      ],
+      "gold_ranks": [
+        1,
+        3
+      ],
+      "graph_write_attempts": 0,
+      "invalid": false,
+      "invalid_reason": null,
+      "judge_rubric": {
+        "acceptable_paraphrases": [
+          "Eugene, Oregon"
+        ],
+        "harmful_extra": [
+          "listing Portland as the current city because of the planned relocation"
+        ],
+        "harmless_extra": [
+          "noting that a Portland move is planned for next month but hasn't happened yet"
+        ],
+        "must_include": [
+          "Eugene"
+        ],
+        "must_not_include": [
+          "Portland as current residence",
+          "Denver as current residence"
+        ]
+      },
+      "memops_official_judge": {
+        "answer_score": 0,
+        "completion_tokens": 125,
+        "extra_detail_postcheck_action": "none",
+        "extra_detail_postcheck_applied": false,
+        "extra_detail_type": "none",
+        "final_state": 0,
+        "finish_reason": "stop",
+        "intermediate_state": null,
+        "judge_operation_detection": {
+          "fn": 0,
+          "fp": 0,
+          "tp": 0
+        },
+        "judge_provenance_support": null,
+        "official_prompt_builder": "build_evaluation_prompt",
+        "official_result_parser": "parse_judge_metrics",
+        "prompt_sha256": "37ce8272503d26a99eaf9ff831db23d1e634492d66036f9042f4644d72d9752e",
+        "prompt_tokens": 5658,
+        "raw_prompt_persisted": false,
+        "raw_response_persisted": false,
+        "reason": "The model incorrectly lists Portland as Chloe's current residence, but the confirmed current residence is Eugene. The Portland move is tentative and has not yet occurred.",
+        "response_sha256": "988c11f5a60afe9e382af630092efade821b56dc74ee426229ff549a5558cda7",
+        "trajectory_order": null,
+        "trajectory_provenance": null
+      },
+      "mrr": 1.0,
+      "ndcg_at_10": 0.9197207891481876,
+      "question_id": "B26__TrajectoryOps:p3_state_transition:longitudinal_operation",
+      "question_pair_id": "p3_state_transition",
+      "recall_at_1": 0.5,
+      "recall_at_10": 1.0,
+      "recall_at_3": 1.0,
+      "recall_at_5": 1.0,
+      "relevance_unit": "LONGMEMEVAL_GOLD_SESSION",
+      "sample_id": "B26__TrajectoryOps"
+    },
+    {
+      "construction_calls": 0,
+      "correct": false,
+      "error_message": "Quality v1 gold sessions is invalid",
+      "evaluation_setting": "adjacent_operation",
+      "evaluation_type": "StateTrajectory",
+      "expected_answer": "The sequence is: Denver (initial, settled) → Portland (settled move for a nonprofit job) → Eugene (settled move to the nonprofit's satellite office) → Portland again (planned relocation next month, not yet executed). As of now, Chloe is living in Eugene. The planned return to Portland has been announced but hasn't happened yet, so Eugene remains her actual residence.",
+      "failure_layer": "retrieval",
+      "gold_memory_state": "Full trajectory for Chloe's city: (1) Denver — confirmed, initial residence. (2) Portland — confirmed, moved ~2 months ago for nonprofit job. (3) Eugene — confirmed, moved last week for satellite office transfer. (4) Portland (tentative) — nonprofit announced relocation next month, not yet executed. Current confirmed state: Eugene. Control target: Daniel's wife due date = late September (unchanged, confirmed).",
+      "gold_provenance": [
+        {
+          "quote": "My younger sister Chloe has been living in Denver for the last few years",
+          "segment_index": 1,
+          "turn_index": 1
+        },
+        {
+          "quote": "Chloe actually moved to Portland about two months ago. She got a new nonprofit job there",
+          "segment_index": 1,
+          "turn_index": 5
+        },
+        {
+          "quote": "Chloe ended up transferring to the nonprofit's satellite office in Eugene. She moved there last week",
+          "segment_index": 2,
+          "turn_index": 3
+        },
+        {
+          "quote": "Chloe's nonprofit confirmed she'll be relocating back to Portland next month to run their main office programs",
+          "segment_index": 3,
+          "turn_index": 5
+        }
+      ],
+      "graph_write_attempts": 0,
+      "invalid": true,
+      "invalid_reason": "builtins.ValueError",
+      "judge_rubric": {
+        "acceptable_paraphrases": [
+          "Portland return is upcoming but not completed",
+          "Eugene is where she lives now"
+        ],
+        "harmful_extra": [
+          "omitting any city from the sequence",
+          "treating the planned Portland return as already completed",
+          "listing the cities in wrong order"
+        ],
+        "harmless_extra": [
+          "mentioning the nonprofit job context",
+          "mentioning the Capitol Hill Denver address as old paperwork"
+        ],
+        "must_include": [
+          "Denver as first city",
+          "Portland as second city",
+          "Eugene as third city and current residence",
+          "planned/future Portland relocation as not yet executed"
+        ],
+        "must_not_include": [
+          "Portland as Chloe's current actual residence"
+        ]
+      },
+      "memops_official_judge": null,
+      "mrr": 0.0,
+      "ndcg_at_10": 0.0,
+      "question_id": "B26__TrajectoryOps:p5_state_trajectory:adjacent_operation",
+      "question_pair_id": "p5_state_trajectory",
+      "recall_at_1": 0.0,
+      "recall_at_10": 0.0,
+      "recall_at_3": 0.0,
+      "recall_at_5": 0.0,
+      "sample_id": "B26__TrajectoryOps"
+    },
+    {
+      "construction_calls": 0,
+      "correct": false,
+      "error_message": "Quality v1 gold sessions is invalid",
+      "evaluation_setting": "longitudinal_operation",
+      "evaluation_type": "StateTrajectory",
+      "expected_answer": "The sequence is: Denver (initial, settled) → Portland (settled move for a nonprofit job) → Eugene (settled move to the nonprofit's satellite office) → Portland again (planned relocation next month, not yet executed). As of now, Chloe is living in Eugene. The planned return to Portland has been announced but hasn't happened yet, so Eugene remains her actual residence.",
+      "failure_layer": "retrieval",
+      "gold_memory_state": "Full trajectory for Chloe's city: (1) Denver — confirmed, initial residence. (2) Portland — confirmed, moved ~2 months ago for nonprofit job. (3) Eugene — confirmed, moved last week for satellite office transfer. (4) Portland (tentative) — nonprofit announced relocation next month, not yet executed. Current confirmed state: Eugene. Control target: Daniel's wife due date = late September (unchanged, confirmed).",
+      "gold_provenance": [
+        {
+          "quote": "My younger sister Chloe has been living in Denver for the last few years",
+          "segment_index": 1,
+          "turn_index": 1
+        },
+        {
+          "quote": "Chloe actually moved to Portland about two months ago. She got a new nonprofit job there",
+          "segment_index": 1,
+          "turn_index": 5
+        },
+        {
+          "quote": "Chloe ended up transferring to the nonprofit's satellite office in Eugene. She moved there last week",
+          "segment_index": 2,
+          "turn_index": 3
+        },
+        {
+          "quote": "Chloe's nonprofit confirmed she'll be relocating back to Portland next month to run their main office programs",
+          "segment_index": 3,
+          "turn_index": 5
+        }
+      ],
+      "graph_write_attempts": 0,
+      "invalid": true,
+      "invalid_reason": "builtins.ValueError",
+      "judge_rubric": {
+        "acceptable_paraphrases": [
+          "Portland return is upcoming but not completed",
+          "Eugene is where she lives now"
+        ],
+        "harmful_extra": [
+          "omitting any city from the sequence",
+          "treating the planned Portland return as already completed",
+          "listing the cities in wrong order"
+        ],
+        "harmless_extra": [
+          "mentioning the nonprofit job context",
+          "mentioning the Capitol Hill Denver address as old paperwork"
+        ],
+        "must_include": [
+          "Denver as first city",
+          "Portland as second city",
+          "Eugene as third city and current residence",
+          "planned/future Portland relocation as not yet executed"
+        ],
+        "must_not_include": [
+          "Portland as Chloe's current actual residence"
+        ]
+      },
+      "memops_official_judge": null,
+      "mrr": 0.0,
+      "ndcg_at_10": 0.0,
+      "question_id": "B26__TrajectoryOps:p5_state_trajectory:longitudinal_operation",
+      "question_pair_id": "p5_state_trajectory",
+      "recall_at_1": 0.0,
+      "recall_at_10": 0.0,
+      "recall_at_3": 0.0,
+      "recall_at_5": 0.0,
+      "sample_id": "B26__TrajectoryOps"
+    }
+  ]
+}

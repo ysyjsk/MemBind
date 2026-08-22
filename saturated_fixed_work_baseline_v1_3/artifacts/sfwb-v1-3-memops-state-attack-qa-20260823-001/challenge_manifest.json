@@ -1,0 +1,49 @@
+{
+  "b0_result": "/data/predator/ly/MemBind/saturated_fixed_work_baseline_v1_3/artifacts/hrep015/recovered_replication_result.json",
+  "b1_result": "/data/predator/ly/MemBind/saturated_fixed_work_baseline_v1_3/artifacts/hrep018/b1r001/replication_result.json",
+  "methods": [
+    "B0_NATIVE_SERIAL",
+    "B1_NAIVE_WHOLE_UPDATE_ASYNC"
+  ],
+  "payload_sha256": "18003ad8a6c1113b0f85d74e03d1bceebcbde9fe95bea66b2c8e734a4f531548",
+  "qa_policy": {
+    "alternate_chat_base_url": "http://10.87.5.247:8002/v1",
+    "alternate_embedding_base_url": "http://10.87.5.247:8003/v1",
+    "construction": "FORBIDDEN",
+    "entity_summary": "EXCLUDED_FROM_READER_CONTEXT",
+    "episode_evidence": "EXCLUDED_FROM_READER_CONTEXT",
+    "graph_facts_only": true,
+    "not_official_memops_qualification": true,
+    "read_only": true
+  },
+  "question_kinds": [
+    "CURRENT_EDGE_VALUE",
+    "CURRENT_VS_STALE"
+  ],
+  "sample_count": 20,
+  "sample_ids": [
+    "A01__Update",
+    "A05__Update",
+    "A13__Update",
+    "A14__Update",
+    "A28__Update",
+    "A29__Update",
+    "A33__TrajectoryOps",
+    "A33__Update",
+    "B01__Update",
+    "B02__Update",
+    "B03__Update",
+    "B10__Update",
+    "B21__TrajectoryOps",
+    "B25__TrajectoryOps",
+    "B26__TrajectoryOps",
+    "C21__Update",
+    "C30__Update",
+    "D02__Update",
+    "E15__Update",
+    "F17__Update"
+  ],
+  "schema_version": "sfwb.v1.3.memops-state-attack-qa-manifest.v1",
+  "selection_basis": "intersection_of_completed_B0_B1_result_manifests_and_frozen_gold_cohort",
+  "status": "EXPLORATORY_READ_ONLY_CHALLENGE"
+}

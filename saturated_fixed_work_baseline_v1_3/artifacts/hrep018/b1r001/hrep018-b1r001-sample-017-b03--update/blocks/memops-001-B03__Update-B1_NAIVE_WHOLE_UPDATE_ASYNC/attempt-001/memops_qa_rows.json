@@ -1,0 +1,161 @@
+{
+  "payload_sha256": "1b879abeba1e426a01b0d34a0d0d259856d70439dc5e992f2eac5d923231f194",
+  "rows": [
+    {
+      "construction_calls": 0,
+      "correct": true,
+      "evaluation_setting": "adjacent_operation",
+      "evaluation_type": "CandidateDisambiguation",
+      "expected_answer": "Staff Technical Lead",
+      "failure_layer": null,
+      "gold_memory_state": "David Keane's current confirmed title is Staff Technical Lead. Senior Technical Lead is the original superseded title. Principal Technical Lead was an intermediate superseded title based on a typo. Distinguished Technical Lead is a tentative future title not yet in effect.",
+      "gold_provenance": [
+        {
+          "quote": "HR sent a correction this morning — David's promotion was actually to Staff Technical Lead, not Principal Technical Lead. Apparently the original announcement had a typo",
+          "segment_index": 2,
+          "turn_index": 3
+        },
+        {
+          "quote": "Tom Aldridge confirmed in a meeting today that David will be promoted again to Distinguished Technical Lead starting next quarter",
+          "segment_index": 3,
+          "turn_index": 7
+        }
+      ],
+      "gold_ranks": [
+        1,
+        3
+      ],
+      "graph_write_attempts": 0,
+      "invalid": false,
+      "invalid_reason": null,
+      "judge_rubric": {
+        "acceptable_paraphrases": [],
+        "harmful_extra": [
+          "selecting any title other than Staff Technical Lead for the current email"
+        ],
+        "harmless_extra": [
+          "noting that Distinguished Technical Lead may apply next quarter"
+        ],
+        "must_include": [
+          "Staff Technical Lead"
+        ],
+        "must_not_include": [
+          "Senior Technical Lead as current",
+          "Principal Technical Lead as current",
+          "Distinguished Technical Lead as current"
+        ]
+      },
+      "memops_official_judge": {
+        "answer_score": 1,
+        "completion_tokens": 99,
+        "extra_detail_postcheck_action": "none",
+        "extra_detail_postcheck_applied": false,
+        "extra_detail_type": "none",
+        "finish_reason": "stop",
+        "judge_operation_detection": {
+          "fn": 0,
+          "fp": 0,
+          "tp": 1
+        },
+        "judge_provenance_support": 1,
+        "official_prompt_builder": "build_evaluation_prompt",
+        "official_result_parser": "parse_judge_metrics",
+        "prompt_sha256": "9949e4d25884ad4454eec43dbe10e47061e3e1774de672c1dcf68a496af183f9",
+        "prompt_tokens": 5862,
+        "raw_prompt_persisted": false,
+        "raw_response_persisted": false,
+        "reason": "The model correctly selected 'Staff Technical Lead' as the current confirmed title for David Keane, consistent with the gold memory state and the expected answer.",
+        "response_sha256": "f0a1f17c9173c53378f8be95870bf203dd8cf7945bab765265b5e7512326cf3a",
+        "stale_value": 0
+      },
+      "mrr": 1.0,
+      "ndcg_at_10": 0.9197207891481876,
+      "question_id": "B03__Update:p4_candidate_disambiguation:adjacent_operation",
+      "question_pair_id": "p4_candidate_disambiguation",
+      "recall_at_1": 0.5,
+      "recall_at_10": 1.0,
+      "recall_at_3": 1.0,
+      "recall_at_5": 1.0,
+      "relevance_unit": "LONGMEMEVAL_GOLD_SESSION",
+      "sample_id": "B03__Update"
+    },
+    {
+      "construction_calls": 0,
+      "correct": true,
+      "evaluation_setting": "longitudinal_operation",
+      "evaluation_type": "CandidateDisambiguation",
+      "expected_answer": "Staff Technical Lead",
+      "failure_layer": null,
+      "gold_memory_state": "David Keane's current confirmed title is Staff Technical Lead. Senior Technical Lead is the original superseded title. Principal Technical Lead was an intermediate superseded title based on a typo. Distinguished Technical Lead is a tentative future title not yet in effect.",
+      "gold_provenance": [
+        {
+          "quote": "HR sent a correction this morning — David's promotion was actually to Staff Technical Lead, not Principal Technical Lead. Apparently the original announcement had a typo",
+          "segment_index": 2,
+          "turn_index": 3
+        },
+        {
+          "quote": "Tom Aldridge confirmed in a meeting today that David will be promoted again to Distinguished Technical Lead starting next quarter",
+          "segment_index": 3,
+          "turn_index": 7
+        }
+      ],
+      "gold_ranks": [
+        1,
+        3
+      ],
+      "graph_write_attempts": 0,
+      "invalid": false,
+      "invalid_reason": null,
+      "judge_rubric": {
+        "acceptable_paraphrases": [],
+        "harmful_extra": [
+          "selecting any title other than Staff Technical Lead for the current email"
+        ],
+        "harmless_extra": [
+          "noting that Distinguished Technical Lead may apply next quarter"
+        ],
+        "must_include": [
+          "Staff Technical Lead"
+        ],
+        "must_not_include": [
+          "Senior Technical Lead as current",
+          "Principal Technical Lead as current",
+          "Distinguished Technical Lead as current"
+        ]
+      },
+      "memops_official_judge": {
+        "answer_score": 1,
+        "completion_tokens": 107,
+        "extra_detail_postcheck_action": "none",
+        "extra_detail_postcheck_applied": false,
+        "extra_detail_type": "none",
+        "finish_reason": "stop",
+        "judge_operation_detection": {
+          "fn": 0,
+          "fp": 0,
+          "tp": 1
+        },
+        "judge_provenance_support": 1,
+        "official_prompt_builder": "build_evaluation_prompt",
+        "official_result_parser": "parse_judge_metrics",
+        "prompt_sha256": "9949e4d25884ad4454eec43dbe10e47061e3e1774de672c1dcf68a496af183f9",
+        "prompt_tokens": 5862,
+        "raw_prompt_persisted": false,
+        "raw_response_persisted": false,
+        "reason": "The model correctly selected 'Staff Technical Lead' as the current confirmed title for David Keane, avoiding all other incorrect or non-current options. The response is concise and matches the expected answer.",
+        "response_sha256": "84055d0ea65a5cf41b0ae07edd0467a64267e49c63c30cf695ad85dc0bef6644",
+        "stale_value": 0
+      },
+      "mrr": 1.0,
+      "ndcg_at_10": 0.9197207891481876,
+      "question_id": "B03__Update:p4_candidate_disambiguation:longitudinal_operation",
+      "question_pair_id": "p4_candidate_disambiguation",
+      "recall_at_1": 0.5,
+      "recall_at_10": 1.0,
+      "recall_at_3": 1.0,
+      "recall_at_5": 1.0,
+      "relevance_unit": "LONGMEMEVAL_GOLD_SESSION",
+      "sample_id": "B03__Update"
+    }
+  ]
+}

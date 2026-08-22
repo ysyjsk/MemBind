@@ -1,6 +1,7 @@
 from __future__ import annotations
 
 import asyncio
+import os
 import shlex
 from pathlib import Path
 from types import SimpleNamespace
@@ -20,6 +21,9 @@ from saturated_fixed_work_baseline_v1_3.membind_v5.p9_runner import (
     _transport_attempt_rows,
     _transport_evidence_summary,
     _run_history_live_async,
+    ALTERNATE_CONSTRUCTION_BASE_URL,
+    ALTERNATE_EMBEDDING_BASE_URL,
+    build_u0_runtime_with_endpoint_overrides,
     build_p9_live_command,
     build_p9_parser,
     run_frontier_history_async,
@@ -319,6 +323,74 @@ def test_p9_command_is_real_runner_and_cli_shape_is_parseable(tmp_path: Path) ->
     )
     assert parsed.execute_live is True
     assert parsed.smoke is False
+
+
+def test_p9_alternate_gpu_endpoint_pair_is_cli_parseable_and_bound(tmp_path: Path) -> None:
+    config = P9FullConfig(
+        repo_root=tmp_path,
+        baseline_root=tmp_path / "baseline",
+        state_path=tmp_path / "state.json",
+        output_root=tmp_path / "p9",
+        run_id="p9-gpu0-smoke",
+        construction_base_url="http://10.87.5.247:8002/v1/",
+        embedding_base_url="http://10.87.5.247:8003/v1",
+    )
+    command = build_p9_live_command(config)
+    assert "--construction-base-url http://10.87.5.247:8002/v1/" in command
+    assert "--embedding-base-url http://10.87.5.247:8003/v1" in command
+    tokens = shlex.split(command)
+    script_index = next(index for index, token in enumerate(tokens) if token.endswith("run_v5_p9_full.py"))
+    parsed = build_p9_parser().parse_args(tokens[script_index + 1 :])
+    assert parsed.construction_base_url == "http://10.87.5.247:8002/v1/"
+    assert parsed.embedding_base_url == "http://10.87.5.247:8003/v1"
+
+
+def test_p9_endpoint_overrides_must_be_a_pair(tmp_path: Path) -> None:
+    with pytest.raises(P9RunnerError, match="overrides must provide"):
+        P9FullConfig(
+            repo_root=tmp_path,
+            baseline_root=tmp_path / "baseline",
+            state_path=tmp_path / "state.json",
+            output_root=tmp_path / "p9",
+            run_id="p9-gpu0-smoke",
+            construction_base_url="http://10.87.5.247:8002/v1/",
+        )
+
+
+def test_endpoint_override_helper_is_temporary_and_fail_closed() -> None:
+    import sys
+
+    sys.path.insert(0, str(Path(__file__).parents[2] / "membind-validation/src"))
+    import native_characterization_runtime as runtime_module
+
+    original_env = {name: os.environ.get(name) for name in ("CONSTRUCTION_LLM_BASE_URL", "EMBEDDING_BASE_URL")}
+    original_constants = (runtime_module.CONSTRUCTION_BASE_URL, runtime_module.EMBEDDING_BASE_URL)
+    observed: dict[str, str] = {}
+
+    def builder() -> object:
+        observed["construction_env"] = os.environ["CONSTRUCTION_LLM_BASE_URL"]
+        observed["embedding_env"] = os.environ["EMBEDDING_BASE_URL"]
+        observed["construction_constant"] = runtime_module.CONSTRUCTION_BASE_URL
+        observed["embedding_constant"] = runtime_module.EMBEDDING_BASE_URL
+        return object()
+
+    assert build_u0_runtime_with_endpoint_overrides(
+        builder,
+        construction_base_url=ALTERNATE_CONSTRUCTION_BASE_URL,
+        embedding_base_url=ALTERNATE_EMBEDDING_BASE_URL,
+    ) is not None
+    assert observed["construction_env"] == ALTERNATE_CONSTRUCTION_BASE_URL
+    assert observed["embedding_env"] == ALTERNATE_EMBEDDING_BASE_URL
+    assert (runtime_module.CONSTRUCTION_BASE_URL, runtime_module.EMBEDDING_BASE_URL) == original_constants
+    for name, value in original_env.items():
+        assert os.environ.get(name) == value
+
+    with pytest.raises(P9RunnerError, match="qualified GPU0 pair"):
+        build_u0_runtime_with_endpoint_overrides(
+            builder,
+            construction_base_url="http://127.0.0.1:9999/v1/",
+            embedding_base_url=ALTERNATE_EMBEDDING_BASE_URL,
+        )
 
 
 def test_current_corrected_p9_queue_command_targets_real_cli_and_parses() -> None:

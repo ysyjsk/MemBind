@@ -90,7 +90,14 @@ async def main_async(args: argparse.Namespace) -> int:
     cohort_root = args.audit_root.resolve() / "replication_cohort"
     source_manifest = read_json(cohort_root / "selection_manifest.json")
     rows = source_manifest.get("samples")
-    if not isinstance(rows, list) or len(rows) != 24:
+    if not isinstance(rows, list) or not rows:
+        raise RuntimeError("HAZARD_COHORT_EMPTY")
+    if args.sample_id is not None:
+        selected = [row for row in rows if isinstance(row, dict) and row.get("sample_id") == args.sample_id]
+        if len(selected) != 1:
+            raise RuntimeError(f"HAZARD_SAMPLE_ID_NOT_UNIQUE:{args.sample_id}")
+        rows = selected
+    elif len(rows) != 24:
         raise RuntimeError("HAZARD_COHORT_NOT_24_SAMPLES")
     parent_root = args.replication_root.resolve()
     if parent_root.exists() and any(parent_root.iterdir()):
@@ -165,6 +172,7 @@ def main() -> int:
     parser.add_argument("--repository-root", type=Path, required=True)
     parser.add_argument("--method", choices=("B0_NATIVE_SERIAL", "B1_NAIVE_WHOLE_UPDATE_ASYNC"), required=True)
     parser.add_argument("--ordinal", type=int, choices=(1, 2, 3), required=True)
+    parser.add_argument("--sample-id", default=None, help="Run exactly one already-frozen sample for checkpoint recovery.")
     parser.add_argument("--sample-timeout-s", type=float, default=180.0)
     args = parser.parse_args()
     return asyncio.run(main_async(args))

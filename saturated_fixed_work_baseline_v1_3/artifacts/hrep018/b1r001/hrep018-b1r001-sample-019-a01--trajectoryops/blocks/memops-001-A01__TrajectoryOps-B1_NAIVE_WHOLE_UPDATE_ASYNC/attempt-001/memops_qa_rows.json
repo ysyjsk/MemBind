@@ -1,0 +1,315 @@
+{
+  "payload_sha256": "30bf8ae6d06184c8e1f51aca0b69f4b91f3517bfc2e53a20425bc1152a1927e9",
+  "rows": [
+    {
+      "construction_calls": 0,
+      "correct": true,
+      "evaluation_setting": "adjacent_operation",
+      "evaluation_type": "StateTransition",
+      "expected_answer": "Senior Data Analyst.",
+      "failure_layer": null,
+      "gold_memory_state": "The confirmed final designation is Senior Data Analyst. Lead Data Analyst was mentioned as a future possibility pending org chart finalization but was never adopted as the official designation. Junior Data Analyst and Data Analyst are superseded earlier values.",
+      "gold_provenance": [
+        {
+          "quote": "Diane told me today that since I took over the MedVantage quarterly deliverable, my title is being bumped to Senior Data Analyst effective this pay period",
+          "segment_index": 2,
+          "turn_index": 5
+        },
+        {
+          "quote": "HR sent an email saying my title will be changed to Lead Data Analyst next quarter once the new org chart is finalized",
+          "segment_index": 3,
+          "turn_index": 5
+        }
+      ],
+      "gold_ranks": [
+        1,
+        2
+      ],
+      "graph_write_attempts": 0,
+      "invalid": false,
+      "invalid_reason": null,
+      "judge_rubric": {
+        "acceptable_paraphrases": [
+          "Sr. Data Analyst"
+        ],
+        "harmful_extra": [
+          "Using Lead Data Analyst on the business cards",
+          "Listing multiple designations as equally current"
+        ],
+        "harmless_extra": [
+          "Mentioning Bridgemark Solutions as the company name"
+        ],
+        "must_include": [
+          "Senior Data Analyst"
+        ],
+        "must_not_include": [
+          "Lead Data Analyst as the designation to print",
+          "Junior Data Analyst",
+          "Data Analyst without Senior qualifier"
+        ]
+      },
+      "memops_official_judge": {
+        "answer_score": 1,
+        "completion_tokens": 138,
+        "extra_detail_postcheck_action": "none",
+        "extra_detail_postcheck_applied": false,
+        "extra_detail_type": "none",
+        "final_state": 1,
+        "finish_reason": "stop",
+        "intermediate_state": null,
+        "judge_operation_detection": {
+          "fn": 0,
+          "fp": 0,
+          "tp": 0
+        },
+        "judge_provenance_support": null,
+        "official_prompt_builder": "build_evaluation_prompt",
+        "official_result_parser": "parse_judge_metrics",
+        "prompt_sha256": "b1afdc01b1af01bf8138d02be7d3a231109259d324e72b362f9f4e699dfc6ea9",
+        "prompt_tokens": 5914,
+        "raw_prompt_persisted": false,
+        "raw_response_persisted": false,
+        "reason": "The model correctly states the current official title as 'Senior Data Analyst', which is the confirmed final value in the gold memory state. It does not include any harmful extra details or treat tentative or outdated values as current.",
+        "response_sha256": "e25a814526e1985e3fbe652469bd71470aebc64a5849d0d7fb80b46ee8baea0e",
+        "trajectory_order": null,
+        "trajectory_provenance": null
+      },
+      "mrr": 1.0,
+      "ndcg_at_10": 1.0,
+      "question_id": "A01__TrajectoryOps:p3_state_transition:adjacent_operation",
+      "question_pair_id": "p3_state_transition",
+      "recall_at_1": 0.5,
+      "recall_at_10": 1.0,
+      "recall_at_3": 1.0,
+      "recall_at_5": 1.0,
+      "relevance_unit": "LONGMEMEVAL_GOLD_SESSION",
+      "sample_id": "A01__TrajectoryOps"
+    },
+    {
+      "construction_calls": 0,
+      "correct": true,
+      "evaluation_setting": "longitudinal_operation",
+      "evaluation_type": "StateTransition",
+      "expected_answer": "Senior Data Analyst.",
+      "failure_layer": null,
+      "gold_memory_state": "The confirmed final designation is Senior Data Analyst. Lead Data Analyst was mentioned as a future possibility pending org chart finalization but was never adopted as the official designation. Junior Data Analyst and Data Analyst are superseded earlier values.",
+      "gold_provenance": [
+        {
+          "quote": "Diane told me today that since I took over the MedVantage quarterly deliverable, my title is being bumped to Senior Data Analyst effective this pay period",
+          "segment_index": 2,
+          "turn_index": 5
+        },
+        {
+          "quote": "HR sent an email saying my title will be changed to Lead Data Analyst next quarter once the new org chart is finalized",
+          "segment_index": 3,
+          "turn_index": 5
+        }
+      ],
+      "gold_ranks": [
+        1,
+        2
+      ],
+      "graph_write_attempts": 0,
+      "invalid": false,
+      "invalid_reason": null,
+      "judge_rubric": {
+        "acceptable_paraphrases": [
+          "Sr. Data Analyst"
+        ],
+        "harmful_extra": [
+          "Using Lead Data Analyst on the business cards",
+          "Listing multiple designations as equally current"
+        ],
+        "harmless_extra": [
+          "Mentioning Bridgemark Solutions as the company name"
+        ],
+        "must_include": [
+          "Senior Data Analyst"
+        ],
+        "must_not_include": [
+          "Lead Data Analyst as the designation to print",
+          "Junior Data Analyst",
+          "Data Analyst without Senior qualifier"
+        ]
+      },
+      "memops_official_judge": {
+        "answer_score": 1,
+        "completion_tokens": 129,
+        "extra_detail_postcheck_action": "none",
+        "extra_detail_postcheck_applied": false,
+        "extra_detail_type": "none",
+        "final_state": 1,
+        "finish_reason": "stop",
+        "intermediate_state": null,
+        "judge_operation_detection": {
+          "fn": 0,
+          "fp": 0,
+          "tp": 0
+        },
+        "judge_provenance_support": null,
+        "official_prompt_builder": "build_evaluation_prompt",
+        "official_result_parser": "parse_judge_metrics",
+        "prompt_sha256": "b1afdc01b1af01bf8138d02be7d3a231109259d324e72b362f9f4e699dfc6ea9",
+        "prompt_tokens": 5914,
+        "raw_prompt_persisted": false,
+        "raw_response_persisted": false,
+        "reason": "The model correctly states the current official title as 'Senior Data Analyst', which is the confirmed final value in the gold operations. No harmful or conflicting extra details are present.",
+        "response_sha256": "fa44897adf97a0998a889d5fb8307402f5dbb0945bd857ae96a80277c5505a17",
+        "trajectory_order": null,
+        "trajectory_provenance": null
+      },
+      "mrr": 1.0,
+      "ndcg_at_10": 1.0,
+      "question_id": "A01__TrajectoryOps:p3_state_transition:longitudinal_operation",
+      "question_pair_id": "p3_state_transition",
+      "recall_at_1": 0.5,
+      "recall_at_10": 1.0,
+      "recall_at_3": 1.0,
+      "recall_at_5": 1.0,
+      "relevance_unit": "LONGMEMEVAL_GOLD_SESSION",
+      "sample_id": "A01__TrajectoryOps"
+    },
+    {
+      "construction_calls": 0,
+      "correct": false,
+      "error_message": "Quality v1 gold sessions is invalid",
+      "evaluation_setting": "adjacent_operation",
+      "evaluation_type": "StateTrajectory",
+      "expected_answer": "The sequence is: (1) Junior Data Analyst — this was the starting designation when you joined on January 15th. (2) Data Analyst — the company restructured titles in February, removing junior and senior labels, so your designation became Data Analyst. This was an official change. (3) Senior Data Analyst — after you took over the MedVantage quarterly deliverable, Diane Kowalski recommended the promotion and it took effect this pay period. This is the current official designation. (4) Lead Data Analyst — HR proposed this for next quarter once the new org chart is finalized, but it has not taken effect and remains a future possibility only.",
+      "failure_layer": "retrieval",
+      "gold_memory_state": "Full trajectory: Junior Data Analyst (confirmed, initial) → Data Analyst (confirmed, February restructuring) → Senior Data Analyst (confirmed, current pay period, final active value) → Lead Data Analyst (tentative, proposed for next quarter, not yet adopted).",
+      "gold_provenance": [
+        {
+          "quote": "My title when I started was Junior Data Analyst",
+          "segment_index": 1,
+          "turn_index": 1
+        },
+        {
+          "quote": "they restructured titles in February and mine became just Data Analyst, no junior or senior labels anymore",
+          "segment_index": 1,
+          "turn_index": 7
+        },
+        {
+          "quote": "Diane told me today that since I took over the MedVantage quarterly deliverable, my title is being bumped to Senior Data Analyst effective this pay period",
+          "segment_index": 2,
+          "turn_index": 5
+        },
+        {
+          "quote": "HR sent an email saying my title will be changed to Lead Data Analyst next quarter once the new org chart is finalized",
+          "segment_index": 3,
+          "turn_index": 5
+        }
+      ],
+      "graph_write_attempts": 0,
+      "invalid": true,
+      "invalid_reason": "builtins.ValueError",
+      "judge_rubric": {
+        "acceptable_paraphrases": [
+          "pending",
+          "future",
+          "not finalized",
+          "proposed but not adopted"
+        ],
+        "harmful_extra": [
+          "Omitting any of the four trajectory steps",
+          "Presenting Lead Data Analyst as having taken effect"
+        ],
+        "harmless_extra": [
+          "MedVantage deliverable context",
+          "February timing for restructuring",
+          "Diane Kowalski's role in the promotion"
+        ],
+        "must_include": [
+          "Junior Data Analyst as starting point",
+          "Data Analyst as second step after restructuring",
+          "Senior Data Analyst as third step and current official",
+          "Lead Data Analyst as fourth step and not yet official/only proposed"
+        ],
+        "must_not_include": [
+          "Lead Data Analyst as an adopted or current designation"
+        ]
+      },
+      "memops_official_judge": null,
+      "mrr": 0.0,
+      "ndcg_at_10": 0.0,
+      "question_id": "A01__TrajectoryOps:p5_state_trajectory:adjacent_operation",
+      "question_pair_id": "p5_state_trajectory",
+      "recall_at_1": 0.0,
+      "recall_at_10": 0.0,
+      "recall_at_3": 0.0,
+      "recall_at_5": 0.0,
+      "sample_id": "A01__TrajectoryOps"
+    },
+    {
+      "construction_calls": 0,
+      "correct": false,
+      "error_message": "Quality v1 gold sessions is invalid",
+      "evaluation_setting": "longitudinal_operation",
+      "evaluation_type": "StateTrajectory",
+      "expected_answer": "The sequence is: (1) Junior Data Analyst — this was the starting designation when you joined on January 15th. (2) Data Analyst — the company restructured titles in February, removing junior and senior labels, so your designation became Data Analyst. This was an official change. (3) Senior Data Analyst — after you took over the MedVantage quarterly deliverable, Diane Kowalski recommended the promotion and it took effect this pay period. This is the current official designation. (4) Lead Data Analyst — HR proposed this for next quarter once the new org chart is finalized, but it has not taken effect and remains a future possibility only.",
+      "failure_layer": "retrieval",
+      "gold_memory_state": "Full trajectory: Junior Data Analyst (confirmed, initial) → Data Analyst (confirmed, February restructuring) → Senior Data Analyst (confirmed, current pay period, final active value) → Lead Data Analyst (tentative, proposed for next quarter, not yet adopted).",
+      "gold_provenance": [
+        {
+          "quote": "My title when I started was Junior Data Analyst",
+          "segment_index": 1,
+          "turn_index": 1
+        },
+        {
+          "quote": "they restructured titles in February and mine became just Data Analyst, no junior or senior labels anymore",
+          "segment_index": 1,
+          "turn_index": 7
+        },
+        {
+          "quote": "Diane told me today that since I took over the MedVantage quarterly deliverable, my title is being bumped to Senior Data Analyst effective this pay period",
+          "segment_index": 2,
+          "turn_index": 5
+        },
+        {
+          "quote": "HR sent an email saying my title will be changed to Lead Data Analyst next quarter once the new org chart is finalized",
+          "segment_index": 3,
+          "turn_index": 5
+        }
+      ],
+      "graph_write_attempts": 0,
+      "invalid": true,
+      "invalid_reason": "builtins.ValueError",
+      "judge_rubric": {
+        "acceptable_paraphrases": [
+          "pending",
+          "future",
+          "not finalized",
+          "proposed but not adopted"
+        ],
+        "harmful_extra": [
+          "Omitting any of the four trajectory steps",
+          "Presenting Lead Data Analyst as having taken effect"
+        ],
+        "harmless_extra": [
+          "MedVantage deliverable context",
+          "February timing for restructuring",
+          "Diane Kowalski's role in the promotion"
+        ],
+        "must_include": [
+          "Junior Data Analyst as starting point",
+          "Data Analyst as second step after restructuring",
+          "Senior Data Analyst as third step and current official",
+          "Lead Data Analyst as fourth step and not yet official/only proposed"
+        ],
+        "must_not_include": [
+          "Lead Data Analyst as an adopted or current designation"
+        ]
+      },
+      "memops_official_judge": null,
+      "mrr": 0.0,
+      "ndcg_at_10": 0.0,
+      "question_id": "A01__TrajectoryOps:p5_state_trajectory:longitudinal_operation",
+      "question_pair_id": "p5_state_trajectory",
+      "recall_at_1": 0.0,
+      "recall_at_10": 0.0,
+      "recall_at_3": 0.0,
+      "recall_at_5": 0.0,
+      "sample_id": "A01__TrajectoryOps"
+    }
+  ]
+}

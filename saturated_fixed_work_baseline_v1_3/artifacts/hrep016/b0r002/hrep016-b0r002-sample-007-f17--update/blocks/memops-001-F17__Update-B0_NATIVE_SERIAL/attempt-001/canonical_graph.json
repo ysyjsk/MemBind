@@ -1,0 +1,582 @@
+{
+  "canonical_graph_hash": "8f8db5ebea9cdddde211786d1e5f6c019d2fb5144e08978f16254138b6823736",
+  "edges": [
+    {
+      "attributes": {},
+      "expired_at": "2026-08-22T15:15:11.999029000+00:00",
+      "fact": "USER has a confirmed AMH result of 1.1 ng/mL from a rerun, validated by Dr. Reyes after ruling out an external lab's mislabeled result.",
+      "invalid_at": "2025-03-03T00:00:00.000000000+00:00",
+      "relation_type": "HAS_AMH_RESULT",
+      "source_entity_key": "user",
+      "source_episode_sequence": 2,
+      "target_entity_key": "amh",
+      "valid_at": "2000-01-01T00:02:00.000000000+00:00"
+    },
+    {
+      "attributes": {},
+      "expired_at": "2026-08-22T15:15:12.024551000+00:00",
+      "fact": "USER received confirmation from Dr. Reyes that the external lab result of 1.6 ng/mL was from a mislabeled vial and is not theirs. The confirmed AMH is still 1.1 ng/mL.",
+      "invalid_at": "2025-03-03T00:00:00.000000000+00:00",
+      "relation_type": "RECEIVED_CONFIRMATION_FROM",
+      "source_entity_key": "user",
+      "source_episode_sequence": 2,
+      "target_entity_key": "dr. reyes",
+      "valid_at": "2000-01-01T00:02:00.000000000+00:00"
+    },
+    {
+      "attributes": {},
+      "expired_at": "2026-08-22T15:15:12.049581000+00:00",
+      "fact": "USER received confirmation from Dr. Reyes that the AMH result of 1.1 ng/mL is accurate and that the external lab's 1.6 ng/mL result was from a mislabeled vial.",
+      "invalid_at": "2025-03-03T00:00:00.000000000+00:00",
+      "relation_type": "RECEIVED_LAB_RESULT_CONFIRMATION",
+      "source_entity_key": "user",
+      "source_episode_sequence": 2,
+      "target_entity_key": "dr. reyes",
+      "valid_at": "2000-01-01T00:02:00.000000000+00:00"
+    },
+    {
+      "attributes": {},
+      "expired_at": "2026-08-22T15:15:12.165608000+00:00",
+      "fact": "USER's lab result portal at Pacific Fertility Clinic had an error where another patient's AMH result of 2.3 ng/mL was cross-posted to their account. The clinic is fixing it.",
+      "invalid_at": "2025-03-03T00:00:00.000000000+00:00",
+      "relation_type": "HAS_LAB_RESULT_CORRECTION",
+      "source_entity_key": "user",
+      "source_episode_sequence": 2,
+      "target_entity_key": "pacific fertility clinic on wilshire",
+      "valid_at": "2000-01-01T00:02:00.000000000+00:00"
+    },
+    {
+      "attributes": {},
+      "expired_at": "2026-08-22T15:15:12.165637000+00:00",
+      "fact": "Dr. Reyes wants to discuss whether to move to IUI sooner rather than continuing with just letrozole and timed intercourse, based on the new AMH result.",
+      "invalid_at": "2000-01-01T00:02:00.000000000+00:00",
+      "relation_type": "RECOMMENDED_TREATMENT",
+      "source_entity_key": "dr. reyes",
+      "source_episode_sequence": 1,
+      "target_entity_key": "user",
+      "valid_at": "2000-01-01T00:00:00.000000000+00:00"
+    },
+    {
+      "attributes": {},
+      "expired_at": null,
+      "fact": "Carla is receiving IVF treatment at UCLA.",
+      "invalid_at": null,
+      "relation_type": "RECEIVES_TREATMENT_AT",
+      "source_entity_key": "carla",
+      "source_episode_sequence": 1,
+      "target_entity_key": "ucla",
+      "valid_at": "2000-01-01T00:00:00.000000000+00:00"
+    },
+    {
+      "attributes": {},
+      "expired_at": null,
+      "fact": "James had a semen analysis and everything was normal, motility and count both fine.",
+      "invalid_at": null,
+      "relation_type": "HAS_TEST_RESULT",
+      "source_entity_key": "james",
+      "source_episode_sequence": 0,
+      "target_entity_key": "semen analysis",
+      "valid_at": "2025-03-03T00:00:00.000000000+00:00"
+    },
+    {
+      "attributes": {},
+      "expired_at": null,
+      "fact": "USER experienced headaches and joint pain for about four days during the first round of letrozole 5mg, and is concerned about whether these side effects would be a concern at a higher dose.",
+      "invalid_at": null,
+      "relation_type": "EXPERIENCED_SIDE_EFFECTS",
+      "source_entity_key": "user",
+      "source_episode_sequence": 1,
+      "target_entity_key": "letrozole 5mg",
+      "valid_at": "2000-01-01T00:00:00.000000000+00:00"
+    },
+    {
+      "attributes": {},
+      "expired_at": null,
+      "fact": "USER has a monitoring ultrasound on May 22nd, which is cycle day 10, to check follicle development for the second letrozole round.",
+      "invalid_at": null,
+      "relation_type": "HAS_MONITORING_APPOINTMENT",
+      "source_entity_key": "user",
+      "source_episode_sequence": 1,
+      "target_entity_key": "may 22nd",
+      "valid_at": "2000-05-22T00:00:00.000000000+00:00"
+    },
+    {
+      "attributes": {},
+      "expired_at": null,
+      "fact": "USER has an appointment with Pacific Fertility Clinic on May 22nd, cycle day 10, to monitor follicle development for the second letrozole round.",
+      "invalid_at": null,
+      "relation_type": "HAS_APPOINTMENT",
+      "source_entity_key": "user",
+      "source_episode_sequence": 2,
+      "target_entity_key": "pacific fertility clinic on wilshire",
+      "valid_at": "2000-01-01T00:02:00.000000000+00:00"
+    },
+    {
+      "attributes": {},
+      "expired_at": null,
+      "fact": "USER is asking Pacific Fertility Clinic whether they use the Beckman Coulter picoAMH or the Elecsys assay for AMH testing, as the reference ranges differ between the two.",
+      "invalid_at": null,
+      "relation_type": "HAS_LAB_ASSAY_QUESTION",
+      "source_entity_key": "user",
+      "source_episode_sequence": 2,
+      "target_entity_key": "pacific fertility clinic on wilshire",
+      "valid_at": "2000-01-01T00:02:00.000000000+00:00"
+    },
+    {
+      "attributes": {},
+      "expired_at": null,
+      "fact": "USER is considering moving to IUI sooner rather than continuing with just letrozole and timed intercourse, as recommended by Dr. Reyes.",
+      "invalid_at": null,
+      "relation_type": "CONSIDERING_TREATMENT",
+      "source_entity_key": "user",
+      "source_episode_sequence": 1,
+      "target_entity_key": "iui",
+      "valid_at": "2000-01-01T00:00:00.000000000+00:00"
+    },
+    {
+      "attributes": {},
+      "expired_at": null,
+      "fact": "USER is focused on the May 22nd ultrasound as a key data point in the fertility journey.",
+      "invalid_at": null,
+      "relation_type": "FOCUSED_ON",
+      "source_entity_key": "user",
+      "source_episode_sequence": 1,
+      "target_entity_key": "may 22nd",
+      "valid_at": "2000-01-01T00:00:00.000000000+00:00"
+    },
+    {
+      "attributes": {},
+      "expired_at": null,
+      "fact": "USER is inquiring whether Pacific Fertility Clinic uses the Beckman Coulter picoAMH assay for AMH testing, as it can give slightly different reference ranges compared to the standard Elecsys assay.",
+      "invalid_at": null,
+      "relation_type": "INQUIRING_ABOUT_ASSAY_USAGE",
+      "source_entity_key": "user",
+      "source_episode_sequence": 2,
+      "target_entity_key": "dr. reyes",
+      "valid_at": "2000-01-01T00:02:00.000000000+00:00"
+    },
+    {
+      "attributes": {},
+      "expired_at": null,
+      "fact": "USER is thinking about where she might end up if IUI doesn't work, inspired by Carla's IVF journey.",
+      "invalid_at": null,
+      "relation_type": "CONSIDERING_TREATMENT",
+      "source_entity_key": "user",
+      "source_episode_sequence": 1,
+      "target_entity_key": "timed intercourse with letrozole",
+      "valid_at": "2000-01-01T00:00:00.000000000+00:00"
+    },
+    {
+      "attributes": {},
+      "expired_at": null,
+      "fact": "USER mentioned Carla, who is undergoing her first IVF cycle at UCLA and has been trying for about 18 months.",
+      "invalid_at": null,
+      "relation_type": "MENTIONED_FRIEND",
+      "source_entity_key": "user",
+      "source_episode_sequence": 1,
+      "target_entity_key": "carla",
+      "valid_at": "2000-01-01T00:00:00.000000000+00:00"
+    },
+    {
+      "attributes": {},
+      "expired_at": null,
+      "fact": "USER plans to ask Dr. Reyes whether the letrozole dose would change with IUI and whether the headaches and joint pain would be a concern at a higher dose.",
+      "invalid_at": null,
+      "relation_type": "PLANS_TO_ASK_QUESTION",
+      "source_entity_key": "user",
+      "source_episode_sequence": [
+        1,
+        2
+      ],
+      "target_entity_key": "dr. reyes",
+      "valid_at": "2000-01-01T00:00:00.000000000+00:00"
+    },
+    {
+      "attributes": {},
+      "expired_at": null,
+      "fact": "USER stopped taking Ritual prenatal about three weeks ago and no longer needs to remember it.",
+      "invalid_at": null,
+      "relation_type": "STOPPED_TAKING_SUPPLEMENT",
+      "source_entity_key": "user",
+      "source_episode_sequence": 1,
+      "target_entity_key": "ritual prenatal",
+      "valid_at": "2000-01-01T00:00:00.000000000+00:00"
+    },
+    {
+      "attributes": {},
+      "expired_at": null,
+      "fact": "USER switched to Thorne Basic Prenatal about three weeks ago because it contains methylfolate instead of folic acid.",
+      "invalid_at": null,
+      "relation_type": "TAKES_SUPPLEMENT",
+      "source_entity_key": "user",
+      "source_episode_sequence": [
+        1,
+        2
+      ],
+      "target_entity_key": "thorne basic prenatal",
+      "valid_at": "2000-01-01T00:00:00.000000000+00:00"
+    },
+    {
+      "attributes": {},
+      "expired_at": null,
+      "fact": "User experienced headaches during her first round of letrozole 5mg.",
+      "invalid_at": null,
+      "relation_type": "EXPERIENCED_SIDE_EFFECT",
+      "source_entity_key": "user",
+      "source_episode_sequence": 0,
+      "target_entity_key": "headaches",
+      "valid_at": "2025-03-31T00:00:00.000000000+00:00"
+    },
+    {
+      "attributes": {},
+      "expired_at": null,
+      "fact": "User experienced joint pain during her first round of letrozole 5mg.",
+      "invalid_at": null,
+      "relation_type": "EXPERIENCED_SIDE_EFFECT",
+      "source_entity_key": "user",
+      "source_episode_sequence": 0,
+      "target_entity_key": "joint pain",
+      "valid_at": "2025-03-31T00:00:00.000000000+00:00"
+    },
+    {
+      "attributes": {},
+      "expired_at": null,
+      "fact": "User had a day-21 progesterone check that came back at 14.2, confirming ovulation for that cycle.",
+      "invalid_at": null,
+      "relation_type": "HAS_TEST_RESULT",
+      "source_entity_key": "user",
+      "source_episode_sequence": 0,
+      "target_entity_key": "day-21 progesterone check",
+      "valid_at": "2025-04-21T00:00:00.000000000+00:00"
+    },
+    {
+      "attributes": {},
+      "expired_at": null,
+      "fact": "User had her first appointment at Pacific Fertility Clinic on Wilshire with Dr. Reyes around March 3rd.",
+      "invalid_at": null,
+      "relation_type": "HAS_APPOINTMENT_AT",
+      "source_entity_key": "user",
+      "source_episode_sequence": 0,
+      "target_entity_key": "pacific fertility clinic on wilshire",
+      "valid_at": "2025-03-03T00:00:00.000000000+00:00"
+    },
+    {
+      "attributes": {},
+      "expired_at": null,
+      "fact": "User had her first appointment with Dr. Reyes around March 3rd.",
+      "invalid_at": null,
+      "relation_type": "HAS_APPOINTMENT_WITH",
+      "source_entity_key": "user",
+      "source_episode_sequence": 0,
+      "target_entity_key": "dr. reyes",
+      "valid_at": "2025-03-03T00:00:00.000000000+00:00"
+    },
+    {
+      "attributes": {},
+      "expired_at": null,
+      "fact": "User is undergoing timed intercourse with letrozole as suggested by Dr. Reyes.",
+      "invalid_at": null,
+      "relation_type": "UNDERGOING_TREATMENT",
+      "source_entity_key": "user",
+      "source_episode_sequence": 0,
+      "target_entity_key": "timed intercourse with letrozole",
+      "valid_at": "2025-03-31T00:00:00.000000000+00:00"
+    },
+    {
+      "attributes": {},
+      "expired_at": null,
+      "fact": "User is using the Premom app to track fertility data.",
+      "invalid_at": null,
+      "relation_type": "USES_APP",
+      "source_entity_key": "user",
+      "source_episode_sequence": [
+        0,
+        1,
+        2
+      ],
+      "target_entity_key": "premom app",
+      "valid_at": "2025-04-07T00:00:00.000000000+00:00"
+    },
+    {
+      "attributes": {},
+      "expired_at": null,
+      "fact": "User is using the easy@Home OPK strips with 25 mIU sensitivity for ovulation prediction.",
+      "invalid_at": null,
+      "relation_type": "USES_SENSITIVITY",
+      "source_entity_key": "user",
+      "source_episode_sequence": 0,
+      "target_entity_key": "25 miu sensitivity",
+      "valid_at": "2025-04-07T00:00:00.000000000+00:00"
+    },
+    {
+      "attributes": {},
+      "expired_at": null,
+      "fact": "User is using the easy@Home OPK strips with 25 mIU sensitivity for ovulation prediction.",
+      "invalid_at": null,
+      "relation_type": "USES_TEST_STRIP",
+      "source_entity_key": "user",
+      "source_episode_sequence": 0,
+      "target_entity_key": "easy@home opk strips",
+      "valid_at": "2025-04-07T00:00:00.000000000+00:00"
+    },
+    {
+      "attributes": {},
+      "expired_at": null,
+      "fact": "User started her first round of letrozole 5mg on cycle day 3 around late March.",
+      "invalid_at": null,
+      "relation_type": "TOOK_MEDICATION",
+      "source_entity_key": "user",
+      "source_episode_sequence": 0,
+      "target_entity_key": "letrozole 5mg",
+      "valid_at": "2025-03-31T00:00:00.000000000+00:00"
+    },
+    {
+      "attributes": {},
+      "expired_at": null,
+      "fact": "User's AMH came back at 1.4 ng/mL from the blood work Dr. Reyes ordered.",
+      "invalid_at": null,
+      "relation_type": "HAS_TEST_RESULT",
+      "source_entity_key": "user",
+      "source_episode_sequence": 0,
+      "target_entity_key": "amh",
+      "valid_at": "2025-03-03T00:00:00.000000000+00:00"
+    },
+    {
+      "attributes": {},
+      "expired_at": null,
+      "fact": "User's AMH test was ordered by Dr. Reyes.",
+      "invalid_at": null,
+      "relation_type": "HAS_TEST_ORDERED_BY",
+      "source_entity_key": "user",
+      "source_episode_sequence": 0,
+      "target_entity_key": "dr. reyes",
+      "valid_at": "2025-03-03T00:00:00.000000000+00:00"
+    }
+  ],
+  "entities": [
+    {
+      "attributes": {},
+      "group_id": "hrep016-b0r002-sample-007-f17--update-MEMOPS-F17__Update-B0_NATIVE_SERIAL-attempt-001",
+      "labels": [
+        "Entity"
+      ],
+      "name": "25 miu sensitivity",
+      "summary": "User is using the easy@Home OPK strips with 25 mIU sensitivity for ovulation prediction."
+    },
+    {
+      "attributes": {},
+      "group_id": "hrep016-b0r002-sample-007-f17--update-MEMOPS-F17__Update-B0_NATIVE_SERIAL-attempt-001",
+      "labels": [
+        "Entity"
+      ],
+      "name": "amh",
+      "summary": "User's AMH came back at 1.4 ng/mL from the blood work Dr. Reyes ordered. USER has a confirmed AMH result of 1.1 ng/mL from a rerun, validated by Dr. Reyes after ruling out an external lab's mislabeled result."
+    },
+    {
+      "attributes": {},
+      "group_id": "hrep016-b0r002-sample-007-f17--update-MEMOPS-F17__Update-B0_NATIVE_SERIAL-attempt-001",
+      "labels": [
+        "Entity"
+      ],
+      "name": "carla",
+      "summary": "USER mentioned Carla, who is undergoing her first IVF cycle at UCLA and has been trying for about 18 months. Carla is receiving IVF treatment at UCLA."
+    },
+    {
+      "attributes": {},
+      "group_id": "hrep016-b0r002-sample-007-f17--update-MEMOPS-F17__Update-B0_NATIVE_SERIAL-attempt-001",
+      "labels": [
+        "Entity"
+      ],
+      "name": "cycle day 10",
+      "summary": ""
+    },
+    {
+      "attributes": {},
+      "group_id": "hrep016-b0r002-sample-007-f17--update-MEMOPS-F17__Update-B0_NATIVE_SERIAL-attempt-001",
+      "labels": [
+        "Entity"
+      ],
+      "name": "day-21 progesterone check",
+      "summary": "User had a day-21 progesterone check that came back at 14.2, confirming ovulation for that cycle."
+    },
+    {
+      "attributes": {},
+      "group_id": "hrep016-b0r002-sample-007-f17--update-MEMOPS-F17__Update-B0_NATIVE_SERIAL-attempt-001",
+      "labels": [
+        "Entity"
+      ],
+      "name": "dr. reyes",
+      "summary": "User had her first appointment with Dr. Reyes around March 3rd. User's AMH test was ordered by Dr. Reyes. Dr. Reyes wants to discuss whether to move to IUI sooner rather than continuing with just letrozole and timed intercourse, based on the new AMH result. USER plans to ask Dr. Reyes whether the letrozole dose would change with IUI and whether the headaches and joint pain would be a concern at a higher dose. USER received confirmation from Dr. Reyes that the external lab result of 1.6 ng/mL was from a mislabeled vial and is not theirs. The confirmed AMH is still 1.1 ng/mL. USER is inquiring whether Pacific Fertility Clinic uses the Beckman Coulter picoAMH assay for AMH testing, as it can give slightly different reference ranges compared to the standard Elecsys assay. USER received confirmation from Dr. Reyes that the AMH result of 1.1 ng/mL is accurate and that the external lab's 1.6 ng/mL result was from a mislabeled vial."
+    },
+    {
+      "attributes": {},
+      "group_id": "hrep016-b0r002-sample-007-f17--update-MEMOPS-F17__Update-B0_NATIVE_SERIAL-attempt-001",
+      "labels": [
+        "Entity"
+      ],
+      "name": "easy@home opk strips",
+      "summary": "User is using the easy@Home OPK strips with 25 mIU sensitivity for ovulation prediction."
+    },
+    {
+      "attributes": {},
+      "group_id": "hrep016-b0r002-sample-007-f17--update-MEMOPS-F17__Update-B0_NATIVE_SERIAL-attempt-001",
+      "labels": [
+        "Entity"
+      ],
+      "name": "folic acid",
+      "summary": ""
+    },
+    {
+      "attributes": {},
+      "group_id": "hrep016-b0r002-sample-007-f17--update-MEMOPS-F17__Update-B0_NATIVE_SERIAL-attempt-001",
+      "labels": [
+        "Entity"
+      ],
+      "name": "headaches",
+      "summary": "User experienced headaches during her first round of letrozole 5mg."
+    },
+    {
+      "attributes": {},
+      "group_id": "hrep016-b0r002-sample-007-f17--update-MEMOPS-F17__Update-B0_NATIVE_SERIAL-attempt-001",
+      "labels": [
+        "Entity"
+      ],
+      "name": "iui",
+      "summary": "IUI is a fertility treatment Dr. Reyes suggested as a next step if timed intercourse with letrozole is unsuccessful. The user is currently undergoing letrozole cycles before considering IUI. USER is considering moving to IUI sooner rather than continuing with just letrozole and timed intercourse, as recommended by Dr. Reyes."
+    },
+    {
+      "attributes": {},
+      "group_id": "hrep016-b0r002-sample-007-f17--update-MEMOPS-F17__Update-B0_NATIVE_SERIAL-attempt-001",
+      "labels": [
+        "Entity"
+      ],
+      "name": "james",
+      "summary": "James had a semen analysis and everything was normal, motility and count both fine."
+    },
+    {
+      "attributes": {},
+      "group_id": "hrep016-b0r002-sample-007-f17--update-MEMOPS-F17__Update-B0_NATIVE_SERIAL-attempt-001",
+      "labels": [
+        "Entity"
+      ],
+      "name": "joint pain",
+      "summary": "User experienced joint pain during her first round of letrozole 5mg."
+    },
+    {
+      "attributes": {},
+      "group_id": "hrep016-b0r002-sample-007-f17--update-MEMOPS-F17__Update-B0_NATIVE_SERIAL-attempt-001",
+      "labels": [
+        "Entity"
+      ],
+      "name": "letrozole 5mg",
+      "summary": "User started her first round of letrozole 5mg on cycle day 3 around late March. USER experienced headaches and joint pain for about four days during the first round of letrozole 5mg, and is concerned about whether these side effects would be a concern at a higher dose."
+    },
+    {
+      "attributes": {},
+      "group_id": "hrep016-b0r002-sample-007-f17--update-MEMOPS-F17__Update-B0_NATIVE_SERIAL-attempt-001",
+      "labels": [
+        "Entity"
+      ],
+      "name": "may 22nd",
+      "summary": "USER has a monitoring ultrasound on May 22nd, which is cycle day 10, to check follicle development for the second letrozole round. USER is focused on the May 22nd ultrasound as a key data point in the fertility journey."
+    },
+    {
+      "attributes": {},
+      "group_id": "hrep016-b0r002-sample-007-f17--update-MEMOPS-F17__Update-B0_NATIVE_SERIAL-attempt-001",
+      "labels": [
+        "Entity"
+      ],
+      "name": "methylfolate",
+      "summary": ""
+    },
+    {
+      "attributes": {},
+      "group_id": "hrep016-b0r002-sample-007-f17--update-MEMOPS-F17__Update-B0_NATIVE_SERIAL-attempt-001",
+      "labels": [
+        "Entity"
+      ],
+      "name": "pacific fertility clinic on wilshire",
+      "summary": "User had her first appointment at Pacific Fertility Clinic on Wilshire with Dr. Reyes around March 3rd. USER has an appointment with Pacific Fertility Clinic on May 22nd, cycle day 10, to monitor follicle development for the second letrozole round. USER's lab result portal at Pacific Fertility Clinic had an error where another patient's AMH result of 2.3 ng/mL was cross-posted to their account. The clinic is fixing it. USER is asking Pacific Fertility Clinic whether they use the Beckman Coulter picoAMH or the Elecsys assay for AMH testing, as the reference ranges differ between the two."
+    },
+    {
+      "attributes": {},
+      "group_id": "hrep016-b0r002-sample-007-f17--update-MEMOPS-F17__Update-B0_NATIVE_SERIAL-attempt-001",
+      "labels": [
+        "Entity"
+      ],
+      "name": "premom app",
+      "summary": "User is using the Premom app to track fertility data."
+    },
+    {
+      "attributes": {},
+      "group_id": "hrep016-b0r002-sample-007-f17--update-MEMOPS-F17__Update-B0_NATIVE_SERIAL-attempt-001",
+      "labels": [
+        "Entity"
+      ],
+      "name": "ritual prenatal",
+      "summary": "USER stopped taking Ritual prenatal about three weeks ago and no longer needs to remember it."
+    },
+    {
+      "attributes": {},
+      "group_id": "hrep016-b0r002-sample-007-f17--update-MEMOPS-F17__Update-B0_NATIVE_SERIAL-attempt-001",
+      "labels": [
+        "Entity"
+      ],
+      "name": "semen analysis",
+      "summary": "James had a semen analysis and everything was normal, motility and count both fine."
+    },
+    {
+      "attributes": {},
+      "group_id": "hrep016-b0r002-sample-007-f17--update-MEMOPS-F17__Update-B0_NATIVE_SERIAL-attempt-001",
+      "labels": [
+        "Entity"
+      ],
+      "name": "thorne basic prenatal",
+      "summary": "USER switched to Thorne Basic Prenatal about three weeks ago because it contains methylfolate instead of folic acid."
+    },
+    {
+      "attributes": {},
+      "group_id": "hrep016-b0r002-sample-007-f17--update-MEMOPS-F17__Update-B0_NATIVE_SERIAL-attempt-001",
+      "labels": [
+        "Entity"
+      ],
+      "name": "timed intercourse with letrozole",
+      "summary": "User is undergoing timed intercourse with letrozole as suggested by Dr. Reyes. USER is thinking about where she might end up if IUI doesn't work, inspired by Carla's IVF journey."
+    },
+    {
+      "attributes": {},
+      "group_id": "hrep016-b0r002-sample-007-f17--update-MEMOPS-F17__Update-B0_NATIVE_SERIAL-attempt-001",
+      "labels": [
+        "Entity"
+      ],
+      "name": "ucla",
+      "summary": "Carla is receiving IVF treatment at UCLA."
+    },
+    {
+      "attributes": {},
+      "group_id": "hrep016-b0r002-sample-007-f17--update-MEMOPS-F17__Update-B0_NATIVE_SERIAL-attempt-001",
+      "labels": [
+        "Entity"
+      ],
+      "name": "user",
+      "summary": "User had her first appointment at Pacific Fertility Clinic on Wilshire with Dr. Reyes around March 3rd. Dr. Reyes ordered blood work, which showed an initial AMH of 1.2 ng/mL, later corrected to 1.4 ng/mL, and then retested at 1.1 ng/mL after a lab calibration issue was flagged. User is 34 years old. User is undergoing timed intercourse with letrozole as suggested by Dr. Reyes. User started her first round of letrozole 5mg on cycle day 3 around late March and experienced headaches and joint pain for about four days. User is using the Premom app to track fertility data and the easy@Home OPK strips with 25 mIU sensitivity for ovulation prediction. A day-21 progesterone check came back at 14.2, confirming ovulation for that cycle, but no pregnancy was achieved. User switched from the Ritual prenatal to Thorne Basic Prenatal about three weeks ago due to its methylfolate content. User and her partner, James, decided to skip the current cycle in early May due to his work travel to Denver."
+    }
+  ],
+  "episodes": [
+    {
+      "session_id": "F17__Update:segment:001",
+      "source_hash": "53066bd729441bc6dde0e9955ac47c2cf3f62420a95e600ff3d2159eb7d5e521",
+      "source_sequence": 0
+    },
+    {
+      "session_id": "F17__Update:segment:002",
+      "source_hash": "d1f300524668f13fe13321df5bc7337b658b0397cb9c6317bcb75c7f578b3846",
+      "source_sequence": 1
+    },
+    {
+      "session_id": "F17__Update:segment:003",
+      "source_hash": "c5bc48e600027d8c055ae897621a355197cbe2ed89b6318762c38c6c0fa84b35",
+      "source_sequence": 2
+    }
+  ]
+}

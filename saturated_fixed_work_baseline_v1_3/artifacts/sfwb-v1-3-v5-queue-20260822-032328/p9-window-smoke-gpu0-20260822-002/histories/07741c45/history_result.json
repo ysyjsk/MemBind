@@ -1,0 +1,118 @@
+{
+  "build_makespan_ns": 8451901077,
+  "durable_frontier": 1,
+  "history_id": "07741c45",
+  "lifecycle": {
+    "build_makespan_ns": 8451901077,
+    "final_publication_ns": 22006163520259,
+    "status": "DURABLE",
+    "t0_ns": 21997713187955,
+    "t_durable_complete_ns": 22006163520259,
+    "timer_start_ns": 21997713187955,
+    "timer_stop_ns": 22006165089032
+  },
+  "logical_work_summary": {
+    "duplicates": 0,
+    "logical_captured": 4,
+    "logical_consumed": 4,
+    "unconsumed": 0
+  },
+  "method": "V5_VERSIONED_ORACLE_HOIST",
+  "namespace": "membind-v5-p9-p9-window-smoke-gpu0-20260822-002-07741c45-01418ce7f0",
+  "native_intervals": [
+    {
+      "end_ns": 22000402783187,
+      "source_sequence": 0,
+      "start_ns": 21998535118376
+    },
+    {
+      "end_ns": 22006162971292,
+      "source_sequence": 1,
+      "start_ns": 22000406101320
+    }
+  ],
+  "oracle_binding_summary": {
+    "duplicates": 0,
+    "logical_captured": 4,
+    "logical_consumed": 4,
+    "provider_native_calls": 3,
+    "provider_replay_calls": 0,
+    "replay_binding_calls": 4,
+    "unconsumed": 0
+  },
+  "overlap_evidence": {
+    "future_prepare_overlapped_native": true,
+    "native_count": 2,
+    "overlap_pairs": [
+      {
+        "native_source_sequence": 0,
+        "prepare_source_sequence": 1
+      }
+    ],
+    "preparation_count": 2
+  },
+  "preparation_intervals": [
+    {
+      "end_ns": 21998532978257,
+      "source_sequence": 0,
+      "start_ns": 21997714666895
+    },
+    {
+      "end_ns": 21999034025971,
+      "source_sequence": 1,
+      "start_ns": 21997722112739
+    }
+  ],
+  "runtime_identity": {
+    "classification": "U0",
+    "construction": {
+      "base_url": "http://10.87.5.247:8002/v1/",
+      "context_limit": 65536,
+      "enable_thinking": false,
+      "model_revision": "6e2312b85c2ae9a31f629f24493b79d8b02eab1a",
+      "requested_max_tokens": 16384,
+      "safety_margin_tokens": 32,
+      "seed": 20260806,
+      "served_model_id": "qwen3-32b-fp8",
+      "structured_output_mode": "json_schema",
+      "temperature": 0.0,
+      "top_p": 1.0
+    },
+    "embedding": {
+      "base_url": "http://10.87.5.247:8003/v1",
+      "dimension": 1024,
+      "served_model_id": "qwen3-embedding-0.6b"
+    },
+    "max_coroutines": 8,
+    "neo4j": {
+      "uri": "bolt://localhost:7687"
+    },
+    "policies": {
+      "cross_run_cache_carry_over": "prohibited",
+      "deterministic_candidate_ordering": false,
+      "embedding_cache": false,
+      "prompt_cache": false
+    },
+    "schema_version": "membind.v5.runtime-identity.v1"
+  },
+  "schema_version": "membind.v5.p9-history-result.v1",
+  "source_count": 2,
+  "status": "PASS",
+  "transport_evidence": {
+    "attempt_count": 7,
+    "complete": true,
+    "finish_reason_observed_count": 7,
+    "finish_reasons": [
+      "stop"
+    ],
+    "schema_version": "membind.v5.transport-evidence.v1",
+    "source_sequences": [
+      0,
+      1
+    ],
+    "successful_attempt_count": 7,
+    "successful_attempts_missing_finish_reason": 0,
+    "transport_error_count": 0,
+    "usage_observed_count": 7
+  }
+}

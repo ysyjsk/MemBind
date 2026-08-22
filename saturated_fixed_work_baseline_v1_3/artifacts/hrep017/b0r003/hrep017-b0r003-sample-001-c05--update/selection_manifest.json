@@ -1,0 +1,47 @@
+{
+  "benchmark": "MemOps",
+  "official_qa_evaluator": {
+    "path": "/data/predator/ly/third_party/MemOps/5.5-evaluate_operation_metrics.py",
+    "prompt_builder": "build_evaluation_prompt",
+    "result_parser": "parse_judge_metrics",
+    "sha256": "17c24362c174239eb7ef5e543bc651afed60ae445a4becd49acf24f6d3c646f0"
+  },
+  "parent_cohort_selection_manifest_sha256": "4f6b21e51ce577864545865c45f6aa0e2c4e3997d6f0ea89624db018f9491891",
+  "payload_sha256": "b8c0320699b6dd590b51911a9e6f984df26091ca921f7a45dac6fef4f82c08c9",
+  "pilot_policy_set": [
+    "B0_NATIVE_SERIAL"
+  ],
+  "replication_contract": {
+    "b0_failure_does_not_gate_next_sample_or_b1": true,
+    "same_source_order": true,
+    "single_sample_subroot": true,
+    "v5_started": false
+  },
+  "sample_count": 1,
+  "sample_order": [
+    "C05__Update"
+  ],
+  "samples": [
+    {
+      "cohort_sample_id": "C05__Update",
+      "hazard_score": 405,
+      "history_id": "memops-c05-update",
+      "max_confirmed_chain_length": 4,
+      "max_same_target_confirmed_mutations": 3,
+      "official_sample_id": "C05",
+      "operation_type": "Update",
+      "qualifying_qa_types": [
+        "CandidateDisambiguation"
+      ],
+      "sample_id": "C05__Update",
+      "source_file": "/data/predator/ly/third_party/MemOps/generated_result/2-evidence_conversation/C05_update.json",
+      "source_sha256": "0335cf348debd89721a818b17c14b7e3c68fda43241e89abc36fb62027e80de3",
+      "state_dependency_pair_count": 1,
+      "target_id": "iceland_booking_ref",
+      "target_name": "Icelandair booking reference code"
+    }
+  ],
+  "schema_version": "sfwb.v1.3.memops-hazard-single-sample-selection.v1",
+  "selection_basis": "gold-only hazard score; fixed type quotas Update=18 and TrajectoryOps=6; no B0/B1 artifacts read",
+  "status": "OFFLINE_HAZARD_COHORT_FROZEN"
+}

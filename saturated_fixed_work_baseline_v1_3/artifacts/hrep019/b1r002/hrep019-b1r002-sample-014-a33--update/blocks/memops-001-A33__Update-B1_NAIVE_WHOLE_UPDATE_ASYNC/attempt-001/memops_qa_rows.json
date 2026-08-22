@@ -1,0 +1,169 @@
+{
+  "payload_sha256": "2578bf4887cb1b8c8122052f751d251ceed7d32070b87ad990b38579c5f847fa",
+  "rows": [
+    {
+      "construction_calls": 0,
+      "correct": false,
+      "evaluation_setting": "adjacent_operation",
+      "evaluation_type": "CandidateDisambiguation",
+      "expected_answer": "5'11¼\"",
+      "failure_layer": null,
+      "gold_memory_state": "Current confirmed height: 5'11¼\" (home measurement, morning, barefoot). 6'0\" is the original self-report, superseded. 5'11\" is the doctor's measurement, superseded by the home measurement. 5'11½\" is a tentative future projection from the chiropractor, not yet realized.",
+      "gold_provenance": [
+        {
+          "quote": "I measured myself at home this morning against the door frame with a tape measure and I got 5'11¼\". First thing in the morning, barefoot, standing straight.",
+          "segment_index": 2,
+          "turn_index": 3
+        },
+        {
+          "quote": "The chiropractor told me that after a few more sessions my spine decompression should add about a quarter inch, putting me right at 5'11½\". He seemed pretty confident about it.",
+          "segment_index": 3,
+          "turn_index": 7
+        }
+      ],
+      "gold_ranks": [
+        1,
+        2
+      ],
+      "graph_write_attempts": 0,
+      "invalid": false,
+      "invalid_reason": null,
+      "judge_rubric": {
+        "acceptable_paraphrases": [
+          "5 feet 11 and a quarter inches",
+          "5'11.25\""
+        ],
+        "harmful_extra": [
+          "selecting 6'0\" as current height",
+          "selecting 5'11½\" as current height",
+          "selecting 5'11\" as current height"
+        ],
+        "harmless_extra": [
+          "noting this is a morning barefoot measurement"
+        ],
+        "must_include": [
+          "5'11¼\""
+        ],
+        "must_not_include": [
+          "6'0\"",
+          "5'11½\""
+        ]
+      },
+      "memops_official_judge": {
+        "answer_score": 0,
+        "completion_tokens": 131,
+        "extra_detail_postcheck_action": "none",
+        "extra_detail_postcheck_applied": false,
+        "extra_detail_type": "none",
+        "finish_reason": "stop",
+        "judge_operation_detection": {
+          "fn": 1,
+          "fp": 0,
+          "tp": 0
+        },
+        "judge_provenance_support": 0,
+        "official_prompt_builder": "build_evaluation_prompt",
+        "official_result_parser": "parse_judge_metrics",
+        "prompt_sha256": "8ef440a4b6ee14fa6a7e06d950731e4e6bc3ed931ec77ea21d7fe13c2e39bcc6",
+        "prompt_tokens": 6557,
+        "raw_prompt_persisted": false,
+        "raw_response_persisted": false,
+        "reason": "The model selected 5'11\", which is a superseded confirmed value (replaced by 5'11¼\"), making it a stale value. The correct answer is 5'11¼\" as the most recent confirmed height. No extra details were provided.",
+        "response_sha256": "873ab979f27672c856ca182e086b8f2eca159ecf7a990dd79b60c47097a0d2ac",
+        "stale_value": 1
+      },
+      "mrr": 1.0,
+      "ndcg_at_10": 1.0,
+      "question_id": "A33__Update:p4_candidate_disambiguation:adjacent_operation",
+      "question_pair_id": "p4_candidate_disambiguation",
+      "recall_at_1": 0.5,
+      "recall_at_10": 1.0,
+      "recall_at_3": 1.0,
+      "recall_at_5": 1.0,
+      "relevance_unit": "LONGMEMEVAL_GOLD_SESSION",
+      "sample_id": "A33__Update"
+    },
+    {
+      "construction_calls": 0,
+      "correct": false,
+      "evaluation_setting": "longitudinal_operation",
+      "evaluation_type": "CandidateDisambiguation",
+      "expected_answer": "5'11¼\"",
+      "failure_layer": null,
+      "gold_memory_state": "Current confirmed height: 5'11¼\" (home measurement, morning, barefoot). 6'0\" is the original self-report, superseded. 5'11\" is the doctor's measurement, superseded by the home measurement. 5'11½\" is a tentative future projection from the chiropractor, not yet realized.",
+      "gold_provenance": [
+        {
+          "quote": "I measured myself at home this morning against the door frame with a tape measure and I got 5'11¼\". First thing in the morning, barefoot, standing straight.",
+          "segment_index": 2,
+          "turn_index": 3
+        },
+        {
+          "quote": "The chiropractor told me that after a few more sessions my spine decompression should add about a quarter inch, putting me right at 5'11½\". He seemed pretty confident about it.",
+          "segment_index": 3,
+          "turn_index": 7
+        }
+      ],
+      "gold_ranks": [
+        1,
+        2
+      ],
+      "graph_write_attempts": 0,
+      "invalid": false,
+      "invalid_reason": null,
+      "judge_rubric": {
+        "acceptable_paraphrases": [
+          "5 feet 11 and a quarter inches",
+          "5'11.25\""
+        ],
+        "harmful_extra": [
+          "selecting 6'0\" as current height",
+          "selecting 5'11½\" as current height",
+          "selecting 5'11\" as current height"
+        ],
+        "harmless_extra": [
+          "noting this is a morning barefoot measurement"
+        ],
+        "must_include": [
+          "5'11¼\""
+        ],
+        "must_not_include": [
+          "6'0\"",
+          "5'11½\""
+        ]
+      },
+      "memops_official_judge": {
+        "answer_score": 0,
+        "completion_tokens": 125,
+        "extra_detail_postcheck_action": "none",
+        "extra_detail_postcheck_applied": false,
+        "extra_detail_type": "none",
+        "finish_reason": "stop",
+        "judge_operation_detection": {
+          "fn": 0,
+          "fp": 0,
+          "tp": 0
+        },
+        "judge_provenance_support": 0,
+        "official_prompt_builder": "build_evaluation_prompt",
+        "official_result_parser": "parse_judge_metrics",
+        "prompt_sha256": "8ef440a4b6ee14fa6a7e06d950731e4e6bc3ed931ec77ea21d7fe13c2e39bcc6",
+        "prompt_tokens": 6557,
+        "raw_prompt_persisted": false,
+        "raw_response_persisted": false,
+        "reason": "The model selected 5'11\", which is a superseded confirmed value (replaced by 5'11¼\" as the current confirmed height). The correct answer is 5'11¼\". This is a stale value error.",
+        "response_sha256": "7d6dfaab46d6512c603f350f7a7cf180d8deecb6f949929e6111f3c4acfa2ffd",
+        "stale_value": 1
+      },
+      "mrr": 1.0,
+      "ndcg_at_10": 1.0,
+      "question_id": "A33__Update:p4_candidate_disambiguation:longitudinal_operation",
+      "question_pair_id": "p4_candidate_disambiguation",
+      "recall_at_1": 0.5,
+      "recall_at_10": 1.0,
+      "recall_at_3": 1.0,
+      "recall_at_5": 1.0,
+      "relevance_unit": "LONGMEMEVAL_GOLD_SESSION",
+      "sample_id": "A33__Update"
+    }
+  ]
+}

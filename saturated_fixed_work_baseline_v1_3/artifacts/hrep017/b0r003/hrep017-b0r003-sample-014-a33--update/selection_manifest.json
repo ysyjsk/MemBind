@@ -1,0 +1,47 @@
+{
+  "benchmark": "MemOps",
+  "official_qa_evaluator": {
+    "path": "/data/predator/ly/third_party/MemOps/5.5-evaluate_operation_metrics.py",
+    "prompt_builder": "build_evaluation_prompt",
+    "result_parser": "parse_judge_metrics",
+    "sha256": "17c24362c174239eb7ef5e543bc651afed60ae445a4becd49acf24f6d3c646f0"
+  },
+  "parent_cohort_selection_manifest_sha256": "4f6b21e51ce577864545865c45f6aa0e2c4e3997d6f0ea89624db018f9491891",
+  "payload_sha256": "8b1d15032c68a3654efbf34f9fa3e8bb5922b484ec91a825dbea4a47af311246",
+  "pilot_policy_set": [
+    "B0_NATIVE_SERIAL"
+  ],
+  "replication_contract": {
+    "b0_failure_does_not_gate_next_sample_or_b1": true,
+    "same_source_order": true,
+    "single_sample_subroot": true,
+    "v5_started": false
+  },
+  "sample_count": 1,
+  "sample_order": [
+    "A33__Update"
+  ],
+  "samples": [
+    {
+      "cohort_sample_id": "A33__Update",
+      "hazard_score": 285,
+      "history_id": "memops-a33-update",
+      "max_confirmed_chain_length": 3,
+      "max_same_target_confirmed_mutations": 2,
+      "official_sample_id": "A33",
+      "operation_type": "Update",
+      "qualifying_qa_types": [
+        "CandidateDisambiguation"
+      ],
+      "sample_id": "A33__Update",
+      "source_file": "/data/predator/ly/third_party/MemOps/generated_result/2-evidence_conversation/A33_update.json",
+      "source_sha256": "003903f125cd990a3a2885b68b85228599f9d312bcb9dc782831b40fc50780c4",
+      "state_dependency_pair_count": 1,
+      "target_id": "current_height",
+      "target_name": "user's current height"
+    }
+  ],
+  "schema_version": "sfwb.v1.3.memops-hazard-single-sample-selection.v1",
+  "selection_basis": "gold-only hazard score; fixed type quotas Update=18 and TrajectoryOps=6; no B0/B1 artifacts read",
+  "status": "OFFLINE_HAZARD_COHORT_FROZEN"
+}

@@ -1,0 +1,320 @@
+{
+  "canonical_graph_hash": "f0ec734edf536894098dee6e692afd0d80f6dbd671bb7d184164f3143ea9c017",
+  "edges": [
+    {
+      "attributes": {},
+      "expired_at": "2026-08-22T16:22:04.311724000+00:00",
+      "fact": "Dr. Patel prescribed metformin 1000mg twice daily as of last Monday after reviewing the user's latest labs and determining that fasting glucose is still not at the desired level.",
+      "invalid_at": "2025-03-04T00:00:00.000000000+00:00",
+      "relation_type": "PRESCRIBED",
+      "source_entity_key": "dr. patel",
+      "source_episode_sequence": 1,
+      "target_entity_key": "metformin 1000mg",
+      "valid_at": "2000-01-01T00:01:00.000000000+00:00"
+    },
+    {
+      "attributes": {},
+      "expired_at": "2026-08-22T16:22:04.356422000+00:00",
+      "fact": "USER takes metformin 1000mg twice daily with breakfast and dinner as of last Monday.",
+      "invalid_at": "2000-01-01T00:02:00.000000000+00:00",
+      "relation_type": "TAKES_MEDICATION",
+      "source_entity_key": "user",
+      "source_episode_sequence": 1,
+      "target_entity_key": "metformin 1000mg",
+      "valid_at": "2000-01-01T00:01:00.000000000+00:00"
+    },
+    {
+      "attributes": {},
+      "expired_at": "2026-08-22T16:22:17.822460000+00:00",
+      "fact": "USER has a family history of high blood pressure, as the user's sister Emily started on lisinopril 10mg for blood pressure.",
+      "invalid_at": "2000-01-01T00:02:00.000000000+00:00",
+      "relation_type": "HAS_FAMILY_HISTORY_WITH",
+      "source_entity_key": "user",
+      "source_episode_sequence": 1,
+      "target_entity_key": "dr. patel",
+      "valid_at": "2000-01-01T00:01:00.000000000+00:00"
+    },
+    {
+      "attributes": {},
+      "expired_at": "2026-08-22T16:22:18.200638000+00:00",
+      "fact": "Dr. Patel prescribed metformin 1000mg twice daily as of last Monday",
+      "invalid_at": "2025-03-04T00:00:00.000000000+00:00",
+      "relation_type": "PRESCRIBED",
+      "source_entity_key": "user",
+      "source_episode_sequence": 2,
+      "target_entity_key": "dr. patel",
+      "valid_at": "2000-01-01T00:02:00.000000000+00:00"
+    },
+    {
+      "attributes": {},
+      "expired_at": "2026-08-22T16:22:18.294383000+00:00",
+      "fact": "Dr. Patel plans to switch the user to metformin 850mg extended-release once daily at the next visit",
+      "invalid_at": "2025-03-04T00:00:00.000000000+00:00",
+      "relation_type": "PLANNED_TO_SWITCH_TO",
+      "source_entity_key": "user",
+      "source_episode_sequence": 2,
+      "target_entity_key": "dr. patel",
+      "valid_at": "2000-01-01T00:02:00.000000000+00:00"
+    },
+    {
+      "attributes": {},
+      "expired_at": null,
+      "fact": "Dr. Patel prescribed metformin 500mg twice a day on March 4th for the user.",
+      "invalid_at": "2025-04-15T00:00:00.000000000+00:00",
+      "relation_type": "PRESCRIBED",
+      "source_entity_key": "dr. patel",
+      "source_episode_sequence": 0,
+      "target_entity_key": "metformin 500mg twice a day",
+      "valid_at": "2025-03-04T00:00:00.000000000+00:00"
+    },
+    {
+      "attributes": {},
+      "expired_at": null,
+      "fact": "Dr. Patel prescribed metformin 750mg twice daily around mid-April for the user due to insufficient improvement in fasting glucose levels.",
+      "invalid_at": null,
+      "relation_type": "PRESCRIBED",
+      "source_entity_key": "dr. patel",
+      "source_episode_sequence": 0,
+      "target_entity_key": "metformin 750mg twice daily",
+      "valid_at": "2025-04-15T00:00:00.000000000+00:00"
+    },
+    {
+      "attributes": {},
+      "expired_at": null,
+      "fact": "Dr. Patel prescribed omeprazole 20mg once a day before breakfast for the user's acid reflux, starting a few days before the conversation.",
+      "invalid_at": null,
+      "relation_type": "PRESCRIBED",
+      "source_entity_key": "dr. patel",
+      "source_episode_sequence": [
+        0,
+        1
+      ],
+      "target_entity_key": "omeprazole 20mg once a day before breakfast",
+      "valid_at": "2025-04-15T00:00:00.000000000+00:00"
+    },
+    {
+      "attributes": {},
+      "expired_at": null,
+      "fact": "Dr. Patel recommended vitamin D3 2000 IU daily in the morning after the user's annual checkup revealed low vitamin D levels.",
+      "invalid_at": null,
+      "relation_type": "RECOMMENDED",
+      "source_entity_key": "dr. patel",
+      "source_episode_sequence": 1,
+      "target_entity_key": "vitamin d3 2000 iu",
+      "valid_at": "2000-01-01T00:00:00.000000000+00:00"
+    },
+    {
+      "attributes": {},
+      "expired_at": null,
+      "fact": "Emily is not on metformin, but a pharmacy mistakenly labeled one of her bags with metformin 750mg",
+      "invalid_at": null,
+      "relation_type": "NOT_ON_MEDICATION",
+      "source_entity_key": "emily",
+      "source_episode_sequence": 2,
+      "target_entity_key": "dr. patel",
+      "valid_at": "2000-01-01T00:02:00.000000000+00:00"
+    },
+    {
+      "attributes": {},
+      "expired_at": null,
+      "fact": "USER has a blood pressure reading of 122 over 78, which Dr. Patel said was fine.",
+      "invalid_at": null,
+      "relation_type": "HAS_BLOOD_PRESSURE_READING",
+      "source_entity_key": "user",
+      "source_episode_sequence": 1,
+      "target_entity_key": "dr. patel",
+      "valid_at": "2000-01-01T00:01:00.000000000+00:00"
+    },
+    {
+      "attributes": {},
+      "expired_at": null,
+      "fact": "USER takes loratadine 10mg as needed for seasonal allergies, but has not needed it in a couple of weeks since pollen levels have dropped.",
+      "invalid_at": null,
+      "relation_type": "TAKES_MEDICATION",
+      "source_entity_key": "user",
+      "source_episode_sequence": 1,
+      "target_entity_key": "loratadine 10mg",
+      "valid_at": "2000-01-01T00:01:00.000000000+00:00"
+    },
+    {
+      "attributes": {},
+      "expired_at": null,
+      "fact": "USER takes vitamin D3 2000 IU daily in the morning since last fall due to low levels at the annual checkup.",
+      "invalid_at": null,
+      "relation_type": "TAKES_MEDICATION",
+      "source_entity_key": "user",
+      "source_episode_sequence": 1,
+      "target_entity_key": "vitamin d3 2000 iu",
+      "valid_at": "2000-01-01T00:01:00.000000000+00:00"
+    },
+    {
+      "attributes": {},
+      "expired_at": null,
+      "fact": "User changed from taking metformin 500mg twice a day to metformin 750mg twice daily around mid-April due to insufficient improvement in fasting glucose levels.",
+      "invalid_at": null,
+      "relation_type": "HAS_CHANGED_TO",
+      "source_entity_key": "user",
+      "source_episode_sequence": 0,
+      "target_entity_key": "metformin 500mg twice a day",
+      "valid_at": "2025-04-15T00:00:00.000000000+00:00"
+    },
+    {
+      "attributes": {},
+      "expired_at": null,
+      "fact": "User finds the evening dose of metformin 750mg twice daily inconvenient because it requires thinking about pills when winding down for the evening.",
+      "invalid_at": null,
+      "relation_type": "FINDS_INCONVENIENT",
+      "source_entity_key": "user",
+      "source_episode_sequence": 0,
+      "target_entity_key": "metformin 750mg twice daily",
+      "valid_at": "2025-04-15T00:00:00.000000000+00:00"
+    },
+    {
+      "attributes": {},
+      "expired_at": null,
+      "fact": "User prefers lighter dinners, such as soup or simple meals, partly due to acid reflux and partly because heavy greasy meals are no longer worth it.",
+      "invalid_at": null,
+      "relation_type": "PREFERENCES_LIGHTER_DINNERS",
+      "source_entity_key": "user",
+      "source_episode_sequence": 0,
+      "target_entity_key": "metformin 750mg twice daily",
+      "valid_at": "2025-04-15T00:00:00.000000000+00:00"
+    },
+    {
+      "attributes": {},
+      "expired_at": null,
+      "fact": "User takes metformin 500mg twice a day with breakfast and dinner, starting on March 4th.",
+      "invalid_at": "2025-04-15T00:00:00.000000000+00:00",
+      "relation_type": "TAKES_MEDICATION",
+      "source_entity_key": "user",
+      "source_episode_sequence": 0,
+      "target_entity_key": "metformin 500mg twice a day",
+      "valid_at": "2025-03-04T00:00:00.000000000+00:00"
+    },
+    {
+      "attributes": {},
+      "expired_at": null,
+      "fact": "User takes metformin 750mg twice daily with breakfast and dinner, starting around mid-April due to insufficient improvement in fasting glucose levels.",
+      "invalid_at": null,
+      "relation_type": "TAKES_MEDICATION",
+      "source_entity_key": "user",
+      "source_episode_sequence": 0,
+      "target_entity_key": "metformin 750mg twice daily",
+      "valid_at": "2025-04-15T00:00:00.000000000+00:00"
+    },
+    {
+      "attributes": {},
+      "expired_at": null,
+      "fact": "User takes omeprazole 20mg once a day before breakfast for acid reflux, starting a few days before the conversation.",
+      "invalid_at": null,
+      "relation_type": "TAKES_MEDICATION",
+      "source_entity_key": "user",
+      "source_episode_sequence": [
+        0,
+        1
+      ],
+      "target_entity_key": "omeprazole 20mg once a day before breakfast",
+      "valid_at": "2025-04-15T00:00:00.000000000+00:00"
+    }
+  ],
+  "entities": [
+    {
+      "attributes": {},
+      "group_id": "hrep017-b0r003-sample-010-a13--update-MEMOPS-A13__Update-B0_NATIVE_SERIAL-attempt-001",
+      "labels": [
+        "Entity"
+      ],
+      "name": "dr. patel",
+      "summary": "Dr. Patel prescribed metformin 500mg twice a day on March 4th for the user. Dr. Patel prescribed metformin 750mg twice daily around mid-April for the user due to insufficient improvement in fasting glucose levels. Dr. Patel prescribed omeprazole 20mg once a day before breakfast for the user's acid reflux, starting a few days before the conversation. Dr. Patel prescribed metformin 1000mg twice daily as of last Monday after reviewing the user's latest labs and determining that fasting glucose is still not at the desired level. Dr. Patel recommended vitamin D3 2000 IU daily in the morning after the user's annual checkup revealed low vitamin D levels. USER has a family history of high blood pressure, as the user's sister Emily started on lisinopril 10mg for blood pressure. USER has a blood pressure reading of 122 over 78, which Dr. Patel said was fine. Dr. Patel prescribed metformin 1000mg twice daily as of last Monday Dr. Patel plans to switch the user to metformin 850mg extended-release once daily at the next visit Emily is not on metformin, but a pharmacy mistakenly labeled one of her bags with metformin 750mg"
+    },
+    {
+      "attributes": {},
+      "group_id": "hrep017-b0r003-sample-010-a13--update-MEMOPS-A13__Update-B0_NATIVE_SERIAL-attempt-001",
+      "labels": [
+        "Entity"
+      ],
+      "name": "emily",
+      "summary": "Emily is not on metformin, but a pharmacy mistakenly labeled one of her bags with metformin 750mg"
+    },
+    {
+      "attributes": {},
+      "group_id": "hrep017-b0r003-sample-010-a13--update-MEMOPS-A13__Update-B0_NATIVE_SERIAL-attempt-001",
+      "labels": [
+        "Entity"
+      ],
+      "name": "loratadine 10mg",
+      "summary": "USER takes loratadine 10mg as needed for seasonal allergies, but has not needed it in a couple of weeks since pollen levels have dropped."
+    },
+    {
+      "attributes": {},
+      "group_id": "hrep017-b0r003-sample-010-a13--update-MEMOPS-A13__Update-B0_NATIVE_SERIAL-attempt-001",
+      "labels": [
+        "Entity"
+      ],
+      "name": "metformin 1000mg",
+      "summary": "USER takes metformin 1000mg twice daily with breakfast and dinner as of last Monday. Dr. Patel prescribed metformin 1000mg twice daily as of last Monday after reviewing the user's latest labs and determining that fasting glucose is still not at the desired level."
+    },
+    {
+      "attributes": {},
+      "group_id": "hrep017-b0r003-sample-010-a13--update-MEMOPS-A13__Update-B0_NATIVE_SERIAL-attempt-001",
+      "labels": [
+        "Entity"
+      ],
+      "name": "metformin 500mg twice a day",
+      "summary": "User takes metformin 500mg twice a day with breakfast and dinner, starting on March 4th. Dr. Patel prescribed metformin 500mg twice a day on March 4th for the user. User changed from taking metformin 500mg twice a day to metformin 750mg twice daily around mid-April due to insufficient improvement in fasting glucose levels."
+    },
+    {
+      "attributes": {},
+      "group_id": "hrep017-b0r003-sample-010-a13--update-MEMOPS-A13__Update-B0_NATIVE_SERIAL-attempt-001",
+      "labels": [
+        "Entity"
+      ],
+      "name": "metformin 750mg twice daily",
+      "summary": "User takes metformin 750mg twice daily with breakfast and dinner, starting around mid-April due to insufficient improvement in fasting glucose levels. Dr. Patel prescribed metformin 750mg twice daily around mid-April for the user due to insufficient improvement in fasting glucose levels. User finds the evening dose of metformin 750mg twice daily inconvenient because it requires thinking about pills when winding down for the evening. User prefers lighter dinners, such as soup or simple meals, partly due to acid reflux and partly because heavy greasy meals are no longer worth it."
+    },
+    {
+      "attributes": {},
+      "group_id": "hrep017-b0r003-sample-010-a13--update-MEMOPS-A13__Update-B0_NATIVE_SERIAL-attempt-001",
+      "labels": [
+        "Entity"
+      ],
+      "name": "omeprazole 20mg once a day before breakfast",
+      "summary": "User takes omeprazole 20mg once a day before breakfast for acid reflux, starting a few days before the conversation. Dr. Patel prescribed omeprazole 20mg once a day before breakfast for the user's acid reflux, starting a few days before the conversation."
+    },
+    {
+      "attributes": {},
+      "group_id": "hrep017-b0r003-sample-010-a13--update-MEMOPS-A13__Update-B0_NATIVE_SERIAL-attempt-001",
+      "labels": [
+        "Entity"
+      ],
+      "name": "user",
+      "summary": "User takes metformin 500mg twice a day with breakfast and dinner, starting on March 4th. User takes metformin 750mg twice daily with breakfast and dinner, starting around mid-April due to insufficient improvement in fasting glucose levels. User takes omeprazole 20mg once a day before breakfast for acid reflux, starting a few days before the conversation. User finds the evening dose of metformin 750mg twice daily inconvenient because it requires thinking about pills when winding down for the evening. User changed from taking metformin 500mg twice a day to metformin 750mg twice daily around mid-April due to insufficient improvement in fasting glucose levels. User prefers lighter dinners, such as soup or simple meals, partly due to acid reflux and partly because heavy greasy meals are no longer worth it. USER takes metformin 1000mg twice daily with breakfast and dinner as of last Monday. USER takes vitamin D3 2000 IU daily in the morning since last fall due to low levels at the annual checkup. USER takes loratadine 10mg as needed for seasonal allergies, but has not needed it in a couple of weeks since pollen levels have dropped. USER has a family history of high blood pressure, as the user's sister Emily started on lisinopril 10mg for blood pressure. USER has a blood pressure reading of 122 over 78, which Dr. Patel said was fine. Dr. Patel prescribed metformin 1000mg twice daily as of last Monday Dr. Patel plans to switch the user to metformin 850mg extended-release once daily at the next visit"
+    },
+    {
+      "attributes": {},
+      "group_id": "hrep017-b0r003-sample-010-a13--update-MEMOPS-A13__Update-B0_NATIVE_SERIAL-attempt-001",
+      "labels": [
+        "Entity"
+      ],
+      "name": "vitamin d3 2000 iu",
+      "summary": "USER takes vitamin D3 2000 IU daily in the morning since last fall due to low levels at the annual checkup. Dr. Patel recommended vitamin D3 2000 IU daily in the morning after the user's annual checkup revealed low vitamin D levels."
+    }
+  ],
+  "episodes": [
+    {
+      "session_id": "A13__Update:segment:001",
+      "source_hash": "b4fa32fc4777fca3f3dd8eadd881b698e8c68c52a9cbb78c62086578e35c0505",
+      "source_sequence": 0
+    },
+    {
+      "session_id": "A13__Update:segment:002",
+      "source_hash": "640772b4357f34ac055ab723fbcbb13671567d9f50233bdfeb46d0a8443aa240",
+      "source_sequence": 1
+    },
+    {
+      "session_id": "A13__Update:segment:003",
+      "source_hash": "111e3ce46ba960169b1b44209313cd0cd83cf7d68117c7f9619693ec2e206fed",
+      "source_sequence": 2
+    }
+  ]
+}

@@ -1,0 +1,169 @@
+{
+  "payload_sha256": "c953ae928389878bd9fdd9c85c19a61079a3dd5be9649edda3a0a38a0fc19b13",
+  "rows": [
+    {
+      "construction_calls": 0,
+      "correct": true,
+      "evaluation_setting": "adjacent_operation",
+      "evaluation_type": "CandidateDisambiguation",
+      "expected_answer": "$80",
+      "failure_layer": null,
+      "gold_memory_state": "Current confirmed session cost with Marcus is $80 per session. $85 was the initial rate (stale). $75 was the 12-week block rate before the nutrition add-on (stale). $70 was tentative and never adopted; also matches Devon's separate rate.",
+      "gold_provenance": [
+        {
+          "quote": "Marcus actually bumped it back up to $80 per session because he added a nutrition check-in component to each session",
+          "segment_index": 2,
+          "turn_index": 5
+        },
+        {
+          "quote": "I just confirmed with Marcus and the rate stays at $80 for now since I haven't signed the 24-week extension yet",
+          "segment_index": 3,
+          "turn_index": 7
+        }
+      ],
+      "gold_ranks": [
+        1,
+        3
+      ],
+      "graph_write_attempts": 0,
+      "invalid": false,
+      "invalid_reason": null,
+      "judge_rubric": {
+        "acceptable_paraphrases": [
+          "80 dollars",
+          "eighty dollars per session"
+        ],
+        "harmful_extra": [
+          "selecting $70 because it was most recently mentioned in the conversation",
+          "selecting $75 because it was the block discount rate"
+        ],
+        "harmless_extra": [
+          "mentioning the nutrition check-in is included"
+        ],
+        "must_include": [
+          "$80"
+        ],
+        "must_not_include": [
+          "$75 as current",
+          "$70 as current",
+          "$85 as current"
+        ]
+      },
+      "memops_official_judge": {
+        "answer_score": 1,
+        "completion_tokens": 117,
+        "extra_detail_postcheck_action": "none",
+        "extra_detail_postcheck_applied": false,
+        "extra_detail_type": "harmless",
+        "finish_reason": "stop",
+        "judge_operation_detection": {
+          "fn": 0,
+          "fp": 0,
+          "tp": 1
+        },
+        "judge_provenance_support": 1,
+        "official_prompt_builder": "build_evaluation_prompt",
+        "official_result_parser": "parse_judge_metrics",
+        "prompt_sha256": "d2bb1fc51884900738d8918e6fe27ee6e4691a2cb99faa2eedfae4dd4ac9b802",
+        "prompt_tokens": 7170,
+        "raw_prompt_persisted": false,
+        "raw_response_persisted": false,
+        "reason": "The model correctly selects $80 as the current confirmed rate and cites the relevant context about the $70 rate being tentative and not finalized. The extra detail about the $70 rate is harmless and supported by the evidence.",
+        "response_sha256": "851751d649fab7eff7256e8b75417a16c25fe4e27f702c685fbd344855354095",
+        "stale_value": 0
+      },
+      "mrr": 1.0,
+      "ndcg_at_10": 0.9197207891481876,
+      "question_id": "B29__Update:p4_candidate_disambiguation:adjacent_operation",
+      "question_pair_id": "p4_candidate_disambiguation",
+      "recall_at_1": 0.5,
+      "recall_at_10": 1.0,
+      "recall_at_3": 1.0,
+      "recall_at_5": 1.0,
+      "relevance_unit": "LONGMEMEVAL_GOLD_SESSION",
+      "sample_id": "B29__Update"
+    },
+    {
+      "construction_calls": 0,
+      "correct": true,
+      "evaluation_setting": "longitudinal_operation",
+      "evaluation_type": "CandidateDisambiguation",
+      "expected_answer": "$80",
+      "failure_layer": null,
+      "gold_memory_state": "Current confirmed session cost with Marcus is $80 per session. $85 was the initial rate (stale). $75 was the 12-week block rate before the nutrition add-on (stale). $70 was tentative and never adopted; also matches Devon's separate rate.",
+      "gold_provenance": [
+        {
+          "quote": "Marcus actually bumped it back up to $80 per session because he added a nutrition check-in component to each session",
+          "segment_index": 2,
+          "turn_index": 5
+        },
+        {
+          "quote": "I just confirmed with Marcus and the rate stays at $80 for now since I haven't signed the 24-week extension yet",
+          "segment_index": 3,
+          "turn_index": 7
+        }
+      ],
+      "gold_ranks": [
+        1,
+        3
+      ],
+      "graph_write_attempts": 0,
+      "invalid": false,
+      "invalid_reason": null,
+      "judge_rubric": {
+        "acceptable_paraphrases": [
+          "80 dollars",
+          "eighty dollars per session"
+        ],
+        "harmful_extra": [
+          "selecting $70 because it was most recently mentioned in the conversation",
+          "selecting $75 because it was the block discount rate"
+        ],
+        "harmless_extra": [
+          "mentioning the nutrition check-in is included"
+        ],
+        "must_include": [
+          "$80"
+        ],
+        "must_not_include": [
+          "$75 as current",
+          "$70 as current",
+          "$85 as current"
+        ]
+      },
+      "memops_official_judge": {
+        "answer_score": 1,
+        "completion_tokens": 114,
+        "extra_detail_postcheck_action": "none",
+        "extra_detail_postcheck_applied": false,
+        "extra_detail_type": "none",
+        "finish_reason": "stop",
+        "judge_operation_detection": {
+          "fn": 0,
+          "fp": 0,
+          "tp": 1
+        },
+        "judge_provenance_support": 1,
+        "official_prompt_builder": "build_evaluation_prompt",
+        "official_result_parser": "parse_judge_metrics",
+        "prompt_sha256": "9e765050f1454203bfaf0e9dc21fe38a344bc25c2ac427527d7c2572efbe0d82",
+        "prompt_tokens": 7123,
+        "raw_prompt_persisted": false,
+        "raw_response_persisted": false,
+        "reason": "The model correctly selected $80 as the current confirmed rate for personal trainer sessions with Marcus, which is the expected answer. The response is concise and matches the required value without introducing harmful or unsupported details.",
+        "response_sha256": "0d3730ee530a1342925d8de8ca7c2eb967da62b809cb6c190b8987864215d908",
+        "stale_value": 0
+      },
+      "mrr": 1.0,
+      "ndcg_at_10": 0.9197207891481876,
+      "question_id": "B29__Update:p4_candidate_disambiguation:longitudinal_operation",
+      "question_pair_id": "p4_candidate_disambiguation",
+      "recall_at_1": 0.5,
+      "recall_at_10": 1.0,
+      "recall_at_3": 1.0,
+      "recall_at_5": 1.0,
+      "relevance_unit": "LONGMEMEVAL_GOLD_SESSION",
+      "sample_id": "B29__Update"
+    }
+  ]
+}

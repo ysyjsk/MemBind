@@ -1,0 +1,403 @@
+{
+  "canonical_graph_hash": "fe5460c435442cf973058e27dc50630de1f5ede5597f858984dfd20418c2df1c",
+  "edges": [
+    {
+      "attributes": {},
+      "expired_at": "2026-08-22T15:28:18.268881000+00:00",
+      "fact": "Danny Kowalski has the phone number 773-505-8241.",
+      "invalid_at": "2000-01-01T00:01:00.000000000+00:00",
+      "relation_type": "HAS_PHONE_NUMBER",
+      "source_entity_key": "danny kowalski",
+      "source_episode_sequence": 0,
+      "target_entity_key": "773-505-8241",
+      "valid_at": "2000-01-01T00:00:00.000000000+00:00"
+    },
+    {
+      "attributes": {},
+      "expired_at": "2026-08-22T15:28:51.078628000+00:00",
+      "fact": "The user prefers to contact Danny via text at his personal number 773-505-9241 rather than calling.",
+      "invalid_at": "2000-01-01T00:02:00.000000000+00:00",
+      "relation_type": "PREFERS_TO_CONTACT_VIA",
+      "source_entity_key": "user",
+      "source_episode_sequence": 1,
+      "target_entity_key": "773-505-8241",
+      "valid_at": "2000-01-01T00:01:00.000000000+00:00"
+    },
+    {
+      "attributes": {},
+      "expired_at": null,
+      "fact": "Danny Kowalski has a pending new phone number 773-505-9300 due to a carrier billing glitch, but it is not yet active.",
+      "invalid_at": null,
+      "relation_type": "HAS_PENDING_PHONE_NUMBER",
+      "source_entity_key": "danny kowalski",
+      "source_episode_sequence": 2,
+      "target_entity_key": "773-505-9300",
+      "valid_at": null
+    },
+    {
+      "attributes": {},
+      "expired_at": null,
+      "fact": "Danny Kowalski has the email address d.kowalski@protonmail.com.",
+      "invalid_at": null,
+      "relation_type": "HAS_EMAIL_ADDRESS",
+      "source_entity_key": "danny kowalski",
+      "source_episode_sequence": [
+        0,
+        1
+      ],
+      "target_entity_key": "d.kowalski@protonmail.com",
+      "valid_at": "2000-01-01T00:00:00.000000000+00:00"
+    },
+    {
+      "attributes": {},
+      "expired_at": null,
+      "fact": "Danny Kowalski lives at 2731 North Kedzie Avenue, Apartment 4B, Logan Square, Chicago.",
+      "invalid_at": null,
+      "relation_type": "LIVES_AT",
+      "source_entity_key": "danny kowalski",
+      "source_episode_sequence": [
+        0,
+        1
+      ],
+      "target_entity_key": "2731 north kedzie avenue, apartment 4b, logan square, chicago",
+      "valid_at": "2000-01-01T00:00:00.000000000+00:00"
+    },
+    {
+      "attributes": {},
+      "expired_at": null,
+      "fact": "Danny Kowalski previously lived at an address on Birch Lane in Evanston, but it is now outdated.",
+      "invalid_at": null,
+      "relation_type": "PREVIOUSLY_LIVED_AT",
+      "source_entity_key": "danny kowalski",
+      "source_episode_sequence": 0,
+      "target_entity_key": "birch lane",
+      "valid_at": null
+    },
+    {
+      "attributes": {},
+      "expired_at": null,
+      "fact": "Danny Kowalski previously used Gmail as his email provider, but it is now inactive.",
+      "invalid_at": null,
+      "relation_type": "PREVIOUSLY_USED_EMAIL_PROVIDER",
+      "source_entity_key": "danny kowalski",
+      "source_episode_sequence": 0,
+      "target_entity_key": "gmail",
+      "valid_at": null
+    },
+    {
+      "attributes": {},
+      "expired_at": null,
+      "fact": "Danny Kowalski uses Protonmail as his email provider.",
+      "invalid_at": null,
+      "relation_type": "USES_EMAIL_PROVIDER",
+      "source_entity_key": "danny kowalski",
+      "source_episode_sequence": 0,
+      "target_entity_key": "protonmail",
+      "valid_at": "2000-01-01T00:00:00.000000000+00:00"
+    },
+    {
+      "attributes": {},
+      "expired_at": null,
+      "fact": "Danny has a work phone number of 312-477-6600, extension 309, at his new architecture firm.",
+      "invalid_at": null,
+      "relation_type": "HAS_PHONE_NUMBER",
+      "source_entity_key": "danny kowalski",
+      "source_episode_sequence": 1,
+      "target_entity_key": "312-477-6600, extension 309",
+      "valid_at": "2000-01-01T00:01:00.000000000+00:00"
+    },
+    {
+      "attributes": {},
+      "expired_at": null,
+      "fact": "Danny now has a personal phone number of 773-505-9241, which he ported from his old number due to data breach concerns.",
+      "invalid_at": null,
+      "relation_type": "HAS_PHONE_NUMBER",
+      "source_entity_key": "danny kowalski",
+      "source_episode_sequence": 1,
+      "target_entity_key": "773-505-8241",
+      "valid_at": "2000-01-01T00:01:00.000000000+00:00"
+    },
+    {
+      "attributes": {},
+      "expired_at": null,
+      "fact": "Marta is the person who reminded the user about Danny's birthday last year.",
+      "invalid_at": null,
+      "relation_type": "IS_REMINDER_SOURCE",
+      "source_entity_key": "user",
+      "source_episode_sequence": 1,
+      "target_entity_key": "marta",
+      "valid_at": "2000-01-01T00:01:00.000000000+00:00"
+    },
+    {
+      "attributes": {},
+      "expired_at": null,
+      "fact": "The user has set a shipping deadline of October 10th to ensure the birthday gift arrives on time at Danny's Logan Square address.",
+      "invalid_at": null,
+      "relation_type": "HAS_SHIPPING_DEADLINE",
+      "source_entity_key": "user",
+      "source_episode_sequence": 1,
+      "target_entity_key": "october 10th",
+      "valid_at": "2000-01-01T00:01:00.000000000+00:00"
+    },
+    {
+      "attributes": {},
+      "expired_at": null,
+      "fact": "The user is friends with Danny Kowalski.",
+      "invalid_at": null,
+      "relation_type": "IS_FRIENDS_WITH",
+      "source_entity_key": "user",
+      "source_episode_sequence": 0,
+      "target_entity_key": "danny kowalski",
+      "valid_at": "2000-01-01T00:00:00.000000000+00:00"
+    },
+    {
+      "attributes": {},
+      "expired_at": null,
+      "fact": "The user is planning to send a birthday gift to Danny, whose birthday is on October 17th.",
+      "invalid_at": null,
+      "relation_type": "REMEMBER_BIRTHDAY",
+      "source_entity_key": "user",
+      "source_episode_sequence": 1,
+      "target_entity_key": "october 17th",
+      "valid_at": "2000-01-01T00:01:00.000000000+00:00"
+    },
+    {
+      "attributes": {},
+      "expired_at": null,
+      "fact": "The user provided the address 2731 North Kedzie Avenue, Apartment 4B, Logan Square, Chicago for Danny Kowalski.",
+      "invalid_at": null,
+      "relation_type": "PROVIDED_ADDRESS",
+      "source_entity_key": "user",
+      "source_episode_sequence": [
+        0,
+        1,
+        2
+      ],
+      "target_entity_key": "2731 north kedzie avenue, apartment 4b, logan square, chicago",
+      "valid_at": null
+    },
+    {
+      "attributes": {},
+      "expired_at": null,
+      "fact": "The user provided the email address d.kowalski@protonmail.com for Danny Kowalski.",
+      "invalid_at": null,
+      "relation_type": "PROVIDED_EMAIL_ADDRESS",
+      "source_entity_key": "user",
+      "source_episode_sequence": [
+        0,
+        2
+      ],
+      "target_entity_key": "d.kowalski@protonmail.com",
+      "valid_at": "2000-01-01T00:00:00.000000000+00:00"
+    },
+    {
+      "attributes": {},
+      "expired_at": null,
+      "fact": "USER confirms using the phone number 773-505-9241 for Danny Kowalski's contact information on the shipping form.",
+      "invalid_at": null,
+      "relation_type": "USES_PHONE_NUMBER_FOR",
+      "source_entity_key": "user",
+      "source_episode_sequence": 2,
+      "target_entity_key": "773-505-9241",
+      "valid_at": "2000-01-01T00:02:00.000000000+00:00"
+    },
+    {
+      "attributes": {},
+      "expired_at": null,
+      "fact": "USER notes that Danny Kowalski has a pending new phone number 773-505-9300 due to a carrier billing glitch, but it is not yet active.",
+      "invalid_at": null,
+      "relation_type": "NOTES_PENDING_PHONE_NUMBER_FOR",
+      "source_entity_key": "user",
+      "source_episode_sequence": 2,
+      "target_entity_key": "773-505-9300",
+      "valid_at": null
+    },
+    {
+      "attributes": {},
+      "expired_at": null,
+      "fact": "USER plans to mail a birthday gift to Danny Kowalski by October 10th to ensure it arrives on time for his October 17th birthday.",
+      "invalid_at": null,
+      "relation_type": "PLANS_TO_MAIL_GIFT_TO",
+      "source_entity_key": "user",
+      "source_episode_sequence": 2,
+      "target_entity_key": "danny kowalski",
+      "valid_at": null
+    },
+    {
+      "attributes": {},
+      "expired_at": null,
+      "fact": "USER plans to text Danny Kowalski at 773-505-9241 to check if he will be home during the week of his birthday.",
+      "invalid_at": null,
+      "relation_type": "TEXTS_TO",
+      "source_entity_key": "user",
+      "source_episode_sequence": 2,
+      "target_entity_key": "773-505-9241",
+      "valid_at": null
+    },
+    {
+      "attributes": {},
+      "expired_at": null,
+      "fact": "USER uses the phone number 773-505-9241 for Danny Kowalski's contact information on the shipping form.",
+      "invalid_at": null,
+      "relation_type": "USES_PHONE_NUMBER_FOR",
+      "source_entity_key": "user",
+      "source_episode_sequence": 2,
+      "target_entity_key": "773-505-9241",
+      "valid_at": "2000-01-01T00:02:00.000000000+00:00"
+    }
+  ],
+  "entities": [
+    {
+      "attributes": {},
+      "group_id": "hrep016-b0r002-sample-016-b02--update-MEMOPS-B02__Update-B0_NATIVE_SERIAL-attempt-001",
+      "labels": [
+        "Entity"
+      ],
+      "name": "2731 north kedzie avenue, apartment 4b, logan square, chicago",
+      "summary": "Danny Kowalski lives at 2731 North Kedzie Avenue, Apartment 4B, Logan Square, Chicago. The user provided the address 2731 North Kedzie Avenue, Apartment 4B, Logan Square, Chicago for Danny Kowalski."
+    },
+    {
+      "attributes": {},
+      "group_id": "hrep016-b0r002-sample-016-b02--update-MEMOPS-B02__Update-B0_NATIVE_SERIAL-attempt-001",
+      "labels": [
+        "Entity"
+      ],
+      "name": "312-477-6600, extension 309",
+      "summary": "Danny has a work phone number of 312-477-6600, extension 309, at his new architecture firm."
+    },
+    {
+      "attributes": {},
+      "group_id": "hrep016-b0r002-sample-016-b02--update-MEMOPS-B02__Update-B0_NATIVE_SERIAL-attempt-001",
+      "labels": [
+        "Entity"
+      ],
+      "name": "773-505-8241",
+      "summary": "Danny Kowalski has the phone number 773-505-8241. Danny now has a personal phone number of 773-505-9241, which he ported from his old number due to data breach concerns. The user prefers to contact Danny via text at his personal number 773-505-9241 rather than calling."
+    },
+    {
+      "attributes": {},
+      "group_id": "hrep016-b0r002-sample-016-b02--update-MEMOPS-B02__Update-B0_NATIVE_SERIAL-attempt-001",
+      "labels": [
+        "Entity"
+      ],
+      "name": "773-505-9241",
+      "summary": "USER uses the phone number 773-505-9241 for Danny Kowalski's contact information on the shipping form. USER plans to text Danny Kowalski at 773-505-9241 to check if he will be home during the week of his birthday. USER confirms using the phone number 773-505-9241 for Danny Kowalski's contact information on the shipping form."
+    },
+    {
+      "attributes": {},
+      "group_id": "hrep016-b0r002-sample-016-b02--update-MEMOPS-B02__Update-B0_NATIVE_SERIAL-attempt-001",
+      "labels": [
+        "Entity"
+      ],
+      "name": "773-505-9300",
+      "summary": "Danny Kowalski has a pending new phone number 773-505-9300 due to a carrier billing glitch, but it is not yet active. USER notes that Danny Kowalski has a pending new phone number 773-505-9300 due to a carrier billing glitch, but it is not yet active."
+    },
+    {
+      "attributes": {},
+      "group_id": "hrep016-b0r002-sample-016-b02--update-MEMOPS-B02__Update-B0_NATIVE_SERIAL-attempt-001",
+      "labels": [
+        "Entity"
+      ],
+      "name": "birch lane",
+      "summary": "Danny Kowalski previously lived at an address on Birch Lane in Evanston, but it is now outdated."
+    },
+    {
+      "attributes": {},
+      "group_id": "hrep016-b0r002-sample-016-b02--update-MEMOPS-B02__Update-B0_NATIVE_SERIAL-attempt-001",
+      "labels": [
+        "Entity"
+      ],
+      "name": "d.kowalski@protonmail.com",
+      "summary": "Danny Kowalski has the email address d.kowalski@protonmail.com. The user provided the email address d.kowalski@protonmail.com for Danny Kowalski."
+    },
+    {
+      "attributes": {},
+      "group_id": "hrep016-b0r002-sample-016-b02--update-MEMOPS-B02__Update-B0_NATIVE_SERIAL-attempt-001",
+      "labels": [
+        "Entity"
+      ],
+      "name": "danny kowalski",
+      "summary": "Danny Kowalski has the phone number 773-505-8241. Danny Kowalski lives at 2731 North Kedzie Avenue, Apartment 4B, Logan Square, Chicago. Danny Kowalski has the email address d.kowalski@protonmail.com. Danny Kowalski uses Protonmail as his email provider. Danny Kowalski previously used Gmail as his email provider, but it is now inactive. Danny Kowalski previously lived at an address on Birch Lane in Evanston, but it is now outdated. The user is friends with Danny Kowalski. Danny has a work phone number of 312-477-6600, extension 309, at his new architecture firm. Danny now has a personal phone number of 773-505-9241, which he ported from his old number due to data breach concerns. USER plans to mail a birthday gift to Danny Kowalski by October 10th to ensure it arrives on time for his October 17th birthday. Danny Kowalski has a pending new phone number 773-505-9300 due to a carrier billing glitch, but it is not yet active."
+    },
+    {
+      "attributes": {},
+      "group_id": "hrep016-b0r002-sample-016-b02--update-MEMOPS-B02__Update-B0_NATIVE_SERIAL-attempt-001",
+      "labels": [
+        "Entity"
+      ],
+      "name": "evanston",
+      "summary": ""
+    },
+    {
+      "attributes": {},
+      "group_id": "hrep016-b0r002-sample-016-b02--update-MEMOPS-B02__Update-B0_NATIVE_SERIAL-attempt-001",
+      "labels": [
+        "Entity"
+      ],
+      "name": "gmail",
+      "summary": "Danny Kowalski previously used Gmail as his email provider, but it is now inactive."
+    },
+    {
+      "attributes": {},
+      "group_id": "hrep016-b0r002-sample-016-b02--update-MEMOPS-B02__Update-B0_NATIVE_SERIAL-attempt-001",
+      "labels": [
+        "Entity"
+      ],
+      "name": "marta",
+      "summary": "Marta is the person who reminded the user about Danny's birthday last year."
+    },
+    {
+      "attributes": {},
+      "group_id": "hrep016-b0r002-sample-016-b02--update-MEMOPS-B02__Update-B0_NATIVE_SERIAL-attempt-001",
+      "labels": [
+        "Entity"
+      ],
+      "name": "october 10th",
+      "summary": "The user has set a shipping deadline of October 10th to ensure the birthday gift arrives on time at Danny's Logan Square address."
+    },
+    {
+      "attributes": {},
+      "group_id": "hrep016-b0r002-sample-016-b02--update-MEMOPS-B02__Update-B0_NATIVE_SERIAL-attempt-001",
+      "labels": [
+        "Entity"
+      ],
+      "name": "october 17th",
+      "summary": "The user is planning to send a birthday gift to Danny, whose birthday is on October 17th."
+    },
+    {
+      "attributes": {},
+      "group_id": "hrep016-b0r002-sample-016-b02--update-MEMOPS-B02__Update-B0_NATIVE_SERIAL-attempt-001",
+      "labels": [
+        "Entity"
+      ],
+      "name": "protonmail",
+      "summary": "Danny Kowalski uses Protonmail as his email provider."
+    },
+    {
+      "attributes": {},
+      "group_id": "hrep016-b0r002-sample-016-b02--update-MEMOPS-B02__Update-B0_NATIVE_SERIAL-attempt-001",
+      "labels": [
+        "Entity"
+      ],
+      "name": "user",
+      "summary": "The user is friends with Danny Kowalski. The user provided the address 2731 North Kedzie Avenue, Apartment 4B, Logan Square, Chicago for Danny Kowalski. The user provided the email address d.kowalski@protonmail.com for Danny Kowalski. The user is planning to send a birthday gift to Danny, whose birthday is on October 17th. The user has set a shipping deadline of October 10th to ensure the birthday gift arrives on time at Danny's Logan Square address. Marta is the person who reminded the user about Danny's birthday last year. The user prefers to contact Danny via text at his personal number 773-505-9241 rather than calling. USER plans to mail a birthday gift to Danny Kowalski by October 10th to ensure it arrives on time for his October 17th birthday. USER uses the phone number 773-505-9241 for Danny Kowalski's contact information on the shipping form. USER plans to text Danny Kowalski at 773-505-9241 to check if he will be home during the week of his birthday. USER confirms using the phone number 773-505-9241 for Danny Kowalski's contact information on the shipping form. USER notes that Danny Kowalski has a pending new phone number 773-505-9300 due to a carrier billing glitch, but it is not yet active."
+    }
+  ],
+  "episodes": [
+    {
+      "session_id": "B02__Update:segment:001",
+      "source_hash": "46c544c5814231191a5664d0a353d55c9fd1007c3646ae775e9dc66fefb416cd",
+      "source_sequence": 0
+    },
+    {
+      "session_id": "B02__Update:segment:002",
+      "source_hash": "8b07af3c46d11b5aeb00d45e3e6fe7979f1e2319d2889683989e0c9a2885708f",
+      "source_sequence": 1
+    },
+    {
+      "session_id": "B02__Update:segment:003",
+      "source_hash": "3c875843cf460b3e3be1edacfab2bfc43b522b41f0c7728bcbae5f2931766c51",
+      "source_sequence": 2
+    }
+  ]
+}

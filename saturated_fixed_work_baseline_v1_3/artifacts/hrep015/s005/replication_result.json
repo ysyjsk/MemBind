@@ -1,0 +1,477 @@
+{
+  "completed_output_count": 1,
+  "failures": [],
+  "method": "B0_NATIVE_SERIAL",
+  "outputs": [
+    {
+      "attempt_root": "/data/predator/ly/MemBind/saturated_fixed_work_baseline_v1_3/artifacts/hrep015/s005/hrep015-s005-sample-001-b21--trajectoryops/blocks/memops-001-B21__TrajectoryOps-B0_NATIVE_SERIAL/attempt-001",
+      "block_id": "memops-001-B21__TrajectoryOps-B0_NATIVE_SERIAL",
+      "method": "B0_NATIVE_SERIAL",
+      "metrics": {
+        "application_gate_count": 0,
+        "artificial_sleep_count": 0,
+        "attempt_id": "attempt-001",
+        "attempt_ordinal": 1,
+        "attempt_root": "/data/predator/ly/MemBind/saturated_fixed_work_baseline_v1_3/artifacts/hrep015/s005/hrep015-s005-sample-001-b21--trajectoryops/blocks/memops-001-B21__TrajectoryOps-B0_NATIVE_SERIAL/attempt-001",
+        "block_id": "memops-001-B21__TrajectoryOps-B0_NATIVE_SERIAL",
+        "build_makespan_ns": 97354513916,
+        "build_makespan_s": 97.354513916,
+        "canonical_exact_match": true,
+        "canonical_graph_hash": "258a2e4c925769f67fd65392e48ab208be2d9b6d88efd3143c5b16ab9342d6e1",
+        "configured_max_inflight": null,
+        "created_sequences": [
+          0,
+          1,
+          2
+        ],
+        "db_duration_p50_s": 0.002920546,
+        "db_duration_p95_s": 0.038827528,
+        "db_duration_p99_s": 0.041518046,
+        "db_metrics_availability": "MEASURED",
+        "db_writes": 3,
+        "direct_semantic_evidence_availability": "DERIVED",
+        "direct_semantic_evidence_records": [],
+        "direct_semantic_violations": 0,
+        "direct_semantic_violations_by_observation": {
+          "future_persistent_state_read": 0,
+          "stale_predecessor_write": 0,
+          "wrong_state_write": 0
+        },
+        "drain_tail_ns": 64187246497,
+        "embedding_duration_p50_s": 0.01136299,
+        "embedding_duration_p95_s": 0.022740046,
+        "embedding_duration_p99_s": 0.037618852,
+        "embedding_items": 72,
+        "embedding_metrics_availability": "MEASURED",
+        "episode_count": 3,
+        "execution_identity_sha256": "84a08258f8849832f4708ee75e998c5ec9fca1ab59a8467e393616518a3f8e42",
+        "feeder_workload_await_count": 3,
+        "history_id": "memops-b21-trajectoryops",
+        "instrumentation_error_spans": 0,
+        "inversion_count": 0,
+        "inversion_density": 0.0,
+        "kendall_tau": 1.0,
+        "llm_duration_p50_s": 1.997189271,
+        "llm_duration_p95_s": 36.369929454,
+        "llm_duration_p99_s": 36.369929454,
+        "llm_input_tokens": 36136,
+        "llm_logical_calls": 16,
+        "llm_metrics_availability": "MEASURED",
+        "llm_transport_attempts": 16,
+        "max_displacement": 0,
+        "method": "B0_NATIVE_SERIAL",
+        "namespace": "hrep015-s005-sample-001-b21--trajectoryops-MEMOPS-B21__TrajectoryOps-B0_NATIVE_SERIAL-attempt-001",
+        "ordering_observations_counted_as_direct": 0,
+        "phase_metrics_availability": "MEASURED",
+        "resource_availability": "NOT_EVALUATED",
+        "sampler_coverage": null,
+        "sampler_gap_max_s": null,
+        "sampler_gap_p95_s": null,
+        "sampler_source_coverage": {},
+        "schema_version": "membind.saturated-fixed-work.block-result.v1",
+        "seal_payload_sha256": "d50a9f12b0f4bf10002bd4082ff101cfb52dd82264877e940a92c83be896efcd",
+        "source_tokens": 2765,
+        "source_tokens_per_s": 28.401353864143513,
+        "t0_ns": 19703841743174,
+        "t_durable_complete_ns": 19801196257090,
+        "t_validated_seal_ns": 19801291129951,
+        "valid": true,
+        "validation_seal_latency_ns": 94872861,
+        "whole_update_active_k_time_ns": {
+          "1": 97346352788
+        },
+        "whole_update_active_max": 1,
+        "whole_update_active_mean": 1.0
+      },
+      "namespace": "hrep015-s005-sample-001-b21--trajectoryops-MEMOPS-B21__TrajectoryOps-B0_NATIVE_SERIAL-attempt-001",
+      "qa_rows": [
+        {
+          "construction_calls": 0,
+          "correct": true,
+          "evaluation_setting": "adjacent_operation",
+          "evaluation_type": "StateTransition",
+          "expected_answer": "$82,500",
+          "failure_layer": null,
+          "gold_memory_state": "David's confirmed annual salary is $82,500, verified from the offer letter. A potential raise to $85,000 was mentioned by Priya as a clinic-wide adjustment starting next quarter, but it has not taken effect. The user explicitly asked to keep $82,500 as the current number. Prior values of $78,000 and $82,000 are superseded.",
+          "gold_provenance": [
+            {
+              "quote": "I double-checked the offer letter last night. His salary is $82,500, not $82,000",
+              "segment_index": 2,
+              "turn_index": 3
+            },
+            {
+              "quote": "That makes sense—keep $82,500 as the current number for now",
+              "segment_index": 3,
+              "turn_index": 7
+            }
+          ],
+          "gold_ranks": [
+            2,
+            3
+          ],
+          "graph_write_attempts": 0,
+          "invalid": false,
+          "invalid_reason": null,
+          "judge_rubric": {
+            "acceptable_paraphrases": [
+              "82,500 dollars",
+              "82.5k"
+            ],
+            "harmful_extra": [
+              "using $85,000 as the current salary",
+              "using $71,500 from the assistant's mention of a previous clinic"
+            ],
+            "harmless_extra": [
+              "noting that a raise to $85,000 is expected but not yet in effect"
+            ],
+            "must_include": [
+              "$82,500"
+            ],
+            "must_not_include": [
+              "$85,000 as the current figure",
+              "$82,000",
+              "$78,000"
+            ]
+          },
+          "memops_official_judge": {
+            "answer_score": 1,
+            "completion_tokens": 155,
+            "extra_detail_postcheck_action": "none",
+            "extra_detail_postcheck_applied": false,
+            "extra_detail_type": "none",
+            "final_state": 1,
+            "finish_reason": "stop",
+            "intermediate_state": null,
+            "judge_operation_detection": {
+              "fn": 0,
+              "fp": 0,
+              "tp": 3
+            },
+            "judge_provenance_support": 1,
+            "official_prompt_builder": "build_evaluation_prompt",
+            "official_result_parser": "parse_judge_metrics",
+            "prompt_sha256": "9564b66097e89d93f46f2f8a4ceab6b4998b22f4143b5c8c1fa2cdb89ff70aa6",
+            "prompt_tokens": 6215,
+            "raw_prompt_persisted": false,
+            "raw_response_persisted": false,
+            "reason": "The model correctly reports the final confirmed salary of $82,500, which is the last confirmed value in the gold operations. It does not include the tentative $85,000 raise or any prior incorrect values. The response is concise and semantically correct.",
+            "response_sha256": "6409e6ad44f9969d097fddecbddbd24c264b5189ea31839243af5da663c67d04",
+            "trajectory_order": 1,
+            "trajectory_provenance": 1
+          },
+          "mrr": 0.5,
+          "ndcg_at_10": 0.6934264036172708,
+          "question_id": "B21__TrajectoryOps:p3_state_transition:adjacent_operation",
+          "question_pair_id": "p3_state_transition",
+          "recall_at_1": 0.0,
+          "recall_at_10": 1.0,
+          "recall_at_3": 1.0,
+          "recall_at_5": 1.0,
+          "relevance_unit": "LONGMEMEVAL_GOLD_SESSION",
+          "sample_id": "B21__TrajectoryOps"
+        },
+        {
+          "construction_calls": 0,
+          "correct": true,
+          "evaluation_setting": "longitudinal_operation",
+          "evaluation_type": "StateTransition",
+          "expected_answer": "$82,500",
+          "failure_layer": null,
+          "gold_memory_state": "David's confirmed annual salary is $82,500, verified from the offer letter. A potential raise to $85,000 was mentioned by Priya as a clinic-wide adjustment starting next quarter, but it has not taken effect. The user explicitly asked to keep $82,500 as the current number. Prior values of $78,000 and $82,000 are superseded.",
+          "gold_provenance": [
+            {
+              "quote": "I double-checked the offer letter last night. His salary is $82,500, not $82,000",
+              "segment_index": 2,
+              "turn_index": 3
+            },
+            {
+              "quote": "That makes sense—keep $82,500 as the current number for now",
+              "segment_index": 3,
+              "turn_index": 7
+            }
+          ],
+          "gold_ranks": [
+            2,
+            3
+          ],
+          "graph_write_attempts": 0,
+          "invalid": false,
+          "invalid_reason": null,
+          "judge_rubric": {
+            "acceptable_paraphrases": [
+              "82,500 dollars",
+              "82.5k"
+            ],
+            "harmful_extra": [
+              "using $85,000 as the current salary",
+              "using $71,500 from the assistant's mention of a previous clinic"
+            ],
+            "harmless_extra": [
+              "noting that a raise to $85,000 is expected but not yet in effect"
+            ],
+            "must_include": [
+              "$82,500"
+            ],
+            "must_not_include": [
+              "$85,000 as the current figure",
+              "$82,000",
+              "$78,000"
+            ]
+          },
+          "memops_official_judge": {
+            "answer_score": 1,
+            "completion_tokens": 146,
+            "extra_detail_postcheck_action": "none",
+            "extra_detail_postcheck_applied": false,
+            "extra_detail_type": "none",
+            "final_state": 1,
+            "finish_reason": "stop",
+            "intermediate_state": null,
+            "judge_operation_detection": {
+              "fn": 0,
+              "fp": 0,
+              "tp": 3
+            },
+            "judge_provenance_support": 1,
+            "official_prompt_builder": "build_evaluation_prompt",
+            "official_result_parser": "parse_judge_metrics",
+            "prompt_sha256": "9564b66097e89d93f46f2f8a4ceab6b4998b22f4143b5c8c1fa2cdb89ff70aa6",
+            "prompt_tokens": 6215,
+            "raw_prompt_persisted": false,
+            "raw_response_persisted": false,
+            "reason": "The model correctly reports the final confirmed salary of $82,500, citing the most recent verified information. It avoids using the tentative $85,000 raise and does not include any harmful or conflicting extra details.",
+            "response_sha256": "59690501fb93721ae94f37b9db25bda9c20d8b38660a570acb1e74af2b569a8e",
+            "trajectory_order": 1,
+            "trajectory_provenance": 1
+          },
+          "mrr": 0.5,
+          "ndcg_at_10": 0.6934264036172708,
+          "question_id": "B21__TrajectoryOps:p3_state_transition:longitudinal_operation",
+          "question_pair_id": "p3_state_transition",
+          "recall_at_1": 0.0,
+          "recall_at_10": 1.0,
+          "recall_at_3": 1.0,
+          "recall_at_5": 1.0,
+          "relevance_unit": "LONGMEMEVAL_GOLD_SESSION",
+          "sample_id": "B21__TrajectoryOps"
+        },
+        {
+          "construction_calls": 0,
+          "correct": false,
+          "error_message": "Quality v1 gold sessions is invalid",
+          "evaluation_setting": "adjacent_operation",
+          "evaluation_type": "StateTrajectory",
+          "expected_answer": "The sequence is: (1) $78,000 was the initial figure, adopted briefly. (2) It was corrected to $82,000, which replaced $78,000 as the adopted figure. (3) After checking the offer letter, $82,000 was corrected to $82,500, which became and remains the adopted figure. (4) $85,000 was floated as a future clinic-wide raise but has not taken effect, so it was never adopted. The final usable figure is $82,500.",
+          "failure_layer": "retrieval",
+          "gold_memory_state": "Salary trajectory: $78,000 (confirmed, then superseded) → $82,000 (confirmed, then superseded) → $82,500 (confirmed, current) → $85,000 (tentative, not in effect). Final confirmed value: $82,500.",
+          "gold_provenance": [
+            {
+              "quote": "David's annual salary at Greenfield is $78,000",
+              "segment_index": 1,
+              "turn_index": 1
+            },
+            {
+              "quote": "It's actually $82,000, not $78,000",
+              "segment_index": 1,
+              "turn_index": 5
+            },
+            {
+              "quote": "I double-checked the offer letter last night. His salary is $82,500, not $82,000",
+              "segment_index": 2,
+              "turn_index": 3
+            },
+            {
+              "quote": "Priya told David that everyone on staff is getting bumped to $85,000 starting next quarter as part of a clinic-wide raise",
+              "segment_index": 3,
+              "turn_index": 5
+            },
+            {
+              "quote": "That makes sense—keep $82,500 as the current number for now",
+              "segment_index": 3,
+              "turn_index": 7
+            }
+          ],
+          "graph_write_attempts": 0,
+          "invalid": true,
+          "invalid_reason": "builtins.ValueError",
+          "judge_rubric": {
+            "acceptable_paraphrases": [
+              "proposed but not adopted for $85,000",
+              "pending for $85,000",
+              "not yet active for $85,000"
+            ],
+            "harmful_extra": [
+              "treating $85,000 as the final adopted figure",
+              "omitting any step in the trajectory",
+              "presenting the steps out of order"
+            ],
+            "harmless_extra": [
+              "mentioning Priya as the source of the $85,000 figure",
+              "mentioning the offer letter as the source for $82,500"
+            ],
+            "must_include": [
+              "$78,000 as initial",
+              "$82,000 as first correction",
+              "$82,500 as offer-letter-verified and current",
+              "$85,000 as not yet in effect or tentative",
+              "correct chronological order"
+            ],
+            "must_not_include": [
+              "$85,000 as adopted or current"
+            ]
+          },
+          "memops_official_judge": null,
+          "mrr": 0.0,
+          "ndcg_at_10": 0.0,
+          "question_id": "B21__TrajectoryOps:p5_state_trajectory:adjacent_operation",
+          "question_pair_id": "p5_state_trajectory",
+          "recall_at_1": 0.0,
+          "recall_at_10": 0.0,
+          "recall_at_3": 0.0,
+          "recall_at_5": 0.0,
+          "sample_id": "B21__TrajectoryOps"
+        },
+        {
+          "construction_calls": 0,
+          "correct": false,
+          "error_message": "Quality v1 gold sessions is invalid",
+          "evaluation_setting": "longitudinal_operation",
+          "evaluation_type": "StateTrajectory",
+          "expected_answer": "The sequence is: (1) $78,000 was the initial figure, adopted briefly. (2) It was corrected to $82,000, which replaced $78,000 as the adopted figure. (3) After checking the offer letter, $82,000 was corrected to $82,500, which became and remains the adopted figure. (4) $85,000 was floated as a future clinic-wide raise but has not taken effect, so it was never adopted. The final usable figure is $82,500.",
+          "failure_layer": "retrieval",
+          "gold_memory_state": "Salary trajectory: $78,000 (confirmed, then superseded) → $82,000 (confirmed, then superseded) → $82,500 (confirmed, current) → $85,000 (tentative, not in effect). Final confirmed value: $82,500.",
+          "gold_provenance": [
+            {
+              "quote": "David's annual salary at Greenfield is $78,000",
+              "segment_index": 1,
+              "turn_index": 1
+            },
+            {
+              "quote": "It's actually $82,000, not $78,000",
+              "segment_index": 1,
+              "turn_index": 5
+            },
+            {
+              "quote": "I double-checked the offer letter last night. His salary is $82,500, not $82,000",
+              "segment_index": 2,
+              "turn_index": 3
+            },
+            {
+              "quote": "Priya told David that everyone on staff is getting bumped to $85,000 starting next quarter as part of a clinic-wide raise",
+              "segment_index": 3,
+              "turn_index": 5
+            },
+            {
+              "quote": "That makes sense—keep $82,500 as the current number for now",
+              "segment_index": 3,
+              "turn_index": 7
+            }
+          ],
+          "graph_write_attempts": 0,
+          "invalid": true,
+          "invalid_reason": "builtins.ValueError",
+          "judge_rubric": {
+            "acceptable_paraphrases": [
+              "proposed but not adopted for $85,000",
+              "pending for $85,000",
+              "not yet active for $85,000"
+            ],
+            "harmful_extra": [
+              "treating $85,000 as the final adopted figure",
+              "omitting any step in the trajectory",
+              "presenting the steps out of order"
+            ],
+            "harmless_extra": [
+              "mentioning Priya as the source of the $85,000 figure",
+              "mentioning the offer letter as the source for $82,500"
+            ],
+            "must_include": [
+              "$78,000 as initial",
+              "$82,000 as first correction",
+              "$82,500 as offer-letter-verified and current",
+              "$85,000 as not yet in effect or tentative",
+              "correct chronological order"
+            ],
+            "must_not_include": [
+              "$85,000 as adopted or current"
+            ]
+          },
+          "memops_official_judge": null,
+          "mrr": 0.0,
+          "ndcg_at_10": 0.0,
+          "question_id": "B21__TrajectoryOps:p5_state_trajectory:longitudinal_operation",
+          "question_pair_id": "p5_state_trajectory",
+          "recall_at_1": 0.0,
+          "recall_at_10": 0.0,
+          "recall_at_3": 0.0,
+          "recall_at_5": 0.0,
+          "sample_id": "B21__TrajectoryOps"
+        }
+      ],
+      "qa_summary": {
+        "all_correct": false,
+        "construction_calls": 0,
+        "correct_rows": 2,
+        "graph_hash_after_qa": "258a2e4c925769f67fd65392e48ab208be2d9b6d88efd3143c5b16ab9342d6e1",
+        "graph_hash_before_qa": "258a2e4c925769f67fd65392e48ab208be2d9b6d88efd3143c5b16ab9342d6e1",
+        "graph_mutated": false,
+        "graph_write_attempts": 0,
+        "method": "B0_NATIVE_SERIAL",
+        "namespace": "hrep015-s005-sample-001-b21--trajectoryops-MEMOPS-B21__TrajectoryOps-B0_NATIVE_SERIAL-attempt-001",
+        "rows": 4,
+        "sample_id": "B21__TrajectoryOps",
+        "stale_value_errors": 0,
+        "state_inspection": {
+          "active_current_mentions": 0,
+          "active_stale_conflicts": [],
+          "active_transition_mentions": [],
+          "canonical_graph_used_for_uuid_equality": false,
+          "current_value_active": false,
+          "current_value_in_entity_summary": true,
+          "expected_current_value": "$82,500",
+          "inactive_mentions": [],
+          "observation_time": "2000-01-01T00:10:00Z",
+          "stale_active_mentions": [],
+          "stale_confirmed_values": [
+            "$78,000",
+            "$82,000"
+          ],
+          "status": "FAIL",
+          "target_id": "david_salary",
+          "target_name": "David's annual salary at Greenfield Rehabilitation Center"
+        }
+      },
+      "sample_id": "B21__TrajectoryOps",
+      "state_inspection": {
+        "active_current_mentions": 0,
+        "active_stale_conflicts": [],
+        "active_transition_mentions": [],
+        "canonical_graph_used_for_uuid_equality": false,
+        "current_value_active": false,
+        "current_value_in_entity_summary": true,
+        "expected_current_value": "$82,500",
+        "inactive_mentions": [],
+        "observation_time": "2000-01-01T00:10:00Z",
+        "stale_active_mentions": [],
+        "stale_confirmed_values": [
+          "$78,000",
+          "$82,000"
+        ],
+        "status": "FAIL",
+        "target_id": "david_salary",
+        "target_name": "David's annual salary at Greenfield Rehabilitation Center"
+      },
+      "workload_sha256": "38f7146400bd5c0c64160d734af2a26f2ae83a8d945b7251f6f23751c1e406ce"
+    }
+  ],
+  "parent_cohort_selection_manifest_sha256": "4f6b21e51ce577864545865c45f6aa0e2c4e3997d6f0ea89624db018f9491891",
+  "payload_sha256": "cca4bdd2137cf1c3dbf4104080ab3128e96edb27b85b9d43ce09e44eb285e804",
+  "replication_ordinal": 1,
+  "sample_count": 1,
+  "sample_ids": [
+    "B21__TrajectoryOps"
+  ],
+  "schema_version": "sfwb.v1.3.memops-hazard-sample-replication-result.v1",
+  "status": "LIVE_COMPLETE",
+  "v5_started": false
+}

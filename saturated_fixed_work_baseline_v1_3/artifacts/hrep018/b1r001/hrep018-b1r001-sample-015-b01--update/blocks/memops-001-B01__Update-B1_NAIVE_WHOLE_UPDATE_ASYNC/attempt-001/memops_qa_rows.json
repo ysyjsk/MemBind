@@ -1,0 +1,169 @@
+{
+  "payload_sha256": "b08b3fab0aaf33608188f3da0819571aee67d93211ea0e8782f72d43c3647820",
+  "rows": [
+    {
+      "construction_calls": 0,
+      "correct": true,
+      "evaluation_setting": "adjacent_operation",
+      "evaluation_type": "CandidateDisambiguation",
+      "expected_answer": "$148K",
+      "failure_layer": null,
+      "gold_memory_state": "Darren Liu's Seattle job offer salary is $148K (confirmed after role restructuring). $145K was the initial figure, superseded by $152K, then revised to $148K. $155K is tentative pending a future budget cycle. Tyler's $150K is a separate person's offer.",
+      "gold_provenance": [
+        {
+          "quote": "Darren just told me the company revised the offer down to $148K because they restructured the role slightly",
+          "segment_index": 2,
+          "turn_index": 3
+        },
+        {
+          "quote": "So for now the official offer is still $148K until that budget thing actually materializes",
+          "segment_index": 3,
+          "turn_index": 7
+        }
+      ],
+      "gold_ranks": [
+        1,
+        2
+      ],
+      "graph_write_attempts": 0,
+      "invalid": false,
+      "invalid_reason": null,
+      "judge_rubric": {
+        "acceptable_paraphrases": [
+          "$148,000",
+          "148K"
+        ],
+        "harmful_extra": [
+          "selecting $155K because it was mentioned most recently",
+          "selecting $150K by confusing Tyler's offer with Darren's"
+        ],
+        "harmless_extra": [
+          "noting that $155K may apply in the future if the budget cycle comes through"
+        ],
+        "must_include": [
+          "$148K"
+        ],
+        "must_not_include": [
+          "$145K as current",
+          "$155K as current",
+          "$150K as Darren's offer"
+        ]
+      },
+      "memops_official_judge": {
+        "answer_score": 1,
+        "completion_tokens": 119,
+        "extra_detail_postcheck_action": "none",
+        "extra_detail_postcheck_applied": false,
+        "extra_detail_type": "none",
+        "finish_reason": "stop",
+        "judge_operation_detection": {
+          "fn": 0,
+          "fp": 0,
+          "tp": 3
+        },
+        "judge_provenance_support": 1,
+        "official_prompt_builder": "build_evaluation_prompt",
+        "official_result_parser": "parse_judge_metrics",
+        "prompt_sha256": "08a7e3295e719a4a3ee9d324717184b49e7df882ac415e9b61667be2ee4317af",
+        "prompt_tokens": 6414,
+        "raw_prompt_persisted": false,
+        "raw_response_persisted": false,
+        "reason": "The model correctly selects $148K as the current confirmed salary for Darren's Seattle job offer, which is the expected answer. It does not include any harmful extra details and aligns with the gold operations and provenance.",
+        "response_sha256": "16a6c8640ceeac6d6e0be1ca322c67e90870e5de25311c4acab51a4c43f1b684",
+        "stale_value": 0
+      },
+      "mrr": 1.0,
+      "ndcg_at_10": 1.0,
+      "question_id": "B01__Update:p4_candidate_disambiguation:adjacent_operation",
+      "question_pair_id": "p4_candidate_disambiguation",
+      "recall_at_1": 0.5,
+      "recall_at_10": 1.0,
+      "recall_at_3": 1.0,
+      "recall_at_5": 1.0,
+      "relevance_unit": "LONGMEMEVAL_GOLD_SESSION",
+      "sample_id": "B01__Update"
+    },
+    {
+      "construction_calls": 0,
+      "correct": true,
+      "evaluation_setting": "longitudinal_operation",
+      "evaluation_type": "CandidateDisambiguation",
+      "expected_answer": "$148K",
+      "failure_layer": null,
+      "gold_memory_state": "Darren Liu's Seattle job offer salary is $148K (confirmed after role restructuring). $145K was the initial figure, superseded by $152K, then revised to $148K. $155K is tentative pending a future budget cycle. Tyler's $150K is a separate person's offer.",
+      "gold_provenance": [
+        {
+          "quote": "Darren just told me the company revised the offer down to $148K because they restructured the role slightly",
+          "segment_index": 2,
+          "turn_index": 3
+        },
+        {
+          "quote": "So for now the official offer is still $148K until that budget thing actually materializes",
+          "segment_index": 3,
+          "turn_index": 7
+        }
+      ],
+      "gold_ranks": [
+        1,
+        2
+      ],
+      "graph_write_attempts": 0,
+      "invalid": false,
+      "invalid_reason": null,
+      "judge_rubric": {
+        "acceptable_paraphrases": [
+          "$148,000",
+          "148K"
+        ],
+        "harmful_extra": [
+          "selecting $155K because it was mentioned most recently",
+          "selecting $150K by confusing Tyler's offer with Darren's"
+        ],
+        "harmless_extra": [
+          "noting that $155K may apply in the future if the budget cycle comes through"
+        ],
+        "must_include": [
+          "$148K"
+        ],
+        "must_not_include": [
+          "$145K as current",
+          "$155K as current",
+          "$150K as Darren's offer"
+        ]
+      },
+      "memops_official_judge": {
+        "answer_score": 1,
+        "completion_tokens": 115,
+        "extra_detail_postcheck_action": "none",
+        "extra_detail_postcheck_applied": false,
+        "extra_detail_type": "none",
+        "finish_reason": "stop",
+        "judge_operation_detection": {
+          "fn": 0,
+          "fp": 0,
+          "tp": 3
+        },
+        "judge_provenance_support": 1,
+        "official_prompt_builder": "build_evaluation_prompt",
+        "official_result_parser": "parse_judge_metrics",
+        "prompt_sha256": "08a7e3295e719a4a3ee9d324717184b49e7df882ac415e9b61667be2ee4317af",
+        "prompt_tokens": 6414,
+        "raw_prompt_persisted": false,
+        "raw_response_persisted": false,
+        "reason": "The model correctly selects $148K as the current confirmed salary for Darren's Seattle job offer, which is the expected answer. It does not include any harmful extra details and aligns with the gold operations and provenance.",
+        "response_sha256": "3f9afc83db66b4fab31905481cd954c20e04fd3042a510b2c399c5cd23027943",
+        "stale_value": 0
+      },
+      "mrr": 1.0,
+      "ndcg_at_10": 1.0,
+      "question_id": "B01__Update:p4_candidate_disambiguation:longitudinal_operation",
+      "question_pair_id": "p4_candidate_disambiguation",
+      "recall_at_1": 0.5,
+      "recall_at_10": 1.0,
+      "recall_at_3": 1.0,
+      "recall_at_5": 1.0,
+      "relevance_unit": "LONGMEMEVAL_GOLD_SESSION",
+      "sample_id": "B01__Update"
+    }
+  ]
+}

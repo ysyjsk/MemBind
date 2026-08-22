@@ -49,6 +49,51 @@ class P9RunnerError(V5LiveRunnerError):
     pass
 
 
+ALTERNATE_CONSTRUCTION_BASE_URL = "http://10.87.5.247:8002/v1/"
+ALTERNATE_EMBEDDING_BASE_URL = "http://10.87.5.247:8003/v1"
+
+
+def build_u0_runtime_with_endpoint_overrides(
+    builder: Callable[[], Any],
+    *,
+    construction_base_url: str | None = None,
+    embedding_base_url: str | None = None,
+) -> Any:
+    """Build one P9 runtime against the explicitly qualified alternate pair.
+
+    The pinned ``native_characterization_runtime.py`` source remains untouched.
+    This helper temporarily binds only the process-local endpoint constants and
+    environment values while the native factory constructs its clients, then
+    restores both even if construction fails.
+    """
+    if construction_base_url is None and embedding_base_url is None:
+        return builder()
+    if construction_base_url != ALTERNATE_CONSTRUCTION_BASE_URL or embedding_base_url != ALTERNATE_EMBEDDING_BASE_URL:
+        raise P9RunnerError("P9 endpoint overrides are not the qualified GPU0 pair")
+    import native_characterization_runtime as runtime_module
+
+    env_names = ("CONSTRUCTION_LLM_BASE_URL", "EMBEDDING_BASE_URL")
+    old_env = {name: os.environ.get(name) for name in env_names}
+    old_constants = {
+        "CONSTRUCTION_BASE_URL": runtime_module.CONSTRUCTION_BASE_URL,
+        "EMBEDDING_BASE_URL": runtime_module.EMBEDDING_BASE_URL,
+    }
+    os.environ[env_names[0]] = construction_base_url
+    os.environ[env_names[1]] = embedding_base_url
+    runtime_module.CONSTRUCTION_BASE_URL = construction_base_url
+    runtime_module.EMBEDDING_BASE_URL = embedding_base_url
+    try:
+        return builder()
+    finally:
+        runtime_module.CONSTRUCTION_BASE_URL = old_constants["CONSTRUCTION_BASE_URL"]
+        runtime_module.EMBEDDING_BASE_URL = old_constants["EMBEDDING_BASE_URL"]
+        for name, value in old_env.items():
+            if value is None:
+                os.environ.pop(name, None)
+            else:
+                os.environ[name] = value
+
+
 _CONTEXT_ERROR_RE = re.compile(
     r"maximum context length is\s+(?P<context>\d+)\s+tokens.*?"
     r"prompt contains at least\s+(?P<input>\d+)\s+input tokens",
@@ -329,6 +374,8 @@ class P9FullConfig:
     history_ids: tuple[str, ...] = FORMAL_HISTORIES
     source_limit: int | None = None
     smoke: bool = False
+    construction_base_url: str | None = None
+    embedding_base_url: str | None = None
 
     def __post_init__(self) -> None:
         if not re.fullmatch(r"[a-z0-9][a-z0-9-]{2,79}", self.run_id):
@@ -342,6 +389,8 @@ class P9FullConfig:
             raise P9RunnerError("P9 source_limit is invalid")
         if self.smoke and (len(self.history_ids) != 1 or self.source_limit not in {1, 2}):
             raise P9RunnerError("P9 smoke must use one history and one or two sources")
+        if (self.construction_base_url is None) != (self.embedding_base_url is None):
+            raise P9RunnerError("P9 endpoint overrides must provide construction and embedding together")
 
 
 @dataclass(frozen=True, slots=True)
@@ -691,6 +740,23 @@ async def _run_history_live_async(
                 "real smoke requires response-level finish_reason metadata"
             )
         admission = list(capture.provider_calls) + list(replay.provider_calls)
+        runtime_config = getattr(runtime, "config", None)
+        runtime_identity = (
+            runtime_config.to_artifact()
+            if runtime_config is not None and callable(getattr(runtime_config, "to_artifact", None))
+            else {
+                "schema_version": "membind.v5.runtime-identity.v1",
+                "construction_base_url": getattr(runtime_config, "construction_base_url", None),
+                "embedding_base_url": getattr(runtime_config, "embedding_base_url", None),
+                "construction_model": getattr(runtime_config, "construction_model", None),
+                "embedding_model": getattr(runtime_config, "embedding_model", None),
+                "max_coroutines": getattr(runtime_config, "max_coroutines", None),
+            }
+        )
+        runtime_identity = {
+            "schema_version": "membind.v5.runtime-identity.v1",
+            **dict(runtime_identity),
+        }
         final_publication_ns = max(
             (int(event["monotonic_ns"]) for event in result.execution.events if event["event"] == "PUBLICATION_DURABLE"),
             default=result.execution.timer_stop_ns,
@@ -729,6 +795,7 @@ async def _run_history_live_async(
             "admission": admission,
             "native_trace": envelopes,
             "transport_evidence": transport_evidence,
+            "runtime_identity": runtime_identity,
             "lifecycle": lifecycle,
             "canonical_graph": dict(canonical),
             "build_makespan_ns": result.execution.build_makespan_ns,
@@ -854,6 +921,7 @@ async def run_p9_full_live_async(
             _write_new(history_root / "canonical_graph.json", result["canonical_graph"])
             _write_new(history_root / "logical_work_summary.json", result["logical_work_summary"])
             _write_new(history_root / "oracle_binding_summary.json", result["oracle_binding_summary"])
+            _write_new(history_root / "runtime_identity.json", result["runtime_identity"])
             _write_new(history_root / "lifecycle.json", result["lifecycle"])
             _write_new(history_root / "block_metrics.json", {"history_id": history_id, "source_count": result["source_count"], "durable_frontier": result["durable_frontier"], "build_makespan_ns": result["build_makespan_ns"], "overlap_evidence": result["overlap_evidence"]})
             if not (history_root / "frontier.jsonl").exists():
@@ -906,6 +974,8 @@ def build_p9_parser() -> argparse.ArgumentParser:
     parser.add_argument("--smoke", action="store_true")
     parser.add_argument("--smoke-history", default="07741c45")
     parser.add_argument("--smoke-sources", type=int, default=2)
+    parser.add_argument("--construction-base-url")
+    parser.add_argument("--embedding-base-url")
     return parser
 
 
@@ -914,8 +984,7 @@ def build_p9_live_command(config: P9FullConfig, *, python: str = "membind-valida
     validation_src = config.repo_root / "membind-validation/src"
     v12_src = config.repo_root / "saturated_fixed_work_baseline_v1_2/src"
     v13_src = config.repo_root / "saturated_fixed_work_baseline_v1_3/src"
-    return " ".join(
-        [
+    tokens = [
             "PYTHONPATH=" + ":".join((str(v13_src), str(v12_src), str(validation_src))),
             python,
             str(script),
@@ -933,13 +1002,17 @@ def build_p9_live_command(config: P9FullConfig, *, python: str = "membind-valida
             config.run_id,
             "--execute-live",
         ]
-    )
+    if config.construction_base_url is not None:
+        tokens.extend(["--construction-base-url", config.construction_base_url])
+        tokens.extend(["--embedding-base-url", str(config.embedding_base_url)])
+    return " ".join(tokens)
 
 
 __all__ = [
     "FrontierHistoryResult",
     "P9FullConfig",
     "P9RunnerError",
+    "build_u0_runtime_with_endpoint_overrides",
     "build_p9_live_command",
     "build_p9_parser",
     "run_frontier_history_async",

@@ -1,0 +1,28 @@
+LLM returned invalid duplicate_facts idx values [0] (valid range: 0--1 for EXISTING FACTS)
+{"event": "SAMPLE_FAILURE", "method": "B0_NATIVE_SERIAL", "ordinal": 1, "sample_order": 1, "sample_id": "B29__Update", "error_type": "TimeoutError", "error": ""}
+{"event": "REPLICATION_COMPLETE", "method": "B0_NATIVE_SERIAL", "ordinal": 1, "status": "LIVE_PARTIAL", "completed_output_count": 0, "failure_count": 1}
+{"event": "RECOVERY_SAMPLE_DONE", "sample_id": "B29__Update", "status": "LIVE_PARTIAL"}
+{"event": "RECOVERY_SAMPLE_START", "sample_id": "A01__TrajectoryOps", "root": "/data/predator/ly/MemBind/saturated_fixed_work_baseline_v1_3/artifacts/hrep015/s002"}
+{"event": "SAMPLE_START", "method": "B0_NATIVE_SERIAL", "ordinal": 1, "sample_order": 1, "sample_id": "A01__TrajectoryOps"}
+^CTraceback (most recent call last):
+  File "/data/predator/ly/MemBind/saturated_fixed_work_baseline_v1_3/scripts/resume_memops_hazard_replication.py", line 194, in <module>
+    raise SystemExit(main())
+                     ^^^^^^
+  File "/data/predator/ly/MemBind/saturated_fixed_work_baseline_v1_3/scripts/resume_memops_hazard_replication.py", line 142, in main
+    completed = subprocess.run(command, cwd=str(args.repository_root.resolve()), env=env, check=False)
+                ^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^
+  File "/usr/lib/python3.12/subprocess.py", line 550, in run
+    stdout, stderr = process.communicate(input, timeout=timeout)
+                     ^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^
+  File "/usr/lib/python3.12/subprocess.py", line 1201, in communicate
+    self.wait()
+  File "/usr/lib/python3.12/subprocess.py", line 1264, in wait
+    return self._wait(timeout=timeout)
+           ^^^^^^^^^^^^^^^^^^^^^^^^^^^
+  File "/usr/lib/python3.12/subprocess.py", line 2053, in _wait
+    (pid, sts) = self._try_wait(0)
+                 ^^^^^^^^^^^^^^^^^
+  File "/usr/lib/python3.12/subprocess.py", line 2011, in _try_wait
+    (pid, sts) = os.waitpid(self.pid, wait_flags)
+                 ^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^
+KeyboardInterrupt

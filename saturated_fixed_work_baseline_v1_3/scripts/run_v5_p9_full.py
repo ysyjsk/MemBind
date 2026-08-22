@@ -13,6 +13,7 @@ from saturated_fixed_work_baseline_v1_3.membind_v5.p9_runner import (
     P9FullConfig,
     P9RunnerError,
     _verify_p8_seal,
+    build_u0_runtime_with_endpoint_overrides,
     build_p9_parser,
     run_p9_full_live_async,
 )
@@ -50,13 +51,17 @@ def main(argv: list[str] | None = None) -> int:
             history_ids=history_ids,
             source_limit=source_limit,
             smoke=args.smoke,
+            construction_base_url=args.construction_base_url,
+            embedding_base_url=args.embedding_base_url,
         )
     except P9RunnerError as exc:
         print(json.dumps({"status": "FAIL", "error": str(exc)}, sort_keys=True))
         return 2
 
-    construction = _models("http://10.87.5.247:8000/v1/models", "qwen3-32b-fp8")
-    embedding = _models("http://10.87.5.247:8001/v1/models", "qwen3-embedding-0.6b")
+    construction_base_url = config.construction_base_url or "http://10.87.5.247:8000/v1/"
+    embedding_base_url = config.embedding_base_url or "http://10.87.5.247:8001/v1"
+    construction = _models(construction_base_url.rstrip("/") + "/models", "qwen3-32b-fp8")
+    embedding = _models(embedding_base_url.rstrip("/") + "/models", "qwen3-embedding-0.6b")
     if construction.get("status") != "PASS" or embedding.get("status") != "PASS":
         print(json.dumps({"status": "BLOCKED_HEALTH", "construction": construction, "embedding": embedding}, sort_keys=True))
         return 2
@@ -89,9 +94,16 @@ def main(argv: list[str] | None = None) -> int:
             def check(action: Any, **kwargs: Any) -> Any:
                 return require_live_action(action, state_path=config.state_path, **kwargs)
 
-            return build_u0_graphiti_from_env(
-                authorization_checker=check,
-                live_action=LiveAction.MEMBIND_V5,
+            def native_build() -> Any:
+                return build_u0_graphiti_from_env(
+                    authorization_checker=check,
+                    live_action=LiveAction.MEMBIND_V5,
+                )
+
+            return build_u0_runtime_with_endpoint_overrides(
+                native_build,
+                construction_base_url=config.construction_base_url,
+                embedding_base_url=config.embedding_base_url,
             )
 
         return build

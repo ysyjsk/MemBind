@@ -1,0 +1,161 @@
+{
+  "payload_sha256": "a983392d6cc3edaa2fa5d36863fb0ce056dadc3e136da1cecf72eb8b2e2543a4",
+  "rows": [
+    {
+      "construction_calls": 0,
+      "correct": true,
+      "evaluation_setting": "adjacent_operation",
+      "evaluation_type": "CandidateDisambiguation",
+      "expected_answer": "1920x1200",
+      "failure_layer": null,
+      "gold_memory_state": "The confirmed native resolution is 1920x1200. Values 2560x1440 (initial misremembering), 2560x1600 (Lenovo specs page, later disproved), and 2880x1800 (Priya's PSREF lookup, tentative and rejected) are all superseded.",
+      "gold_provenance": [
+        {
+          "quote": "I just booted into Windows and checked Display Settings directly. It says 1920 by 1200 and that matches what xrandr showed me. So I'm confident now: my actual native resolution is 1920x1200",
+          "segment_index": 3,
+          "turn_index": 5
+        },
+        {
+          "quote": "I ran the xrandr command in Fedora and it reports 1920 by 1200. So the native resolution when I'm in Linux is 1920x1200",
+          "segment_index": 2,
+          "turn_index": 3
+        }
+      ],
+      "gold_ranks": [
+        1,
+        2
+      ],
+      "graph_write_attempts": 0,
+      "invalid": false,
+      "invalid_reason": null,
+      "judge_rubric": {
+        "acceptable_paraphrases": [
+          "1920 by 1200"
+        ],
+        "harmful_extra": [
+          "selecting any resolution other than 1920x1200"
+        ],
+        "harmless_extra": [],
+        "must_include": [
+          "1920x1200"
+        ],
+        "must_not_include": [
+          "2560x1440",
+          "2560x1600",
+          "2880x1800"
+        ]
+      },
+      "memops_official_judge": {
+        "answer_score": 1,
+        "completion_tokens": 125,
+        "extra_detail_postcheck_action": "none",
+        "extra_detail_postcheck_applied": false,
+        "extra_detail_type": "none",
+        "finish_reason": "stop",
+        "judge_operation_detection": {
+          "fn": 3,
+          "fp": 0,
+          "tp": 3
+        },
+        "judge_provenance_support": 1,
+        "official_prompt_builder": "build_evaluation_prompt",
+        "official_result_parser": "parse_judge_metrics",
+        "prompt_sha256": "ecf812af7a0297de79654e2e8bcc9a2421140a1cbb20de6310d0edaacf880051",
+        "prompt_tokens": 7057,
+        "raw_prompt_persisted": false,
+        "raw_response_persisted": false,
+        "reason": "The model correctly selects 1920x1200 as the native resolution, which is the confirmed current value in the Gold operations. It cites the correct provenance (Windows and xrandr in Fedora). No harmful extra details are present.",
+        "response_sha256": "853759c0c7f2069da3869cba34cc744bd438bee18f23a80d16bd68cb22955a30",
+        "stale_value": 0
+      },
+      "mrr": 1.0,
+      "ndcg_at_10": 1.0,
+      "question_id": "D02__Update:p4_candidate_disambiguation:adjacent_operation",
+      "question_pair_id": "p4_candidate_disambiguation",
+      "recall_at_1": 0.5,
+      "recall_at_10": 1.0,
+      "recall_at_3": 1.0,
+      "recall_at_5": 1.0,
+      "relevance_unit": "LONGMEMEVAL_GOLD_SESSION",
+      "sample_id": "D02__Update"
+    },
+    {
+      "construction_calls": 0,
+      "correct": true,
+      "evaluation_setting": "longitudinal_operation",
+      "evaluation_type": "CandidateDisambiguation",
+      "expected_answer": "1920x1200",
+      "failure_layer": null,
+      "gold_memory_state": "The confirmed native resolution is 1920x1200. Values 2560x1440 (initial misremembering), 2560x1600 (Lenovo specs page, later disproved), and 2880x1800 (Priya's PSREF lookup, tentative and rejected) are all superseded.",
+      "gold_provenance": [
+        {
+          "quote": "I just booted into Windows and checked Display Settings directly. It says 1920 by 1200 and that matches what xrandr showed me. So I'm confident now: my actual native resolution is 1920x1200",
+          "segment_index": 3,
+          "turn_index": 5
+        },
+        {
+          "quote": "I ran the xrandr command in Fedora and it reports 1920 by 1200. So the native resolution when I'm in Linux is 1920x1200",
+          "segment_index": 2,
+          "turn_index": 3
+        }
+      ],
+      "gold_ranks": [
+        1,
+        2
+      ],
+      "graph_write_attempts": 0,
+      "invalid": false,
+      "invalid_reason": null,
+      "judge_rubric": {
+        "acceptable_paraphrases": [
+          "1920 by 1200"
+        ],
+        "harmful_extra": [
+          "selecting any resolution other than 1920x1200"
+        ],
+        "harmless_extra": [],
+        "must_include": [
+          "1920x1200"
+        ],
+        "must_not_include": [
+          "2560x1440",
+          "2560x1600",
+          "2880x1800"
+        ]
+      },
+      "memops_official_judge": {
+        "answer_score": 1,
+        "completion_tokens": 115,
+        "extra_detail_postcheck_action": "none",
+        "extra_detail_postcheck_applied": false,
+        "extra_detail_type": "none",
+        "finish_reason": "stop",
+        "judge_operation_detection": {
+          "fn": 3,
+          "fp": 0,
+          "tp": 3
+        },
+        "judge_provenance_support": 1,
+        "official_prompt_builder": "build_evaluation_prompt",
+        "official_result_parser": "parse_judge_metrics",
+        "prompt_sha256": "d7ef85a3e72a09adc5cebea182484ad6a10e170d6643051e7417e692cedfacae",
+        "prompt_tokens": 7046,
+        "raw_prompt_persisted": false,
+        "raw_response_persisted": false,
+        "reason": "The model correctly selected 1920x1200 as the native resolution, citing the confirmed evidence from both Windows and xrandr in Fedora. It did not include any harmful extra details.",
+        "response_sha256": "5ea4000db988bc7631f7079f778bbbb51764a0478a58cf18c00cfe809d495ba1",
+        "stale_value": 0
+      },
+      "mrr": 1.0,
+      "ndcg_at_10": 1.0,
+      "question_id": "D02__Update:p4_candidate_disambiguation:longitudinal_operation",
+      "question_pair_id": "p4_candidate_disambiguation",
+      "recall_at_1": 0.5,
+      "recall_at_10": 1.0,
+      "recall_at_3": 1.0,
+      "recall_at_5": 1.0,
+      "relevance_unit": "LONGMEMEVAL_GOLD_SESSION",
+      "sample_id": "D02__Update"
+    }
+  ]
+}

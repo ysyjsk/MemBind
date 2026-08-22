@@ -1,0 +1,48 @@
+{
+  "benchmark": "MemOps",
+  "official_qa_evaluator": {
+    "path": "/data/predator/ly/third_party/MemOps/5.5-evaluate_operation_metrics.py",
+    "prompt_builder": "build_evaluation_prompt",
+    "result_parser": "parse_judge_metrics",
+    "sha256": "17c24362c174239eb7ef5e543bc651afed60ae445a4becd49acf24f6d3c646f0"
+  },
+  "parent_cohort_selection_manifest_sha256": "4f6b21e51ce577864545865c45f6aa0e2c4e3997d6f0ea89624db018f9491891",
+  "payload_sha256": "e2b1714888f6acf7a435f0df3b1afe321f7c128c9b25803e292d2adb82bf9639",
+  "pilot_policy_set": [
+    "B0_NATIVE_SERIAL"
+  ],
+  "replication_contract": {
+    "b0_failure_does_not_gate_next_sample_or_b1": true,
+    "same_source_order": true,
+    "single_sample_subroot": true,
+    "v5_started": false
+  },
+  "sample_count": 1,
+  "sample_order": [
+    "B21__TrajectoryOps"
+  ],
+  "samples": [
+    {
+      "cohort_sample_id": "B21__TrajectoryOps",
+      "hazard_score": 294,
+      "history_id": "memops-b21-trajectoryops",
+      "max_confirmed_chain_length": 3,
+      "max_same_target_confirmed_mutations": 2,
+      "official_sample_id": "B21",
+      "operation_type": "TrajectoryOps",
+      "qualifying_qa_types": [
+        "StateTrajectory",
+        "StateTransition"
+      ],
+      "sample_id": "B21__TrajectoryOps",
+      "source_file": "/data/predator/ly/third_party/MemOps/generated_result/2-evidence_conversation/B21_trajectory_ops.json",
+      "source_sha256": "db5fe40f81ba6d2b5601751ba15e82bd7edb8adc200a7b4339a9b355ca516d04",
+      "state_dependency_pair_count": 1,
+      "target_id": "david_salary",
+      "target_name": "David's annual salary at Greenfield Rehabilitation Center"
+    }
+  ],
+  "schema_version": "sfwb.v1.3.memops-hazard-single-sample-selection.v1",
+  "selection_basis": "gold-only hazard score; fixed type quotas Update=18 and TrajectoryOps=6; no B0/B1 artifacts read",
+  "status": "OFFLINE_HAZARD_COHORT_FROZEN"
+}

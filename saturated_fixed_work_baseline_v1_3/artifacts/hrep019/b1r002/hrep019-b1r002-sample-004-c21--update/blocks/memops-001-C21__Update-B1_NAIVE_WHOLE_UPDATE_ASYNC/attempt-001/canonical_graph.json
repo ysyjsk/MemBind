@@ -1,0 +1,472 @@
+{
+  "canonical_graph_hash": "a5b7093ff2175694de09d1b5c6b9f776338e1a787971b7ebd2aaa1c416aef78a",
+  "edges": [
+    {
+      "attributes": {},
+      "expired_at": "2026-08-22T15:43:46.129798000+00:00",
+      "fact": "USER has a payment due date for Citi Double Cash on the 22nd of every month, which was changed from the 7th in February to align with their second paycheck.",
+      "invalid_at": "2025-02-07T00:00:00.000000000+00:00",
+      "relation_type": "HAS_PAYMENT_DUE_DATE",
+      "source_entity_key": "user",
+      "source_episode_sequence": 0,
+      "target_entity_key": "citi double cash",
+      "valid_at": null
+    },
+    {
+      "attributes": {},
+      "expired_at": "2026-08-22T15:44:03.583967000+00:00",
+      "fact": "You have a payment system for the Citi Double Cash card that aligns with your second paycheck on the 16th of every month.",
+      "invalid_at": "2025-02-01T00:00:00.000000000+00:00",
+      "relation_type": "HAS_PAYMENT_SYSTEM",
+      "source_entity_key": "citi double cash",
+      "source_episode_sequence": 2,
+      "target_entity_key": "you",
+      "valid_at": "2000-01-16T00:00:00.000000000+00:00"
+    },
+    {
+      "attributes": {},
+      "expired_at": "2026-08-22T15:44:03.605035000+00:00",
+      "fact": "You decide to keep the Citi Double Cash card's due date at the 18th of every month.",
+      "invalid_at": "2025-02-01T00:00:00.000000000+00:00",
+      "relation_type": "DECIDES_TO_KEEP_DUE_DATE",
+      "source_entity_key": "you",
+      "source_episode_sequence": 2,
+      "target_entity_key": "citi double cash",
+      "valid_at": "2000-01-01T00:02:00.000000000+00:00"
+    },
+    {
+      "attributes": {},
+      "expired_at": null,
+      "fact": "Citi Double Cash has a due date of the 18th of every month for You.",
+      "invalid_at": null,
+      "relation_type": "HAS_DUE_DATE",
+      "source_entity_key": "citi double cash",
+      "source_episode_sequence": 2,
+      "target_entity_key": "you",
+      "valid_at": null
+    },
+    {
+      "attributes": {},
+      "expired_at": null,
+      "fact": "Citi Double Cash has a history of due date changes for You: originally the 7th, then the 22nd in February, and finally the 18th.",
+      "invalid_at": null,
+      "relation_type": "HAS_HISTORY",
+      "source_entity_key": "citi double cash",
+      "source_episode_sequence": 2,
+      "target_entity_key": "you",
+      "valid_at": null
+    },
+    {
+      "attributes": {},
+      "expired_at": null,
+      "fact": "Citi issues the Citi Double Cash card.",
+      "invalid_at": null,
+      "relation_type": "ISSUES",
+      "source_entity_key": "citi",
+      "source_episode_sequence": 2,
+      "target_entity_key": "citi double cash",
+      "valid_at": "2000-01-01T00:00:00.000000000+00:00"
+    },
+    {
+      "attributes": {},
+      "expired_at": null,
+      "fact": "Citi offers You the ability to change the due date of the Citi Double Cash card to the 25th starting next billing cycle.",
+      "invalid_at": null,
+      "relation_type": "OFFERS_DUE_DATE_CHANGE",
+      "source_entity_key": "citi",
+      "source_episode_sequence": 2,
+      "target_entity_key": "you",
+      "valid_at": null
+    },
+    {
+      "attributes": {},
+      "expired_at": null,
+      "fact": "Citi offers a reminder system for You, with the most recent statement showing the 18th as the due date for Citi Double Cash.",
+      "invalid_at": null,
+      "relation_type": "OFFERS_REMINDER",
+      "source_entity_key": "citi",
+      "source_episode_sequence": 2,
+      "target_entity_key": "you",
+      "valid_at": null
+    },
+    {
+      "attributes": {},
+      "expired_at": null,
+      "fact": "Kevin has been carrying a balance on his Discover card for months.",
+      "invalid_at": null,
+      "relation_type": "CARRYING_BALANCE_ON",
+      "source_entity_key": "kevin",
+      "source_episode_sequence": 1,
+      "target_entity_key": "discover card",
+      "valid_at": "2000-01-01T00:01:00.000000000+00:00"
+    },
+    {
+      "attributes": {},
+      "expired_at": null,
+      "fact": "Kevin owns a Discover card with a due date on the 25th and has been carrying a balance for months.",
+      "invalid_at": null,
+      "relation_type": "OWNS",
+      "source_entity_key": "kevin",
+      "source_episode_sequence": 1,
+      "target_entity_key": "discover card",
+      "valid_at": null
+    },
+    {
+      "attributes": {},
+      "expired_at": null,
+      "fact": "USER changed the payment due date for Citi Double Cash from the 7th to the 22nd in February to align with their second paycheck.",
+      "invalid_at": null,
+      "relation_type": "CHANGED_PAYMENT_DUE_DATE",
+      "source_entity_key": "user",
+      "source_episode_sequence": 0,
+      "target_entity_key": "citi double cash",
+      "valid_at": "2025-02-01T00:00:00.000000000+00:00"
+    },
+    {
+      "attributes": {},
+      "expired_at": null,
+      "fact": "USER has a payment due date for Capital One Quicksilver on the 28th of each month, with a low priority and a recurring Spotify charge of $11.99 to keep the card active.",
+      "invalid_at": null,
+      "relation_type": "HAS_PAYMENT_DUE_DATE",
+      "source_entity_key": "user",
+      "source_episode_sequence": 0,
+      "target_entity_key": "capital one quicksilver",
+      "valid_at": null
+    },
+    {
+      "attributes": {},
+      "expired_at": null,
+      "fact": "USER has a payment due date for Chase Sapphire on the 15th of each month, but aims to pay around the 10th-11th to help with credit utilization.",
+      "invalid_at": null,
+      "relation_type": "HAS_PAYMENT_DUE_DATE",
+      "source_entity_key": "user",
+      "source_episode_sequence": 0,
+      "target_entity_key": "chase sapphire",
+      "valid_at": null
+    },
+    {
+      "attributes": {},
+      "expired_at": null,
+      "fact": "USER has an approximate payment due date for Amex Blue Cash around the 10th or 12th of each month, with the exact date to be determined.",
+      "invalid_at": null,
+      "relation_type": "HAS_PAYMENT_DUE_DATE",
+      "source_entity_key": "user",
+      "source_episode_sequence": 0,
+      "target_entity_key": "amex blue cash",
+      "valid_at": null
+    },
+    {
+      "attributes": {},
+      "expired_at": null,
+      "fact": "USER maintains account activity for Capital One Quicksilver by keeping a small recurring Spotify charge of $11.99 on the card.",
+      "invalid_at": null,
+      "relation_type": "MAINTAINS_ACCOUNT_ACTIVITY",
+      "source_entity_key": "user",
+      "source_episode_sequence": 0,
+      "target_entity_key": "capital one quicksilver",
+      "valid_at": null
+    },
+    {
+      "attributes": {},
+      "expired_at": null,
+      "fact": "USER practices a payment strategy for Chase Sapphire by paying around the 10th-11th of each month, which is before the 15th due date, to help with credit utilization.",
+      "invalid_at": null,
+      "relation_type": "PRACTICES_PAYMENT_STRATEGY",
+      "source_entity_key": "user",
+      "source_episode_sequence": 0,
+      "target_entity_key": "chase sapphire",
+      "valid_at": "2025-04-30T00:00:00.000000000+00:00"
+    },
+    {
+      "attributes": {},
+      "expired_at": null,
+      "fact": "You compare the Citi Double Cash due date to Kevin's Discover card due date when considering a change to the 25th.",
+      "invalid_at": null,
+      "relation_type": "COMPARES_DUE_DATE",
+      "source_entity_key": "you",
+      "source_episode_sequence": 2,
+      "target_entity_key": "kevin's discover card",
+      "valid_at": null
+    },
+    {
+      "attributes": {},
+      "expired_at": null,
+      "fact": "You confirm that the Citi Double Cash card's due date is the 18th of every month.",
+      "invalid_at": null,
+      "relation_type": "CONFIRMS_DUE_DATE",
+      "source_entity_key": "you",
+      "source_episode_sequence": 2,
+      "target_entity_key": "citi double cash",
+      "valid_at": null
+    },
+    {
+      "attributes": {},
+      "expired_at": null,
+      "fact": "You demonstrate financial discipline by maintaining a system for the Citi Double Cash card and not missing payments since the March Amex incident.",
+      "invalid_at": null,
+      "relation_type": "HAS_FINANCIAL_DISCIPLINE",
+      "source_entity_key": "you",
+      "source_episode_sequence": 2,
+      "target_entity_key": "citi double cash",
+      "valid_at": null
+    },
+    {
+      "attributes": {},
+      "expired_at": null,
+      "fact": "You have a 2-day buffer between your second paycheck on the 16th and the Citi Double Cash due date on the 18th.",
+      "invalid_at": null,
+      "relation_type": "HAS_PAYMENT_BUFFER",
+      "source_entity_key": "you",
+      "source_episode_sequence": 2,
+      "target_entity_key": "citi double cash",
+      "valid_at": null
+    },
+    {
+      "attributes": {},
+      "expired_at": null,
+      "fact": "You have a Google Calendar reminder for the Citi Double Cash due date on the 15th of every month.",
+      "invalid_at": null,
+      "relation_type": "HAS_REMINDER",
+      "source_entity_key": "citi double cash",
+      "source_episode_sequence": 2,
+      "target_entity_key": "you",
+      "valid_at": null
+    },
+    {
+      "attributes": {},
+      "expired_at": null,
+      "fact": "You have a consistent payment system for the Citi Double Cash card that includes Sunday evening reviews and 3-day calendar reminders.",
+      "invalid_at": null,
+      "relation_type": "HAS_PAYMENT_SYSTEM",
+      "source_entity_key": "you",
+      "source_episode_sequence": 2,
+      "target_entity_key": "citi double cash",
+      "valid_at": null
+    },
+    {
+      "attributes": {},
+      "expired_at": null,
+      "fact": "You have a mindset shift regarding the Citi Double Cash card, now looking forward to Sunday reviews instead of dreading them.",
+      "invalid_at": null,
+      "relation_type": "HAS_MINDSET_SHIFT",
+      "source_entity_key": "you",
+      "source_episode_sequence": 2,
+      "target_entity_key": "citi double cash",
+      "valid_at": null
+    },
+    {
+      "attributes": {},
+      "expired_at": null,
+      "fact": "You note that the Amex Blue Cash due date on the 10th-12th and the Citi Double Cash due date on the 18th are spaced 6-8 days apart.",
+      "invalid_at": null,
+      "relation_type": "HAS_PAYMENT_BUFFER",
+      "source_entity_key": "you",
+      "source_episode_sequence": 2,
+      "target_entity_key": "amex blue cash",
+      "valid_at": null
+    },
+    {
+      "attributes": {},
+      "expired_at": null,
+      "fact": "You note that the Chase Sapphire due date on the 15th and the Citi Double Cash due date on the 18th are spaced 3 days apart.",
+      "invalid_at": null,
+      "relation_type": "HAS_PAYMENT_BUFFER",
+      "source_entity_key": "you",
+      "source_episode_sequence": 2,
+      "target_entity_key": "chase sapphire",
+      "valid_at": null
+    },
+    {
+      "attributes": {},
+      "expired_at": null,
+      "fact": "You note that the Citi Double Cash due date on the 18th and the Capital One Quicksilver due date on the 28th are spaced 10 days apart.",
+      "invalid_at": null,
+      "relation_type": "HAS_PAYMENT_BUFFER",
+      "source_entity_key": "you",
+      "source_episode_sequence": 2,
+      "target_entity_key": "capital one quicksilver",
+      "valid_at": null
+    }
+  ],
+  "entities": [
+    {
+      "attributes": {},
+      "group_id": "hrep019-b1r002-sample-004-c21--update-MEMOPS-C21__Update-B1_NAIVE_WHOLE_UPDATE_ASYNC-attempt-001",
+      "labels": [
+        "Entity"
+      ],
+      "name": "amex blue cash",
+      "summary": "USER has an approximate payment due date for Amex Blue Cash around the 10th or 12th of each month, with the exact date to be determined."
+    },
+    {
+      "attributes": {},
+      "group_id": "hrep019-b1r002-sample-004-c21--update-MEMOPS-C21__Update-B1_NAIVE_WHOLE_UPDATE_ASYNC-attempt-001",
+      "labels": [
+        "Entity"
+      ],
+      "name": "amex blue cash",
+      "summary": "You note that the Amex Blue Cash due date on the 10th-12th and the Citi Double Cash due date on the 18th are spaced 6-8 days apart."
+    },
+    {
+      "attributes": {},
+      "group_id": "hrep019-b1r002-sample-004-c21--update-MEMOPS-C21__Update-B1_NAIVE_WHOLE_UPDATE_ASYNC-attempt-001",
+      "labels": [
+        "Entity"
+      ],
+      "name": "capital one quicksilver",
+      "summary": "USER has a payment due date for Capital One Quicksilver on the 28th of each month, with a low priority and a recurring Spotify charge of $11.99 to keep the card active. USER maintains account activity for Capital One Quicksilver by keeping a small recurring Spotify charge of $11.99 on the card."
+    },
+    {
+      "attributes": {},
+      "group_id": "hrep019-b1r002-sample-004-c21--update-MEMOPS-C21__Update-B1_NAIVE_WHOLE_UPDATE_ASYNC-attempt-001",
+      "labels": [
+        "Entity"
+      ],
+      "name": "capital one quicksilver",
+      "summary": "You note that the Citi Double Cash due date on the 18th and the Capital One Quicksilver due date on the 28th are spaced 10 days apart."
+    },
+    {
+      "attributes": {},
+      "group_id": "hrep019-b1r002-sample-004-c21--update-MEMOPS-C21__Update-B1_NAIVE_WHOLE_UPDATE_ASYNC-attempt-001",
+      "labels": [
+        "Entity"
+      ],
+      "name": "chase sapphire",
+      "summary": "USER has a payment due date for Chase Sapphire on the 15th of each month, but aims to pay around the 10th-11th to help with credit utilization. USER practices a payment strategy for Chase Sapphire by paying around the 10th-11th of each month, which is before the 15th due date, to help with credit utilization."
+    },
+    {
+      "attributes": {},
+      "group_id": "hrep019-b1r002-sample-004-c21--update-MEMOPS-C21__Update-B1_NAIVE_WHOLE_UPDATE_ASYNC-attempt-001",
+      "labels": [
+        "Entity"
+      ],
+      "name": "chase sapphire",
+      "summary": "You note that the Chase Sapphire due date on the 15th and the Citi Double Cash due date on the 18th are spaced 3 days apart."
+    },
+    {
+      "attributes": {},
+      "group_id": "hrep019-b1r002-sample-004-c21--update-MEMOPS-C21__Update-B1_NAIVE_WHOLE_UPDATE_ASYNC-attempt-001",
+      "labels": [
+        "Entity"
+      ],
+      "name": "citi double cash",
+      "summary": "Citi Double Cash has a due date of the 18th of every month for You. You have a Google Calendar reminder for the Citi Double Cash due date on the 15th of every month. You have a payment system for the Citi Double Cash card that aligns with your second paycheck on the 16th of every month. Citi issues the Citi Double Cash card. Citi Double Cash has a history of due date changes for You: originally the 7th, then the 22nd in February, and finally the 18th. You confirm that the Citi Double Cash card's due date is the 18th of every month. You decide to keep the Citi Double Cash card's due date at the 18th of every month. You have a 2-day buffer between your second paycheck on the 16th and the Citi Double Cash due date on the 18th. You have a consistent payment system for the Citi Double Cash card that includes Sunday evening reviews and 3-day calendar reminders. You demonstrate financial discipline by maintaining a system for the Citi Double Cash card and not missing payments since the March Amex incident. You have a mindset shift regarding the Citi Double Cash card, now looking forward to Sunday reviews instead of dreading them."
+    },
+    {
+      "attributes": {},
+      "group_id": "hrep019-b1r002-sample-004-c21--update-MEMOPS-C21__Update-B1_NAIVE_WHOLE_UPDATE_ASYNC-attempt-001",
+      "labels": [
+        "Entity"
+      ],
+      "name": "citi double cash",
+      "summary": "USER has a payment due date for Citi Double Cash on the 22nd of every month, which was changed from the 7th in February to align with their second paycheck. USER changed the payment due date for Citi Double Cash from the 7th to the 22nd in February to align with their second paycheck."
+    },
+    {
+      "attributes": {},
+      "group_id": "hrep019-b1r002-sample-004-c21--update-MEMOPS-C21__Update-B1_NAIVE_WHOLE_UPDATE_ASYNC-attempt-001",
+      "labels": [
+        "Entity"
+      ],
+      "name": "citi",
+      "summary": "Citi issues the Citi Double Cash card. Citi offers a reminder system for You, with the most recent statement showing the 18th as the due date for Citi Double Cash. Citi offers You the ability to change the due date of the Citi Double Cash card to the 25th starting next billing cycle."
+    },
+    {
+      "attributes": {},
+      "group_id": "hrep019-b1r002-sample-004-c21--update-MEMOPS-C21__Update-B1_NAIVE_WHOLE_UPDATE_ASYNC-attempt-001",
+      "labels": [
+        "Entity"
+      ],
+      "name": "discover card",
+      "summary": "Kevin owns a Discover card with a due date on the 25th and has been carrying a balance for months. Kevin has been carrying a balance on his Discover card for months."
+    },
+    {
+      "attributes": {},
+      "group_id": "hrep019-b1r002-sample-004-c21--update-MEMOPS-C21__Update-B1_NAIVE_WHOLE_UPDATE_ASYNC-attempt-001",
+      "labels": [
+        "Entity"
+      ],
+      "name": "google calendar",
+      "summary": "Google Calendar is used to set reminders for credit card due dates. A reminder for the Citi Double Cash card due date on the 18th is set for the 15th, the day before the second paycheck arrives."
+    },
+    {
+      "attributes": {},
+      "group_id": "hrep019-b1r002-sample-004-c21--update-MEMOPS-C21__Update-B1_NAIVE_WHOLE_UPDATE_ASYNC-attempt-001",
+      "labels": [
+        "Entity"
+      ],
+      "name": "kevin",
+      "summary": "Kevin owns a Discover card with a due date on the 25th and has been carrying a balance for months. Kevin has been carrying a balance on his Discover card for months."
+    },
+    {
+      "attributes": {},
+      "group_id": "hrep019-b1r002-sample-004-c21--update-MEMOPS-C21__Update-B1_NAIVE_WHOLE_UPDATE_ASYNC-attempt-001",
+      "labels": [
+        "Entity"
+      ],
+      "name": "kevin's discover card",
+      "summary": "You compare the Citi Double Cash due date to Kevin's Discover card due date when considering a change to the 25th."
+    },
+    {
+      "attributes": {},
+      "group_id": "hrep019-b1r002-sample-004-c21--update-MEMOPS-C21__Update-B1_NAIVE_WHOLE_UPDATE_ASYNC-attempt-001",
+      "labels": [
+        "Entity"
+      ],
+      "name": "spotify",
+      "summary": "Spotify has a recurring charge of $11.99 on the user's Capital One Quicksilver card to keep the account active."
+    },
+    {
+      "attributes": {},
+      "group_id": "hrep019-b1r002-sample-004-c21--update-MEMOPS-C21__Update-B1_NAIVE_WHOLE_UPDATE_ASYNC-attempt-001",
+      "labels": [
+        "Entity"
+      ],
+      "name": "spotify",
+      "summary": "Spotify is listed as a low-priority expense on the Capital One Quicksilver card, which has a due date of the 28th of every month."
+    },
+    {
+      "attributes": {},
+      "group_id": "hrep019-b1r002-sample-004-c21--update-MEMOPS-C21__Update-B1_NAIVE_WHOLE_UPDATE_ASYNC-attempt-001",
+      "labels": [
+        "Entity"
+      ],
+      "name": "sunday evening weekly review",
+      "summary": "The Sunday evening weekly review is a ritual where upcoming bills are scanned, funding is confirmed, and payments are mentally organized. It complements Google Calendar reminders and aligns with paycheck dates on the 1st and 16th, creating a proactive financial planning system."
+    },
+    {
+      "attributes": {},
+      "group_id": "hrep019-b1r002-sample-004-c21--update-MEMOPS-C21__Update-B1_NAIVE_WHOLE_UPDATE_ASYNC-attempt-001",
+      "labels": [
+        "Entity"
+      ],
+      "name": "user",
+      "summary": "USER has a payment due date for Citi Double Cash on the 22nd of every month, which was changed from the 7th in February to align with their second paycheck. USER has a payment due date for Chase Sapphire on the 15th of each month, but aims to pay around the 10th-11th to help with credit utilization. USER has a payment due date for Capital One Quicksilver on the 28th of each month, with a low priority and a recurring Spotify charge of $11.99 to keep the card active. USER has an approximate payment due date for Amex Blue Cash around the 10th or 12th of each month, with the exact date to be determined. USER changed the payment due date for Citi Double Cash from the 7th to the 22nd in February to align with their second paycheck. USER practices a payment strategy for Chase Sapphire by paying around the 10th-11th of each month, which is before the 15th due date, to help with credit utilization. USER maintains account activity for Capital One Quicksilver by keeping a small recurring Spotify charge of $11.99 on the card."
+    },
+    {
+      "attributes": {},
+      "group_id": "hrep019-b1r002-sample-004-c21--update-MEMOPS-C21__Update-B1_NAIVE_WHOLE_UPDATE_ASYNC-attempt-001",
+      "labels": [
+        "Entity"
+      ],
+      "name": "you",
+      "summary": "Citi Double Cash has a due date of the 18th of every month for You. You have a Google Calendar reminder for the Citi Double Cash due date on the 15th of every month. You have a payment system for the Citi Double Cash card that aligns with your second paycheck on the 16th of every month. Citi Double Cash has a history of due date changes for You: originally the 7th, then the 22nd in February, and finally the 18th. Citi offers a reminder system for You, with the most recent statement showing the 18th as the due date for Citi Double Cash. Citi offers You the ability to change the due date of the Citi Double Cash card to the 25th starting next billing cycle. You confirm that the Citi Double Cash card's due date is the 18th of every month. You decide to keep the Citi Double Cash card's due date at the 18th of every month. You have a 2-day buffer between your second paycheck on the 16th and the Citi Double Cash due date on the 18th. You compare the Citi Double Cash due date to Kevin's Discover card due date when considering a change to the 25th. You note that the Citi Double Cash due date on the 18th and the Capital One Quicksilver due date on the 28th are spaced 10 days apart. You note that the Chase Sapphire due date on the 15th and the Citi Double Cash due date on the 18th are spaced 3 days apart. You note that the Amex Blue Cash due date on the 10th-12th and the Citi Double Cash due date on the 18th are spaced 6-8 days apart. You have a consistent payment system for the Citi Double Cash card that includes Sunday evening reviews and 3-day calendar reminders. You demonstrate financial discipline by maintaining a system for the Citi Double Cash card and not missing payments since the March Amex incident. You have a mindset shift regarding the Citi Double Cash card, now looking forward to Sunday reviews instead of dreading them."
+    }
+  ],
+  "episodes": [
+    {
+      "session_id": "C21__Update:segment:001",
+      "source_hash": "19a781f080e3fedd15b6e2781a858b5f761a07e1b809367d7093c0e311a9ff8e",
+      "source_sequence": 0
+    },
+    {
+      "session_id": "C21__Update:segment:002",
+      "source_hash": "dfb1ddd44c74a0d1d8079d92e42b48af9366f1071daf2e501eab7169ee966754",
+      "source_sequence": 1
+    },
+    {
+      "session_id": "C21__Update:segment:003",
+      "source_hash": "d18e0c562d28f69fe9f87754eda942b23b7a9f71c267762e84749e9dec402688",
+      "source_sequence": 2
+    }
+  ]
+}

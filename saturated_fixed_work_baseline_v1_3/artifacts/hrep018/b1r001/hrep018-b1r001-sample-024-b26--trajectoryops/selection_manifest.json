@@ -1,0 +1,48 @@
+{
+  "benchmark": "MemOps",
+  "official_qa_evaluator": {
+    "path": "/data/predator/ly/third_party/MemOps/5.5-evaluate_operation_metrics.py",
+    "prompt_builder": "build_evaluation_prompt",
+    "result_parser": "parse_judge_metrics",
+    "sha256": "17c24362c174239eb7ef5e543bc651afed60ae445a4becd49acf24f6d3c646f0"
+  },
+  "parent_cohort_selection_manifest_sha256": "4f6b21e51ce577864545865c45f6aa0e2c4e3997d6f0ea89624db018f9491891",
+  "payload_sha256": "192cb69a5631a900f979e633218269360a8991879fc09cfe964ef05294e4a048",
+  "pilot_policy_set": [
+    "B1_NAIVE_WHOLE_UPDATE_ASYNC"
+  ],
+  "replication_contract": {
+    "b0_failure_does_not_gate_next_sample_or_b1": true,
+    "same_source_order": true,
+    "single_sample_subroot": true,
+    "v5_started": false
+  },
+  "sample_count": 1,
+  "sample_order": [
+    "B26__TrajectoryOps"
+  ],
+  "samples": [
+    {
+      "cohort_sample_id": "B26__TrajectoryOps",
+      "hazard_score": 294,
+      "history_id": "memops-b26-trajectoryops",
+      "max_confirmed_chain_length": 3,
+      "max_same_target_confirmed_mutations": 2,
+      "official_sample_id": "B26",
+      "operation_type": "TrajectoryOps",
+      "qualifying_qa_types": [
+        "StateTrajectory",
+        "StateTransition"
+      ],
+      "sample_id": "B26__TrajectoryOps",
+      "source_file": "/data/predator/ly/third_party/MemOps/generated_result/2-evidence_conversation/B26_trajectory_ops.json",
+      "source_sha256": "d17fd2cd56d9556a96490693691481d260f10a9861e059b8a3f2db30fc928a97",
+      "state_dependency_pair_count": 1,
+      "target_id": "chloe_city",
+      "target_name": "Chloe's city of residence"
+    }
+  ],
+  "schema_version": "sfwb.v1.3.memops-hazard-single-sample-selection.v1",
+  "selection_basis": "gold-only hazard score; fixed type quotas Update=18 and TrajectoryOps=6; no B0/B1 artifacts read",
+  "status": "OFFLINE_HAZARD_COHORT_FROZEN"
+}
