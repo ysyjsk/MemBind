@@ -9,6 +9,7 @@ from .transcript import TranscriptStore
 from .executor import FrontierExecutor
 from .timing import BuildTimer
 from .capabilities import CapabilityViolation, LLMOnlyFacade, NonEscapingValue, assert_non_escaping
+from .provider_admission import FrontierAwareLLMClient, ProviderAdmissionError, provider_scope
 
 __all__ = [
     "AdmissionClass",
@@ -20,6 +21,9 @@ __all__ = [
     "LLMOnlyFacade",
     "NonEscapingValue",
     "assert_non_escaping",
+    "FrontierAwareLLMClient",
+    "ProviderAdmissionError",
+    "provider_scope",
     "HoistCertificate",
     "NativeBindingScope",
     "OperatorContract",

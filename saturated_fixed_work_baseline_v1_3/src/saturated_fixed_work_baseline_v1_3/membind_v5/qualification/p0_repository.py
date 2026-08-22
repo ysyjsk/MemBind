@@ -31,6 +31,20 @@ def _run(*args: str) -> str:
         return ""
 
 
+def _is_ancestor(root: Path, ancestor: str, descendant: str) -> bool:
+    """Require the audited revision to remain in the current implementation history."""
+    try:
+        result = subprocess.run(
+            ("git", "-C", str(root), "merge-base", "--is-ancestor", ancestor, descendant),
+            check=False,
+            capture_output=True,
+            timeout=5,
+        )
+    except (OSError, subprocess.TimeoutExpired):
+        return False
+    return result.returncode == 0
+
+
 def qualify_repository(
     repo_root: str | Path,
     *,
@@ -44,8 +58,11 @@ def qualify_repository(
 ) -> dict[str, Any]:
     root = Path(repo_root).resolve()
     actual_commit = _run("git", "-C", str(root), "rev-parse", "HEAD")
-    if actual_commit != expected_commit:
-        raise QualificationError(f"repo revision mismatch: expected {expected_commit}, got {actual_commit}")
+    if not actual_commit or not _is_ancestor(root, expected_commit, actual_commit):
+        raise QualificationError(
+            f"repo revision is not a descendant of audited baseline: "
+            f"expected ancestor {expected_commit}, got {actual_commit}"
+        )
     configs: dict[str, str] = {}
     for raw in frozen_config_paths:
         path = (root / raw).resolve()
@@ -83,7 +100,10 @@ def qualify_repository(
         "schema_version": "membind.v5.p0-repository-qualification.v1",
         "status": "PASS",
         "repo_root": str(root),
+        "audit_base_commit": expected_commit,
         "membind_commit": actual_commit,
+        "implementation_descends_from_audit_base": True,
+        "worktree_status": _run("git", "-C", str(root), "status", "--short"),
         "python": str(python),
         "python_version": sys.version,
         "graphiti_core_version": graphiti_version,

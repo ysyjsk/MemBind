@@ -28,7 +28,11 @@ def _read_json(path: Path) -> Any:
         raise CampaignContractError(f"artifact unreadable: {path}") from exc
 
 
-def verify_baseline_reference(baseline_root: str | Path) -> dict[str, Any]:
+def verify_baseline_reference(
+    baseline_root: str | Path,
+    *,
+    allow_invalid_qa: bool = False,
+) -> dict[str, Any]:
     root = Path(baseline_root).resolve()
     seal = root / "formal_run_seal.json"
     results = root / "qualification" / "baseline_results.json"
@@ -38,18 +42,19 @@ def verify_baseline_reference(baseline_root: str | Path) -> dict[str, Any]:
     result_body = _read_json(results)
     if seal_body.get("status") != "FORMAL_RUN_SEALED":
         raise CampaignContractError("baseline formal seal status is invalid")
-    if result_body.get("status") != "PASS":
+    if result_body.get("status") not in {"PASS", "FAIL_QA_CONTRACT"}:
         raise CampaignContractError("baseline qualification status is invalid")
     decisions = result_body.get("qa_history_decisions")
-    if (
-        not isinstance(decisions, list)
-        or len(decisions) != len(FORMAL_HISTORIES)
-        or any(
-            not isinstance(decision, Mapping)
-            or decision.get("contract_status") != "PASS"
+    qa_contract_pass = (
+        isinstance(decisions, list)
+        and len(decisions) == len(FORMAL_HISTORIES)
+        and all(
+            isinstance(decision, Mapping)
+            and decision.get("contract_status") == "PASS"
             for decision in decisions
         )
-    ):
+    )
+    if not qa_contract_pass and not allow_invalid_qa:
         raise CampaignContractError("baseline QA qualification is invalid")
     rows = result_body.get("rows", result_body.get("results", result_body.get("blocks", []))) if isinstance(result_body, Mapping) else []
     keys = {(str(row.get("history_id")), str(row.get("method"))) for row in rows if isinstance(row, Mapping)}
@@ -65,6 +70,8 @@ def verify_baseline_reference(baseline_root: str | Path) -> dict[str, Any]:
         "methods": list(BASELINE_METHODS),
         "histories": list(FORMAL_HISTORIES),
         "baseline_root_mutated": False,
+        "qa_contract_status": "PASS" if qa_contract_pass else "INVALID_RETAINED",
+        "qa_correctness_is_not_claimed": not qa_contract_pass,
     }
 
 

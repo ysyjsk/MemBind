@@ -42,6 +42,10 @@ from saturated_fixed_work_baseline_v1_3.membind_v5.runtime.core.capabilities imp
     NonEscapingValue,
     assert_non_escaping,
 )
+from saturated_fixed_work_baseline_v1_3.membind_v5.runtime.core.provider_admission import (
+    FrontierAwareLLMClient,
+    provider_scope,
+)
 
 
 def test_operator_certificate_rejects_derived_state_and_non_bindable_effect() -> None:
@@ -205,6 +209,33 @@ async def test_executor_c1_degenerates_to_serial_and_cancels_after_failure() -> 
     assert published == [0, 1]
     assert executor.frontier.durable_frontier == 0
     assert executor.frontier.failed_sequence == 1
+
+
+@pytest.mark.asyncio
+async def test_provider_admission_classifies_frontier_prepare_dynamically_and_replay_is_free() -> None:
+    authority = CapacityAuthority.from_runtime(2, 2)
+    arbiter = __import__(
+        "saturated_fixed_work_baseline_v1_3.membind_v5.runtime.core.admission",
+        fromlist=["AdmissionArbiter"],
+    ).AdmissionArbiter(authority)
+    store = TranscriptStore()
+    frontier = {"value": -1}
+
+    class Client:
+        async def generate_response(self, messages, **kwargs):
+            return {"ok": kwargs["prompt_name"]}
+
+    capture = FrontierAwareLLMClient(Client(), store=store, arbiter=arbiter, mode="capture", durable_frontier=lambda: frontier["value"], client_identity={"class": "Fake", "source_hash": "x"})
+    with provider_scope(region="PREPARE", source_sequence=0):
+        await capture.generate_response([{"role": "user", "content": "x"}], prompt_name="extract_nodes.extract_message")
+    with provider_scope(region="PREPARE", source_sequence=2):
+        await capture.generate_response([{"role": "user", "content": "z"}], prompt_name="extract_nodes.extract_message")
+    assert [row["admission_class"] for row in capture.provider_calls] == ["FRONTIER_PREPARE", "FUTURE_PREPARE"]
+    replay = FrontierAwareLLMClient(Client(), store=store, arbiter=arbiter, mode="replay", durable_frontier=lambda: frontier["value"], client_identity={"class": "Fake", "source_hash": "x"})
+    with NativeBindingScope(store, source_sequence=0):
+        with provider_scope(region="NATIVE", source_sequence=0):
+            await replay.generate_response([{"role": "user", "content": "x"}], prompt_name="extract_nodes.extract_message")
+    assert replay.provider_calls[-1]["admitted"] is False
 
 
 def test_core_architecture_has_no_graphiti_import() -> None:

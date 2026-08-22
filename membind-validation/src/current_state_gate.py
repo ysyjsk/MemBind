@@ -37,6 +37,7 @@ class LiveAction(str, Enum):
     NATIVE_CHARACTERIZATION_C2 = "native_characterization_c2"
     NATIVE_CHARACTERIZATION_C4 = "native_characterization_c4"
     NATIVE_CHARACTERIZATION_C5 = "native_characterization_c5"
+    MEMBIND_V5 = "membind_v5"
 
 
 @dataclass(frozen=True)
@@ -91,6 +92,9 @@ _EXACT_STAGE_SCOPES: dict[LiveAction, set[tuple[str, str]]] = {
     },
     LiveAction.NATIVE_CHARACTERIZATION_C5: {
         ("NATIVE_CHARACTERIZATION", "native_characterization_c5_live_only")
+    },
+    LiveAction.MEMBIND_V5: {
+        ("V5", "membind_v5_live_only")
     },
 }
 

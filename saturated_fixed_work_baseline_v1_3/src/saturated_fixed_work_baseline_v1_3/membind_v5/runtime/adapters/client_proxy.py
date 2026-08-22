@@ -46,7 +46,7 @@ class V5LLMClientProxy:
     def __post_init__(self) -> None:
         if self.mode not in {"capture", "replay"}:
             raise ValueError("proxy mode must be capture or replay")
-        self._ordinals: dict[str, int] = {}
+        self._ordinals: dict[tuple[int, str], int] = {}
         if self.client_identity is None:
             self.client_identity = _client_identity(self.delegate)
         if self.transport_identity is None:
@@ -54,8 +54,9 @@ class V5LLMClientProxy:
 
     def _identity(self, messages: Any, response_model: Any, max_tokens: int | None, model_size: Any, group_id: str | None, prompt_name: str | None, attribute_extraction: bool) -> Any:
         callsite = str(prompt_name or "unknown")
-        ordinal = self._ordinals.get(callsite, 0)
-        self._ordinals[callsite] = ordinal + 1
+        key = (int(self.source_sequence), callsite)
+        ordinal = self._ordinals.get(key, 0)
+        self._ordinals[key] = ordinal + 1
         return build_request_identity(
             source_sequence=self.source_sequence,
             callsite=callsite,
@@ -112,4 +113,3 @@ class V5LLMClientProxy:
 
     def __getattr__(self, name: str) -> Any:
         return getattr(self.delegate, name)
-
