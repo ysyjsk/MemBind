@@ -1,0 +1,492 @@
+{
+  "benchmark": "MemOps",
+  "official_qa_evaluator": {
+    "path": "/data/predator/ly/third_party/MemOps/5.5-evaluate_operation_metrics.py",
+    "prompt_builder": "build_evaluation_prompt",
+    "result_parser": "parse_judge_metrics",
+    "sha256": "17c24362c174239eb7ef5e543bc651afed60ae445a4becd49acf24f6d3c646f0"
+  },
+  "payload_sha256": "4f6b21e51ce577864545865c45f6aa0e2c4e3997d6f0ea89624db018f9491891",
+  "pilot_policy_set": [
+    "B0_NATIVE_SERIAL",
+    "B1_NAIVE_WHOLE_UPDATE_ASYNC"
+  ],
+  "replication_contract": {
+    "b0_failure_does_not_gate_b1": true,
+    "fresh_namespace_per_replication": true,
+    "fresh_run_root_per_replication": true,
+    "replications_per_method": 3,
+    "same_order_across_methods": true,
+    "v5_started": false
+  },
+  "sample_count": 24,
+  "sample_order": [
+    "C05__Update",
+    "E15__Update",
+    "B29__Update",
+    "C21__Update",
+    "C30__Update",
+    "D02__Update",
+    "F17__Update",
+    "A01__Update",
+    "A05__Update",
+    "A13__Update",
+    "A14__Update",
+    "A28__Update",
+    "A29__Update",
+    "A33__Update",
+    "B01__Update",
+    "B02__Update",
+    "B03__Update",
+    "B10__Update",
+    "A01__TrajectoryOps",
+    "A28__TrajectoryOps",
+    "A33__TrajectoryOps",
+    "B21__TrajectoryOps",
+    "B25__TrajectoryOps",
+    "B26__TrajectoryOps"
+  ],
+  "samples": [
+    {
+      "cohort_sample_id": "C05__Update",
+      "hazard_score": 405,
+      "history_id": "memops-c05-update",
+      "max_confirmed_chain_length": 4,
+      "max_same_target_confirmed_mutations": 3,
+      "official_sample_id": "C05",
+      "operation_type": "Update",
+      "qualifying_qa_types": [
+        "CandidateDisambiguation"
+      ],
+      "sample_id": "C05__Update",
+      "source_file": "/data/predator/ly/third_party/MemOps/generated_result/2-evidence_conversation/C05_update.json",
+      "source_sha256": "0335cf348debd89721a818b17c14b7e3c68fda43241e89abc36fb62027e80de3",
+      "state_dependency_pair_count": 1,
+      "target_id": "iceland_booking_ref",
+      "target_name": "Icelandair booking reference code"
+    },
+    {
+      "cohort_sample_id": "E15__Update",
+      "hazard_score": 405,
+      "history_id": "memops-e15-update",
+      "max_confirmed_chain_length": 4,
+      "max_same_target_confirmed_mutations": 3,
+      "official_sample_id": "E15",
+      "operation_type": "Update",
+      "qualifying_qa_types": [
+        "CandidateDisambiguation"
+      ],
+      "sample_id": "E15__Update",
+      "source_file": "/data/predator/ly/third_party/MemOps/generated_result/2-evidence_conversation/E15_update.json",
+      "source_sha256": "7086723408fce31ede9f4a67071792aaa88df25aba1aae47160ffaf1b4ec1b5e",
+      "state_dependency_pair_count": 1,
+      "target_id": "downgrade_vs_upgrade_ratio",
+      "target_name": "ratio of downgraded to upgraded priority incidents"
+    },
+    {
+      "cohort_sample_id": "B29__Update",
+      "hazard_score": 305,
+      "history_id": "memops-b29-update",
+      "max_confirmed_chain_length": 4,
+      "max_same_target_confirmed_mutations": 2,
+      "official_sample_id": "B29",
+      "operation_type": "Update",
+      "qualifying_qa_types": [
+        "CandidateDisambiguation"
+      ],
+      "sample_id": "B29__Update",
+      "source_file": "/data/predator/ly/third_party/MemOps/generated_result/2-evidence_conversation/B29_update.json",
+      "source_sha256": "962e02c36ee880fc5206882789392e8dad4d22290f30cab8a05c0edbe792a288",
+      "state_dependency_pair_count": 1,
+      "target_id": "total_sessions_in_block",
+      "target_name": "total sessions in 12-week training block"
+    },
+    {
+      "cohort_sample_id": "C21__Update",
+      "hazard_score": 305,
+      "history_id": "memops-c21-update",
+      "max_confirmed_chain_length": 4,
+      "max_same_target_confirmed_mutations": 2,
+      "official_sample_id": "C21",
+      "operation_type": "Update",
+      "qualifying_qa_types": [
+        "CandidateDisambiguation"
+      ],
+      "sample_id": "C21__Update",
+      "source_file": "/data/predator/ly/third_party/MemOps/generated_result/2-evidence_conversation/C21_update.json",
+      "source_sha256": "348588af0eaf23e1eb01fb29c46e57e9a04d46b69e784a6b72161719061adc0b",
+      "state_dependency_pair_count": 1,
+      "target_id": "calendar_reminder_offset",
+      "target_name": "Google Calendar reminder offset before due dates"
+    },
+    {
+      "cohort_sample_id": "C30__Update",
+      "hazard_score": 305,
+      "history_id": "memops-c30-update",
+      "max_confirmed_chain_length": 4,
+      "max_same_target_confirmed_mutations": 2,
+      "official_sample_id": "C30",
+      "operation_type": "Update",
+      "qualifying_qa_types": [
+        "CandidateDisambiguation"
+      ],
+      "sample_id": "C30__Update",
+      "source_file": "/data/predator/ly/third_party/MemOps/generated_result/2-evidence_conversation/C30_update.json",
+      "source_sha256": "37eb9afed0eb4781e1b1d83868d478270f34be09d0196b217ae1a03273a13baa",
+      "state_dependency_pair_count": 1,
+      "target_id": "btc_monthly_buy",
+      "target_name": "Monthly Bitcoin auto-buy on Coinbase"
+    },
+    {
+      "cohort_sample_id": "D02__Update",
+      "hazard_score": 305,
+      "history_id": "memops-d02-update",
+      "max_confirmed_chain_length": 4,
+      "max_same_target_confirmed_mutations": 2,
+      "official_sample_id": "D02",
+      "operation_type": "Update",
+      "qualifying_qa_types": [
+        "CandidateDisambiguation"
+      ],
+      "sample_id": "D02__Update",
+      "source_file": "/data/predator/ly/third_party/MemOps/generated_result/2-evidence_conversation/D02_update.json",
+      "source_sha256": "556463fc5bbb3751a100a9ff2fc89ae5099562fca3289947571f5544407f62a0",
+      "state_dependency_pair_count": 1,
+      "target_id": "laptop_screen_resolution",
+      "target_name": "ThinkPad X1 Carbon Gen 11 screen resolution"
+    },
+    {
+      "cohort_sample_id": "F17__Update",
+      "hazard_score": 305,
+      "history_id": "memops-f17-update",
+      "max_confirmed_chain_length": 4,
+      "max_same_target_confirmed_mutations": 2,
+      "official_sample_id": "F17",
+      "operation_type": "Update",
+      "qualifying_qa_types": [
+        "CandidateDisambiguation"
+      ],
+      "sample_id": "F17__Update",
+      "source_file": "/data/predator/ly/third_party/MemOps/generated_result/2-evidence_conversation/F17_update.json",
+      "source_sha256": "06bae901ec84e13c7085ce4faaca25f3214d9803cecd95eae499aee12dd35e47",
+      "state_dependency_pair_count": 1,
+      "target_id": "amh_level",
+      "target_name": "User's AMH level from fertility hormone panel"
+    },
+    {
+      "cohort_sample_id": "A01__Update",
+      "hazard_score": 285,
+      "history_id": "memops-a01-update",
+      "max_confirmed_chain_length": 3,
+      "max_same_target_confirmed_mutations": 2,
+      "official_sample_id": "A01",
+      "operation_type": "Update",
+      "qualifying_qa_types": [
+        "CandidateDisambiguation"
+      ],
+      "sample_id": "A01__Update",
+      "source_file": "/data/predator/ly/third_party/MemOps/generated_result/2-evidence_conversation/A01_update.json",
+      "source_sha256": "a4f6b0c31dcfe4d0c5207ce5d2c292890c51ab54ab61278f197b3ac989decc87",
+      "state_dependency_pair_count": 1,
+      "target_id": "job_title",
+      "target_name": "Current job title at Bridgemark Solutions"
+    },
+    {
+      "cohort_sample_id": "A05__Update",
+      "hazard_score": 285,
+      "history_id": "memops-a05-update",
+      "max_confirmed_chain_length": 3,
+      "max_same_target_confirmed_mutations": 2,
+      "official_sample_id": "A05",
+      "operation_type": "Update",
+      "qualifying_qa_types": [
+        "CandidateDisambiguation"
+      ],
+      "sample_id": "A05__Update",
+      "source_file": "/data/predator/ly/third_party/MemOps/generated_result/2-evidence_conversation/A05_update.json",
+      "source_sha256": "ae77817d56ebdca4fbe8f0c60a24790e149b7c1c36c20b6e20895550c4a8d358",
+      "state_dependency_pair_count": 1,
+      "target_id": "birchwood_lease_duration",
+      "target_name": "lease duration at 742 Birchwood Lane"
+    },
+    {
+      "cohort_sample_id": "A13__Update",
+      "hazard_score": 285,
+      "history_id": "memops-a13-update",
+      "max_confirmed_chain_length": 3,
+      "max_same_target_confirmed_mutations": 2,
+      "official_sample_id": "A13",
+      "operation_type": "Update",
+      "qualifying_qa_types": [
+        "CandidateDisambiguation"
+      ],
+      "sample_id": "A13__Update",
+      "source_file": "/data/predator/ly/third_party/MemOps/generated_result/2-evidence_conversation/A13_update.json",
+      "source_sha256": "0cf23a586a213e2c25cfdd54263a985b3c5ff4585d2d4f604b2858ce45f3b434",
+      "state_dependency_pair_count": 1,
+      "target_id": "metformin_dosage",
+      "target_name": "Current metformin dosage"
+    },
+    {
+      "cohort_sample_id": "A14__Update",
+      "hazard_score": 285,
+      "history_id": "memops-a14-update",
+      "max_confirmed_chain_length": 3,
+      "max_same_target_confirmed_mutations": 2,
+      "official_sample_id": "A14",
+      "operation_type": "Update",
+      "qualifying_qa_types": [
+        "CandidateDisambiguation"
+      ],
+      "sample_id": "A14__Update",
+      "source_file": "/data/predator/ly/third_party/MemOps/generated_result/2-evidence_conversation/A14_update.json",
+      "source_sha256": "84f5a3d086be822377527fd0481db9e0059f1da319e15db70673ea61de4ade33",
+      "state_dependency_pair_count": 1,
+      "target_id": "brazilian_passport_number",
+      "target_name": "Brazilian passport number"
+    },
+    {
+      "cohort_sample_id": "A28__Update",
+      "hazard_score": 285,
+      "history_id": "memops-a28-update",
+      "max_confirmed_chain_length": 3,
+      "max_same_target_confirmed_mutations": 2,
+      "official_sample_id": "A28",
+      "operation_type": "Update",
+      "qualifying_qa_types": [
+        "CandidateDisambiguation"
+      ],
+      "sample_id": "A28__Update",
+      "source_file": "/data/predator/ly/third_party/MemOps/generated_result/2-evidence_conversation/A28_update.json",
+      "source_sha256": "28d7e6a8469d33b005ea6898483d7512704cb39187b54fd4817b4c398a14ef12",
+      "state_dependency_pair_count": 1,
+      "target_id": "methodology_milestone_date",
+      "target_name": "Methodology chapter committee presentation date"
+    },
+    {
+      "cohort_sample_id": "A29__Update",
+      "hazard_score": 285,
+      "history_id": "memops-a29-update",
+      "max_confirmed_chain_length": 3,
+      "max_same_target_confirmed_mutations": 2,
+      "official_sample_id": "A29",
+      "operation_type": "Update",
+      "qualifying_qa_types": [
+        "CandidateDisambiguation"
+      ],
+      "sample_id": "A29__Update",
+      "source_file": "/data/predator/ly/third_party/MemOps/generated_result/2-evidence_conversation/A29_update.json",
+      "source_sha256": "bf1334640990ec0e54e67747b4b26cb8ace191e9ce0212c6d7f72a15fa31ea89",
+      "state_dependency_pair_count": 1,
+      "target_id": "grandmother_weekly_calls_start",
+      "target_name": "Start time of weekly Sunday calls with grandmother in São Paulo"
+    },
+    {
+      "cohort_sample_id": "A33__Update",
+      "hazard_score": 285,
+      "history_id": "memops-a33-update",
+      "max_confirmed_chain_length": 3,
+      "max_same_target_confirmed_mutations": 2,
+      "official_sample_id": "A33",
+      "operation_type": "Update",
+      "qualifying_qa_types": [
+        "CandidateDisambiguation"
+      ],
+      "sample_id": "A33__Update",
+      "source_file": "/data/predator/ly/third_party/MemOps/generated_result/2-evidence_conversation/A33_update.json",
+      "source_sha256": "003903f125cd990a3a2885b68b85228599f9d312bcb9dc782831b40fc50780c4",
+      "state_dependency_pair_count": 1,
+      "target_id": "current_height",
+      "target_name": "user's current height"
+    },
+    {
+      "cohort_sample_id": "B01__Update",
+      "hazard_score": 285,
+      "history_id": "memops-b01-update",
+      "max_confirmed_chain_length": 3,
+      "max_same_target_confirmed_mutations": 2,
+      "official_sample_id": "B01",
+      "operation_type": "Update",
+      "qualifying_qa_types": [
+        "CandidateDisambiguation"
+      ],
+      "sample_id": "B01__Update",
+      "source_file": "/data/predator/ly/third_party/MemOps/generated_result/2-evidence_conversation/B01_update.json",
+      "source_sha256": "57103aa23213218255182f99d9d0c1f8f0d9b0281dbf3c6fc7870b47fb1bd743",
+      "state_dependency_pair_count": 1,
+      "target_id": "darren_birthday",
+      "target_name": "Darren Liu's birthday"
+    },
+    {
+      "cohort_sample_id": "B02__Update",
+      "hazard_score": 285,
+      "history_id": "memops-b02-update",
+      "max_confirmed_chain_length": 3,
+      "max_same_target_confirmed_mutations": 2,
+      "official_sample_id": "B02",
+      "operation_type": "Update",
+      "qualifying_qa_types": [
+        "CandidateDisambiguation"
+      ],
+      "sample_id": "B02__Update",
+      "source_file": "/data/predator/ly/third_party/MemOps/generated_result/2-evidence_conversation/B02_update.json",
+      "source_sha256": "35db302c355e62f327723a5d852dcd372bffb7c7b0bb2eaa79e561630e9cd460",
+      "state_dependency_pair_count": 1,
+      "target_id": "danny_address",
+      "target_name": "Danny Kowalski's current mailing address"
+    },
+    {
+      "cohort_sample_id": "B03__Update",
+      "hazard_score": 285,
+      "history_id": "memops-b03-update",
+      "max_confirmed_chain_length": 3,
+      "max_same_target_confirmed_mutations": 2,
+      "official_sample_id": "B03",
+      "operation_type": "Update",
+      "qualifying_qa_types": [
+        "CandidateDisambiguation"
+      ],
+      "sample_id": "B03__Update",
+      "source_file": "/data/predator/ly/third_party/MemOps/generated_result/2-evidence_conversation/B03_update.json",
+      "source_sha256": "06e4922d4e174b74e9cb13180031933d6caaefa1a38e769a107a29296174536e",
+      "state_dependency_pair_count": 1,
+      "target_id": "david_keane_title",
+      "target_name": "David Keane's job title"
+    },
+    {
+      "cohort_sample_id": "B10__Update",
+      "hazard_score": 285,
+      "history_id": "memops-b10-update",
+      "max_confirmed_chain_length": 3,
+      "max_same_target_confirmed_mutations": 2,
+      "official_sample_id": "B10",
+      "operation_type": "Update",
+      "qualifying_qa_types": [
+        "CandidateDisambiguation"
+      ],
+      "sample_id": "B10__Update",
+      "source_file": "/data/predator/ly/third_party/MemOps/generated_result/2-evidence_conversation/B10_update.json",
+      "source_sha256": "bfa32752bb86e13664b7355486afb108c5d586c9bab07ee82e66f1dce5d49e20",
+      "state_dependency_pair_count": 1,
+      "target_id": "mochi_checkup_weight",
+      "target_name": "Mochi's weight at vet checkup"
+    },
+    {
+      "cohort_sample_id": "A01__TrajectoryOps",
+      "hazard_score": 294,
+      "history_id": "memops-a01-trajectoryops",
+      "max_confirmed_chain_length": 3,
+      "max_same_target_confirmed_mutations": 2,
+      "official_sample_id": "A01",
+      "operation_type": "TrajectoryOps",
+      "qualifying_qa_types": [
+        "StateTrajectory",
+        "StateTransition"
+      ],
+      "sample_id": "A01__TrajectoryOps",
+      "source_file": "/data/predator/ly/third_party/MemOps/generated_result/2-evidence_conversation/A01_trajectory_ops.json",
+      "source_sha256": "14237dae89e35340fc16a7f6dbac2052be727728d1a647461c69a94203f4153a",
+      "state_dependency_pair_count": 1,
+      "target_id": "job_title",
+      "target_name": "job title at Bridgemark Solutions"
+    },
+    {
+      "cohort_sample_id": "A28__TrajectoryOps",
+      "hazard_score": 294,
+      "history_id": "memops-a28-trajectoryops",
+      "max_confirmed_chain_length": 3,
+      "max_same_target_confirmed_mutations": 2,
+      "official_sample_id": "A28",
+      "operation_type": "TrajectoryOps",
+      "qualifying_qa_types": [
+        "StateTrajectory",
+        "StateTransition"
+      ],
+      "sample_id": "A28__TrajectoryOps",
+      "source_file": "/data/predator/ly/third_party/MemOps/generated_result/2-evidence_conversation/A28_trajectory_ops.json",
+      "source_sha256": "5c99fac01649d1be434ce1f0cc5c1c70209e308c64d8cb0a4091f3cb7fc06e4d",
+      "state_dependency_pair_count": 1,
+      "target_id": "milestone_meeting_date",
+      "target_name": "methodology chapter committee presentation date"
+    },
+    {
+      "cohort_sample_id": "A33__TrajectoryOps",
+      "hazard_score": 294,
+      "history_id": "memops-a33-trajectoryops",
+      "max_confirmed_chain_length": 3,
+      "max_same_target_confirmed_mutations": 2,
+      "official_sample_id": "A33",
+      "operation_type": "TrajectoryOps",
+      "qualifying_qa_types": [
+        "StateTrajectory",
+        "StateTransition"
+      ],
+      "sample_id": "A33__TrajectoryOps",
+      "source_file": "/data/predator/ly/third_party/MemOps/generated_result/2-evidence_conversation/A33_trajectory_ops.json",
+      "source_sha256": "7eac7f9c4745c88ffa30afa761137bf96713136b496d095bab0486a31f812796",
+      "state_dependency_pair_count": 1,
+      "target_id": "current_height",
+      "target_name": "user's current height"
+    },
+    {
+      "cohort_sample_id": "B21__TrajectoryOps",
+      "hazard_score": 294,
+      "history_id": "memops-b21-trajectoryops",
+      "max_confirmed_chain_length": 3,
+      "max_same_target_confirmed_mutations": 2,
+      "official_sample_id": "B21",
+      "operation_type": "TrajectoryOps",
+      "qualifying_qa_types": [
+        "StateTrajectory",
+        "StateTransition"
+      ],
+      "sample_id": "B21__TrajectoryOps",
+      "source_file": "/data/predator/ly/third_party/MemOps/generated_result/2-evidence_conversation/B21_trajectory_ops.json",
+      "source_sha256": "db5fe40f81ba6d2b5601751ba15e82bd7edb8adc200a7b4339a9b355ca516d04",
+      "state_dependency_pair_count": 1,
+      "target_id": "david_salary",
+      "target_name": "David's annual salary at Greenfield Rehabilitation Center"
+    },
+    {
+      "cohort_sample_id": "B25__TrajectoryOps",
+      "hazard_score": 294,
+      "history_id": "memops-b25-trajectoryops",
+      "max_confirmed_chain_length": 3,
+      "max_same_target_confirmed_mutations": 2,
+      "official_sample_id": "B25",
+      "operation_type": "TrajectoryOps",
+      "qualifying_qa_types": [
+        "StateTrajectory",
+        "StateTransition"
+      ],
+      "sample_id": "B25__TrajectoryOps",
+      "source_file": "/data/predator/ly/third_party/MemOps/generated_result/2-evidence_conversation/B25_trajectory_ops.json",
+      "source_sha256": "d5652c066cfbdcb97df90fda5607ce3047eefc63301e87d37f201b2d7473643d",
+      "state_dependency_pair_count": 1,
+      "target_id": "robotics_schedule",
+      "target_name": "Lily's robotics club meeting schedule"
+    },
+    {
+      "cohort_sample_id": "B26__TrajectoryOps",
+      "hazard_score": 294,
+      "history_id": "memops-b26-trajectoryops",
+      "max_confirmed_chain_length": 3,
+      "max_same_target_confirmed_mutations": 2,
+      "official_sample_id": "B26",
+      "operation_type": "TrajectoryOps",
+      "qualifying_qa_types": [
+        "StateTrajectory",
+        "StateTransition"
+      ],
+      "sample_id": "B26__TrajectoryOps",
+      "source_file": "/data/predator/ly/third_party/MemOps/generated_result/2-evidence_conversation/B26_trajectory_ops.json",
+      "source_sha256": "d17fd2cd56d9556a96490693691481d260f10a9861e059b8a3f2db30fc928a97",
+      "state_dependency_pair_count": 1,
+      "target_id": "chloe_city",
+      "target_name": "Chloe's city of residence"
+    }
+  ],
+  "schema_version": "sfwb.v1.3.memops-hazard-replication-selection.v1",
+  "selection_basis": "gold-only hazard score; fixed type quotas Update=18 and TrajectoryOps=6; no B0/B1 artifacts read",
+  "status": "OFFLINE_HAZARD_COHORT_FROZEN"
+}

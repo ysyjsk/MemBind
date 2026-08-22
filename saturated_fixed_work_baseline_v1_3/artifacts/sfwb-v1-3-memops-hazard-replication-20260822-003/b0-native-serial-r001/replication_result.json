@@ -1,0 +1,332 @@
+{
+  "methods": [
+    "B0_NATIVE_SERIAL"
+  ],
+  "outputs": [
+    {
+      "attempt_root": "/data/predator/ly/MemBind/saturated_fixed_work_baseline_v1_3/artifacts/sfwb-v1-3-memops-hazard-replication-20260822-003/b0-native-serial-r001/blocks/memops-001-C05__Update-B0_NATIVE_SERIAL/attempt-001",
+      "block_id": "memops-001-C05__Update-B0_NATIVE_SERIAL",
+      "method": "B0_NATIVE_SERIAL",
+      "metrics": {
+        "application_gate_count": 0,
+        "artificial_sleep_count": 0,
+        "attempt_id": "attempt-001",
+        "attempt_ordinal": 1,
+        "attempt_root": "/data/predator/ly/MemBind/saturated_fixed_work_baseline_v1_3/artifacts/sfwb-v1-3-memops-hazard-replication-20260822-003/b0-native-serial-r001/blocks/memops-001-C05__Update-B0_NATIVE_SERIAL/attempt-001",
+        "block_id": "memops-001-C05__Update-B0_NATIVE_SERIAL",
+        "build_makespan_ns": 54713220528,
+        "build_makespan_s": 54.713220528,
+        "canonical_exact_match": true,
+        "canonical_graph_hash": "4a7695e6f7653001320d39cd3386197090875fd321b68a6ea8b4e66179c472c3",
+        "configured_max_inflight": null,
+        "created_sequences": [
+          0,
+          1,
+          2
+        ],
+        "db_duration_p50_s": 0.002504685,
+        "db_duration_p95_s": 0.039894489,
+        "db_duration_p99_s": 0.041556606,
+        "db_metrics_availability": "MEASURED",
+        "db_writes": 3,
+        "direct_semantic_evidence_availability": "DERIVED",
+        "direct_semantic_evidence_records": [],
+        "direct_semantic_violations": 0,
+        "direct_semantic_violations_by_observation": {
+          "future_persistent_state_read": 0,
+          "stale_predecessor_write": 0,
+          "wrong_state_write": 0
+        },
+        "drain_tail_ns": 7565066667,
+        "embedding_duration_p50_s": 0.019605542,
+        "embedding_duration_p95_s": 0.029621823,
+        "embedding_duration_p99_s": 0.043387197,
+        "embedding_items": 90,
+        "embedding_metrics_availability": "MEASURED",
+        "episode_count": 3,
+        "execution_identity_sha256": "a47710f1627df833cb0434dff3c102db7ef6333f26d3fbfdd3cccfd66986debf",
+        "feeder_workload_await_count": 3,
+        "history_id": "memops-c05-update",
+        "instrumentation_error_spans": 0,
+        "inversion_count": 0,
+        "inversion_density": 0.0,
+        "kendall_tau": 1.0,
+        "llm_duration_p50_s": 0.902198227,
+        "llm_duration_p95_s": 14.033905187,
+        "llm_duration_p99_s": 15.843169156,
+        "llm_input_tokens": 41489,
+        "llm_logical_calls": 22,
+        "llm_metrics_availability": "MEASURED",
+        "llm_transport_attempts": 22,
+        "max_displacement": 0,
+        "method": "B0_NATIVE_SERIAL",
+        "namespace": "b0-native-serial-r001-MEMOPS-C05__Update-B0_NATIVE_SERIAL-attempt-001",
+        "ordering_observations_counted_as_direct": 0,
+        "phase_metrics_availability": "MEASURED",
+        "resource_availability": "NOT_EVALUATED",
+        "sampler_coverage": null,
+        "sampler_gap_max_s": null,
+        "sampler_gap_p95_s": null,
+        "sampler_source_coverage": {},
+        "schema_version": "membind.saturated-fixed-work.block-result.v1",
+        "seal_payload_sha256": "2b8b73237ee80e62a33e0629ae2381b8cecbb54d18c16d5523ef807d2598189b",
+        "source_tokens": 3674,
+        "source_tokens_per_s": 67.15013235457043,
+        "t0_ns": 15530023451975,
+        "t_durable_complete_ns": 15584736672503,
+        "t_validated_seal_ns": 15584835536589,
+        "valid": true,
+        "validation_seal_latency_ns": 98864086,
+        "whole_update_active_k_time_ns": {
+          "1": 54703104123
+        },
+        "whole_update_active_max": 1,
+        "whole_update_active_mean": 1.0
+      },
+      "namespace": "b0-native-serial-r001-MEMOPS-C05__Update-B0_NATIVE_SERIAL-attempt-001",
+      "qa_rows": [
+        {
+          "construction_calls": 0,
+          "correct": true,
+          "evaluation_setting": "adjacent_operation",
+          "evaluation_type": "CandidateDisambiguation",
+          "expected_answer": "May 28",
+          "failure_layer": null,
+          "gold_memory_state": "Iceland return flight date: May 28 (final confirmed). May 25 (original, superseded by May 26). May 26 (superseded by May 28). May 30 (tentative, explicitly reverted to May 28).",
+          "gold_provenance": [
+            {
+              "quote": "So the May 30th extension isn't happening after all. His manager came back and said only the original two extra days were approved. So we're sticking with May 28th—that's the final return date",
+              "segment_index": 3,
+              "turn_index": 5
+            },
+            {
+              "quote": "I just changed the return flight again—moved it to May 28th. My partner got two extra days off work approved, so we're extending",
+              "segment_index": 2,
+              "turn_index": 3
+            }
+          ],
+          "gold_ranks": [
+            1,
+            2
+          ],
+          "graph_write_attempts": 0,
+          "invalid": false,
+          "invalid_reason": null,
+          "judge_rubric": {
+            "acceptable_paraphrases": [
+              "May 28th",
+              "the 28th of May"
+            ],
+            "harmful_extra": [
+              "Suggesting any date other than May 28 as the return date"
+            ],
+            "harmless_extra": [
+              "Mentioning it's a 10-day trip",
+              "Mentioning the departure is May 18"
+            ],
+            "must_include": [
+              "May 28"
+            ],
+            "must_not_include": [
+              "May 25",
+              "May 26",
+              "May 30"
+            ]
+          },
+          "memops_official_judge": {
+            "answer_score": 1,
+            "completion_tokens": 106,
+            "extra_detail_postcheck_action": "none",
+            "extra_detail_postcheck_applied": false,
+            "extra_detail_type": "none",
+            "finish_reason": "stop",
+            "judge_operation_detection": {
+              "fn": 0,
+              "fp": 0,
+              "tp": 0
+            },
+            "judge_provenance_support": 1,
+            "official_prompt_builder": "build_evaluation_prompt",
+            "official_result_parser": "parse_judge_metrics",
+            "prompt_sha256": "59903cd5e9247592c14a2959dd8c07d61e09f3e44c4101170007deba8992b445",
+            "prompt_tokens": 7262,
+            "raw_prompt_persisted": false,
+            "raw_response_persisted": false,
+            "reason": "The model correctly selected May 28 as the final confirmed return date, which is the expected answer. It did not include any harmful extra details and the response is concise and accurate.",
+            "response_sha256": "de31c7d19a54476e60e8ee5a6d4b2d1ddb06f386399feca9f8a6c2006073d99d",
+            "stale_value": 0
+          },
+          "mrr": 1.0,
+          "ndcg_at_10": 1.0,
+          "question_id": "C05__Update:p4_candidate_disambiguation:adjacent_operation",
+          "question_pair_id": "p4_candidate_disambiguation",
+          "recall_at_1": 0.5,
+          "recall_at_10": 1.0,
+          "recall_at_3": 1.0,
+          "recall_at_5": 1.0,
+          "relevance_unit": "LONGMEMEVAL_GOLD_SESSION",
+          "sample_id": "C05__Update"
+        },
+        {
+          "construction_calls": 0,
+          "correct": true,
+          "evaluation_setting": "longitudinal_operation",
+          "evaluation_type": "CandidateDisambiguation",
+          "expected_answer": "May 28",
+          "failure_layer": null,
+          "gold_memory_state": "Iceland return flight date: May 28 (final confirmed). May 25 (original, superseded by May 26). May 26 (superseded by May 28). May 30 (tentative, explicitly reverted to May 28).",
+          "gold_provenance": [
+            {
+              "quote": "So the May 30th extension isn't happening after all. His manager came back and said only the original two extra days were approved. So we're sticking with May 28th—that's the final return date",
+              "segment_index": 3,
+              "turn_index": 5
+            },
+            {
+              "quote": "I just changed the return flight again—moved it to May 28th. My partner got two extra days off work approved, so we're extending",
+              "segment_index": 2,
+              "turn_index": 3
+            }
+          ],
+          "gold_ranks": [
+            1,
+            2
+          ],
+          "graph_write_attempts": 0,
+          "invalid": false,
+          "invalid_reason": null,
+          "judge_rubric": {
+            "acceptable_paraphrases": [
+              "May 28th",
+              "the 28th of May"
+            ],
+            "harmful_extra": [
+              "Suggesting any date other than May 28 as the return date"
+            ],
+            "harmless_extra": [
+              "Mentioning it's a 10-day trip",
+              "Mentioning the departure is May 18"
+            ],
+            "must_include": [
+              "May 28"
+            ],
+            "must_not_include": [
+              "May 25",
+              "May 26",
+              "May 30"
+            ]
+          },
+          "memops_official_judge": {
+            "answer_score": 1,
+            "completion_tokens": 113,
+            "extra_detail_postcheck_action": "none",
+            "extra_detail_postcheck_applied": false,
+            "extra_detail_type": "none",
+            "finish_reason": "stop",
+            "judge_operation_detection": {
+              "fn": 2,
+              "fp": 0,
+              "tp": 3
+            },
+            "judge_provenance_support": 1,
+            "official_prompt_builder": "build_evaluation_prompt",
+            "official_result_parser": "parse_judge_metrics",
+            "prompt_sha256": "59903cd5e9247592c14a2959dd8c07d61e09f3e44c4101170007deba8992b445",
+            "prompt_tokens": 7262,
+            "raw_prompt_persisted": false,
+            "raw_response_persisted": false,
+            "reason": "The model correctly selected May 28 as the final confirmed return date, which is the expected answer. It did not include any harmful extra details and the provenance is supported by the final confirmation in the evidence conversation.",
+            "response_sha256": "2bbc36f47725adea6d9aa49f8344a461064e3dcebbcedf7c031e74398198b7ae",
+            "stale_value": 0
+          },
+          "mrr": 1.0,
+          "ndcg_at_10": 1.0,
+          "question_id": "C05__Update:p4_candidate_disambiguation:longitudinal_operation",
+          "question_pair_id": "p4_candidate_disambiguation",
+          "recall_at_1": 0.5,
+          "recall_at_10": 1.0,
+          "recall_at_3": 1.0,
+          "recall_at_5": 1.0,
+          "relevance_unit": "LONGMEMEVAL_GOLD_SESSION",
+          "sample_id": "C05__Update"
+        }
+      ],
+      "qa_summary": {
+        "all_correct": true,
+        "construction_calls": 0,
+        "correct_rows": 2,
+        "graph_hash_after_qa": "4a7695e6f7653001320d39cd3386197090875fd321b68a6ea8b4e66179c472c3",
+        "graph_hash_before_qa": "4a7695e6f7653001320d39cd3386197090875fd321b68a6ea8b4e66179c472c3",
+        "graph_mutated": false,
+        "graph_write_attempts": 0,
+        "method": "B0_NATIVE_SERIAL",
+        "namespace": "b0-native-serial-r001-MEMOPS-C05__Update-B0_NATIVE_SERIAL-attempt-001",
+        "rows": 2,
+        "sample_id": "C05__Update",
+        "stale_value_errors": 0,
+        "state_inspection": {
+          "active_current_mentions": 0,
+          "active_stale_conflicts": [],
+          "active_transition_mentions": [],
+          "canonical_graph_used_for_uuid_equality": false,
+          "current_value_active": false,
+          "current_value_in_entity_summary": true,
+          "expected_current_value": "IKXR47",
+          "inactive_mentions": [],
+          "observation_time": "2000-01-01T00:10:00Z",
+          "stale_active_mentions": [],
+          "stale_confirmed_values": [],
+          "status": "FAIL",
+          "target_id": "iceland_booking_ref",
+          "target_name": "Icelandair booking reference code"
+        }
+      },
+      "sample_id": "C05__Update",
+      "state_inspection": {
+        "active_current_mentions": 0,
+        "active_stale_conflicts": [],
+        "active_transition_mentions": [],
+        "canonical_graph_used_for_uuid_equality": false,
+        "current_value_active": false,
+        "current_value_in_entity_summary": true,
+        "expected_current_value": "IKXR47",
+        "inactive_mentions": [],
+        "observation_time": "2000-01-01T00:10:00Z",
+        "stale_active_mentions": [],
+        "stale_confirmed_values": [],
+        "status": "FAIL",
+        "target_id": "iceland_booking_ref",
+        "target_name": "Icelandair booking reference code"
+      },
+      "workload_sha256": "556d29ab5a1abaa76034e1af5d97362155c0c54cbcfb3572c772c2d1abed7b17"
+    }
+  ],
+  "qualification_root": "/data/predator/ly/MemBind/saturated_fixed_work_baseline_v1_3/artifacts/sfwb-v1-3-memops-hazard-replication-20260822-003/b0-native-serial-r001",
+  "sample_ids": [
+    "C05__Update",
+    "E15__Update",
+    "B29__Update",
+    "C21__Update",
+    "C30__Update",
+    "D02__Update",
+    "F17__Update",
+    "A01__Update",
+    "A05__Update",
+    "A13__Update",
+    "A14__Update",
+    "A28__Update",
+    "A29__Update",
+    "A33__Update",
+    "B01__Update",
+    "B02__Update",
+    "B03__Update",
+    "B10__Update",
+    "A01__TrajectoryOps",
+    "A28__TrajectoryOps",
+    "A33__TrajectoryOps",
+    "B21__TrajectoryOps",
+    "B25__TrajectoryOps",
+    "B26__TrajectoryOps"
+  ],
+  "schema_version": "sfwb.v1.3.memops-live-qualification.v1",
+  "status": "LIVE_COMPLETE"
+}

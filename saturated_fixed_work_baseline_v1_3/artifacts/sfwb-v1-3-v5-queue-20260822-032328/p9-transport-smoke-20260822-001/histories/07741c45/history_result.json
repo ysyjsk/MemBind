@@ -1,0 +1,86 @@
+{
+  "build_makespan_ns": 16177861255,
+  "durable_frontier": 1,
+  "history_id": "07741c45",
+  "lifecycle": {
+    "build_makespan_ns": 16177861255,
+    "final_publication_ns": 15316383024449,
+    "status": "DURABLE",
+    "t0_ns": 15300206774614,
+    "t_durable_complete_ns": 15316383024449,
+    "timer_start_ns": 15300206774614,
+    "timer_stop_ns": 15316384635869
+  },
+  "logical_work_summary": {
+    "duplicates": 0,
+    "logical_captured": 4,
+    "logical_consumed": 4,
+    "unconsumed": 0
+  },
+  "method": "V5_VERSIONED_ORACLE_HOIST",
+  "namespace": "membind-v5-p9-p9-transport-smoke-20260822-001-07741c45-25709e7601",
+  "native_intervals": [
+    {
+      "end_ns": 15305428751516,
+      "source_sequence": 0,
+      "start_ns": 15302536815717
+    },
+    {
+      "end_ns": 15316382518957,
+      "source_sequence": 1,
+      "start_ns": 15314330896540
+    }
+  ],
+  "oracle_binding_summary": {
+    "duplicates": 0,
+    "logical_captured": 4,
+    "logical_consumed": 4,
+    "provider_native_calls": 7,
+    "provider_replay_calls": 0,
+    "replay_binding_calls": 4,
+    "unconsumed": 0
+  },
+  "overlap_evidence": {
+    "future_prepare_overlapped_native": true,
+    "native_count": 2,
+    "overlap_pairs": [
+      {
+        "native_source_sequence": 0,
+        "prepare_source_sequence": 1
+      }
+    ],
+    "preparation_count": 2
+  },
+  "preparation_intervals": [
+    {
+      "end_ns": 15302534924590,
+      "source_sequence": 0,
+      "start_ns": 15300208261746
+    },
+    {
+      "end_ns": 15314328973647,
+      "source_sequence": 1,
+      "start_ns": 15300213666412
+    }
+  ],
+  "schema_version": "membind.v5.p9-history-result.v1",
+  "source_count": 2,
+  "status": "PASS",
+  "transport_evidence": {
+    "attempt_count": 11,
+    "complete": true,
+    "finish_reason_observed_count": 11,
+    "finish_reasons": [
+      "stop"
+    ],
+    "schema_version": "membind.v5.transport-evidence.v1",
+    "source_sequences": [
+      0,
+      1
+    ],
+    "successful_attempt_count": 11,
+    "successful_attempts_missing_finish_reason": 0,
+    "transport_error_count": 0,
+    "usage_observed_count": 11
+  }
+}

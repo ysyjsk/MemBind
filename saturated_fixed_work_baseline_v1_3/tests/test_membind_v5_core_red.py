@@ -348,27 +348,149 @@ async def test_frontier_advance_wakes_reserved_critical_waiter() -> None:
 
 
 @pytest.mark.asyncio
-async def test_executor_bounds_preparation_tasks_by_runtime_capacity() -> None:
-    """P9 must not materialize one coroutine/future per source."""
+async def test_native_frontier_waiter_precedes_queued_future_work() -> None:
+    from saturated_fixed_work_baseline_v1_3.membind_v5.runtime.core.admission import AdmissionArbiter
+
+    authority = CapacityAuthority.from_runtime(3, 3)
+    events: list[dict[str, object]] = []
+    arbiter = AdmissionArbiter(authority, name="provider", event_sink=events.append)
+    held_a = await arbiter.acquire(AdmissionClass.FUTURE_PREPARE, source_sequence=8)
+    held_b = await arbiter.acquire(AdmissionClass.FUTURE_PREPARE, source_sequence=9)
+    future_waiter = asyncio.create_task(arbiter.acquire(AdmissionClass.FUTURE_PREPARE, source_sequence=3))
+    native_waiter = asyncio.create_task(arbiter.acquire(AdmissionClass.NATIVE_FRONTIER, source_sequence=0))
+    await asyncio.sleep(0)
+
+    await arbiter.release(held_a)
+    native = await asyncio.wait_for(native_waiter, timeout=1.0)
+    assert native is AdmissionClass.NATIVE_FRONTIER
+    native_admit = next(row for row in events if row.get("event") == "ADMISSION_ADMIT" and row.get("admission_class") == "NATIVE_FRONTIER")
+    assert native_admit["source_sequence"] == 0
+
+    await arbiter.release(native)
+    await arbiter.release(held_b)
+    future = await asyncio.wait_for(future_waiter, timeout=1.0)
+    assert future is AdmissionClass.FUTURE_PREPARE
+    await arbiter.release(future)
+    assert arbiter.outstanding == 0
+
+
+@pytest.mark.asyncio
+async def test_executor_materializes_all_future_preparations_without_source_window() -> None:
+    """Every semantic-safe source may become a ready/waiting task immediately."""
+    source_count = 49
     authority = CapacityAuthority.from_runtime(2, 2)
-    executor = FrontierExecutor(10, authority, prepare_admission=False)
-    active = 0
-    peak = 0
+    executor = FrontierExecutor(source_count, authority, prepare_admission=False)
+    started: set[int] = set()
+    release_future = asyncio.Event()
 
     async def prepare(sequence: int) -> int:
-        nonlocal active, peak
-        active += 1
-        peak = max(peak, active)
-        await asyncio.sleep(0.001)
-        active -= 1
+        started.add(sequence)
+        if sequence:
+            await release_future.wait()
+        return sequence
+
+    async def publish(sequence: int, _value: int) -> None:
+        if sequence == 0:
+            # Give all create_task callbacks a chance to run before opening the
+            # future preparations.  A source-level window would fail here.
+            for _ in range(100):
+                if len(started) == source_count:
+                    break
+                await asyncio.sleep(0)
+            assert started == set(range(source_count))
+            release_future.set()
+        await asyncio.sleep(0)
+
+    result = await asyncio.wait_for(executor.run(prepare, publish), timeout=2.0)
+    assert result.durable_frontier == source_count - 1
+    assert started == set(range(source_count))
+
+
+@pytest.mark.asyncio
+async def test_materialized_future_preparations_remain_provider_admission_bounded() -> None:
+    source_count = 49
+    authority = CapacityAuthority.from_runtime(3, 3)
+    admission_events: list[dict[str, object]] = []
+    executor = FrontierExecutor(
+        source_count,
+        authority,
+        admission_event_sink=admission_events.append,
+    )
+
+    async def prepare(sequence: int) -> int:
+        await asyncio.sleep(0.0001)
         return sequence
 
     async def publish(_sequence: int, _value: int) -> None:
-        await asyncio.sleep(0)
+        await asyncio.sleep(0.0001)
 
-    result = await executor.run(prepare, publish)
-    assert result.durable_frontier == 9
-    assert peak <= authority.value
+    result = await asyncio.wait_for(executor.run(prepare, publish), timeout=5.0)
+    assert result.durable_frontier == source_count - 1
+    admitted = [row for row in admission_events if row.get("event") == "ADMISSION_ADMIT"]
+    assert admitted
+    assert max(int(row["outstanding"]) for row in admitted) <= authority.value
+    assert max(int(row["future_outstanding"]) for row in admitted) <= authority.value - 1
+    assert executor.admission.outstanding == 0
+    assert executor.admission.evidence()["future_outstanding"] == 0
+
+
+@pytest.mark.asyncio
+async def test_materialized_provider_calls_are_bounded_by_one_shared_arbiter() -> None:
+    """All source calls may wait in the arbiter without exceeding C_admit."""
+    from saturated_fixed_work_baseline_v1_3.membind_v5.runtime.core.admission import AdmissionArbiter
+
+    source_count = 49
+    authority = CapacityAuthority.from_runtime(3, 3)
+    events: list[dict[str, object]] = []
+    arbiter = AdmissionArbiter(authority, name="provider", event_sink=events.append)
+    frontier = {"value": -1}
+    active = 0
+    peak_active = 0
+
+    class Delegate:
+        async def generate_response(self, messages, **kwargs):
+            del messages, kwargs
+            nonlocal active, peak_active
+            active += 1
+            peak_active = max(peak_active, active)
+            try:
+                await asyncio.sleep(0.0001)
+                return {"ok": True}
+            finally:
+                active -= 1
+
+    client = FrontierAwareLLMClient(
+        Delegate(),
+        store=TranscriptStore(),
+        arbiter=arbiter,
+        mode="capture",
+        durable_frontier=lambda: frontier["value"],
+        client_identity={"class": "ProviderStress", "source_hash": "v5"},
+    )
+    completed = [asyncio.Event() for _ in range(source_count)]
+
+    async def one(sequence: int) -> None:
+        with provider_scope(region="PREPARE", source_sequence=sequence):
+            await client.generate_response(
+                [{"role": "user", "content": f"source-{sequence}"}],
+                prompt_name="extract_nodes.extract_message",
+            )
+        completed[sequence].set()
+
+    tasks = [asyncio.create_task(one(sequence)) for sequence in range(source_count)]
+    for sequence, done in enumerate(completed):
+        await asyncio.wait_for(done.wait(), timeout=2.0)
+        frontier["value"] = sequence
+        await arbiter.frontier_advanced(sequence)
+    await asyncio.wait_for(asyncio.gather(*tasks), timeout=2.0)
+
+    admits = [row for row in events if row.get("event") == "ADMISSION_ADMIT"]
+    assert peak_active <= authority.value
+    assert max(int(row["outstanding"]) for row in admits) <= authority.value
+    assert max(int(row["future_outstanding"]) for row in admits) <= authority.value - 1
+    assert arbiter.outstanding == 0
+    assert arbiter.evidence()["future_outstanding"] == 0
+    assert len(client.provider_calls) == source_count
 
 
 @pytest.mark.asyncio
@@ -402,6 +524,7 @@ async def test_admission_and_provider_failure_are_durable_sanitized_events() -> 
     assert any(row.get("event") == "ADMISSION_RELEASE" for row in events)
     assert len(client.provider_calls) == 1
     failure = client.provider_calls[0]
+    assert failure["arbiter"] == "provider"
     assert failure["status"] == "failure"
     assert failure["error_type"] == "builtins.RuntimeError"
     assert failure["request_digest_prefix"]
@@ -434,6 +557,7 @@ async def test_provider_admission_classifies_frontier_prepare_dynamically_and_re
         with provider_scope(region="NATIVE", source_sequence=0):
             await replay.generate_response([{"role": "user", "content": "x"}], prompt_name="extract_nodes.extract_message")
     assert replay.provider_calls[-1]["admitted"] is False
+    assert replay.provider_calls[-1]["arbiter"] == "provider"
 
 
 @pytest.mark.asyncio

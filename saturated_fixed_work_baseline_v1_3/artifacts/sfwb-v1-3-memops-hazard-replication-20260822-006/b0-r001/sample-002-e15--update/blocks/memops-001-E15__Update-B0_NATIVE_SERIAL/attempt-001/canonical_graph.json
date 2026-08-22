@@ -1,0 +1,272 @@
+{
+  "canonical_graph_hash": "40caddc049451e5298b410dcfaf5140b7d01756d85f968d110f212bfe3afa0f8",
+  "edges": [
+    {
+      "attributes": {},
+      "expired_at": "2026-08-22T13:29:18.201593000+00:00",
+      "fact": "The new triage workflow piloted by Angela ended three weeks after May 1st.",
+      "invalid_at": "2025-05-12T00:00:00.000000000+00:00",
+      "relation_type": "INITIATIVE_END_DATE",
+      "source_entity_key": "angela",
+      "source_episode_sequence": 1,
+      "target_entity_key": "may 1st",
+      "valid_at": "2025-04-21T00:00:00.000000000+00:00"
+    },
+    {
+      "attributes": {},
+      "expired_at": "2026-08-22T13:29:49.010978000+00:00",
+      "fact": "USER mentions Angela's triage workflow pilot that was attempted starting May 1st, ran for three weeks, and was scrapped due to being too cumbersome.",
+      "invalid_at": "2000-05-22T00:00:00.000000000+00:00",
+      "relation_type": "MENTIONS_PILOT",
+      "source_entity_key": "user",
+      "source_episode_sequence": 2,
+      "target_entity_key": "angela",
+      "valid_at": "2000-05-01T00:00:00.000000000+00:00"
+    },
+    {
+      "attributes": {},
+      "expired_at": "2026-08-22T13:29:49.011001000+00:00",
+      "fact": "USER mentions that Angela sent out a memo about piloting a new triage workflow.",
+      "invalid_at": "2000-05-01T00:00:00.000000000+00:00",
+      "relation_type": "MENTIONS_INITIATIVE_OF",
+      "source_entity_key": "user",
+      "source_episode_sequence": 1,
+      "target_entity_key": "angela",
+      "valid_at": "2000-01-01T00:01:00.000000000+00:00"
+    },
+    {
+      "attributes": {},
+      "expired_at": "2026-08-22T13:29:49.011007000+00:00",
+      "fact": "Angela sent out a memo about piloting a new triage workflow to USER.",
+      "invalid_at": "2000-05-01T00:00:00.000000000+00:00",
+      "relation_type": "SENT_MEMO_TO",
+      "source_entity_key": "angela",
+      "source_episode_sequence": 1,
+      "target_entity_key": "user",
+      "valid_at": "2000-01-01T00:01:00.000000000+00:00"
+    },
+    {
+      "attributes": {},
+      "expired_at": null,
+      "fact": "Angela planned the new triage workflow to go live on May 1st.",
+      "invalid_at": null,
+      "relation_type": "PLANNED_INITIATIVE_START",
+      "source_entity_key": "angela",
+      "source_episode_sequence": 1,
+      "target_entity_key": "may 1st",
+      "valid_at": null
+    },
+    {
+      "attributes": {},
+      "expired_at": null,
+      "fact": "Angela's new triage workflow was scrapped because people found it too cumbersome for daily use.",
+      "invalid_at": null,
+      "relation_type": "INITIATIVE_FAILURE_CAUSE",
+      "source_entity_key": "angela",
+      "source_episode_sequence": 1,
+      "target_entity_key": "user",
+      "valid_at": null
+    },
+    {
+      "attributes": {},
+      "expired_at": null,
+      "fact": "Derek has a ticket number INC-20240310-0489 for a low-priority request for a second monitor setup that was escalated to P1.",
+      "invalid_at": null,
+      "relation_type": "HAS_TICKET",
+      "source_entity_key": "derek",
+      "source_episode_sequence": 2,
+      "target_entity_key": "inc-20240310-0489",
+      "valid_at": null
+    },
+    {
+      "attributes": {},
+      "expired_at": null,
+      "fact": "Derek submitted a low-priority request for a second monitor setup, which got escalated to P1 and caused Raj to be paged at 2 AM.",
+      "invalid_at": null,
+      "relation_type": "AFFECTED",
+      "source_entity_key": "derek",
+      "source_episode_sequence": 0,
+      "target_entity_key": "raj",
+      "valid_at": null
+    },
+    {
+      "attributes": {},
+      "expired_at": null,
+      "fact": "The new triage workflow piloted by Angela started on May 1st.",
+      "invalid_at": null,
+      "relation_type": "INITIATIVE_START_DATE",
+      "source_entity_key": "angela",
+      "source_episode_sequence": 1,
+      "target_entity_key": "may 1st",
+      "valid_at": null
+    },
+    {
+      "attributes": {},
+      "expired_at": null,
+      "fact": "USER has a ticket number INC-20240303-0712 for a production database outage incident where the P1 was reclassified to P3.",
+      "invalid_at": null,
+      "relation_type": "HAS_TICKET",
+      "source_entity_key": "user",
+      "source_episode_sequence": 2,
+      "target_entity_key": "inc-20240303-0712",
+      "valid_at": null
+    },
+    {
+      "attributes": {},
+      "expired_at": null,
+      "fact": "USER mentions Derek's monitor ticket as a case study to illustrate the mislabeling problem in the triage system.",
+      "invalid_at": null,
+      "relation_type": "MENTIONS_CASE_STUDY",
+      "source_entity_key": "user",
+      "source_episode_sequence": 2,
+      "target_entity_key": "derek",
+      "valid_at": null
+    },
+    {
+      "attributes": {},
+      "expired_at": null,
+      "fact": "USER mentions that Raj, a senior engineer, was paged at 2 AM due to Derek's monitor setup being escalated to P1.",
+      "invalid_at": null,
+      "relation_type": "MENTIONS_IMPACT",
+      "source_entity_key": "user",
+      "source_episode_sequence": 2,
+      "target_entity_key": "raj",
+      "valid_at": "2000-01-01T00:02:00.000000000+00:00"
+    },
+    {
+      "attributes": {},
+      "expired_at": null,
+      "fact": "USER received additional entries from Derek's sub-team, but only one of them was a valid priority relabel, increasing the confirmed count to 18.",
+      "invalid_at": null,
+      "relation_type": "RECEIVED_ADDITIONAL_ENTRIES",
+      "source_entity_key": "user",
+      "source_episode_sequence": 2,
+      "target_entity_key": "derek",
+      "valid_at": "2000-01-01T00:02:00.000000000+00:00"
+    },
+    {
+      "attributes": {},
+      "expired_at": null,
+      "fact": "USER references OpsGenie, a ticketing system from a previous job, where submitters could add context notes alongside severity tags.",
+      "invalid_at": null,
+      "relation_type": "REFERENCES_SYSTEM",
+      "source_entity_key": "user",
+      "source_episode_sequence": 2,
+      "target_entity_key": "opsgenie",
+      "valid_at": null
+    },
+    {
+      "attributes": {},
+      "expired_at": null,
+      "fact": "USER uses Derek's INC-20240310-0489 ticket as a case study to illustrate the mislabeling problem in both directions.",
+      "invalid_at": null,
+      "relation_type": "USES_AS_CASE_STUDY",
+      "source_entity_key": "user",
+      "source_episode_sequence": 2,
+      "target_entity_key": "inc-20240310-0489",
+      "valid_at": null
+    },
+    {
+      "attributes": {},
+      "expired_at": null,
+      "fact": "USER uses the INC-20240303-0712 ticket as the anchor case study in the presentation to demonstrate the mislabeling problem.",
+      "invalid_at": null,
+      "relation_type": "USES_AS_ANCHOR_CASE_STUDY",
+      "source_entity_key": "user",
+      "source_episode_sequence": 2,
+      "target_entity_key": "inc-20240303-0712",
+      "valid_at": null
+    }
+  ],
+  "entities": [
+    {
+      "attributes": {},
+      "group_id": "sample-002-e15--update-MEMOPS-E15__Update-B0_NATIVE_SERIAL-attempt-001",
+      "labels": [
+        "Entity"
+      ],
+      "name": "angela",
+      "summary": "USER mentions that Angela sent out a memo about piloting a new triage workflow. Angela sent out a memo about piloting a new triage workflow to USER. Angela planned the new triage workflow to go live on May 1st. The new triage workflow piloted by Angela started on May 1st. The new triage workflow piloted by Angela ended three weeks after May 1st. Angela's new triage workflow was scrapped because people found it too cumbersome for daily use. USER mentions Angela's triage workflow pilot that was attempted starting May 1st, ran for three weeks, and was scrapped due to being too cumbersome."
+    },
+    {
+      "attributes": {},
+      "group_id": "sample-002-e15--update-MEMOPS-E15__Update-B0_NATIVE_SERIAL-attempt-001",
+      "labels": [
+        "Entity"
+      ],
+      "name": "derek",
+      "summary": "Derek submitted a low-priority request for a second monitor setup, which got escalated to P1 and caused Raj to be paged at 2 AM. Derek has a ticket number INC-20240310-0489 for a low-priority request for a second monitor setup that was escalated to P1. USER mentions Derek's monitor ticket as a case study to illustrate the mislabeling problem in the triage system. USER received additional entries from Derek's sub-team, but only one of them was a valid priority relabel, increasing the confirmed count to 18."
+    },
+    {
+      "attributes": {},
+      "group_id": "sample-002-e15--update-MEMOPS-E15__Update-B0_NATIVE_SERIAL-attempt-001",
+      "labels": [
+        "Entity"
+      ],
+      "name": "inc-20240303-0712",
+      "summary": "USER has a ticket number INC-20240303-0712 for a production database outage incident where the P1 was reclassified to P3. USER uses the INC-20240303-0712 ticket as the anchor case study in the presentation to demonstrate the mislabeling problem."
+    },
+    {
+      "attributes": {},
+      "group_id": "sample-002-e15--update-MEMOPS-E15__Update-B0_NATIVE_SERIAL-attempt-001",
+      "labels": [
+        "Entity"
+      ],
+      "name": "inc-20240310-0489",
+      "summary": "Derek has a ticket number INC-20240310-0489 for a low-priority request for a second monitor setup that was escalated to P1. USER uses Derek's INC-20240310-0489 ticket as a case study to illustrate the mislabeling problem in both directions."
+    },
+    {
+      "attributes": {},
+      "group_id": "sample-002-e15--update-MEMOPS-E15__Update-B0_NATIVE_SERIAL-attempt-001",
+      "labels": [
+        "Entity"
+      ],
+      "name": "may 1st",
+      "summary": "Angela planned the new triage workflow to go live on May 1st. The new triage workflow piloted by Angela started on May 1st. The new triage workflow piloted by Angela ended three weeks after May 1st."
+    },
+    {
+      "attributes": {},
+      "group_id": "sample-002-e15--update-MEMOPS-E15__Update-B0_NATIVE_SERIAL-attempt-001",
+      "labels": [
+        "Entity"
+      ],
+      "name": "opsgenie",
+      "summary": "USER references OpsGenie, a ticketing system from a previous job, where submitters could add context notes alongside severity tags."
+    },
+    {
+      "attributes": {},
+      "group_id": "sample-002-e15--update-MEMOPS-E15__Update-B0_NATIVE_SERIAL-attempt-001",
+      "labels": [
+        "Entity"
+      ],
+      "name": "raj",
+      "summary": "Derek submitted a low-priority request for a second monitor setup, which got escalated to P1 and caused Raj to be paged at 2 AM. USER mentions that Raj, a senior engineer, was paged at 2 AM due to Derek's monitor setup being escalated to P1."
+    },
+    {
+      "attributes": {},
+      "group_id": "sample-002-e15--update-MEMOPS-E15__Update-B0_NATIVE_SERIAL-attempt-001",
+      "labels": [
+        "Entity"
+      ],
+      "name": "user",
+      "summary": "USER mentions that Angela sent out a memo about piloting a new triage workflow. Angela sent out a memo about piloting a new triage workflow to USER. Angela's new triage workflow was scrapped because people found it too cumbersome for daily use. USER has a ticket number INC-20240303-0712 for a production database outage incident where the P1 was reclassified to P3. USER mentions Derek's monitor ticket as a case study to illustrate the mislabeling problem in the triage system. USER mentions Angela's triage workflow pilot that was attempted starting May 1st, ran for three weeks, and was scrapped due to being too cumbersome. USER mentions that Raj, a senior engineer, was paged at 2 AM due to Derek's monitor setup being escalated to P1. USER references OpsGenie, a ticketing system from a previous job, where submitters could add context notes alongside severity tags. USER uses the INC-20240303-0712 ticket as the anchor case study in the presentation to demonstrate the mislabeling problem. USER uses Derek's INC-20240310-0489 ticket as a case study to illustrate the mislabeling problem in both directions. USER received additional entries from Derek's sub-team, but only one of them was a valid priority relabel, increasing the confirmed count to 18."
+    }
+  ],
+  "episodes": [
+    {
+      "session_id": "E15__Update:segment:001",
+      "source_hash": "d556e4a355b7e9536e88a2b33889319a1a42810d31a5fb8d152bef76baed2278",
+      "source_sequence": 0
+    },
+    {
+      "session_id": "E15__Update:segment:002",
+      "source_hash": "679ce256df88951758573447b23cb6b70d483291c71ded90305cee1dfa0a0ee2",
+      "source_sequence": 1
+    },
+    {
+      "session_id": "E15__Update:segment:003",
+      "source_hash": "7efa83bac16e5974fa8128b6d2158b2f2d6907b1a3f62725c6ccae906ec676d3",
+      "source_sequence": 2
+    }
+  ]
+}

@@ -1,0 +1,900 @@
+{
+  "actual_admission_order": [
+    0,
+    1,
+    2
+  ],
+  "attempt_root": "/data/predator/ly/MemBind/saturated_fixed_work_baseline_v1_3/artifacts/sfwb-v1-3-memops-hazard-replication-20260822-009/b0-r001/sfwb-v1-3-memops-hazard-replication-20260822-009-b0-r001-sample-007-f17--update/blocks/memops-001-F17__Update-B0_NATIVE_SERIAL/attempt-001",
+  "mechanism_links": {
+    "additional_or_divergent_work": "NOT_ESTABLISHED",
+    "different_semantic_request_or_candidate_set": "NOT_ESTABLISHED",
+    "predecessor_not_durable_at_state_read": "NOT_OBSERVED",
+    "semantic_consequence": "NOT_ESTABLISHED",
+    "stale_or_different_graph_observation": "NOT_ESTABLISHED",
+    "unordered_admission": "NOT_OBSERVED"
+  },
+  "method": "B0_NATIVE_SERIAL",
+  "namespace": "sfwb-v1-3-memops-hazard-replication-20260822-009-b0-r001-sample-007-f17--update-MEMOPS-F17__Update-B0_NATIVE_SERIAL-attempt-001",
+  "observability_limits": [
+    "Graph read returns are not captured as raw candidate identities; only candidate cardinality metadata is available.",
+    "Prompt/output semantic fingerprints are not present in native trace; only request-shape fingerprints are derived.",
+    "A final canonical graph is downstream state and is not used to infer the first read cause."
+  ],
+  "overlap_pair_count": 3,
+  "overlap_pairs": [
+    [
+      0,
+      1
+    ],
+    [
+      0,
+      2
+    ],
+    [
+      1,
+      2
+    ]
+  ],
+  "payload_sha256": "2c4d66027875db540ff52acc8cf0f6fd60f487ef4732178a9c84b877d0f89bb9",
+  "publication_durable_by_source": {
+    "0": 17410982584902,
+    "1": 17476821583902,
+    "2": 17530885463030
+  },
+  "sample_id": "F17__Update",
+  "schema_version": "sfwb.v1.3.memops-hazard-observability.v1",
+  "source_count": 3,
+  "source_records": [
+    {
+      "candidate_search_cardinality": {
+        "candidate_count_values": [
+          0,
+          0,
+          0,
+          0,
+          0,
+          0,
+          0,
+          0,
+          0,
+          0,
+          0,
+          0,
+          0,
+          0,
+          0,
+          0,
+          0,
+          0,
+          0,
+          0,
+          0,
+          0,
+          0,
+          0,
+          0,
+          0,
+          0
+        ],
+        "candidate_identity_fingerprint": "NOT_OBSERVABLE",
+        "candidate_query_count_values": [
+          15,
+          1,
+          1,
+          1,
+          1,
+          1,
+          1,
+          1,
+          1,
+          1,
+          1,
+          1,
+          1,
+          1,
+          1,
+          1,
+          1,
+          1,
+          1,
+          1,
+          1,
+          1,
+          1,
+          1,
+          1,
+          1,
+          1
+        ],
+        "cardinality_fingerprint": "bf2ec6c7aee0cca4c5d15a3c0fe09915e8d94ead6d827521ff037c10b775b137",
+        "span_count": 27
+      },
+      "durable_frontier_at_first_state_read": null,
+      "execution_end_ns": 17410982076304,
+      "execution_start_ns": 17372462309199,
+      "first_state_dependent_read_ns": null,
+      "publication_durable_ns": 17410982584902,
+      "read_before_dependency_durable": false,
+      "resolution_extraction_request": {
+        "output_semantic_fingerprint": "NOT_OBSERVABLE",
+        "request_shape": [
+          {
+            "attempt_index": null,
+            "input_tokens": 2857,
+            "operation_class": "logical-call",
+            "output_tokens": 260,
+            "phase": "llm",
+            "prompt_name": "extract_nodes.extract_message",
+            "retry_count": 0
+          },
+          {
+            "attempt_index": 0,
+            "input_tokens": 2857,
+            "operation_class": "request-attempt",
+            "output_tokens": 260,
+            "phase": "llm-transport",
+            "prompt_name": null,
+            "retry_count": null
+          },
+          {
+            "attempt_index": null,
+            "input_tokens": 2511,
+            "operation_class": "logical-call",
+            "output_tokens": 1247,
+            "phase": "llm",
+            "prompt_name": "extract_edges.edge",
+            "retry_count": 0
+          },
+          {
+            "attempt_index": 0,
+            "input_tokens": 2511,
+            "operation_class": "request-attempt",
+            "output_tokens": 1247,
+            "phase": "llm-transport",
+            "prompt_name": null,
+            "retry_count": null
+          },
+          {
+            "attempt_index": null,
+            "input_tokens": 1527,
+            "operation_class": "logical-call",
+            "output_tokens": 56,
+            "phase": "llm",
+            "prompt_name": "extract_nodes.extract_summaries_batch",
+            "retry_count": 0
+          },
+          {
+            "attempt_index": 0,
+            "input_tokens": 1527,
+            "operation_class": "request-attempt",
+            "output_tokens": 56,
+            "phase": "llm-transport",
+            "prompt_name": null,
+            "retry_count": null
+          }
+        ],
+        "request_shape_fingerprint": "74ce6a031535fe81e510c875b133101a921d0dca928352b6fc162c887944c5cb",
+        "semantic_prompt_fingerprint": "NOT_OBSERVABLE"
+      },
+      "source_hash": "53066bd729441bc6dde0e9955ac47c2cf3f62420a95e600ff3d2159eb7d5e521",
+      "source_sequence": 0,
+      "state_dependent": false,
+      "state_dependent_read": []
+    },
+    {
+      "candidate_search_cardinality": {
+        "candidate_count_values": [
+          210,
+          0,
+          0,
+          0,
+          0,
+          1,
+          0,
+          1,
+          2,
+          0,
+          0,
+          1,
+          0,
+          10,
+          10,
+          10,
+          10,
+          10,
+          10,
+          10,
+          10,
+          10,
+          10,
+          10,
+          10
+        ],
+        "candidate_identity_fingerprint": "NOT_OBSERVABLE",
+        "candidate_query_count_values": [
+          14,
+          1,
+          1,
+          1,
+          1,
+          1,
+          1,
+          1,
+          1,
+          1,
+          1,
+          1,
+          1,
+          1,
+          1,
+          1,
+          1,
+          1,
+          1,
+          1,
+          1,
+          1,
+          1,
+          1,
+          1
+        ],
+        "cardinality_fingerprint": "cfe6e43513347efffd994491fa83edcdce023548f8ac254e89ea44eb8a7e5268",
+        "span_count": 25
+      },
+      "durable_frontier_at_first_state_read": 0,
+      "execution_end_ns": 17476821085339,
+      "execution_start_ns": 17410983421715,
+      "first_state_dependent_read_ns": 17410983883313,
+      "publication_durable_ns": 17476821583902,
+      "read_before_dependency_durable": false,
+      "resolution_extraction_request": {
+        "output_semantic_fingerprint": "NOT_OBSERVABLE",
+        "request_shape": [
+          {
+            "attempt_index": null,
+            "input_tokens": 4047,
+            "operation_class": "logical-call",
+            "output_tokens": 234,
+            "phase": "llm",
+            "prompt_name": "extract_nodes.extract_message",
+            "retry_count": 0
+          },
+          {
+            "attempt_index": 0,
+            "input_tokens": 4047,
+            "operation_class": "request-attempt",
+            "output_tokens": 234,
+            "phase": "llm-transport",
+            "prompt_name": null,
+            "retry_count": null
+          },
+          {
+            "attempt_index": null,
+            "input_tokens": 3812,
+            "operation_class": "logical-call",
+            "output_tokens": 308,
+            "phase": "llm",
+            "prompt_name": "dedupe_nodes.nodes",
+            "retry_count": 0
+          },
+          {
+            "attempt_index": 0,
+            "input_tokens": 3812,
+            "operation_class": "request-attempt",
+            "output_tokens": 308,
+            "phase": "llm-transport",
+            "prompt_name": null,
+            "retry_count": null
+          },
+          {
+            "attempt_index": null,
+            "input_tokens": 3675,
+            "operation_class": "logical-call",
+            "output_tokens": 1585,
+            "phase": "llm",
+            "prompt_name": "extract_edges.edge",
+            "retry_count": 0
+          },
+          {
+            "attempt_index": 0,
+            "input_tokens": 3675,
+            "operation_class": "request-attempt",
+            "output_tokens": 1585,
+            "phase": "llm-transport",
+            "prompt_name": null,
+            "retry_count": null
+          },
+          {
+            "attempt_index": null,
+            "input_tokens": 903,
+            "operation_class": "logical-call",
+            "output_tokens": 19,
+            "phase": "llm",
+            "prompt_name": "dedupe_edges.resolve_edge",
+            "retry_count": 0
+          },
+          {
+            "attempt_index": 0,
+            "input_tokens": 903,
+            "operation_class": "request-attempt",
+            "output_tokens": 19,
+            "phase": "llm-transport",
+            "prompt_name": null,
+            "retry_count": null
+          },
+          {
+            "attempt_index": null,
+            "input_tokens": 895,
+            "operation_class": "logical-call",
+            "output_tokens": 19,
+            "phase": "llm",
+            "prompt_name": "dedupe_edges.resolve_edge",
+            "retry_count": 0
+          },
+          {
+            "attempt_index": 0,
+            "input_tokens": 895,
+            "operation_class": "request-attempt",
+            "output_tokens": 19,
+            "phase": "llm-transport",
+            "prompt_name": null,
+            "retry_count": null
+          },
+          {
+            "attempt_index": null,
+            "input_tokens": 902,
+            "operation_class": "logical-call",
+            "output_tokens": 19,
+            "phase": "llm",
+            "prompt_name": "dedupe_edges.resolve_edge",
+            "retry_count": 0
+          },
+          {
+            "attempt_index": 0,
+            "input_tokens": 902,
+            "operation_class": "request-attempt",
+            "output_tokens": 19,
+            "phase": "llm-transport",
+            "prompt_name": null,
+            "retry_count": null
+          },
+          {
+            "attempt_index": null,
+            "input_tokens": 911,
+            "operation_class": "logical-call",
+            "output_tokens": 19,
+            "phase": "llm",
+            "prompt_name": "dedupe_edges.resolve_edge",
+            "retry_count": 0
+          },
+          {
+            "attempt_index": 0,
+            "input_tokens": 911,
+            "operation_class": "request-attempt",
+            "output_tokens": 19,
+            "phase": "llm-transport",
+            "prompt_name": null,
+            "retry_count": null
+          },
+          {
+            "attempt_index": null,
+            "input_tokens": 897,
+            "operation_class": "logical-call",
+            "output_tokens": 21,
+            "phase": "llm",
+            "prompt_name": "dedupe_edges.resolve_edge",
+            "retry_count": 0
+          },
+          {
+            "attempt_index": 0,
+            "input_tokens": 897,
+            "operation_class": "request-attempt",
+            "output_tokens": 21,
+            "phase": "llm-transport",
+            "prompt_name": null,
+            "retry_count": null
+          },
+          {
+            "attempt_index": null,
+            "input_tokens": 899,
+            "operation_class": "logical-call",
+            "output_tokens": 19,
+            "phase": "llm",
+            "prompt_name": "dedupe_edges.resolve_edge",
+            "retry_count": 0
+          },
+          {
+            "attempt_index": 0,
+            "input_tokens": 899,
+            "operation_class": "request-attempt",
+            "output_tokens": 19,
+            "phase": "llm-transport",
+            "prompt_name": null,
+            "retry_count": null
+          },
+          {
+            "attempt_index": null,
+            "input_tokens": 927,
+            "operation_class": "logical-call",
+            "output_tokens": 19,
+            "phase": "llm",
+            "prompt_name": "dedupe_edges.resolve_edge",
+            "retry_count": 0
+          },
+          {
+            "attempt_index": 0,
+            "input_tokens": 927,
+            "operation_class": "request-attempt",
+            "output_tokens": 19,
+            "phase": "llm-transport",
+            "prompt_name": null,
+            "retry_count": null
+          },
+          {
+            "attempt_index": null,
+            "input_tokens": 906,
+            "operation_class": "logical-call",
+            "output_tokens": 19,
+            "phase": "llm",
+            "prompt_name": "dedupe_edges.resolve_edge",
+            "retry_count": 0
+          },
+          {
+            "attempt_index": 0,
+            "input_tokens": 906,
+            "operation_class": "request-attempt",
+            "output_tokens": 19,
+            "phase": "llm-transport",
+            "prompt_name": null,
+            "retry_count": null
+          },
+          {
+            "attempt_index": null,
+            "input_tokens": 903,
+            "operation_class": "logical-call",
+            "output_tokens": 19,
+            "phase": "llm",
+            "prompt_name": "dedupe_edges.resolve_edge",
+            "retry_count": 0
+          },
+          {
+            "attempt_index": 0,
+            "input_tokens": 903,
+            "operation_class": "request-attempt",
+            "output_tokens": 19,
+            "phase": "llm-transport",
+            "prompt_name": null,
+            "retry_count": null
+          },
+          {
+            "attempt_index": null,
+            "input_tokens": 891,
+            "operation_class": "logical-call",
+            "output_tokens": 19,
+            "phase": "llm",
+            "prompt_name": "dedupe_edges.resolve_edge",
+            "retry_count": 0
+          },
+          {
+            "attempt_index": 0,
+            "input_tokens": 891,
+            "operation_class": "request-attempt",
+            "output_tokens": 19,
+            "phase": "llm-transport",
+            "prompt_name": null,
+            "retry_count": null
+          },
+          {
+            "attempt_index": null,
+            "input_tokens": 898,
+            "operation_class": "logical-call",
+            "output_tokens": 19,
+            "phase": "llm",
+            "prompt_name": "dedupe_edges.resolve_edge",
+            "retry_count": 0
+          },
+          {
+            "attempt_index": 0,
+            "input_tokens": 898,
+            "operation_class": "request-attempt",
+            "output_tokens": 19,
+            "phase": "llm-transport",
+            "prompt_name": null,
+            "retry_count": null
+          },
+          {
+            "attempt_index": null,
+            "input_tokens": 899,
+            "operation_class": "logical-call",
+            "output_tokens": 19,
+            "phase": "llm",
+            "prompt_name": "dedupe_edges.resolve_edge",
+            "retry_count": 0
+          },
+          {
+            "attempt_index": 0,
+            "input_tokens": 899,
+            "operation_class": "request-attempt",
+            "output_tokens": 19,
+            "phase": "llm-transport",
+            "prompt_name": null,
+            "retry_count": null
+          },
+          {
+            "attempt_index": null,
+            "input_tokens": 3030,
+            "operation_class": "logical-call",
+            "output_tokens": 439,
+            "phase": "llm",
+            "prompt_name": "extract_nodes.extract_summaries_batch",
+            "retry_count": 0
+          },
+          {
+            "attempt_index": 0,
+            "input_tokens": 3030,
+            "operation_class": "request-attempt",
+            "output_tokens": 439,
+            "phase": "llm-transport",
+            "prompt_name": null,
+            "retry_count": null
+          }
+        ],
+        "request_shape_fingerprint": "db3c5c92d7bdcda0ce4191f2610b5cf69406e0094183dbb5200751abec9a41ba",
+        "semantic_prompt_fingerprint": "NOT_OBSERVABLE"
+      },
+      "source_hash": "d1f300524668f13fe13321df5bc7337b658b0397cb9c6317bcb75c7f578b3846",
+      "source_sequence": 1,
+      "state_dependent": true,
+      "state_dependent_read": [
+        {
+          "durable_frontier_at_first_state_read": 0,
+          "first_state_dependent_read_ns": 17410983883313,
+          "new_operation_id": "op3",
+          "new_segment_index": 2,
+          "new_value": "1.1 ng/mL",
+          "old_operation_id": "op2",
+          "old_segment_index": 1,
+          "old_value": "1.2 ng/mL",
+          "predecessor_publication_durable_ns": 17410982584902,
+          "predecessor_source_sequence": 0,
+          "read_before_predecessor_durable": false,
+          "target_id": "amh_level",
+          "target_name": "User's AMH level from fertility hormone panel"
+        }
+      ]
+    },
+    {
+      "candidate_search_cardinality": {
+        "candidate_count_values": [
+          150,
+          1,
+          1,
+          3,
+          1,
+          1,
+          1,
+          3,
+          3,
+          1,
+          3,
+          10,
+          10,
+          10,
+          10,
+          10,
+          10,
+          10,
+          10,
+          10,
+          10
+        ],
+        "candidate_identity_fingerprint": "NOT_OBSERVABLE",
+        "candidate_query_count_values": [
+          10,
+          1,
+          1,
+          1,
+          1,
+          1,
+          1,
+          1,
+          1,
+          1,
+          1,
+          1,
+          1,
+          1,
+          1,
+          1,
+          1,
+          1,
+          1,
+          1,
+          1
+        ],
+        "cardinality_fingerprint": "915d4d8af29edb58671e9e205fa667701810e17ff737dd473657234ab3c71606",
+        "span_count": 21
+      },
+      "durable_frontier_at_first_state_read": null,
+      "execution_end_ns": 17530884906011,
+      "execution_start_ns": 17476822491738,
+      "first_state_dependent_read_ns": null,
+      "publication_durable_ns": 17530885463030,
+      "read_before_dependency_durable": false,
+      "resolution_extraction_request": {
+        "output_semantic_fingerprint": "NOT_OBSERVABLE",
+        "request_shape": [
+          {
+            "attempt_index": null,
+            "input_tokens": 5252,
+            "operation_class": "logical-call",
+            "output_tokens": 179,
+            "phase": "llm",
+            "prompt_name": "extract_nodes.extract_message",
+            "retry_count": 0
+          },
+          {
+            "attempt_index": 0,
+            "input_tokens": 5252,
+            "operation_class": "request-attempt",
+            "output_tokens": 179,
+            "phase": "llm-transport",
+            "prompt_name": null,
+            "retry_count": null
+          },
+          {
+            "attempt_index": null,
+            "input_tokens": 5079,
+            "operation_class": "logical-call",
+            "output_tokens": 80,
+            "phase": "llm",
+            "prompt_name": "dedupe_nodes.nodes",
+            "retry_count": 0
+          },
+          {
+            "attempt_index": 0,
+            "input_tokens": 5079,
+            "operation_class": "request-attempt",
+            "output_tokens": 80,
+            "phase": "llm-transport",
+            "prompt_name": null,
+            "retry_count": null
+          },
+          {
+            "attempt_index": null,
+            "input_tokens": 4825,
+            "operation_class": "logical-call",
+            "output_tokens": 1148,
+            "phase": "llm",
+            "prompt_name": "extract_edges.edge",
+            "retry_count": 0
+          },
+          {
+            "attempt_index": 0,
+            "input_tokens": 4825,
+            "operation_class": "request-attempt",
+            "output_tokens": 1148,
+            "phase": "llm-transport",
+            "prompt_name": null,
+            "retry_count": null
+          },
+          {
+            "attempt_index": null,
+            "input_tokens": 955,
+            "operation_class": "logical-call",
+            "output_tokens": 21,
+            "phase": "llm",
+            "prompt_name": "dedupe_edges.resolve_edge",
+            "retry_count": 0
+          },
+          {
+            "attempt_index": 0,
+            "input_tokens": 955,
+            "operation_class": "request-attempt",
+            "output_tokens": 21,
+            "phase": "llm-transport",
+            "prompt_name": null,
+            "retry_count": null
+          },
+          {
+            "attempt_index": null,
+            "input_tokens": 963,
+            "operation_class": "logical-call",
+            "output_tokens": 21,
+            "phase": "llm",
+            "prompt_name": "dedupe_edges.resolve_edge",
+            "retry_count": 0
+          },
+          {
+            "attempt_index": 0,
+            "input_tokens": 963,
+            "operation_class": "request-attempt",
+            "output_tokens": 21,
+            "phase": "llm-transport",
+            "prompt_name": null,
+            "retry_count": null
+          },
+          {
+            "attempt_index": null,
+            "input_tokens": 954,
+            "operation_class": "logical-call",
+            "output_tokens": 21,
+            "phase": "llm",
+            "prompt_name": "dedupe_edges.resolve_edge",
+            "retry_count": 0
+          },
+          {
+            "attempt_index": 0,
+            "input_tokens": 954,
+            "operation_class": "request-attempt",
+            "output_tokens": 21,
+            "phase": "llm-transport",
+            "prompt_name": null,
+            "retry_count": null
+          },
+          {
+            "attempt_index": null,
+            "input_tokens": 929,
+            "operation_class": "logical-call",
+            "output_tokens": 21,
+            "phase": "llm",
+            "prompt_name": "dedupe_edges.resolve_edge",
+            "retry_count": 0
+          },
+          {
+            "attempt_index": 0,
+            "input_tokens": 929,
+            "operation_class": "request-attempt",
+            "output_tokens": 21,
+            "phase": "llm-transport",
+            "prompt_name": null,
+            "retry_count": null
+          },
+          {
+            "attempt_index": null,
+            "input_tokens": 948,
+            "operation_class": "logical-call",
+            "output_tokens": 23,
+            "phase": "llm",
+            "prompt_name": "dedupe_edges.resolve_edge",
+            "retry_count": 0
+          },
+          {
+            "attempt_index": 0,
+            "input_tokens": 948,
+            "operation_class": "request-attempt",
+            "output_tokens": 23,
+            "phase": "llm-transport",
+            "prompt_name": null,
+            "retry_count": null
+          },
+          {
+            "attempt_index": null,
+            "input_tokens": 941,
+            "operation_class": "logical-call",
+            "output_tokens": 27,
+            "phase": "llm",
+            "prompt_name": "dedupe_edges.resolve_edge",
+            "retry_count": 0
+          },
+          {
+            "attempt_index": 0,
+            "input_tokens": 941,
+            "operation_class": "request-attempt",
+            "output_tokens": 27,
+            "phase": "llm-transport",
+            "prompt_name": null,
+            "retry_count": null
+          },
+          {
+            "attempt_index": null,
+            "input_tokens": 988,
+            "operation_class": "logical-call",
+            "output_tokens": 21,
+            "phase": "llm",
+            "prompt_name": "dedupe_edges.resolve_edge",
+            "retry_count": 0
+          },
+          {
+            "attempt_index": 0,
+            "input_tokens": 988,
+            "operation_class": "request-attempt",
+            "output_tokens": 21,
+            "phase": "llm-transport",
+            "prompt_name": null,
+            "retry_count": null
+          },
+          {
+            "attempt_index": null,
+            "input_tokens": 991,
+            "operation_class": "logical-call",
+            "output_tokens": 19,
+            "phase": "llm",
+            "prompt_name": "dedupe_edges.resolve_edge",
+            "retry_count": 0
+          },
+          {
+            "attempt_index": 0,
+            "input_tokens": 991,
+            "operation_class": "request-attempt",
+            "output_tokens": 19,
+            "phase": "llm-transport",
+            "prompt_name": null,
+            "retry_count": null
+          },
+          {
+            "attempt_index": null,
+            "input_tokens": 961,
+            "operation_class": "logical-call",
+            "output_tokens": 19,
+            "phase": "llm",
+            "prompt_name": "dedupe_edges.resolve_edge",
+            "retry_count": 0
+          },
+          {
+            "attempt_index": 0,
+            "input_tokens": 961,
+            "operation_class": "request-attempt",
+            "output_tokens": 19,
+            "phase": "llm-transport",
+            "prompt_name": null,
+            "retry_count": null
+          },
+          {
+            "attempt_index": null,
+            "input_tokens": 951,
+            "operation_class": "logical-call",
+            "output_tokens": 21,
+            "phase": "llm",
+            "prompt_name": "dedupe_edges.resolve_edge",
+            "retry_count": 0
+          },
+          {
+            "attempt_index": 0,
+            "input_tokens": 951,
+            "operation_class": "request-attempt",
+            "output_tokens": 21,
+            "phase": "llm-transport",
+            "prompt_name": null,
+            "retry_count": null
+          },
+          {
+            "attempt_index": null,
+            "input_tokens": 4164,
+            "operation_class": "logical-call",
+            "output_tokens": 650,
+            "phase": "llm",
+            "prompt_name": "extract_nodes.extract_summaries_batch",
+            "retry_count": 0
+          },
+          {
+            "attempt_index": 0,
+            "input_tokens": 4164,
+            "operation_class": "request-attempt",
+            "output_tokens": 650,
+            "phase": "llm-transport",
+            "prompt_name": null,
+            "retry_count": null
+          }
+        ],
+        "request_shape_fingerprint": "1ce508d3c7374297fd283a2a6a91b43a5c6e7951198cd112210817ec71a9ccc1",
+        "semantic_prompt_fingerprint": "NOT_OBSERVABLE"
+      },
+      "source_hash": "c5bc48e600027d8c055ae897621a355197cbe2ed89b6318762c38c6c0fa84b35",
+      "source_sequence": 2,
+      "state_dependent": false,
+      "state_dependent_read": []
+    }
+  ],
+  "unordered_admission": false,
+  "work_metrics": {
+    "build_makespan_s": 158.424049696,
+    "db_writes": 3,
+    "embedding_items": 219,
+    "llm_input_tokens": 61191,
+    "llm_logical_calls": 33,
+    "llm_transport_attempts": 33,
+    "whole_update_active_max": 1,
+    "whole_update_active_mean": 1.0
+  }
+}

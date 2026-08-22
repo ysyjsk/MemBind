@@ -73,13 +73,27 @@ class FrontierExecutor:
         timer_start = int(self.clock())
         if self.lifecycle_sink is not None:
             self.lifecycle_sink({"event": "FORMAL_START", "monotonic_ns": timer_start, "t0_ns": timer_start})
+        def prepare_admission_class(sequence: int) -> AdmissionClass:
+            # A queued preparation follows the live durable frontier.  The
+            # source is not assigned a permanent staging class when its task is
+            # created: frontier advancement can promote d+1 while it waits.
+            return (
+                AdmissionClass.FRONTIER_PREPARE
+                if sequence == self.frontier.durable_frontier + 1
+                else AdmissionClass.FUTURE_PREPARE
+            )
+
         async def do_prepare(sequence: int) -> None:
-            admission_class = AdmissionClass.FRONTIER_PREPARE if sequence == 0 else AdmissionClass.FUTURE_PREPARE
+            admission_class = prepare_admission_class(sequence)
             admitted = False
             if self.prepare_admission:
-                await self.admission.acquire(admission_class, source_sequence=sequence)
+                admitted_class = await self.admission.acquire(
+                    admission_class,
+                    source_sequence=sequence,
+                    class_resolver=lambda: prepare_admission_class(sequence),
+                )
                 admitted = True
-                self.frontier._event("ADMITTED", sequence, admission_class=admission_class.value)
+                self.frontier._event("ADMITTED", sequence, admission_class=admitted_class.value)
             else:
                 self.frontier._event("PREPARE_SUBMITTED", sequence, admission_class=admission_class.value)
             try:
@@ -93,27 +107,19 @@ class FrontierExecutor:
                 raise
             finally:
                 if admitted:
-                    await self.admission.release(admission_class)
+                    await self.admission.release(admitted_class)
 
-        # Keep the coroutine window bounded by the frozen runtime-derived
-        # capacity.  Provider admission still controls outstanding calls; this
-        # scheduler bound prevents one task/future per source from accumulating
-        # memory and cancellation scope on a full history.
+        # Materialize every semantic-safe source immediately.  This is a task
+        # registry, not a provider-work permit: expensive LLM calls still wait
+        # on the shared provider AdmissionArbiter, which is the only capacity
+        # envelope.  Keeping all tasks visible also lets a waiting d+1 request
+        # be reclassified as FRONTIER_PREPARE as soon as the frontier advances.
         task_by_sequence: dict[int, asyncio.Task[Any]] = {}
         prep_errors: dict[int, BaseException] = {}
-        next_sequence = 0
-        window = max(1, int(self.authority.value))
-
-        def schedule_window() -> None:
-            nonlocal next_sequence
-            active = sum(1 for task in task_by_sequence.values() if not task.done())
-            stop_at = min(prep_errors) if prep_errors else self.source_count
-            while next_sequence < stop_at and active < window:
-                task = asyncio.create_task(do_prepare(next_sequence))
-                task_by_sequence[next_sequence] = task
-                self._tasks.append(task)
-                next_sequence += 1
-                active += 1
+        for sequence in range(self.source_count):
+            task = asyncio.create_task(do_prepare(sequence))
+            task_by_sequence[sequence] = task
+            self._tasks.append(task)
 
         def harvest_done() -> None:
             for sequence, task in list(task_by_sequence.items()):
@@ -141,7 +147,6 @@ class FrontierExecutor:
                 if task in self._tasks:
                     self._tasks.remove(task)
 
-        schedule_window()
         try:
             for sequence in range(self.source_count):
                 while sequence not in self.frontier.prepared:
@@ -149,7 +154,6 @@ class FrontierExecutor:
                     if sequence in prep_errors:
                         self.frontier.failed_sequence = sequence
                         raise prep_errors[sequence]
-                    schedule_window()
                     if sequence in self.frontier.prepared:
                         break
                     pending = [task for task in task_by_sequence.values() if not task.done()]
@@ -157,7 +161,6 @@ class FrontierExecutor:
                         raise RuntimeError(f"preparation stalled at source {sequence}")
                     await asyncio.wait(pending, return_when=asyncio.FIRST_COMPLETED)
                 harvest_done()
-                schedule_window()
                 native_admitted = False
                 if self.admit_native:
                     await self.admission.acquire(AdmissionClass.NATIVE_FRONTIER, source_sequence=sequence)
@@ -165,13 +168,13 @@ class FrontierExecutor:
                     self.frontier._event("ADMITTED", sequence, admission_class=AdmissionClass.NATIVE_FRONTIER.value)
                 try:
                     await self.frontier.publish(sequence, lambda value, seq=sequence: publish(seq, value))
-                    if not self.admit_native:
-                        await self.admission.frontier_advanced(sequence)
+                    # Publication changes the class of queued provider work,
+                    # regardless of whether native itself used an outer permit.
+                    await self.admission.frontier_advanced(sequence)
                 finally:
                     if native_admitted:
                         await self.admission.release(AdmissionClass.NATIVE_FRONTIER)
                 task_by_sequence.pop(sequence, None)
-                schedule_window()
         except BaseException:
             if self.lifecycle_sink is not None:
                 self.lifecycle_sink(

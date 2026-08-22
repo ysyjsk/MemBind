@@ -157,7 +157,13 @@ class AdmissionArbiter:
                             )
                     self._waiters.sort(key=lambda item: (item[0], item[1], item[2]))
                     is_head = self._waiters and self._waiters[0][2] == ticket
-                    future_allowed = admission_class != AdmissionClass.FUTURE_PREPARE or self.authority.value == 1 or self._future_outstanding < self.authority.value - 1
+                    # Always reserve one permit for the next frontier-critical
+                    # operation.  In particular, C=1 has zero future credit;
+                    # the queued source d+1 is promoted when d becomes durable.
+                    future_allowed = (
+                        admission_class != AdmissionClass.FUTURE_PREPARE
+                        or self._future_outstanding < self.authority.value - 1
+                    )
                     if is_head and self._outstanding < self.authority.value and future_allowed:
                         self._waiters.pop(next(i for i, item in enumerate(self._waiters) if item[2] == ticket))
                         self._outstanding += 1

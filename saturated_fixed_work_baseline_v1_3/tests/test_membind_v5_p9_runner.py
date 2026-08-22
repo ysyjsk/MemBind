@@ -3,6 +3,7 @@ from __future__ import annotations
 import asyncio
 import shlex
 from pathlib import Path
+from types import SimpleNamespace
 
 import pytest
 
@@ -15,6 +16,9 @@ from saturated_fixed_work_baseline_v1_3.membind_v5.p9_runner import (
     _install_p9_context_budget_adapter,
     _p9_effective_max_tokens,
     _persist_partial_native_trace,
+    _persist_transport_evidence,
+    _transport_attempt_rows,
+    _transport_evidence_summary,
     _run_history_live_async,
     build_p9_live_command,
     build_p9_parser,
@@ -131,6 +135,47 @@ def test_partial_native_trace_is_materialized_without_overwriting_existing_artif
     assert [row["source_sequence"] for row in rows] == [0, 1]
     _persist_partial_native_trace(target, Recorder(), "run-1", episodes)
     assert [__import__("json").loads(line)["source_sequence"] for line in target.read_text().splitlines()] == [0, 1]
+
+
+def test_transport_evidence_distinguishes_response_finish_reason_from_logical_failure(tmp_path: Path) -> None:
+    recorder = SimpleNamespace(
+        records=[
+            SimpleNamespace(
+                phase="llm-transport",
+                source_sequence=3,
+                start_ns=10,
+                end_ns=20,
+                status="ok",
+                error_code=None,
+                metadata={
+                    "attempt_index": 0,
+                    "input_tokens": 100,
+                    "output_tokens": 16,
+                    "usage_observed": True,
+                    "finish_reason_observed": True,
+                    "finish_reason": "length",
+                },
+            ),
+            SimpleNamespace(
+                phase="llm",
+                source_sequence=3,
+                start_ns=10,
+                end_ns=21,
+                status="error",
+                error_code="json.JSONDecodeError",
+                metadata={"retry_count": 0},
+            ),
+        ]
+    )
+    rows = _transport_attempt_rows(recorder)
+    summary = _transport_evidence_summary(rows)
+    assert rows[0]["finish_reason"] == "length"
+    assert summary["complete"] is True
+    assert summary["finish_reasons"] == ["length"]
+    summary = _persist_transport_evidence(tmp_path, recorder)
+    assert summary["attempt_count"] == 1
+    assert (tmp_path / "transport_attempts.jsonl").is_file()
+    assert (tmp_path / "transport_evidence.json").is_file()
 
 
 @pytest.mark.asyncio

@@ -181,6 +181,25 @@ def _usage_value(usage: Any, name: str) -> int:
         return 0
 
 
+def _response_choices(result: Any) -> list[Any]:
+    if isinstance(result, dict):
+        choices = result.get("choices", [])
+    else:
+        choices = getattr(result, "choices", [])
+    return list(choices or []) if isinstance(choices, (list, tuple)) else []
+
+
+def _choice_finish_reason(result: Any) -> str | None:
+    choices = _response_choices(result)
+    if not choices:
+        return None
+    choice = choices[0]
+    value = choice.get("finish_reason") if isinstance(choice, dict) else getattr(choice, "finish_reason", None)
+    if value is None:
+        return None
+    return _safe_label(value)
+
+
 def _find_chat_completions(client: Any) -> Any | None:
     seen: set[int] = set()
     current = client
@@ -240,12 +259,24 @@ def instrument_llm_client(client: Any, recorder: TraceRecorder) -> PatchHandle:
                 operation_class="request-attempt",
                 metadata={"attempt_index": attempt_index},
             ) as span:
-                result = await original_create(*args, **kwargs)
+                try:
+                    result = await original_create(*args, **kwargs)
+                except BaseException:
+                    # A transport exception has no response choice to inspect;
+                    # retain that distinction instead of inferring a finish
+                    # reason from the enclosing logical exception.
+                    span.add_metadata("finish_reason_observed", False)
+                    raise
                 usage = getattr(result, "usage", None)
                 input_tokens = _usage_value(usage, "prompt_tokens")
                 output_tokens = _usage_value(usage, "completion_tokens")
                 span.add_metadata("input_tokens", input_tokens)
                 span.add_metadata("output_tokens", output_tokens)
+                span.add_metadata("usage_observed", usage is not None)
+                finish_reason = _choice_finish_reason(result)
+                span.add_metadata("finish_reason_observed", finish_reason is not None)
+                if finish_reason is not None:
+                    span.add_metadata("finish_reason", finish_reason)
                 if state is not None:
                     state.input_tokens += input_tokens
                     state.output_tokens += output_tokens

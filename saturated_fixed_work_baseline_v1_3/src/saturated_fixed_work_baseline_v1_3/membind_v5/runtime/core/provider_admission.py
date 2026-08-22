@@ -77,6 +77,7 @@ class FrontierAwareLLMClient:
     def _record_call(self, *, region: str, source_sequence: int, prompt_name: Any, admission_class: AdmissionClass | None, admitted: bool, replay: bool, status: str, result: Any = None, error: BaseException | None = None) -> None:
         identity = _identity.get()
         row: dict[str, Any] = {
+            "arbiter": self.arbiter.name,
             "mode": self.mode,
             "region": region,
             "source_sequence": int(source_sequence),

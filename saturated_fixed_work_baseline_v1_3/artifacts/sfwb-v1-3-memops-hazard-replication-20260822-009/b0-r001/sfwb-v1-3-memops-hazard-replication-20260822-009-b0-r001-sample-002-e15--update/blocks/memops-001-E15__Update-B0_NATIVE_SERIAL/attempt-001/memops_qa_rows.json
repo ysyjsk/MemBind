@@ -1,0 +1,153 @@
+{
+  "payload_sha256": "8bc138a60c086a455bf07927b89dd67c297ccf818512462d8e9b2f1a6985bec2",
+  "rows": [
+    {
+      "construction_calls": 0,
+      "correct": true,
+      "evaluation_setting": "adjacent_operation",
+      "evaluation_type": "CandidateDisambiguation",
+      "expected_answer": "18",
+      "failure_layer": null,
+      "gold_memory_state": "The confirmed final count of mislabeled priority incidents is 18. 14 was the original count, 17 was the count before Derek's entry was verified, and 20 was a tentative figure that was never confirmed.",
+      "gold_provenance": [
+        {
+          "quote": "I checked Derek's three entries and only one of them was actually a priority relabel. The other two were just routing changes. So the confirmed count is 18 now.",
+          "segment_index": 3,
+          "turn_index": 5
+        }
+      ],
+      "gold_ranks": [
+        1
+      ],
+      "graph_write_attempts": 0,
+      "invalid": false,
+      "invalid_reason": null,
+      "judge_rubric": {
+        "acceptable_paraphrases": [
+          "eighteen"
+        ],
+        "harmful_extra": [
+          "selecting 20 as the final count",
+          "selecting 17 as the final count",
+          "selecting 14 as the final count"
+        ],
+        "harmless_extra": [],
+        "must_include": [
+          "18"
+        ],
+        "must_not_include": [
+          "14 is the current count",
+          "17 is the current count",
+          "20 is the current count"
+        ]
+      },
+      "memops_official_judge": {
+        "answer_score": 1,
+        "completion_tokens": 105,
+        "extra_detail_postcheck_action": "none",
+        "extra_detail_postcheck_applied": false,
+        "extra_detail_type": "none",
+        "finish_reason": "stop",
+        "judge_operation_detection": {
+          "fn": 0,
+          "fp": 0,
+          "tp": 0
+        },
+        "judge_provenance_support": 1,
+        "official_prompt_builder": "build_evaluation_prompt",
+        "official_result_parser": "parse_judge_metrics",
+        "prompt_sha256": "374028db8e1c8b746bdb330902948ad918c3613f23d3a138c18e6d40f13eabd1",
+        "prompt_tokens": 7550,
+        "raw_prompt_persisted": false,
+        "raw_response_persisted": false,
+        "reason": "The model correctly selected the expected answer '18', which is the confirmed final count in the Gold memory state. No harmful or unsupported extra details were included.",
+        "response_sha256": "098f5d27ba29953ca8f228b23ecd77c398755a2ca605d8d3b3919fdb58ee4179",
+        "stale_value": 0
+      },
+      "mrr": 1.0,
+      "ndcg_at_10": 1.0,
+      "question_id": "E15__Update:p4_candidate_disambiguation:adjacent_operation",
+      "question_pair_id": "p4_candidate_disambiguation",
+      "recall_at_1": 1.0,
+      "recall_at_10": 1.0,
+      "recall_at_3": 1.0,
+      "recall_at_5": 1.0,
+      "relevance_unit": "LONGMEMEVAL_GOLD_SESSION",
+      "sample_id": "E15__Update"
+    },
+    {
+      "construction_calls": 0,
+      "correct": true,
+      "evaluation_setting": "longitudinal_operation",
+      "evaluation_type": "CandidateDisambiguation",
+      "expected_answer": "18",
+      "failure_layer": null,
+      "gold_memory_state": "The confirmed final count of mislabeled priority incidents is 18. 14 was the original count, 17 was the count before Derek's entry was verified, and 20 was a tentative figure that was never confirmed.",
+      "gold_provenance": [
+        {
+          "quote": "I checked Derek's three entries and only one of them was actually a priority relabel. The other two were just routing changes. So the confirmed count is 18 now.",
+          "segment_index": 3,
+          "turn_index": 5
+        }
+      ],
+      "gold_ranks": [
+        1
+      ],
+      "graph_write_attempts": 0,
+      "invalid": false,
+      "invalid_reason": null,
+      "judge_rubric": {
+        "acceptable_paraphrases": [
+          "eighteen"
+        ],
+        "harmful_extra": [
+          "selecting 20 as the final count",
+          "selecting 17 as the final count",
+          "selecting 14 as the final count"
+        ],
+        "harmless_extra": [],
+        "must_include": [
+          "18"
+        ],
+        "must_not_include": [
+          "14 is the current count",
+          "17 is the current count",
+          "20 is the current count"
+        ]
+      },
+      "memops_official_judge": {
+        "answer_score": 1,
+        "completion_tokens": 105,
+        "extra_detail_postcheck_action": "none",
+        "extra_detail_postcheck_applied": false,
+        "extra_detail_type": "none",
+        "finish_reason": "stop",
+        "judge_operation_detection": {
+          "fn": 0,
+          "fp": 0,
+          "tp": 0
+        },
+        "judge_provenance_support": 1,
+        "official_prompt_builder": "build_evaluation_prompt",
+        "official_result_parser": "parse_judge_metrics",
+        "prompt_sha256": "374028db8e1c8b746bdb330902948ad918c3613f23d3a138c18e6d40f13eabd1",
+        "prompt_tokens": 7550,
+        "raw_prompt_persisted": false,
+        "raw_response_persisted": false,
+        "reason": "The model correctly selected the expected answer '18', which is the confirmed final count in the Gold memory state. No harmful or unsupported extra details were included.",
+        "response_sha256": "098f5d27ba29953ca8f228b23ecd77c398755a2ca605d8d3b3919fdb58ee4179",
+        "stale_value": 0
+      },
+      "mrr": 1.0,
+      "ndcg_at_10": 1.0,
+      "question_id": "E15__Update:p4_candidate_disambiguation:longitudinal_operation",
+      "question_pair_id": "p4_candidate_disambiguation",
+      "recall_at_1": 1.0,
+      "recall_at_10": 1.0,
+      "recall_at_3": 1.0,
+      "recall_at_5": 1.0,
+      "relevance_unit": "LONGMEMEVAL_GOLD_SESSION",
+      "sample_id": "E15__Update"
+    }
+  ]
+}

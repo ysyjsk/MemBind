@@ -359,6 +359,51 @@ class PhaseAliasTests(IsolatedAsyncioTestCase):
 
 
 class LLMAndEmbeddingWrapperTests(IsolatedAsyncioTestCase):
+    async def test_llm_transport_records_choice_finish_reason_on_logical_parse_failure(self) -> None:
+        recorder = TraceRecorder()
+        response = SimpleNamespace(
+            usage=SimpleNamespace(prompt_tokens=17, completion_tokens=8, total_tokens=25),
+            choices=[
+                SimpleNamespace(
+                    finish_reason="length",
+                    message=SimpleNamespace(content='{"nodes":'),
+                )
+            ],
+        )
+
+        async def create(**kwargs: object) -> object:
+            return response
+
+        class Client:
+            def __init__(self) -> None:
+                self.client = SimpleNamespace(
+                    chat=SimpleNamespace(completions=SimpleNamespace(create=create))
+                )
+
+            async def generate_response(self, **kwargs: object) -> object:
+                await self.client.chat.completions.create(messages=kwargs["messages"])
+                raise json.JSONDecodeError("invalid", '{"nodes":', 9)
+
+        client = Client()
+        installed = instrument_llm_client(client, recorder)
+        try:
+            with recorder.episode_scope("run", "episode", 0):
+                with self.assertRaises(json.JSONDecodeError):
+                    await client.generate_response(
+                        messages=[{"role": "user", "content": "redacted"}],
+                        prompt_name="extract_nodes.extract_message",
+                    )
+        finally:
+            installed.restore()
+
+        attempt = next(record for record in recorder.records if record.phase == "llm-transport")
+        logical = next(record for record in recorder.records if record.phase == "llm")
+        self.assertEqual(attempt.metadata["finish_reason"], "length")
+        self.assertTrue(attempt.metadata["finish_reason_observed"])
+        self.assertEqual(attempt.metadata["input_tokens"], 17)
+        self.assertEqual(attempt.metadata["output_tokens"], 8)
+        self.assertEqual(logical.status, "error")
+
     async def test_llm_wrapper_records_attempts_tokens_and_no_content(self) -> None:
         recorder = TraceRecorder()
         response = SimpleNamespace(

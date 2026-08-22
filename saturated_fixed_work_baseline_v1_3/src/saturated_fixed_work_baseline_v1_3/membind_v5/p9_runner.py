@@ -210,6 +210,81 @@ def _persist_partial_native_trace(
         _write_jsonl(path, envelopes)
 
 
+def _transport_attempt_rows(recorder: Any) -> list[dict[str, Any]]:
+    """Project pinned instrumentation transport spans into sanitized evidence.
+
+    This intentionally reads the existing ``TraceRecorder`` records instead
+    of adding a second transport wrapper.  A logical Graphiti response or
+    exception is not transport evidence; only ``llm-transport`` spans may
+    contribute finish reason and usage fields here.
+    """
+
+    rows: list[dict[str, Any]] = []
+    for record in getattr(recorder, "records", ()) or ():
+        if getattr(record, "phase", None) != "llm-transport":
+            continue
+        metadata = dict(getattr(record, "metadata", {}) or {})
+        row: dict[str, Any] = {
+            "source_sequence": int(getattr(record, "source_sequence", -1)),
+            "attempt_index": int(metadata.get("attempt_index", len(rows))),
+            "start_ns": int(getattr(record, "start_ns", 0)),
+            "end_ns": int(getattr(record, "end_ns", 0)),
+            "status": str(getattr(record, "status", "unknown")),
+            "error_code": getattr(record, "error_code", None),
+            "input_tokens": int(metadata.get("input_tokens", 0) or 0),
+            "output_tokens": int(metadata.get("output_tokens", 0) or 0),
+            "usage_observed": bool(metadata.get("usage_observed", False)),
+            "finish_reason_observed": bool(metadata.get("finish_reason_observed", False)),
+        }
+        if metadata.get("finish_reason") is not None:
+            row["finish_reason"] = str(metadata["finish_reason"])
+        rows.append(row)
+    rows.sort(key=lambda row: (row["start_ns"], row["source_sequence"], row["attempt_index"]))
+    return rows
+
+
+def _transport_evidence_summary(rows: Sequence[Mapping[str, Any]]) -> dict[str, Any]:
+    """Summarize what transport-level evidence is actually observable."""
+
+    attempts = [dict(row) for row in rows]
+    successful = [row for row in attempts if row.get("status") == "ok"]
+    observed_finish = [row for row in successful if row.get("finish_reason_observed") is True]
+    missing_finish = [row for row in successful if row.get("finish_reason_observed") is not True]
+    usage_observed = [row for row in attempts if row.get("usage_observed") is True]
+    return {
+        "schema_version": "membind.v5.transport-evidence.v1",
+        "attempt_count": len(attempts),
+        "successful_attempt_count": len(successful),
+        "transport_error_count": sum(row.get("status") == "error" for row in attempts),
+        "finish_reason_observed_count": len(observed_finish),
+        "successful_attempts_missing_finish_reason": len(missing_finish),
+        "usage_observed_count": len(usage_observed),
+        "finish_reasons": sorted({str(row["finish_reason"]) for row in observed_finish if row.get("finish_reason") is not None}),
+        # ``complete`` means every successful transport response exposed its
+        # own choice finish reason.  Transport exceptions are represented as
+        # errors and are not incorrectly assigned a reason.
+        "complete": bool(attempts) and not missing_finish,
+        "source_sequences": sorted({int(row["source_sequence"]) for row in attempts}),
+    }
+
+
+def _persist_transport_evidence(
+    history_root: Path,
+    recorder: Any,
+) -> dict[str, Any]:
+    """Persist transport-attempt rows and summary once per history attempt."""
+
+    rows = _transport_attempt_rows(recorder)
+    summary = _transport_evidence_summary(rows)
+    attempts_path = history_root / "transport_attempts.jsonl"
+    summary_path = history_root / "transport_evidence.json"
+    if rows and not attempts_path.exists():
+        _write_jsonl(attempts_path, rows)
+    if not summary_path.exists():
+        _write_new(summary_path, summary)
+    return summary
+
+
 def _install_p9_context_budget_adapter(llm_client: Any) -> Callable[[], None]:
     """Scope effective-budget retry to the P9 real provider transport only."""
 
@@ -605,6 +680,16 @@ async def _run_history_live_async(
             recorder.episode_envelope(config.run_id, episode.name, episode.source_sequence)
             for episode in episodes
         ]
+        transport_evidence = (
+            _persist_transport_evidence(history_root, recorder)
+            if history_root is not None
+            else _transport_evidence_summary(_transport_attempt_rows(recorder))
+        )
+        if config.smoke and not transport_evidence["complete"]:
+            raise P9RunnerError(
+                f"{history_id}: transport-attempt evidence is incomplete; "
+                "real smoke requires response-level finish_reason metadata"
+            )
         admission = list(capture.provider_calls) + list(replay.provider_calls)
         final_publication_ns = max(
             (int(event["monotonic_ns"]) for event in result.execution.events if event["event"] == "PUBLICATION_DURABLE"),
@@ -643,6 +728,7 @@ async def _run_history_live_async(
             },
             "admission": admission,
             "native_trace": envelopes,
+            "transport_evidence": transport_evidence,
             "lifecycle": lifecycle,
             "canonical_graph": dict(canonical),
             "build_makespan_ns": result.execution.build_makespan_ns,
@@ -654,6 +740,7 @@ async def _run_history_live_async(
     except BaseException as exc:
         logical = store.summary()
         if history_root is not None:
+            transport_evidence = _persist_transport_evidence(history_root, recorder)
             try:
                 _persist_partial_native_trace(
                     history_root / "native_trace.jsonl",
@@ -678,6 +765,7 @@ async def _run_history_live_async(
                     "durable_frontier": frontier_journal.max_durable_frontier if frontier_journal else -1,
                     "prepared_event_count": frontier_journal.event_counts.get("PREPARED", 0) if frontier_journal else 0,
                     "logical_work_summary": logical,
+                    "transport_evidence": transport_evidence,
                     "frontier_event_count": journals.get("frontier").count if journals else 0,
                     "admission_event_count": journals.get("admission").count if journals else 0,
                 },
