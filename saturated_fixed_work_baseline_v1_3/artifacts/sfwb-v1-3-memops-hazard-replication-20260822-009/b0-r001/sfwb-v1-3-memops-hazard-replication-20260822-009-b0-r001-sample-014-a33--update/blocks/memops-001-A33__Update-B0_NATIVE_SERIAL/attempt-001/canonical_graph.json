@@ -1,0 +1,281 @@
+{
+  "canonical_graph_hash": "2e84326f0737cf2b35b1feb65af5936cec265e3ac6211162499cf48d39f71703",
+  "edges": [
+    {
+      "attributes": {},
+      "expired_at": "2026-08-22T14:06:44.817765000+00:00",
+      "fact": "USER started seeing a chiropractor about two weeks ago for upper back tightness. The chiropractor has been performing spinal adjustments and decompression therapy. The USER is currently on session four of eight, going twice a week, and is halfway through the treatment plan.",
+      "invalid_at": "2000-01-01T00:02:00.000000000+00:00",
+      "relation_type": "SEEKS_TREATMENT_FROM",
+      "source_entity_key": "user",
+      "source_episode_sequence": 1,
+      "target_entity_key": "chiropractor",
+      "valid_at": "2000-01-01T00:00:00.000000000+00:00"
+    },
+    {
+      "attributes": {},
+      "expired_at": "2026-08-22T14:06:44.911387000+00:00",
+      "fact": "The chiropractor projected that after a few more sessions, the USER's spine decompression should add about a quarter inch, potentially increasing the USER's height to 5'11½\".",
+      "invalid_at": "2000-03-12T00:00:00.000000000+00:00",
+      "relation_type": "MAKES_PROJECTION_ABOUT",
+      "source_entity_key": "chiropractor",
+      "source_episode_sequence": 2,
+      "target_entity_key": "user",
+      "valid_at": "2000-01-01T00:02:00.000000000+00:00"
+    },
+    {
+      "attributes": {},
+      "expired_at": "2026-08-22T14:06:44.911416000+00:00",
+      "fact": "USER mentioned their mom, who recently found out she has shrunk to 5'4\" after losing about half an inch in height.",
+      "invalid_at": "2000-01-01T00:02:00.000000000+00:00",
+      "relation_type": "MENTIONED_RELATIVE",
+      "source_entity_key": "user",
+      "source_episode_sequence": 0,
+      "target_entity_key": "user's mom",
+      "valid_at": "2000-01-01T00:00:00.000000000+00:00"
+    },
+    {
+      "attributes": {},
+      "expired_at": null,
+      "fact": "At the physical on March 12th, the nurse measured USER at 5'11\".",
+      "invalid_at": null,
+      "relation_type": "MEASURED_HEIGHT",
+      "source_entity_key": "user",
+      "source_episode_sequence": 0,
+      "target_entity_key": "march 12th",
+      "valid_at": "2000-03-12T00:00:00.000000000+00:00"
+    },
+    {
+      "attributes": {},
+      "expired_at": null,
+      "fact": "The chiropractor is providing spinal adjustments and decompression therapy to the USER, with a recommendation of at least eight sessions total.",
+      "invalid_at": null,
+      "relation_type": "PROVIDES_TREATMENT_TO",
+      "source_entity_key": "chiropractor",
+      "source_episode_sequence": 2,
+      "target_entity_key": "user",
+      "valid_at": "2000-01-01T00:02:00.000000000+00:00"
+    },
+    {
+      "attributes": {},
+      "expired_at": null,
+      "fact": "The chiropractor performs decompression therapy on the USER as part of the treatment for upper back tightness.",
+      "invalid_at": null,
+      "relation_type": "PERFORMS",
+      "source_entity_key": "chiropractor",
+      "source_episode_sequence": 1,
+      "target_entity_key": "decompression therapy",
+      "valid_at": "2000-01-01T00:00:00.000000000+00:00"
+    },
+    {
+      "attributes": {},
+      "expired_at": null,
+      "fact": "The chiropractor performs spinal adjustments on the USER as part of the treatment for upper back tightness.",
+      "invalid_at": null,
+      "relation_type": "PERFORMS",
+      "source_entity_key": "chiropractor",
+      "source_episode_sequence": 1,
+      "target_entity_key": "spinal adjustments",
+      "valid_at": "2000-01-01T00:00:00.000000000+00:00"
+    },
+    {
+      "attributes": {},
+      "expired_at": null,
+      "fact": "The chiropractor wants the USER to return for a second round of eight sessions starting next month.",
+      "invalid_at": null,
+      "relation_type": "RECOMMENDS_FOLLOW_UP",
+      "source_entity_key": "chiropractor",
+      "source_episode_sequence": 2,
+      "target_entity_key": "user",
+      "valid_at": "2000-01-01T00:02:00.000000000+00:00"
+    },
+    {
+      "attributes": {},
+      "expired_at": null,
+      "fact": "USER had their annual physical on March 12th.",
+      "invalid_at": null,
+      "relation_type": "HAD_PHYSICAL",
+      "source_entity_key": "user",
+      "source_episode_sequence": 0,
+      "target_entity_key": "march 12th",
+      "valid_at": null
+    },
+    {
+      "attributes": {},
+      "expired_at": null,
+      "fact": "USER is undergoing chiropractic treatment for upper back tightness and has completed six out of eight sessions as of the current time.",
+      "invalid_at": null,
+      "relation_type": "SEEKS_TREATMENT_FROM",
+      "source_entity_key": "user",
+      "source_episode_sequence": 2,
+      "target_entity_key": "chiropractor",
+      "valid_at": "2000-01-01T00:02:00.000000000+00:00"
+    },
+    {
+      "attributes": {},
+      "expired_at": null,
+      "fact": "USER mentioned their friend Kevin, who claimed to be 5'10\" but was actually measured at 5'8½\".",
+      "invalid_at": null,
+      "relation_type": "MENTIONED_FRIEND",
+      "source_entity_key": "user",
+      "source_episode_sequence": 0,
+      "target_entity_key": "kevin",
+      "valid_at": null
+    },
+    {
+      "attributes": {},
+      "expired_at": null,
+      "fact": "USER owns a pair of Vans Old Skools, which are flat-sole minimal sneakers. They were ordered online last week and arrived yesterday. The USER is happy with how they look and plans to wear them daily for casual stuff.",
+      "invalid_at": null,
+      "relation_type": "OWNS",
+      "source_entity_key": "user",
+      "source_episode_sequence": 1,
+      "target_entity_key": "vans old skools",
+      "valid_at": "2000-01-01T00:00:00.000000000+00:00"
+    },
+    {
+      "attributes": {},
+      "expired_at": null,
+      "fact": "USER receives decompression therapy from the chiropractor as part of his treatment for upper back tightness.",
+      "invalid_at": null,
+      "relation_type": "RECEIVES",
+      "source_entity_key": "user",
+      "source_episode_sequence": 1,
+      "target_entity_key": "decompression therapy",
+      "valid_at": "2000-01-01T00:00:00.000000000+00:00"
+    },
+    {
+      "attributes": {},
+      "expired_at": null,
+      "fact": "USER receives spinal adjustments from the chiropractor as part of his treatment for upper back tightness.",
+      "invalid_at": null,
+      "relation_type": "RECEIVES",
+      "source_entity_key": "user",
+      "source_episode_sequence": 1,
+      "target_entity_key": "spinal adjustments",
+      "valid_at": "2000-01-01T00:00:00.000000000+00:00"
+    },
+    {
+      "attributes": {},
+      "expired_at": null,
+      "fact": "USER used a posture corrector strap back in late March but found it uncomfortable and felt like a harness.",
+      "invalid_at": null,
+      "relation_type": "USED",
+      "source_entity_key": "user",
+      "source_episode_sequence": 1,
+      "target_entity_key": "posture corrector strap",
+      "valid_at": "2000-01-01T00:00:00.000000000+00:00"
+    },
+    {
+      "attributes": {},
+      "expired_at": null,
+      "fact": "USER's mom has shrunk to 5'4\" after losing about half an inch in height, which is a recent change.",
+      "invalid_at": null,
+      "relation_type": "HEIGHT_CHANGED",
+      "source_entity_key": "user's mom",
+      "source_episode_sequence": 0,
+      "target_entity_key": "march 12th",
+      "valid_at": null
+    }
+  ],
+  "entities": [
+    {
+      "attributes": {},
+      "group_id": "sfwb-v1-3-memops-hazard-replication-20260822-009-b0-r001-sample-014-a33--update-MEMOPS-A33__Update-B0_NATIVE_SERIAL-attempt-001",
+      "labels": [
+        "Entity"
+      ],
+      "name": "chiropractor",
+      "summary": "USER started seeing a chiropractor about two weeks ago for upper back tightness. The chiropractor has been performing spinal adjustments and decompression therapy. The USER is currently on session four of eight, going twice a week, and is halfway through the treatment plan. The chiropractor performs spinal adjustments on the USER as part of the treatment for upper back tightness. The chiropractor performs decompression therapy on the USER as part of the treatment for upper back tightness. USER is undergoing chiropractic treatment for upper back tightness and has completed six out of eight sessions as of the current time. The chiropractor is providing spinal adjustments and decompression therapy to the USER, with a recommendation of at least eight sessions total. The chiropractor projected that after a few more sessions, the USER's spine decompression should add about a quarter inch, potentially increasing the USER's height to 5'11½\". The chiropractor wants the USER to return for a second round of eight sessions starting next month."
+    },
+    {
+      "attributes": {},
+      "group_id": "sfwb-v1-3-memops-hazard-replication-20260822-009-b0-r001-sample-014-a33--update-MEMOPS-A33__Update-B0_NATIVE_SERIAL-attempt-001",
+      "labels": [
+        "Entity"
+      ],
+      "name": "decompression therapy",
+      "summary": "The chiropractor performs decompression therapy on the USER as part of the treatment for upper back tightness. USER receives decompression therapy from the chiropractor as part of his treatment for upper back tightness."
+    },
+    {
+      "attributes": {},
+      "group_id": "sfwb-v1-3-memops-hazard-replication-20260822-009-b0-r001-sample-014-a33--update-MEMOPS-A33__Update-B0_NATIVE_SERIAL-attempt-001",
+      "labels": [
+        "Entity"
+      ],
+      "name": "kevin",
+      "summary": "USER mentioned their friend Kevin, who claimed to be 5'10\" but was actually measured at 5'8½\"."
+    },
+    {
+      "attributes": {},
+      "group_id": "sfwb-v1-3-memops-hazard-replication-20260822-009-b0-r001-sample-014-a33--update-MEMOPS-A33__Update-B0_NATIVE_SERIAL-attempt-001",
+      "labels": [
+        "Entity"
+      ],
+      "name": "march 12th",
+      "summary": "USER had their annual physical on March 12th. At the physical on March 12th, the nurse measured USER at 5'11\". USER's mom has shrunk to 5'4\" after losing about half an inch in height, which is a recent change."
+    },
+    {
+      "attributes": {},
+      "group_id": "sfwb-v1-3-memops-hazard-replication-20260822-009-b0-r001-sample-014-a33--update-MEMOPS-A33__Update-B0_NATIVE_SERIAL-attempt-001",
+      "labels": [
+        "Entity"
+      ],
+      "name": "posture corrector strap",
+      "summary": "USER used a posture corrector strap back in late March but found it uncomfortable and felt like a harness."
+    },
+    {
+      "attributes": {},
+      "group_id": "sfwb-v1-3-memops-hazard-replication-20260822-009-b0-r001-sample-014-a33--update-MEMOPS-A33__Update-B0_NATIVE_SERIAL-attempt-001",
+      "labels": [
+        "Entity"
+      ],
+      "name": "spinal adjustments",
+      "summary": "The chiropractor performs spinal adjustments on the USER as part of the treatment for upper back tightness. USER receives spinal adjustments from the chiropractor as part of his treatment for upper back tightness."
+    },
+    {
+      "attributes": {},
+      "group_id": "sfwb-v1-3-memops-hazard-replication-20260822-009-b0-r001-sample-014-a33--update-MEMOPS-A33__Update-B0_NATIVE_SERIAL-attempt-001",
+      "labels": [
+        "Entity"
+      ],
+      "name": "user",
+      "summary": "USER had their annual physical on March 12th. At the physical on March 12th, the nurse measured USER at 5'11\". USER mentioned their friend Kevin, who claimed to be 5'10\" but was actually measured at 5'8½\". USER mentioned their mom, who recently found out she has shrunk to 5'4\" after losing about half an inch in height. USER owns a pair of Vans Old Skools, which are flat-sole minimal sneakers. They were ordered online last week and arrived yesterday. The USER is happy with how they look and plans to wear them daily for casual stuff. USER started seeing a chiropractor about two weeks ago for upper back tightness. The chiropractor has been performing spinal adjustments and decompression therapy. The USER is currently on session four of eight, going twice a week, and is halfway through the treatment plan. USER used a posture corrector strap back in late March but found it uncomfortable and felt like a harness. USER receives spinal adjustments from the chiropractor as part of his treatment for upper back tightness. USER receives decompression therapy from the chiropractor as part of his treatment for upper back tightness. USER is undergoing chiropractic treatment for upper back tightness and has completed six out of eight sessions as of the current time. The chiropractor is providing spinal adjustments and decompression therapy to the USER, with a recommendation of at least eight sessions total. The chiropractor projected that after a few more sessions, the USER's spine decompression should add about a quarter inch, potentially increasing the USER's height to 5'11½\". The chiropractor wants the USER to return for a second round of eight sessions starting next month."
+    },
+    {
+      "attributes": {},
+      "group_id": "sfwb-v1-3-memops-hazard-replication-20260822-009-b0-r001-sample-014-a33--update-MEMOPS-A33__Update-B0_NATIVE_SERIAL-attempt-001",
+      "labels": [
+        "Entity"
+      ],
+      "name": "user's mom",
+      "summary": "USER mentioned their mom, who recently found out she has shrunk to 5'4\" after losing about half an inch in height. USER's mom has shrunk to 5'4\" after losing about half an inch in height, which is a recent change."
+    },
+    {
+      "attributes": {},
+      "group_id": "sfwb-v1-3-memops-hazard-replication-20260822-009-b0-r001-sample-014-a33--update-MEMOPS-A33__Update-B0_NATIVE_SERIAL-attempt-001",
+      "labels": [
+        "Entity"
+      ],
+      "name": "vans old skools",
+      "summary": "USER owns a pair of Vans Old Skools, which are flat-sole minimal sneakers. They were ordered online last week and arrived yesterday. The USER is happy with how they look and plans to wear them daily for casual stuff."
+    }
+  ],
+  "episodes": [
+    {
+      "session_id": "A33__Update:segment:001",
+      "source_hash": "4e7e54a705d8246a18473cc6d122998801a3d9b65d265a916e1b5fe1f139b5e0",
+      "source_sequence": 0
+    },
+    {
+      "session_id": "A33__Update:segment:002",
+      "source_hash": "d9e833bb8a140691e54c64fab97809075e1554004f410ebd8d00b3b947723fb9",
+      "source_sequence": 1
+    },
+    {
+      "session_id": "A33__Update:segment:003",
+      "source_hash": "fd428f2914f1f1944ce51e1376c6a1e64c70e421c0f6baf2ff3ab3101bffdc57",
+      "source_sequence": 2
+    }
+  ]
+}

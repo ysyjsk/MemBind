@@ -1,0 +1,235 @@
+{
+  "canonical_graph_hash": "1d83446f8fbf35e53cb944cc038c98acbeaadff13efa6a454eedcac19b4b46b2",
+  "edges": [
+    {
+      "attributes": {},
+      "expired_at": null,
+      "fact": "Mariana obtained her Spanish citizenship after waiting over two years.",
+      "invalid_at": null,
+      "relation_type": "OBTAINED",
+      "source_entity_key": "mariana",
+      "source_episode_sequence": 1,
+      "target_entity_key": "spanish citizenship",
+      "valid_at": "2000-01-01T00:01:00.000000000+00:00"
+    },
+    {
+      "attributes": {},
+      "expired_at": null,
+      "fact": "The consulate's system currently has an incorrect passport number HG284931 linked to USER's application, which is not the number on their physical passport.",
+      "invalid_at": null,
+      "relation_type": "HAS_INCORRECT_RECORD",
+      "source_entity_key": "user",
+      "source_episode_sequence": 2,
+      "target_entity_key": "hg284931",
+      "valid_at": "2000-01-01T00:02:00.000000000+00:00"
+    },
+    {
+      "attributes": {},
+      "expired_at": null,
+      "fact": "USER has a Portuguese citizenship application reference number PT-2025-04417, submitted on March 3rd at the São Paulo consulate, based on their maternal grandmother's birth in Porto.",
+      "invalid_at": null,
+      "relation_type": "HAS_APPLICATION_REFERENCE",
+      "source_entity_key": "user",
+      "source_episode_sequence": 2,
+      "target_entity_key": "mariana",
+      "valid_at": "2000-01-01T00:02:00.000000000+00:00"
+    },
+    {
+      "attributes": {},
+      "expired_at": null,
+      "fact": "USER is comfortable using Portunhol during travel, as demonstrated in their recent trip to Montevideo.",
+      "invalid_at": null,
+      "relation_type": "COMFORTABLE_USING",
+      "source_entity_key": "user",
+      "source_episode_sequence": 1,
+      "target_entity_key": "portunhol",
+      "valid_at": "2000-01-01T00:01:00.000000000+00:00"
+    },
+    {
+      "attributes": {},
+      "expired_at": null,
+      "fact": "USER mentioned that their colleague Mariana recently finalized her Spanish citizenship after waiting over two years.",
+      "invalid_at": null,
+      "relation_type": "MENTIONED",
+      "source_entity_key": "user",
+      "source_episode_sequence": 1,
+      "target_entity_key": "mariana",
+      "valid_at": "2000-01-01T00:01:00.000000000+00:00"
+    },
+    {
+      "attributes": {},
+      "expired_at": null,
+      "fact": "USER spent a long weekend in Montevideo a couple of months ago and loved it because they could slip into Portunhol and everyone understood them.",
+      "invalid_at": null,
+      "relation_type": "TRAVELED_TO",
+      "source_entity_key": "user",
+      "source_episode_sequence": 1,
+      "target_entity_key": "montevideo",
+      "valid_at": "2000-01-01T00:01:00.000000000+00:00"
+    },
+    {
+      "attributes": {},
+      "expired_at": null,
+      "fact": "USER submitted their Portuguese citizenship application at the São Paulo consulate.",
+      "invalid_at": null,
+      "relation_type": "SUBMITTED_APPLICATION_AT",
+      "source_entity_key": "user",
+      "source_episode_sequence": 2,
+      "target_entity_key": "montevideo",
+      "valid_at": "2000-01-01T00:02:00.000000000+00:00"
+    },
+    {
+      "attributes": {},
+      "expired_at": null,
+      "fact": "USER's Portuguese citizenship application is based on their maternal grandmother's birth in Porto before she emigrated to Brazil.",
+      "invalid_at": null,
+      "relation_type": "ANCESTRAL_ORIGIN",
+      "source_entity_key": "user",
+      "source_episode_sequence": 2,
+      "target_entity_key": "lucas's dual citizenship process with italy",
+      "valid_at": "2000-01-01T00:02:00.000000000+00:00"
+    },
+    {
+      "attributes": {},
+      "expired_at": null,
+      "fact": "USER's actual Brazilian passport number is HG284139, as confirmed from the physical passport page.",
+      "invalid_at": null,
+      "relation_type": "HAS_PASSPORT_NUMBER",
+      "source_entity_key": "user",
+      "source_episode_sequence": 2,
+      "target_entity_key": "hg284139",
+      "valid_at": "2000-01-01T00:02:00.000000000+00:00"
+    },
+    {
+      "attributes": {},
+      "expired_at": null,
+      "fact": "User mentions that Lucas went through a dual citizenship process with Italy last year.",
+      "invalid_at": null,
+      "relation_type": "MENTIONS",
+      "source_entity_key": "user",
+      "source_episode_sequence": 0,
+      "target_entity_key": "lucas",
+      "valid_at": "1999-01-01T00:00:00.000000000+00:00"
+    },
+    {
+      "attributes": {},
+      "expired_at": null,
+      "fact": "User mentions that Lucas's dual citizenship process with Italy took about 14 months from application to approval.",
+      "invalid_at": null,
+      "relation_type": "MENTIONS",
+      "source_entity_key": "user",
+      "source_episode_sequence": 0,
+      "target_entity_key": "lucas's dual citizenship process with italy",
+      "valid_at": null
+    }
+  ],
+  "entities": [
+    {
+      "attributes": {},
+      "group_id": "sfwb-v1-3-memops-hazard-replication-20260822-009-b0-r001-sample-011-a14--update-MEMOPS-A14__Update-B0_NATIVE_SERIAL-attempt-001",
+      "labels": [
+        "Entity"
+      ],
+      "name": "assistant",
+      "summary": "Tracked Brazilian passport number HG284193 then updated to HG284139 after user corrections. Maintained Portuguese citizenship application reference PT-2025-04417 submitted March 3rd at São Paulo consulate for user's maternal grandmother's Porto birth. Noted consulate data entry error showing HG284931 instead of correct HG284139 and advised user to request correction. Recorded user's travel preferences for Portuguese/Spanish-speaking destinations including Lisbon (November) and Montevideo. Monitored citizenship timeline concerns based on Lucas's 14-month Italian process and Mariana's 2-year Spanish process. Offered to draft correction notes and status inquiries for consulate communications."
+    },
+    {
+      "attributes": {},
+      "group_id": "sfwb-v1-3-memops-hazard-replication-20260822-009-b0-r001-sample-011-a14--update-MEMOPS-A14__Update-B0_NATIVE_SERIAL-attempt-001",
+      "labels": [
+        "Entity"
+      ],
+      "name": "hg284139",
+      "summary": "USER's actual Brazilian passport number is HG284139, as confirmed from the physical passport page."
+    },
+    {
+      "attributes": {},
+      "group_id": "sfwb-v1-3-memops-hazard-replication-20260822-009-b0-r001-sample-011-a14--update-MEMOPS-A14__Update-B0_NATIVE_SERIAL-attempt-001",
+      "labels": [
+        "Entity"
+      ],
+      "name": "hg284931",
+      "summary": "The consulate's system currently has an incorrect passport number HG284931 linked to USER's application, which is not the number on their physical passport."
+    },
+    {
+      "attributes": {},
+      "group_id": "sfwb-v1-3-memops-hazard-replication-20260822-009-b0-r001-sample-011-a14--update-MEMOPS-A14__Update-B0_NATIVE_SERIAL-attempt-001",
+      "labels": [
+        "Entity"
+      ],
+      "name": "lucas",
+      "summary": "User mentions that Lucas went through a dual citizenship process with Italy last year."
+    },
+    {
+      "attributes": {},
+      "group_id": "sfwb-v1-3-memops-hazard-replication-20260822-009-b0-r001-sample-011-a14--update-MEMOPS-A14__Update-B0_NATIVE_SERIAL-attempt-001",
+      "labels": [
+        "Entity"
+      ],
+      "name": "lucas's dual citizenship process with italy",
+      "summary": "User mentions that Lucas's dual citizenship process with Italy took about 14 months from application to approval. USER's Portuguese citizenship application is based on their maternal grandmother's birth in Porto before she emigrated to Brazil."
+    },
+    {
+      "attributes": {},
+      "group_id": "sfwb-v1-3-memops-hazard-replication-20260822-009-b0-r001-sample-011-a14--update-MEMOPS-A14__Update-B0_NATIVE_SERIAL-attempt-001",
+      "labels": [
+        "Entity"
+      ],
+      "name": "mariana",
+      "summary": "Mariana obtained her Spanish citizenship after waiting over two years. USER mentioned that their colleague Mariana recently finalized her Spanish citizenship after waiting over two years. USER has a Portuguese citizenship application reference number PT-2025-04417, submitted on March 3rd at the São Paulo consulate, based on their maternal grandmother's birth in Porto."
+    },
+    {
+      "attributes": {},
+      "group_id": "sfwb-v1-3-memops-hazard-replication-20260822-009-b0-r001-sample-011-a14--update-MEMOPS-A14__Update-B0_NATIVE_SERIAL-attempt-001",
+      "labels": [
+        "Entity"
+      ],
+      "name": "montevideo",
+      "summary": "USER spent a long weekend in Montevideo a couple of months ago and loved it because they could slip into Portunhol and everyone understood them. USER submitted their Portuguese citizenship application at the São Paulo consulate."
+    },
+    {
+      "attributes": {},
+      "group_id": "sfwb-v1-3-memops-hazard-replication-20260822-009-b0-r001-sample-011-a14--update-MEMOPS-A14__Update-B0_NATIVE_SERIAL-attempt-001",
+      "labels": [
+        "Entity"
+      ],
+      "name": "portunhol",
+      "summary": "USER is comfortable using Portunhol during travel, as demonstrated in their recent trip to Montevideo."
+    },
+    {
+      "attributes": {},
+      "group_id": "sfwb-v1-3-memops-hazard-replication-20260822-009-b0-r001-sample-011-a14--update-MEMOPS-A14__Update-B0_NATIVE_SERIAL-attempt-001",
+      "labels": [
+        "Entity"
+      ],
+      "name": "spanish citizenship",
+      "summary": "Mariana obtained her Spanish citizenship after waiting over two years."
+    },
+    {
+      "attributes": {},
+      "group_id": "sfwb-v1-3-memops-hazard-replication-20260822-009-b0-r001-sample-011-a14--update-MEMOPS-A14__Update-B0_NATIVE_SERIAL-attempt-001",
+      "labels": [
+        "Entity"
+      ],
+      "name": "user",
+      "summary": "User mentions that Lucas's dual citizenship process with Italy took about 14 months from application to approval. User mentions that Lucas went through a dual citizenship process with Italy last year. USER spent a long weekend in Montevideo a couple of months ago and loved it because they could slip into Portunhol and everyone understood them. USER is comfortable using Portunhol during travel, as demonstrated in their recent trip to Montevideo. USER mentioned that their colleague Mariana recently finalized her Spanish citizenship after waiting over two years. USER has a Portuguese citizenship application reference number PT-2025-04417, submitted on March 3rd at the São Paulo consulate, based on their maternal grandmother's birth in Porto. USER's actual Brazilian passport number is HG284139, as confirmed from the physical passport page. The consulate's system currently has an incorrect passport number HG284931 linked to USER's application, which is not the number on their physical passport. USER submitted their Portuguese citizenship application at the São Paulo consulate. USER's Portuguese citizenship application is based on their maternal grandmother's birth in Porto before she emigrated to Brazil."
+    }
+  ],
+  "episodes": [
+    {
+      "session_id": "A14__Update:segment:001",
+      "source_hash": "494af9214129ccbdd4c985ee9f13f2bc115c57fbab5950c630df2dddcb63d6ef",
+      "source_sequence": 0
+    },
+    {
+      "session_id": "A14__Update:segment:002",
+      "source_hash": "e45ca15ad1688848c921ac9ca98deba99ac9d68ba6c0155c40015f62a74a85ed",
+      "source_sequence": 1
+    },
+    {
+      "session_id": "A14__Update:segment:003",
+      "source_hash": "88823d2a7b6be78e77b337181f30a812958cddf48c7073e14f0c2b23a9707dbb",
+      "source_sequence": 2
+    }
+  ]
+}
