@@ -43,3 +43,39 @@ def test_p9_promotion_is_append_only_and_requires_verified_p8(tmp_path: Path) ->
     assert json.loads((queue / "queue_manifest.json").read_text()) == manifest
     with pytest.raises(QueueContractError, match="already recorded"):
         promote_queue_after_p8(queue_root=queue, p8_seal=seal, baseline_root=baseline)
+
+
+def test_p9_promotion_rejects_provider_free_runner_command(tmp_path: Path) -> None:
+    repo = Path(__file__).parents[2]
+    baseline = repo / "saturated_fixed_work_baseline_v1_3/artifacts/sfwb-v1-3-formal-baseline-20260822-002"
+    queue = tmp_path / "queue"
+    build_queue_manifest(repo_root=repo, baseline_root=baseline, queue_root=queue, session_name="v5-p9")
+    p8 = queue / "minimal-6"
+    p8.mkdir()
+    seal = p8 / "seal.json"
+    seal.write_text(json.dumps({"status": "P8_LIVE_SEALED", "source_count": 2}))
+    (queue / "p8_ready.json").write_text(json.dumps({"status": "P8_SEAL_READY", "seal_path": str(seal.resolve())}))
+    with pytest.raises(QueueContractError, match="real runner"):
+        promote_queue_after_p8(
+            queue_root=queue,
+            p8_seal=seal,
+            baseline_root=baseline,
+            command="run_v5_campaign.py --baseline-root <sealed-baseline>",
+        )
+
+
+def test_p9_promotion_default_command_is_real_live_runner(tmp_path: Path) -> None:
+    repo = Path(__file__).parents[2]
+    baseline = repo / "saturated_fixed_work_baseline_v1_3/artifacts/sfwb-v1-3-formal-baseline-20260822-002"
+    queue = tmp_path / "queue"
+    build_queue_manifest(repo_root=repo, baseline_root=baseline, queue_root=queue, session_name="v5-p9")
+    p8 = queue / "minimal-6"
+    p8.mkdir()
+    seal = p8 / "seal.json"
+    seal.write_text(json.dumps({"status": "P8_LIVE_SEALED", "source_count": 2}))
+    (queue / "p8_ready.json").write_text(json.dumps({"status": "P8_SEAL_READY", "seal_path": str(seal.resolve())}))
+    body = json.loads(promote_queue_after_p8(queue_root=queue, p8_seal=seal, baseline_root=baseline).read_text())
+    assert "run_v5_p9_full.py" in body["full_command"]
+    assert "run_v5_campaign.py" not in body["full_command"]
+    for token in ("--repo-root", "--baseline-root", "--state", "--p8-seal", "--output-root", "--run-id", "--execute-live"):
+        assert token in body["full_command"]

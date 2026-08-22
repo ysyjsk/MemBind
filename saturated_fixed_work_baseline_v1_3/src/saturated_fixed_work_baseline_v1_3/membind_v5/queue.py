@@ -92,7 +92,11 @@ def promote_queue_after_p8(
     queue_root: str | Path,
     p8_seal: str | Path,
     baseline_root: str | Path,
-    command: str = "run_v5_campaign.py --baseline-root <sealed-baseline>",
+    command: str = (
+        "run_v5_p9_full.py --repo-root <repo-root> --baseline-root <sealed-baseline> "
+        "--state <v5-state> --p8-seal <p8-seal> --output-root <p9-output> "
+        "--run-id <run-id> --execute-live"
+    ),
     output_name: str = "p9_full_queue.json",
     readiness_name: str = "p8_ready.json",
 ) -> Path:
@@ -108,6 +112,9 @@ def promote_queue_after_p8(
     ready_path = root / readiness_name
     if not output_name or Path(output_name).name != output_name or not output_name.endswith(".json"):
         raise QueueContractError("P9 queue output name invalid")
+    required_command_tokens = ("run_v5_p9_full.py", "--baseline-root", "--state", "--p8-seal", "--output-root", "--run-id", "--execute-live")
+    if "run_v5_campaign.py" in command or any(token not in command for token in required_command_tokens):
+        raise QueueContractError("P9 full command must target the real runner with live-gate arguments")
     target = root / output_name
     if not manifest_path.is_file() or not ready_path.is_file():
         raise QueueContractError("P8 queue readiness evidence is required")

@@ -14,7 +14,14 @@ def main() -> int:
     parser.add_argument("--queue-root", required=True)
     parser.add_argument("--p8-seal", required=True)
     parser.add_argument("--baseline-root", required=True)
-    parser.add_argument("--command", default="run_v5_campaign.py --baseline-root <sealed-baseline>")
+    parser.add_argument(
+        "--command",
+        default=(
+            "run_v5_p9_full.py --repo-root <repo-root> --baseline-root <sealed-baseline> "
+            "--state <v5-state> --p8-seal <p8-seal> --output-root <p9-output> "
+            "--run-id <run-id> --execute-live"
+        ),
+    )
     parser.add_argument("--output-name", default="p9_full_queue.json")
     parser.add_argument("--readiness-name", default="p8_ready.json")
     args = parser.parse_args()

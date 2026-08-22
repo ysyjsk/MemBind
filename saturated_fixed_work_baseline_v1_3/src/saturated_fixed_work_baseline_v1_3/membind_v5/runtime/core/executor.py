@@ -31,12 +31,14 @@ class FrontierExecutor:
         authority: CapacityAuthority,
         *,
         clock: Callable[[], int] = time.monotonic_ns,
+        prepare_admission: bool = True,
     ) -> None:
         if source_count < 0:
             raise ValueError("source_count must be non-negative")
         self.source_count = source_count
         self.clock = clock
         self.authority = authority
+        self.prepare_admission = bool(prepare_admission)
         self.admission = AdmissionArbiter(authority)
         self.frontier = FrontierRuntime(source_count, clock=clock)
         self._tasks: list[asyncio.Task[Any]] = []
@@ -52,8 +54,11 @@ class FrontierExecutor:
 
         async def do_prepare(sequence: int) -> None:
             admission_class = AdmissionClass.FRONTIER_PREPARE if sequence == 0 else AdmissionClass.FUTURE_PREPARE
-            await self.admission.acquire(admission_class, source_sequence=sequence)
-            self.frontier._event("ADMITTED", sequence, admission_class=admission_class.value)
+            if self.prepare_admission:
+                await self.admission.acquire(admission_class, source_sequence=sequence)
+                self.frontier._event("ADMITTED", sequence, admission_class=admission_class.value)
+            else:
+                self.frontier._event("PREPARE_SUBMITTED", sequence, admission_class=admission_class.value)
             try:
                 value = await prepare(sequence)
                 prep_results[sequence] = value
@@ -63,7 +68,8 @@ class FrontierExecutor:
                 self.frontier._event("PREPARE_FAILURE", sequence, error_type=f"{type(exc).__module__}.{type(exc).__qualname__}")
                 raise
             finally:
-                await self.admission.release(admission_class)
+                if self.prepare_admission:
+                    await self.admission.release(admission_class)
 
         self._tasks = [asyncio.create_task(do_prepare(sequence)) for sequence in range(self.source_count)]
         try:
@@ -97,4 +103,3 @@ class FrontierExecutor:
             timer_stop_ns=timer_stop,
             failed_sequence=self.frontier.failed_sequence,
         )
-

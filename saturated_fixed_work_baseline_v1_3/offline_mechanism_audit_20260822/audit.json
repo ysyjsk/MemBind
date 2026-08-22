@@ -1,0 +1,200 @@
+{
+  "schema_version": "sfwb.v1.3.offline-mechanism-audit.v1",
+  "audit_date": "2026-08-22",
+  "scope": {
+    "benchmark": "saturated_fixed_work_baseline_v1_3",
+    "formal_run": "sfwb-v1-3-formal-baseline-20260822-002",
+    "policies": ["B0_NATIVE_SERIAL", "B1_NAIVE_WHOLE_UPDATE_ASYNC"],
+    "history_count": 4,
+    "live_services_started": false,
+    "construction_rerun": false,
+    "qa_rerun": false,
+    "sealed_artifacts_modified": false
+  },
+  "decision": {
+    "gate": "STOP_CURRENT_WORKLOAD_NOT_MECHANISM_ALIGNED",
+    "strong_claim_supported": false,
+    "weaker_observations": [
+      "OBSERVED_GRAPH_DIVERGENCE",
+      "OBSERVED_OUT_OF_ORDER_STATE_VISIBILITY",
+      "CONCRETE_TEMPORAL_DIVERGENCE_IN_ONE_HISTORY",
+      "CAUSAL_ATTRIBUTION_INSUFFICIENT"
+    ],
+    "next_authorized_phase": "offline mechanism-first workload design only"
+  },
+  "graphiti_mechanism": {
+    "pinned_version": "graphiti_core 0.29.3",
+    "state_dependent_paths": [
+      {
+        "path": "add_episode -> retrieve_episodes -> extract_nodes -> resolve_extracted_nodes",
+        "effect": "previous episodes and similarity candidates can change entity UUID binding and dedupe decisions",
+        "source": "graphiti.py:1086-1137; node_operations.py:407-450,519-624"
+      },
+      {
+        "path": "extract_edges -> get_between_nodes/search -> resolve_extracted_edge",
+        "effect": "existing endpoint edges and broad invalidation candidates can change duplicate and contradiction decisions",
+        "source": "edge_operations.py:365-430,623-778"
+      },
+      {
+        "path": "resolve_extracted_edge -> timestamp/expiry/invalidation",
+        "effect": "candidate valid_at/invalid_at state can make an edge active or expired",
+        "source": "edge_operations.py:811-847"
+      },
+      {
+        "path": "add_nodes_and_edges_bulk -> session.execute_write",
+        "effect": "effects are persisted transactionally after preparation/resolution",
+        "source": "bulk_utils.py:128-148"
+      }
+    ],
+    "explicit_sequential_guidance": {
+      "source": "graphiti.py:1056-1059",
+      "text": "each episode is added sequentially and awaited before adding the next one"
+    }
+  },
+  "histories": {
+    "07741c45": {
+      "graph_counts": {"b0_entities": 242, "b1_entities": 258, "b0_edges": 183, "b1_edges": 176},
+      "shared_logical_edges": 3,
+      "matched_temporal_changes": 0,
+      "matched_active_inactive_changes": 0,
+      "source_zero": {
+        "b0_candidate_count_range": [0, 0],
+        "b1_candidate_count_range": [0, 0],
+        "b0_transaction": "tx-00000000",
+        "b1_transaction": "tx-00000033",
+        "node_extraction_tokens": {"b0": [3571, 21], "b1": [3571, 21]},
+        "edge_extraction_tokens": {"b0": [2986, 203], "b1": [2986, 885]}
+      },
+      "future_state_candidate_visible_at_source_zero": false,
+      "out_of_order_b1_publication": true,
+      "representation_assessment": "canonical graph differs materially, but exact semantic output identity is unavailable; not reducible to UUID/order alone from the sealed projection",
+      "qa_targets_affected_state": false,
+      "first_causal_boundary": "UNPROVABLE: extraction output already differs before candidate resolution",
+      "classification": "CAUSAL_ATTRIBUTION_INSUFFICIENT"
+    },
+    "b6019101": {
+      "graph_counts": {"b0_entities": 316, "b1_entities": 388, "b0_edges": 235, "b1_edges": 243},
+      "shared_logical_edges": 10,
+      "matched_temporal_changes": 7,
+      "matched_active_inactive_changes": 6,
+      "concrete_temporal_case": {
+        "source_episode_sequence": 12,
+        "entity_pair": "chicago bulls -> six 1998 HAS_PLAYER edges",
+        "b0": "valid_at=1998-01-01, invalid_at=null, expired_at=null",
+        "b1": "valid_at=1998-01-01, invalid_at=1998-12-31, expired_at set",
+        "b1_trace": "edge invalidation candidates=10; new_edge_expired_count observed",
+        "qa_target": "none of the four QA questions asks about Chicago Bulls state"
+      },
+      "source_zero": {
+        "b0_candidate_count_range": [0, 0],
+        "b1_candidate_count_range": [0, 0],
+        "b0_transaction": "tx-00000000",
+        "b1_transaction": "tx-00000014",
+        "node_extraction_tokens": {"b0": [5341, 23], "b1": [5341, 23]},
+        "edge_extraction_tokens": {"b0": [4758, 8], "b1": [4758, 8]}
+      },
+      "future_state_candidate_visible_at_source_zero": false,
+      "out_of_order_b1_publication": true,
+      "representation_assessment": "real user-semantic temporal difference, not a UUID/order-only difference",
+      "qa_targets_affected_state": false,
+      "first_causal_boundary": "UNPROVABLE: source-12 extraction, candidate context, and timestamp/effect payload identities are not sealed",
+      "classification": "CONCRETE_SEMANTIC_DIVERGENCE_BUT_CAUSE_UNPROVABLE"
+    },
+    "6071bd76": {
+      "graph_counts": {"b0_entities": 207, "b1_entities": 154, "b0_edges": 122, "b1_edges": 115},
+      "shared_logical_edges": 6,
+      "matched_temporal_changes": 0,
+      "matched_active_inactive_changes": 0,
+      "source_zero": {
+        "b0_edges": 9,
+        "b1_edges": 9,
+        "shared_logical_edges": 6,
+        "b0_candidate_count_max": 0,
+        "b1_candidate_count_max": 70,
+        "b0_transaction": "tx-00000000",
+        "b1_transaction": "tx-00000043",
+        "node_extraction_tokens": {"b0": [4969, 170], "b1": [4969, 170]},
+        "edge_extraction_tokens": {"b0": [4533, 920], "b1": [4533, 899]},
+        "difference_shape": "three fact texts differ while endpoints/relation remain equivalent in the matched source-zero subset"
+      },
+      "future_state_candidate_visible_at_source_zero": true,
+      "out_of_order_b1_publication": true,
+      "representation_assessment": "source-zero wording changes are plausibly equivalent, while aggregate graph/entity counts differ; exact extracted outputs and candidate identities are unavailable",
+      "qa_targets_affected_state": false,
+      "first_causal_boundary": "UNPROVABLE: candidate visibility is proven, but extraction payload and resolution decision are not",
+      "classification": "STATE_VISIBILITY_OBSERVED_CAUSAL_ATTRIBUTION_INSUFFICIENT"
+    },
+    "a2f3aa27": {
+      "graph_counts": {"b0_entities": 238, "b1_entities": 296, "b0_edges": 114, "b1_edges": 142},
+      "shared_logical_edges": 9,
+      "matched_temporal_changes": 0,
+      "matched_active_inactive_changes": 0,
+      "source_zero": {
+        "b0_edges": 11,
+        "b1_edges": 11,
+        "shared_logical_edges": 0,
+        "b0_candidate_count_max": 0,
+        "b1_candidate_count_max": 108,
+        "b0_transaction": "tx-00000000",
+        "b1_transaction": "tx-00000033",
+        "node_extraction_tokens": {"b0": [4112, 208], "b1": [4112, 208]},
+        "edge_extraction_tokens": {"b0": [3714, 843], "b1": [3714, 718]},
+        "difference_shape": "B0 nfc-chip -> algorithm/certification/protocol edges become B1 algorithm/certification/protocol -> nfc-chip edges with different relation types/facts"
+      },
+      "future_state_candidate_visible_at_source_zero": true,
+      "out_of_order_b1_publication": true,
+      "representation_assessment": "clear semantic representation difference, not UUID or insertion order",
+      "qa_targets_affected_state": false,
+      "first_causal_boundary": "UNPROVABLE: state visibility and semantic graph difference are observed, but source-zero edge response and candidate identity are not sealed",
+      "classification": "SEMANTIC_DIVERGENCE_AND_STATE_VISIBILITY_BUT_CAUSE_UNPROVABLE"
+    }
+  },
+  "nondeterminism_control": {
+    "frozen_client": {"temperature": 0, "top_p": 1.0, "seed": 20260806},
+    "serial_self_divergence": {
+      "run_pair": "simple qualification B0-A vs B0-B",
+      "entities": [67, 67],
+      "edges": [107, 107],
+      "shared_logical_edges": 105,
+      "only_side_edges": [2, 2],
+      "interpretation": "same serial policy and fixed client settings still produced two logical edge differences; model-serving/output nondeterminism is a live confounder in the sealed evidence"
+    },
+    "missing_identity_fields": [
+      "raw or canonical extraction response digest",
+      "exact prompt/input payload digest",
+      "ordered candidate identity digest",
+      "candidate state version or publication watermark",
+      "batch membership and ordering",
+      "resolution decision digest",
+      "effect/invalidation digest"
+    ]
+  },
+  "qa_alignment": {
+    "question_count": 16,
+    "questions_per_history": 4,
+    "question_type": "knowledge-update for all rows",
+    "mechanism_challenge_present": false,
+    "missing_challenges": [
+      "same entity old-value -> new-value replacement",
+      "same edge-pair contradiction",
+      "duplicate entity merge",
+      "duplicate edge resolution",
+      "temporal invalidation",
+      "stale predecessor read / lost update"
+    ],
+    "questions": {
+      "07741c45": "shoe storage/brands/organization",
+      "b6019101": "film counts and movie-marathon plans",
+      "6071bd76": "French-press ratios, coffee origin, paired tea",
+      "a2f3aa27": "food delivery, Sunday meal, account tracking, collaboration"
+    }
+  },
+  "required_future_workload_contract": [
+    "same entity or same edge pair appears in multiple ordered episodes",
+    "old fact -> new fact or explicit contradiction/invalidation",
+    "Graphiti resolution/invalidation path is actually triggered",
+    "swapping execution order changes the resolved state",
+    "QA query directly targets the changed state",
+    "serial repeat stability and paired response/candidate/effect digests are recorded"
+  ]
+}

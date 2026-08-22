@@ -1,0 +1,60 @@
+{
+  "build_makespan_ns": 4434207977,
+  "durable_frontier": 1,
+  "history_id": "07741c45",
+  "logical_work_summary": {
+    "duplicates": 0,
+    "logical_captured": 4,
+    "logical_consumed": 4,
+    "unconsumed": 0
+  },
+  "method": "V5_VERSIONED_ORACLE_HOIST",
+  "namespace": "membind-v5-p9-p9-smoke-20260822-07741c45-e2e470d4fa",
+  "native_intervals": [
+    {
+      "end_ns": 687626496983217,
+      "source_sequence": 0,
+      "start_ns": 687624549203546
+    },
+    {
+      "end_ns": 687628177603367,
+      "source_sequence": 1,
+      "start_ns": 687626934794263
+    }
+  ],
+  "oracle_binding_summary": {
+    "duplicates": 0,
+    "logical_captured": 4,
+    "logical_consumed": 4,
+    "provider_native_calls": 3,
+    "provider_replay_calls": 0,
+    "replay_binding_calls": 4,
+    "unconsumed": 0
+  },
+  "overlap_evidence": {
+    "future_prepare_overlapped_native": true,
+    "native_count": 2,
+    "overlap_pairs": [
+      {
+        "native_source_sequence": 0,
+        "prepare_source_sequence": 1
+      }
+    ],
+    "preparation_count": 2
+  },
+  "preparation_intervals": [
+    {
+      "end_ns": 687624549176413,
+      "source_sequence": 0,
+      "start_ns": 687623743534943
+    },
+    {
+      "end_ns": 687626934760314,
+      "source_sequence": 1,
+      "start_ns": 687623746696491
+    }
+  ],
+  "schema_version": "membind.v5.p9-history-result.v1",
+  "source_count": 2,
+  "status": "PASS"
+}
