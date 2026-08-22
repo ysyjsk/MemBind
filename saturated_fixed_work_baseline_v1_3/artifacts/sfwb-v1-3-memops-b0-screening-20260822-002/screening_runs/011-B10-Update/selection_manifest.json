@@ -1,0 +1,124 @@
+{
+  "cohort_id": "sfwb-v1-3-memops-b0-screening-20260822-002",
+  "cohort_manifest_sha256": "779c4d6596d53c27ce49079cc7b68543904a9ef0131892d83aacd9068a812ed6",
+  "cohort_sample_id": "B10__Update",
+  "official_qa_evaluator": {
+    "path": "/data/predator/ly/third_party/MemOps/5.5-evaluate_operation_metrics.py",
+    "prompt_builder": "build_evaluation_prompt",
+    "result_parser": "parse_judge_metrics",
+    "sha256": "17c24362c174239eb7ef5e543bc651afed60ae445a4becd49acf24f6d3c646f0"
+  },
+  "official_sample_id": "B10",
+  "payload_sha256": "f3dee61a7f932778110470bde3a0e91c5e7fc51f7f74bd6e836cea0d43597bc9",
+  "samples": [
+    {
+      "cohort_sample_id": "B10__Update",
+      "history_id": "memops-b10-update",
+      "latest_confirmed_value": "1.9 kg",
+      "official_sample_id": "B10",
+      "operation_type": "Update",
+      "qa": [
+        {
+          "evaluation_setting": "adjacent_operation",
+          "evaluation_type": "CandidateDisambiguation",
+          "expected_answer": "1.9 kg",
+          "gold_memory_state": "Mochi's confirmed current weight is 1.9 kg from the most recent actual weigh-in. 1.2 kg was the user's initial misremembering. 1.4 kg was the corrected first-checkup weight, now superseded by the follow-up. 2.3 kg is only a vet tech's prediction for a future visit, not a confirmed measurement.",
+          "gold_provenance": [
+            {
+              "quote": "So I took Mochi in for a follow-up weigh-in last week and she's now at 1.9 kg. She's been growing so fast.",
+              "segment_index": 2,
+              "turn_index": 3
+            },
+            {
+              "quote": "The vet tech mentioned she'll probably be around 2.3 kg by then based on her growth curve.",
+              "segment_index": 3,
+              "turn_index": 5
+            }
+          ],
+          "judge_rubric": {
+            "acceptable_paraphrases": [
+              "1.9"
+            ],
+            "harmful_extra": [
+              "selecting 2.3 kg because it is the most recent number mentioned",
+              "selecting 1.4 kg because it was the corrected first-checkup weight"
+            ],
+            "harmless_extra": [],
+            "must_include": [
+              "1.9 kg"
+            ],
+            "must_not_include": [
+              "1.2 kg as the answer",
+              "1.4 kg as the answer",
+              "2.3 kg as the answer"
+            ]
+          },
+          "question_id": "B10:p4_candidate_disambiguation:adjacent_operation",
+          "question_pair_id": "p4_candidate_disambiguation"
+        },
+        {
+          "evaluation_setting": "longitudinal_operation",
+          "evaluation_type": "CandidateDisambiguation",
+          "expected_answer": "1.9 kg",
+          "gold_memory_state": "Mochi's confirmed current weight is 1.9 kg from the most recent actual weigh-in. 1.2 kg was the user's initial misremembering. 1.4 kg was the corrected first-checkup weight, now superseded by the follow-up. 2.3 kg is only a vet tech's prediction for a future visit, not a confirmed measurement.",
+          "gold_provenance": [
+            {
+              "quote": "So I took Mochi in for a follow-up weigh-in last week and she's now at 1.9 kg. She's been growing so fast.",
+              "segment_index": 2,
+              "turn_index": 3
+            },
+            {
+              "quote": "The vet tech mentioned she'll probably be around 2.3 kg by then based on her growth curve.",
+              "segment_index": 3,
+              "turn_index": 5
+            }
+          ],
+          "judge_rubric": {
+            "acceptable_paraphrases": [
+              "1.9"
+            ],
+            "harmful_extra": [
+              "selecting 2.3 kg because it is the most recent number mentioned",
+              "selecting 1.4 kg because it was the corrected first-checkup weight"
+            ],
+            "harmless_extra": [],
+            "must_include": [
+              "1.9 kg"
+            ],
+            "must_not_include": [
+              "1.2 kg as the answer",
+              "1.4 kg as the answer",
+              "2.3 kg as the answer"
+            ]
+          },
+          "question_id": "B10:p4_candidate_disambiguation:longitudinal_operation",
+          "question_pair_id": "p4_candidate_disambiguation"
+        }
+      ],
+      "sample_id": "B10__Update",
+      "source_file": "/data/predator/ly/third_party/MemOps/generated_result/2-evidence_conversation/B10_update.json",
+      "source_sha256": "bfa32752bb86e13664b7355486afb108c5d586c9bab07ee82e66f1dce5d49e20",
+      "special_semantics_present": true,
+      "stale_confirmed_values": [
+        "1.2 kg",
+        "1.4 kg"
+      ],
+      "target_id": "mochi_checkup_weight",
+      "target_name": "Mochi's weight at vet checkup",
+      "transitions": [
+        {
+          "new_operation_id": "op3",
+          "new_segment_index": 2,
+          "new_value": "1.9 kg",
+          "old_operation_id": "op2",
+          "old_segment_index": 1,
+          "old_value": "1.2 kg",
+          "target_id": "mochi_checkup_weight",
+          "target_name": "Mochi's weight at vet checkup"
+        }
+      ]
+    }
+  ],
+  "schema_version": "sfwb.v1.3.memops-b0-screening-run-selection.v1",
+  "status": "OFFLINE_RUN_SELECTION_FROZEN"
+}

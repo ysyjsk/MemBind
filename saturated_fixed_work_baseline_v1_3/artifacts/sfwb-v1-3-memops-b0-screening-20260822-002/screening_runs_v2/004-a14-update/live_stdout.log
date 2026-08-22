@@ -1,0 +1,301 @@
+Target entity not found in nodes for edge relation: SUBMITTED_APPLICATION_FOR
+Target entity not found in nodes for edge relation: HAS_PASSPORT_NUMBER
+Target entity not found in nodes for edge relation: MOTIVATED_BY
+{
+  "schema_version": "sfwb.v1.3.memops-live-qualification.v1",
+  "status": "LIVE_COMPLETE",
+  "qualification_root": "artifacts/sfwb-v1-3-memops-b0-screening-20260822-002/screening_runs_v2/004-a14-update",
+  "methods": [
+    "B0_NATIVE_SERIAL"
+  ],
+  "sample_ids": [
+    "A14__Update"
+  ],
+  "outputs": [
+    {
+      "sample_id": "A14__Update",
+      "method": "B0_NATIVE_SERIAL",
+      "block_id": "memops-001-A14__Update-B0_NATIVE_SERIAL",
+      "namespace": "004-a14-update-MEMOPS-A14__Update-B0_NATIVE_SERIAL-attempt-001",
+      "attempt_root": "artifacts/sfwb-v1-3-memops-b0-screening-20260822-002/screening_runs_v2/004-a14-update/blocks/memops-001-A14__Update-B0_NATIVE_SERIAL/attempt-001",
+      "workload_sha256": "548ca9a8691106e3e1c0914193e1fdc1fcdecb5a57c6d1ec473280df403c7f46",
+      "metrics": {
+        "schema_version": "membind.saturated-fixed-work.block-result.v1",
+        "method": "B0_NATIVE_SERIAL",
+        "history_id": "memops-a14-update",
+        "namespace": "004-a14-update-MEMOPS-A14__Update-B0_NATIVE_SERIAL-attempt-001",
+        "valid": true,
+        "episode_count": 3,
+        "created_sequences": [
+          0,
+          1,
+          2
+        ],
+        "feeder_workload_await_count": 3,
+        "application_gate_count": 0,
+        "artificial_sleep_count": 0,
+        "configured_max_inflight": null,
+        "t0_ns": 9354565197102,
+        "t_durable_complete_ns": 9414918031491,
+        "t_validated_seal_ns": 9415042519050,
+        "build_makespan_ns": 60352834389,
+        "drain_tail_ns": 28688741045,
+        "validation_seal_latency_ns": 124487559,
+        "canonical_graph_hash": "bf34741cd999e57a24b17a61b4848b70a9fff3ed6b4bbf3a3ffc4c2af205bcda",
+        "seal_payload_sha256": "e1d61e968b27a2ba55cfe2df5aa5420f44478aa9d489e17e17a59ee9185ad5bf",
+        "llm_input_tokens": 38496,
+        "llm_logical_calls": 20,
+        "llm_transport_attempts": 20,
+        "embedding_items": 74,
+        "db_writes": 3,
+        "instrumentation_error_spans": 0,
+        "llm_duration_p50_s": 0.829682139,
+        "llm_duration_p95_s": 13.96030422,
+        "llm_duration_p99_s": 18.214017185,
+        "embedding_duration_p50_s": 0.016767639,
+        "embedding_duration_p95_s": 0.031209212,
+        "embedding_duration_p99_s": 0.032023847,
+        "db_duration_p50_s": 0.005386065,
+        "db_duration_p95_s": 0.028948601,
+        "db_duration_p99_s": 0.033408398,
+        "llm_metrics_availability": "MEASURED",
+        "embedding_metrics_availability": "MEASURED",
+        "db_metrics_availability": "MEASURED",
+        "direct_semantic_violations": 0,
+        "direct_semantic_evidence_availability": "DERIVED",
+        "direct_semantic_violations_by_observation": {
+          "future_persistent_state_read": 0,
+          "stale_predecessor_write": 0,
+          "wrong_state_write": 0
+        },
+        "direct_semantic_evidence_records": [],
+        "ordering_observations_counted_as_direct": 0,
+        "block_id": "memops-001-A14__Update-B0_NATIVE_SERIAL",
+        "attempt_id": "attempt-001",
+        "attempt_ordinal": 1,
+        "source_tokens": 2865,
+        "build_makespan_s": 60.352834389,
+        "source_tokens_per_s": 47.470844228024845,
+        "whole_update_active_mean": 1.0,
+        "whole_update_active_max": 1,
+        "whole_update_active_k_time_ns": {
+          "1": 60341348233
+        },
+        "inversion_count": 0,
+        "inversion_density": 0.0,
+        "kendall_tau": 1.0,
+        "max_displacement": 0,
+        "canonical_exact_match": true,
+        "phase_metrics_availability": "MEASURED",
+        "resource_availability": "NOT_EVALUATED",
+        "sampler_coverage": null,
+        "sampler_source_coverage": {},
+        "sampler_gap_p95_s": null,
+        "sampler_gap_max_s": null,
+        "execution_identity_sha256": "35c3ce21eddd57a52a44a552cdb6335b409bfdcafd5f4126c51a8c11fcf8d1c2",
+        "attempt_root": "artifacts/sfwb-v1-3-memops-b0-screening-20260822-002/screening_runs_v2/004-a14-update/blocks/memops-001-A14__Update-B0_NATIVE_SERIAL/attempt-001"
+      },
+      "state_inspection": {
+        "status": "PASS",
+        "target_id": "brazilian_passport_number",
+        "target_name": "Brazilian passport number",
+        "expected_current_value": "HG284139",
+        "observation_time": "2000-01-01T00:10:00Z",
+        "stale_confirmed_values": [
+          "HG284913",
+          "HG284193"
+        ],
+        "current_value_active": true,
+        "current_value_in_entity_summary": true,
+        "active_current_mentions": 1,
+        "stale_active_mentions": [],
+        "active_stale_conflicts": [],
+        "active_transition_mentions": [],
+        "inactive_mentions": [],
+        "canonical_graph_used_for_uuid_equality": false
+      },
+      "qa_rows": [
+        {
+          "recall_at_1": 0.0,
+          "recall_at_3": 1.0,
+          "recall_at_5": 1.0,
+          "recall_at_10": 1.0,
+          "mrr": 0.3333333333333333,
+          "ndcg_at_10": 0.5,
+          "gold_ranks": [
+            3
+          ],
+          "relevance_unit": "LONGMEMEVAL_GOLD_SESSION",
+          "correct": true,
+          "invalid": false,
+          "invalid_reason": null,
+          "failure_layer": null,
+          "construction_calls": 0,
+          "graph_write_attempts": 0,
+          "sample_id": "A14__Update",
+          "question_id": "A14__Update:p4_candidate_disambiguation:adjacent_operation",
+          "question_pair_id": "p4_candidate_disambiguation",
+          "evaluation_type": "CandidateDisambiguation",
+          "evaluation_setting": "adjacent_operation",
+          "expected_answer": "HG284139",
+          "gold_memory_state": "Brazilian passport number is HG284139, confirmed from the physical passport. HG284913 and HG284193 are superseded stale values. HG284931 is a tentative consulate system error pending correction. HG284319 belongs to a different applicant.",
+          "judge_rubric": {
+            "acceptable_paraphrases": [],
+            "harmful_extra": [
+              "selecting any value other than HG284139"
+            ],
+            "harmless_extra": [],
+            "must_include": [
+              "HG284139"
+            ],
+            "must_not_include": [
+              "HG284913",
+              "HG284193",
+              "HG284931",
+              "HG284319"
+            ]
+          },
+          "gold_provenance": [
+            {
+              "quote": "I pulled out the physical passport just now and the number printed on it is HG284139. I've been reading the last four digits wrong this whole time",
+              "segment_index": 2,
+              "turn_index": 3
+            }
+          ],
+          "memops_official_judge": {
+            "answer_score": 1,
+            "judge_operation_detection": {
+              "tp": 1,
+              "fp": 0,
+              "fn": 0
+            },
+            "judge_provenance_support": 1,
+            "extra_detail_type": "none",
+            "reason": "The model correctly selected the confirmed current value HG284139 as the Brazilian passport number, which is the expected answer. No extra details were included.",
+            "stale_value": 0,
+            "extra_detail_postcheck_applied": false,
+            "extra_detail_postcheck_action": "none",
+            "official_prompt_builder": "build_evaluation_prompt",
+            "official_result_parser": "parse_judge_metrics",
+            "prompt_sha256": "4d5732ba3cd689d038d903589f83d10561c137c11464aa9a77516a9978d0a747",
+            "response_sha256": "fdadba3a03d37e2c12d67ced6c310409dfca00e30cd011bca3504d3822b51afb",
+            "prompt_tokens": 6173,
+            "completion_tokens": 106,
+            "finish_reason": "stop",
+            "raw_prompt_persisted": false,
+            "raw_response_persisted": false
+          }
+        },
+        {
+          "recall_at_1": 0.0,
+          "recall_at_3": 1.0,
+          "recall_at_5": 1.0,
+          "recall_at_10": 1.0,
+          "mrr": 0.3333333333333333,
+          "ndcg_at_10": 0.5,
+          "gold_ranks": [
+            3
+          ],
+          "relevance_unit": "LONGMEMEVAL_GOLD_SESSION",
+          "correct": true,
+          "invalid": false,
+          "invalid_reason": null,
+          "failure_layer": null,
+          "construction_calls": 0,
+          "graph_write_attempts": 0,
+          "sample_id": "A14__Update",
+          "question_id": "A14__Update:p4_candidate_disambiguation:longitudinal_operation",
+          "question_pair_id": "p4_candidate_disambiguation",
+          "evaluation_type": "CandidateDisambiguation",
+          "evaluation_setting": "longitudinal_operation",
+          "expected_answer": "HG284139",
+          "gold_memory_state": "Brazilian passport number is HG284139, confirmed from the physical passport. HG284913 and HG284193 are superseded stale values. HG284931 is a tentative consulate system error pending correction. HG284319 belongs to a different applicant.",
+          "judge_rubric": {
+            "acceptable_paraphrases": [],
+            "harmful_extra": [
+              "selecting any value other than HG284139"
+            ],
+            "harmless_extra": [],
+            "must_include": [
+              "HG284139"
+            ],
+            "must_not_include": [
+              "HG284913",
+              "HG284193",
+              "HG284931",
+              "HG284319"
+            ]
+          },
+          "gold_provenance": [
+            {
+              "quote": "I pulled out the physical passport just now and the number printed on it is HG284139. I've been reading the last four digits wrong this whole time",
+              "segment_index": 2,
+              "turn_index": 3
+            }
+          ],
+          "memops_official_judge": {
+            "answer_score": 1,
+            "judge_operation_detection": {
+              "tp": 1,
+              "fp": 0,
+              "fn": 0
+            },
+            "judge_provenance_support": 1,
+            "extra_detail_type": "none",
+            "reason": "The model correctly selected the confirmed current value HG284139, which is the correct passport number from the physical document. No harmful or conflicting extra details were included.",
+            "stale_value": 0,
+            "extra_detail_postcheck_applied": false,
+            "extra_detail_postcheck_action": "none",
+            "official_prompt_builder": "build_evaluation_prompt",
+            "official_result_parser": "parse_judge_metrics",
+            "prompt_sha256": "4d5732ba3cd689d038d903589f83d10561c137c11464aa9a77516a9978d0a747",
+            "response_sha256": "529ada4f372f039e344da51f707622f24df808b3154246db909ae42afdbfa687",
+            "prompt_tokens": 6173,
+            "completion_tokens": 105,
+            "finish_reason": "stop",
+            "raw_prompt_persisted": false,
+            "raw_response_persisted": false
+          }
+        }
+      ],
+      "qa_summary": {
+        "sample_id": "A14__Update",
+        "method": "B0_NATIVE_SERIAL",
+        "namespace": "004-a14-update-MEMOPS-A14__Update-B0_NATIVE_SERIAL-attempt-001",
+        "rows": 2,
+        "correct_rows": 2,
+        "all_correct": true,
+        "stale_value_errors": 0,
+        "graph_write_attempts": 0,
+        "construction_calls": 0,
+        "graph_hash_before_qa": "bf34741cd999e57a24b17a61b4848b70a9fff3ed6b4bbf3a3ffc4c2af205bcda",
+        "graph_hash_after_qa": "bf34741cd999e57a24b17a61b4848b70a9fff3ed6b4bbf3a3ffc4c2af205bcda",
+        "graph_mutated": false,
+        "state_inspection": {
+          "status": "PASS",
+          "target_id": "brazilian_passport_number",
+          "target_name": "Brazilian passport number",
+          "expected_current_value": "HG284139",
+          "observation_time": "2000-01-01T00:10:00Z",
+          "stale_confirmed_values": [
+            "HG284913",
+            "HG284193"
+          ],
+          "current_value_active": true,
+          "current_value_in_entity_summary": true,
+          "active_current_mentions": 1,
+          "stale_active_mentions": [],
+          "active_stale_conflicts": [],
+          "active_transition_mentions": [],
+          "inactive_mentions": [],
+          "canonical_graph_used_for_uuid_equality": false
+        }
+      }
+    }
+  ],
+  "b0_gate": {
+    "status": "B0_QUALIFIED",
+    "failures": [],
+    "sample_count": 1
+  }
+}

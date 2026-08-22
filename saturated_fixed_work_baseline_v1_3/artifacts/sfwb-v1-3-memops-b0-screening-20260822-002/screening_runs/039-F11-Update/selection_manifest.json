@@ -1,0 +1,128 @@
+{
+  "cohort_id": "sfwb-v1-3-memops-b0-screening-20260822-002",
+  "cohort_manifest_sha256": "779c4d6596d53c27ce49079cc7b68543904a9ef0131892d83aacd9068a812ed6",
+  "cohort_sample_id": "F11__Update",
+  "official_qa_evaluator": {
+    "path": "/data/predator/ly/third_party/MemOps/5.5-evaluate_operation_metrics.py",
+    "prompt_builder": "build_evaluation_prompt",
+    "result_parser": "parse_judge_metrics",
+    "sha256": "17c24362c174239eb7ef5e543bc651afed60ae445a4becd49acf24f6d3c646f0"
+  },
+  "official_sample_id": "F11",
+  "payload_sha256": "20812c713fd7dfcc23e39e3030b8728ecd83d4dac23d442bd247d549f7cc348c",
+  "samples": [
+    {
+      "cohort_sample_id": "F11__Update",
+      "history_id": "memops-f11-update",
+      "latest_confirmed_value": "18%",
+      "official_sample_id": "F11",
+      "operation_type": "Update",
+      "qa": [
+        {
+          "evaluation_setting": "adjacent_operation",
+          "evaluation_type": "CandidateDisambiguation",
+          "expected_answer": "18%",
+          "gold_memory_state": "BND bond allocation is currently 18% (confirmed). 15% was the initial allocation (stale). 23% was an intermediate allocation later reversed (stale). 30% is a tentative advisor proposal not yet approved or executed.",
+          "gold_provenance": [
+            {
+              "quote": "I actually sold some of the BND I just bought and put it back into VTI. Bonds are back down to about 18% now",
+              "segment_index": 2,
+              "turn_index": 3
+            },
+            {
+              "quote": "For now, my bonds are still at 18% since nothing has actually been executed. Let's leave the record as-is.",
+              "segment_index": 3,
+              "turn_index": 7
+            }
+          ],
+          "judge_rubric": {
+            "acceptable_paraphrases": [
+              "about 18%",
+              "approximately 18%"
+            ],
+            "harmful_extra": [
+              "selecting any value other than 18%"
+            ],
+            "harmless_extra": [
+              "noting that 30% is a pending proposal"
+            ],
+            "must_include": [
+              "18%"
+            ],
+            "must_not_include": [
+              "15%",
+              "23%",
+              "30%"
+            ]
+          },
+          "question_id": "F11:p4_candidate_disambiguation:adjacent_operation",
+          "question_pair_id": "p4_candidate_disambiguation"
+        },
+        {
+          "evaluation_setting": "longitudinal_operation",
+          "evaluation_type": "CandidateDisambiguation",
+          "expected_answer": "18%",
+          "gold_memory_state": "BND bond allocation is currently 18% (confirmed). 15% was the initial allocation (stale). 23% was an intermediate allocation later reversed (stale). 30% is a tentative advisor proposal not yet approved or executed.",
+          "gold_provenance": [
+            {
+              "quote": "I actually sold some of the BND I just bought and put it back into VTI. Bonds are back down to about 18% now",
+              "segment_index": 2,
+              "turn_index": 3
+            },
+            {
+              "quote": "For now, my bonds are still at 18% since nothing has actually been executed. Let's leave the record as-is.",
+              "segment_index": 3,
+              "turn_index": 7
+            }
+          ],
+          "judge_rubric": {
+            "acceptable_paraphrases": [
+              "about 18%",
+              "approximately 18%"
+            ],
+            "harmful_extra": [
+              "selecting any value other than 18%"
+            ],
+            "harmless_extra": [
+              "noting that 30% is a pending proposal"
+            ],
+            "must_include": [
+              "18%"
+            ],
+            "must_not_include": [
+              "15%",
+              "23%",
+              "30%"
+            ]
+          },
+          "question_id": "F11:p4_candidate_disambiguation:longitudinal_operation",
+          "question_pair_id": "p4_candidate_disambiguation"
+        }
+      ],
+      "sample_id": "F11__Update",
+      "source_file": "/data/predator/ly/third_party/MemOps/generated_result/2-evidence_conversation/F11_update.json",
+      "source_sha256": "840e5d960b7e9ec6b704ca80a434336b0716bca220633ed822895eebb63fa148",
+      "special_semantics_present": true,
+      "stale_confirmed_values": [
+        "15%",
+        "23%"
+      ],
+      "target_id": "bnd_allocation_pct",
+      "target_name": "BND bond allocation percentage in Fidelity brokerage",
+      "transitions": [
+        {
+          "new_operation_id": "op3",
+          "new_segment_index": 2,
+          "new_value": "18%",
+          "old_operation_id": "op2",
+          "old_segment_index": 1,
+          "old_value": "15%",
+          "target_id": "bnd_allocation_pct",
+          "target_name": "BND bond allocation percentage in Fidelity brokerage"
+        }
+      ]
+    }
+  ],
+  "schema_version": "sfwb.v1.3.memops-b0-screening-run-selection.v1",
+  "status": "OFFLINE_RUN_SELECTION_FROZEN"
+}

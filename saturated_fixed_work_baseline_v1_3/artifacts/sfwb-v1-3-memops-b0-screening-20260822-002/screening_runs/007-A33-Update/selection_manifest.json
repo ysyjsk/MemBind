@@ -1,0 +1,130 @@
+{
+  "cohort_id": "sfwb-v1-3-memops-b0-screening-20260822-002",
+  "cohort_manifest_sha256": "779c4d6596d53c27ce49079cc7b68543904a9ef0131892d83aacd9068a812ed6",
+  "cohort_sample_id": "A33__Update",
+  "official_qa_evaluator": {
+    "path": "/data/predator/ly/third_party/MemOps/5.5-evaluate_operation_metrics.py",
+    "prompt_builder": "build_evaluation_prompt",
+    "result_parser": "parse_judge_metrics",
+    "sha256": "17c24362c174239eb7ef5e543bc651afed60ae445a4becd49acf24f6d3c646f0"
+  },
+  "official_sample_id": "A33",
+  "payload_sha256": "2a7c5b947e5a48601870c5bb1796960403743e23ac7e066d6da5ee68bcbce234",
+  "samples": [
+    {
+      "cohort_sample_id": "A33__Update",
+      "history_id": "memops-a33-update",
+      "latest_confirmed_value": "5'11¼\"",
+      "official_sample_id": "A33",
+      "operation_type": "Update",
+      "qa": [
+        {
+          "evaluation_setting": "adjacent_operation",
+          "evaluation_type": "CandidateDisambiguation",
+          "expected_answer": "5'11¼\"",
+          "gold_memory_state": "Current confirmed height: 5'11¼\" (home measurement, morning, barefoot). 6'0\" is the original self-report, superseded. 5'11\" is the doctor's measurement, superseded by the home measurement. 5'11½\" is a tentative future projection from the chiropractor, not yet realized.",
+          "gold_provenance": [
+            {
+              "quote": "I measured myself at home this morning against the door frame with a tape measure and I got 5'11¼\". First thing in the morning, barefoot, standing straight.",
+              "segment_index": 2,
+              "turn_index": 3
+            },
+            {
+              "quote": "The chiropractor told me that after a few more sessions my spine decompression should add about a quarter inch, putting me right at 5'11½\". He seemed pretty confident about it.",
+              "segment_index": 3,
+              "turn_index": 7
+            }
+          ],
+          "judge_rubric": {
+            "acceptable_paraphrases": [
+              "5 feet 11 and a quarter inches",
+              "5'11.25\""
+            ],
+            "harmful_extra": [
+              "selecting 6'0\" as current height",
+              "selecting 5'11½\" as current height",
+              "selecting 5'11\" as current height"
+            ],
+            "harmless_extra": [
+              "noting this is a morning barefoot measurement"
+            ],
+            "must_include": [
+              "5'11¼\""
+            ],
+            "must_not_include": [
+              "6'0\"",
+              "5'11½\""
+            ]
+          },
+          "question_id": "A33:p4_candidate_disambiguation:adjacent_operation",
+          "question_pair_id": "p4_candidate_disambiguation"
+        },
+        {
+          "evaluation_setting": "longitudinal_operation",
+          "evaluation_type": "CandidateDisambiguation",
+          "expected_answer": "5'11¼\"",
+          "gold_memory_state": "Current confirmed height: 5'11¼\" (home measurement, morning, barefoot). 6'0\" is the original self-report, superseded. 5'11\" is the doctor's measurement, superseded by the home measurement. 5'11½\" is a tentative future projection from the chiropractor, not yet realized.",
+          "gold_provenance": [
+            {
+              "quote": "I measured myself at home this morning against the door frame with a tape measure and I got 5'11¼\". First thing in the morning, barefoot, standing straight.",
+              "segment_index": 2,
+              "turn_index": 3
+            },
+            {
+              "quote": "The chiropractor told me that after a few more sessions my spine decompression should add about a quarter inch, putting me right at 5'11½\". He seemed pretty confident about it.",
+              "segment_index": 3,
+              "turn_index": 7
+            }
+          ],
+          "judge_rubric": {
+            "acceptable_paraphrases": [
+              "5 feet 11 and a quarter inches",
+              "5'11.25\""
+            ],
+            "harmful_extra": [
+              "selecting 6'0\" as current height",
+              "selecting 5'11½\" as current height",
+              "selecting 5'11\" as current height"
+            ],
+            "harmless_extra": [
+              "noting this is a morning barefoot measurement"
+            ],
+            "must_include": [
+              "5'11¼\""
+            ],
+            "must_not_include": [
+              "6'0\"",
+              "5'11½\""
+            ]
+          },
+          "question_id": "A33:p4_candidate_disambiguation:longitudinal_operation",
+          "question_pair_id": "p4_candidate_disambiguation"
+        }
+      ],
+      "sample_id": "A33__Update",
+      "source_file": "/data/predator/ly/third_party/MemOps/generated_result/2-evidence_conversation/A33_update.json",
+      "source_sha256": "003903f125cd990a3a2885b68b85228599f9d312bcb9dc782831b40fc50780c4",
+      "special_semantics_present": true,
+      "stale_confirmed_values": [
+        "6'0\"",
+        "5'11\""
+      ],
+      "target_id": "current_height",
+      "target_name": "user's current height",
+      "transitions": [
+        {
+          "new_operation_id": "op3",
+          "new_segment_index": 2,
+          "new_value": "5'11¼\"",
+          "old_operation_id": "op2",
+          "old_segment_index": 1,
+          "old_value": "6'0\"",
+          "target_id": "current_height",
+          "target_name": "user's current height"
+        }
+      ]
+    }
+  ],
+  "schema_version": "sfwb.v1.3.memops-b0-screening-run-selection.v1",
+  "status": "OFFLINE_RUN_SELECTION_FROZEN"
+}

@@ -1,0 +1,118 @@
+{
+  "cohort_id": "sfwb-v1-3-memops-b0-screening-20260822-002",
+  "cohort_manifest_sha256": "779c4d6596d53c27ce49079cc7b68543904a9ef0131892d83aacd9068a812ed6",
+  "cohort_sample_id": "C11__Update",
+  "official_qa_evaluator": {
+    "path": "/data/predator/ly/third_party/MemOps/5.5-evaluate_operation_metrics.py",
+    "prompt_builder": "build_evaluation_prompt",
+    "result_parser": "parse_judge_metrics",
+    "sha256": "17c24362c174239eb7ef5e543bc651afed60ae445a4becd49acf24f6d3c646f0"
+  },
+  "official_sample_id": "C11",
+  "payload_sha256": "3bf73d0b463c4b176dd583bdedff1c13eecd301baa380c2604e908b6b5e61341",
+  "samples": [
+    {
+      "cohort_sample_id": "C11__Update",
+      "history_id": "memops-c11-update",
+      "latest_confirmed_value": "May 17",
+      "official_sample_id": "C11",
+      "operation_type": "Update",
+      "qa": [
+        {
+          "evaluation_setting": "adjacent_operation",
+          "evaluation_type": "CandidateDisambiguation",
+          "expected_answer": "May 17",
+          "gold_memory_state": "Current confirmed exam date: May 17. May 24 is tentative and not adopted. May 10 and April 19 are superseded.",
+          "gold_provenance": [
+            {
+              "quote": "I actually had to move the C11 date again. Pearson VUE called and said there's a system maintenance window on May 10, so they bumped me to May 17",
+              "segment_index": 2,
+              "turn_index": 3
+            },
+            {
+              "quote": "Kevin suggested we both sit on May 24 together so we can study as a pair the week before. The Pearson VUE site shows a slot open on May 24 and I'm seriously considering switching to that",
+              "segment_index": 3,
+              "turn_index": 5
+            }
+          ],
+          "judge_rubric": {
+            "acceptable_paraphrases": [],
+            "harmful_extra": [
+              "selecting any date other than May 17"
+            ],
+            "harmless_extra": [],
+            "must_include": [
+              "May 17"
+            ],
+            "must_not_include": [
+              "May 24",
+              "May 10",
+              "April 19"
+            ]
+          },
+          "question_id": "C11:p4_candidate_disambiguation:adjacent_operation",
+          "question_pair_id": "p4_candidate_disambiguation"
+        },
+        {
+          "evaluation_setting": "longitudinal_operation",
+          "evaluation_type": "CandidateDisambiguation",
+          "expected_answer": "May 17",
+          "gold_memory_state": "Current confirmed exam date: May 17. May 24 is tentative and not adopted. May 10 and April 19 are superseded.",
+          "gold_provenance": [
+            {
+              "quote": "I actually had to move the C11 date again. Pearson VUE called and said there's a system maintenance window on May 10, so they bumped me to May 17",
+              "segment_index": 2,
+              "turn_index": 3
+            },
+            {
+              "quote": "Kevin suggested we both sit on May 24 together so we can study as a pair the week before. The Pearson VUE site shows a slot open on May 24 and I'm seriously considering switching to that",
+              "segment_index": 3,
+              "turn_index": 5
+            }
+          ],
+          "judge_rubric": {
+            "acceptable_paraphrases": [],
+            "harmful_extra": [
+              "selecting any date other than May 17"
+            ],
+            "harmless_extra": [],
+            "must_include": [
+              "May 17"
+            ],
+            "must_not_include": [
+              "May 24",
+              "May 10",
+              "April 19"
+            ]
+          },
+          "question_id": "C11:p4_candidate_disambiguation:longitudinal_operation",
+          "question_pair_id": "p4_candidate_disambiguation"
+        }
+      ],
+      "sample_id": "C11__Update",
+      "source_file": "/data/predator/ly/third_party/MemOps/generated_result/2-evidence_conversation/C11_update.json",
+      "source_sha256": "c7a3702c90f42c03a1db9dcd0eea9de913550c3479aa5ecc3ba8f8b120722127",
+      "special_semantics_present": true,
+      "stale_confirmed_values": [
+        "April 19",
+        "May 10"
+      ],
+      "target_id": "c11_exam_date",
+      "target_name": "C11 exam date",
+      "transitions": [
+        {
+          "new_operation_id": "op3",
+          "new_segment_index": 2,
+          "new_value": "May 17",
+          "old_operation_id": "op2",
+          "old_segment_index": 1,
+          "old_value": "April 19",
+          "target_id": "c11_exam_date",
+          "target_name": "C11 exam date"
+        }
+      ]
+    }
+  ],
+  "schema_version": "sfwb.v1.3.memops-b0-screening-run-selection.v1",
+  "status": "OFFLINE_RUN_SELECTION_FROZEN"
+}

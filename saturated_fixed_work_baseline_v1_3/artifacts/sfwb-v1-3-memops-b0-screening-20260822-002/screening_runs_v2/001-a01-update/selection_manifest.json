@@ -1,0 +1,120 @@
+{
+  "cohort_id": "sfwb-v1-3-memops-b0-screening-20260822-002",
+  "cohort_manifest_sha256": "779c4d6596d53c27ce49079cc7b68543904a9ef0131892d83aacd9068a812ed6",
+  "cohort_sample_id": "A01__Update",
+  "official_qa_evaluator": {
+    "path": "/data/predator/ly/third_party/MemOps/5.5-evaluate_operation_metrics.py",
+    "prompt_builder": "build_evaluation_prompt",
+    "result_parser": "parse_judge_metrics",
+    "sha256": "17c24362c174239eb7ef5e543bc651afed60ae445a4becd49acf24f6d3c646f0"
+  },
+  "official_sample_id": "A01",
+  "payload_sha256": "97eac11f40d7675d65d63c055de669e27df18f0fdc3e5214d0606742778fbbea",
+  "samples": [
+    {
+      "cohort_sample_id": "A01__Update",
+      "history_id": "memops-a01-update",
+      "latest_confirmed_value": "Senior Data Analyst",
+      "official_sample_id": "A01",
+      "operation_type": "Update",
+      "qa": [
+        {
+          "evaluation_setting": "adjacent_operation",
+          "evaluation_type": "CandidateDisambiguation",
+          "expected_answer": "Senior Data Analyst",
+          "gold_memory_state": "Current confirmed title: Senior Data Analyst. Prior titles (Junior Data Analyst, Data Analyst) are superseded. Lead Data Analyst is a planned but unfinalized future consolidation.",
+          "gold_provenance": [
+            {
+              "quote": "Diane told me yesterday that because I'm now the primary owner of the MedVantage quarterly deliverable, my title is being changed to Senior Data Analyst effective immediately",
+              "segment_index": 2,
+              "turn_index": 3
+            },
+            {
+              "quote": "HR sent an email today saying they're planning to consolidate all analyst roles under a single title of Lead Data Analyst by next quarter",
+              "segment_index": 3,
+              "turn_index": 5
+            }
+          ],
+          "judge_rubric": {
+            "acceptable_paraphrases": [],
+            "harmful_extra": [
+              "selecting Lead Data Analyst because it was mentioned most recently",
+              "selecting Data Analyst because the February restructuring removed tiers"
+            ],
+            "harmless_extra": [],
+            "must_include": [
+              "Senior Data Analyst"
+            ],
+            "must_not_include": [
+              "Data Analyst as the answer without Senior prefix",
+              "Junior Data Analyst as the answer",
+              "Lead Data Analyst as the answer"
+            ]
+          },
+          "question_id": "A01:p4_candidate_disambiguation:adjacent_operation",
+          "question_pair_id": "p4_candidate_disambiguation"
+        },
+        {
+          "evaluation_setting": "longitudinal_operation",
+          "evaluation_type": "CandidateDisambiguation",
+          "expected_answer": "Senior Data Analyst",
+          "gold_memory_state": "Current confirmed title: Senior Data Analyst. Prior titles (Junior Data Analyst, Data Analyst) are superseded. Lead Data Analyst is a planned but unfinalized future consolidation.",
+          "gold_provenance": [
+            {
+              "quote": "Diane told me yesterday that because I'm now the primary owner of the MedVantage quarterly deliverable, my title is being changed to Senior Data Analyst effective immediately",
+              "segment_index": 2,
+              "turn_index": 3
+            },
+            {
+              "quote": "HR sent an email today saying they're planning to consolidate all analyst roles under a single title of Lead Data Analyst by next quarter",
+              "segment_index": 3,
+              "turn_index": 5
+            }
+          ],
+          "judge_rubric": {
+            "acceptable_paraphrases": [],
+            "harmful_extra": [
+              "selecting Lead Data Analyst because it was mentioned most recently",
+              "selecting Data Analyst because the February restructuring removed tiers"
+            ],
+            "harmless_extra": [],
+            "must_include": [
+              "Senior Data Analyst"
+            ],
+            "must_not_include": [
+              "Data Analyst as the answer without Senior prefix",
+              "Junior Data Analyst as the answer",
+              "Lead Data Analyst as the answer"
+            ]
+          },
+          "question_id": "A01:p4_candidate_disambiguation:longitudinal_operation",
+          "question_pair_id": "p4_candidate_disambiguation"
+        }
+      ],
+      "sample_id": "A01__Update",
+      "source_file": "/data/predator/ly/third_party/MemOps/generated_result/2-evidence_conversation/A01_update.json",
+      "source_sha256": "a4f6b0c31dcfe4d0c5207ce5d2c292890c51ab54ab61278f197b3ac989decc87",
+      "special_semantics_present": true,
+      "stale_confirmed_values": [
+        "Junior Data Analyst",
+        "Data Analyst"
+      ],
+      "target_id": "job_title",
+      "target_name": "Current job title at Bridgemark Solutions",
+      "transitions": [
+        {
+          "new_operation_id": "op3",
+          "new_segment_index": 2,
+          "new_value": "Senior Data Analyst",
+          "old_operation_id": "op2",
+          "old_segment_index": 1,
+          "old_value": "Junior Data Analyst",
+          "target_id": "job_title",
+          "target_name": "Current job title at Bridgemark Solutions"
+        }
+      ]
+    }
+  ],
+  "schema_version": "sfwb.v1.3.memops-b0-screening-run-selection.v1",
+  "status": "OFFLINE_RUN_SELECTION_FROZEN"
+}

@@ -1,0 +1,124 @@
+{
+  "cohort_id": "sfwb-v1-3-memops-b0-screening-20260822-002",
+  "cohort_manifest_sha256": "779c4d6596d53c27ce49079cc7b68543904a9ef0131892d83aacd9068a812ed6",
+  "cohort_sample_id": "C22__Update",
+  "official_qa_evaluator": {
+    "path": "/data/predator/ly/third_party/MemOps/5.5-evaluate_operation_metrics.py",
+    "prompt_builder": "build_evaluation_prompt",
+    "result_parser": "parse_judge_metrics",
+    "sha256": "17c24362c174239eb7ef5e543bc651afed60ae445a4becd49acf24f6d3c646f0"
+  },
+  "official_sample_id": "C22",
+  "payload_sha256": "937097dc2d6d2904bb80f4d5b0616ca8acb77b307ef0769e2c528091a0968109",
+  "samples": [
+    {
+      "cohort_sample_id": "C22__Update",
+      "history_id": "memops-c22-update",
+      "latest_confirmed_value": "April 1",
+      "official_sample_id": "C22",
+      "operation_type": "Update",
+      "qa": [
+        {
+          "evaluation_setting": "adjacent_operation",
+          "evaluation_type": "CandidateDisambiguation",
+          "expected_answer": "April 1",
+          "gold_memory_state": "Adobe Creative Cloud annual renewal date is confirmed as April 1. March 15 was the original self-reported date (stale, superseded by March 22). March 22 was the account-page correction (stale, superseded by April 1 after billing dispute). April 15 is from an unconfirmed email and has not been verified with Adobe support (tentative, not adopted).",
+          "gold_provenance": [
+            {
+              "quote": "I called Adobe support just now and they confirmed the renewal was moved to April 1 because of the billing dispute I filed",
+              "segment_index": 2,
+              "turn_index": 3
+            },
+            {
+              "quote": "Adobe sent me an email saying they're consolidating billing cycles and my renewal will shift to April 15 going forward",
+              "segment_index": 3,
+              "turn_index": 5
+            }
+          ],
+          "judge_rubric": {
+            "acceptable_paraphrases": [],
+            "harmful_extra": [
+              "selecting April 15 because it is the most recent mention",
+              "selecting March 15 or March 22 because they appeared earlier"
+            ],
+            "harmless_extra": [
+              "noting that April 15 is pending confirmation"
+            ],
+            "must_include": [
+              "April 1"
+            ],
+            "must_not_include": [
+              "March 15 as the answer",
+              "March 22 as the answer",
+              "April 15 as the answer"
+            ]
+          },
+          "question_id": "C22:p4_candidate_disambiguation:adjacent_operation",
+          "question_pair_id": "p4_candidate_disambiguation"
+        },
+        {
+          "evaluation_setting": "longitudinal_operation",
+          "evaluation_type": "CandidateDisambiguation",
+          "expected_answer": "April 1",
+          "gold_memory_state": "Adobe Creative Cloud annual renewal date is confirmed as April 1. March 15 was the original self-reported date (stale, superseded by March 22). March 22 was the account-page correction (stale, superseded by April 1 after billing dispute). April 15 is from an unconfirmed email and has not been verified with Adobe support (tentative, not adopted).",
+          "gold_provenance": [
+            {
+              "quote": "I called Adobe support just now and they confirmed the renewal was moved to April 1 because of the billing dispute I filed",
+              "segment_index": 2,
+              "turn_index": 3
+            },
+            {
+              "quote": "Adobe sent me an email saying they're consolidating billing cycles and my renewal will shift to April 15 going forward",
+              "segment_index": 3,
+              "turn_index": 5
+            }
+          ],
+          "judge_rubric": {
+            "acceptable_paraphrases": [],
+            "harmful_extra": [
+              "selecting April 15 because it is the most recent mention",
+              "selecting March 15 or March 22 because they appeared earlier"
+            ],
+            "harmless_extra": [
+              "noting that April 15 is pending confirmation"
+            ],
+            "must_include": [
+              "April 1"
+            ],
+            "must_not_include": [
+              "March 15 as the answer",
+              "March 22 as the answer",
+              "April 15 as the answer"
+            ]
+          },
+          "question_id": "C22:p4_candidate_disambiguation:longitudinal_operation",
+          "question_pair_id": "p4_candidate_disambiguation"
+        }
+      ],
+      "sample_id": "C22__Update",
+      "source_file": "/data/predator/ly/third_party/MemOps/generated_result/2-evidence_conversation/C22_update.json",
+      "source_sha256": "011ffd78bd6f7a341b7c01973bb1b0fa564023110f3b5d87aaed38d23c0a53d4",
+      "special_semantics_present": true,
+      "stale_confirmed_values": [
+        "March 15",
+        "March 22"
+      ],
+      "target_id": "adobe_cc_renewal_date",
+      "target_name": "Adobe Creative Cloud annual auto-renewal date",
+      "transitions": [
+        {
+          "new_operation_id": "op3",
+          "new_segment_index": 2,
+          "new_value": "April 1",
+          "old_operation_id": "op2",
+          "old_segment_index": 1,
+          "old_value": "March 15",
+          "target_id": "adobe_cc_renewal_date",
+          "target_name": "Adobe Creative Cloud annual auto-renewal date"
+        }
+      ]
+    }
+  ],
+  "schema_version": "sfwb.v1.3.memops-b0-screening-run-selection.v1",
+  "status": "OFFLINE_RUN_SELECTION_FROZEN"
+}

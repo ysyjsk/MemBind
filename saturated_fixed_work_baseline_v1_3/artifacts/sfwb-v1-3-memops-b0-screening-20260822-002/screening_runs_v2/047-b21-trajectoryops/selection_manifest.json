@@ -1,0 +1,252 @@
+{
+  "cohort_id": "sfwb-v1-3-memops-b0-screening-20260822-002",
+  "cohort_manifest_sha256": "779c4d6596d53c27ce49079cc7b68543904a9ef0131892d83aacd9068a812ed6",
+  "cohort_sample_id": "B21__TrajectoryOps",
+  "official_qa_evaluator": {
+    "path": "/data/predator/ly/third_party/MemOps/5.5-evaluate_operation_metrics.py",
+    "prompt_builder": "build_evaluation_prompt",
+    "result_parser": "parse_judge_metrics",
+    "sha256": "17c24362c174239eb7ef5e543bc651afed60ae445a4becd49acf24f6d3c646f0"
+  },
+  "official_sample_id": "B21",
+  "payload_sha256": "7504503150b4a22a0011a91792e7bd3ee5816cf14154043996ce9c2d153349cd",
+  "samples": [
+    {
+      "cohort_sample_id": "B21__TrajectoryOps",
+      "history_id": "memops-b21-trajectoryops",
+      "latest_confirmed_value": "$82,500",
+      "official_sample_id": "B21",
+      "operation_type": "TrajectoryOps",
+      "qa": [
+        {
+          "evaluation_setting": "adjacent_operation",
+          "evaluation_type": "StateTransition",
+          "expected_answer": "$82,500",
+          "gold_memory_state": "David's confirmed annual salary is $82,500, verified from the offer letter. A potential raise to $85,000 was mentioned by Priya as a clinic-wide adjustment starting next quarter, but it has not taken effect. The user explicitly asked to keep $82,500 as the current number. Prior values of $78,000 and $82,000 are superseded.",
+          "gold_provenance": [
+            {
+              "quote": "I double-checked the offer letter last night. His salary is $82,500, not $82,000",
+              "segment_index": 2,
+              "turn_index": 3
+            },
+            {
+              "quote": "That makes sense—keep $82,500 as the current number for now",
+              "segment_index": 3,
+              "turn_index": 7
+            }
+          ],
+          "judge_rubric": {
+            "acceptable_paraphrases": [
+              "82,500 dollars",
+              "82.5k"
+            ],
+            "harmful_extra": [
+              "using $85,000 as the current salary",
+              "using $71,500 from the assistant's mention of a previous clinic"
+            ],
+            "harmless_extra": [
+              "noting that a raise to $85,000 is expected but not yet in effect"
+            ],
+            "must_include": [
+              "$82,500"
+            ],
+            "must_not_include": [
+              "$85,000 as the current figure",
+              "$82,000",
+              "$78,000"
+            ]
+          },
+          "question_id": "B21:p3_state_transition:adjacent_operation",
+          "question_pair_id": "p3_state_transition"
+        },
+        {
+          "evaluation_setting": "longitudinal_operation",
+          "evaluation_type": "StateTransition",
+          "expected_answer": "$82,500",
+          "gold_memory_state": "David's confirmed annual salary is $82,500, verified from the offer letter. A potential raise to $85,000 was mentioned by Priya as a clinic-wide adjustment starting next quarter, but it has not taken effect. The user explicitly asked to keep $82,500 as the current number. Prior values of $78,000 and $82,000 are superseded.",
+          "gold_provenance": [
+            {
+              "quote": "I double-checked the offer letter last night. His salary is $82,500, not $82,000",
+              "segment_index": 2,
+              "turn_index": 3
+            },
+            {
+              "quote": "That makes sense—keep $82,500 as the current number for now",
+              "segment_index": 3,
+              "turn_index": 7
+            }
+          ],
+          "judge_rubric": {
+            "acceptable_paraphrases": [
+              "82,500 dollars",
+              "82.5k"
+            ],
+            "harmful_extra": [
+              "using $85,000 as the current salary",
+              "using $71,500 from the assistant's mention of a previous clinic"
+            ],
+            "harmless_extra": [
+              "noting that a raise to $85,000 is expected but not yet in effect"
+            ],
+            "must_include": [
+              "$82,500"
+            ],
+            "must_not_include": [
+              "$85,000 as the current figure",
+              "$82,000",
+              "$78,000"
+            ]
+          },
+          "question_id": "B21:p3_state_transition:longitudinal_operation",
+          "question_pair_id": "p3_state_transition"
+        },
+        {
+          "evaluation_setting": "adjacent_operation",
+          "evaluation_type": "StateTrajectory",
+          "expected_answer": "The sequence is: (1) $78,000 was the initial figure, adopted briefly. (2) It was corrected to $82,000, which replaced $78,000 as the adopted figure. (3) After checking the offer letter, $82,000 was corrected to $82,500, which became and remains the adopted figure. (4) $85,000 was floated as a future clinic-wide raise but has not taken effect, so it was never adopted. The final usable figure is $82,500.",
+          "gold_memory_state": "Salary trajectory: $78,000 (confirmed, then superseded) → $82,000 (confirmed, then superseded) → $82,500 (confirmed, current) → $85,000 (tentative, not in effect). Final confirmed value: $82,500.",
+          "gold_provenance": [
+            {
+              "quote": "David's annual salary at Greenfield is $78,000",
+              "segment_index": 1,
+              "turn_index": 1
+            },
+            {
+              "quote": "It's actually $82,000, not $78,000",
+              "segment_index": 1,
+              "turn_index": 5
+            },
+            {
+              "quote": "I double-checked the offer letter last night. His salary is $82,500, not $82,000",
+              "segment_index": 2,
+              "turn_index": 3
+            },
+            {
+              "quote": "Priya told David that everyone on staff is getting bumped to $85,000 starting next quarter as part of a clinic-wide raise",
+              "segment_index": 3,
+              "turn_index": 5
+            },
+            {
+              "quote": "That makes sense—keep $82,500 as the current number for now",
+              "segment_index": 3,
+              "turn_index": 7
+            }
+          ],
+          "judge_rubric": {
+            "acceptable_paraphrases": [
+              "proposed but not adopted for $85,000",
+              "pending for $85,000",
+              "not yet active for $85,000"
+            ],
+            "harmful_extra": [
+              "treating $85,000 as the final adopted figure",
+              "omitting any step in the trajectory",
+              "presenting the steps out of order"
+            ],
+            "harmless_extra": [
+              "mentioning Priya as the source of the $85,000 figure",
+              "mentioning the offer letter as the source for $82,500"
+            ],
+            "must_include": [
+              "$78,000 as initial",
+              "$82,000 as first correction",
+              "$82,500 as offer-letter-verified and current",
+              "$85,000 as not yet in effect or tentative",
+              "correct chronological order"
+            ],
+            "must_not_include": [
+              "$85,000 as adopted or current"
+            ]
+          },
+          "question_id": "B21:p5_state_trajectory:adjacent_operation",
+          "question_pair_id": "p5_state_trajectory"
+        },
+        {
+          "evaluation_setting": "longitudinal_operation",
+          "evaluation_type": "StateTrajectory",
+          "expected_answer": "The sequence is: (1) $78,000 was the initial figure, adopted briefly. (2) It was corrected to $82,000, which replaced $78,000 as the adopted figure. (3) After checking the offer letter, $82,000 was corrected to $82,500, which became and remains the adopted figure. (4) $85,000 was floated as a future clinic-wide raise but has not taken effect, so it was never adopted. The final usable figure is $82,500.",
+          "gold_memory_state": "Salary trajectory: $78,000 (confirmed, then superseded) → $82,000 (confirmed, then superseded) → $82,500 (confirmed, current) → $85,000 (tentative, not in effect). Final confirmed value: $82,500.",
+          "gold_provenance": [
+            {
+              "quote": "David's annual salary at Greenfield is $78,000",
+              "segment_index": 1,
+              "turn_index": 1
+            },
+            {
+              "quote": "It's actually $82,000, not $78,000",
+              "segment_index": 1,
+              "turn_index": 5
+            },
+            {
+              "quote": "I double-checked the offer letter last night. His salary is $82,500, not $82,000",
+              "segment_index": 2,
+              "turn_index": 3
+            },
+            {
+              "quote": "Priya told David that everyone on staff is getting bumped to $85,000 starting next quarter as part of a clinic-wide raise",
+              "segment_index": 3,
+              "turn_index": 5
+            },
+            {
+              "quote": "That makes sense—keep $82,500 as the current number for now",
+              "segment_index": 3,
+              "turn_index": 7
+            }
+          ],
+          "judge_rubric": {
+            "acceptable_paraphrases": [
+              "proposed but not adopted for $85,000",
+              "pending for $85,000",
+              "not yet active for $85,000"
+            ],
+            "harmful_extra": [
+              "treating $85,000 as the final adopted figure",
+              "omitting any step in the trajectory",
+              "presenting the steps out of order"
+            ],
+            "harmless_extra": [
+              "mentioning Priya as the source of the $85,000 figure",
+              "mentioning the offer letter as the source for $82,500"
+            ],
+            "must_include": [
+              "$78,000 as initial",
+              "$82,000 as first correction",
+              "$82,500 as offer-letter-verified and current",
+              "$85,000 as not yet in effect or tentative",
+              "correct chronological order"
+            ],
+            "must_not_include": [
+              "$85,000 as adopted or current"
+            ]
+          },
+          "question_id": "B21:p5_state_trajectory:longitudinal_operation",
+          "question_pair_id": "p5_state_trajectory"
+        }
+      ],
+      "sample_id": "B21__TrajectoryOps",
+      "source_file": "/data/predator/ly/third_party/MemOps/generated_result/2-evidence_conversation/B21_trajectory_ops.json",
+      "source_sha256": "db5fe40f81ba6d2b5601751ba15e82bd7edb8adc200a7b4339a9b355ca516d04",
+      "special_semantics_present": true,
+      "stale_confirmed_values": [
+        "$78,000",
+        "$82,000"
+      ],
+      "target_id": "david_salary",
+      "target_name": "David's annual salary at Greenfield Rehabilitation Center",
+      "transitions": [
+        {
+          "new_operation_id": "op3",
+          "new_segment_index": 2,
+          "new_value": "$82,500",
+          "old_operation_id": "op2",
+          "old_segment_index": 1,
+          "old_value": "$78,000",
+          "target_id": "david_salary",
+          "target_name": "David's annual salary at Greenfield Rehabilitation Center"
+        }
+      ]
+    }
+  ],
+  "schema_version": "sfwb.v1.3.memops-b0-screening-run-selection.v1",
+  "status": "OFFLINE_RUN_SELECTION_FROZEN"
+}

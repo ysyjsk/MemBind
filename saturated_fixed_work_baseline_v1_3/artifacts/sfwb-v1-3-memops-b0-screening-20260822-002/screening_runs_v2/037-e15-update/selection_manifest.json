@@ -1,0 +1,117 @@
+{
+  "cohort_id": "sfwb-v1-3-memops-b0-screening-20260822-002",
+  "cohort_manifest_sha256": "779c4d6596d53c27ce49079cc7b68543904a9ef0131892d83aacd9068a812ed6",
+  "cohort_sample_id": "E15__Update",
+  "official_qa_evaluator": {
+    "path": "/data/predator/ly/third_party/MemOps/5.5-evaluate_operation_metrics.py",
+    "prompt_builder": "build_evaluation_prompt",
+    "result_parser": "parse_judge_metrics",
+    "sha256": "17c24362c174239eb7ef5e543bc651afed60ae445a4becd49acf24f6d3c646f0"
+  },
+  "official_sample_id": "E15",
+  "payload_sha256": "e8a69c4958e00efa6726258169a49023b2d45d9277ad2f8c6ecc388ae17645ba",
+  "samples": [
+    {
+      "cohort_sample_id": "E15__Update",
+      "history_id": "memops-e15-update",
+      "latest_confirmed_value": "18",
+      "official_sample_id": "E15",
+      "operation_type": "Update",
+      "qa": [
+        {
+          "evaluation_setting": "adjacent_operation",
+          "evaluation_type": "CandidateDisambiguation",
+          "expected_answer": "18",
+          "gold_memory_state": "The confirmed final count of mislabeled priority incidents is 18. 14 was the original count, 17 was the count before Derek's entry was verified, and 20 was a tentative figure that was never confirmed.",
+          "gold_provenance": [
+            {
+              "quote": "I checked Derek's three entries and only one of them was actually a priority relabel. The other two were just routing changes. So the confirmed count is 18 now.",
+              "segment_index": 3,
+              "turn_index": 5
+            }
+          ],
+          "judge_rubric": {
+            "acceptable_paraphrases": [
+              "eighteen"
+            ],
+            "harmful_extra": [
+              "selecting 20 as the final count",
+              "selecting 17 as the final count",
+              "selecting 14 as the final count"
+            ],
+            "harmless_extra": [],
+            "must_include": [
+              "18"
+            ],
+            "must_not_include": [
+              "14 is the current count",
+              "17 is the current count",
+              "20 is the current count"
+            ]
+          },
+          "question_id": "E15:p4_candidate_disambiguation:adjacent_operation",
+          "question_pair_id": "p4_candidate_disambiguation"
+        },
+        {
+          "evaluation_setting": "longitudinal_operation",
+          "evaluation_type": "CandidateDisambiguation",
+          "expected_answer": "18",
+          "gold_memory_state": "The confirmed final count of mislabeled priority incidents is 18. 14 was the original count, 17 was the count before Derek's entry was verified, and 20 was a tentative figure that was never confirmed.",
+          "gold_provenance": [
+            {
+              "quote": "I checked Derek's three entries and only one of them was actually a priority relabel. The other two were just routing changes. So the confirmed count is 18 now.",
+              "segment_index": 3,
+              "turn_index": 5
+            }
+          ],
+          "judge_rubric": {
+            "acceptable_paraphrases": [
+              "eighteen"
+            ],
+            "harmful_extra": [
+              "selecting 20 as the final count",
+              "selecting 17 as the final count",
+              "selecting 14 as the final count"
+            ],
+            "harmless_extra": [],
+            "must_include": [
+              "18"
+            ],
+            "must_not_include": [
+              "14 is the current count",
+              "17 is the current count",
+              "20 is the current count"
+            ]
+          },
+          "question_id": "E15:p4_candidate_disambiguation:longitudinal_operation",
+          "question_pair_id": "p4_candidate_disambiguation"
+        }
+      ],
+      "sample_id": "E15__Update",
+      "source_file": "/data/predator/ly/third_party/MemOps/generated_result/2-evidence_conversation/E15_update.json",
+      "source_sha256": "7086723408fce31ede9f4a67071792aaa88df25aba1aae47160ffaf1b4ec1b5e",
+      "special_semantics_present": true,
+      "stale_confirmed_values": [
+        "14",
+        "16",
+        "17"
+      ],
+      "target_id": "mislabeled_incident_count",
+      "target_name": "number of mislabeled priority incidents in personal spreadsheet",
+      "transitions": [
+        {
+          "new_operation_id": "op5",
+          "new_segment_index": 3,
+          "new_value": "18",
+          "old_operation_id": "op3",
+          "old_segment_index": 2,
+          "old_value": "16",
+          "target_id": "mislabeled_incident_count",
+          "target_name": "number of mislabeled priority incidents in personal spreadsheet"
+        }
+      ]
+    }
+  ],
+  "schema_version": "sfwb.v1.3.memops-b0-screening-run-selection.v1",
+  "status": "OFFLINE_RUN_SELECTION_FROZEN"
+}

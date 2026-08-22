@@ -1,0 +1,240 @@
+{
+  "cohort_id": "sfwb-v1-3-memops-b0-screening-20260822-002",
+  "cohort_manifest_sha256": "779c4d6596d53c27ce49079cc7b68543904a9ef0131892d83aacd9068a812ed6",
+  "cohort_sample_id": "B25__TrajectoryOps",
+  "official_qa_evaluator": {
+    "path": "/data/predator/ly/third_party/MemOps/5.5-evaluate_operation_metrics.py",
+    "prompt_builder": "build_evaluation_prompt",
+    "result_parser": "parse_judge_metrics",
+    "sha256": "17c24362c174239eb7ef5e543bc651afed60ae445a4becd49acf24f6d3c646f0"
+  },
+  "official_sample_id": "B25",
+  "payload_sha256": "7b3bb8c38f66ca31ed353a667012536ee3a202eebed959de5638d729aff23aab",
+  "samples": [
+    {
+      "cohort_sample_id": "B25__TrajectoryOps",
+      "history_id": "memops-b25-trajectoryops",
+      "latest_confirmed_value": "Every Friday, 3:15–4:30 PM, starting April",
+      "official_sample_id": "B25",
+      "operation_type": "TrajectoryOps",
+      "qa": [
+        {
+          "evaluation_setting": "adjacent_operation",
+          "evaluation_type": "StateTransition",
+          "expected_answer": "Fridays. Lily's robotics club meets every Friday from 3:15 to 4:30 PM.",
+          "gold_memory_state": "Confirmed final state: robotics club meets every Friday, 3:15–4:30 PM starting April. The possibility of moving to Wednesdays starting May was mentioned by the coach but is not confirmed — it is under discussion with administration. The confirmed pickup day remains Friday.",
+          "gold_provenance": [
+            {
+              "quote": "the school just sent an update that starting in April the robotics club is switching to every Friday instead of every other Friday, same time slot 3:15 to 4:30",
+              "segment_index": 2,
+              "turn_index": 3
+            },
+            {
+              "quote": "The robotics coach sent a note home saying they're looking at moving the club to Wednesdays 3:15 to 4:30 starting in May because of gym scheduling conflicts on Fridays",
+              "segment_index": 3,
+              "turn_index": 5
+            }
+          ],
+          "judge_rubric": {
+            "acceptable_paraphrases": [
+              "Fridays after school",
+              "every Friday"
+            ],
+            "harmful_extra": [
+              "treating Wednesday as the current robotics day",
+              "presenting the Wednesday possibility as decided"
+            ],
+            "harmless_extra": [
+              "mentioning the Wednesday possibility is under discussion but not yet decided"
+            ],
+            "must_include": [
+              "Friday",
+              "3:15–4:30 PM"
+            ],
+            "must_not_include": [
+              "Wednesday as the robotics day",
+              "second and fourth Fridays only",
+              "first and third Fridays only"
+            ]
+          },
+          "question_id": "B25:p3_state_transition:adjacent_operation",
+          "question_pair_id": "p3_state_transition"
+        },
+        {
+          "evaluation_setting": "longitudinal_operation",
+          "evaluation_type": "StateTransition",
+          "expected_answer": "Fridays. Lily's robotics club meets every Friday from 3:15 to 4:30 PM.",
+          "gold_memory_state": "Confirmed final state: robotics club meets every Friday, 3:15–4:30 PM starting April. The possibility of moving to Wednesdays starting May was mentioned by the coach but is not confirmed — it is under discussion with administration. The confirmed pickup day remains Friday.",
+          "gold_provenance": [
+            {
+              "quote": "the school just sent an update that starting in April the robotics club is switching to every Friday instead of every other Friday, same time slot 3:15 to 4:30",
+              "segment_index": 2,
+              "turn_index": 3
+            },
+            {
+              "quote": "The robotics coach sent a note home saying they're looking at moving the club to Wednesdays 3:15 to 4:30 starting in May because of gym scheduling conflicts on Fridays",
+              "segment_index": 3,
+              "turn_index": 5
+            }
+          ],
+          "judge_rubric": {
+            "acceptable_paraphrases": [
+              "Fridays after school",
+              "every Friday"
+            ],
+            "harmful_extra": [
+              "treating Wednesday as the current robotics day",
+              "presenting the Wednesday possibility as decided"
+            ],
+            "harmless_extra": [
+              "mentioning the Wednesday possibility is under discussion but not yet decided"
+            ],
+            "must_include": [
+              "Friday",
+              "3:15–4:30 PM"
+            ],
+            "must_not_include": [
+              "Wednesday as the robotics day",
+              "second and fourth Fridays only",
+              "first and third Fridays only"
+            ]
+          },
+          "question_id": "B25:p3_state_transition:longitudinal_operation",
+          "question_pair_id": "p3_state_transition"
+        },
+        {
+          "evaluation_setting": "adjacent_operation",
+          "evaluation_type": "StateTrajectory",
+          "expected_answer": "First version: first and third Fridays, 3:15–4:30 PM — this was initially reported but was a mistake. Second version: second and fourth Fridays, 3:15–4:30 PM — this was the corrected schedule after checking with the school office and was adopted. Third version: every Friday, 3:15–4:30 PM starting April — this replaced the biweekly schedule when the trial program expanded, and it is the current adopted schedule. Fourth version: Wednesdays, 3:15–4:30 PM starting May — this was only floated by the coach as a possibility due to gym conflicts and has not been adopted.",
+          "gold_memory_state": "Final confirmed state: every Friday, 3:15–4:30 PM starting April. The Wednesday possibility is tentative/unconfirmed. All prior Friday schedules (first-and-third, second-and-fourth) are superseded.",
+          "gold_provenance": [
+            {
+              "quote": "Lily's robotics club at school meets every other Friday, specifically the first and third Fridays of each month, from 3:15 to 4:30 PM",
+              "segment_index": 1,
+              "turn_index": 1
+            },
+            {
+              "quote": "I double-checked with the school office and the robotics club actually meets on the second and fourth Fridays, not the first and third like I originally said",
+              "segment_index": 1,
+              "turn_index": 5
+            },
+            {
+              "quote": "the school just sent an update that starting in April the robotics club is switching to every Friday instead of every other Friday, same time slot 3:15 to 4:30",
+              "segment_index": 2,
+              "turn_index": 3
+            },
+            {
+              "quote": "The robotics coach sent a note home saying they're looking at moving the club to Wednesdays 3:15 to 4:30 starting in May because of gym scheduling conflicts on Fridays",
+              "segment_index": 3,
+              "turn_index": 5
+            }
+          ],
+          "judge_rubric": {
+            "acceptable_paraphrases": [
+              "the first schedule was wrong",
+              "corrected after checking with the school",
+              "expanded from biweekly to weekly",
+              "coach floated Wednesday but not decided"
+            ],
+            "harmful_extra": [
+              "presenting Wednesday as adopted/confirmed",
+              "omitting any of the four versions",
+              "presenting first-and-third Fridays as ever having been the correct schedule"
+            ],
+            "harmless_extra": [
+              "mentioning the gym conflict reason for the Wednesday proposal",
+              "mentioning the trial program context"
+            ],
+            "must_include": [
+              "first and third Fridays as initial/mistaken version",
+              "second and fourth Fridays as corrected version",
+              "every Friday as expanded/current version",
+              "Wednesday as unconfirmed/tentative possibility"
+            ],
+            "must_not_include": []
+          },
+          "question_id": "B25:p5_state_trajectory:adjacent_operation",
+          "question_pair_id": "p5_state_trajectory"
+        },
+        {
+          "evaluation_setting": "longitudinal_operation",
+          "evaluation_type": "StateTrajectory",
+          "expected_answer": "First version: first and third Fridays, 3:15–4:30 PM — this was initially reported but was a mistake. Second version: second and fourth Fridays, 3:15–4:30 PM — this was the corrected schedule after checking with the school office and was adopted. Third version: every Friday, 3:15–4:30 PM starting April — this replaced the biweekly schedule when the trial program expanded, and it is the current adopted schedule. Fourth version: Wednesdays, 3:15–4:30 PM starting May — this was only floated by the coach as a possibility due to gym conflicts and has not been adopted.",
+          "gold_memory_state": "Final confirmed state: every Friday, 3:15–4:30 PM starting April. The Wednesday possibility is tentative/unconfirmed. All prior Friday schedules (first-and-third, second-and-fourth) are superseded.",
+          "gold_provenance": [
+            {
+              "quote": "Lily's robotics club at school meets every other Friday, specifically the first and third Fridays of each month, from 3:15 to 4:30 PM",
+              "segment_index": 1,
+              "turn_index": 1
+            },
+            {
+              "quote": "I double-checked with the school office and the robotics club actually meets on the second and fourth Fridays, not the first and third like I originally said",
+              "segment_index": 1,
+              "turn_index": 5
+            },
+            {
+              "quote": "the school just sent an update that starting in April the robotics club is switching to every Friday instead of every other Friday, same time slot 3:15 to 4:30",
+              "segment_index": 2,
+              "turn_index": 3
+            },
+            {
+              "quote": "The robotics coach sent a note home saying they're looking at moving the club to Wednesdays 3:15 to 4:30 starting in May because of gym scheduling conflicts on Fridays",
+              "segment_index": 3,
+              "turn_index": 5
+            }
+          ],
+          "judge_rubric": {
+            "acceptable_paraphrases": [
+              "the first schedule was wrong",
+              "corrected after checking with the school",
+              "expanded from biweekly to weekly",
+              "coach floated Wednesday but not decided"
+            ],
+            "harmful_extra": [
+              "presenting Wednesday as adopted/confirmed",
+              "omitting any of the four versions",
+              "presenting first-and-third Fridays as ever having been the correct schedule"
+            ],
+            "harmless_extra": [
+              "mentioning the gym conflict reason for the Wednesday proposal",
+              "mentioning the trial program context"
+            ],
+            "must_include": [
+              "first and third Fridays as initial/mistaken version",
+              "second and fourth Fridays as corrected version",
+              "every Friday as expanded/current version",
+              "Wednesday as unconfirmed/tentative possibility"
+            ],
+            "must_not_include": []
+          },
+          "question_id": "B25:p5_state_trajectory:longitudinal_operation",
+          "question_pair_id": "p5_state_trajectory"
+        }
+      ],
+      "sample_id": "B25__TrajectoryOps",
+      "source_file": "/data/predator/ly/third_party/MemOps/generated_result/2-evidence_conversation/B25_trajectory_ops.json",
+      "source_sha256": "d5652c066cfbdcb97df90fda5607ce3047eefc63301e87d37f201b2d7473643d",
+      "special_semantics_present": true,
+      "stale_confirmed_values": [
+        "First and third Fridays of each month, 3:15–4:30 PM",
+        "Second and fourth Fridays of each month, 3:15–4:30 PM"
+      ],
+      "target_id": "robotics_schedule",
+      "target_name": "Lily's robotics club meeting schedule",
+      "transitions": [
+        {
+          "new_operation_id": "op3",
+          "new_segment_index": 2,
+          "new_value": "Every Friday, 3:15–4:30 PM, starting April",
+          "old_operation_id": "op2",
+          "old_segment_index": 1,
+          "old_value": "First and third Fridays of each month, 3:15–4:30 PM",
+          "target_id": "robotics_schedule",
+          "target_name": "Lily's robotics club meeting schedule"
+        }
+      ]
+    }
+  ],
+  "schema_version": "sfwb.v1.3.memops-b0-screening-run-selection.v1",
+  "status": "OFFLINE_RUN_SELECTION_FROZEN"
+}

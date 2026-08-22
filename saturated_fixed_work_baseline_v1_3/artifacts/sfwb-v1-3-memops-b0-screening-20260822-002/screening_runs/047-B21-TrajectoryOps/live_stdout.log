@@ -1,0 +1,31 @@
+Traceback (most recent call last):
+  File "/usr/lib/python3.12/asyncio/runners.py", line 118, in run
+    return self._loop.run_until_complete(task)
+           ^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^
+  File "/usr/lib/python3.12/asyncio/base_events.py", line 687, in run_until_complete
+    return future.result()
+           ^^^^^^^^^^^^^^^
+  File "/data/predator/ly/MemBind/saturated_fixed_work_baseline_v1_3/src/saturated_fixed_work_baseline_v1_3/memops_qualification.py", line 548, in run_memops_live
+    construction = await asyncio.to_thread(
+                   ^^^^^^^^^^^^^^^^^^^^^^^^
+  File "/usr/lib/python3.12/asyncio/threads.py", line 25, in to_thread
+    return await loop.run_in_executor(None, func_call)
+           ^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^
+asyncio.exceptions.CancelledError
+
+During handling of the above exception, another exception occurred:
+
+Traceback (most recent call last):
+  File "/data/predator/ly/MemBind/saturated_fixed_work_baseline_v1_3/scripts/run_memops_qualification.py", line 89, in <module>
+    raise SystemExit(main())
+                     ^^^^^^
+  File "/data/predator/ly/MemBind/saturated_fixed_work_baseline_v1_3/scripts/run_memops_qualification.py", line 56, in main
+    result = asyncio.run(
+             ^^^^^^^^^^^^
+  File "/usr/lib/python3.12/asyncio/runners.py", line 194, in run
+    return runner.run(main)
+           ^^^^^^^^^^^^^^^^
+  File "/usr/lib/python3.12/asyncio/runners.py", line 123, in run
+    raise KeyboardInterrupt()
+KeyboardInterrupt
+sys:1: RuntimeWarning: coroutine 'Neo4jDriver._execute_index_query' was never awaited

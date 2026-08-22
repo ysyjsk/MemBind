@@ -1,0 +1,128 @@
+{
+  "cohort_id": "sfwb-v1-3-memops-b0-screening-20260822-002",
+  "cohort_manifest_sha256": "779c4d6596d53c27ce49079cc7b68543904a9ef0131892d83aacd9068a812ed6",
+  "cohort_sample_id": "D24__Update",
+  "official_qa_evaluator": {
+    "path": "/data/predator/ly/third_party/MemOps/5.5-evaluate_operation_metrics.py",
+    "prompt_builder": "build_evaluation_prompt",
+    "result_parser": "parse_judge_metrics",
+    "sha256": "17c24362c174239eb7ef5e543bc651afed60ae445a4becd49acf24f6d3c646f0"
+  },
+  "official_sample_id": "D24",
+  "payload_sha256": "556a1dae46eede16d948ea32ac02bab029f68d08fc05fdd589754f7f4c03bba5",
+  "samples": [
+    {
+      "cohort_sample_id": "D24__Update",
+      "history_id": "memops-d24-update",
+      "latest_confirmed_value": "41,850 miles",
+      "official_sample_id": "D24",
+      "operation_type": "Update",
+      "qa": [
+        {
+          "evaluation_setting": "adjacent_operation",
+          "evaluation_type": "CandidateDisambiguation",
+          "expected_answer": "41,850 miles",
+          "gold_memory_state": "The confirmed purchase mileage is 41,850 miles based on the final bill of sale. 38,000 was the initial self-report (superseded). 41,200 was the inspection mileage (superseded). 42,100 is a tentative dealership system figure that the user has not adopted.",
+          "gold_provenance": [
+            {
+              "quote": "Turns out the 41,200 was the inspection mileage, not the sale mileage. The actual purchase odometer on the final bill of sale says 41,850",
+              "segment_index": 2,
+              "turn_index": 3
+            },
+            {
+              "quote": "the dealership service advisor just emailed me and said their system shows the purchase mileage as 42,100. He's going to update my service record to reflect that number",
+              "segment_index": 3,
+              "turn_index": 5
+            }
+          ],
+          "judge_rubric": {
+            "acceptable_paraphrases": [
+              "41850 miles",
+              "41,850"
+            ],
+            "harmful_extra": [
+              "selecting any value other than 41,850"
+            ],
+            "harmless_extra": [
+              "mentioning the bill of sale as the source"
+            ],
+            "must_include": [
+              "41,850"
+            ],
+            "must_not_include": [
+              "38,000",
+              "41,200",
+              "42,100"
+            ]
+          },
+          "question_id": "D24:p4_candidate_disambiguation:adjacent_operation",
+          "question_pair_id": "p4_candidate_disambiguation"
+        },
+        {
+          "evaluation_setting": "longitudinal_operation",
+          "evaluation_type": "CandidateDisambiguation",
+          "expected_answer": "41,850 miles",
+          "gold_memory_state": "The confirmed purchase mileage is 41,850 miles based on the final bill of sale. 38,000 was the initial self-report (superseded). 41,200 was the inspection mileage (superseded). 42,100 is a tentative dealership system figure that the user has not adopted.",
+          "gold_provenance": [
+            {
+              "quote": "Turns out the 41,200 was the inspection mileage, not the sale mileage. The actual purchase odometer on the final bill of sale says 41,850",
+              "segment_index": 2,
+              "turn_index": 3
+            },
+            {
+              "quote": "the dealership service advisor just emailed me and said their system shows the purchase mileage as 42,100. He's going to update my service record to reflect that number",
+              "segment_index": 3,
+              "turn_index": 5
+            }
+          ],
+          "judge_rubric": {
+            "acceptable_paraphrases": [
+              "41850 miles",
+              "41,850"
+            ],
+            "harmful_extra": [
+              "selecting any value other than 41,850"
+            ],
+            "harmless_extra": [
+              "mentioning the bill of sale as the source"
+            ],
+            "must_include": [
+              "41,850"
+            ],
+            "must_not_include": [
+              "38,000",
+              "41,200",
+              "42,100"
+            ]
+          },
+          "question_id": "D24:p4_candidate_disambiguation:longitudinal_operation",
+          "question_pair_id": "p4_candidate_disambiguation"
+        }
+      ],
+      "sample_id": "D24__Update",
+      "source_file": "/data/predator/ly/third_party/MemOps/generated_result/2-evidence_conversation/D24_update.json",
+      "source_sha256": "cb007547729d3805fb68ea896128ff472d5f148a51fb7e025d10d993a150577d",
+      "special_semantics_present": true,
+      "stale_confirmed_values": [
+        "38,000 miles",
+        "41,200 miles"
+      ],
+      "target_id": "outback_purchase_mileage",
+      "target_name": "Mileage at purchase of 2021 Subaru Outback Wilderness",
+      "transitions": [
+        {
+          "new_operation_id": "op3",
+          "new_segment_index": 2,
+          "new_value": "41,850 miles",
+          "old_operation_id": "op2",
+          "old_segment_index": 1,
+          "old_value": "38,000 miles",
+          "target_id": "outback_purchase_mileage",
+          "target_name": "Mileage at purchase of 2021 Subaru Outback Wilderness"
+        }
+      ]
+    }
+  ],
+  "schema_version": "sfwb.v1.3.memops-b0-screening-run-selection.v1",
+  "status": "OFFLINE_RUN_SELECTION_FROZEN"
+}

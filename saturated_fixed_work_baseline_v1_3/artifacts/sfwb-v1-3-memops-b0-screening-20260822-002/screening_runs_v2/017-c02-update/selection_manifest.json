@@ -1,0 +1,118 @@
+{
+  "cohort_id": "sfwb-v1-3-memops-b0-screening-20260822-002",
+  "cohort_manifest_sha256": "779c4d6596d53c27ce49079cc7b68543904a9ef0131892d83aacd9068a812ed6",
+  "cohort_sample_id": "C02__Update",
+  "official_qa_evaluator": {
+    "path": "/data/predator/ly/third_party/MemOps/5.5-evaluate_operation_metrics.py",
+    "prompt_builder": "build_evaluation_prompt",
+    "result_parser": "parse_judge_metrics",
+    "sha256": "17c24362c174239eb7ef5e543bc651afed60ae445a4becd49acf24f6d3c646f0"
+  },
+  "official_sample_id": "C02",
+  "payload_sha256": "a99535313343d02aef4f2636483d63130b148be0648c6b5aa9ec231705d45023",
+  "samples": [
+    {
+      "cohort_sample_id": "C02__Update",
+      "history_id": "memops-c02-update",
+      "latest_confirmed_value": "April 10",
+      "official_sample_id": "C02",
+      "operation_type": "Update",
+      "qa": [
+        {
+          "evaluation_setting": "adjacent_operation",
+          "evaluation_type": "CandidateDisambiguation",
+          "expected_answer": "April 10",
+          "gold_memory_state": "The last confirmed lease renewal notification deadline is April 10, based on the property manager's email correcting the notice period to 45 days. May 1 was the initial estimate. April 25 was the first correction. April 20 was mentioned by the new ownership group but never confirmed as applying to the user.",
+          "gold_provenance": [
+            {
+              "quote": "I got an email from the property manager this morning. She said there was a typo in my lease addendum and the actual notice period is 45 days, not 30. So the real deadline is April 10, not April 25.",
+              "segment_index": 2,
+              "turn_index": 3
+            },
+            {
+              "quote": "The building's new ownership group sent a notice saying all renewal deadlines are being pushed to April 20 across the board. My neighbor got the same letter.",
+              "segment_index": 3,
+              "turn_index": 5
+            }
+          ],
+          "judge_rubric": {
+            "acceptable_paraphrases": [],
+            "harmful_extra": [
+              "selecting April 20 because it appears most recently in the conversation"
+            ],
+            "harmless_extra": [],
+            "must_include": [
+              "April 10"
+            ],
+            "must_not_include": [
+              "May 1 as the answer",
+              "April 25 as the answer",
+              "April 20 as the answer"
+            ]
+          },
+          "question_id": "C02:p4_candidate_disambiguation:adjacent_operation",
+          "question_pair_id": "p4_candidate_disambiguation"
+        },
+        {
+          "evaluation_setting": "longitudinal_operation",
+          "evaluation_type": "CandidateDisambiguation",
+          "expected_answer": "April 10",
+          "gold_memory_state": "The last confirmed lease renewal notification deadline is April 10, based on the property manager's email correcting the notice period to 45 days. May 1 was the initial estimate. April 25 was the first correction. April 20 was mentioned by the new ownership group but never confirmed as applying to the user.",
+          "gold_provenance": [
+            {
+              "quote": "I got an email from the property manager this morning. She said there was a typo in my lease addendum and the actual notice period is 45 days, not 30. So the real deadline is April 10, not April 25.",
+              "segment_index": 2,
+              "turn_index": 3
+            },
+            {
+              "quote": "The building's new ownership group sent a notice saying all renewal deadlines are being pushed to April 20 across the board. My neighbor got the same letter.",
+              "segment_index": 3,
+              "turn_index": 5
+            }
+          ],
+          "judge_rubric": {
+            "acceptable_paraphrases": [],
+            "harmful_extra": [
+              "selecting April 20 because it appears most recently in the conversation"
+            ],
+            "harmless_extra": [],
+            "must_include": [
+              "April 10"
+            ],
+            "must_not_include": [
+              "May 1 as the answer",
+              "April 25 as the answer",
+              "April 20 as the answer"
+            ]
+          },
+          "question_id": "C02:p4_candidate_disambiguation:longitudinal_operation",
+          "question_pair_id": "p4_candidate_disambiguation"
+        }
+      ],
+      "sample_id": "C02__Update",
+      "source_file": "/data/predator/ly/third_party/MemOps/generated_result/2-evidence_conversation/C02_update.json",
+      "source_sha256": "45b714943c566e308b2083cb151e87089d9695ddd49bd960dd2d470f6a8b3ee6",
+      "special_semantics_present": true,
+      "stale_confirmed_values": [
+        "May 1",
+        "April 25"
+      ],
+      "target_id": "lease_renewal_deadline",
+      "target_name": "Apartment lease renewal notification deadline",
+      "transitions": [
+        {
+          "new_operation_id": "op3",
+          "new_segment_index": 2,
+          "new_value": "April 10",
+          "old_operation_id": "op2",
+          "old_segment_index": 1,
+          "old_value": "May 1",
+          "target_id": "lease_renewal_deadline",
+          "target_name": "Apartment lease renewal notification deadline"
+        }
+      ]
+    }
+  ],
+  "schema_version": "sfwb.v1.3.memops-b0-screening-run-selection.v1",
+  "status": "OFFLINE_RUN_SELECTION_FROZEN"
+}

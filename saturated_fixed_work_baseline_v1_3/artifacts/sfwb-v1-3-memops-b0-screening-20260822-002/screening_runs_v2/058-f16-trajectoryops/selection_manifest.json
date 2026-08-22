@@ -1,0 +1,250 @@
+{
+  "cohort_id": "sfwb-v1-3-memops-b0-screening-20260822-002",
+  "cohort_manifest_sha256": "779c4d6596d53c27ce49079cc7b68543904a9ef0131892d83aacd9068a812ed6",
+  "cohort_sample_id": "F16__TrajectoryOps",
+  "official_qa_evaluator": {
+    "path": "/data/predator/ly/third_party/MemOps/5.5-evaluate_operation_metrics.py",
+    "prompt_builder": "build_evaluation_prompt",
+    "result_parser": "parse_judge_metrics",
+    "sha256": "17c24362c174239eb7ef5e543bc651afed60ae445a4becd49acf24f6d3c646f0"
+  },
+  "official_sample_id": "F16",
+  "payload_sha256": "05b0538668cc79916a1a7923e5132f9f4da436cfb0fc511f56572d63d89c4db5",
+  "samples": [
+    {
+      "cohort_sample_id": "F16__TrajectoryOps",
+      "history_id": "memops-f16-trajectoryops",
+      "latest_confirmed_value": "Tuesday",
+      "official_sample_id": "F16",
+      "operation_type": "TrajectoryOps",
+      "qa": [
+        {
+          "evaluation_setting": "adjacent_operation",
+          "evaluation_type": "StateTransition",
+          "expected_answer": "Tuesday.",
+          "gold_memory_state": "The support group meeting day is currently Tuesday (confirmed permanent change). A possible future switch back to Wednesday was mentioned but is not yet finalized and has not taken effect. The tentative Wednesday value was never adopted as the current day. Thursday was the original mistaken value, long since corrected.",
+          "gold_provenance": [
+            {
+              "quote": "Marcus sent out an email saying the group is permanently moving to Tuesdays at 7 PM starting this week",
+              "segment_index": 2,
+              "turn_index": 3
+            },
+            {
+              "quote": "Marcus texted that the community center confirmed we'll be switching back to Wednesdays next month because of a scheduling conflict with another program",
+              "segment_index": 3,
+              "turn_index": 5
+            }
+          ],
+          "judge_rubric": {
+            "acceptable_paraphrases": [
+              "Tuesdays",
+              "Tuesday evenings",
+              "Tuesday at 7 PM"
+            ],
+            "harmful_extra": [
+              "saying the group currently meets on Wednesday",
+              "saying the group currently meets on Thursday",
+              "treating the tentative future Wednesday as the current day"
+            ],
+            "harmless_extra": [
+              "mentioning 7 PM as the time",
+              "mentioning the community center on Elm Street"
+            ],
+            "must_include": [
+              "Tuesday"
+            ],
+            "must_not_include": [
+              "Wednesday",
+              "Thursday"
+            ]
+          },
+          "question_id": "F16:p3_state_transition:adjacent_operation",
+          "question_pair_id": "p3_state_transition"
+        },
+        {
+          "evaluation_setting": "longitudinal_operation",
+          "evaluation_type": "StateTransition",
+          "expected_answer": "Tuesday.",
+          "gold_memory_state": "The support group meeting day is currently Tuesday (confirmed permanent change). A possible future switch back to Wednesday was mentioned but is not yet finalized and has not taken effect. The tentative Wednesday value was never adopted as the current day. Thursday was the original mistaken value, long since corrected.",
+          "gold_provenance": [
+            {
+              "quote": "Marcus sent out an email saying the group is permanently moving to Tuesdays at 7 PM starting this week",
+              "segment_index": 2,
+              "turn_index": 3
+            },
+            {
+              "quote": "Marcus texted that the community center confirmed we'll be switching back to Wednesdays next month because of a scheduling conflict with another program",
+              "segment_index": 3,
+              "turn_index": 5
+            }
+          ],
+          "judge_rubric": {
+            "acceptable_paraphrases": [
+              "Tuesdays",
+              "Tuesday evenings",
+              "Tuesday at 7 PM"
+            ],
+            "harmful_extra": [
+              "saying the group currently meets on Wednesday",
+              "saying the group currently meets on Thursday",
+              "treating the tentative future Wednesday as the current day"
+            ],
+            "harmless_extra": [
+              "mentioning 7 PM as the time",
+              "mentioning the community center on Elm Street"
+            ],
+            "must_include": [
+              "Tuesday"
+            ],
+            "must_not_include": [
+              "Wednesday",
+              "Thursday"
+            ]
+          },
+          "question_id": "F16:p3_state_transition:longitudinal_operation",
+          "question_pair_id": "p3_state_transition"
+        },
+        {
+          "evaluation_setting": "adjacent_operation",
+          "evaluation_type": "StateTrajectory",
+          "expected_answer": "The sequence is: (1) Thursday was the first day mentioned but was a mistake. (2) You corrected it to Wednesday at 7 PM. (3) The group permanently moved to Tuesday at 7 PM due to a community center double-booking. (4) A possible return to Wednesday next month was mentioned by Marcus, but it was still being finalized and hadn't taken effect yet. So the adopted values in order were Thursday → Wednesday → Tuesday, with a pending but not-yet-adopted possibility of Wednesday in the future.",
+          "gold_memory_state": "Full trajectory: Thursday (confirmed, step 1) → Wednesday (confirmed correction, step 2) → Tuesday (confirmed permanent change, step 3) → Wednesday (tentative future, step 4, not yet in effect). Current confirmed value = Tuesday.",
+          "gold_provenance": [
+            {
+              "quote": "I started going to this queer support group that meets Thursday evenings at the community center on Elm Street",
+              "segment_index": 1,
+              "turn_index": 1
+            },
+            {
+              "quote": "The group actually meets on Wednesdays at 7 PM, not Thursdays",
+              "segment_index": 1,
+              "turn_index": 5
+            },
+            {
+              "quote": "Marcus sent out an email saying the group is permanently moving to Tuesdays at 7 PM starting this week",
+              "segment_index": 2,
+              "turn_index": 3
+            },
+            {
+              "quote": "Marcus texted that the community center confirmed we'll be switching back to Wednesdays next month because of a scheduling conflict with another program",
+              "segment_index": 3,
+              "turn_index": 5
+            }
+          ],
+          "judge_rubric": {
+            "acceptable_paraphrases": [
+              "Thursday was a mistake then corrected to Wednesday",
+              "moved permanently to Tuesday",
+              "possible return to Wednesday not finalized"
+            ],
+            "harmful_extra": [
+              "treating the tentative Wednesday as already in effect",
+              "listing fewer than four trajectory steps"
+            ],
+            "harmless_extra": [
+              "mentioning Marcus",
+              "mentioning the community center",
+              "mentioning the double-booking reason",
+              "mentioning 7 PM"
+            ],
+            "must_include": [
+              "Thursday as initial value",
+              "Wednesday as correction",
+              "Tuesday as permanent change",
+              "tentative or pending Wednesday as a future possibility not yet adopted"
+            ],
+            "must_not_include": [
+              "claiming the current day is Wednesday",
+              "claiming the current day is Thursday",
+              "omitting any step in the trajectory"
+            ]
+          },
+          "question_id": "F16:p5_state_trajectory:adjacent_operation",
+          "question_pair_id": "p5_state_trajectory"
+        },
+        {
+          "evaluation_setting": "longitudinal_operation",
+          "evaluation_type": "StateTrajectory",
+          "expected_answer": "The sequence is: (1) Thursday was the first day mentioned but was a mistake. (2) You corrected it to Wednesday at 7 PM. (3) The group permanently moved to Tuesday at 7 PM due to a community center double-booking. (4) A possible return to Wednesday next month was mentioned by Marcus, but it was still being finalized and hadn't taken effect yet. So the adopted values in order were Thursday → Wednesday → Tuesday, with a pending but not-yet-adopted possibility of Wednesday in the future.",
+          "gold_memory_state": "Full trajectory: Thursday (confirmed, step 1) → Wednesday (confirmed correction, step 2) → Tuesday (confirmed permanent change, step 3) → Wednesday (tentative future, step 4, not yet in effect). Current confirmed value = Tuesday.",
+          "gold_provenance": [
+            {
+              "quote": "I started going to this queer support group that meets Thursday evenings at the community center on Elm Street",
+              "segment_index": 1,
+              "turn_index": 1
+            },
+            {
+              "quote": "The group actually meets on Wednesdays at 7 PM, not Thursdays",
+              "segment_index": 1,
+              "turn_index": 5
+            },
+            {
+              "quote": "Marcus sent out an email saying the group is permanently moving to Tuesdays at 7 PM starting this week",
+              "segment_index": 2,
+              "turn_index": 3
+            },
+            {
+              "quote": "Marcus texted that the community center confirmed we'll be switching back to Wednesdays next month because of a scheduling conflict with another program",
+              "segment_index": 3,
+              "turn_index": 5
+            }
+          ],
+          "judge_rubric": {
+            "acceptable_paraphrases": [
+              "Thursday was a mistake then corrected to Wednesday",
+              "moved permanently to Tuesday",
+              "possible return to Wednesday not finalized"
+            ],
+            "harmful_extra": [
+              "treating the tentative Wednesday as already in effect",
+              "listing fewer than four trajectory steps"
+            ],
+            "harmless_extra": [
+              "mentioning Marcus",
+              "mentioning the community center",
+              "mentioning the double-booking reason",
+              "mentioning 7 PM"
+            ],
+            "must_include": [
+              "Thursday as initial value",
+              "Wednesday as correction",
+              "Tuesday as permanent change",
+              "tentative or pending Wednesday as a future possibility not yet adopted"
+            ],
+            "must_not_include": [
+              "claiming the current day is Wednesday",
+              "claiming the current day is Thursday",
+              "omitting any step in the trajectory"
+            ]
+          },
+          "question_id": "F16:p5_state_trajectory:longitudinal_operation",
+          "question_pair_id": "p5_state_trajectory"
+        }
+      ],
+      "sample_id": "F16__TrajectoryOps",
+      "source_file": "/data/predator/ly/third_party/MemOps/generated_result/2-evidence_conversation/F16_trajectory_ops.json",
+      "source_sha256": "193ee6b748d62ec022a641258a2dacff240f439a3d3bc6b012caf77fd19f671a",
+      "special_semantics_present": true,
+      "stale_confirmed_values": [
+        "Thursday",
+        "Wednesday"
+      ],
+      "target_id": "support_group_meeting_day",
+      "target_name": "support group meeting day",
+      "transitions": [
+        {
+          "new_operation_id": "op4",
+          "new_segment_index": 2,
+          "new_value": "Tuesday",
+          "old_operation_id": "op2",
+          "old_segment_index": 1,
+          "old_value": "Thursday",
+          "target_id": "support_group_meeting_day",
+          "target_name": "support group meeting day"
+        }
+      ]
+    }
+  ],
+  "schema_version": "sfwb.v1.3.memops-b0-screening-run-selection.v1",
+  "status": "OFFLINE_RUN_SELECTION_FROZEN"
+}

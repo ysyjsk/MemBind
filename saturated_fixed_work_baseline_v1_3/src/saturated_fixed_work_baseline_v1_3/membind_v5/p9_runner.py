@@ -64,6 +64,111 @@ def _p9_effective_max_tokens(error: BaseException, requested: int, *, safety_mar
     return budget if budget > 0 else None
 
 
+def _verify_p8_seal(path: Path, *, baseline_reference: Mapping[str, Any]) -> dict[str, Any]:
+    """Validate the sealed P8 artifact identity before allowing P9."""
+
+    if not isinstance(baseline_reference, Mapping) or not baseline_reference.get("formal_run_seal_sha256"):
+        raise P9RunnerError("baseline reference is incomplete for P8 verification")
+
+    try:
+        seal = json.loads(path.read_text(encoding="utf-8"))
+    except (OSError, UnicodeDecodeError, json.JSONDecodeError) as exc:
+        raise P9RunnerError("P8 seal is unreadable") from exc
+    required = {
+        "manifest.json",
+        "frontier.jsonl",
+        "admission.jsonl",
+        "logical_work_summary.json",
+        "native_trace.jsonl",
+        "block_metrics.json",
+        "canonical_graph.json",
+        "lifecycle.json",
+        "live_authority.json",
+        "capacity_authority.json",
+        "oracle_binding_summary.json",
+    }
+    missing = sorted(name for name in required if not (path.parent / name).is_file())
+    if missing:
+        raise P9RunnerError(f"P8 artifact incomplete: {missing}")
+    if (
+        seal.get("schema_version") != "membind.v5.p8-seal.v1"
+        or seal.get("status") != "P8_LIVE_SEALED"
+        or seal.get("method") != V5_METHOD
+        or seal.get("source_count") not in {1, 2}
+        or not isinstance(seal.get("namespace"), str)
+        or not seal["namespace"].startswith("membind-v5-p8-")
+        or not isinstance(seal.get("build_makespan_ns"), int)
+        or seal["build_makespan_ns"] <= 0
+    ):
+        raise P9RunnerError("P8 seal identity is invalid")
+    try:
+        manifest = json.loads((path.parent / "manifest.json").read_text(encoding="utf-8"))
+    except (OSError, UnicodeDecodeError, json.JSONDecodeError) as exc:
+        raise P9RunnerError("P8 manifest is unreadable") from exc
+    manifest_baseline = manifest.get("baseline_reference") if isinstance(manifest, Mapping) else None
+    if (
+        not isinstance(manifest, Mapping)
+        or not isinstance(manifest_baseline, Mapping)
+        or manifest.get("status") != "PASS"
+        or manifest.get("method") != V5_METHOD
+        or manifest.get("namespace") != seal.get("namespace")
+        or manifest.get("source_count") != seal.get("source_count")
+        or manifest_baseline.get("formal_run_seal_sha256")
+        != baseline_reference.get("formal_run_seal_sha256")
+        or manifest.get("native_graphiti_path") != "Graphiti.add_episode"
+    ):
+        raise P9RunnerError("P8 manifest identity does not match baseline or native path")
+    return {**seal, "path": str(path.resolve()), "artifact_completeness": "PASS"}
+
+
+class _DurableJsonl:
+    """Small append-only journal used while a history is executing.
+
+    Rows are flushed and fsynced at the event boundary so a provider or native
+    failure leaves enough evidence for offline diagnosis.  The journal never
+    stores prompts, responses, or credentials.
+    """
+
+    def __init__(self, path: Path) -> None:
+        self.path = Path(path)
+        self.path.parent.mkdir(parents=True, exist_ok=True)
+        self._stream = self.path.open("a", encoding="utf-8")
+        self.count = 0
+        self.last: dict[str, Any] | None = None
+        self.event_counts: dict[str, int] = {}
+        self.max_durable_frontier = -1
+        self._previous_sha256 = "0" * 64
+
+    def append(self, row: Mapping[str, Any]) -> None:
+        body = {
+            "schema_version": "membind.v5.p9-journal-event.v1",
+            "ordinal": self.count,
+            "previous_sha256": self._previous_sha256,
+            **dict(row),
+        }
+        payload = json.dumps(body, ensure_ascii=True, sort_keys=True, separators=(",", ":")).encode("utf-8")
+        digest = hashlib.sha256(payload).hexdigest()
+        body["payload_sha256"] = digest
+        self._stream.write(json.dumps(body, ensure_ascii=True, sort_keys=True, separators=(",", ":")) + "\n")
+        self._stream.flush()
+        os.fsync(self._stream.fileno())
+        self.count += 1
+        self.last = body
+        self._previous_sha256 = digest
+        event = body.get("event")
+        if event is not None:
+            key = str(event)
+            self.event_counts[key] = self.event_counts.get(key, 0) + 1
+            if key == "PUBLICATION_DURABLE":
+                self.max_durable_frontier = max(self.max_durable_frontier, int(body.get("source_sequence", -1)))
+
+    def close(self) -> None:
+        if not self._stream.closed:
+            self._stream.flush()
+            os.fsync(self._stream.fileno())
+            self._stream.close()
+
+
 def _install_p9_context_budget_adapter(llm_client: Any) -> Callable[[], None]:
     """Scope effective-budget retry to the P9 real provider transport only."""
 
@@ -168,6 +273,10 @@ async def run_frontier_history_async(
     authority: CapacityAuthority,
     history_id: str = "smoke",
     clock: Callable[[], int] = time.monotonic_ns,
+    event_sink: Callable[[dict[str, Any]], None] | None = None,
+    interval_sink: Callable[[dict[str, Any]], None] | None = None,
+    admission_event_sink: Callable[[dict[str, Any]], None] | None = None,
+    lifecycle_sink: Callable[[dict[str, Any]], None] | None = None,
 ) -> FrontierHistoryResult:
     """Run concurrent preparation and ordered publication without a global barrier."""
 
@@ -179,6 +288,9 @@ async def run_frontier_history_async(
         # the capacity envelope for P9.  This lets future extraction overlap a
         # native suffix while retaining FrontierExecutor's ordered publication.
         prepare_admission=False,
+        event_sink=event_sink,
+        admission_event_sink=admission_event_sink,
+        lifecycle_sink=lifecycle_sink,
     )
     preparation_intervals: list[dict[str, Any]] = []
     native_intervals: list[dict[str, Any]] = []
@@ -188,18 +300,20 @@ async def run_frontier_history_async(
         try:
             return await prepare(sequence)
         finally:
-            preparation_intervals.append(
-                {"source_sequence": sequence, "start_ns": start, "end_ns": int(clock())}
-            )
+            row = {"event": "PREPARE_INTERVAL", "source_sequence": sequence, "start_ns": start, "end_ns": int(clock())}
+            preparation_intervals.append({key: row[key] for key in ("source_sequence", "start_ns", "end_ns")})
+            if interval_sink is not None:
+                interval_sink(dict(row))
 
     async def traced_publish(sequence: int, value: Any) -> Any:
         start = int(clock())
         try:
             return await publish(sequence, value)
         finally:
-            native_intervals.append(
-                {"source_sequence": sequence, "start_ns": start, "end_ns": int(clock())}
-            )
+            row = {"event": "NATIVE_INTERVAL", "source_sequence": sequence, "start_ns": start, "end_ns": int(clock())}
+            native_intervals.append({key: row[key] for key in ("source_sequence", "start_ns", "end_ns")})
+            if interval_sink is not None:
+                interval_sink(dict(row))
 
     execution = await executor.run(traced_prepare, traced_publish)
     overlap_pairs = []
@@ -259,6 +373,7 @@ async def _run_history_live_async(
     instrumentation_installer: Callable[[Any, Any], Any],
     recorder_factory: Callable[[], Any],
     graph_exporter: Callable[[Any, list[Any], str], Any],
+    history_root: Path | None = None,
 ) -> dict[str, Any]:
     from graphiti_core.utils.maintenance.edge_operations import extract_edges
     from graphiti_core.utils.maintenance.node_operations import extract_nodes
@@ -271,6 +386,25 @@ async def _run_history_live_async(
         raise P9RunnerError(f"{history_id}: source sequence mapping is invalid")
     if not config.smoke and len(episodes) != EXPECTED_EPISODE_COUNTS[history_id]:
         raise P9RunnerError(f"{history_id}: full history source count is incomplete")
+
+    journals: dict[str, _DurableJsonl] = {}
+    if history_root is not None:
+        history_root.mkdir(parents=True, exist_ok=True)
+        journals = {
+            "frontier": _DurableJsonl(history_root / "frontier.jsonl"),
+            "admission": _DurableJsonl(history_root / "admission.jsonl"),
+            "raw": _DurableJsonl(history_root / "raw_events.jsonl"),
+        }
+
+    def journal_frontier(row: dict[str, Any]) -> None:
+        if journals:
+            journals["frontier"].append(row)
+            journals["raw"].append({"event": "FRONTIER", **row})
+
+    def journal_admission(row: dict[str, Any]) -> None:
+        if journals:
+            journals["admission"].append(row)
+            journals["raw"].append({"event": "ADMISSION", **row})
 
     runtime = await _maybe_await(runtime_builder())
     graphiti = runtime.graphiti
@@ -293,7 +427,7 @@ async def _run_history_live_async(
 
     original_llm = runtime.llm_client
     capacity = CapacityAuthority.from_protocol_runtime(runtime)
-    provider_arbiter = AdmissionArbiter(capacity)
+    provider_arbiter = AdmissionArbiter(capacity, event_sink=journal_admission if journals else None)
     store = TranscriptStore()
     frontier_ref = {"value": -1}
     client_identity = {
@@ -309,6 +443,7 @@ async def _run_history_live_async(
         mode="capture",
         durable_frontier=lambda: frontier_ref["value"],
         client_identity=client_identity,
+        event_sink=journal_admission if journals else None,
     )
     replay = FrontierAwareLLMClient(
         original_llm,
@@ -317,6 +452,7 @@ async def _run_history_live_async(
         mode="replay",
         durable_frontier=lambda: frontier_ref["value"],
         client_identity=client_identity,
+        event_sink=journal_admission if journals else None,
     )
     multiplex = _ScopedLLMClient(capture, replay)
     graphiti.llm_client = multiplex
@@ -365,6 +501,10 @@ async def _run_history_live_async(
             publish,
             authority=capacity,
             history_id=history_id,
+            event_sink=journal_frontier if journals else None,
+            interval_sink=(journals["raw"].append if journals else None),
+            admission_event_sink=journal_admission if journals else None,
+            lifecycle_sink=(journals["raw"].append if journals else None),
         )
         frontier_ref["value"] = result.durable_frontier
         if result.durable_frontier != len(episodes) - 1:
@@ -380,6 +520,19 @@ async def _run_history_live_async(
             for episode in episodes
         ]
         admission = list(capture.provider_calls) + list(replay.provider_calls)
+        final_publication_ns = max(
+            (int(event["monotonic_ns"]) for event in result.execution.events if event["event"] == "PUBLICATION_DURABLE"),
+            default=result.execution.timer_stop_ns,
+        )
+        lifecycle = {
+            "status": "DURABLE",
+            "t0_ns": result.execution.timer_start_ns,
+            "timer_start_ns": result.execution.timer_start_ns,
+            "t_durable_complete_ns": final_publication_ns,
+            "final_publication_ns": final_publication_ns,
+            "timer_stop_ns": result.execution.timer_stop_ns,
+            "build_makespan_ns": result.execution.timer_stop_ns - result.execution.timer_start_ns,
+        }
         summary = {
             "schema_version": "membind.v5.p9-history-result.v1",
             "status": "PASS",
@@ -404,13 +557,36 @@ async def _run_history_live_async(
             },
             "admission": admission,
             "native_trace": envelopes,
+            "lifecycle": lifecycle,
             "canonical_graph": dict(canonical),
             "build_makespan_ns": result.execution.build_makespan_ns,
         }
         await close_runtime()
+        for journal in journals.values():
+            journal.close()
         return summary
-    except BaseException:
+    except BaseException as exc:
+        logical = store.summary()
+        if history_root is not None:
+            frontier_journal = journals.get("frontier")
+            _write_new(
+                history_root / "failure.json",
+                {
+                    "schema_version": "membind.v5.p9-history-failure.v1",
+                    "status": "P9_HISTORY_FAILED",
+                    "history_id": history_id,
+                    "namespace": namespace,
+                    "error_type": f"{type(exc).__module__}.{type(exc).__qualname__}",
+                    "durable_frontier": frontier_journal.max_durable_frontier if frontier_journal else -1,
+                    "prepared_event_count": frontier_journal.event_counts.get("PREPARED", 0) if frontier_journal else 0,
+                    "logical_work_summary": logical,
+                    "frontier_event_count": journals.get("frontier").count if journals else 0,
+                    "admission_event_count": journals.get("admission").count if journals else 0,
+                },
+            )
         await close_runtime()
+        for journal in journals.values():
+            journal.close()
         raise
 
 
@@ -446,9 +622,7 @@ async def run_p9_full_live_async(
     baseline = verify_baseline_reference(config.baseline_root, allow_invalid_qa=True)
     if config.p8_seal is None or not config.p8_seal.is_file():
         raise P9RunnerError("P8 seal is required before P9")
-    p8 = json.loads(config.p8_seal.read_text(encoding="utf-8"))
-    if p8.get("status") != "P8_LIVE_SEALED":
-        raise P9RunnerError("P8 seal status is invalid")
+    p8 = _verify_p8_seal(config.p8_seal, baseline_reference=baseline)
 
     root.mkdir(parents=True, exist_ok=True)
     started = {
@@ -468,6 +642,7 @@ async def run_p9_full_live_async(
     try:
         for history_id in config.history_ids:
             namespace = f"membind-v5-p9-{config.run_id}-{history_id}-{uuid.uuid4().hex[:10]}"
+            history_root = root / "histories" / history_id
             result = await _run_history_live_async(
                 config=config,
                 history_id=history_id,
@@ -477,16 +652,19 @@ async def run_p9_full_live_async(
                 instrumentation_installer=instrumentation_installer,
                 recorder_factory=recorder_factory,
                 graph_exporter=graph_exporter,
+                history_root=history_root,
             )
             history_results.append(result)
-            history_root = root / "histories" / history_id
             _write_new(history_root / "history_result.json", {key: value for key, value in result.items() if key not in {"canonical_graph", "native_trace", "admission", "frontier"}})
             _write_new(history_root / "canonical_graph.json", result["canonical_graph"])
             _write_new(history_root / "logical_work_summary.json", result["logical_work_summary"])
             _write_new(history_root / "oracle_binding_summary.json", result["oracle_binding_summary"])
+            _write_new(history_root / "lifecycle.json", result["lifecycle"])
             _write_new(history_root / "block_metrics.json", {"history_id": history_id, "source_count": result["source_count"], "durable_frontier": result["durable_frontier"], "build_makespan_ns": result["build_makespan_ns"], "overlap_evidence": result["overlap_evidence"]})
-            _write_jsonl(history_root / "frontier.jsonl", result["frontier"])
-            _write_jsonl(history_root / "admission.jsonl", result["admission"])
+            if not (history_root / "frontier.jsonl").exists():
+                _write_jsonl(history_root / "frontier.jsonl", result["frontier"])
+            if not (history_root / "admission.jsonl").exists():
+                _write_jsonl(history_root / "admission.jsonl", result["admission"])
             _write_jsonl(history_root / "native_trace.jsonl", result["native_trace"])
             _write_new(history_root / "seal.json", {"schema_version": "membind.v5.p9-history-seal.v1", "status": "P9_HISTORY_SEALED", "history_id": history_id, "source_count": result["source_count"], "durable_frontier": result["durable_frontier"]})
     except BaseException as exc:

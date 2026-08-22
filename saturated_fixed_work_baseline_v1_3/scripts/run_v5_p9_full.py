@@ -6,30 +6,31 @@ from __future__ import annotations
 import asyncio
 import json
 import sys
-import urllib.request
 from pathlib import Path
 from typing import Any
 
 from saturated_fixed_work_baseline_v1_3.membind_v5.p9_runner import (
     P9FullConfig,
     P9RunnerError,
+    _verify_p8_seal,
     build_p9_parser,
     run_p9_full_live_async,
 )
 
 
 def _models(url: str, expected: str) -> dict[str, Any]:
-    request = urllib.request.Request(url, headers={"Accept": "application/json"})
     try:
-        with urllib.request.urlopen(request, timeout=10) as response:
-            body = response.read()
-        parsed = json.loads(body)
-        ids = sorted(
-            str(item.get("id", "")).casefold()
-            for item in (parsed.get("data", []) if isinstance(parsed, dict) else [])
-            if isinstance(item, dict)
-        )
-        return {"status": "PASS" if expected.casefold() in ids else "FAIL", "url": url, "model_ids": ids}
+        from saturated_fixed_work_baseline_v1_2.services import probe_model_catalog
+
+        max_model_len = 65536 if expected == "qwen3-32b-fp8" else 32768
+        return {
+            "status": "PASS",
+            **probe_model_catalog(
+                url,
+                expected_model=expected,
+                expected_max_model_len=max_model_len,
+            ),
+        }
     except Exception as exc:
         return {"status": "FAIL", "url": url, "error_type": f"{type(exc).__module__}.{type(exc).__qualname__}"}
 
@@ -66,9 +67,7 @@ def main(argv: list[str] | None = None) -> int:
     try:
         require_live_action(LiveAction.MEMBIND_V5, state_path=config.state_path)
         baseline = verify_baseline_reference(config.baseline_root, allow_invalid_qa=True)
-        p8 = json.loads(config.p8_seal.read_text(encoding="utf-8"))
-        if p8.get("status") != "P8_LIVE_SEALED":
-            raise P9RunnerError("P8 seal status is invalid")
+        p8 = _verify_p8_seal(config.p8_seal, baseline_reference=baseline)
     except Exception as exc:
         print(json.dumps({"status": "BLOCKED_GATE", "error": f"{type(exc).__name__}:{str(exc)}"}, sort_keys=True))
         return 2

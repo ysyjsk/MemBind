@@ -6,7 +6,10 @@ from pathlib import Path
 import pytest
 
 from saturated_fixed_work_baseline_v1_3.membind_v5.p9_runner import (
+    _DurableJsonl,
+    _verify_p8_seal,
     P9FullConfig,
+    P9RunnerError,
     _ScopedLLMClient,
     _install_p9_context_budget_adapter,
     _p9_effective_max_tokens,
@@ -72,6 +75,80 @@ async def test_full_frontier_failure_does_not_advance_durable_frontier() -> None
     assert published == [0, 1]
 
 
+@pytest.mark.asyncio
+async def test_partial_frontier_journal_survives_native_failure(tmp_path: Path) -> None:
+    journal = _DurableJsonl(tmp_path / "frontier.jsonl")
+    authority = CapacityAuthority.from_runtime(2, 2)
+
+    async def prepare(sequence: int) -> int:
+        return sequence
+
+    async def publish(sequence: int, _value: int) -> None:
+        if sequence == 1:
+            raise RuntimeError("native failure")
+
+    with pytest.raises(RuntimeError, match="native failure"):
+        await run_frontier_history_async(
+            3,
+            prepare,
+            publish,
+            authority=authority,
+            event_sink=journal.append,
+        )
+    journal.close()
+    rows = [__import__("json").loads(line) for line in (tmp_path / "frontier.jsonl").read_text().splitlines()]
+    assert [row["ordinal"] for row in rows] == list(range(len(rows)))
+    assert rows[0]["previous_sha256"] == "0" * 64
+    assert all(row.get("payload_sha256") for row in rows)
+    assert [row["source_sequence"] for row in rows if row["event"] == "PUBLICATION_DURABLE"] == [0]
+    assert any(row["event"] == "FAILURE" and row["source_sequence"] == 1 for row in rows)
+    assert not any(row["event"] == "PUBLICATION_DURABLE" and row["source_sequence"] == 1 for row in rows)
+
+
+@pytest.mark.asyncio
+async def test_p9_lifecycle_sink_binds_formal_start_to_final_durable() -> None:
+    lifecycle: list[dict[str, object]] = []
+    authority = CapacityAuthority.from_runtime(2, 2)
+
+    async def prepare(sequence: int) -> int:
+        await asyncio.sleep(0)
+        return sequence
+
+    async def publish(_sequence: int, _value: int) -> None:
+        await asyncio.sleep(0)
+
+    result = await run_frontier_history_async(
+        2,
+        prepare,
+        publish,
+        authority=authority,
+        lifecycle_sink=lifecycle.append,
+    )
+    assert lifecycle[0]["event"] == "FORMAL_START"
+    assert lifecycle[-1]["event"] == "TIMER_STOP"
+    assert lifecycle[-1]["t_durable_complete_ns"] <= lifecycle[-1]["timer_stop_ns"]
+    assert result.execution.timer_start_ns <= lifecycle[-1]["t_durable_complete_ns"]
+
+
+@pytest.mark.asyncio
+async def test_p9_lifecycle_sink_records_abort_without_durable_advance() -> None:
+    lifecycle: list[dict[str, object]] = []
+    authority = CapacityAuthority.from_runtime(2, 2)
+
+    async def prepare(sequence: int) -> int:
+        return sequence
+
+    async def publish(sequence: int, _value: int) -> None:
+        if sequence == 0:
+            raise RuntimeError("native failure")
+
+    with pytest.raises(RuntimeError, match="native failure"):
+        await run_frontier_history_async(2, prepare, publish, authority=authority, lifecycle_sink=lifecycle.append)
+    assert lifecycle[0]["event"] == "FORMAL_START"
+    assert lifecycle[-1]["event"] == "TIMER_ABORT"
+    assert lifecycle[-1]["durable_frontier"] == -1
+
+
 def test_p9_command_is_real_runner_and_cli_shape_is_parseable(tmp_path: Path) -> None:
     config = P9FullConfig(
         repo_root=tmp_path,
@@ -111,6 +188,54 @@ def test_p9_full_config_defaults_to_all_frozen_histories() -> None:
     )
     assert config.history_ids == ("07741c45", "b6019101", "6071bd76", "a2f3aa27")
     assert config.source_limit is None
+
+
+def test_p8_gate_requires_seal_identity_and_complete_artifact(tmp_path: Path) -> None:
+    root = tmp_path / "p8"
+    root.mkdir()
+    required = {
+        "frontier.jsonl",
+        "admission.jsonl",
+        "logical_work_summary.json",
+        "native_trace.jsonl",
+        "block_metrics.json",
+        "canonical_graph.json",
+        "lifecycle.json",
+        "live_authority.json",
+        "capacity_authority.json",
+        "oracle_binding_summary.json",
+    }
+    for name in required:
+        (root / name).write_text("{}\n", encoding="utf-8")
+    baseline = {"formal_run_seal_sha256": "baseline-hash"}
+    seal = {
+        "schema_version": "membind.v5.p8-seal.v1",
+        "status": "P8_LIVE_SEALED",
+        "method": "V5_VERSIONED_ORACLE_HOIST",
+        "namespace": "membind-v5-p8-test-abc",
+        "source_count": 2,
+        "build_makespan_ns": 1,
+    }
+    (root / "seal.json").write_text(__import__("json").dumps(seal), encoding="utf-8")
+    (root / "manifest.json").write_text(
+        __import__("json").dumps(
+            {
+                "status": "PASS",
+                "method": seal["method"],
+                "namespace": seal["namespace"],
+                "source_count": 2,
+                "native_graphiti_path": "Graphiti.add_episode",
+                "baseline_reference": baseline,
+            }
+        ),
+        encoding="utf-8",
+    )
+    verified = _verify_p8_seal(root / "seal.json", baseline_reference=baseline)
+    assert verified["artifact_completeness"] == "PASS"
+    seal["status"] = "P8_LIVE_STARTED"
+    (root / "seal.json").write_text(__import__("json").dumps(seal), encoding="utf-8")
+    with pytest.raises(P9RunnerError, match="P8 seal identity"):
+        _verify_p8_seal(root / "seal.json", baseline_reference=baseline)
 
 
 def test_p9_failure_schema_is_sanitized() -> None:

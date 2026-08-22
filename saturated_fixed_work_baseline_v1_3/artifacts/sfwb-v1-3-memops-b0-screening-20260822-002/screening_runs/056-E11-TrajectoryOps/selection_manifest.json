@@ -1,0 +1,238 @@
+{
+  "cohort_id": "sfwb-v1-3-memops-b0-screening-20260822-002",
+  "cohort_manifest_sha256": "779c4d6596d53c27ce49079cc7b68543904a9ef0131892d83aacd9068a812ed6",
+  "cohort_sample_id": "E11__TrajectoryOps",
+  "official_qa_evaluator": {
+    "path": "/data/predator/ly/third_party/MemOps/5.5-evaluate_operation_metrics.py",
+    "prompt_builder": "build_evaluation_prompt",
+    "result_parser": "parse_judge_metrics",
+    "sha256": "17c24362c174239eb7ef5e543bc651afed60ae445a4becd49acf24f6d3c646f0"
+  },
+  "official_sample_id": "E11",
+  "payload_sha256": "fd8e2042252e3ec11ef6c2700ffeb931a2e81162a010bda02700c4fb665a604f",
+  "samples": [
+    {
+      "cohort_sample_id": "E11__TrajectoryOps",
+      "history_id": "memops-e11-trajectoryops",
+      "latest_confirmed_value": "750 boxes",
+      "official_sample_id": "E11",
+      "operation_type": "TrajectoryOps",
+      "qa": [
+        {
+          "evaluation_setting": "adjacent_operation",
+          "evaluation_type": "StateTransition",
+          "expected_answer": "750 boxes.",
+          "gold_memory_state": "GreenWrap Co. box order is 750 boxes (confirmed). The offer to bump back to 1,000 boxes has not been accepted and remains pending the user's decision by Friday. The confirmed current quantity is 750.",
+          "gold_provenance": [
+            {
+              "quote": "GreenWrap confirmed they can only do 750 boxes on this shipment due to a stock issue, so I agreed to 750",
+              "segment_index": 2,
+              "turn_index": 3
+            },
+            {
+              "quote": "GreenWrap's rep just emailed saying they restocked and can bump my order back up to 1,000 boxes if I confirm by Friday",
+              "segment_index": 3,
+              "turn_index": 5
+            }
+          ],
+          "judge_rubric": {
+            "acceptable_paraphrases": [
+              "750 boxes",
+              "seven hundred fifty boxes"
+            ],
+            "harmful_extra": [
+              "treating the tentative 1,000-box offer as the current confirmed quantity"
+            ],
+            "harmless_extra": [
+              "mentioning the pending offer to increase to 1,000",
+              "mentioning the need to decide by Friday"
+            ],
+            "must_include": [
+              "750"
+            ],
+            "must_not_include": [
+              "1,000 as the current order",
+              "500 as the current order"
+            ]
+          },
+          "question_id": "E11:p3_state_transition:adjacent_operation",
+          "question_pair_id": "p3_state_transition"
+        },
+        {
+          "evaluation_setting": "longitudinal_operation",
+          "evaluation_type": "StateTransition",
+          "expected_answer": "750 boxes.",
+          "gold_memory_state": "GreenWrap Co. box order is 750 boxes (confirmed). The offer to bump back to 1,000 boxes has not been accepted and remains pending the user's decision by Friday. The confirmed current quantity is 750.",
+          "gold_provenance": [
+            {
+              "quote": "GreenWrap confirmed they can only do 750 boxes on this shipment due to a stock issue, so I agreed to 750",
+              "segment_index": 2,
+              "turn_index": 3
+            },
+            {
+              "quote": "GreenWrap's rep just emailed saying they restocked and can bump my order back up to 1,000 boxes if I confirm by Friday",
+              "segment_index": 3,
+              "turn_index": 5
+            }
+          ],
+          "judge_rubric": {
+            "acceptable_paraphrases": [
+              "750 boxes",
+              "seven hundred fifty boxes"
+            ],
+            "harmful_extra": [
+              "treating the tentative 1,000-box offer as the current confirmed quantity"
+            ],
+            "harmless_extra": [
+              "mentioning the pending offer to increase to 1,000",
+              "mentioning the need to decide by Friday"
+            ],
+            "must_include": [
+              "750"
+            ],
+            "must_not_include": [
+              "1,000 as the current order",
+              "500 as the current order"
+            ]
+          },
+          "question_id": "E11:p3_state_transition:longitudinal_operation",
+          "question_pair_id": "p3_state_transition"
+        },
+        {
+          "evaluation_setting": "adjacent_operation",
+          "evaluation_type": "StateTrajectory",
+          "expected_answer": "The sequence was: (1) initially 500 boxes when the order was first placed, (2) increased to 1,000 boxes after the user called GreenWrap to change it for holiday coverage, (3) reduced to 750 boxes after GreenWrap said they could only fulfill that amount due to a stock issue and the user agreed, (4) GreenWrap offered to bump back to 1,000 boxes but the user has not accepted yet. Steps 1 through 3 were each adopted. Step 4 is pending and has not been adopted. The order currently stands at 750 boxes.",
+          "gold_memory_state": "GreenWrap box order trajectory: 500 (confirmed, step 1) → 1,000 (confirmed, step 2) → 750 (confirmed, step 3) → 1,000 (tentative, step 4, not adopted). Current confirmed value: 750 boxes.",
+          "gold_provenance": [
+            {
+              "quote": "I just placed a reorder with GreenWrap Co. for 500 boxes of packaging for my candle business",
+              "segment_index": 1,
+              "turn_index": 1
+            },
+            {
+              "quote": "I called GreenWrap and changed the order to 1,000 boxes because I realized 500 won't cover the next two months of production",
+              "segment_index": 1,
+              "turn_index": 5
+            },
+            {
+              "quote": "GreenWrap confirmed they can only do 750 boxes on this shipment due to a stock issue, so I agreed to 750",
+              "segment_index": 2,
+              "turn_index": 3
+            },
+            {
+              "quote": "GreenWrap's rep just emailed saying they restocked and can bump my order back up to 1,000 boxes if I confirm by Friday",
+              "segment_index": 3,
+              "turn_index": 5
+            }
+          ],
+          "judge_rubric": {
+            "acceptable_paraphrases": [
+              "hasn't decided on the 1,000 yet",
+              "waiting to confirm the bump to 1,000",
+              "750 is the current active order"
+            ],
+            "harmful_extra": [
+              "treating the tentative 1,000 offer as the final adopted value",
+              "omitting the 750 step entirely"
+            ],
+            "harmless_extra": [
+              "mentioning the Friday deadline",
+              "mentioning the stock issue reason",
+              "mentioning the holiday production context"
+            ],
+            "must_include": [
+              "500 as initial value",
+              "1,000 as second value",
+              "750 as third value and current confirmed value",
+              "tentative/pending offer of 1,000 not yet accepted"
+            ],
+            "must_not_include": [
+              "stating the current order is 1,000"
+            ]
+          },
+          "question_id": "E11:p5_state_trajectory:adjacent_operation",
+          "question_pair_id": "p5_state_trajectory"
+        },
+        {
+          "evaluation_setting": "longitudinal_operation",
+          "evaluation_type": "StateTrajectory",
+          "expected_answer": "The sequence was: (1) initially 500 boxes when the order was first placed, (2) increased to 1,000 boxes after the user called GreenWrap to change it for holiday coverage, (3) reduced to 750 boxes after GreenWrap said they could only fulfill that amount due to a stock issue and the user agreed, (4) GreenWrap offered to bump back to 1,000 boxes but the user has not accepted yet. Steps 1 through 3 were each adopted. Step 4 is pending and has not been adopted. The order currently stands at 750 boxes.",
+          "gold_memory_state": "GreenWrap box order trajectory: 500 (confirmed, step 1) → 1,000 (confirmed, step 2) → 750 (confirmed, step 3) → 1,000 (tentative, step 4, not adopted). Current confirmed value: 750 boxes.",
+          "gold_provenance": [
+            {
+              "quote": "I just placed a reorder with GreenWrap Co. for 500 boxes of packaging for my candle business",
+              "segment_index": 1,
+              "turn_index": 1
+            },
+            {
+              "quote": "I called GreenWrap and changed the order to 1,000 boxes because I realized 500 won't cover the next two months of production",
+              "segment_index": 1,
+              "turn_index": 5
+            },
+            {
+              "quote": "GreenWrap confirmed they can only do 750 boxes on this shipment due to a stock issue, so I agreed to 750",
+              "segment_index": 2,
+              "turn_index": 3
+            },
+            {
+              "quote": "GreenWrap's rep just emailed saying they restocked and can bump my order back up to 1,000 boxes if I confirm by Friday",
+              "segment_index": 3,
+              "turn_index": 5
+            }
+          ],
+          "judge_rubric": {
+            "acceptable_paraphrases": [
+              "hasn't decided on the 1,000 yet",
+              "waiting to confirm the bump to 1,000",
+              "750 is the current active order"
+            ],
+            "harmful_extra": [
+              "treating the tentative 1,000 offer as the final adopted value",
+              "omitting the 750 step entirely"
+            ],
+            "harmless_extra": [
+              "mentioning the Friday deadline",
+              "mentioning the stock issue reason",
+              "mentioning the holiday production context"
+            ],
+            "must_include": [
+              "500 as initial value",
+              "1,000 as second value",
+              "750 as third value and current confirmed value",
+              "tentative/pending offer of 1,000 not yet accepted"
+            ],
+            "must_not_include": [
+              "stating the current order is 1,000"
+            ]
+          },
+          "question_id": "E11:p5_state_trajectory:longitudinal_operation",
+          "question_pair_id": "p5_state_trajectory"
+        }
+      ],
+      "sample_id": "E11__TrajectoryOps",
+      "source_file": "/data/predator/ly/third_party/MemOps/generated_result/2-evidence_conversation/E11_trajectory_ops.json",
+      "source_sha256": "f12a151684a745043215d0c6df5e863509f4d35cbff41ca2a0f91654a3b0c43b",
+      "special_semantics_present": true,
+      "stale_confirmed_values": [
+        "500 boxes",
+        "1,000 boxes"
+      ],
+      "target_id": "greenwrap_box_order_qty",
+      "target_name": "GreenWrap Co. packaging box reorder quantity",
+      "transitions": [
+        {
+          "new_operation_id": "op3",
+          "new_segment_index": 2,
+          "new_value": "750 boxes",
+          "old_operation_id": "op2",
+          "old_segment_index": 1,
+          "old_value": "500 boxes",
+          "target_id": "greenwrap_box_order_qty",
+          "target_name": "GreenWrap Co. packaging box reorder quantity"
+        }
+      ]
+    }
+  ],
+  "schema_version": "sfwb.v1.3.memops-b0-screening-run-selection.v1",
+  "status": "OFFLINE_RUN_SELECTION_FROZEN"
+}

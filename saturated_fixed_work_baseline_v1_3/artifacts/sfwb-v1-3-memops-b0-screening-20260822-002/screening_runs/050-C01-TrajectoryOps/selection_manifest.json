@@ -1,0 +1,248 @@
+{
+  "cohort_id": "sfwb-v1-3-memops-b0-screening-20260822-002",
+  "cohort_manifest_sha256": "779c4d6596d53c27ce49079cc7b68543904a9ef0131892d83aacd9068a812ed6",
+  "cohort_sample_id": "C01__TrajectoryOps",
+  "official_qa_evaluator": {
+    "path": "/data/predator/ly/third_party/MemOps/5.5-evaluate_operation_metrics.py",
+    "prompt_builder": "build_evaluation_prompt",
+    "result_parser": "parse_judge_metrics",
+    "sha256": "17c24362c174239eb7ef5e543bc651afed60ae445a4becd49acf24f6d3c646f0"
+  },
+  "official_sample_id": "C01",
+  "payload_sha256": "ea261ae6d0f97d719b457c55ef3f696d3d39714c13a81ad77cfec5d40abb8bf7",
+  "samples": [
+    {
+      "cohort_sample_id": "C01__TrajectoryOps",
+      "history_id": "memops-c01-trajectoryops",
+      "latest_confirmed_value": "$210",
+      "official_sample_id": "C01",
+      "operation_type": "TrajectoryOps",
+      "qa": [
+        {
+          "evaluation_setting": "adjacent_operation",
+          "evaluation_type": "StateTransition",
+          "expected_answer": "$210",
+          "gold_memory_state": "BrightFix confirmed standalone quote is $210 (spring promotion). The $185 bundle offer was conditional on adding kitchen vent cleaning and was never confirmed/accepted. Previous values of $220 and $240 are superseded.",
+          "gold_provenance": [
+            {
+              "quote": "BrightFix actually sent me an updated quote yesterday. They lowered it to $210 because they're running a spring promotion",
+              "segment_index": 2,
+              "turn_index": 3
+            },
+            {
+              "quote": "The BrightFix rep left me a voicemail saying if I bundle the bathroom fan with a kitchen vent cleaning, the fan replacement portion drops to $185. I'm seriously considering that package",
+              "segment_index": 3,
+              "turn_index": 5
+            }
+          ],
+          "judge_rubric": {
+            "acceptable_paraphrases": [
+              "210 dollars",
+              "two hundred ten dollars"
+            ],
+            "harmful_extra": [
+              "presenting $185 as the confirmed standalone price"
+            ],
+            "harmless_extra": [
+              "mentioning the spring promotion",
+              "noting the bundle option exists but is unconfirmed"
+            ],
+            "must_include": [
+              "$210"
+            ],
+            "must_not_include": [
+              "$185 as the reliable standalone rate",
+              "$220",
+              "$240"
+            ]
+          },
+          "question_id": "C01:p3_state_transition:adjacent_operation",
+          "question_pair_id": "p3_state_transition"
+        },
+        {
+          "evaluation_setting": "longitudinal_operation",
+          "evaluation_type": "StateTransition",
+          "expected_answer": "$210",
+          "gold_memory_state": "BrightFix confirmed standalone quote is $210 (spring promotion). The $185 bundle offer was conditional on adding kitchen vent cleaning and was never confirmed/accepted. Previous values of $220 and $240 are superseded.",
+          "gold_provenance": [
+            {
+              "quote": "BrightFix actually sent me an updated quote yesterday. They lowered it to $210 because they're running a spring promotion",
+              "segment_index": 2,
+              "turn_index": 3
+            },
+            {
+              "quote": "The BrightFix rep left me a voicemail saying if I bundle the bathroom fan with a kitchen vent cleaning, the fan replacement portion drops to $185. I'm seriously considering that package",
+              "segment_index": 3,
+              "turn_index": 5
+            }
+          ],
+          "judge_rubric": {
+            "acceptable_paraphrases": [
+              "210 dollars",
+              "two hundred ten dollars"
+            ],
+            "harmful_extra": [
+              "presenting $185 as the confirmed standalone price"
+            ],
+            "harmless_extra": [
+              "mentioning the spring promotion",
+              "noting the bundle option exists but is unconfirmed"
+            ],
+            "must_include": [
+              "$210"
+            ],
+            "must_not_include": [
+              "$185 as the reliable standalone rate",
+              "$220",
+              "$240"
+            ]
+          },
+          "question_id": "C01:p3_state_transition:longitudinal_operation",
+          "question_pair_id": "p3_state_transition"
+        },
+        {
+          "evaluation_setting": "adjacent_operation",
+          "evaluation_type": "StateTrajectory",
+          "expected_answer": "The sequence was: (1) $220 initially reported but based on faulty memory, (2) corrected to $240 after checking the email — this was the first confirmed amount, (3) lowered to $210 when BrightFix sent a spring promotion quote — this became the new confirmed amount, (4) a conditional $185 was offered if bundled with kitchen vent cleaning, but this was never accepted or confirmed. The current reliable standalone quote is $210.",
+          "gold_memory_state": "BrightFix quote trajectory: $220 (confirmed, then superseded) → $240 (confirmed correction, then superseded) → $210 (confirmed spring promotion, current) → $185 (tentative bundle, not adopted). Final confirmed value: $210.",
+          "gold_provenance": [
+            {
+              "quote": "I called BrightFix Home Services on March 12th and they quoted me $220 for parts and labor to replace the bathroom exhaust fan",
+              "segment_index": 1,
+              "turn_index": 1
+            },
+            {
+              "quote": "I went back and checked the email from BrightFix and the quote was actually $240, not $220. I remembered it wrong",
+              "segment_index": 1,
+              "turn_index": 5
+            },
+            {
+              "quote": "BrightFix actually sent me an updated quote yesterday. They lowered it to $210 because they're running a spring promotion",
+              "segment_index": 2,
+              "turn_index": 3
+            },
+            {
+              "quote": "The BrightFix rep left me a voicemail saying if I bundle the bathroom fan with a kitchen vent cleaning, the fan replacement portion drops to $185. I'm seriously considering that package",
+              "segment_index": 3,
+              "turn_index": 5
+            }
+          ],
+          "judge_rubric": {
+            "acceptable_paraphrases": [
+              "not confirmed",
+              "not accepted",
+              "contingent on bundling",
+              "pending"
+            ],
+            "harmful_extra": [
+              "stating $185 replaced $210 as the confirmed rate",
+              "omitting the $240 step",
+              "presenting the sequence out of chronological order"
+            ],
+            "harmless_extra": [
+              "March 12th date",
+              "spring promotion detail",
+              "kitchen vent cleaning bundle context"
+            ],
+            "must_include": [
+              "$220",
+              "$240",
+              "$210",
+              "$185",
+              "$210 as current/final confirmed value",
+              "$185 as conditional/not adopted"
+            ],
+            "must_not_include": [
+              "$185 as the final confirmed quote"
+            ]
+          },
+          "question_id": "C01:p5_state_trajectory:adjacent_operation",
+          "question_pair_id": "p5_state_trajectory"
+        },
+        {
+          "evaluation_setting": "longitudinal_operation",
+          "evaluation_type": "StateTrajectory",
+          "expected_answer": "The sequence was: (1) $220 initially reported but based on faulty memory, (2) corrected to $240 after checking the email — this was the first confirmed amount, (3) lowered to $210 when BrightFix sent a spring promotion quote — this became the new confirmed amount, (4) a conditional $185 was offered if bundled with kitchen vent cleaning, but this was never accepted or confirmed. The current reliable standalone quote is $210.",
+          "gold_memory_state": "BrightFix quote trajectory: $220 (confirmed, then superseded) → $240 (confirmed correction, then superseded) → $210 (confirmed spring promotion, current) → $185 (tentative bundle, not adopted). Final confirmed value: $210.",
+          "gold_provenance": [
+            {
+              "quote": "I called BrightFix Home Services on March 12th and they quoted me $220 for parts and labor to replace the bathroom exhaust fan",
+              "segment_index": 1,
+              "turn_index": 1
+            },
+            {
+              "quote": "I went back and checked the email from BrightFix and the quote was actually $240, not $220. I remembered it wrong",
+              "segment_index": 1,
+              "turn_index": 5
+            },
+            {
+              "quote": "BrightFix actually sent me an updated quote yesterday. They lowered it to $210 because they're running a spring promotion",
+              "segment_index": 2,
+              "turn_index": 3
+            },
+            {
+              "quote": "The BrightFix rep left me a voicemail saying if I bundle the bathroom fan with a kitchen vent cleaning, the fan replacement portion drops to $185. I'm seriously considering that package",
+              "segment_index": 3,
+              "turn_index": 5
+            }
+          ],
+          "judge_rubric": {
+            "acceptable_paraphrases": [
+              "not confirmed",
+              "not accepted",
+              "contingent on bundling",
+              "pending"
+            ],
+            "harmful_extra": [
+              "stating $185 replaced $210 as the confirmed rate",
+              "omitting the $240 step",
+              "presenting the sequence out of chronological order"
+            ],
+            "harmless_extra": [
+              "March 12th date",
+              "spring promotion detail",
+              "kitchen vent cleaning bundle context"
+            ],
+            "must_include": [
+              "$220",
+              "$240",
+              "$210",
+              "$185",
+              "$210 as current/final confirmed value",
+              "$185 as conditional/not adopted"
+            ],
+            "must_not_include": [
+              "$185 as the final confirmed quote"
+            ]
+          },
+          "question_id": "C01:p5_state_trajectory:longitudinal_operation",
+          "question_pair_id": "p5_state_trajectory"
+        }
+      ],
+      "sample_id": "C01__TrajectoryOps",
+      "source_file": "/data/predator/ly/third_party/MemOps/generated_result/2-evidence_conversation/C01_trajectory_ops.json",
+      "source_sha256": "8dab0f6847c27684478ae2a6e03302e997a591c88e1715665ecfc92900f79b8b",
+      "special_semantics_present": true,
+      "stale_confirmed_values": [
+        "$220",
+        "$240"
+      ],
+      "target_id": "brightfix_quote_amount",
+      "target_name": "BrightFix Home Services quote for bathroom exhaust fan replacement",
+      "transitions": [
+        {
+          "new_operation_id": "op4",
+          "new_segment_index": 2,
+          "new_value": "$210",
+          "old_operation_id": "op2",
+          "old_segment_index": 1,
+          "old_value": "$220",
+          "target_id": "brightfix_quote_amount",
+          "target_name": "BrightFix Home Services quote for bathroom exhaust fan replacement"
+        }
+      ]
+    }
+  ],
+  "schema_version": "sfwb.v1.3.memops-b0-screening-run-selection.v1",
+  "status": "OFFLINE_RUN_SELECTION_FROZEN"
+}

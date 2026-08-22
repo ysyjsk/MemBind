@@ -67,6 +67,7 @@ class V5LLMClientProxy:
     transport_identity: dict[str, Any] | None = None
     cache_salt: str = ""
     previous_context_digest: str = ""
+    identity_sink: Callable[[RequestIdentity], None] | None = None
 
     def __post_init__(self) -> None:
         if self.mode not in {"capture", "replay"}:
@@ -129,6 +130,8 @@ class V5LLMClientProxy:
         identity = self._identity(messages, response_model, max_tokens, model_size, group_id, prompt_name, attribute_extraction, source_sequence)
         immutable_messages = copy.deepcopy(messages)
         identity_token = _PROXY_REQUEST_IDENTITY.set(identity)
+        if self.identity_sink is not None:
+            self.identity_sink(identity)
 
         async def delegate() -> Any:
             return await self.delegate.generate_response(

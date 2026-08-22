@@ -33,6 +33,8 @@ class FrontierExecutor:
         clock: Callable[[], int] = time.monotonic_ns,
         prepare_admission: bool = True,
         event_sink: Callable[[dict[str, Any]], None] | None = None,
+        admission_event_sink: Callable[[dict[str, Any]], None] | None = None,
+        lifecycle_sink: Callable[[dict[str, Any]], None] | None = None,
     ) -> None:
         if source_count < 0:
             raise ValueError("source_count must be non-negative")
@@ -40,8 +42,9 @@ class FrontierExecutor:
         self.clock = clock
         self.authority = authority
         self.prepare_admission = bool(prepare_admission)
-        self.admission = AdmissionArbiter(authority)
+        self.admission = AdmissionArbiter(authority, event_sink=admission_event_sink)
         self.frontier = FrontierRuntime(source_count, clock=clock, event_sink=event_sink)
+        self.lifecycle_sink = lifecycle_sink
         self._tasks: list[asyncio.Task[Any]] = []
 
     async def run(
@@ -50,6 +53,8 @@ class FrontierExecutor:
         publish: Callable[[int, Any], Awaitable[Any]],
     ) -> ExecutionResult:
         timer_start = int(self.clock())
+        if self.lifecycle_sink is not None:
+            self.lifecycle_sink({"event": "FORMAL_START", "monotonic_ns": timer_start, "t0_ns": timer_start})
         async def do_prepare(sequence: int) -> None:
             admission_class = AdmissionClass.FRONTIER_PREPARE if sequence == 0 else AdmissionClass.FUTURE_PREPARE
             if self.prepare_admission:
@@ -122,6 +127,16 @@ class FrontierExecutor:
                 task_by_sequence.pop(sequence, None)
                 schedule_window()
         except BaseException:
+            if self.lifecycle_sink is not None:
+                self.lifecycle_sink(
+                    {
+                        "event": "TIMER_ABORT",
+                        "monotonic_ns": int(self.clock()),
+                        "timer_start_ns": timer_start,
+                        "durable_frontier": self.frontier.durable_frontier,
+                        "failed_sequence": self.frontier.failed_sequence,
+                    }
+                )
             for task in task_by_sequence.values():
                 if not task.done():
                     task.cancel()
@@ -130,6 +145,20 @@ class FrontierExecutor:
         finally:
             self._tasks = []
         timer_stop = int(self.clock())
+        if self.lifecycle_sink is not None:
+            final_publication = max(
+                (int(event["monotonic_ns"]) for event in self.frontier.events if event["event"] == "PUBLICATION_DURABLE"),
+                default=timer_stop,
+            )
+            self.lifecycle_sink(
+                {
+                    "event": "TIMER_STOP",
+                    "monotonic_ns": timer_stop,
+                    "timer_stop_ns": timer_stop,
+                    "final_publication_ns": final_publication,
+                    "t_durable_complete_ns": final_publication,
+                }
+            )
         return ExecutionResult(
             durable_frontier=self.frontier.durable_frontier,
             events=list(self.frontier.events),

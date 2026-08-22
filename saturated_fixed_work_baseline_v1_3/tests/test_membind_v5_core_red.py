@@ -330,6 +330,35 @@ async def test_provider_admission_classifies_frontier_prepare_dynamically_and_re
     assert replay.provider_calls[-1]["admitted"] is False
 
 
+@pytest.mark.asyncio
+async def test_admission_waiter_reclassifies_when_frontier_moves() -> None:
+    from saturated_fixed_work_baseline_v1_3.membind_v5.runtime.core.admission import AdmissionArbiter
+
+    authority = CapacityAuthority.from_runtime(1, 1)
+    events: list[dict[str, object]] = []
+    arbiter = AdmissionArbiter(authority, event_sink=events.append)
+    frontier = {"value": -1}
+    held = await arbiter.acquire(AdmissionClass.NATIVE_FRONTIER, source_sequence=0)
+    waiting = asyncio.create_task(
+        arbiter.acquire(
+            AdmissionClass.FUTURE_PREPARE,
+            source_sequence=1,
+            class_resolver=lambda: (
+                AdmissionClass.FRONTIER_PREPARE
+                if frontier["value"] + 1 == 1
+                else AdmissionClass.FUTURE_PREPARE
+            ),
+        )
+    )
+    await asyncio.sleep(0)
+    frontier["value"] = 0
+    await arbiter.release(held)
+    admitted = await waiting
+    await arbiter.release(admitted)
+    assert admitted is AdmissionClass.FRONTIER_PREPARE
+    assert any(row.get("event") == "ADMISSION_RECLASSIFY" for row in events)
+
+
 def test_core_architecture_has_no_graphiti_import() -> None:
     root = Path(__file__).parents[1] / "src/saturated_fixed_work_baseline_v1_3/membind_v5/runtime/core"
     for path in root.glob("*.py"):

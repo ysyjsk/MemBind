@@ -1,0 +1,262 @@
+{
+  "cohort_id": "sfwb-v1-3-memops-b0-screening-20260822-002",
+  "cohort_manifest_sha256": "779c4d6596d53c27ce49079cc7b68543904a9ef0131892d83aacd9068a812ed6",
+  "cohort_sample_id": "C30__TrajectoryOps",
+  "official_qa_evaluator": {
+    "path": "/data/predator/ly/third_party/MemOps/5.5-evaluate_operation_metrics.py",
+    "prompt_builder": "build_evaluation_prompt",
+    "result_parser": "parse_judge_metrics",
+    "sha256": "17c24362c174239eb7ef5e543bc651afed60ae445a4becd49acf24f6d3c646f0"
+  },
+  "official_sample_id": "C30",
+  "payload_sha256": "1cf6e3a5c08ed388eb4c13282bd713942fd551ff736fbdd60a8fb87099f71707",
+  "samples": [
+    {
+      "cohort_sample_id": "C30__TrajectoryOps",
+      "history_id": "memops-c30-trajectoryops",
+      "latest_confirmed_value": "$300",
+      "official_sample_id": "C30",
+      "operation_type": "TrajectoryOps",
+      "qa": [
+        {
+          "evaluation_setting": "adjacent_operation",
+          "evaluation_type": "StateTransition",
+          "expected_answer": "$300 will be deducted biweekly for the VTSAX auto-invest.",
+          "gold_memory_state": "The VTSAX biweekly auto-invest is $300, which is the last confirmed amount after the user changed the Fidelity setting. The $400 amount recommended by the financial advisor was never enacted — the user explicitly stated they hadn't changed the Fidelity setting and were still deciding. The active deduction amount remains $300.",
+          "gold_provenance": [
+            {
+              "quote": "after running the numbers with my budget spreadsheet I decided to bump the VTSAX auto-invest up to $300 biweekly starting this month",
+              "segment_index": 2,
+              "turn_index": 5
+            },
+            {
+              "quote": "My financial advisor just emailed and recommended I increase the VTSAX contribution to $400 biweekly to max out my annual target. I'll probably go ahead with that",
+              "segment_index": 3,
+              "turn_index": 3
+            },
+            {
+              "quote": "my active recurring investments are the $300 biweekly VTSAX auto-invest and the $50 monthly Bitcoin buy on Coinbase",
+              "segment_index": 3,
+              "turn_index": 7
+            }
+          ],
+          "judge_rubric": {
+            "acceptable_paraphrases": [
+              "300 dollars biweekly",
+              "$300 every two weeks"
+            ],
+            "harmful_extra": [
+              "presenting $400 as the amount that will be deducted",
+              "presenting any amount other than $300 as active"
+            ],
+            "harmless_extra": [
+              "mentioning that an increase to $400 was discussed but not finalized",
+              "mentioning the deduction dates are the 1st and 15th"
+            ],
+            "must_include": [
+              "$300"
+            ],
+            "must_not_include": [
+              "$400 as the active amount",
+              "$250 as the current amount",
+              "$200 as the current amount"
+            ]
+          },
+          "question_id": "C30:p3_state_transition:adjacent_operation",
+          "question_pair_id": "p3_state_transition"
+        },
+        {
+          "evaluation_setting": "longitudinal_operation",
+          "evaluation_type": "StateTransition",
+          "expected_answer": "$300 will be deducted biweekly for the VTSAX auto-invest.",
+          "gold_memory_state": "The VTSAX biweekly auto-invest is $300, which is the last confirmed amount after the user changed the Fidelity setting. The $400 amount recommended by the financial advisor was never enacted — the user explicitly stated they hadn't changed the Fidelity setting and were still deciding. The active deduction amount remains $300.",
+          "gold_provenance": [
+            {
+              "quote": "after running the numbers with my budget spreadsheet I decided to bump the VTSAX auto-invest up to $300 biweekly starting this month",
+              "segment_index": 2,
+              "turn_index": 5
+            },
+            {
+              "quote": "My financial advisor just emailed and recommended I increase the VTSAX contribution to $400 biweekly to max out my annual target. I'll probably go ahead with that",
+              "segment_index": 3,
+              "turn_index": 3
+            },
+            {
+              "quote": "my active recurring investments are the $300 biweekly VTSAX auto-invest and the $50 monthly Bitcoin buy on Coinbase",
+              "segment_index": 3,
+              "turn_index": 7
+            }
+          ],
+          "judge_rubric": {
+            "acceptable_paraphrases": [
+              "300 dollars biweekly",
+              "$300 every two weeks"
+            ],
+            "harmful_extra": [
+              "presenting $400 as the amount that will be deducted",
+              "presenting any amount other than $300 as active"
+            ],
+            "harmless_extra": [
+              "mentioning that an increase to $400 was discussed but not finalized",
+              "mentioning the deduction dates are the 1st and 15th"
+            ],
+            "must_include": [
+              "$300"
+            ],
+            "must_not_include": [
+              "$400 as the active amount",
+              "$250 as the current amount",
+              "$200 as the current amount"
+            ]
+          },
+          "question_id": "C30:p3_state_transition:longitudinal_operation",
+          "question_pair_id": "p3_state_transition"
+        },
+        {
+          "evaluation_setting": "adjacent_operation",
+          "evaluation_type": "StateTrajectory",
+          "expected_answer": "The sequence was: (1) $200 biweekly was the initial amount stated, (2) $250 biweekly replaced $200 after the user checked Fidelity settings and found the correct current amount, (3) $300 biweekly replaced $250 after the user ran budget numbers and changed the Fidelity setting, (4) $400 biweekly was recommended by the financial advisor but was never adopted — the user had not changed the Fidelity setting and was still deciding. The final active amount is $300 biweekly.",
+          "gold_memory_state": "VTSAX biweekly auto-invest trajectory: $200 (initial, confirmed) → $250 (corrected, confirmed) → $300 (increased, confirmed) → $400 (advisor recommendation, tentative/not enacted). Final confirmed state: $300 biweekly.",
+          "gold_provenance": [
+            {
+              "quote": "I set up a biweekly auto-invest into VTSAX through Fidelity for $200 every two weeks, hitting on the 1st and 15th of each month",
+              "segment_index": 1,
+              "turn_index": 1
+            },
+            {
+              "quote": "I went back and checked my Fidelity settings and the VTSAX auto-invest is actually $250 every two weeks, not $200. I must have been thinking of an older amount",
+              "segment_index": 1,
+              "turn_index": 5
+            },
+            {
+              "quote": "after running the numbers with my budget spreadsheet I decided to bump the VTSAX auto-invest up to $300 biweekly starting this month",
+              "segment_index": 2,
+              "turn_index": 5
+            },
+            {
+              "quote": "My financial advisor just emailed and recommended I increase the VTSAX contribution to $400 biweekly to max out my annual target. I'll probably go ahead with that",
+              "segment_index": 3,
+              "turn_index": 3
+            },
+            {
+              "quote": "my active recurring investments are the $300 biweekly VTSAX auto-invest and the $50 monthly Bitcoin buy on Coinbase",
+              "segment_index": 3,
+              "turn_index": 7
+            }
+          ],
+          "judge_rubric": {
+            "acceptable_paraphrases": [
+              "$400 was proposed but not finalized",
+              "$400 was recommended but pending"
+            ],
+            "harmful_extra": [
+              "presenting $400 as the final amount",
+              "omitting the $250 intermediate step",
+              "presenting $200 as the final amount"
+            ],
+            "harmless_extra": [
+              "mentioning the advisor's reasoning about annual target",
+              "mentioning the budget spreadsheet context for the $300 change"
+            ],
+            "must_include": [
+              "$200 as initial",
+              "$250 as correction",
+              "$300 as the increase that was enacted",
+              "$400 as discussed but not adopted",
+              "$300 as the final active amount"
+            ],
+            "must_not_include": [
+              "$400 as adopted or active"
+            ]
+          },
+          "question_id": "C30:p5_state_trajectory:adjacent_operation",
+          "question_pair_id": "p5_state_trajectory"
+        },
+        {
+          "evaluation_setting": "longitudinal_operation",
+          "evaluation_type": "StateTrajectory",
+          "expected_answer": "The sequence was: (1) $200 biweekly was the initial amount stated, (2) $250 biweekly replaced $200 after the user checked Fidelity settings and found the correct current amount, (3) $300 biweekly replaced $250 after the user ran budget numbers and changed the Fidelity setting, (4) $400 biweekly was recommended by the financial advisor but was never adopted — the user had not changed the Fidelity setting and was still deciding. The final active amount is $300 biweekly.",
+          "gold_memory_state": "VTSAX biweekly auto-invest trajectory: $200 (initial, confirmed) → $250 (corrected, confirmed) → $300 (increased, confirmed) → $400 (advisor recommendation, tentative/not enacted). Final confirmed state: $300 biweekly.",
+          "gold_provenance": [
+            {
+              "quote": "I set up a biweekly auto-invest into VTSAX through Fidelity for $200 every two weeks, hitting on the 1st and 15th of each month",
+              "segment_index": 1,
+              "turn_index": 1
+            },
+            {
+              "quote": "I went back and checked my Fidelity settings and the VTSAX auto-invest is actually $250 every two weeks, not $200. I must have been thinking of an older amount",
+              "segment_index": 1,
+              "turn_index": 5
+            },
+            {
+              "quote": "after running the numbers with my budget spreadsheet I decided to bump the VTSAX auto-invest up to $300 biweekly starting this month",
+              "segment_index": 2,
+              "turn_index": 5
+            },
+            {
+              "quote": "My financial advisor just emailed and recommended I increase the VTSAX contribution to $400 biweekly to max out my annual target. I'll probably go ahead with that",
+              "segment_index": 3,
+              "turn_index": 3
+            },
+            {
+              "quote": "my active recurring investments are the $300 biweekly VTSAX auto-invest and the $50 monthly Bitcoin buy on Coinbase",
+              "segment_index": 3,
+              "turn_index": 7
+            }
+          ],
+          "judge_rubric": {
+            "acceptable_paraphrases": [
+              "$400 was proposed but not finalized",
+              "$400 was recommended but pending"
+            ],
+            "harmful_extra": [
+              "presenting $400 as the final amount",
+              "omitting the $250 intermediate step",
+              "presenting $200 as the final amount"
+            ],
+            "harmless_extra": [
+              "mentioning the advisor's reasoning about annual target",
+              "mentioning the budget spreadsheet context for the $300 change"
+            ],
+            "must_include": [
+              "$200 as initial",
+              "$250 as correction",
+              "$300 as the increase that was enacted",
+              "$400 as discussed but not adopted",
+              "$300 as the final active amount"
+            ],
+            "must_not_include": [
+              "$400 as adopted or active"
+            ]
+          },
+          "question_id": "C30:p5_state_trajectory:longitudinal_operation",
+          "question_pair_id": "p5_state_trajectory"
+        }
+      ],
+      "sample_id": "C30__TrajectoryOps",
+      "source_file": "/data/predator/ly/third_party/MemOps/generated_result/2-evidence_conversation/C30_trajectory_ops.json",
+      "source_sha256": "87cf9e5943bfc0d8fef1a7d1ac65cf6b0401d499e69a83293de71dd979b914fc",
+      "special_semantics_present": true,
+      "stale_confirmed_values": [
+        "$200",
+        "$250"
+      ],
+      "target_id": "vtsax_biweekly_amount",
+      "target_name": "biweekly VTSAX auto-invest amount",
+      "transitions": [
+        {
+          "new_operation_id": "op4",
+          "new_segment_index": 2,
+          "new_value": "$300",
+          "old_operation_id": "op2",
+          "old_segment_index": 1,
+          "old_value": "$200",
+          "target_id": "vtsax_biweekly_amount",
+          "target_name": "biweekly VTSAX auto-invest amount"
+        }
+      ]
+    }
+  ],
+  "schema_version": "sfwb.v1.3.memops-b0-screening-run-selection.v1",
+  "status": "OFFLINE_RUN_SELECTION_FROZEN"
+}

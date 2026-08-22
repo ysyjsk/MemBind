@@ -1,0 +1,128 @@
+{
+  "cohort_id": "sfwb-v1-3-memops-b0-screening-20260822-002",
+  "cohort_manifest_sha256": "779c4d6596d53c27ce49079cc7b68543904a9ef0131892d83aacd9068a812ed6",
+  "cohort_sample_id": "C31__Update",
+  "official_qa_evaluator": {
+    "path": "/data/predator/ly/third_party/MemOps/5.5-evaluate_operation_metrics.py",
+    "prompt_builder": "build_evaluation_prompt",
+    "result_parser": "parse_judge_metrics",
+    "sha256": "17c24362c174239eb7ef5e543bc651afed60ae445a4becd49acf24f6d3c646f0"
+  },
+  "official_sample_id": "C31",
+  "payload_sha256": "515e398837fbfbce74a0d14a63310657bb70a47124092f947d7e0aeb98b3664a",
+  "samples": [
+    {
+      "cohort_sample_id": "C31__Update",
+      "history_id": "memops-c31-update",
+      "latest_confirmed_value": "January 25th",
+      "official_sample_id": "C31",
+      "operation_type": "Update",
+      "qa": [
+        {
+          "evaluation_setting": "adjacent_operation",
+          "evaluation_type": "CandidateDisambiguation",
+          "expected_answer": "January 25th",
+          "gold_memory_state": "The confirmed Milbemax switch date is January 25th, supported by the email receipt. February was the initial report, superseded by late January, then refined to January 25th. January 18th is tentative and unconfirmed.",
+          "gold_provenance": [
+            {
+              "quote": "I just found the receipt in my email. The Milbemax purchase was January 25th. So the switch date was January 25th specifically",
+              "segment_index": 2,
+              "turn_index": 3
+            },
+            {
+              "quote": "Yeah, let's leave it at January 25th on the form for now until I sort it out",
+              "segment_index": 3,
+              "turn_index": 7
+            }
+          ],
+          "judge_rubric": {
+            "acceptable_paraphrases": [
+              "Jan 25",
+              "the 25th of January"
+            ],
+            "harmful_extra": [
+              "selecting any date other than January 25th"
+            ],
+            "harmless_extra": [
+              "noting receipt as evidence"
+            ],
+            "must_include": [
+              "January 25th"
+            ],
+            "must_not_include": [
+              "February",
+              "January 18th",
+              "January 22nd"
+            ]
+          },
+          "question_id": "C31:p4_candidate_disambiguation:adjacent_operation",
+          "question_pair_id": "p4_candidate_disambiguation"
+        },
+        {
+          "evaluation_setting": "longitudinal_operation",
+          "evaluation_type": "CandidateDisambiguation",
+          "expected_answer": "January 25th",
+          "gold_memory_state": "The confirmed Milbemax switch date is January 25th, supported by the email receipt. February was the initial report, superseded by late January, then refined to January 25th. January 18th is tentative and unconfirmed.",
+          "gold_provenance": [
+            {
+              "quote": "I just found the receipt in my email. The Milbemax purchase was January 25th. So the switch date was January 25th specifically",
+              "segment_index": 2,
+              "turn_index": 3
+            },
+            {
+              "quote": "Yeah, let's leave it at January 25th on the form for now until I sort it out",
+              "segment_index": 3,
+              "turn_index": 7
+            }
+          ],
+          "judge_rubric": {
+            "acceptable_paraphrases": [
+              "Jan 25",
+              "the 25th of January"
+            ],
+            "harmful_extra": [
+              "selecting any date other than January 25th"
+            ],
+            "harmless_extra": [
+              "noting receipt as evidence"
+            ],
+            "must_include": [
+              "January 25th"
+            ],
+            "must_not_include": [
+              "February",
+              "January 18th",
+              "January 22nd"
+            ]
+          },
+          "question_id": "C31:p4_candidate_disambiguation:longitudinal_operation",
+          "question_pair_id": "p4_candidate_disambiguation"
+        }
+      ],
+      "sample_id": "C31__Update",
+      "source_file": "/data/predator/ly/third_party/MemOps/generated_result/2-evidence_conversation/C31_update.json",
+      "source_sha256": "d1f4b94258728db4e1ccebe54050bb1dbda1e1c370486940e5485d37a9c6bd3e",
+      "special_semantics_present": true,
+      "stale_confirmed_values": [
+        "February",
+        "late January"
+      ],
+      "target_id": "mochi_deworming_switch_date",
+      "target_name": "Date Mochi switched from Drontal to Milbemax",
+      "transitions": [
+        {
+          "new_operation_id": "op3",
+          "new_segment_index": 2,
+          "new_value": "January 25th",
+          "old_operation_id": "op2",
+          "old_segment_index": 1,
+          "old_value": "February",
+          "target_id": "mochi_deworming_switch_date",
+          "target_name": "Date Mochi switched from Drontal to Milbemax"
+        }
+      ]
+    }
+  ],
+  "schema_version": "sfwb.v1.3.memops-b0-screening-run-selection.v1",
+  "status": "OFFLINE_RUN_SELECTION_FROZEN"
+}

@@ -1,0 +1,126 @@
+{
+  "cohort_id": "sfwb-v1-3-memops-b0-screening-20260822-002",
+  "cohort_manifest_sha256": "779c4d6596d53c27ce49079cc7b68543904a9ef0131892d83aacd9068a812ed6",
+  "cohort_sample_id": "C30__Update",
+  "official_qa_evaluator": {
+    "path": "/data/predator/ly/third_party/MemOps/5.5-evaluate_operation_metrics.py",
+    "prompt_builder": "build_evaluation_prompt",
+    "result_parser": "parse_judge_metrics",
+    "sha256": "17c24362c174239eb7ef5e543bc651afed60ae445a4becd49acf24f6d3c646f0"
+  },
+  "official_sample_id": "C30",
+  "payload_sha256": "f85d8c55b45c47aa72769d4323555dee04e32e82fb902b779ec391bfb42ac6e1",
+  "samples": [
+    {
+      "cohort_sample_id": "C30__Update",
+      "history_id": "memops-c30-update",
+      "latest_confirmed_value": "$300",
+      "official_sample_id": "C30",
+      "operation_type": "Update",
+      "qa": [
+        {
+          "evaluation_setting": "adjacent_operation",
+          "evaluation_type": "CandidateDisambiguation",
+          "expected_answer": "$300",
+          "gold_memory_state": "The current confirmed VTSAX biweekly auto-invest amount is $300. $200 was the initial value (superseded). $250 was the corrected value (superseded by increase to $300). $350 was a tentative advisor recommendation that was not adopted.",
+          "gold_provenance": [
+            {
+              "quote": "I decided to keep the VTSAX auto-invest at $300 biweekly for now",
+              "segment_index": 3,
+              "turn_index": 7
+            },
+            {
+              "quote": "I bumped the VTSAX auto-invest up to $300 every two weeks starting this cycle",
+              "segment_index": 2,
+              "turn_index": 3
+            }
+          ],
+          "judge_rubric": {
+            "acceptable_paraphrases": [
+              "300 dollars",
+              "three hundred dollars"
+            ],
+            "harmful_extra": [
+              "selecting $350 because it was mentioned most recently in the conversation",
+              "selecting $250 because the user mentioned feeling comfortable at that level"
+            ],
+            "harmless_extra": [],
+            "must_include": [
+              "$300"
+            ],
+            "must_not_include": [
+              "$200 as current",
+              "$250 as current",
+              "$350 as current"
+            ]
+          },
+          "question_id": "C30:p4_candidate_disambiguation:adjacent_operation",
+          "question_pair_id": "p4_candidate_disambiguation"
+        },
+        {
+          "evaluation_setting": "longitudinal_operation",
+          "evaluation_type": "CandidateDisambiguation",
+          "expected_answer": "$300",
+          "gold_memory_state": "The current confirmed VTSAX biweekly auto-invest amount is $300. $200 was the initial value (superseded). $250 was the corrected value (superseded by increase to $300). $350 was a tentative advisor recommendation that was not adopted.",
+          "gold_provenance": [
+            {
+              "quote": "I decided to keep the VTSAX auto-invest at $300 biweekly for now",
+              "segment_index": 3,
+              "turn_index": 7
+            },
+            {
+              "quote": "I bumped the VTSAX auto-invest up to $300 every two weeks starting this cycle",
+              "segment_index": 2,
+              "turn_index": 3
+            }
+          ],
+          "judge_rubric": {
+            "acceptable_paraphrases": [
+              "300 dollars",
+              "three hundred dollars"
+            ],
+            "harmful_extra": [
+              "selecting $350 because it was mentioned most recently in the conversation",
+              "selecting $250 because the user mentioned feeling comfortable at that level"
+            ],
+            "harmless_extra": [],
+            "must_include": [
+              "$300"
+            ],
+            "must_not_include": [
+              "$200 as current",
+              "$250 as current",
+              "$350 as current"
+            ]
+          },
+          "question_id": "C30:p4_candidate_disambiguation:longitudinal_operation",
+          "question_pair_id": "p4_candidate_disambiguation"
+        }
+      ],
+      "sample_id": "C30__Update",
+      "source_file": "/data/predator/ly/third_party/MemOps/generated_result/2-evidence_conversation/C30_update.json",
+      "source_sha256": "37eb9afed0eb4781e1b1d83868d478270f34be09d0196b217ae1a03273a13baa",
+      "special_semantics_present": true,
+      "stale_confirmed_values": [
+        "$200",
+        "$250"
+      ],
+      "target_id": "vtsax_biweekly_amount",
+      "target_name": "Biweekly VTSAX auto-invest amount",
+      "transitions": [
+        {
+          "new_operation_id": "op3",
+          "new_segment_index": 2,
+          "new_value": "$300",
+          "old_operation_id": "op2",
+          "old_segment_index": 1,
+          "old_value": "$200",
+          "target_id": "vtsax_biweekly_amount",
+          "target_name": "Biweekly VTSAX auto-invest amount"
+        }
+      ]
+    }
+  ],
+  "schema_version": "sfwb.v1.3.memops-b0-screening-run-selection.v1",
+  "status": "OFFLINE_RUN_SELECTION_FROZEN"
+}

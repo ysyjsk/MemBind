@@ -1,0 +1,341 @@
+{
+  "b0_gate": {
+    "failures": [
+      {
+        "detail": {
+          "active_current_mentions": 0,
+          "active_stale_conflicts": [],
+          "active_transition_mentions": [],
+          "canonical_graph_used_for_uuid_equality": false,
+          "current_value_active": false,
+          "current_value_in_entity_summary": false,
+          "expected_current_value": "July 1st",
+          "inactive_mentions": [],
+          "observation_time": "2000-01-01T00:10:00Z",
+          "stale_active_mentions": [],
+          "stale_confirmed_values": [
+            "June 1st",
+            "June 15th"
+          ],
+          "status": "FAIL",
+          "target_id": "voss_sabbatical_start_date",
+          "target_name": "Dr. Voss sabbatical start date"
+        },
+        "reason": "CURRENT_STATE_INSPECTION",
+        "sample_id": "A28__Update"
+      }
+    ],
+    "sample_count": 1,
+    "status": "STOP_MEMOPS_GRAPHITI_B0_INELIGIBLE"
+  },
+  "methods": [
+    "B0_NATIVE_SERIAL"
+  ],
+  "outputs": [
+    {
+      "attempt_root": "artifacts/sfwb-v1-3-memops-b0-screening-20260822-002/screening_runs_v2/005-a28-update/blocks/memops-001-A28__Update-B0_NATIVE_SERIAL/attempt-001",
+      "block_id": "memops-001-A28__Update-B0_NATIVE_SERIAL",
+      "method": "B0_NATIVE_SERIAL",
+      "metrics": {
+        "application_gate_count": 0,
+        "artificial_sleep_count": 0,
+        "attempt_id": "attempt-001",
+        "attempt_ordinal": 1,
+        "attempt_root": "artifacts/sfwb-v1-3-memops-b0-screening-20260822-002/screening_runs_v2/005-a28-update/blocks/memops-001-A28__Update-B0_NATIVE_SERIAL/attempt-001",
+        "block_id": "memops-001-A28__Update-B0_NATIVE_SERIAL",
+        "build_makespan_ns": 50082071981,
+        "build_makespan_s": 50.082071981,
+        "canonical_exact_match": true,
+        "canonical_graph_hash": "3b9b4a48d8924d64984c706a304fdfb9656f25a051dfd288e9d046839d9239dc",
+        "configured_max_inflight": null,
+        "created_sequences": [
+          0,
+          1,
+          2
+        ],
+        "db_duration_p50_s": 0.004138348,
+        "db_duration_p95_s": 0.05313069,
+        "db_duration_p99_s": 0.074759073,
+        "db_metrics_availability": "MEASURED",
+        "db_writes": 3,
+        "direct_semantic_evidence_availability": "DERIVED",
+        "direct_semantic_evidence_records": [],
+        "direct_semantic_violations": 0,
+        "direct_semantic_violations_by_observation": {
+          "future_persistent_state_read": 0,
+          "stale_predecessor_write": 0,
+          "wrong_state_write": 0
+        },
+        "drain_tail_ns": 16331528286,
+        "embedding_duration_p50_s": 0.018721376,
+        "embedding_duration_p95_s": 0.058122175,
+        "embedding_duration_p99_s": 0.059121269,
+        "embedding_items": 74,
+        "embedding_metrics_availability": "MEASURED",
+        "episode_count": 3,
+        "execution_identity_sha256": "453fd6e8067c8fa4240f08e0dbe73ef170617208d38f18e6952dd2f2a86fba99",
+        "feeder_workload_await_count": 3,
+        "history_id": "memops-a28-update",
+        "instrumentation_error_spans": 0,
+        "inversion_count": 0,
+        "inversion_density": 0.0,
+        "kendall_tau": 1.0,
+        "llm_duration_p50_s": 0.936900963,
+        "llm_duration_p95_s": 18.407280755,
+        "llm_duration_p99_s": 18.407280755,
+        "llm_input_tokens": 36208,
+        "llm_logical_calls": 19,
+        "llm_metrics_availability": "MEASURED",
+        "llm_transport_attempts": 19,
+        "max_displacement": 0,
+        "method": "B0_NATIVE_SERIAL",
+        "namespace": "005-a28-update-MEMOPS-A28__Update-B0_NATIVE_SERIAL-attempt-001",
+        "ordering_observations_counted_as_direct": 0,
+        "phase_metrics_availability": "MEASURED",
+        "resource_availability": "NOT_EVALUATED",
+        "sampler_coverage": null,
+        "sampler_gap_max_s": null,
+        "sampler_gap_p95_s": null,
+        "sampler_source_coverage": {},
+        "schema_version": "membind.saturated-fixed-work.block-result.v1",
+        "seal_payload_sha256": "5874e4f8900aa324b905ffd06816b7b8c34f292d3e5e45cbe0fe1f468dd9f440",
+        "source_tokens": 2888,
+        "source_tokens_per_s": 57.66534581667551,
+        "t0_ns": 9424318446325,
+        "t_durable_complete_ns": 9474400518306,
+        "t_validated_seal_ns": 9474521450256,
+        "valid": true,
+        "validation_seal_latency_ns": 120931950,
+        "whole_update_active_k_time_ns": {
+          "1": 50070011295
+        },
+        "whole_update_active_max": 1,
+        "whole_update_active_mean": 1.0
+      },
+      "namespace": "005-a28-update-MEMOPS-A28__Update-B0_NATIVE_SERIAL-attempt-001",
+      "qa_rows": [
+        {
+          "construction_calls": 0,
+          "correct": true,
+          "evaluation_setting": "adjacent_operation",
+          "evaluation_type": "CandidateDisambiguation",
+          "expected_answer": "July 1st",
+          "failure_layer": null,
+          "gold_memory_state": "Dr. Voss's confirmed sabbatical start date is July 1st. June 1st and June 15th are superseded earlier values. June 20th is an unconfirmed rumor from a third party.",
+          "gold_provenance": [
+            {
+              "quote": "her sabbatical has been pushed back to July 1st because of some administrative delay at UCSD",
+              "segment_index": 2,
+              "turn_index": 3
+            },
+            {
+              "quote": "James mentioned that the department secretary told him Dr. Voss might actually leave as early as June 20th because UCSD resolved the paperwork faster than expected",
+              "segment_index": 3,
+              "turn_index": 5
+            }
+          ],
+          "gold_ranks": [
+            2,
+            3
+          ],
+          "graph_write_attempts": 0,
+          "invalid": false,
+          "invalid_reason": null,
+          "judge_rubric": {
+            "acceptable_paraphrases": [
+              "July 1"
+            ],
+            "harmful_extra": [
+              "Selecting June 20th because it is the most recently mentioned date in the conversation"
+            ],
+            "harmless_extra": [
+              "Noting that June 20th was mentioned as a possibility but unconfirmed"
+            ],
+            "must_include": [
+              "July 1st"
+            ],
+            "must_not_include": [
+              "June 15th as current",
+              "June 20th as current",
+              "June 1st as current"
+            ]
+          },
+          "memops_official_judge": {
+            "answer_score": 1,
+            "completion_tokens": 95,
+            "extra_detail_postcheck_action": "none",
+            "extra_detail_postcheck_applied": false,
+            "extra_detail_type": "none",
+            "finish_reason": "stop",
+            "judge_operation_detection": {
+              "fn": 0,
+              "fp": 0,
+              "tp": 1
+            },
+            "judge_provenance_support": 1,
+            "official_prompt_builder": "build_evaluation_prompt",
+            "official_result_parser": "parse_judge_metrics",
+            "prompt_sha256": "7949b79df237e1d6cba5ec9cbf881e3945fc4061a050aa87ff9077c6d87e10f8",
+            "prompt_tokens": 6164,
+            "raw_prompt_persisted": false,
+            "raw_response_persisted": false,
+            "reason": "The model correctly selected the confirmed and most recent value, July 1st, without introducing harmful extra details.",
+            "response_sha256": "0472b0af2a6cfa8f861eaa92be8c5e9e306147004e6d547e20d0bd36a6d5f365",
+            "stale_value": 0
+          },
+          "mrr": 0.5,
+          "ndcg_at_10": 0.6934264036172708,
+          "question_id": "A28__Update:p4_candidate_disambiguation:adjacent_operation",
+          "question_pair_id": "p4_candidate_disambiguation",
+          "recall_at_1": 0.0,
+          "recall_at_10": 1.0,
+          "recall_at_3": 1.0,
+          "recall_at_5": 1.0,
+          "relevance_unit": "LONGMEMEVAL_GOLD_SESSION",
+          "sample_id": "A28__Update"
+        },
+        {
+          "construction_calls": 0,
+          "correct": true,
+          "evaluation_setting": "longitudinal_operation",
+          "evaluation_type": "CandidateDisambiguation",
+          "expected_answer": "July 1st",
+          "failure_layer": null,
+          "gold_memory_state": "Dr. Voss's confirmed sabbatical start date is July 1st. June 1st and June 15th are superseded earlier values. June 20th is an unconfirmed rumor from a third party.",
+          "gold_provenance": [
+            {
+              "quote": "her sabbatical has been pushed back to July 1st because of some administrative delay at UCSD",
+              "segment_index": 2,
+              "turn_index": 3
+            },
+            {
+              "quote": "James mentioned that the department secretary told him Dr. Voss might actually leave as early as June 20th because UCSD resolved the paperwork faster than expected",
+              "segment_index": 3,
+              "turn_index": 5
+            }
+          ],
+          "gold_ranks": [
+            2,
+            3
+          ],
+          "graph_write_attempts": 0,
+          "invalid": false,
+          "invalid_reason": null,
+          "judge_rubric": {
+            "acceptable_paraphrases": [
+              "July 1"
+            ],
+            "harmful_extra": [
+              "Selecting June 20th because it is the most recently mentioned date in the conversation"
+            ],
+            "harmless_extra": [
+              "Noting that June 20th was mentioned as a possibility but unconfirmed"
+            ],
+            "must_include": [
+              "July 1st"
+            ],
+            "must_not_include": [
+              "June 15th as current",
+              "June 20th as current",
+              "June 1st as current"
+            ]
+          },
+          "memops_official_judge": {
+            "answer_score": 1,
+            "completion_tokens": 109,
+            "extra_detail_postcheck_action": "none",
+            "extra_detail_postcheck_applied": false,
+            "extra_detail_type": "none",
+            "finish_reason": "stop",
+            "judge_operation_detection": {
+              "fn": 0,
+              "fp": 0,
+              "tp": 1
+            },
+            "judge_provenance_support": 1,
+            "official_prompt_builder": "build_evaluation_prompt",
+            "official_result_parser": "parse_judge_metrics",
+            "prompt_sha256": "7949b79df237e1d6cba5ec9cbf881e3945fc4061a050aa87ff9077c6d87e10f8",
+            "prompt_tokens": 6164,
+            "raw_prompt_persisted": false,
+            "raw_response_persisted": false,
+            "reason": "The model correctly selected the confirmed sabbatical start date of July 1st, which is the expected answer. It did not include any harmful extra details or select a superseded or tentative value.",
+            "response_sha256": "13a8e5480e12c277a3874eef5022bf501eafddeced0c6c63280c1980e3c1ce24",
+            "stale_value": 0
+          },
+          "mrr": 0.5,
+          "ndcg_at_10": 0.6934264036172708,
+          "question_id": "A28__Update:p4_candidate_disambiguation:longitudinal_operation",
+          "question_pair_id": "p4_candidate_disambiguation",
+          "recall_at_1": 0.0,
+          "recall_at_10": 1.0,
+          "recall_at_3": 1.0,
+          "recall_at_5": 1.0,
+          "relevance_unit": "LONGMEMEVAL_GOLD_SESSION",
+          "sample_id": "A28__Update"
+        }
+      ],
+      "qa_summary": {
+        "all_correct": true,
+        "construction_calls": 0,
+        "correct_rows": 2,
+        "graph_hash_after_qa": "3b9b4a48d8924d64984c706a304fdfb9656f25a051dfd288e9d046839d9239dc",
+        "graph_hash_before_qa": "3b9b4a48d8924d64984c706a304fdfb9656f25a051dfd288e9d046839d9239dc",
+        "graph_mutated": false,
+        "graph_write_attempts": 0,
+        "method": "B0_NATIVE_SERIAL",
+        "namespace": "005-a28-update-MEMOPS-A28__Update-B0_NATIVE_SERIAL-attempt-001",
+        "rows": 2,
+        "sample_id": "A28__Update",
+        "stale_value_errors": 0,
+        "state_inspection": {
+          "active_current_mentions": 0,
+          "active_stale_conflicts": [],
+          "active_transition_mentions": [],
+          "canonical_graph_used_for_uuid_equality": false,
+          "current_value_active": false,
+          "current_value_in_entity_summary": false,
+          "expected_current_value": "July 1st",
+          "inactive_mentions": [],
+          "observation_time": "2000-01-01T00:10:00Z",
+          "stale_active_mentions": [],
+          "stale_confirmed_values": [
+            "June 1st",
+            "June 15th"
+          ],
+          "status": "FAIL",
+          "target_id": "voss_sabbatical_start_date",
+          "target_name": "Dr. Voss sabbatical start date"
+        }
+      },
+      "sample_id": "A28__Update",
+      "state_inspection": {
+        "active_current_mentions": 0,
+        "active_stale_conflicts": [],
+        "active_transition_mentions": [],
+        "canonical_graph_used_for_uuid_equality": false,
+        "current_value_active": false,
+        "current_value_in_entity_summary": false,
+        "expected_current_value": "July 1st",
+        "inactive_mentions": [],
+        "observation_time": "2000-01-01T00:10:00Z",
+        "stale_active_mentions": [],
+        "stale_confirmed_values": [
+          "June 1st",
+          "June 15th"
+        ],
+        "status": "FAIL",
+        "target_id": "voss_sabbatical_start_date",
+        "target_name": "Dr. Voss sabbatical start date"
+      },
+      "workload_sha256": "61a89ef67dab2d496091756de4c824d1fc33b4f0861ee7e7c76b0f914fe0965e"
+    }
+  ],
+  "payload_sha256": "53305016f6a1ed9127b62d4fbedde8267f40d8cdc08d6bbc8c5a995d33bdd849",
+  "qualification_root": "artifacts/sfwb-v1-3-memops-b0-screening-20260822-002/screening_runs_v2/005-a28-update",
+  "sample_ids": [
+    "A28__Update"
+  ],
+  "schema_version": "sfwb.v1.3.memops-live-qualification.v1",
+  "status": "LIVE_COMPLETE"
+}

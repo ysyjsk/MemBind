@@ -1,0 +1,128 @@
+{
+  "cohort_id": "sfwb-v1-3-memops-b0-screening-20260822-002",
+  "cohort_manifest_sha256": "779c4d6596d53c27ce49079cc7b68543904a9ef0131892d83aacd9068a812ed6",
+  "cohort_sample_id": "C23__Update",
+  "official_qa_evaluator": {
+    "path": "/data/predator/ly/third_party/MemOps/5.5-evaluate_operation_metrics.py",
+    "prompt_builder": "build_evaluation_prompt",
+    "result_parser": "parse_judge_metrics",
+    "sha256": "17c24362c174239eb7ef5e543bc651afed60ae445a4becd49acf24f6d3c646f0"
+  },
+  "official_sample_id": "C23",
+  "payload_sha256": "57a0fc96c14f2cba51387799463c699efddde2385883dc01d1e1ecfa7148f1ac",
+  "samples": [
+    {
+      "cohort_sample_id": "C23__Update",
+      "history_id": "memops-c23-update",
+      "latest_confirmed_value": "October 31, 2025",
+      "official_sample_id": "C23",
+      "operation_type": "Update",
+      "qa": [
+        {
+          "evaluation_setting": "adjacent_operation",
+          "evaluation_type": "CandidateDisambiguation",
+          "expected_answer": "October 31, 2025",
+          "gold_memory_state": "User's passport expiration: October 31, 2025 (confirmed via amendment stamp). September 14, 2025 was the initial self-report (stale). September 12, 2025 was the first correction (stale, superseded by amendment). December 31, 2025 is tentative/unverified from consular officer claim (not adopted).",
+          "gold_provenance": [
+            {
+              "quote": "I also noticed the passport office stamped an amendment page that extends the validity to October 31, 2025",
+              "segment_index": 2,
+              "turn_index": 3
+            },
+            {
+              "quote": "The consular officer told me that with the new bilateral agreement, my passport validity will be recognized until December 31, 2025 for travel within the region",
+              "segment_index": 3,
+              "turn_index": 5
+            }
+          ],
+          "judge_rubric": {
+            "acceptable_paraphrases": [
+              "Oct 31, 2025",
+              "October 31 2025"
+            ],
+            "harmful_extra": [
+              "selecting any date other than October 31, 2025"
+            ],
+            "harmless_extra": [
+              "noting the amendment stamp as the source of this date"
+            ],
+            "must_include": [
+              "October 31, 2025"
+            ],
+            "must_not_include": [
+              "September 14, 2025",
+              "September 12, 2025",
+              "December 31, 2025"
+            ]
+          },
+          "question_id": "C23:p4_candidate_disambiguation:adjacent_operation",
+          "question_pair_id": "p4_candidate_disambiguation"
+        },
+        {
+          "evaluation_setting": "longitudinal_operation",
+          "evaluation_type": "CandidateDisambiguation",
+          "expected_answer": "October 31, 2025",
+          "gold_memory_state": "User's passport expiration: October 31, 2025 (confirmed via amendment stamp). September 14, 2025 was the initial self-report (stale). September 12, 2025 was the first correction (stale, superseded by amendment). December 31, 2025 is tentative/unverified from consular officer claim (not adopted).",
+          "gold_provenance": [
+            {
+              "quote": "I also noticed the passport office stamped an amendment page that extends the validity to October 31, 2025",
+              "segment_index": 2,
+              "turn_index": 3
+            },
+            {
+              "quote": "The consular officer told me that with the new bilateral agreement, my passport validity will be recognized until December 31, 2025 for travel within the region",
+              "segment_index": 3,
+              "turn_index": 5
+            }
+          ],
+          "judge_rubric": {
+            "acceptable_paraphrases": [
+              "Oct 31, 2025",
+              "October 31 2025"
+            ],
+            "harmful_extra": [
+              "selecting any date other than October 31, 2025"
+            ],
+            "harmless_extra": [
+              "noting the amendment stamp as the source of this date"
+            ],
+            "must_include": [
+              "October 31, 2025"
+            ],
+            "must_not_include": [
+              "September 14, 2025",
+              "September 12, 2025",
+              "December 31, 2025"
+            ]
+          },
+          "question_id": "C23:p4_candidate_disambiguation:longitudinal_operation",
+          "question_pair_id": "p4_candidate_disambiguation"
+        }
+      ],
+      "sample_id": "C23__Update",
+      "source_file": "/data/predator/ly/third_party/MemOps/generated_result/2-evidence_conversation/C23_update.json",
+      "source_sha256": "a5c92a7ebf49a2abc888fd9aa6f843e1c8406bf68e679cd2659bc22eaf0017df",
+      "special_semantics_present": true,
+      "stale_confirmed_values": [
+        "September 14, 2025",
+        "September 12, 2025"
+      ],
+      "target_id": "user_passport_expiry",
+      "target_name": "User's passport expiration date",
+      "transitions": [
+        {
+          "new_operation_id": "op3",
+          "new_segment_index": 2,
+          "new_value": "October 31, 2025",
+          "old_operation_id": "op2",
+          "old_segment_index": 1,
+          "old_value": "September 14, 2025",
+          "target_id": "user_passport_expiry",
+          "target_name": "User's passport expiration date"
+        }
+      ]
+    }
+  ],
+  "schema_version": "sfwb.v1.3.memops-b0-screening-run-selection.v1",
+  "status": "OFFLINE_RUN_SELECTION_FROZEN"
+}

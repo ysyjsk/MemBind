@@ -1,0 +1,128 @@
+{
+  "cohort_id": "sfwb-v1-3-memops-b0-screening-20260822-002",
+  "cohort_manifest_sha256": "779c4d6596d53c27ce49079cc7b68543904a9ef0131892d83aacd9068a812ed6",
+  "cohort_sample_id": "C04__Update",
+  "official_qa_evaluator": {
+    "path": "/data/predator/ly/third_party/MemOps/5.5-evaluate_operation_metrics.py",
+    "prompt_builder": "build_evaluation_prompt",
+    "result_parser": "parse_judge_metrics",
+    "sha256": "17c24362c174239eb7ef5e543bc651afed60ae445a4becd49acf24f6d3c646f0"
+  },
+  "official_sample_id": "C04",
+  "payload_sha256": "eec3006fb98a039fc7e9a1e6d4e7b199c2fd5ce466222172596fc7a37bb7ca52",
+  "samples": [
+    {
+      "cohort_sample_id": "C04__Update",
+      "history_id": "memops-c04-update",
+      "latest_confirmed_value": "May 12th, Monday, 9:30 AM",
+      "official_sample_id": "C04",
+      "operation_type": "Update",
+      "qa": [
+        {
+          "evaluation_setting": "adjacent_operation",
+          "evaluation_type": "CandidateDisambiguation",
+          "expected_answer": "May 12th, Monday, 9:30 AM",
+          "gold_memory_state": "The confirmed follow-up date is May 12th, Monday, 9:30 AM. May 19th was only a tentative possibility that was never confirmed. May 5th and April 28th are superseded prior dates.",
+          "gold_provenance": [
+            {
+              "quote": "I had to reschedule again. The new date is May 12th, Monday, 9:30 AM. Dr. Liu's office confirmed it this morning",
+              "segment_index": 2,
+              "turn_index": 3
+            },
+            {
+              "quote": "Dr. Liu's assistant just messaged me saying there might be a schedule change and the appointment could be pushed to May 19th, Monday, 9:30 AM",
+              "segment_index": 3,
+              "turn_index": 5
+            }
+          ],
+          "judge_rubric": {
+            "acceptable_paraphrases": [
+              "May 12",
+              "the 12th of May"
+            ],
+            "harmful_extra": [
+              "Selecting May 19th because it is the most recent date mentioned"
+            ],
+            "harmless_extra": [
+              "Noting the 9:30 AM time"
+            ],
+            "must_include": [
+              "May 12th"
+            ],
+            "must_not_include": [
+              "May 19th as the answer",
+              "May 5th as the answer",
+              "April 28th as the answer"
+            ]
+          },
+          "question_id": "C04:p4_candidate_disambiguation:adjacent_operation",
+          "question_pair_id": "p4_candidate_disambiguation"
+        },
+        {
+          "evaluation_setting": "longitudinal_operation",
+          "evaluation_type": "CandidateDisambiguation",
+          "expected_answer": "May 12th, Monday, 9:30 AM",
+          "gold_memory_state": "The confirmed follow-up date is May 12th, Monday, 9:30 AM. May 19th was only a tentative possibility that was never confirmed. May 5th and April 28th are superseded prior dates.",
+          "gold_provenance": [
+            {
+              "quote": "I had to reschedule again. The new date is May 12th, Monday, 9:30 AM. Dr. Liu's office confirmed it this morning",
+              "segment_index": 2,
+              "turn_index": 3
+            },
+            {
+              "quote": "Dr. Liu's assistant just messaged me saying there might be a schedule change and the appointment could be pushed to May 19th, Monday, 9:30 AM",
+              "segment_index": 3,
+              "turn_index": 5
+            }
+          ],
+          "judge_rubric": {
+            "acceptable_paraphrases": [
+              "May 12",
+              "the 12th of May"
+            ],
+            "harmful_extra": [
+              "Selecting May 19th because it is the most recent date mentioned"
+            ],
+            "harmless_extra": [
+              "Noting the 9:30 AM time"
+            ],
+            "must_include": [
+              "May 12th"
+            ],
+            "must_not_include": [
+              "May 19th as the answer",
+              "May 5th as the answer",
+              "April 28th as the answer"
+            ]
+          },
+          "question_id": "C04:p4_candidate_disambiguation:longitudinal_operation",
+          "question_pair_id": "p4_candidate_disambiguation"
+        }
+      ],
+      "sample_id": "C04__Update",
+      "source_file": "/data/predator/ly/third_party/MemOps/generated_result/2-evidence_conversation/C04_update.json",
+      "source_sha256": "dde3741acc8dc309e26a89703b4f8253a3d3b1968d9f254c43eb96a2692049b1",
+      "special_semantics_present": true,
+      "stale_confirmed_values": [
+        "April 28th, Monday, 9:30 AM",
+        "May 5th, Monday, 9:30 AM"
+      ],
+      "target_id": "followup_appointment_date",
+      "target_name": "Follow-up appointment date with Dr. Liu Wenjie at Zhongshan Hospital gastroenterology",
+      "transitions": [
+        {
+          "new_operation_id": "op3",
+          "new_segment_index": 2,
+          "new_value": "May 12th, Monday, 9:30 AM",
+          "old_operation_id": "op2",
+          "old_segment_index": 1,
+          "old_value": "April 28th, Monday, 9:30 AM",
+          "target_id": "followup_appointment_date",
+          "target_name": "Follow-up appointment date with Dr. Liu Wenjie at Zhongshan Hospital gastroenterology"
+        }
+      ]
+    }
+  ],
+  "schema_version": "sfwb.v1.3.memops-b0-screening-run-selection.v1",
+  "status": "OFFLINE_RUN_SELECTION_FROZEN"
+}

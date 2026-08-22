@@ -1,0 +1,130 @@
+{
+  "cohort_id": "sfwb-v1-3-memops-b0-screening-20260822-002",
+  "cohort_manifest_sha256": "779c4d6596d53c27ce49079cc7b68543904a9ef0131892d83aacd9068a812ed6",
+  "cohort_sample_id": "C05__Update",
+  "official_qa_evaluator": {
+    "path": "/data/predator/ly/third_party/MemOps/5.5-evaluate_operation_metrics.py",
+    "prompt_builder": "build_evaluation_prompt",
+    "result_parser": "parse_judge_metrics",
+    "sha256": "17c24362c174239eb7ef5e543bc651afed60ae445a4becd49acf24f6d3c646f0"
+  },
+  "official_sample_id": "C05",
+  "payload_sha256": "110a4d956cb72679d9f10c925ff1a5780ec083b3a7c87d85d19805b3fe1a4d46",
+  "samples": [
+    {
+      "cohort_sample_id": "C05__Update",
+      "history_id": "memops-c05-update",
+      "latest_confirmed_value": "May 28",
+      "official_sample_id": "C05",
+      "operation_type": "Update",
+      "qa": [
+        {
+          "evaluation_setting": "adjacent_operation",
+          "evaluation_type": "CandidateDisambiguation",
+          "expected_answer": "May 28",
+          "gold_memory_state": "Iceland return flight date: May 28 (final confirmed). May 25 (original, superseded by May 26). May 26 (superseded by May 28). May 30 (tentative, explicitly reverted to May 28).",
+          "gold_provenance": [
+            {
+              "quote": "So the May 30th extension isn't happening after all. His manager came back and said only the original two extra days were approved. So we're sticking with May 28th—that's the final return date",
+              "segment_index": 3,
+              "turn_index": 5
+            },
+            {
+              "quote": "I just changed the return flight again—moved it to May 28th. My partner got two extra days off work approved, so we're extending",
+              "segment_index": 2,
+              "turn_index": 3
+            }
+          ],
+          "judge_rubric": {
+            "acceptable_paraphrases": [
+              "May 28th",
+              "the 28th of May"
+            ],
+            "harmful_extra": [
+              "Suggesting any date other than May 28 as the return date"
+            ],
+            "harmless_extra": [
+              "Mentioning it's a 10-day trip",
+              "Mentioning the departure is May 18"
+            ],
+            "must_include": [
+              "May 28"
+            ],
+            "must_not_include": [
+              "May 25",
+              "May 26",
+              "May 30"
+            ]
+          },
+          "question_id": "C05:p4_candidate_disambiguation:adjacent_operation",
+          "question_pair_id": "p4_candidate_disambiguation"
+        },
+        {
+          "evaluation_setting": "longitudinal_operation",
+          "evaluation_type": "CandidateDisambiguation",
+          "expected_answer": "May 28",
+          "gold_memory_state": "Iceland return flight date: May 28 (final confirmed). May 25 (original, superseded by May 26). May 26 (superseded by May 28). May 30 (tentative, explicitly reverted to May 28).",
+          "gold_provenance": [
+            {
+              "quote": "So the May 30th extension isn't happening after all. His manager came back and said only the original two extra days were approved. So we're sticking with May 28th—that's the final return date",
+              "segment_index": 3,
+              "turn_index": 5
+            },
+            {
+              "quote": "I just changed the return flight again—moved it to May 28th. My partner got two extra days off work approved, so we're extending",
+              "segment_index": 2,
+              "turn_index": 3
+            }
+          ],
+          "judge_rubric": {
+            "acceptable_paraphrases": [
+              "May 28th",
+              "the 28th of May"
+            ],
+            "harmful_extra": [
+              "Suggesting any date other than May 28 as the return date"
+            ],
+            "harmless_extra": [
+              "Mentioning it's a 10-day trip",
+              "Mentioning the departure is May 18"
+            ],
+            "must_include": [
+              "May 28"
+            ],
+            "must_not_include": [
+              "May 25",
+              "May 26",
+              "May 30"
+            ]
+          },
+          "question_id": "C05:p4_candidate_disambiguation:longitudinal_operation",
+          "question_pair_id": "p4_candidate_disambiguation"
+        }
+      ],
+      "sample_id": "C05__Update",
+      "source_file": "/data/predator/ly/third_party/MemOps/generated_result/2-evidence_conversation/C05_update.json",
+      "source_sha256": "0335cf348debd89721a818b17c14b7e3c68fda43241e89abc36fb62027e80de3",
+      "special_semantics_present": true,
+      "stale_confirmed_values": [
+        "May 25",
+        "May 26"
+      ],
+      "target_id": "iceland_return_date",
+      "target_name": "Iceland trip return flight date",
+      "transitions": [
+        {
+          "new_operation_id": "op3",
+          "new_segment_index": 2,
+          "new_value": "May 28",
+          "old_operation_id": "op2",
+          "old_segment_index": 1,
+          "old_value": "May 25",
+          "target_id": "iceland_return_date",
+          "target_name": "Iceland trip return flight date"
+        }
+      ]
+    }
+  ],
+  "schema_version": "sfwb.v1.3.memops-b0-screening-run-selection.v1",
+  "status": "OFFLINE_RUN_SELECTION_FROZEN"
+}

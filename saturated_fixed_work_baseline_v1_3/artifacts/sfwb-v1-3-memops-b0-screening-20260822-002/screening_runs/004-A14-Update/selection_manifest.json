@@ -1,0 +1,110 @@
+{
+  "cohort_id": "sfwb-v1-3-memops-b0-screening-20260822-002",
+  "cohort_manifest_sha256": "779c4d6596d53c27ce49079cc7b68543904a9ef0131892d83aacd9068a812ed6",
+  "cohort_sample_id": "A14__Update",
+  "official_qa_evaluator": {
+    "path": "/data/predator/ly/third_party/MemOps/5.5-evaluate_operation_metrics.py",
+    "prompt_builder": "build_evaluation_prompt",
+    "result_parser": "parse_judge_metrics",
+    "sha256": "17c24362c174239eb7ef5e543bc651afed60ae445a4becd49acf24f6d3c646f0"
+  },
+  "official_sample_id": "A14",
+  "payload_sha256": "acb04825d739fb8004db6897731325bf0d19bc5255414cb125336903edd25a2a",
+  "samples": [
+    {
+      "cohort_sample_id": "A14__Update",
+      "history_id": "memops-a14-update",
+      "latest_confirmed_value": "HG284139",
+      "official_sample_id": "A14",
+      "operation_type": "Update",
+      "qa": [
+        {
+          "evaluation_setting": "adjacent_operation",
+          "evaluation_type": "CandidateDisambiguation",
+          "expected_answer": "HG284139",
+          "gold_memory_state": "Brazilian passport number is HG284139, confirmed from the physical passport. HG284913 and HG284193 are superseded stale values. HG284931 is a tentative consulate system error pending correction. HG284319 belongs to a different applicant.",
+          "gold_provenance": [
+            {
+              "quote": "I pulled out the physical passport just now and the number printed on it is HG284139. I've been reading the last four digits wrong this whole time",
+              "segment_index": 2,
+              "turn_index": 3
+            }
+          ],
+          "judge_rubric": {
+            "acceptable_paraphrases": [],
+            "harmful_extra": [
+              "selecting any value other than HG284139"
+            ],
+            "harmless_extra": [],
+            "must_include": [
+              "HG284139"
+            ],
+            "must_not_include": [
+              "HG284913",
+              "HG284193",
+              "HG284931",
+              "HG284319"
+            ]
+          },
+          "question_id": "A14:p4_candidate_disambiguation:adjacent_operation",
+          "question_pair_id": "p4_candidate_disambiguation"
+        },
+        {
+          "evaluation_setting": "longitudinal_operation",
+          "evaluation_type": "CandidateDisambiguation",
+          "expected_answer": "HG284139",
+          "gold_memory_state": "Brazilian passport number is HG284139, confirmed from the physical passport. HG284913 and HG284193 are superseded stale values. HG284931 is a tentative consulate system error pending correction. HG284319 belongs to a different applicant.",
+          "gold_provenance": [
+            {
+              "quote": "I pulled out the physical passport just now and the number printed on it is HG284139. I've been reading the last four digits wrong this whole time",
+              "segment_index": 2,
+              "turn_index": 3
+            }
+          ],
+          "judge_rubric": {
+            "acceptable_paraphrases": [],
+            "harmful_extra": [
+              "selecting any value other than HG284139"
+            ],
+            "harmless_extra": [],
+            "must_include": [
+              "HG284139"
+            ],
+            "must_not_include": [
+              "HG284913",
+              "HG284193",
+              "HG284931",
+              "HG284319"
+            ]
+          },
+          "question_id": "A14:p4_candidate_disambiguation:longitudinal_operation",
+          "question_pair_id": "p4_candidate_disambiguation"
+        }
+      ],
+      "sample_id": "A14__Update",
+      "source_file": "/data/predator/ly/third_party/MemOps/generated_result/2-evidence_conversation/A14_update.json",
+      "source_sha256": "84f5a3d086be822377527fd0481db9e0059f1da319e15db70673ea61de4ade33",
+      "special_semantics_present": true,
+      "stale_confirmed_values": [
+        "HG284913",
+        "HG284193"
+      ],
+      "target_id": "brazilian_passport_number",
+      "target_name": "Brazilian passport number",
+      "transitions": [
+        {
+          "new_operation_id": "op3",
+          "new_segment_index": 2,
+          "new_value": "HG284139",
+          "old_operation_id": "op2",
+          "old_segment_index": 1,
+          "old_value": "HG284913",
+          "target_id": "brazilian_passport_number",
+          "target_name": "Brazilian passport number"
+        }
+      ]
+    }
+  ],
+  "schema_version": "sfwb.v1.3.memops-b0-screening-run-selection.v1",
+  "status": "OFFLINE_RUN_SELECTION_FROZEN"
+}

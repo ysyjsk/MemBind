@@ -1,0 +1,244 @@
+{
+  "cohort_id": "sfwb-v1-3-memops-b0-screening-20260822-002",
+  "cohort_manifest_sha256": "779c4d6596d53c27ce49079cc7b68543904a9ef0131892d83aacd9068a812ed6",
+  "cohort_sample_id": "A28__TrajectoryOps",
+  "official_qa_evaluator": {
+    "path": "/data/predator/ly/third_party/MemOps/5.5-evaluate_operation_metrics.py",
+    "prompt_builder": "build_evaluation_prompt",
+    "result_parser": "parse_judge_metrics",
+    "sha256": "17c24362c174239eb7ef5e543bc651afed60ae445a4becd49acf24f6d3c646f0"
+  },
+  "official_sample_id": "A28",
+  "payload_sha256": "7a22dc3db509245769ac0c7e8c67428cc5efccd8e3c1cd20a4000b54758c4ff7",
+  "samples": [
+    {
+      "cohort_sample_id": "A28__TrajectoryOps",
+      "history_id": "memops-a28-trajectoryops",
+      "latest_confirmed_value": "July 1st",
+      "official_sample_id": "A28",
+      "operation_type": "TrajectoryOps",
+      "qa": [
+        {
+          "evaluation_setting": "adjacent_operation",
+          "evaluation_type": "StateTransition",
+          "expected_answer": "July 1st.",
+          "gold_memory_state": "Dr. Voss sabbatical start date: July 1st is the last confirmed value. The tentative reversion to June 15th reported secondhand by James Okoro was never confirmed by Dr. Voss and should not be adopted. The user explicitly decided to keep planning around the existing confirmed date until hearing from Dr. Voss directly.",
+          "gold_provenance": [
+            {
+              "quote": "the sabbatical is now confirmed for July 1st because of some administrative delay at UC San Diego",
+              "segment_index": 2,
+              "turn_index": 5
+            },
+            {
+              "quote": "Dr. Voss told him the sabbatical might actually start June 15th after all because the San Diego housing fell through and she found a new place available earlier",
+              "segment_index": 3,
+              "turn_index": 5
+            }
+          ],
+          "judge_rubric": {
+            "acceptable_paraphrases": [
+              "July 1",
+              "the first of July"
+            ],
+            "harmful_extra": [
+              "Treating the secondhand June 15th report as the operative date"
+            ],
+            "harmless_extra": [
+              "UC San Diego",
+              "six months",
+              "administrative delay"
+            ],
+            "must_include": [
+              "July 1st"
+            ],
+            "must_not_include": [
+              "June 15th as the planning date",
+              "June 1st"
+            ]
+          },
+          "question_id": "A28:p3_state_transition:adjacent_operation",
+          "question_pair_id": "p3_state_transition"
+        },
+        {
+          "evaluation_setting": "longitudinal_operation",
+          "evaluation_type": "StateTransition",
+          "expected_answer": "July 1st.",
+          "gold_memory_state": "Dr. Voss sabbatical start date: July 1st is the last confirmed value. The tentative reversion to June 15th reported secondhand by James Okoro was never confirmed by Dr. Voss and should not be adopted. The user explicitly decided to keep planning around the existing confirmed date until hearing from Dr. Voss directly.",
+          "gold_provenance": [
+            {
+              "quote": "the sabbatical is now confirmed for July 1st because of some administrative delay at UC San Diego",
+              "segment_index": 2,
+              "turn_index": 5
+            },
+            {
+              "quote": "Dr. Voss told him the sabbatical might actually start June 15th after all because the San Diego housing fell through and she found a new place available earlier",
+              "segment_index": 3,
+              "turn_index": 5
+            }
+          ],
+          "judge_rubric": {
+            "acceptable_paraphrases": [
+              "July 1",
+              "the first of July"
+            ],
+            "harmful_extra": [
+              "Treating the secondhand June 15th report as the operative date"
+            ],
+            "harmless_extra": [
+              "UC San Diego",
+              "six months",
+              "administrative delay"
+            ],
+            "must_include": [
+              "July 1st"
+            ],
+            "must_not_include": [
+              "June 15th as the planning date",
+              "June 1st"
+            ]
+          },
+          "question_id": "A28:p3_state_transition:longitudinal_operation",
+          "question_pair_id": "p3_state_transition"
+        },
+        {
+          "evaluation_setting": "adjacent_operation",
+          "evaluation_type": "StateTrajectory",
+          "expected_answer": "The departure date went through four stages. First, you reported June 1st as the start date. Second, you corrected it yourself to June 15th, which became the working date. Third, Dr. Voss emailed you directly confirming July 1st due to an administrative delay, replacing June 15th. Fourth, James Okoro passed along that Dr. Voss might revert to June 15th because of a housing situation, but you hadn't verified this with Dr. Voss and decided not to adopt it. The final plan you should work with is July 1st.",
+          "gold_memory_state": "Sabbatical start date trajectory: June 1st (confirmed, then superseded) → June 15th (confirmed correction, then superseded) → July 1st (confirmed by Dr. Voss's email, current operative value) → June 15th (tentative via James Okoro, not adopted). Final usable value: July 1st. Milestone meeting May 8th: unchanged throughout.",
+          "gold_provenance": [
+            {
+              "quote": "she'll be going on sabbatical starting June 1st to UC San Diego for six months",
+              "segment_index": 1,
+              "turn_index": 3
+            },
+            {
+              "quote": "She actually said mid-June, around June 15th, not June 1st",
+              "segment_index": 1,
+              "turn_index": 5
+            },
+            {
+              "quote": "the sabbatical is now confirmed for July 1st because of some administrative delay at UC San Diego",
+              "segment_index": 2,
+              "turn_index": 5
+            },
+            {
+              "quote": "Dr. Voss told him the sabbatical might actually start June 15th after all because the San Diego housing fell through and she found a new place available earlier",
+              "segment_index": 3,
+              "turn_index": 5
+            }
+          ],
+          "judge_rubric": {
+            "acceptable_paraphrases": [
+              "mid-June for June 15th",
+              "beginning of July for July 1st"
+            ],
+            "harmful_extra": [
+              "Treating the tentative June 15th as confirmed or adopted",
+              "Omitting the July 1st confirmation"
+            ],
+            "harmless_extra": [
+              "UC San Diego",
+              "administrative delay",
+              "housing change in San Diego",
+              "six months duration"
+            ],
+            "must_include": [
+              "June 1st as initial value",
+              "June 15th as first correction",
+              "July 1st as the email-confirmed value",
+              "secondhand June 15th report as not adopted",
+              "July 1st as the final planning date"
+            ],
+            "must_not_include": [
+              "June 15th as the final adopted date",
+              "June 1st as currently valid"
+            ]
+          },
+          "question_id": "A28:p5_state_trajectory:adjacent_operation",
+          "question_pair_id": "p5_state_trajectory"
+        },
+        {
+          "evaluation_setting": "longitudinal_operation",
+          "evaluation_type": "StateTrajectory",
+          "expected_answer": "The departure date went through four stages. First, you reported June 1st as the start date. Second, you corrected it yourself to June 15th, which became the working date. Third, Dr. Voss emailed you directly confirming July 1st due to an administrative delay, replacing June 15th. Fourth, James Okoro passed along that Dr. Voss might revert to June 15th because of a housing situation, but you hadn't verified this with Dr. Voss and decided not to adopt it. The final plan you should work with is July 1st.",
+          "gold_memory_state": "Sabbatical start date trajectory: June 1st (confirmed, then superseded) → June 15th (confirmed correction, then superseded) → July 1st (confirmed by Dr. Voss's email, current operative value) → June 15th (tentative via James Okoro, not adopted). Final usable value: July 1st. Milestone meeting May 8th: unchanged throughout.",
+          "gold_provenance": [
+            {
+              "quote": "she'll be going on sabbatical starting June 1st to UC San Diego for six months",
+              "segment_index": 1,
+              "turn_index": 3
+            },
+            {
+              "quote": "She actually said mid-June, around June 15th, not June 1st",
+              "segment_index": 1,
+              "turn_index": 5
+            },
+            {
+              "quote": "the sabbatical is now confirmed for July 1st because of some administrative delay at UC San Diego",
+              "segment_index": 2,
+              "turn_index": 5
+            },
+            {
+              "quote": "Dr. Voss told him the sabbatical might actually start June 15th after all because the San Diego housing fell through and she found a new place available earlier",
+              "segment_index": 3,
+              "turn_index": 5
+            }
+          ],
+          "judge_rubric": {
+            "acceptable_paraphrases": [
+              "mid-June for June 15th",
+              "beginning of July for July 1st"
+            ],
+            "harmful_extra": [
+              "Treating the tentative June 15th as confirmed or adopted",
+              "Omitting the July 1st confirmation"
+            ],
+            "harmless_extra": [
+              "UC San Diego",
+              "administrative delay",
+              "housing change in San Diego",
+              "six months duration"
+            ],
+            "must_include": [
+              "June 1st as initial value",
+              "June 15th as first correction",
+              "July 1st as the email-confirmed value",
+              "secondhand June 15th report as not adopted",
+              "July 1st as the final planning date"
+            ],
+            "must_not_include": [
+              "June 15th as the final adopted date",
+              "June 1st as currently valid"
+            ]
+          },
+          "question_id": "A28:p5_state_trajectory:longitudinal_operation",
+          "question_pair_id": "p5_state_trajectory"
+        }
+      ],
+      "sample_id": "A28__TrajectoryOps",
+      "source_file": "/data/predator/ly/third_party/MemOps/generated_result/2-evidence_conversation/A28_trajectory_ops.json",
+      "source_sha256": "5c99fac01649d1be434ce1f0cc5c1c70209e308c64d8cb0a4091f3cb7fc06e4d",
+      "special_semantics_present": true,
+      "stale_confirmed_values": [
+        "June 1st",
+        "June 15th"
+      ],
+      "target_id": "voss_sabbatical_start_date",
+      "target_name": "Dr. Voss sabbatical start date",
+      "transitions": [
+        {
+          "new_operation_id": "op4",
+          "new_segment_index": 2,
+          "new_value": "July 1st",
+          "old_operation_id": "op2",
+          "old_segment_index": 1,
+          "old_value": "June 1st",
+          "target_id": "voss_sabbatical_start_date",
+          "target_name": "Dr. Voss sabbatical start date"
+        }
+      ]
+    }
+  ],
+  "schema_version": "sfwb.v1.3.memops-b0-screening-run-selection.v1",
+  "status": "OFFLINE_RUN_SELECTION_FROZEN"
+}

@@ -1,0 +1,120 @@
+{
+  "cohort_id": "sfwb-v1-3-memops-b0-screening-20260822-002",
+  "cohort_manifest_sha256": "779c4d6596d53c27ce49079cc7b68543904a9ef0131892d83aacd9068a812ed6",
+  "cohort_sample_id": "B12__Update",
+  "official_qa_evaluator": {
+    "path": "/data/predator/ly/third_party/MemOps/5.5-evaluate_operation_metrics.py",
+    "prompt_builder": "build_evaluation_prompt",
+    "result_parser": "parse_judge_metrics",
+    "sha256": "17c24362c174239eb7ef5e543bc651afed60ae445a4becd49acf24f6d3c646f0"
+  },
+  "official_sample_id": "B12",
+  "payload_sha256": "1a3f336e60c1fdb25cbd71b74da88669a9eda8b2bc9f1726112a4b58e4bf8399",
+  "samples": [
+    {
+      "cohort_sample_id": "B12__Update",
+      "history_id": "memops-b12-update",
+      "latest_confirmed_value": "604-881-3790",
+      "official_sample_id": "B12",
+      "operation_type": "Update",
+      "qa": [
+        {
+          "evaluation_setting": "adjacent_operation",
+          "evaluation_type": "CandidateDisambiguation",
+          "expected_answer": "604-881-3790",
+          "gold_memory_state": "Gerald Huang's confirmed active cell is 604-881-3790. 604-881-3724 was a prior number and is also the tentative revert target, but that revert is unconfirmed. 604-881-3742 was the original incorrect number. 604-550-1180 belongs to Rachel at a property management company and is irrelevant.",
+          "gold_provenance": [
+            {
+              "quote": "Gerald texted me from a new number today — 604-881-3790. He said he switched carriers and this is his new cell going forward.",
+              "segment_index": 2,
+              "turn_index": 3
+            },
+            {
+              "quote": "Gerald mentioned he might be porting his old number back — 604-881-3724 — because his brother Kevin already had 3790 saved and it was causing mix-ups. He said he'd confirm by end of week.",
+              "segment_index": 3,
+              "turn_index": 5
+            }
+          ],
+          "judge_rubric": {
+            "acceptable_paraphrases": [],
+            "harmful_extra": [
+              "selecting the tentative revert number as active",
+              "selecting the original incorrect number"
+            ],
+            "harmless_extra": [],
+            "must_include": [
+              "604-881-3790"
+            ],
+            "must_not_include": [
+              "604-881-3724 as the answer",
+              "604-881-3742 as the answer",
+              "604-550-1180 as the answer"
+            ]
+          },
+          "question_id": "B12:p4_candidate_disambiguation:adjacent_operation",
+          "question_pair_id": "p4_candidate_disambiguation"
+        },
+        {
+          "evaluation_setting": "longitudinal_operation",
+          "evaluation_type": "CandidateDisambiguation",
+          "expected_answer": "604-881-3790",
+          "gold_memory_state": "Gerald Huang's confirmed active cell is 604-881-3790. 604-881-3724 was a prior number and is also the tentative revert target, but that revert is unconfirmed. 604-881-3742 was the original incorrect number. 604-550-1180 belongs to Rachel at a property management company and is irrelevant.",
+          "gold_provenance": [
+            {
+              "quote": "Gerald texted me from a new number today — 604-881-3790. He said he switched carriers and this is his new cell going forward.",
+              "segment_index": 2,
+              "turn_index": 3
+            },
+            {
+              "quote": "Gerald mentioned he might be porting his old number back — 604-881-3724 — because his brother Kevin already had 3790 saved and it was causing mix-ups. He said he'd confirm by end of week.",
+              "segment_index": 3,
+              "turn_index": 5
+            }
+          ],
+          "judge_rubric": {
+            "acceptable_paraphrases": [],
+            "harmful_extra": [
+              "selecting the tentative revert number as active",
+              "selecting the original incorrect number"
+            ],
+            "harmless_extra": [],
+            "must_include": [
+              "604-881-3790"
+            ],
+            "must_not_include": [
+              "604-881-3724 as the answer",
+              "604-881-3742 as the answer",
+              "604-550-1180 as the answer"
+            ]
+          },
+          "question_id": "B12:p4_candidate_disambiguation:longitudinal_operation",
+          "question_pair_id": "p4_candidate_disambiguation"
+        }
+      ],
+      "sample_id": "B12__Update",
+      "source_file": "/data/predator/ly/third_party/MemOps/generated_result/2-evidence_conversation/B12_update.json",
+      "source_sha256": "33e02a6ed7daf4e05f717866e0492350f52ab41918cf6b29f3513ac64ec4ea09",
+      "special_semantics_present": true,
+      "stale_confirmed_values": [
+        "604-881-3742",
+        "604-881-3724"
+      ],
+      "target_id": "gerald_phone_number",
+      "target_name": "Gerald Huang cell phone number",
+      "transitions": [
+        {
+          "new_operation_id": "op3",
+          "new_segment_index": 2,
+          "new_value": "604-881-3790",
+          "old_operation_id": "op2",
+          "old_segment_index": 1,
+          "old_value": "604-881-3742",
+          "target_id": "gerald_phone_number",
+          "target_name": "Gerald Huang cell phone number"
+        }
+      ]
+    }
+  ],
+  "schema_version": "sfwb.v1.3.memops-b0-screening-run-selection.v1",
+  "status": "OFFLINE_RUN_SELECTION_FROZEN"
+}

@@ -1,0 +1,128 @@
+{
+  "cohort_id": "sfwb-v1-3-memops-b0-screening-20260822-002",
+  "cohort_manifest_sha256": "779c4d6596d53c27ce49079cc7b68543904a9ef0131892d83aacd9068a812ed6",
+  "cohort_sample_id": "D05__Update",
+  "official_qa_evaluator": {
+    "path": "/data/predator/ly/third_party/MemOps/5.5-evaluate_operation_metrics.py",
+    "prompt_builder": "build_evaluation_prompt",
+    "result_parser": "parse_judge_metrics",
+    "sha256": "17c24362c174239eb7ef5e543bc651afed60ae445a4becd49acf24f6d3c646f0"
+  },
+  "official_sample_id": "D05",
+  "payload_sha256": "0f965b2687489993aa0b5c0d1c3ae38399dc681932a4a559a9990070f145d2a8",
+  "samples": [
+    {
+      "cohort_sample_id": "D05__Update",
+      "history_id": "memops-d05-update",
+      "latest_confirmed_value": "412 Kensington Rd, Suite 200",
+      "official_sample_id": "D05",
+      "operation_type": "Update",
+      "qa": [
+        {
+          "evaluation_setting": "adjacent_operation",
+          "evaluation_type": "CandidateDisambiguation",
+          "expected_answer": "412 Kensington Rd, Suite 200",
+          "gold_memory_state": "Allergist clinic confirmed address: 412 Kensington Rd, Suite 200. Broadmoor Ave is the dentist. 780 Greystone Blvd is a pending future relocation not yet adopted. Kensington Rd without the suite number is an incomplete earlier version.",
+          "gold_provenance": [
+            {
+              "quote": "The clinic address is actually listed as 412 Kensington Rd, Suite 200. I want to be precise about it since I'll need to go back for follow-up testing",
+              "segment_index": 2,
+              "turn_index": 5
+            },
+            {
+              "quote": "Dr. Patel's office confirmed they're relocating to 780 Greystone Blvd starting next month. So my follow-up appointment in September will be at the new location",
+              "segment_index": 3,
+              "turn_index": 5
+            }
+          ],
+          "judge_rubric": {
+            "acceptable_paraphrases": [
+              "412 Kensington Road, Suite 200"
+            ],
+            "harmful_extra": [
+              "selecting the tentative relocation address as the current mailing address",
+              "selecting the dentist address"
+            ],
+            "harmless_extra": [
+              "noting that 780 Greystone Blvd will be the future address"
+            ],
+            "must_include": [
+              "412 Kensington Rd, Suite 200"
+            ],
+            "must_not_include": [
+              "Broadmoor Ave as the allergist address",
+              "780 Greystone Blvd as the current address",
+              "Kensington Rd without suite number as the complete address"
+            ]
+          },
+          "question_id": "D05:p4_candidate_disambiguation:adjacent_operation",
+          "question_pair_id": "p4_candidate_disambiguation"
+        },
+        {
+          "evaluation_setting": "longitudinal_operation",
+          "evaluation_type": "CandidateDisambiguation",
+          "expected_answer": "412 Kensington Rd, Suite 200",
+          "gold_memory_state": "Allergist clinic confirmed address: 412 Kensington Rd, Suite 200. Broadmoor Ave is the dentist. 780 Greystone Blvd is a pending future relocation not yet adopted. Kensington Rd without the suite number is an incomplete earlier version.",
+          "gold_provenance": [
+            {
+              "quote": "The clinic address is actually listed as 412 Kensington Rd, Suite 200. I want to be precise about it since I'll need to go back for follow-up testing",
+              "segment_index": 2,
+              "turn_index": 5
+            },
+            {
+              "quote": "Dr. Patel's office confirmed they're relocating to 780 Greystone Blvd starting next month. So my follow-up appointment in September will be at the new location",
+              "segment_index": 3,
+              "turn_index": 5
+            }
+          ],
+          "judge_rubric": {
+            "acceptable_paraphrases": [
+              "412 Kensington Road, Suite 200"
+            ],
+            "harmful_extra": [
+              "selecting the tentative relocation address as the current mailing address",
+              "selecting the dentist address"
+            ],
+            "harmless_extra": [
+              "noting that 780 Greystone Blvd will be the future address"
+            ],
+            "must_include": [
+              "412 Kensington Rd, Suite 200"
+            ],
+            "must_not_include": [
+              "Broadmoor Ave as the allergist address",
+              "780 Greystone Blvd as the current address",
+              "Kensington Rd without suite number as the complete address"
+            ]
+          },
+          "question_id": "D05:p4_candidate_disambiguation:longitudinal_operation",
+          "question_pair_id": "p4_candidate_disambiguation"
+        }
+      ],
+      "sample_id": "D05__Update",
+      "source_file": "/data/predator/ly/third_party/MemOps/generated_result/2-evidence_conversation/D05_update.json",
+      "source_sha256": "6cdd0dd52f44b2a011909f1b8ab2b9b39922cb9f12c1509afab61d8a25083d3d",
+      "special_semantics_present": true,
+      "stale_confirmed_values": [
+        "Broadmoor Ave",
+        "Kensington Rd"
+      ],
+      "target_id": "allergy_clinic_location",
+      "target_name": "location of allergist clinic where testing was done",
+      "transitions": [
+        {
+          "new_operation_id": "op3",
+          "new_segment_index": 2,
+          "new_value": "412 Kensington Rd, Suite 200",
+          "old_operation_id": "op2",
+          "old_segment_index": 1,
+          "old_value": "Broadmoor Ave",
+          "target_id": "allergy_clinic_location",
+          "target_name": "location of allergist clinic where testing was done"
+        }
+      ]
+    }
+  ],
+  "schema_version": "sfwb.v1.3.memops-b0-screening-run-selection.v1",
+  "status": "OFFLINE_RUN_SELECTION_FROZEN"
+}

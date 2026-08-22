@@ -1,0 +1,132 @@
+{
+  "cohort_id": "sfwb-v1-3-memops-b0-screening-20260822-002",
+  "cohort_manifest_sha256": "779c4d6596d53c27ce49079cc7b68543904a9ef0131892d83aacd9068a812ed6",
+  "cohort_sample_id": "E12__Update",
+  "official_qa_evaluator": {
+    "path": "/data/predator/ly/third_party/MemOps/5.5-evaluate_operation_metrics.py",
+    "prompt_builder": "build_evaluation_prompt",
+    "result_parser": "parse_judge_metrics",
+    "sha256": "17c24362c174239eb7ef5e543bc651afed60ae445a4becd49acf24f6d3c646f0"
+  },
+  "official_sample_id": "E12",
+  "payload_sha256": "0423384a78c491d85cda694bb05ea302cc600a194c321d3676c1b27019344b21",
+  "samples": [
+    {
+      "cohort_sample_id": "E12__Update",
+      "history_id": "memops-e12-update",
+      "latest_confirmed_value": "co-tenant",
+      "official_sample_id": "E12",
+      "operation_type": "Update",
+      "qa": [
+        {
+          "evaluation_setting": "adjacent_operation",
+          "evaluation_type": "CandidateDisambiguation",
+          "expected_answer": "co-tenant",
+          "gold_memory_state": "The user's last personally confirmed relationship label for Elaine on official forms is 'co-tenant' from the apartment lease renewal. 'wife' was the initial mislabel corrected to 'partner', which was then superseded by 'co-tenant'. 'fiancée' was assigned by Elaine's mom without the user's confirmation. 'spouse' appeared on an old archived HR form that was already corrected.",
+          "gold_provenance": [
+            {
+              "quote": "we did the apartment lease renewal together last week and we both wrote 'co-tenant' on the form",
+              "segment_index": 2,
+              "turn_index": 3
+            },
+            {
+              "quote": "Elaine's mom told us she already listed Elaine as my fiancée on the family reunion RSVP for August",
+              "segment_index": 3,
+              "turn_index": 5
+            }
+          ],
+          "judge_rubric": {
+            "acceptable_paraphrases": [
+              "cotenant",
+              "co tenant"
+            ],
+            "harmful_extra": [
+              "selecting fiancée because it appeared most recently in conversation",
+              "selecting wife or spouse because they appeared on forms"
+            ],
+            "harmless_extra": [
+              "noting the lease renewal context"
+            ],
+            "must_include": [
+              "co-tenant"
+            ],
+            "must_not_include": [
+              "wife",
+              "fiancée",
+              "spouse",
+              "partner"
+            ]
+          },
+          "question_id": "E12:p4_candidate_disambiguation:adjacent_operation",
+          "question_pair_id": "p4_candidate_disambiguation"
+        },
+        {
+          "evaluation_setting": "longitudinal_operation",
+          "evaluation_type": "CandidateDisambiguation",
+          "expected_answer": "co-tenant",
+          "gold_memory_state": "The user's last personally confirmed relationship label for Elaine on official forms is 'co-tenant' from the apartment lease renewal. 'wife' was the initial mislabel corrected to 'partner', which was then superseded by 'co-tenant'. 'fiancée' was assigned by Elaine's mom without the user's confirmation. 'spouse' appeared on an old archived HR form that was already corrected.",
+          "gold_provenance": [
+            {
+              "quote": "we did the apartment lease renewal together last week and we both wrote 'co-tenant' on the form",
+              "segment_index": 2,
+              "turn_index": 3
+            },
+            {
+              "quote": "Elaine's mom told us she already listed Elaine as my fiancée on the family reunion RSVP for August",
+              "segment_index": 3,
+              "turn_index": 5
+            }
+          ],
+          "judge_rubric": {
+            "acceptable_paraphrases": [
+              "cotenant",
+              "co tenant"
+            ],
+            "harmful_extra": [
+              "selecting fiancée because it appeared most recently in conversation",
+              "selecting wife or spouse because they appeared on forms"
+            ],
+            "harmless_extra": [
+              "noting the lease renewal context"
+            ],
+            "must_include": [
+              "co-tenant"
+            ],
+            "must_not_include": [
+              "wife",
+              "fiancée",
+              "spouse",
+              "partner"
+            ]
+          },
+          "question_id": "E12:p4_candidate_disambiguation:longitudinal_operation",
+          "question_pair_id": "p4_candidate_disambiguation"
+        }
+      ],
+      "sample_id": "E12__Update",
+      "source_file": "/data/predator/ly/third_party/MemOps/generated_result/2-evidence_conversation/E12_update.json",
+      "source_sha256": "c87fbe0249cf7c07033225eb59cef8a688a042f9b2e968fea84cf0d7245cc0fe",
+      "special_semantics_present": true,
+      "stale_confirmed_values": [
+        "wife",
+        "partner"
+      ],
+      "target_id": "elaine_relationship_label",
+      "target_name": "Elaine's relationship label on official forms",
+      "transitions": [
+        {
+          "new_operation_id": "op3",
+          "new_segment_index": 2,
+          "new_value": "co-tenant",
+          "old_operation_id": "op2",
+          "old_segment_index": 1,
+          "old_value": "wife",
+          "target_id": "elaine_relationship_label",
+          "target_name": "Elaine's relationship label on official forms"
+        }
+      ]
+    }
+  ],
+  "schema_version": "sfwb.v1.3.memops-b0-screening-run-selection.v1",
+  "status": "OFFLINE_RUN_SELECTION_FROZEN"
+}

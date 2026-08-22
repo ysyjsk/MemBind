@@ -1,0 +1,130 @@
+{
+  "cohort_id": "sfwb-v1-3-memops-b0-screening-20260822-002",
+  "cohort_manifest_sha256": "779c4d6596d53c27ce49079cc7b68543904a9ef0131892d83aacd9068a812ed6",
+  "cohort_sample_id": "C26__Update",
+  "official_qa_evaluator": {
+    "path": "/data/predator/ly/third_party/MemOps/5.5-evaluate_operation_metrics.py",
+    "prompt_builder": "build_evaluation_prompt",
+    "result_parser": "parse_judge_metrics",
+    "sha256": "17c24362c174239eb7ef5e543bc651afed60ae445a4becd49acf24f6d3c646f0"
+  },
+  "official_sample_id": "C26",
+  "payload_sha256": "9e9e7546fa76f4bb389be8ce83de78944da92f2ae1ce9d4d3ba7d0d6baff0e9c",
+  "samples": [
+    {
+      "cohort_sample_id": "C26__Update",
+      "history_id": "memops-c26-update",
+      "latest_confirmed_value": "March 12, 3:00 PM",
+      "official_sample_id": "C26",
+      "operation_type": "Update",
+      "qa": [
+        {
+          "evaluation_setting": "adjacent_operation",
+          "evaluation_type": "CandidateDisambiguation",
+          "expected_answer": "March 12, 3:00 PM",
+          "gold_memory_state": "The last confirmed interview time is March 12, 3:00 PM. The 4:00 PM time is tentative and unconfirmed. The 2:30 PM and 2:00 PM times are superseded stale values.",
+          "gold_provenance": [
+            {
+              "quote": "David Koh's assistant emailed me and moved the interview to 3:00 PM on the same day, March 12",
+              "segment_index": 2,
+              "turn_index": 3
+            },
+            {
+              "quote": "David Koh's assistant just sent another message saying they might push it to 4:00 PM because the panel has a conflict earlier in the afternoon",
+              "segment_index": 3,
+              "turn_index": 5
+            }
+          ],
+          "judge_rubric": {
+            "acceptable_paraphrases": [
+              "3 PM",
+              "3 o'clock on March 12"
+            ],
+            "harmful_extra": [
+              "selecting 4:00 PM because it was mentioned most recently",
+              "selecting 2:30 PM or 2:00 PM"
+            ],
+            "harmless_extra": [
+              "noting that 4:00 PM is pending confirmation"
+            ],
+            "must_include": [
+              "3:00 PM"
+            ],
+            "must_not_include": [
+              "2:30 PM as the answer",
+              "2:00 PM as the answer",
+              "4:00 PM as the answer"
+            ]
+          },
+          "question_id": "C26:p4_candidate_disambiguation:adjacent_operation",
+          "question_pair_id": "p4_candidate_disambiguation"
+        },
+        {
+          "evaluation_setting": "longitudinal_operation",
+          "evaluation_type": "CandidateDisambiguation",
+          "expected_answer": "March 12, 3:00 PM",
+          "gold_memory_state": "The last confirmed interview time is March 12, 3:00 PM. The 4:00 PM time is tentative and unconfirmed. The 2:30 PM and 2:00 PM times are superseded stale values.",
+          "gold_provenance": [
+            {
+              "quote": "David Koh's assistant emailed me and moved the interview to 3:00 PM on the same day, March 12",
+              "segment_index": 2,
+              "turn_index": 3
+            },
+            {
+              "quote": "David Koh's assistant just sent another message saying they might push it to 4:00 PM because the panel has a conflict earlier in the afternoon",
+              "segment_index": 3,
+              "turn_index": 5
+            }
+          ],
+          "judge_rubric": {
+            "acceptable_paraphrases": [
+              "3 PM",
+              "3 o'clock on March 12"
+            ],
+            "harmful_extra": [
+              "selecting 4:00 PM because it was mentioned most recently",
+              "selecting 2:30 PM or 2:00 PM"
+            ],
+            "harmless_extra": [
+              "noting that 4:00 PM is pending confirmation"
+            ],
+            "must_include": [
+              "3:00 PM"
+            ],
+            "must_not_include": [
+              "2:30 PM as the answer",
+              "2:00 PM as the answer",
+              "4:00 PM as the answer"
+            ]
+          },
+          "question_id": "C26:p4_candidate_disambiguation:longitudinal_operation",
+          "question_pair_id": "p4_candidate_disambiguation"
+        }
+      ],
+      "sample_id": "C26__Update",
+      "source_file": "/data/predator/ly/third_party/MemOps/generated_result/2-evidence_conversation/C26_update.json",
+      "source_sha256": "490097629cee90daa883df4b1e74a5632e4ba0e5df055d3c54a600d6d2324da6",
+      "special_semantics_present": true,
+      "stale_confirmed_values": [
+        "March 12, 2:30 PM",
+        "March 12, 2:00 PM"
+      ],
+      "target_id": "c26_interview_time",
+      "target_name": "C26 interview appointment time",
+      "transitions": [
+        {
+          "new_operation_id": "op3",
+          "new_segment_index": 2,
+          "new_value": "March 12, 3:00 PM",
+          "old_operation_id": "op2",
+          "old_segment_index": 1,
+          "old_value": "March 12, 2:30 PM",
+          "target_id": "c26_interview_time",
+          "target_name": "C26 interview appointment time"
+        }
+      ]
+    }
+  ],
+  "schema_version": "sfwb.v1.3.memops-b0-screening-run-selection.v1",
+  "status": "OFFLINE_RUN_SELECTION_FROZEN"
+}

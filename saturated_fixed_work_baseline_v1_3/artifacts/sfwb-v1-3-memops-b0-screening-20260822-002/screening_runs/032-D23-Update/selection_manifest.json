@@ -1,0 +1,124 @@
+{
+  "cohort_id": "sfwb-v1-3-memops-b0-screening-20260822-002",
+  "cohort_manifest_sha256": "779c4d6596d53c27ce49079cc7b68543904a9ef0131892d83aacd9068a812ed6",
+  "cohort_sample_id": "D23__Update",
+  "official_qa_evaluator": {
+    "path": "/data/predator/ly/third_party/MemOps/5.5-evaluate_operation_metrics.py",
+    "prompt_builder": "build_evaluation_prompt",
+    "result_parser": "parse_judge_metrics",
+    "sha256": "17c24362c174239eb7ef5e543bc651afed60ae445a4becd49acf24f6d3c646f0"
+  },
+  "official_sample_id": "D23",
+  "payload_sha256": "6c396158153c91e136eddf33bb5820f2d4fffa1072c77db9fe9c9dad2c53d85f",
+  "samples": [
+    {
+      "cohort_sample_id": "D23__Update",
+      "history_id": "memops-d23-update",
+      "latest_confirmed_value": "11A",
+      "official_sample_id": "D23",
+      "operation_type": "Update",
+      "qa": [
+        {
+          "evaluation_setting": "adjacent_operation",
+          "evaluation_type": "CandidateDisambiguation",
+          "expected_answer": "11A",
+          "gold_memory_state": "Denver flight seat is 11A, confirmed from airline account history. 14A was the initial self-report (superseded). 12A was the boarding-pass-photo correction (superseded). 10A is an unverified suggestion from coworker Sarah (tentative, not adopted).",
+          "gold_provenance": [
+            {
+              "quote": "So I pulled up my airline account history just now and the Denver booking actually shows seat 11A, not 12A. Row 12 doesn't even exist on that 737 configuration",
+              "segment_index": 2,
+              "turn_index": 3
+            },
+            {
+              "quote": "My coworker Sarah just texted me — she says we were in row 10, not 11, because she was in 10C right across the aisle from me. So it might have been 10A after all",
+              "segment_index": 3,
+              "turn_index": 5
+            }
+          ],
+          "judge_rubric": {
+            "acceptable_paraphrases": [
+              "seat 11A",
+              "row 11, seat A"
+            ],
+            "harmful_extra": [
+              "selecting 10A because it was the most recently mentioned value"
+            ],
+            "harmless_extra": [],
+            "must_include": [
+              "11A"
+            ],
+            "must_not_include": [
+              "14A as correct",
+              "12A as correct",
+              "10A as correct"
+            ]
+          },
+          "question_id": "D23:p4_candidate_disambiguation:adjacent_operation",
+          "question_pair_id": "p4_candidate_disambiguation"
+        },
+        {
+          "evaluation_setting": "longitudinal_operation",
+          "evaluation_type": "CandidateDisambiguation",
+          "expected_answer": "11A",
+          "gold_memory_state": "Denver flight seat is 11A, confirmed from airline account history. 14A was the initial self-report (superseded). 12A was the boarding-pass-photo correction (superseded). 10A is an unverified suggestion from coworker Sarah (tentative, not adopted).",
+          "gold_provenance": [
+            {
+              "quote": "So I pulled up my airline account history just now and the Denver booking actually shows seat 11A, not 12A. Row 12 doesn't even exist on that 737 configuration",
+              "segment_index": 2,
+              "turn_index": 3
+            },
+            {
+              "quote": "My coworker Sarah just texted me — she says we were in row 10, not 11, because she was in 10C right across the aisle from me. So it might have been 10A after all",
+              "segment_index": 3,
+              "turn_index": 5
+            }
+          ],
+          "judge_rubric": {
+            "acceptable_paraphrases": [
+              "seat 11A",
+              "row 11, seat A"
+            ],
+            "harmful_extra": [
+              "selecting 10A because it was the most recently mentioned value"
+            ],
+            "harmless_extra": [],
+            "must_include": [
+              "11A"
+            ],
+            "must_not_include": [
+              "14A as correct",
+              "12A as correct",
+              "10A as correct"
+            ]
+          },
+          "question_id": "D23:p4_candidate_disambiguation:longitudinal_operation",
+          "question_pair_id": "p4_candidate_disambiguation"
+        }
+      ],
+      "sample_id": "D23__Update",
+      "source_file": "/data/predator/ly/third_party/MemOps/generated_result/2-evidence_conversation/D23_update.json",
+      "source_sha256": "64ddf7e658701eaa36dbf398ce3956c42e957ec6f1af7313182b6bd773604198",
+      "special_semantics_present": true,
+      "stale_confirmed_values": [
+        "14A",
+        "12A"
+      ],
+      "target_id": "denver_flight_seat",
+      "target_name": "Denver flight seat assignment",
+      "transitions": [
+        {
+          "new_operation_id": "op3",
+          "new_segment_index": 2,
+          "new_value": "11A",
+          "old_operation_id": "op2",
+          "old_segment_index": 1,
+          "old_value": "14A",
+          "target_id": "denver_flight_seat",
+          "target_name": "Denver flight seat assignment"
+        }
+      ]
+    }
+  ],
+  "schema_version": "sfwb.v1.3.memops-b0-screening-run-selection.v1",
+  "status": "OFFLINE_RUN_SELECTION_FROZEN"
+}

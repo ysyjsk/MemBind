@@ -1,0 +1,320 @@
+Target entity not found in nodes for edge relation: MISLABELED_MEDICATION
+LLM returned invalid duplicate_facts idx values [2] (valid range: 0-1 for EXISTING FACTS)
+{
+  "schema_version": "sfwb.v1.3.memops-live-qualification.v1",
+  "status": "LIVE_COMPLETE",
+  "qualification_root": "artifacts/sfwb-v1-3-memops-b0-screening-20260822-002/screening_runs_v2/003-a13-update",
+  "methods": [
+    "B0_NATIVE_SERIAL"
+  ],
+  "sample_ids": [
+    "A13__Update"
+  ],
+  "outputs": [
+    {
+      "sample_id": "A13__Update",
+      "method": "B0_NATIVE_SERIAL",
+      "block_id": "memops-001-A13__Update-B0_NATIVE_SERIAL",
+      "namespace": "003-a13-update-MEMOPS-A13__Update-B0_NATIVE_SERIAL-attempt-001",
+      "attempt_root": "artifacts/sfwb-v1-3-memops-b0-screening-20260822-002/screening_runs_v2/003-a13-update/blocks/memops-001-A13__Update-B0_NATIVE_SERIAL/attempt-001",
+      "workload_sha256": "844dc2b4805757725a3552a2031785065fca26d24bcd8715f5ea4d75e44527a9",
+      "metrics": {
+        "schema_version": "membind.saturated-fixed-work.block-result.v1",
+        "method": "B0_NATIVE_SERIAL",
+        "history_id": "memops-a13-update",
+        "namespace": "003-a13-update-MEMOPS-A13__Update-B0_NATIVE_SERIAL-attempt-001",
+        "valid": true,
+        "episode_count": 3,
+        "created_sequences": [
+          0,
+          1,
+          2
+        ],
+        "feeder_workload_await_count": 3,
+        "application_gate_count": 0,
+        "artificial_sleep_count": 0,
+        "configured_max_inflight": null,
+        "t0_ns": 9271201509065,
+        "t_durable_complete_ns": 9344359062728,
+        "t_validated_seal_ns": 9344477050335,
+        "build_makespan_ns": 73157553663,
+        "drain_tail_ns": 13884275484,
+        "validation_seal_latency_ns": 117987607,
+        "canonical_graph_hash": "a86ce5e60acd519484adce4254b6d73a9bce5d5afb74df45f246b6e6696e291d",
+        "seal_payload_sha256": "058c732996a23fe62ab71f69357b9bcfe7e133221830977597133d55f688571f",
+        "llm_input_tokens": 39357,
+        "llm_logical_calls": 20,
+        "llm_transport_attempts": 20,
+        "embedding_items": 114,
+        "db_writes": 3,
+        "instrumentation_error_spans": 0,
+        "llm_duration_p50_s": 1.424213405,
+        "llm_duration_p95_s": 23.440558865,
+        "llm_duration_p99_s": 24.018686141,
+        "embedding_duration_p50_s": 0.025980211,
+        "embedding_duration_p95_s": 0.040999681,
+        "embedding_duration_p99_s": 0.042538581,
+        "db_duration_p50_s": 0.005764368,
+        "db_duration_p95_s": 0.085122194,
+        "db_duration_p99_s": 0.08810975,
+        "llm_metrics_availability": "MEASURED",
+        "embedding_metrics_availability": "MEASURED",
+        "db_metrics_availability": "MEASURED",
+        "direct_semantic_violations": 0,
+        "direct_semantic_evidence_availability": "DERIVED",
+        "direct_semantic_violations_by_observation": {
+          "future_persistent_state_read": 0,
+          "stale_predecessor_write": 0,
+          "wrong_state_write": 0
+        },
+        "direct_semantic_evidence_records": [],
+        "ordering_observations_counted_as_direct": 0,
+        "block_id": "memops-001-A13__Update-B0_NATIVE_SERIAL",
+        "attempt_id": "attempt-001",
+        "attempt_ordinal": 1,
+        "source_tokens": 2765,
+        "build_makespan_s": 73.157553663,
+        "source_tokens_per_s": 37.795140235784295,
+        "whole_update_active_mean": 1.0,
+        "whole_update_active_max": 1,
+        "whole_update_active_k_time_ns": {
+          "1": 73145887754
+        },
+        "inversion_count": 0,
+        "inversion_density": 0.0,
+        "kendall_tau": 1.0,
+        "max_displacement": 0,
+        "canonical_exact_match": true,
+        "phase_metrics_availability": "MEASURED",
+        "resource_availability": "NOT_EVALUATED",
+        "sampler_coverage": null,
+        "sampler_source_coverage": {},
+        "sampler_gap_p95_s": null,
+        "sampler_gap_max_s": null,
+        "execution_identity_sha256": "7641bddded30459343aff8366ac149b1325956540025ddc9d83ae9bc08384f55",
+        "attempt_root": "artifacts/sfwb-v1-3-memops-b0-screening-20260822-002/screening_runs_v2/003-a13-update/blocks/memops-001-A13__Update-B0_NATIVE_SERIAL/attempt-001"
+      },
+      "state_inspection": {
+        "status": "PASS",
+        "target_id": "metformin_dosage",
+        "target_name": "Current metformin dosage",
+        "expected_current_value": "1000mg twice daily",
+        "observation_time": "2000-01-01T00:10:00Z",
+        "stale_confirmed_values": [
+          "500mg twice daily",
+          "750mg twice daily"
+        ],
+        "current_value_active": true,
+        "current_value_in_entity_summary": true,
+        "active_current_mentions": 2,
+        "stale_active_mentions": [],
+        "active_stale_conflicts": [],
+        "active_transition_mentions": [],
+        "inactive_mentions": [
+          "1000mg twice daily"
+        ],
+        "canonical_graph_used_for_uuid_equality": false
+      },
+      "qa_rows": [
+        {
+          "recall_at_1": 0.5,
+          "recall_at_3": 1.0,
+          "recall_at_5": 1.0,
+          "recall_at_10": 1.0,
+          "mrr": 1.0,
+          "ndcg_at_10": 0.9197207891481876,
+          "gold_ranks": [
+            1,
+            3
+          ],
+          "relevance_unit": "LONGMEMEVAL_GOLD_SESSION",
+          "correct": true,
+          "invalid": false,
+          "invalid_reason": null,
+          "failure_layer": null,
+          "construction_calls": 0,
+          "graph_write_attempts": 0,
+          "sample_id": "A13__Update",
+          "question_id": "A13__Update:p4_candidate_disambiguation:adjacent_operation",
+          "question_pair_id": "p4_candidate_disambiguation",
+          "evaluation_type": "CandidateDisambiguation",
+          "evaluation_setting": "adjacent_operation",
+          "expected_answer": "1000mg twice daily",
+          "gold_memory_state": "Current confirmed metformin dosage is 1000mg twice daily. Previous dosages of 500mg twice daily and 750mg twice daily are superseded. The 850mg extended-release once daily is a tentative future possibility that has not been enacted.",
+          "judge_rubric": {
+            "acceptable_paraphrases": [
+              "1000 mg two times a day",
+              "1000mg BID"
+            ],
+            "harmful_extra": [
+              "Selecting any option other than 1000mg twice daily"
+            ],
+            "harmless_extra": [],
+            "must_include": [
+              "1000mg twice daily"
+            ],
+            "must_not_include": [
+              "750mg twice daily as current",
+              "500mg twice daily as current",
+              "850mg extended-release once daily as current"
+            ]
+          },
+          "gold_provenance": [
+            {
+              "quote": "Dr. Patel actually bumped the metformin up again to 1000mg twice daily as of last Monday",
+              "segment_index": 2,
+              "turn_index": 3
+            },
+            {
+              "quote": "Dr. Patel said at my next visit she'll likely switch me to 850mg extended-release once daily instead",
+              "segment_index": 3,
+              "turn_index": 5
+            }
+          ],
+          "memops_official_judge": {
+            "answer_score": 1,
+            "judge_operation_detection": {
+              "tp": 1,
+              "fp": 0,
+              "fn": 0
+            },
+            "judge_provenance_support": 1,
+            "extra_detail_type": "none",
+            "reason": "The model correctly selected the confirmed current metformin dosage of 1000mg twice daily, which is the expected answer. It did not include any harmful extra details or select a stale or tentative value.",
+            "stale_value": 0,
+            "extra_detail_postcheck_applied": false,
+            "extra_detail_postcheck_action": "none",
+            "official_prompt_builder": "build_evaluation_prompt",
+            "official_result_parser": "parse_judge_metrics",
+            "prompt_sha256": "0b83e1c07bbf051f10810b826074c21782febe3d814093feed2f5f17492db549",
+            "response_sha256": "5f960ef72e455f46a7bf330fc40fa1ad4c0349a9ebd51b6e766af7b7f24515a3",
+            "prompt_tokens": 6243,
+            "completion_tokens": 112,
+            "finish_reason": "stop",
+            "raw_prompt_persisted": false,
+            "raw_response_persisted": false
+          }
+        },
+        {
+          "recall_at_1": 0.5,
+          "recall_at_3": 1.0,
+          "recall_at_5": 1.0,
+          "recall_at_10": 1.0,
+          "mrr": 1.0,
+          "ndcg_at_10": 0.9197207891481876,
+          "gold_ranks": [
+            1,
+            3
+          ],
+          "relevance_unit": "LONGMEMEVAL_GOLD_SESSION",
+          "correct": true,
+          "invalid": false,
+          "invalid_reason": null,
+          "failure_layer": null,
+          "construction_calls": 0,
+          "graph_write_attempts": 0,
+          "sample_id": "A13__Update",
+          "question_id": "A13__Update:p4_candidate_disambiguation:longitudinal_operation",
+          "question_pair_id": "p4_candidate_disambiguation",
+          "evaluation_type": "CandidateDisambiguation",
+          "evaluation_setting": "longitudinal_operation",
+          "expected_answer": "1000mg twice daily",
+          "gold_memory_state": "Current confirmed metformin dosage is 1000mg twice daily. Previous dosages of 500mg twice daily and 750mg twice daily are superseded. The 850mg extended-release once daily is a tentative future possibility that has not been enacted.",
+          "judge_rubric": {
+            "acceptable_paraphrases": [
+              "1000 mg two times a day",
+              "1000mg BID"
+            ],
+            "harmful_extra": [
+              "Selecting any option other than 1000mg twice daily"
+            ],
+            "harmless_extra": [],
+            "must_include": [
+              "1000mg twice daily"
+            ],
+            "must_not_include": [
+              "750mg twice daily as current",
+              "500mg twice daily as current",
+              "850mg extended-release once daily as current"
+            ]
+          },
+          "gold_provenance": [
+            {
+              "quote": "Dr. Patel actually bumped the metformin up again to 1000mg twice daily as of last Monday",
+              "segment_index": 2,
+              "turn_index": 3
+            },
+            {
+              "quote": "Dr. Patel said at my next visit she'll likely switch me to 850mg extended-release once daily instead",
+              "segment_index": 3,
+              "turn_index": 5
+            }
+          ],
+          "memops_official_judge": {
+            "answer_score": 1,
+            "judge_operation_detection": {
+              "tp": 1,
+              "fp": 0,
+              "fn": 0
+            },
+            "judge_provenance_support": 1,
+            "extra_detail_type": "none",
+            "reason": "The model correctly selected the current confirmed metformin dosage of 1000mg twice daily, which is the expected answer. It did not include any harmful extra details or select a stale or tentative value.",
+            "stale_value": 0,
+            "extra_detail_postcheck_applied": false,
+            "extra_detail_postcheck_action": "none",
+            "official_prompt_builder": "build_evaluation_prompt",
+            "official_result_parser": "parse_judge_metrics",
+            "prompt_sha256": "0b83e1c07bbf051f10810b826074c21782febe3d814093feed2f5f17492db549",
+            "response_sha256": "bf0bc45cd9b28596a9770999e6b703ad0f013e55232095057f6ecc6c661021e5",
+            "prompt_tokens": 6243,
+            "completion_tokens": 112,
+            "finish_reason": "stop",
+            "raw_prompt_persisted": false,
+            "raw_response_persisted": false
+          }
+        }
+      ],
+      "qa_summary": {
+        "sample_id": "A13__Update",
+        "method": "B0_NATIVE_SERIAL",
+        "namespace": "003-a13-update-MEMOPS-A13__Update-B0_NATIVE_SERIAL-attempt-001",
+        "rows": 2,
+        "correct_rows": 2,
+        "all_correct": true,
+        "stale_value_errors": 0,
+        "graph_write_attempts": 0,
+        "construction_calls": 0,
+        "graph_hash_before_qa": "a86ce5e60acd519484adce4254b6d73a9bce5d5afb74df45f246b6e6696e291d",
+        "graph_hash_after_qa": "a86ce5e60acd519484adce4254b6d73a9bce5d5afb74df45f246b6e6696e291d",
+        "graph_mutated": false,
+        "state_inspection": {
+          "status": "PASS",
+          "target_id": "metformin_dosage",
+          "target_name": "Current metformin dosage",
+          "expected_current_value": "1000mg twice daily",
+          "observation_time": "2000-01-01T00:10:00Z",
+          "stale_confirmed_values": [
+            "500mg twice daily",
+            "750mg twice daily"
+          ],
+          "current_value_active": true,
+          "current_value_in_entity_summary": true,
+          "active_current_mentions": 2,
+          "stale_active_mentions": [],
+          "active_stale_conflicts": [],
+          "active_transition_mentions": [],
+          "inactive_mentions": [
+            "1000mg twice daily"
+          ],
+          "canonical_graph_used_for_uuid_equality": false
+        }
+      }
+    }
+  ],
+  "b0_gate": {
+    "status": "B0_QUALIFIED",
+    "failures": [],
+    "sample_count": 1
+  }
+}

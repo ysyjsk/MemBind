@@ -1,0 +1,122 @@
+{
+  "cohort_id": "sfwb-v1-3-memops-b0-screening-20260822-002",
+  "cohort_manifest_sha256": "779c4d6596d53c27ce49079cc7b68543904a9ef0131892d83aacd9068a812ed6",
+  "cohort_sample_id": "F14__Update",
+  "official_qa_evaluator": {
+    "path": "/data/predator/ly/third_party/MemOps/5.5-evaluate_operation_metrics.py",
+    "prompt_builder": "build_evaluation_prompt",
+    "result_parser": "parse_judge_metrics",
+    "sha256": "17c24362c174239eb7ef5e543bc651afed60ae445a4becd49acf24f6d3c646f0"
+  },
+  "official_sample_id": "F14",
+  "payload_sha256": "28bdafdd4b0ae7fa4366c4b7d5befb7937461a7ebdaf5da0a888d6f827691182",
+  "samples": [
+    {
+      "cohort_sample_id": "F14__Update",
+      "history_id": "memops-f14-update",
+      "latest_confirmed_value": "130/80",
+      "official_sample_id": "F14",
+      "operation_type": "Update",
+      "qa": [
+        {
+          "evaluation_setting": "adjacent_operation",
+          "evaluation_type": "CandidateDisambiguation",
+          "expected_answer": "130/80",
+          "gold_memory_state": "Current confirmed BP reading is 130/80. Prior values 142/88 and 136/84 are superseded. 118/72 is tentative/untrusted from CVS kiosk.",
+          "gold_provenance": [
+            {
+              "quote": "the most accurate recent one is 130/80 since I was fully rested",
+              "segment_index": 2,
+              "turn_index": 3
+            },
+            {
+              "quote": "The pharmacy kiosk at CVS just gave me 118/72 today. I think that machine reads low though, my home cuff never goes that low",
+              "segment_index": 3,
+              "turn_index": 5
+            }
+          ],
+          "judge_rubric": {
+            "acceptable_paraphrases": [],
+            "harmful_extra": [
+              "selecting 118/72 because it is the most recent chronologically"
+            ],
+            "harmless_extra": [
+              "noting the downward trend"
+            ],
+            "must_include": [
+              "130/80"
+            ],
+            "must_not_include": [
+              "142/88 as current",
+              "136/84 as current",
+              "118/72 as current"
+            ]
+          },
+          "question_id": "F14:p4_candidate_disambiguation:adjacent_operation",
+          "question_pair_id": "p4_candidate_disambiguation"
+        },
+        {
+          "evaluation_setting": "longitudinal_operation",
+          "evaluation_type": "CandidateDisambiguation",
+          "expected_answer": "130/80",
+          "gold_memory_state": "Current confirmed BP reading is 130/80. Prior values 142/88 and 136/84 are superseded. 118/72 is tentative/untrusted from CVS kiosk.",
+          "gold_provenance": [
+            {
+              "quote": "the most accurate recent one is 130/80 since I was fully rested",
+              "segment_index": 2,
+              "turn_index": 3
+            },
+            {
+              "quote": "The pharmacy kiosk at CVS just gave me 118/72 today. I think that machine reads low though, my home cuff never goes that low",
+              "segment_index": 3,
+              "turn_index": 5
+            }
+          ],
+          "judge_rubric": {
+            "acceptable_paraphrases": [],
+            "harmful_extra": [
+              "selecting 118/72 because it is the most recent chronologically"
+            ],
+            "harmless_extra": [
+              "noting the downward trend"
+            ],
+            "must_include": [
+              "130/80"
+            ],
+            "must_not_include": [
+              "142/88 as current",
+              "136/84 as current",
+              "118/72 as current"
+            ]
+          },
+          "question_id": "F14:p4_candidate_disambiguation:longitudinal_operation",
+          "question_pair_id": "p4_candidate_disambiguation"
+        }
+      ],
+      "sample_id": "F14__Update",
+      "source_file": "/data/predator/ly/third_party/MemOps/generated_result/2-evidence_conversation/F14_update.json",
+      "source_sha256": "b5438ccdac265a29b5a7db831949fe4bee8e0698b107a3bb48f2b47a0bbba633",
+      "special_semantics_present": true,
+      "stale_confirmed_values": [
+        "142/88",
+        "136/84"
+      ],
+      "target_id": "bp_reading",
+      "target_name": "User's most recent blood pressure reading",
+      "transitions": [
+        {
+          "new_operation_id": "op3",
+          "new_segment_index": 2,
+          "new_value": "130/80",
+          "old_operation_id": "op2",
+          "old_segment_index": 1,
+          "old_value": "142/88",
+          "target_id": "bp_reading",
+          "target_name": "User's most recent blood pressure reading"
+        }
+      ]
+    }
+  ],
+  "schema_version": "sfwb.v1.3.memops-b0-screening-run-selection.v1",
+  "status": "OFFLINE_RUN_SELECTION_FROZEN"
+}

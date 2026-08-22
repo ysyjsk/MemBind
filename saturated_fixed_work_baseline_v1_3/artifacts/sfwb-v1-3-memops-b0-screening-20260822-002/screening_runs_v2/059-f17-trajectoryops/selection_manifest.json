@@ -1,0 +1,266 @@
+{
+  "cohort_id": "sfwb-v1-3-memops-b0-screening-20260822-002",
+  "cohort_manifest_sha256": "779c4d6596d53c27ce49079cc7b68543904a9ef0131892d83aacd9068a812ed6",
+  "cohort_sample_id": "F17__TrajectoryOps",
+  "official_qa_evaluator": {
+    "path": "/data/predator/ly/third_party/MemOps/5.5-evaluate_operation_metrics.py",
+    "prompt_builder": "build_evaluation_prompt",
+    "result_parser": "parse_judge_metrics",
+    "sha256": "17c24362c174239eb7ef5e543bc651afed60ae445a4becd49acf24f6d3c646f0"
+  },
+  "official_sample_id": "F17",
+  "payload_sha256": "dcf700ce00afd7cfdc945ae5ab05ef73985e7cc141b98601caf05f0628d1ef59",
+  "samples": [
+    {
+      "cohort_sample_id": "F17__TrajectoryOps",
+      "history_id": "memops-f17-trajectoryops",
+      "latest_confirmed_value": "1.6 ng/mL",
+      "official_sample_id": "F17",
+      "operation_type": "TrajectoryOps",
+      "qa": [
+        {
+          "evaluation_setting": "adjacent_operation",
+          "evaluation_type": "StateTransition",
+          "expected_answer": "1.6 ng/mL",
+          "gold_memory_state": "Confirmed AMH is 1.6 ng/mL from the lab retest. The 1.8 ng/mL value from the nurse's voicemail about assay recalibration is tentative and pending Dr. Reyes's confirmation — it should not be treated as the current value. Prior values of 1.2 and 1.4 are superseded.",
+          "gold_provenance": [
+            {
+              "quote": "Dr. Reyes had the lab rerun the AMH and it came back at 1.6 ng/mL this time",
+              "segment_index": 2,
+              "turn_index": 5
+            },
+            {
+              "quote": "the nurse at Pacific Fertility left a voicemail saying they want to adjust my AMH on file to 1.8 ng/mL based on a new assay calibration",
+              "segment_index": 3,
+              "turn_index": 5
+            },
+            {
+              "quote": "For now just keep it noted but don't treat it as confirmed — I want to hear it from her directly",
+              "segment_index": 3,
+              "turn_index": 7
+            }
+          ],
+          "judge_rubric": {
+            "acceptable_paraphrases": [
+              "1.6 ng/mL",
+              "one point six"
+            ],
+            "harmful_extra": [
+              "presenting 1.8 as the value to rely on",
+              "presenting 1.2 or 1.4 as current"
+            ],
+            "harmless_extra": [
+              "mentioning that 1.8 is pending confirmation",
+              "mentioning the retest context"
+            ],
+            "must_include": [
+              "1.6"
+            ],
+            "must_not_include": [
+              "1.8 as the current confirmed value"
+            ]
+          },
+          "question_id": "F17:p3_state_transition:adjacent_operation",
+          "question_pair_id": "p3_state_transition"
+        },
+        {
+          "evaluation_setting": "longitudinal_operation",
+          "evaluation_type": "StateTransition",
+          "expected_answer": "1.6 ng/mL",
+          "gold_memory_state": "Confirmed AMH is 1.6 ng/mL from the lab retest. The 1.8 ng/mL value from the nurse's voicemail about assay recalibration is tentative and pending Dr. Reyes's confirmation — it should not be treated as the current value. Prior values of 1.2 and 1.4 are superseded.",
+          "gold_provenance": [
+            {
+              "quote": "Dr. Reyes had the lab rerun the AMH and it came back at 1.6 ng/mL this time",
+              "segment_index": 2,
+              "turn_index": 5
+            },
+            {
+              "quote": "the nurse at Pacific Fertility left a voicemail saying they want to adjust my AMH on file to 1.8 ng/mL based on a new assay calibration",
+              "segment_index": 3,
+              "turn_index": 5
+            },
+            {
+              "quote": "For now just keep it noted but don't treat it as confirmed — I want to hear it from her directly",
+              "segment_index": 3,
+              "turn_index": 7
+            }
+          ],
+          "judge_rubric": {
+            "acceptable_paraphrases": [
+              "1.6 ng/mL",
+              "one point six"
+            ],
+            "harmful_extra": [
+              "presenting 1.8 as the value to rely on",
+              "presenting 1.2 or 1.4 as current"
+            ],
+            "harmless_extra": [
+              "mentioning that 1.8 is pending confirmation",
+              "mentioning the retest context"
+            ],
+            "must_include": [
+              "1.6"
+            ],
+            "must_not_include": [
+              "1.8 as the current confirmed value"
+            ]
+          },
+          "question_id": "F17:p3_state_transition:longitudinal_operation",
+          "question_pair_id": "p3_state_transition"
+        },
+        {
+          "evaluation_setting": "adjacent_operation",
+          "evaluation_type": "StateTrajectory",
+          "expected_answer": "The progression was: (1) You first reported 1.2 ng/mL from Dr. Reyes's initial hormone panel — this was adopted as the working value. (2) You corrected it to 1.4 ng/mL after checking the actual lab printout, replacing 1.2. (3) Dr. Reyes had the lab rerun the AMH and it came back at 1.6 ng/mL, which replaced 1.4 and became the confirmed current value. (4) A nurse voicemail proposed adjusting the value to 1.8 ng/mL based on an assay recalibration, but you explicitly asked to keep this as unconfirmed until Dr. Reyes verifies it. So 1.6 ng/mL remains the adopted value, and 1.8 ng/mL was never fully accepted.",
+          "gold_memory_state": "AMH trajectory: 1.2 (confirmed, then superseded by correction) → 1.4 (confirmed, then superseded by retest) → 1.6 (confirmed, currently adopted) → 1.8 (tentative, not adopted). The 1.8 value is pending Dr. Reyes's confirmation. Prenatal vitamin (Thorne Basic Prenatal) is a separate target with no trajectory changes.",
+          "gold_provenance": [
+            {
+              "quote": "my AMH came back at 1.2 ng/mL from the lab work Dr. Reyes ordered",
+              "segment_index": 1,
+              "turn_index": 1
+            },
+            {
+              "quote": "I double-checked the actual lab printout and my AMH was 1.4 ng/mL, not 1.2",
+              "segment_index": 1,
+              "turn_index": 5
+            },
+            {
+              "quote": "Dr. Reyes had the lab rerun the AMH and it came back at 1.6 ng/mL this time",
+              "segment_index": 2,
+              "turn_index": 5
+            },
+            {
+              "quote": "the nurse at Pacific Fertility left a voicemail saying they want to adjust my AMH on file to 1.8 ng/mL based on a new assay calibration",
+              "segment_index": 3,
+              "turn_index": 5
+            },
+            {
+              "quote": "For now just keep it noted but don't treat it as confirmed — I want to hear it from her directly",
+              "segment_index": 3,
+              "turn_index": 7
+            }
+          ],
+          "judge_rubric": {
+            "acceptable_paraphrases": [
+              "1.8 is pending",
+              "1.8 is unverified",
+              "1.8 awaits Dr. Reyes confirmation"
+            ],
+            "harmful_extra": [
+              "presenting 1.8 as confirmed/adopted",
+              "omitting any of the four values from the sequence",
+              "reversing the order of any values"
+            ],
+            "harmless_extra": [
+              "mentioning Dr. Reyes",
+              "mentioning the lab printout",
+              "mentioning the assay recalibration context",
+              "mentioning Pacific Fertility Clinic"
+            ],
+            "must_include": [
+              "1.2",
+              "1.4",
+              "1.6",
+              "1.8",
+              "1.6 is the current adopted value",
+              "1.8 was not fully accepted or confirmed"
+            ],
+            "must_not_include": [
+              "1.8 as the final adopted value"
+            ]
+          },
+          "question_id": "F17:p5_state_trajectory:adjacent_operation",
+          "question_pair_id": "p5_state_trajectory"
+        },
+        {
+          "evaluation_setting": "longitudinal_operation",
+          "evaluation_type": "StateTrajectory",
+          "expected_answer": "The progression was: (1) You first reported 1.2 ng/mL from Dr. Reyes's initial hormone panel — this was adopted as the working value. (2) You corrected it to 1.4 ng/mL after checking the actual lab printout, replacing 1.2. (3) Dr. Reyes had the lab rerun the AMH and it came back at 1.6 ng/mL, which replaced 1.4 and became the confirmed current value. (4) A nurse voicemail proposed adjusting the value to 1.8 ng/mL based on an assay recalibration, but you explicitly asked to keep this as unconfirmed until Dr. Reyes verifies it. So 1.6 ng/mL remains the adopted value, and 1.8 ng/mL was never fully accepted.",
+          "gold_memory_state": "AMH trajectory: 1.2 (confirmed, then superseded by correction) → 1.4 (confirmed, then superseded by retest) → 1.6 (confirmed, currently adopted) → 1.8 (tentative, not adopted). The 1.8 value is pending Dr. Reyes's confirmation. Prenatal vitamin (Thorne Basic Prenatal) is a separate target with no trajectory changes.",
+          "gold_provenance": [
+            {
+              "quote": "my AMH came back at 1.2 ng/mL from the lab work Dr. Reyes ordered",
+              "segment_index": 1,
+              "turn_index": 1
+            },
+            {
+              "quote": "I double-checked the actual lab printout and my AMH was 1.4 ng/mL, not 1.2",
+              "segment_index": 1,
+              "turn_index": 5
+            },
+            {
+              "quote": "Dr. Reyes had the lab rerun the AMH and it came back at 1.6 ng/mL this time",
+              "segment_index": 2,
+              "turn_index": 5
+            },
+            {
+              "quote": "the nurse at Pacific Fertility left a voicemail saying they want to adjust my AMH on file to 1.8 ng/mL based on a new assay calibration",
+              "segment_index": 3,
+              "turn_index": 5
+            },
+            {
+              "quote": "For now just keep it noted but don't treat it as confirmed — I want to hear it from her directly",
+              "segment_index": 3,
+              "turn_index": 7
+            }
+          ],
+          "judge_rubric": {
+            "acceptable_paraphrases": [
+              "1.8 is pending",
+              "1.8 is unverified",
+              "1.8 awaits Dr. Reyes confirmation"
+            ],
+            "harmful_extra": [
+              "presenting 1.8 as confirmed/adopted",
+              "omitting any of the four values from the sequence",
+              "reversing the order of any values"
+            ],
+            "harmless_extra": [
+              "mentioning Dr. Reyes",
+              "mentioning the lab printout",
+              "mentioning the assay recalibration context",
+              "mentioning Pacific Fertility Clinic"
+            ],
+            "must_include": [
+              "1.2",
+              "1.4",
+              "1.6",
+              "1.8",
+              "1.6 is the current adopted value",
+              "1.8 was not fully accepted or confirmed"
+            ],
+            "must_not_include": [
+              "1.8 as the final adopted value"
+            ]
+          },
+          "question_id": "F17:p5_state_trajectory:longitudinal_operation",
+          "question_pair_id": "p5_state_trajectory"
+        }
+      ],
+      "sample_id": "F17__TrajectoryOps",
+      "source_file": "/data/predator/ly/third_party/MemOps/generated_result/2-evidence_conversation/F17_trajectory_ops.json",
+      "source_sha256": "89da1aea51213c01805b42f8f3b3b46c0c41d5d2654fc424d03b90e396d5ac66",
+      "special_semantics_present": true,
+      "stale_confirmed_values": [
+        "1.2 ng/mL",
+        "1.4 ng/mL"
+      ],
+      "target_id": "amh_level",
+      "target_name": "AMH level from fertility workup",
+      "transitions": [
+        {
+          "new_operation_id": "op4",
+          "new_segment_index": 2,
+          "new_value": "1.6 ng/mL",
+          "old_operation_id": "op2",
+          "old_segment_index": 1,
+          "old_value": "1.2 ng/mL",
+          "target_id": "amh_level",
+          "target_name": "AMH level from fertility workup"
+        }
+      ]
+    }
+  ],
+  "schema_version": "sfwb.v1.3.memops-b0-screening-run-selection.v1",
+  "status": "OFFLINE_RUN_SELECTION_FROZEN"
+}

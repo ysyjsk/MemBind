@@ -1,0 +1,132 @@
+{
+  "cohort_id": "sfwb-v1-3-memops-b0-screening-20260822-002",
+  "cohort_manifest_sha256": "779c4d6596d53c27ce49079cc7b68543904a9ef0131892d83aacd9068a812ed6",
+  "cohort_sample_id": "C06__Update",
+  "official_qa_evaluator": {
+    "path": "/data/predator/ly/third_party/MemOps/5.5-evaluate_operation_metrics.py",
+    "prompt_builder": "build_evaluation_prompt",
+    "result_parser": "parse_judge_metrics",
+    "sha256": "17c24362c174239eb7ef5e543bc651afed60ae445a4becd49acf24f6d3c646f0"
+  },
+  "official_sample_id": "C06",
+  "payload_sha256": "e5813786075473830ad96c6e154dc97ccf5e0e538dd2d671b08400a36360309a",
+  "samples": [
+    {
+      "cohort_sample_id": "C06__Update",
+      "history_id": "memops-c06-update",
+      "latest_confirmed_value": "March 15",
+      "official_sample_id": "C06",
+      "operation_type": "Update",
+      "qa": [
+        {
+          "evaluation_setting": "adjacent_operation",
+          "evaluation_type": "CandidateDisambiguation",
+          "expected_answer": "March 15",
+          "gold_memory_state": "Lisbon departure date is confirmed as March 15. March 14 was the original booking (superseded). March 16 was the airline reroute (superseded). March 18 was a tentative travel-agent offer that the user was leaning against.",
+          "gold_provenance": [
+            {
+              "quote": "I managed to switch back. The Lisbon departure is now March 15, a Saturday. The direct route opened up on that date so I grabbed it",
+              "segment_index": 2,
+              "turn_index": 3
+            },
+            {
+              "quote": "My travel agent just emailed saying she can move me to March 18, a Tuesday, for a better fare. She's holding that seat for me until tomorrow",
+              "segment_index": 3,
+              "turn_index": 5
+            }
+          ],
+          "judge_rubric": {
+            "acceptable_paraphrases": [
+              "the 15th",
+              "15 March"
+            ],
+            "harmful_extra": [
+              "selecting March 18 because it was mentioned most recently",
+              "selecting March 14 or March 16 because they were previously confirmed"
+            ],
+            "harmless_extra": [
+              "mentioning it is a Saturday",
+              "mentioning it is a red-eye flight"
+            ],
+            "must_include": [
+              "March 15"
+            ],
+            "must_not_include": [
+              "March 14 as the answer",
+              "March 16 as the answer",
+              "March 18 as the answer"
+            ]
+          },
+          "question_id": "C06:p4_candidate_disambiguation:adjacent_operation",
+          "question_pair_id": "p4_candidate_disambiguation"
+        },
+        {
+          "evaluation_setting": "longitudinal_operation",
+          "evaluation_type": "CandidateDisambiguation",
+          "expected_answer": "March 15",
+          "gold_memory_state": "Lisbon departure date is confirmed as March 15. March 14 was the original booking (superseded). March 16 was the airline reroute (superseded). March 18 was a tentative travel-agent offer that the user was leaning against.",
+          "gold_provenance": [
+            {
+              "quote": "I managed to switch back. The Lisbon departure is now March 15, a Saturday. The direct route opened up on that date so I grabbed it",
+              "segment_index": 2,
+              "turn_index": 3
+            },
+            {
+              "quote": "My travel agent just emailed saying she can move me to March 18, a Tuesday, for a better fare. She's holding that seat for me until tomorrow",
+              "segment_index": 3,
+              "turn_index": 5
+            }
+          ],
+          "judge_rubric": {
+            "acceptable_paraphrases": [
+              "the 15th",
+              "15 March"
+            ],
+            "harmful_extra": [
+              "selecting March 18 because it was mentioned most recently",
+              "selecting March 14 or March 16 because they were previously confirmed"
+            ],
+            "harmless_extra": [
+              "mentioning it is a Saturday",
+              "mentioning it is a red-eye flight"
+            ],
+            "must_include": [
+              "March 15"
+            ],
+            "must_not_include": [
+              "March 14 as the answer",
+              "March 16 as the answer",
+              "March 18 as the answer"
+            ]
+          },
+          "question_id": "C06:p4_candidate_disambiguation:longitudinal_operation",
+          "question_pair_id": "p4_candidate_disambiguation"
+        }
+      ],
+      "sample_id": "C06__Update",
+      "source_file": "/data/predator/ly/third_party/MemOps/generated_result/2-evidence_conversation/C06_update.json",
+      "source_sha256": "a1c59a629fe7a4e2c4e0819231e676d6c93b42c72510ee32ddd6d2d652aa0de8",
+      "special_semantics_present": true,
+      "stale_confirmed_values": [
+        "March 14",
+        "March 16"
+      ],
+      "target_id": "lisbon_departure_date",
+      "target_name": "Lisbon trip departure date",
+      "transitions": [
+        {
+          "new_operation_id": "op3",
+          "new_segment_index": 2,
+          "new_value": "March 15",
+          "old_operation_id": "op2",
+          "old_segment_index": 1,
+          "old_value": "March 14",
+          "target_id": "lisbon_departure_date",
+          "target_name": "Lisbon trip departure date"
+        }
+      ]
+    }
+  ],
+  "schema_version": "sfwb.v1.3.memops-b0-screening-run-selection.v1",
+  "status": "OFFLINE_RUN_SELECTION_FROZEN"
+}

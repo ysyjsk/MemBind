@@ -1,0 +1,270 @@
+{
+  "cohort_id": "sfwb-v1-3-memops-b0-screening-20260822-002",
+  "cohort_manifest_sha256": "779c4d6596d53c27ce49079cc7b68543904a9ef0131892d83aacd9068a812ed6",
+  "cohort_sample_id": "E08__TrajectoryOps",
+  "official_qa_evaluator": {
+    "path": "/data/predator/ly/third_party/MemOps/5.5-evaluate_operation_metrics.py",
+    "prompt_builder": "build_evaluation_prompt",
+    "result_parser": "parse_judge_metrics",
+    "sha256": "17c24362c174239eb7ef5e543bc651afed60ae445a4becd49acf24f6d3c646f0"
+  },
+  "official_sample_id": "E08",
+  "payload_sha256": "5eb34c58fdceafe197b702cdb6461f4e864f944d73f73b36dc6a9e63927723cd",
+  "samples": [
+    {
+      "cohort_sample_id": "E08__TrajectoryOps",
+      "history_id": "memops-e08-trajectoryops",
+      "latest_confirmed_value": "$382",
+      "official_sample_id": "E08",
+      "operation_type": "TrajectoryOps",
+      "qa": [
+        {
+          "evaluation_setting": "adjacent_operation",
+          "evaluation_type": "StateTransition",
+          "expected_answer": "$382",
+          "gold_memory_state": "Portland hotel total is $382, confirmed and accepted by Finance. The tentative $344 loyalty discount was never adopted—the user explicitly stated the accepted figure remains $382 until the credit actually posts. The $344 value is pending and unconfirmed and must not be used.",
+          "gold_provenance": [
+            {
+              "quote": "I just got a revised folio from the Residence Inn showing a $4 parking surcharge I missed. The correct total for the Portland stay is now $382",
+              "segment_index": 2,
+              "turn_index": 3
+            },
+            {
+              "quote": "Finance accepted the $382 Portland hotel figure, so that's processed now",
+              "segment_index": 3,
+              "turn_index": 1
+            },
+            {
+              "quote": "For now the accepted figure is still $382 since nothing has changed yet",
+              "segment_index": 3,
+              "turn_index": 7
+            }
+          ],
+          "judge_rubric": {
+            "acceptable_paraphrases": [
+              "382 dollars",
+              "three hundred eighty-two dollars"
+            ],
+            "harmful_extra": [
+              "using $344 as the current amount",
+              "using $387 or $378 as the current amount"
+            ],
+            "harmless_extra": [
+              "mentioning that a potential loyalty discount is pending",
+              "mentioning Residence Inn"
+            ],
+            "must_include": [
+              "$382"
+            ],
+            "must_not_include": [
+              "$344",
+              "$387",
+              "$378"
+            ]
+          },
+          "question_id": "E08:p3_state_transition:adjacent_operation",
+          "question_pair_id": "p3_state_transition"
+        },
+        {
+          "evaluation_setting": "longitudinal_operation",
+          "evaluation_type": "StateTransition",
+          "expected_answer": "$382",
+          "gold_memory_state": "Portland hotel total is $382, confirmed and accepted by Finance. The tentative $344 loyalty discount was never adopted—the user explicitly stated the accepted figure remains $382 until the credit actually posts. The $344 value is pending and unconfirmed and must not be used.",
+          "gold_provenance": [
+            {
+              "quote": "I just got a revised folio from the Residence Inn showing a $4 parking surcharge I missed. The correct total for the Portland stay is now $382",
+              "segment_index": 2,
+              "turn_index": 3
+            },
+            {
+              "quote": "Finance accepted the $382 Portland hotel figure, so that's processed now",
+              "segment_index": 3,
+              "turn_index": 1
+            },
+            {
+              "quote": "For now the accepted figure is still $382 since nothing has changed yet",
+              "segment_index": 3,
+              "turn_index": 7
+            }
+          ],
+          "judge_rubric": {
+            "acceptable_paraphrases": [
+              "382 dollars",
+              "three hundred eighty-two dollars"
+            ],
+            "harmful_extra": [
+              "using $344 as the current amount",
+              "using $387 or $378 as the current amount"
+            ],
+            "harmless_extra": [
+              "mentioning that a potential loyalty discount is pending",
+              "mentioning Residence Inn"
+            ],
+            "must_include": [
+              "$382"
+            ],
+            "must_not_include": [
+              "$344",
+              "$387",
+              "$378"
+            ]
+          },
+          "question_id": "E08:p3_state_transition:longitudinal_operation",
+          "question_pair_id": "p3_state_transition"
+        },
+        {
+          "evaluation_setting": "adjacent_operation",
+          "evaluation_type": "StateTrajectory",
+          "expected_answer": "The sequence was: (1) $387 was the original filed amount; (2) $378 replaced it after the user found the original receipt and resubmitted; (3) $382 replaced $378 after a revised folio showed a $4 parking surcharge, and Finance accepted $382; (4) $344 was mentioned as a possible 10% loyalty discount but was never adopted—the user explicitly kept $382 as the accepted figure pending actual confirmation of the credit. The final usable amount is $382.",
+          "gold_memory_state": "Portland hotel total trajectory: $387 (initial, superseded) → $378 (receipt-corrected, superseded) → $382 (folio-corrected, confirmed and accepted by Finance, current) → $344 (tentative loyalty discount, never adopted). Final confirmed value: $382.",
+          "gold_provenance": [
+            {
+              "quote": "I filed my quarterly expense report and listed the Portland hotel stay as $387 for two nights",
+              "segment_index": 1,
+              "turn_index": 1
+            },
+            {
+              "quote": "I dug up the original receipt and confirmed the correct amount was $378, so I resubmitted with that figure",
+              "segment_index": 1,
+              "turn_index": 5
+            },
+            {
+              "quote": "I just got a revised folio from the Residence Inn showing a $4 parking surcharge I missed. The correct total for the Portland stay is now $382",
+              "segment_index": 2,
+              "turn_index": 3
+            },
+            {
+              "quote": "The hotel loyalty program rep told me they're going to apply a 10% member discount retroactively, which would bring the total down to about $344",
+              "segment_index": 3,
+              "turn_index": 5
+            },
+            {
+              "quote": "For now the accepted figure is still $382 since nothing has changed yet",
+              "segment_index": 3,
+              "turn_index": 7
+            }
+          ],
+          "judge_rubric": {
+            "acceptable_paraphrases": [
+              "$344 was not acted on",
+              "$344 is pending",
+              "$344 was only mentioned as a possibility"
+            ],
+            "harmful_extra": [
+              "presenting $344 as adopted",
+              "omitting $378 from the sequence",
+              "presenting the sequence out of order"
+            ],
+            "harmless_extra": [
+              "mentioning the Residence Inn",
+              "mentioning the parking surcharge details",
+              "mentioning Finance acceptance"
+            ],
+            "must_include": [
+              "$387",
+              "$378",
+              "$382",
+              "$344",
+              "correct chronological order",
+              "$382 as final accepted",
+              "$344 never adopted or only tentative"
+            ],
+            "must_not_include": [
+              "$344 as the final accepted amount"
+            ]
+          },
+          "question_id": "E08:p5_state_trajectory:adjacent_operation",
+          "question_pair_id": "p5_state_trajectory"
+        },
+        {
+          "evaluation_setting": "longitudinal_operation",
+          "evaluation_type": "StateTrajectory",
+          "expected_answer": "The sequence was: (1) $387 was the original filed amount; (2) $378 replaced it after the user found the original receipt and resubmitted; (3) $382 replaced $378 after a revised folio showed a $4 parking surcharge, and Finance accepted $382; (4) $344 was mentioned as a possible 10% loyalty discount but was never adopted—the user explicitly kept $382 as the accepted figure pending actual confirmation of the credit. The final usable amount is $382.",
+          "gold_memory_state": "Portland hotel total trajectory: $387 (initial, superseded) → $378 (receipt-corrected, superseded) → $382 (folio-corrected, confirmed and accepted by Finance, current) → $344 (tentative loyalty discount, never adopted). Final confirmed value: $382.",
+          "gold_provenance": [
+            {
+              "quote": "I filed my quarterly expense report and listed the Portland hotel stay as $387 for two nights",
+              "segment_index": 1,
+              "turn_index": 1
+            },
+            {
+              "quote": "I dug up the original receipt and confirmed the correct amount was $378, so I resubmitted with that figure",
+              "segment_index": 1,
+              "turn_index": 5
+            },
+            {
+              "quote": "I just got a revised folio from the Residence Inn showing a $4 parking surcharge I missed. The correct total for the Portland stay is now $382",
+              "segment_index": 2,
+              "turn_index": 3
+            },
+            {
+              "quote": "The hotel loyalty program rep told me they're going to apply a 10% member discount retroactively, which would bring the total down to about $344",
+              "segment_index": 3,
+              "turn_index": 5
+            },
+            {
+              "quote": "For now the accepted figure is still $382 since nothing has changed yet",
+              "segment_index": 3,
+              "turn_index": 7
+            }
+          ],
+          "judge_rubric": {
+            "acceptable_paraphrases": [
+              "$344 was not acted on",
+              "$344 is pending",
+              "$344 was only mentioned as a possibility"
+            ],
+            "harmful_extra": [
+              "presenting $344 as adopted",
+              "omitting $378 from the sequence",
+              "presenting the sequence out of order"
+            ],
+            "harmless_extra": [
+              "mentioning the Residence Inn",
+              "mentioning the parking surcharge details",
+              "mentioning Finance acceptance"
+            ],
+            "must_include": [
+              "$387",
+              "$378",
+              "$382",
+              "$344",
+              "correct chronological order",
+              "$382 as final accepted",
+              "$344 never adopted or only tentative"
+            ],
+            "must_not_include": [
+              "$344 as the final accepted amount"
+            ]
+          },
+          "question_id": "E08:p5_state_trajectory:longitudinal_operation",
+          "question_pair_id": "p5_state_trajectory"
+        }
+      ],
+      "sample_id": "E08__TrajectoryOps",
+      "source_file": "/data/predator/ly/third_party/MemOps/generated_result/2-evidence_conversation/E08_trajectory_ops.json",
+      "source_sha256": "084035c5c747a3389da1c103eefff9429015ba760c569fd792372c834726d141",
+      "special_semantics_present": true,
+      "stale_confirmed_values": [
+        "$387",
+        "$378"
+      ],
+      "target_id": "portland_hotel_total",
+      "target_name": "reported Portland hotel total",
+      "transitions": [
+        {
+          "new_operation_id": "op4",
+          "new_segment_index": 2,
+          "new_value": "$382",
+          "old_operation_id": "op2",
+          "old_segment_index": 1,
+          "old_value": "$387",
+          "target_id": "portland_hotel_total",
+          "target_name": "reported Portland hotel total"
+        }
+      ]
+    }
+  ],
+  "schema_version": "sfwb.v1.3.memops-b0-screening-run-selection.v1",
+  "status": "OFFLINE_RUN_SELECTION_FROZEN"
+}
