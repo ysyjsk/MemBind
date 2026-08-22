@@ -1,0 +1,537 @@
+{
+  "official_qa_evaluator": {
+    "path": "/data/predator/ly/third_party/MemOps/5.5-evaluate_operation_metrics.py",
+    "prompt_builder": "build_evaluation_prompt",
+    "result_parser": "parse_judge_metrics",
+    "sha256": "17c24362c174239eb7ef5e543bc651afed60ae445a4becd49acf24f6d3c646f0"
+  },
+  "payload_sha256": "28d02ae1046cab2fec5cc3e36ba5f0743e79a87f35db7059a7be4a513bc34e27",
+  "pilot_id": "sfwb-v1-3-memops-pilot-20260822-001",
+  "pilot_manifest_sha256": "be3f9ffcf476dc8fba0c03b9811f0616ae54589c3b818028d7eff295b6fea870",
+  "policy": "B1_NAIVE_WHOLE_UPDATE_ASYNC",
+  "samples": [
+    {
+      "cohort_sample_id": "A01__Update",
+      "history_id": "memops-a01-update",
+      "latest_confirmed_value": "Senior Data Analyst",
+      "official_sample_id": "A01",
+      "operation_type": "Update",
+      "qa": [
+        {
+          "evaluation_setting": "adjacent_operation",
+          "evaluation_type": "CandidateDisambiguation",
+          "expected_answer": "Senior Data Analyst",
+          "gold_memory_state": "Current confirmed title: Senior Data Analyst. Prior titles (Junior Data Analyst, Data Analyst) are superseded. Lead Data Analyst is a planned but unfinalized future consolidation.",
+          "gold_provenance": [
+            {
+              "quote": "Diane told me yesterday that because I'm now the primary owner of the MedVantage quarterly deliverable, my title is being changed to Senior Data Analyst effective immediately",
+              "segment_index": 2,
+              "turn_index": 3
+            },
+            {
+              "quote": "HR sent an email today saying they're planning to consolidate all analyst roles under a single title of Lead Data Analyst by next quarter",
+              "segment_index": 3,
+              "turn_index": 5
+            }
+          ],
+          "judge_rubric": {
+            "acceptable_paraphrases": [],
+            "harmful_extra": [
+              "selecting Lead Data Analyst because it was mentioned most recently",
+              "selecting Data Analyst because the February restructuring removed tiers"
+            ],
+            "harmless_extra": [],
+            "must_include": [
+              "Senior Data Analyst"
+            ],
+            "must_not_include": [
+              "Data Analyst as the answer without Senior prefix",
+              "Junior Data Analyst as the answer",
+              "Lead Data Analyst as the answer"
+            ]
+          },
+          "question_id": "A01:p4_candidate_disambiguation:adjacent_operation",
+          "question_pair_id": "p4_candidate_disambiguation"
+        },
+        {
+          "evaluation_setting": "longitudinal_operation",
+          "evaluation_type": "CandidateDisambiguation",
+          "expected_answer": "Senior Data Analyst",
+          "gold_memory_state": "Current confirmed title: Senior Data Analyst. Prior titles (Junior Data Analyst, Data Analyst) are superseded. Lead Data Analyst is a planned but unfinalized future consolidation.",
+          "gold_provenance": [
+            {
+              "quote": "Diane told me yesterday that because I'm now the primary owner of the MedVantage quarterly deliverable, my title is being changed to Senior Data Analyst effective immediately",
+              "segment_index": 2,
+              "turn_index": 3
+            },
+            {
+              "quote": "HR sent an email today saying they're planning to consolidate all analyst roles under a single title of Lead Data Analyst by next quarter",
+              "segment_index": 3,
+              "turn_index": 5
+            }
+          ],
+          "judge_rubric": {
+            "acceptable_paraphrases": [],
+            "harmful_extra": [
+              "selecting Lead Data Analyst because it was mentioned most recently",
+              "selecting Data Analyst because the February restructuring removed tiers"
+            ],
+            "harmless_extra": [],
+            "must_include": [
+              "Senior Data Analyst"
+            ],
+            "must_not_include": [
+              "Data Analyst as the answer without Senior prefix",
+              "Junior Data Analyst as the answer",
+              "Lead Data Analyst as the answer"
+            ]
+          },
+          "question_id": "A01:p4_candidate_disambiguation:longitudinal_operation",
+          "question_pair_id": "p4_candidate_disambiguation"
+        }
+      ],
+      "sample_id": "A01__Update",
+      "source_file": "/data/predator/ly/third_party/MemOps/generated_result/2-evidence_conversation/A01_update.json",
+      "source_sha256": "a4f6b0c31dcfe4d0c5207ce5d2c292890c51ab54ab61278f197b3ac989decc87",
+      "special_semantics_present": true,
+      "stale_confirmed_values": [
+        "Junior Data Analyst",
+        "Data Analyst"
+      ],
+      "target_id": "job_title",
+      "target_name": "Current job title at Bridgemark Solutions",
+      "transitions": [
+        {
+          "new_operation_id": "op3",
+          "new_segment_index": 2,
+          "new_value": "Senior Data Analyst",
+          "old_operation_id": "op2",
+          "old_segment_index": 1,
+          "old_value": "Junior Data Analyst",
+          "target_id": "job_title",
+          "target_name": "Current job title at Bridgemark Solutions"
+        }
+      ]
+    },
+    {
+      "cohort_sample_id": "A05__Update",
+      "history_id": "memops-a05-update",
+      "latest_confirmed_value": "Unit 4A",
+      "official_sample_id": "A05",
+      "operation_type": "Update",
+      "qa": [
+        {
+          "evaluation_setting": "adjacent_operation",
+          "evaluation_type": "CandidateDisambiguation",
+          "expected_answer": "Unit 4A",
+          "gold_memory_state": "Current confirmed unit is Unit 4A. Unit 3B was the initial value (superseded). Unit 3A was the landlord-corrected value (superseded by 4A). A possible revert to 3A next quarter is tentative and unconfirmed.",
+          "gold_provenance": [
+            {
+              "quote": "I got a letter from the building management today and they've officially re-designated my apartment as Unit 4A after the floor renumbering",
+              "segment_index": 2,
+              "turn_index": 3
+            },
+            {
+              "quote": "The building manager told me they're planning to switch my designation back to Unit 3A starting next quarter because residents complained about the renumbering",
+              "segment_index": 3,
+              "turn_index": 5
+            }
+          ],
+          "judge_rubric": {
+            "acceptable_paraphrases": [
+              "4A"
+            ],
+            "harmful_extra": [
+              "selecting Unit 3A because of the tentative future revert",
+              "selecting Unit 3B because it was the first value given"
+            ],
+            "harmless_extra": [
+              "noting that the unit may change in the future once officially confirmed"
+            ],
+            "must_include": [
+              "Unit 4A"
+            ],
+            "must_not_include": [
+              "Unit 3B as current",
+              "Unit 3A as current"
+            ]
+          },
+          "question_id": "A05:p4_candidate_disambiguation:adjacent_operation",
+          "question_pair_id": "p4_candidate_disambiguation"
+        },
+        {
+          "evaluation_setting": "longitudinal_operation",
+          "evaluation_type": "CandidateDisambiguation",
+          "expected_answer": "Unit 4A",
+          "gold_memory_state": "Current confirmed unit is Unit 4A. Unit 3B was the initial value (superseded). Unit 3A was the landlord-corrected value (superseded by 4A). A possible revert to 3A next quarter is tentative and unconfirmed.",
+          "gold_provenance": [
+            {
+              "quote": "I got a letter from the building management today and they've officially re-designated my apartment as Unit 4A after the floor renumbering",
+              "segment_index": 2,
+              "turn_index": 3
+            },
+            {
+              "quote": "The building manager told me they're planning to switch my designation back to Unit 3A starting next quarter because residents complained about the renumbering",
+              "segment_index": 3,
+              "turn_index": 5
+            }
+          ],
+          "judge_rubric": {
+            "acceptable_paraphrases": [
+              "4A"
+            ],
+            "harmful_extra": [
+              "selecting Unit 3A because of the tentative future revert",
+              "selecting Unit 3B because it was the first value given"
+            ],
+            "harmless_extra": [
+              "noting that the unit may change in the future once officially confirmed"
+            ],
+            "must_include": [
+              "Unit 4A"
+            ],
+            "must_not_include": [
+              "Unit 3B as current",
+              "Unit 3A as current"
+            ]
+          },
+          "question_id": "A05:p4_candidate_disambiguation:longitudinal_operation",
+          "question_pair_id": "p4_candidate_disambiguation"
+        }
+      ],
+      "sample_id": "A05__Update",
+      "source_file": "/data/predator/ly/third_party/MemOps/generated_result/2-evidence_conversation/A05_update.json",
+      "source_sha256": "ae77817d56ebdca4fbe8f0c60a24790e149b7c1c36c20b6e20895550c4a8d358",
+      "special_semantics_present": true,
+      "stale_confirmed_values": [
+        "Unit 3B",
+        "Unit 3A"
+      ],
+      "target_id": "birchwood_unit_number",
+      "target_name": "unit number at 742 Birchwood Lane, Ashford Heights",
+      "transitions": [
+        {
+          "new_operation_id": "op3",
+          "new_segment_index": 2,
+          "new_value": "Unit 4A",
+          "old_operation_id": "op2",
+          "old_segment_index": 1,
+          "old_value": "Unit 3B",
+          "target_id": "birchwood_unit_number",
+          "target_name": "unit number at 742 Birchwood Lane, Ashford Heights"
+        }
+      ]
+    },
+    {
+      "cohort_sample_id": "A13__Update",
+      "history_id": "memops-a13-update",
+      "latest_confirmed_value": "1000mg twice daily",
+      "official_sample_id": "A13",
+      "operation_type": "Update",
+      "qa": [
+        {
+          "evaluation_setting": "adjacent_operation",
+          "evaluation_type": "CandidateDisambiguation",
+          "expected_answer": "1000mg twice daily",
+          "gold_memory_state": "Current confirmed metformin dosage is 1000mg twice daily. Previous dosages of 500mg twice daily and 750mg twice daily are superseded. The 850mg extended-release once daily is a tentative future possibility that has not been enacted.",
+          "gold_provenance": [
+            {
+              "quote": "Dr. Patel actually bumped the metformin up again to 1000mg twice daily as of last Monday",
+              "segment_index": 2,
+              "turn_index": 3
+            },
+            {
+              "quote": "Dr. Patel said at my next visit she'll likely switch me to 850mg extended-release once daily instead",
+              "segment_index": 3,
+              "turn_index": 5
+            }
+          ],
+          "judge_rubric": {
+            "acceptable_paraphrases": [
+              "1000 mg two times a day",
+              "1000mg BID"
+            ],
+            "harmful_extra": [
+              "Selecting any option other than 1000mg twice daily"
+            ],
+            "harmless_extra": [],
+            "must_include": [
+              "1000mg twice daily"
+            ],
+            "must_not_include": [
+              "750mg twice daily as current",
+              "500mg twice daily as current",
+              "850mg extended-release once daily as current"
+            ]
+          },
+          "question_id": "A13:p4_candidate_disambiguation:adjacent_operation",
+          "question_pair_id": "p4_candidate_disambiguation"
+        },
+        {
+          "evaluation_setting": "longitudinal_operation",
+          "evaluation_type": "CandidateDisambiguation",
+          "expected_answer": "1000mg twice daily",
+          "gold_memory_state": "Current confirmed metformin dosage is 1000mg twice daily. Previous dosages of 500mg twice daily and 750mg twice daily are superseded. The 850mg extended-release once daily is a tentative future possibility that has not been enacted.",
+          "gold_provenance": [
+            {
+              "quote": "Dr. Patel actually bumped the metformin up again to 1000mg twice daily as of last Monday",
+              "segment_index": 2,
+              "turn_index": 3
+            },
+            {
+              "quote": "Dr. Patel said at my next visit she'll likely switch me to 850mg extended-release once daily instead",
+              "segment_index": 3,
+              "turn_index": 5
+            }
+          ],
+          "judge_rubric": {
+            "acceptable_paraphrases": [
+              "1000 mg two times a day",
+              "1000mg BID"
+            ],
+            "harmful_extra": [
+              "Selecting any option other than 1000mg twice daily"
+            ],
+            "harmless_extra": [],
+            "must_include": [
+              "1000mg twice daily"
+            ],
+            "must_not_include": [
+              "750mg twice daily as current",
+              "500mg twice daily as current",
+              "850mg extended-release once daily as current"
+            ]
+          },
+          "question_id": "A13:p4_candidate_disambiguation:longitudinal_operation",
+          "question_pair_id": "p4_candidate_disambiguation"
+        }
+      ],
+      "sample_id": "A13__Update",
+      "source_file": "/data/predator/ly/third_party/MemOps/generated_result/2-evidence_conversation/A13_update.json",
+      "source_sha256": "0cf23a586a213e2c25cfdd54263a985b3c5ff4585d2d4f604b2858ce45f3b434",
+      "special_semantics_present": true,
+      "stale_confirmed_values": [
+        "500mg twice daily",
+        "750mg twice daily"
+      ],
+      "target_id": "metformin_dosage",
+      "target_name": "Current metformin dosage",
+      "transitions": [
+        {
+          "new_operation_id": "op3",
+          "new_segment_index": 2,
+          "new_value": "1000mg twice daily",
+          "old_operation_id": "op2",
+          "old_segment_index": 1,
+          "old_value": "500mg twice daily",
+          "target_id": "metformin_dosage",
+          "target_name": "Current metformin dosage"
+        }
+      ]
+    },
+    {
+      "cohort_sample_id": "A14__Update",
+      "history_id": "memops-a14-update",
+      "latest_confirmed_value": "HG284139",
+      "official_sample_id": "A14",
+      "operation_type": "Update",
+      "qa": [
+        {
+          "evaluation_setting": "adjacent_operation",
+          "evaluation_type": "CandidateDisambiguation",
+          "expected_answer": "HG284139",
+          "gold_memory_state": "Brazilian passport number is HG284139, confirmed from the physical passport. HG284913 and HG284193 are superseded stale values. HG284931 is a tentative consulate system error pending correction. HG284319 belongs to a different applicant.",
+          "gold_provenance": [
+            {
+              "quote": "I pulled out the physical passport just now and the number printed on it is HG284139. I've been reading the last four digits wrong this whole time",
+              "segment_index": 2,
+              "turn_index": 3
+            }
+          ],
+          "judge_rubric": {
+            "acceptable_paraphrases": [],
+            "harmful_extra": [
+              "selecting any value other than HG284139"
+            ],
+            "harmless_extra": [],
+            "must_include": [
+              "HG284139"
+            ],
+            "must_not_include": [
+              "HG284913",
+              "HG284193",
+              "HG284931",
+              "HG284319"
+            ]
+          },
+          "question_id": "A14:p4_candidate_disambiguation:adjacent_operation",
+          "question_pair_id": "p4_candidate_disambiguation"
+        },
+        {
+          "evaluation_setting": "longitudinal_operation",
+          "evaluation_type": "CandidateDisambiguation",
+          "expected_answer": "HG284139",
+          "gold_memory_state": "Brazilian passport number is HG284139, confirmed from the physical passport. HG284913 and HG284193 are superseded stale values. HG284931 is a tentative consulate system error pending correction. HG284319 belongs to a different applicant.",
+          "gold_provenance": [
+            {
+              "quote": "I pulled out the physical passport just now and the number printed on it is HG284139. I've been reading the last four digits wrong this whole time",
+              "segment_index": 2,
+              "turn_index": 3
+            }
+          ],
+          "judge_rubric": {
+            "acceptable_paraphrases": [],
+            "harmful_extra": [
+              "selecting any value other than HG284139"
+            ],
+            "harmless_extra": [],
+            "must_include": [
+              "HG284139"
+            ],
+            "must_not_include": [
+              "HG284913",
+              "HG284193",
+              "HG284931",
+              "HG284319"
+            ]
+          },
+          "question_id": "A14:p4_candidate_disambiguation:longitudinal_operation",
+          "question_pair_id": "p4_candidate_disambiguation"
+        }
+      ],
+      "sample_id": "A14__Update",
+      "source_file": "/data/predator/ly/third_party/MemOps/generated_result/2-evidence_conversation/A14_update.json",
+      "source_sha256": "84f5a3d086be822377527fd0481db9e0059f1da319e15db70673ea61de4ade33",
+      "special_semantics_present": true,
+      "stale_confirmed_values": [
+        "HG284913",
+        "HG284193"
+      ],
+      "target_id": "brazilian_passport_number",
+      "target_name": "Brazilian passport number",
+      "transitions": [
+        {
+          "new_operation_id": "op3",
+          "new_segment_index": 2,
+          "new_value": "HG284139",
+          "old_operation_id": "op2",
+          "old_segment_index": 1,
+          "old_value": "HG284913",
+          "target_id": "brazilian_passport_number",
+          "target_name": "Brazilian passport number"
+        }
+      ]
+    },
+    {
+      "cohort_sample_id": "A28__Update",
+      "history_id": "memops-a28-update",
+      "latest_confirmed_value": "July 1st",
+      "official_sample_id": "A28",
+      "operation_type": "Update",
+      "qa": [
+        {
+          "evaluation_setting": "adjacent_operation",
+          "evaluation_type": "CandidateDisambiguation",
+          "expected_answer": "July 1st",
+          "gold_memory_state": "Dr. Voss's confirmed sabbatical start date is July 1st. June 1st and June 15th are superseded earlier values. June 20th is an unconfirmed rumor from a third party.",
+          "gold_provenance": [
+            {
+              "quote": "her sabbatical has been pushed back to July 1st because of some administrative delay at UCSD",
+              "segment_index": 2,
+              "turn_index": 3
+            },
+            {
+              "quote": "James mentioned that the department secretary told him Dr. Voss might actually leave as early as June 20th because UCSD resolved the paperwork faster than expected",
+              "segment_index": 3,
+              "turn_index": 5
+            }
+          ],
+          "judge_rubric": {
+            "acceptable_paraphrases": [
+              "July 1"
+            ],
+            "harmful_extra": [
+              "Selecting June 20th because it is the most recently mentioned date in the conversation"
+            ],
+            "harmless_extra": [
+              "Noting that June 20th was mentioned as a possibility but unconfirmed"
+            ],
+            "must_include": [
+              "July 1st"
+            ],
+            "must_not_include": [
+              "June 15th as current",
+              "June 20th as current",
+              "June 1st as current"
+            ]
+          },
+          "question_id": "A28:p4_candidate_disambiguation:adjacent_operation",
+          "question_pair_id": "p4_candidate_disambiguation"
+        },
+        {
+          "evaluation_setting": "longitudinal_operation",
+          "evaluation_type": "CandidateDisambiguation",
+          "expected_answer": "July 1st",
+          "gold_memory_state": "Dr. Voss's confirmed sabbatical start date is July 1st. June 1st and June 15th are superseded earlier values. June 20th is an unconfirmed rumor from a third party.",
+          "gold_provenance": [
+            {
+              "quote": "her sabbatical has been pushed back to July 1st because of some administrative delay at UCSD",
+              "segment_index": 2,
+              "turn_index": 3
+            },
+            {
+              "quote": "James mentioned that the department secretary told him Dr. Voss might actually leave as early as June 20th because UCSD resolved the paperwork faster than expected",
+              "segment_index": 3,
+              "turn_index": 5
+            }
+          ],
+          "judge_rubric": {
+            "acceptable_paraphrases": [
+              "July 1"
+            ],
+            "harmful_extra": [
+              "Selecting June 20th because it is the most recently mentioned date in the conversation"
+            ],
+            "harmless_extra": [
+              "Noting that June 20th was mentioned as a possibility but unconfirmed"
+            ],
+            "must_include": [
+              "July 1st"
+            ],
+            "must_not_include": [
+              "June 15th as current",
+              "June 20th as current",
+              "June 1st as current"
+            ]
+          },
+          "question_id": "A28:p4_candidate_disambiguation:longitudinal_operation",
+          "question_pair_id": "p4_candidate_disambiguation"
+        }
+      ],
+      "sample_id": "A28__Update",
+      "source_file": "/data/predator/ly/third_party/MemOps/generated_result/2-evidence_conversation/A28_update.json",
+      "source_sha256": "28d7e6a8469d33b005ea6898483d7512704cb39187b54fd4817b4c398a14ef12",
+      "special_semantics_present": true,
+      "stale_confirmed_values": [
+        "June 1st",
+        "June 15th"
+      ],
+      "target_id": "voss_sabbatical_start_date",
+      "target_name": "Dr. Voss sabbatical start date",
+      "transitions": [
+        {
+          "new_operation_id": "op3",
+          "new_segment_index": 2,
+          "new_value": "July 1st",
+          "old_operation_id": "op2",
+          "old_segment_index": 1,
+          "old_value": "June 1st",
+          "target_id": "voss_sabbatical_start_date",
+          "target_name": "Dr. Voss sabbatical start date"
+        }
+      ]
+    }
+  ],
+  "schema_version": "sfwb.v1.3.memops-pilot-run-selection.v1",
+  "status": "OFFLINE_PILOT_RUN_FROZEN"
+}

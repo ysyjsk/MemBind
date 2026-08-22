@@ -75,8 +75,17 @@ _PRIORITY = {
 
 
 class AdmissionArbiter:
-    def __init__(self, authority: CapacityAuthority, *, event_sink: Callable[[dict[str, Any]], None] | None = None) -> None:
+    def __init__(
+        self,
+        authority: CapacityAuthority,
+        *,
+        name: str = "provider",
+        event_sink: Callable[[dict[str, Any]], None] | None = None,
+    ) -> None:
         self.authority = authority
+        if not isinstance(name, str) or not name:
+            raise ValueError("admission arbiter name must be non-empty")
+        self.name = name
         self.event_sink = event_sink
         self._condition = asyncio.Condition()
         self._outstanding = 0
@@ -93,6 +102,7 @@ class AdmissionArbiter:
     def _emit(self, event: str, **fields: Any) -> None:
         row = {
             "event": event,
+            "arbiter": self.name,
             "monotonic_ns": __import__("time").monotonic_ns(),
             **fields,
         }
@@ -197,8 +207,28 @@ class AdmissionArbiter:
             )
             self._condition.notify_all()
 
+    async def frontier_advanced(self, source_sequence: int) -> None:
+        """Wake queued provider calls after ordered durable publication.
+
+        A provider-free native replay may not release a provider permit.  The
+        frontier advance is therefore an independent wake-up so a queued
+        source ``d+1`` can be reclassified from FUTURE_PREPARE and use the
+        reserved critical credit.
+        """
+
+        async with self._condition:
+            self._emit(
+                "FRONTIER_ADVANCE",
+                source_sequence=int(source_sequence),
+                outstanding=self._outstanding,
+                future_outstanding=self._future_outstanding,
+                reserved_future_credit=max(0, self.authority.value - 1 - self._future_outstanding),
+            )
+            self._condition.notify_all()
+
     def evidence(self) -> dict[str, Any]:
         return {
+            "arbiter": self.name,
             "capacity": self.authority.to_dict(),
             "outstanding": self._outstanding,
             "future_outstanding": self._future_outstanding,

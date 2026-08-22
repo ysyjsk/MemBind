@@ -1,0 +1,735 @@
+{
+  "canonical_graph_hash": "ab6c99117b3f2f5604a928b6f825de215fc7fb9de9e1ae6fa66fb65f31b6c902",
+  "edges": [
+    {
+      "attributes": {},
+      "expired_at": "2026-08-22T12:44:09.798162000+00:00",
+      "fact": "User takes metformin 500mg twice a day with breakfast and dinner, starting on March 4th.",
+      "invalid_at": "2025-04-15T00:00:00.000000000+00:00",
+      "relation_type": "TAKES_MEDICATION",
+      "source_entity_key": "user",
+      "source_episode_sequence": 0,
+      "target_entity_key": "metformin 500mg twice a day",
+      "valid_at": "2025-03-04T00:00:00.000000000+00:00"
+    },
+    {
+      "attributes": {},
+      "expired_at": "2026-08-22T12:44:09.799151000+00:00",
+      "fact": "Dr. Patel prescribed metformin 500mg twice a day to the User on March 4th.",
+      "invalid_at": "2025-04-15T00:00:00.000000000+00:00",
+      "relation_type": "PRESCRIBED_MEDICATION",
+      "source_entity_key": "dr. patel",
+      "source_episode_sequence": 0,
+      "target_entity_key": "metformin 500mg twice a day",
+      "valid_at": "2025-03-04T00:00:00.000000000+00:00"
+    },
+    {
+      "attributes": {},
+      "expired_at": "2026-08-22T12:44:09.820627000+00:00",
+      "fact": "User started taking metformin 1000mg twice daily as of last Monday after Dr. Patel reviewed their latest labs and said the fasting glucose is still not where she wants it.",
+      "invalid_at": "2000-01-01T00:02:00.000000000+00:00",
+      "relation_type": "TAKES_MEDICATION",
+      "source_entity_key": "user",
+      "source_episode_sequence": 1,
+      "target_entity_key": "metformin 1000mg twice daily",
+      "valid_at": "1999-12-27T00:00:00.000000000+00:00"
+    },
+    {
+      "attributes": {},
+      "expired_at": "2026-08-22T12:44:18.683206000+00:00",
+      "fact": "User takes metformin 1000mg twice daily.",
+      "invalid_at": "2025-03-04T00:00:00.000000000+00:00",
+      "relation_type": "TAKES_MEDICATION",
+      "source_entity_key": "user",
+      "source_episode_sequence": 2,
+      "target_entity_key": "metformin 1000mg twice daily",
+      "valid_at": "2000-01-01T00:02:00.000000000+00:00"
+    },
+    {
+      "attributes": {},
+      "expired_at": "2026-08-22T12:44:18.731806000+00:00",
+      "fact": "User will shred the outdated pharmacy printout this weekend.",
+      "invalid_at": "2000-01-08T00:00:00.000000000+00:00",
+      "relation_type": "WILL_SHRED",
+      "source_entity_key": "user",
+      "source_episode_sequence": 2,
+      "target_entity_key": "pharmacy printout",
+      "valid_at": "2000-01-01T00:00:00.000000000+00:00"
+    },
+    {
+      "attributes": {},
+      "expired_at": "2026-08-22T12:44:18.777714000+00:00",
+      "fact": "User's medication chart documents the current medications: metformin 1000mg twice daily, omeprazole 20mg once daily before breakfast, vitamin D3 2000 IU daily, and loratadine 10mg as needed.",
+      "invalid_at": "2025-03-04T00:00:00.000000000+00:00",
+      "relation_type": "DOCUMENTS",
+      "source_entity_key": "user",
+      "source_episode_sequence": 2,
+      "target_entity_key": "medication chart",
+      "valid_at": "2000-01-01T00:02:00.000000000+00:00"
+    },
+    {
+      "attributes": {},
+      "expired_at": null,
+      "fact": "Dr. Patel prescribed metformin 750mg twice daily to the User around mid-April due to insufficient improvement in fasting glucose.",
+      "invalid_at": null,
+      "relation_type": "PRESCRIBED_MEDICATION",
+      "source_entity_key": "dr. patel",
+      "source_episode_sequence": 0,
+      "target_entity_key": "metformin 750mg twice daily",
+      "valid_at": "2025-04-15T00:00:00.000000000+00:00"
+    },
+    {
+      "attributes": {},
+      "expired_at": null,
+      "fact": "Dr. Patel prescribed omeprazole 20mg once a day before breakfast to the User for acid reflux.",
+      "invalid_at": null,
+      "relation_type": "PRESCRIBED_MEDICATION",
+      "source_entity_key": "dr. patel",
+      "source_episode_sequence": 0,
+      "target_entity_key": "omeprazole 20mg once a day before breakfast",
+      "valid_at": "2025-04-01T00:00:00.000000000+00:00"
+    },
+    {
+      "attributes": {},
+      "expired_at": null,
+      "fact": "Emily has a metformin 750mg label on one of her pharmacy bags, which is a mistake since she is not on metformin.",
+      "invalid_at": null,
+      "relation_type": "HAS_DOCUMENT",
+      "source_entity_key": "emily",
+      "source_episode_sequence": 2,
+      "target_entity_key": "emily's metformin 750mg label",
+      "valid_at": "2000-01-01T00:02:00.000000000+00:00"
+    },
+    {
+      "attributes": {},
+      "expired_at": null,
+      "fact": "Emily started taking lisinopril 10mg recently for blood pressure.",
+      "invalid_at": null,
+      "relation_type": "TAKES_MEDICATION",
+      "source_entity_key": "emily",
+      "source_episode_sequence": 1,
+      "target_entity_key": "lisinopril 10mg",
+      "valid_at": "2000-01-01T00:01:00.000000000+00:00"
+    },
+    {
+      "attributes": {},
+      "expired_at": null,
+      "fact": "User feels frustrated about taking metformin 750mg twice daily because their fasting glucose wasn't improving despite careful dieting.",
+      "invalid_at": null,
+      "relation_type": "FEELS_FRUSTRATED_ABOUT",
+      "source_entity_key": "user",
+      "source_episode_sequence": 0,
+      "target_entity_key": "metformin 750mg twice daily",
+      "valid_at": "2025-04-15T00:00:00.000000000+00:00"
+    },
+    {
+      "attributes": {},
+      "expired_at": null,
+      "fact": "User felt relief from acid reflux and improved sleep after starting omeprazole 20mg once a day before breakfast.",
+      "invalid_at": null,
+      "relation_type": "FELT_RELIEF_FROM",
+      "source_entity_key": "user",
+      "source_episode_sequence": 0,
+      "target_entity_key": "omeprazole 20mg once a day before breakfast",
+      "valid_at": "2025-04-01T00:00:00.000000000+00:00"
+    },
+    {
+      "attributes": {},
+      "expired_at": null,
+      "fact": "User finds the evening dose of metformin 750mg twice daily inconvenient because it requires thinking about pills when winding down for the evening.",
+      "invalid_at": null,
+      "relation_type": "FINDS_INCONVENIENT",
+      "source_entity_key": "user",
+      "source_episode_sequence": 0,
+      "target_entity_key": "metformin 750mg twice daily",
+      "valid_at": "2025-04-15T00:00:00.000000000+00:00"
+    },
+    {
+      "attributes": {},
+      "expired_at": null,
+      "fact": "User has a blood pressure reading of 122/78, which Dr. Patel said was fine.",
+      "invalid_at": null,
+      "relation_type": "HAS_BLOOD_PRESSURE_READING",
+      "source_entity_key": "user",
+      "source_episode_sequence": 1,
+      "target_entity_key": "122/78",
+      "valid_at": "2000-01-01T00:01:00.000000000+00:00"
+    },
+    {
+      "attributes": {},
+      "expired_at": null,
+      "fact": "User has a family history of hypertension, as their sister Emily started on lisinopril 10mg recently for blood pressure.",
+      "invalid_at": null,
+      "relation_type": "HAS_FAMILY_HISTORY_OF",
+      "source_entity_key": "user",
+      "source_episode_sequence": 1,
+      "target_entity_key": "hypertension",
+      "valid_at": null
+    },
+    {
+      "attributes": {},
+      "expired_at": null,
+      "fact": "User has a pharmacy printout that lists metformin at 500mg, which is outdated.",
+      "invalid_at": null,
+      "relation_type": "HAS_DOCUMENT",
+      "source_entity_key": "user",
+      "source_episode_sequence": 2,
+      "target_entity_key": "pharmacy printout",
+      "valid_at": null
+    },
+    {
+      "attributes": {},
+      "expired_at": null,
+      "fact": "User has an upcoming appointment with Dr. Patel, where she will likely switch the user to extended-release metformin 850mg once daily.",
+      "invalid_at": null,
+      "relation_type": "HAS_APPOINTMENT_WITH",
+      "source_entity_key": "user",
+      "source_episode_sequence": 2,
+      "target_entity_key": "dr. patel",
+      "valid_at": null
+    },
+    {
+      "attributes": {},
+      "expired_at": null,
+      "fact": "User is focusing on keeping up with lighter meals.",
+      "invalid_at": null,
+      "relation_type": "FOCUSES_ON",
+      "source_entity_key": "user",
+      "source_episode_sequence": 2,
+      "target_entity_key": "lighter meals",
+      "valid_at": "2000-01-01T00:02:00.000000000+00:00"
+    },
+    {
+      "attributes": {},
+      "expired_at": null,
+      "fact": "User is under the care of Dr. Patel for their health conditions.",
+      "invalid_at": null,
+      "relation_type": "SEEKS_TREATMENT_FROM",
+      "source_entity_key": "user",
+      "source_episode_sequence": 1,
+      "target_entity_key": "dr. patel",
+      "valid_at": "2000-01-01T00:01:00.000000000+00:00"
+    },
+    {
+      "attributes": {},
+      "expired_at": null,
+      "fact": "User mentioned to consider discussing the possibility of switching to an extended-release formulation of metformin 750mg twice daily with Dr. Patel at the next visit.",
+      "invalid_at": null,
+      "relation_type": "MENTIONED_TO_CONSIDER",
+      "source_entity_key": "user",
+      "source_episode_sequence": 0,
+      "target_entity_key": "metformin 750mg twice daily",
+      "valid_at": "2025-04-15T00:00:00.000000000+00:00"
+    },
+    {
+      "attributes": {},
+      "expired_at": null,
+      "fact": "User plans to set up a medication chart on the fridge with drug name, dose, and when to take it, including a checkbox column for tracking.",
+      "invalid_at": null,
+      "relation_type": "PLANS_TO_USE",
+      "source_entity_key": "user",
+      "source_episode_sequence": 2,
+      "target_entity_key": "medication chart",
+      "valid_at": "2000-01-01T00:02:00.000000000+00:00"
+    },
+    {
+      "attributes": {},
+      "expired_at": null,
+      "fact": "User plans to switch to extended-release metformin 850mg once daily, as recommended by Dr. Patel.",
+      "invalid_at": null,
+      "relation_type": "PLANS_TO_SWITCH_TO",
+      "source_entity_key": "user",
+      "source_episode_sequence": 2,
+      "target_entity_key": "extended-release metformin 850mg once daily",
+      "valid_at": null
+    },
+    {
+      "attributes": {},
+      "expired_at": null,
+      "fact": "User prefers consolidating the taking of metformin 750mg twice daily in the morning when possible.",
+      "invalid_at": null,
+      "relation_type": "PREFERS_CONSOLIDATED_TAKING_OF",
+      "source_entity_key": "user",
+      "source_episode_sequence": 0,
+      "target_entity_key": "metformin 750mg twice daily",
+      "valid_at": "2025-04-15T00:00:00.000000000+00:00"
+    },
+    {
+      "attributes": {},
+      "expired_at": null,
+      "fact": "User should discard the outdated metformin 500mg printout to avoid confusion.",
+      "invalid_at": null,
+      "relation_type": "SHOULD_DISCARD",
+      "source_entity_key": "user",
+      "source_episode_sequence": 2,
+      "target_entity_key": "metformin 500mg",
+      "valid_at": null
+    },
+    {
+      "attributes": {},
+      "expired_at": null,
+      "fact": "User takes loratadine 10mg as needed for allergies, but hasn't needed it in a couple of weeks since the pollen has calmed down.",
+      "invalid_at": "2000-01-15T00:00:00.000000000+00:00",
+      "relation_type": "TAKES_MEDICATION",
+      "source_entity_key": "user",
+      "source_episode_sequence": 1,
+      "target_entity_key": "loratadine 10mg",
+      "valid_at": "2000-01-01T00:01:00.000000000+00:00"
+    },
+    {
+      "attributes": {},
+      "expired_at": null,
+      "fact": "User takes loratadine 10mg as needed.",
+      "invalid_at": null,
+      "relation_type": "TAKES_MEDICATION",
+      "source_entity_key": "user",
+      "source_episode_sequence": 2,
+      "target_entity_key": "loratadine 10mg as needed",
+      "valid_at": "2000-01-01T00:02:00.000000000+00:00"
+    },
+    {
+      "attributes": {},
+      "expired_at": null,
+      "fact": "User takes metformin 750mg twice daily with breakfast and dinner, starting around mid-April.",
+      "invalid_at": null,
+      "relation_type": "TAKES_MEDICATION",
+      "source_entity_key": "user",
+      "source_episode_sequence": 0,
+      "target_entity_key": "metformin 750mg twice daily",
+      "valid_at": "2025-04-15T00:00:00.000000000+00:00"
+    },
+    {
+      "attributes": {},
+      "expired_at": null,
+      "fact": "User takes omeprazole 20mg once a day before breakfast for acid reflux, starting a few days before the conversation.",
+      "invalid_at": null,
+      "relation_type": "TAKES_MEDICATION",
+      "source_entity_key": "user",
+      "source_episode_sequence": 0,
+      "target_entity_key": "omeprazole 20mg once a day before breakfast",
+      "valid_at": "2025-04-01T00:00:00.000000000+00:00"
+    },
+    {
+      "attributes": {},
+      "expired_at": null,
+      "fact": "User takes omeprazole 20mg once daily before breakfast.",
+      "invalid_at": null,
+      "relation_type": "TAKES_MEDICATION",
+      "source_entity_key": "user",
+      "source_episode_sequence": 1,
+      "target_entity_key": "omeprazole 20mg",
+      "valid_at": "2000-01-01T00:01:00.000000000+00:00"
+    },
+    {
+      "attributes": {},
+      "expired_at": null,
+      "fact": "User takes omeprazole 20mg once daily before breakfast.",
+      "invalid_at": null,
+      "relation_type": "TAKES_MEDICATION",
+      "source_entity_key": "user",
+      "source_episode_sequence": 2,
+      "target_entity_key": "omeprazole 20mg once daily before breakfast",
+      "valid_at": "2000-01-01T00:00:00.000000000+00:00"
+    },
+    {
+      "attributes": {},
+      "expired_at": null,
+      "fact": "User takes vitamin D3 2000 IU daily.",
+      "invalid_at": null,
+      "relation_type": "TAKES_MEDICATION",
+      "source_entity_key": "user",
+      "source_episode_sequence": 2,
+      "target_entity_key": "vitamin d3 2000 iu daily",
+      "valid_at": "2000-01-01T00:00:00.000000000+00:00"
+    },
+    {
+      "attributes": {},
+      "expired_at": null,
+      "fact": "User takes vitamin D3 2000 IU every morning since last fall when their levels came back low at their annual checkup.",
+      "invalid_at": null,
+      "relation_type": "TAKES_MEDICATION",
+      "source_entity_key": "user",
+      "source_episode_sequence": 1,
+      "target_entity_key": "vitamin d3 2000 iu",
+      "valid_at": null
+    },
+    {
+      "attributes": {},
+      "expired_at": null,
+      "fact": "User will finalize the medication chart and have it up on the fridge this weekend.",
+      "invalid_at": null,
+      "relation_type": "WILL_FINALIZE",
+      "source_entity_key": "user",
+      "source_episode_sequence": 2,
+      "target_entity_key": "medication chart",
+      "valid_at": "2000-01-01T00:02:00.000000000+00:00"
+    },
+    {
+      "attributes": {},
+      "expired_at": null,
+      "fact": "User will update the medication chart after the next appointment with Dr. Patel if there are any changes to the dosage or formulation.",
+      "invalid_at": null,
+      "relation_type": "WILL_UPDATE",
+      "source_entity_key": "user",
+      "source_episode_sequence": 2,
+      "target_entity_key": "medication chart",
+      "valid_at": null
+    },
+    {
+      "attributes": {},
+      "expired_at": null,
+      "fact": "User's medication chart will include Dr. Patel's contact information.",
+      "invalid_at": null,
+      "relation_type": "HAS_CONTACT_INFORMATION",
+      "source_entity_key": "user",
+      "source_episode_sequence": 2,
+      "target_entity_key": "dr. patel",
+      "valid_at": null
+    },
+    {
+      "attributes": {},
+      "expired_at": null,
+      "fact": "User's medication chart will include a checkbox column for each day of the week to track whether each dose has been taken.",
+      "invalid_at": null,
+      "relation_type": "INCLUDES",
+      "source_entity_key": "user",
+      "source_episode_sequence": 2,
+      "target_entity_key": "medication chart",
+      "valid_at": "2000-01-01T00:02:00.000000000+00:00"
+    }
+  ],
+  "entities": [
+    {
+      "attributes": {},
+      "group_id": "b1-run-MEMOPS-A13__Update-B1_NAIVE_WHOLE_UPDATE_ASYNC-attempt-001",
+      "labels": [
+        "Entity"
+      ],
+      "name": "122/78",
+      "summary": "User has a blood pressure reading of 122/78, which Dr. Patel said was fine."
+    },
+    {
+      "attributes": {},
+      "group_id": "b1-run-MEMOPS-A13__Update-B1_NAIVE_WHOLE_UPDATE_ASYNC-attempt-001",
+      "labels": [
+        "Entity"
+      ],
+      "name": "allergies",
+      "summary": "The user takes loratadine 10mg as needed for allergies but has not used it in a couple of weeks due to lower pollen levels. It is a seasonal medication, not a daily one."
+    },
+    {
+      "attributes": {},
+      "group_id": "b1-run-MEMOPS-A13__Update-B1_NAIVE_WHOLE_UPDATE_ASYNC-attempt-001",
+      "labels": [
+        "Entity"
+      ],
+      "name": "annual checkup",
+      "summary": "Vitamin D levels came back low at the annual checkup last fall, prompting the start of vitamin D3 2000 IU daily supplementation. The user plans to recheck vitamin D levels at the next annual visit."
+    },
+    {
+      "attributes": {},
+      "group_id": "b1-run-MEMOPS-A13__Update-B1_NAIVE_WHOLE_UPDATE_ASYNC-attempt-001",
+      "labels": [
+        "Entity"
+      ],
+      "name": "blood pressure",
+      "summary": "The user's blood pressure has been normal, with the last reading at 122/78, which Dr. Patel said was fine. The user's sister Emily started on lisinopril 10mg for blood pressure, and the user is monitoring for family patterns of hypertension."
+    },
+    {
+      "attributes": {},
+      "group_id": "b1-run-MEMOPS-A13__Update-B1_NAIVE_WHOLE_UPDATE_ASYNC-attempt-001",
+      "labels": [
+        "Entity"
+      ],
+      "name": "checkbox column",
+      "summary": "A checkbox column for each day of the week can be added to the medication chart to track whether each dose has been taken."
+    },
+    {
+      "attributes": {},
+      "group_id": "b1-run-MEMOPS-A13__Update-B1_NAIVE_WHOLE_UPDATE_ASYNC-attempt-001",
+      "labels": [
+        "Entity"
+      ],
+      "name": "dr. patel",
+      "summary": "Dr. Patel prescribed metformin 500mg twice a day to the User on March 4th. Dr. Patel prescribed metformin 750mg twice daily to the User around mid-April due to insufficient improvement in fasting glucose. Dr. Patel prescribed omeprazole 20mg once a day before breakfast to the User for acid reflux."
+    },
+    {
+      "attributes": {},
+      "group_id": "b1-run-MEMOPS-A13__Update-B1_NAIVE_WHOLE_UPDATE_ASYNC-attempt-001",
+      "labels": [
+        "Entity"
+      ],
+      "name": "dr. patel",
+      "summary": "User has an upcoming appointment with Dr. Patel, where she will likely switch the user to extended-release metformin 850mg once daily. User's medication chart will include Dr. Patel's contact information."
+    },
+    {
+      "attributes": {},
+      "group_id": "b1-run-MEMOPS-A13__Update-B1_NAIVE_WHOLE_UPDATE_ASYNC-attempt-001",
+      "labels": [
+        "Entity"
+      ],
+      "name": "dr. patel",
+      "summary": "User is under the care of Dr. Patel for their health conditions."
+    },
+    {
+      "attributes": {},
+      "group_id": "b1-run-MEMOPS-A13__Update-B1_NAIVE_WHOLE_UPDATE_ASYNC-attempt-001",
+      "labels": [
+        "Entity"
+      ],
+      "name": "emily",
+      "summary": "Emily has a metformin 750mg label on one of her pharmacy bags, which is a mistake since she is not on metformin."
+    },
+    {
+      "attributes": {},
+      "group_id": "b1-run-MEMOPS-A13__Update-B1_NAIVE_WHOLE_UPDATE_ASYNC-attempt-001",
+      "labels": [
+        "Entity"
+      ],
+      "name": "emily",
+      "summary": "Emily started taking lisinopril 10mg recently for blood pressure."
+    },
+    {
+      "attributes": {},
+      "group_id": "b1-run-MEMOPS-A13__Update-B1_NAIVE_WHOLE_UPDATE_ASYNC-attempt-001",
+      "labels": [
+        "Entity"
+      ],
+      "name": "emily's metformin 750mg label",
+      "summary": "Emily has a metformin 750mg label on one of her pharmacy bags, which is a mistake since she is not on metformin."
+    },
+    {
+      "attributes": {},
+      "group_id": "b1-run-MEMOPS-A13__Update-B1_NAIVE_WHOLE_UPDATE_ASYNC-attempt-001",
+      "labels": [
+        "Entity"
+      ],
+      "name": "extended-release metformin 850mg once daily",
+      "summary": "User plans to switch to extended-release metformin 850mg once daily, as recommended by Dr. Patel."
+    },
+    {
+      "attributes": {},
+      "group_id": "b1-run-MEMOPS-A13__Update-B1_NAIVE_WHOLE_UPDATE_ASYNC-attempt-001",
+      "labels": [
+        "Entity"
+      ],
+      "name": "fasting glucose",
+      "summary": "Dr. Patel reviewed the user's latest labs and found that fasting glucose levels were still not at the desired target, leading to an increase in metformin dosage to 1000mg twice daily."
+    },
+    {
+      "attributes": {},
+      "group_id": "b1-run-MEMOPS-A13__Update-B1_NAIVE_WHOLE_UPDATE_ASYNC-attempt-001",
+      "labels": [
+        "Entity"
+      ],
+      "name": "fridge",
+      "summary": ""
+    },
+    {
+      "attributes": {},
+      "group_id": "b1-run-MEMOPS-A13__Update-B1_NAIVE_WHOLE_UPDATE_ASYNC-attempt-001",
+      "labels": [
+        "Entity"
+      ],
+      "name": "hypertension",
+      "summary": "User has a family history of hypertension, as their sister Emily started on lisinopril 10mg recently for blood pressure."
+    },
+    {
+      "attributes": {},
+      "group_id": "b1-run-MEMOPS-A13__Update-B1_NAIVE_WHOLE_UPDATE_ASYNC-attempt-001",
+      "labels": [
+        "Entity"
+      ],
+      "name": "last monday",
+      "summary": "On last Monday, Dr. Patel increased the metformin dosage to 1000mg twice daily after reviewing the user's latest labs and determining that fasting glucose levels were still not optimal."
+    },
+    {
+      "attributes": {},
+      "group_id": "b1-run-MEMOPS-A13__Update-B1_NAIVE_WHOLE_UPDATE_ASYNC-attempt-001",
+      "labels": [
+        "Entity"
+      ],
+      "name": "lighter meals",
+      "summary": "User is focusing on keeping up with lighter meals."
+    },
+    {
+      "attributes": {},
+      "group_id": "b1-run-MEMOPS-A13__Update-B1_NAIVE_WHOLE_UPDATE_ASYNC-attempt-001",
+      "labels": [
+        "Entity"
+      ],
+      "name": "lisinopril 10mg",
+      "summary": "Emily started taking lisinopril 10mg recently for blood pressure."
+    },
+    {
+      "attributes": {},
+      "group_id": "b1-run-MEMOPS-A13__Update-B1_NAIVE_WHOLE_UPDATE_ASYNC-attempt-001",
+      "labels": [
+        "Entity"
+      ],
+      "name": "loratadine 10mg as needed",
+      "summary": "User takes loratadine 10mg as needed."
+    },
+    {
+      "attributes": {},
+      "group_id": "b1-run-MEMOPS-A13__Update-B1_NAIVE_WHOLE_UPDATE_ASYNC-attempt-001",
+      "labels": [
+        "Entity"
+      ],
+      "name": "loratadine 10mg",
+      "summary": "User takes loratadine 10mg as needed for allergies, but hasn't needed it in a couple of weeks since the pollen has calmed down."
+    },
+    {
+      "attributes": {},
+      "group_id": "b1-run-MEMOPS-A13__Update-B1_NAIVE_WHOLE_UPDATE_ASYNC-attempt-001",
+      "labels": [
+        "Entity"
+      ],
+      "name": "medication chart",
+      "summary": "User plans to set up a medication chart on the fridge with drug name, dose, and when to take it, including a checkbox column for tracking. User will update the medication chart after the next appointment with Dr. Patel if there are any changes to the dosage or formulation. User will finalize the medication chart and have it up on the fridge this weekend. User's medication chart will include a checkbox column for each day of the week to track whether each dose has been taken. User's medication chart documents the current medications: metformin 1000mg twice daily, omeprazole 20mg once daily before breakfast, vitamin D3 2000 IU daily, and loratadine 10mg as needed."
+    },
+    {
+      "attributes": {},
+      "group_id": "b1-run-MEMOPS-A13__Update-B1_NAIVE_WHOLE_UPDATE_ASYNC-attempt-001",
+      "labels": [
+        "Entity"
+      ],
+      "name": "metformin 1000mg twice daily",
+      "summary": "User started taking metformin 1000mg twice daily as of last Monday after Dr. Patel reviewed their latest labs and said the fasting glucose is still not where she wants it."
+    },
+    {
+      "attributes": {},
+      "group_id": "b1-run-MEMOPS-A13__Update-B1_NAIVE_WHOLE_UPDATE_ASYNC-attempt-001",
+      "labels": [
+        "Entity"
+      ],
+      "name": "metformin 1000mg twice daily",
+      "summary": "User takes metformin 1000mg twice daily."
+    },
+    {
+      "attributes": {},
+      "group_id": "b1-run-MEMOPS-A13__Update-B1_NAIVE_WHOLE_UPDATE_ASYNC-attempt-001",
+      "labels": [
+        "Entity"
+      ],
+      "name": "metformin 500mg twice a day",
+      "summary": "User takes metformin 500mg twice a day with breakfast and dinner, starting on March 4th. Dr. Patel prescribed metformin 500mg twice a day to the User on March 4th."
+    },
+    {
+      "attributes": {},
+      "group_id": "b1-run-MEMOPS-A13__Update-B1_NAIVE_WHOLE_UPDATE_ASYNC-attempt-001",
+      "labels": [
+        "Entity"
+      ],
+      "name": "metformin 500mg",
+      "summary": "User should discard the outdated metformin 500mg printout to avoid confusion."
+    },
+    {
+      "attributes": {},
+      "group_id": "b1-run-MEMOPS-A13__Update-B1_NAIVE_WHOLE_UPDATE_ASYNC-attempt-001",
+      "labels": [
+        "Entity"
+      ],
+      "name": "metformin 750mg twice daily",
+      "summary": "User takes metformin 750mg twice daily with breakfast and dinner, starting around mid-April. Dr. Patel prescribed metformin 750mg twice daily to the User around mid-April due to insufficient improvement in fasting glucose. User feels frustrated about taking metformin 750mg twice daily because their fasting glucose wasn't improving despite careful dieting. User finds the evening dose of metformin 750mg twice daily inconvenient because it requires thinking about pills when winding down for the evening. User prefers consolidating the taking of metformin 750mg twice daily in the morning when possible. User mentioned to consider discussing the possibility of switching to an extended-release formulation of metformin 750mg twice daily with Dr. Patel at the next visit."
+    },
+    {
+      "attributes": {},
+      "group_id": "b1-run-MEMOPS-A13__Update-B1_NAIVE_WHOLE_UPDATE_ASYNC-attempt-001",
+      "labels": [
+        "Entity"
+      ],
+      "name": "omeprazole 20mg once a day before breakfast",
+      "summary": "User takes omeprazole 20mg once a day before breakfast for acid reflux, starting a few days before the conversation. Dr. Patel prescribed omeprazole 20mg once a day before breakfast to the User for acid reflux. User felt relief from acid reflux and improved sleep after starting omeprazole 20mg once a day before breakfast."
+    },
+    {
+      "attributes": {},
+      "group_id": "b1-run-MEMOPS-A13__Update-B1_NAIVE_WHOLE_UPDATE_ASYNC-attempt-001",
+      "labels": [
+        "Entity"
+      ],
+      "name": "omeprazole 20mg once daily before breakfast",
+      "summary": "User takes omeprazole 20mg once daily before breakfast."
+    },
+    {
+      "attributes": {},
+      "group_id": "b1-run-MEMOPS-A13__Update-B1_NAIVE_WHOLE_UPDATE_ASYNC-attempt-001",
+      "labels": [
+        "Entity"
+      ],
+      "name": "omeprazole 20mg",
+      "summary": "User takes omeprazole 20mg once daily before breakfast."
+    },
+    {
+      "attributes": {},
+      "group_id": "b1-run-MEMOPS-A13__Update-B1_NAIVE_WHOLE_UPDATE_ASYNC-attempt-001",
+      "labels": [
+        "Entity"
+      ],
+      "name": "pharmacy printout",
+      "summary": "User has a pharmacy printout that lists metformin at 500mg, which is outdated. User will shred the outdated pharmacy printout this weekend."
+    },
+    {
+      "attributes": {},
+      "group_id": "b1-run-MEMOPS-A13__Update-B1_NAIVE_WHOLE_UPDATE_ASYNC-attempt-001",
+      "labels": [
+        "Entity"
+      ],
+      "name": "user",
+      "summary": "User takes metformin 1000mg twice daily. User takes omeprazole 20mg once daily before breakfast. User takes vitamin D3 2000 IU daily. User takes loratadine 10mg as needed. User has a pharmacy printout that lists metformin at 500mg, which is outdated. User plans to set up a medication chart on the fridge with drug name, dose, and when to take it, including a checkbox column for tracking. User should discard the outdated metformin 500mg printout to avoid confusion. User has an upcoming appointment with Dr. Patel, where she will likely switch the user to extended-release metformin 850mg once daily. User plans to switch to extended-release metformin 850mg once daily, as recommended by Dr. Patel. User is focusing on keeping up with lighter meals. User will update the medication chart after the next appointment with Dr. Patel if there are any changes to the dosage or formulation. User will shred the outdated pharmacy printout this weekend. User will finalize the medication chart and have it up on the fridge this weekend. User's medication chart will include a checkbox column for each day of the week to track whether each dose has been taken. User's medication chart will include Dr. Patel's contact information. User's medication chart documents the current medications: metformin 1000mg twice daily, omeprazole 20mg once daily before breakfast, vitamin D3 2000 IU daily, and loratadine 10mg as needed."
+    },
+    {
+      "attributes": {},
+      "group_id": "b1-run-MEMOPS-A13__Update-B1_NAIVE_WHOLE_UPDATE_ASYNC-attempt-001",
+      "labels": [
+        "Entity"
+      ],
+      "name": "user",
+      "summary": "User takes metformin 500mg twice a day with breakfast and dinner, starting on March 4th. User takes metformin 750mg twice daily with breakfast and dinner, starting around mid-April. User takes omeprazole 20mg once a day before breakfast for acid reflux, starting a few days before the conversation. User feels frustrated about taking metformin 750mg twice daily because their fasting glucose wasn't improving despite careful dieting. User finds the evening dose of metformin 750mg twice daily inconvenient because it requires thinking about pills when winding down for the evening. User felt relief from acid reflux and improved sleep after starting omeprazole 20mg once a day before breakfast. User prefers consolidating the taking of metformin 750mg twice daily in the morning when possible. User mentioned to consider discussing the possibility of switching to an extended-release formulation of metformin 750mg twice daily with Dr. Patel at the next visit."
+    },
+    {
+      "attributes": {},
+      "group_id": "b1-run-MEMOPS-A13__Update-B1_NAIVE_WHOLE_UPDATE_ASYNC-attempt-001",
+      "labels": [
+        "Entity"
+      ],
+      "name": "user",
+      "summary": "User takes vitamin D3 2000 IU every morning since last fall when their levels came back low at their annual checkup. User started taking metformin 1000mg twice daily as of last Monday after Dr. Patel reviewed their latest labs and said the fasting glucose is still not where she wants it. User takes omeprazole 20mg once daily before breakfast. User takes loratadine 10mg as needed for allergies, but hasn't needed it in a couple of weeks since the pollen has calmed down. User has a blood pressure reading of 122/78, which Dr. Patel said was fine. User is under the care of Dr. Patel for their health conditions. User has a family history of hypertension, as their sister Emily started on lisinopril 10mg recently for blood pressure."
+    },
+    {
+      "attributes": {},
+      "group_id": "b1-run-MEMOPS-A13__Update-B1_NAIVE_WHOLE_UPDATE_ASYNC-attempt-001",
+      "labels": [
+        "Entity"
+      ],
+      "name": "vitamin d3 2000 iu daily",
+      "summary": "User takes vitamin D3 2000 IU daily."
+    },
+    {
+      "attributes": {},
+      "group_id": "b1-run-MEMOPS-A13__Update-B1_NAIVE_WHOLE_UPDATE_ASYNC-attempt-001",
+      "labels": [
+        "Entity"
+      ],
+      "name": "vitamin d3 2000 iu",
+      "summary": "User takes vitamin D3 2000 IU every morning since last fall when their levels came back low at their annual checkup."
+    }
+  ],
+  "episodes": [
+    {
+      "session_id": "A13__Update:segment:001",
+      "source_hash": "b4fa32fc4777fca3f3dd8eadd881b698e8c68c52a9cbb78c62086578e35c0505",
+      "source_sequence": 0
+    },
+    {
+      "session_id": "A13__Update:segment:002",
+      "source_hash": "640772b4357f34ac055ab723fbcbb13671567d9f50233bdfeb46d0a8443aa240",
+      "source_sequence": 1
+    },
+    {
+      "session_id": "A13__Update:segment:003",
+      "source_hash": "111e3ce46ba960169b1b44209313cd0cd83cf7d68117c7f9619693ec2e206fed",
+      "source_sequence": 2
+    }
+  ]
+}

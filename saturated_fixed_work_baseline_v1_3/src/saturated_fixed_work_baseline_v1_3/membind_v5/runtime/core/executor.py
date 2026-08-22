@@ -35,6 +35,9 @@ class FrontierExecutor:
         event_sink: Callable[[dict[str, Any]], None] | None = None,
         admission_event_sink: Callable[[dict[str, Any]], None] | None = None,
         lifecycle_sink: Callable[[dict[str, Any]], None] | None = None,
+        admission: AdmissionArbiter | None = None,
+        durable_frontier_sink: Callable[[int], None] | None = None,
+        admit_native: bool = True,
     ) -> None:
         if source_count < 0:
             raise ValueError("source_count must be non-negative")
@@ -42,8 +45,23 @@ class FrontierExecutor:
         self.clock = clock
         self.authority = authority
         self.prepare_admission = bool(prepare_admission)
-        self.admission = AdmissionArbiter(authority, event_sink=admission_event_sink)
-        self.frontier = FrontierRuntime(source_count, clock=clock, event_sink=event_sink)
+        if admission is not None and admission.authority != authority:
+            raise ValueError("shared admission authority mismatch")
+        self.admission = admission or AdmissionArbiter(
+            authority,
+            name="executor",
+            event_sink=admission_event_sink,
+        )
+        self.durable_frontier_sink = durable_frontier_sink
+        self.admit_native = bool(admit_native)
+
+        def frontier_event(row: dict[str, Any]) -> None:
+            if event_sink is not None:
+                event_sink(dict(row))
+            if row.get("event") == "PUBLICATION_DURABLE" and durable_frontier_sink is not None:
+                durable_frontier_sink(int(row["source_sequence"]))
+
+        self.frontier = FrontierRuntime(source_count, clock=clock, event_sink=frontier_event)
         self.lifecycle_sink = lifecycle_sink
         self._tasks: list[asyncio.Task[Any]] = []
 
@@ -57,19 +75,24 @@ class FrontierExecutor:
             self.lifecycle_sink({"event": "FORMAL_START", "monotonic_ns": timer_start, "t0_ns": timer_start})
         async def do_prepare(sequence: int) -> None:
             admission_class = AdmissionClass.FRONTIER_PREPARE if sequence == 0 else AdmissionClass.FUTURE_PREPARE
+            admitted = False
             if self.prepare_admission:
                 await self.admission.acquire(admission_class, source_sequence=sequence)
+                admitted = True
                 self.frontier._event("ADMITTED", sequence, admission_class=admission_class.value)
             else:
                 self.frontier._event("PREPARE_SUBMITTED", sequence, admission_class=admission_class.value)
             try:
                 value = await prepare(sequence)
                 await self.frontier.mark_prepared(sequence, value)
+            except asyncio.CancelledError:
+                self.frontier._event("PREPARE_CANCELLED", sequence)
+                raise
             except BaseException as exc:
                 self.frontier._event("PREPARE_FAILURE", sequence, error_type=f"{type(exc).__module__}.{type(exc).__qualname__}")
                 raise
             finally:
-                if self.prepare_admission:
+                if admitted:
                     await self.admission.release(admission_class)
 
         # Keep the coroutine window bounded by the frozen runtime-derived
@@ -77,13 +100,15 @@ class FrontierExecutor:
         # scheduler bound prevents one task/future per source from accumulating
         # memory and cancellation scope on a full history.
         task_by_sequence: dict[int, asyncio.Task[Any]] = {}
+        prep_errors: dict[int, BaseException] = {}
         next_sequence = 0
         window = max(1, int(self.authority.value))
 
         def schedule_window() -> None:
             nonlocal next_sequence
             active = sum(1 for task in task_by_sequence.values() if not task.done())
-            while next_sequence < self.source_count and active < window:
+            stop_at = min(prep_errors) if prep_errors else self.source_count
+            while next_sequence < stop_at and active < window:
                 task = asyncio.create_task(do_prepare(next_sequence))
                 task_by_sequence[next_sequence] = task
                 self._tasks.append(task)
@@ -98,8 +123,20 @@ class FrontierExecutor:
                     continue
                 error = task.exception()
                 if error is not None:
-                    self.frontier.failed_sequence = sequence
-                    raise error
+                    prep_errors[sequence] = error
+                    task_by_sequence.pop(sequence, None)
+                    if task in self._tasks:
+                        self._tasks.remove(task)
+                    self.frontier._event(
+                        "PREPARE_DEFERRED_FAILURE",
+                        sequence,
+                        error_type=f"{type(error).__module__}.{type(error).__qualname__}",
+                    )
+                    failed_at = min(prep_errors)
+                    for future_sequence, future_task in list(task_by_sequence.items()):
+                        if future_sequence > failed_at and not future_task.done():
+                            future_task.cancel()
+                    continue
                 task_by_sequence.pop(sequence, None)
                 if task in self._tasks:
                     self._tasks.remove(task)
@@ -109,6 +146,9 @@ class FrontierExecutor:
             for sequence in range(self.source_count):
                 while sequence not in self.frontier.prepared:
                     harvest_done()
+                    if sequence in prep_errors:
+                        self.frontier.failed_sequence = sequence
+                        raise prep_errors[sequence]
                     schedule_window()
                     if sequence in self.frontier.prepared:
                         break
@@ -118,12 +158,18 @@ class FrontierExecutor:
                     await asyncio.wait(pending, return_when=asyncio.FIRST_COMPLETED)
                 harvest_done()
                 schedule_window()
-                await self.admission.acquire(AdmissionClass.NATIVE_FRONTIER, source_sequence=sequence)
-                self.frontier._event("ADMITTED", sequence, admission_class=AdmissionClass.NATIVE_FRONTIER.value)
+                native_admitted = False
+                if self.admit_native:
+                    await self.admission.acquire(AdmissionClass.NATIVE_FRONTIER, source_sequence=sequence)
+                    native_admitted = True
+                    self.frontier._event("ADMITTED", sequence, admission_class=AdmissionClass.NATIVE_FRONTIER.value)
                 try:
                     await self.frontier.publish(sequence, lambda value, seq=sequence: publish(seq, value))
+                    if not self.admit_native:
+                        await self.admission.frontier_advanced(sequence)
                 finally:
-                    await self.admission.release(AdmissionClass.NATIVE_FRONTIER)
+                    if native_admitted:
+                        await self.admission.release(AdmissionClass.NATIVE_FRONTIER)
                 task_by_sequence.pop(sequence, None)
                 schedule_window()
         except BaseException:

@@ -132,7 +132,10 @@ class _DurableJsonl:
     def __init__(self, path: Path) -> None:
         self.path = Path(path)
         self.path.parent.mkdir(parents=True, exist_ok=True)
-        self._stream = self.path.open("a", encoding="utf-8")
+        # A journal belongs to one attempt.  Appending to an existing file
+        # would reset the hash-chain/ordinal state and create unverifiable
+        # evidence, so reruns fail closed instead of silently corrupting it.
+        self._stream = self.path.open("x", encoding="utf-8")
         self.count = 0
         self.last: dict[str, Any] | None = None
         self.event_counts: dict[str, int] = {}
@@ -140,6 +143,13 @@ class _DurableJsonl:
         self._previous_sha256 = "0" * 64
 
     def append(self, row: Mapping[str, Any]) -> None:
+        if row.get("event") == "PUBLICATION_DURABLE":
+            observed = int(row.get("source_sequence", -1))
+            expected = self.max_durable_frontier + 1
+            if observed != expected:
+                raise P9RunnerError(
+                    f"durable frontier must advance by one: expected {expected}, got {observed}"
+                )
         body = {
             "schema_version": "membind.v5.p9-journal-event.v1",
             "ordinal": self.count,
@@ -167,6 +177,37 @@ class _DurableJsonl:
             self._stream.flush()
             os.fsync(self._stream.fileno())
             self._stream.close()
+
+
+def _persist_partial_native_trace(
+    path: Path,
+    recorder: Any,
+    run_id: str,
+    episodes: Sequence[Any],
+) -> None:
+    """Persist already-observed native spans on a failed history attempt.
+
+    The recorder is shared with the pinned instrumentation and remains the
+    source of truth for span shape.  A failed attempt may have no complete
+    envelope for the failing source; only envelopes with at least one span are
+    written, and an existing artifact is never overwritten.
+    """
+
+    if path.exists() or recorder is None:
+        return
+    materialize = getattr(recorder, "episode_envelope", None)
+    if not callable(materialize):
+        return
+    envelopes: list[Mapping[str, Any]] = []
+    for episode in episodes:
+        try:
+            envelope = materialize(run_id, episode.name, int(episode.source_sequence))
+        except BaseException:
+            continue
+        if isinstance(envelope, Mapping) and envelope.get("spans"):
+            envelopes.append(dict(envelope))
+    if envelopes:
+        _write_jsonl(path, envelopes)
 
 
 def _install_p9_context_budget_adapter(llm_client: Any) -> Callable[[], None]:
@@ -277,6 +318,9 @@ async def run_frontier_history_async(
     interval_sink: Callable[[dict[str, Any]], None] | None = None,
     admission_event_sink: Callable[[dict[str, Any]], None] | None = None,
     lifecycle_sink: Callable[[dict[str, Any]], None] | None = None,
+    admission: AdmissionArbiter | None = None,
+    durable_frontier_sink: Callable[[int], None] | None = None,
+    admit_native: bool = True,
 ) -> FrontierHistoryResult:
     """Run concurrent preparation and ordered publication without a global barrier."""
 
@@ -291,6 +335,9 @@ async def run_frontier_history_async(
         event_sink=event_sink,
         admission_event_sink=admission_event_sink,
         lifecycle_sink=lifecycle_sink,
+        admission=admission,
+        durable_frontier_sink=durable_frontier_sink,
+        admit_native=admit_native,
     )
     preparation_intervals: list[dict[str, Any]] = []
     native_intervals: list[dict[str, Any]] = []
@@ -356,7 +403,6 @@ class _ScopedLLMClient:
         if region is None or source_sequence is None:
             raise P9RunnerError("Graphiti provider call outside P9 source scope")
         client = self.capture if region == "PREPARE" else self.replay
-        client._proxy.source_sequence = int(source_sequence)
         return await client.generate_response(messages, **kwargs)
 
     def __getattr__(self, name: str) -> Any:
@@ -375,8 +421,6 @@ async def _run_history_live_async(
     graph_exporter: Callable[[Any, list[Any], str], Any],
     history_root: Path | None = None,
 ) -> dict[str, Any]:
-    from graphiti_core.utils.maintenance.edge_operations import extract_edges
-    from graphiti_core.utils.maintenance.node_operations import extract_nodes
     from saturated_fixed_work_baseline_v1_2.dataset import EXPECTED_EPISODE_COUNTS
 
     episodes = tuple(episode_loader(config.repo_root, history_id, namespace))
@@ -387,30 +431,44 @@ async def _run_history_live_async(
     if not config.smoke and len(episodes) != EXPECTED_EPISODE_COUNTS[history_id]:
         raise P9RunnerError(f"{history_id}: full history source count is incomplete")
 
+    frontier_ref = {"value": -1}
     journals: dict[str, _DurableJsonl] = {}
     if history_root is not None:
         history_root.mkdir(parents=True, exist_ok=True)
-        journals = {
-            "frontier": _DurableJsonl(history_root / "frontier.jsonl"),
-            "admission": _DurableJsonl(history_root / "admission.jsonl"),
-            "raw": _DurableJsonl(history_root / "raw_events.jsonl"),
-        }
+        try:
+            for key, filename in (
+                ("frontier", "frontier.jsonl"),
+                ("admission", "admission.jsonl"),
+                ("raw", "raw_events.jsonl"),
+            ):
+                journals[key] = _DurableJsonl(history_root / filename)
+        except BaseException:
+            for journal in journals.values():
+                journal.close()
+            raise
 
     def journal_frontier(row: dict[str, Any]) -> None:
         if journals:
             journals["frontier"].append(row)
             journals["raw"].append({"event": "FRONTIER", **row})
 
+    def advance_frontier(sequence: int) -> None:
+        expected = frontier_ref["value"] + 1
+        observed = int(sequence)
+        if observed != expected:
+            raise P9RunnerError(f"durable frontier jump: expected {expected}, got {observed}")
+        frontier_ref["value"] = observed
+
     def journal_admission(row: dict[str, Any]) -> None:
         if journals:
             journals["admission"].append(row)
             journals["raw"].append({"event": "ADMISSION", **row})
 
-    runtime = await _maybe_await(runtime_builder())
-    graphiti = runtime.graphiti
-    recorder = recorder_factory()
-    instrumentation = instrumentation_installer(graphiti, recorder)
-    context_budget_restore = _install_p9_context_budget_adapter(runtime.llm_client)
+    runtime: Any | None = None
+    graphiti: Any | None = None
+    recorder: Any = None
+    instrumentation: Any = None
+    context_budget_restore: Callable[[], None] = lambda: None
     closed = False
 
     async def close_runtime() -> None:
@@ -418,83 +476,109 @@ async def _run_history_live_async(
         if closed:
             return
         closed = True
+        cleanup_errors: list[BaseException] = []
         if instrumentation is not None:
-            instrumentation.restore()
-        context_budget_restore()
-        close = getattr(graphiti, "close", None)
+            try:
+                instrumentation.restore()
+            except BaseException as exc:
+                cleanup_errors.append(exc)
+        try:
+            context_budget_restore()
+        except BaseException as exc:
+            cleanup_errors.append(exc)
+        close = getattr(graphiti, "close", None) if graphiti is not None else None
         if callable(close):
-            await _maybe_await(close())
+            try:
+                await _maybe_await(close())
+            except BaseException as exc:
+                cleanup_errors.append(exc)
+        if cleanup_errors:
+            raise cleanup_errors[0]
 
-    original_llm = runtime.llm_client
-    capacity = CapacityAuthority.from_protocol_runtime(runtime)
-    provider_arbiter = AdmissionArbiter(capacity, event_sink=journal_admission if journals else None)
     store = TranscriptStore()
-    frontier_ref = {"value": -1}
-    client_identity = {
-        "class": f"{type(original_llm).__module__}.{type(original_llm).__qualname__}",
-        "source_hash": hashlib.sha256(inspect.getsource(type(original_llm)).encode()).hexdigest()
-        if inspect.isclass(type(original_llm))
-        else "unknown",
-    }
-    capture = FrontierAwareLLMClient(
-        original_llm,
-        store=store,
-        arbiter=provider_arbiter,
-        mode="capture",
-        durable_frontier=lambda: frontier_ref["value"],
-        client_identity=client_identity,
-        event_sink=journal_admission if journals else None,
-    )
-    replay = FrontierAwareLLMClient(
-        original_llm,
-        store=store,
-        arbiter=provider_arbiter,
-        mode="replay",
-        durable_frontier=lambda: frontier_ref["value"],
-        client_identity=client_identity,
-        event_sink=journal_admission if journals else None,
-    )
-    multiplex = _ScopedLLMClient(capture, replay)
-    graphiti.llm_client = multiplex
-    graphiti.clients.llm_client = multiplex
-
-    async def prepare(sequence: int) -> dict[str, Any]:
-        episode = episodes[sequence]
-        node_episode = _episode_node(episode, namespace=namespace)
-        previous = [
-            _episode_node(item, namespace=namespace, uuid_value=f"prep-{item.source_sequence}")
-            for item in _native_previous_window(episodes, sequence)
-        ]
-        with recorder.episode_scope(config.run_id, episode.name, sequence):
-            with provider_scope(region="PREPARE", source_sequence=sequence):
-                nodes, index_map = await extract_nodes(
-                    graphiti.clients, node_episode, previous, None, None, None
-                )
-                edges = await extract_edges(
-                    graphiti.clients,
-                    node_episode,
-                    nodes,
-                    previous,
-                    {("Entity", "Entity"): []},
-                    namespace,
-                    None,
-                    None,
-                )
-        return {
-            "source_sequence": sequence,
-            "node_count": len(nodes),
-            "edge_count": len(edges),
-            "node_index_count": len(index_map),
-        }
-
-    async def publish(sequence: int, _prepared: Any) -> Any:
-        episode = episodes[sequence]
-        with recorder.episode_scope(config.run_id, episode.name, sequence):
-            with provider_scope(region="NATIVE", source_sequence=sequence):
-                with NativeBindingScope(store, source_sequence=sequence):
-                    return await graphiti.add_episode(**_graphiti_kwargs(episode, namespace=namespace))
-
     try:
+        # Keep dependency/runtime construction failures inside the same
+        # history failure boundary so a missing pinned Graphiti install also
+        # leaves a sanitized attempt marker and closed journals.
+        from graphiti_core.utils.maintenance.edge_operations import extract_edges
+        from graphiti_core.utils.maintenance.node_operations import extract_nodes
+
+        runtime = await _maybe_await(runtime_builder())
+        graphiti = runtime.graphiti
+        recorder = recorder_factory()
+        instrumentation = instrumentation_installer(graphiti, recorder)
+        context_budget_restore = _install_p9_context_budget_adapter(runtime.llm_client)
+        original_llm = runtime.llm_client
+        capacity = CapacityAuthority.from_protocol_runtime(runtime)
+        provider_arbiter = AdmissionArbiter(
+            capacity,
+            name="provider",
+            event_sink=journal_admission if journals else None,
+        )
+        client_identity = {
+            "class": f"{type(original_llm).__module__}.{type(original_llm).__qualname__}",
+            "source_hash": hashlib.sha256(inspect.getsource(type(original_llm)).encode()).hexdigest()
+            if inspect.isclass(type(original_llm))
+            else "unknown",
+        }
+        capture = FrontierAwareLLMClient(
+            original_llm,
+            store=store,
+            arbiter=provider_arbiter,
+            mode="capture",
+            durable_frontier=lambda: frontier_ref["value"],
+            client_identity=client_identity,
+            event_sink=journal_admission if journals else None,
+        )
+        replay = FrontierAwareLLMClient(
+            original_llm,
+            store=store,
+            arbiter=provider_arbiter,
+            mode="replay",
+            durable_frontier=lambda: frontier_ref["value"],
+            client_identity=client_identity,
+            event_sink=journal_admission if journals else None,
+        )
+        multiplex = _ScopedLLMClient(capture, replay)
+        graphiti.llm_client = multiplex
+        graphiti.clients.llm_client = multiplex
+
+        async def prepare(sequence: int) -> dict[str, Any]:
+            episode = episodes[sequence]
+            node_episode = _episode_node(episode, namespace=namespace)
+            previous = [
+                _episode_node(item, namespace=namespace, uuid_value=f"prep-{item.source_sequence}")
+                for item in _native_previous_window(episodes, sequence)
+            ]
+            with recorder.episode_scope(config.run_id, episode.name, sequence):
+                with provider_scope(region="PREPARE", source_sequence=sequence):
+                    nodes, index_map = await extract_nodes(
+                        graphiti.clients, node_episode, previous, None, None, None
+                    )
+                    edges = await extract_edges(
+                        graphiti.clients,
+                        node_episode,
+                        nodes,
+                        previous,
+                        {("Entity", "Entity"): []},
+                        namespace,
+                        None,
+                        None,
+                    )
+            return {
+                "source_sequence": sequence,
+                "node_count": len(nodes),
+                "edge_count": len(edges),
+                "node_index_count": len(index_map),
+            }
+
+        async def publish(sequence: int, _prepared: Any) -> Any:
+            episode = episodes[sequence]
+            with recorder.episode_scope(config.run_id, episode.name, sequence):
+                with provider_scope(region="NATIVE", source_sequence=sequence):
+                    with NativeBindingScope(store, source_sequence=sequence):
+                        return await graphiti.add_episode(**_graphiti_kwargs(episode, namespace=namespace))
+
         result = await run_frontier_history_async(
             len(episodes),
             prepare,
@@ -503,8 +587,10 @@ async def _run_history_live_async(
             history_id=history_id,
             event_sink=journal_frontier if journals else None,
             interval_sink=(journals["raw"].append if journals else None),
-            admission_event_sink=journal_admission if journals else None,
             lifecycle_sink=(journals["raw"].append if journals else None),
+            admission=provider_arbiter,
+            durable_frontier_sink=advance_frontier,
+            admit_native=False,
         )
         frontier_ref["value"] = result.durable_frontier
         if result.durable_frontier != len(episodes) - 1:
@@ -568,6 +654,18 @@ async def _run_history_live_async(
     except BaseException as exc:
         logical = store.summary()
         if history_root is not None:
+            try:
+                _persist_partial_native_trace(
+                    history_root / "native_trace.jsonl",
+                    recorder,
+                    config.run_id,
+                    episodes,
+                )
+            except BaseException:
+                # Failure diagnostics must never replace the original native
+                # or provider exception; frontier/admission journals remain
+                # the mandatory durable evidence.
+                pass
             frontier_journal = journals.get("frontier")
             _write_new(
                 history_root / "failure.json",
@@ -584,9 +682,18 @@ async def _run_history_live_async(
                     "admission_event_count": journals.get("admission").count if journals else 0,
                 },
             )
-        await close_runtime()
-        for journal in journals.values():
-            journal.close()
+        # Preserve the original failure even if a best-effort runtime close or
+        # fsync also fails; the journals are still closed before re-raising.
+        try:
+            await close_runtime()
+        except BaseException:
+            pass
+        finally:
+            for journal in journals.values():
+                try:
+                    journal.close()
+                except BaseException:
+                    pass
         raise
 
 

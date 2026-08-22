@@ -1,6 +1,7 @@
 from __future__ import annotations
 
 import asyncio
+import shlex
 from pathlib import Path
 
 import pytest
@@ -13,6 +14,8 @@ from saturated_fixed_work_baseline_v1_3.membind_v5.p9_runner import (
     _ScopedLLMClient,
     _install_p9_context_budget_adapter,
     _p9_effective_max_tokens,
+    _persist_partial_native_trace,
+    _run_history_live_async,
     build_p9_live_command,
     build_p9_parser,
     run_frontier_history_async,
@@ -105,6 +108,68 @@ async def test_partial_frontier_journal_survives_native_failure(tmp_path: Path) 
     assert not any(row["event"] == "PUBLICATION_DURABLE" and row["source_sequence"] == 1 for row in rows)
 
 
+def test_durable_jsonl_rejects_frontier_jump_or_duplicate(tmp_path: Path) -> None:
+    journal = _DurableJsonl(tmp_path / "frontier.jsonl")
+    journal.append({"event": "PUBLICATION_DURABLE", "source_sequence": 0})
+    with pytest.raises(P9RunnerError, match="durable frontier must advance by one"):
+        journal.append({"event": "PUBLICATION_DURABLE", "source_sequence": 2})
+    journal.close()
+    rows = [__import__("json").loads(line) for line in (tmp_path / "frontier.jsonl").read_text().splitlines()]
+    assert [row["source_sequence"] for row in rows] == [0]
+
+
+def test_partial_native_trace_is_materialized_without_overwriting_existing_artifact(tmp_path: Path) -> None:
+    class Recorder:
+        def episode_envelope(self, run_id: str, episode_id: str, source_sequence: int) -> dict[str, object]:
+            del run_id, episode_id
+            return {"source_sequence": source_sequence, "spans": [{"source_sequence": source_sequence}]} if source_sequence < 2 else {"source_sequence": source_sequence, "spans": []}
+
+    episodes = [type("Episode", (), {"name": f"episode-{index}", "source_sequence": index})() for index in range(3)]
+    target = tmp_path / "native_trace.jsonl"
+    _persist_partial_native_trace(target, Recorder(), "run-1", episodes)
+    rows = [__import__("json").loads(line) for line in target.read_text().splitlines()]
+    assert [row["source_sequence"] for row in rows] == [0, 1]
+    _persist_partial_native_trace(target, Recorder(), "run-1", episodes)
+    assert [__import__("json").loads(line)["source_sequence"] for line in target.read_text().splitlines()] == [0, 1]
+
+
+@pytest.mark.asyncio
+async def test_p9_initialization_failure_closes_journals_and_writes_history_failure(tmp_path: Path) -> None:
+    pytest.importorskip("graphiti_core")
+    config = P9FullConfig(
+        repo_root=tmp_path,
+        baseline_root=tmp_path / "baseline",
+        state_path=tmp_path / "state.json",
+        output_root=tmp_path / "output",
+        run_id="p9-init-failure",
+        history_ids=("07741c45",),
+        source_limit=1,
+        smoke=True,
+    )
+    episode = type("Episode", (), {"source_sequence": 0})()
+
+    async def broken_runtime_builder() -> object:
+        raise RuntimeError("runtime construction failed")
+
+    with pytest.raises(RuntimeError, match="runtime construction failed"):
+        await _run_history_live_async(
+            config=config,
+            history_id="07741c45",
+            namespace="membind-v5-p9-init-failure",
+            runtime_builder=broken_runtime_builder,
+            episode_loader=lambda *_args: [episode],
+            instrumentation_installer=lambda *_args: None,
+            recorder_factory=lambda: object(),
+            graph_exporter=lambda *_args: {},
+            history_root=tmp_path / "history",
+        )
+    failure = __import__("json").loads((tmp_path / "history" / "failure.json").read_text())
+    assert failure["status"] == "P9_HISTORY_FAILED"
+    assert failure["error_type"] == "builtins.RuntimeError"
+    for name in ("frontier.jsonl", "admission.jsonl", "raw_events.jsonl"):
+        assert (tmp_path / "history" / name).is_file()
+
+
 @pytest.mark.asyncio
 async def test_p9_lifecycle_sink_binds_formal_start_to_final_durable() -> None:
     lifecycle: list[dict[str, object]] = []
@@ -149,6 +214,39 @@ async def test_p9_lifecycle_sink_records_abort_without_durable_advance() -> None
     assert lifecycle[-1]["durable_frontier"] == -1
 
 
+@pytest.mark.asyncio
+async def test_durable_frontier_sink_updates_before_next_prepare_is_released() -> None:
+    authority = CapacityAuthority.from_runtime(2, 2)
+    frontier = {"value": -1}
+    source_one_started = asyncio.Event()
+    observed_frontiers: list[int] = []
+
+    async def prepare(sequence: int) -> int:
+        if sequence == 1:
+            source_one_started.set()
+            while frontier["value"] < 0:
+                await asyncio.sleep(0)
+            observed_frontiers.append(frontier["value"])
+        return sequence
+
+    async def publish(sequence: int, _value: int) -> None:
+        if sequence == 0:
+            await source_one_started.wait()
+
+    def on_durable(sequence: int) -> None:
+        frontier["value"] = int(sequence)
+
+    result = await run_frontier_history_async(
+        2,
+        prepare,
+        publish,
+        authority=authority,
+        durable_frontier_sink=on_durable,
+    )
+    assert result.durable_frontier == 1
+    assert observed_frontiers == [0]
+
+
 def test_p9_command_is_real_runner_and_cli_shape_is_parseable(tmp_path: Path) -> None:
     config = P9FullConfig(
         repo_root=tmp_path,
@@ -176,6 +274,20 @@ def test_p9_command_is_real_runner_and_cli_shape_is_parseable(tmp_path: Path) ->
     )
     assert parsed.execute_live is True
     assert parsed.smoke is False
+
+
+def test_current_corrected_p9_queue_command_targets_real_cli_and_parses() -> None:
+    queue_file = Path(__file__).parents[1] / "artifacts/sfwb-v1-3-v5-queue-20260822-032328/p9_full_queue_corrected.json"
+    body = __import__("json").loads(queue_file.read_text(encoding="utf-8"))
+    command = str(body["full_command"])
+    assert "run_v5_p9_full.py" in command
+    assert "run_v5_campaign.py" not in command
+    tokens = shlex.split(command)
+    script_index = next(index for index, token in enumerate(tokens) if token.endswith("run_v5_p9_full.py"))
+    parsed = build_p9_parser().parse_args(tokens[script_index + 1 :])
+    assert parsed.execute_live is True
+    assert parsed.smoke is False
+    assert parsed.run_id == "p9-full-20260822"
 
 
 def test_p9_full_config_defaults_to_all_frozen_histories() -> None:
@@ -388,3 +500,46 @@ async def test_concurrent_capture_source_identity_is_context_local() -> None:
     await asyncio.gather(*(one(index) for index in range(4)))
     identities = sorted(item.identity.source_sequence for item in store._items.values())
     assert identities == [0, 1, 2, 3]
+
+
+@pytest.mark.asyncio
+async def test_scoped_multiplexer_does_not_mutate_shared_proxy_source_identity() -> None:
+    class Delegate:
+        async def generate_response(self, messages, **kwargs):
+            await asyncio.sleep(0.001)
+            return {"source": kwargs["prompt_name"]}
+
+    AdmissionArbiter = __import__(
+        "saturated_fixed_work_baseline_v1_3.membind_v5.runtime.core.admission",
+        fromlist=["AdmissionArbiter"],
+    ).AdmissionArbiter
+    authority = CapacityAuthority.from_runtime(4, 4)
+    store = TranscriptStore()
+    capture = FrontierAwareLLMClient(
+        Delegate(),
+        store=store,
+        arbiter=AdmissionArbiter(authority),
+        mode="capture",
+        durable_frontier=lambda: -1,
+        client_identity={"class": "Delegate", "source_hash": "multiplexer-test"},
+    )
+    replay = FrontierAwareLLMClient(
+        Delegate(),
+        store=store,
+        arbiter=AdmissionArbiter(authority),
+        mode="replay",
+        durable_frontier=lambda: -1,
+        client_identity={"class": "Delegate", "source_hash": "multiplexer-test"},
+    )
+    scoped = _ScopedLLMClient(capture, replay)
+
+    async def one(source_sequence: int) -> None:
+        with provider_scope(region="PREPARE", source_sequence=source_sequence):
+            await scoped.generate_response(
+                [{"role": "user", "content": f"source-{source_sequence}"}],
+                prompt_name="extract_nodes.extract_message",
+            )
+
+    await asyncio.gather(*(one(index) for index in range(4)))
+    assert capture._proxy.source_sequence == 0
+    assert replay._proxy.source_sequence == 0

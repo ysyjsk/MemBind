@@ -1,0 +1,1490 @@
+{
+  "methods": [
+    "B0_NATIVE_SERIAL"
+  ],
+  "outputs": [
+    {
+      "attempt_root": "/data/predator/ly/MemBind/saturated_fixed_work_baseline_v1_3/artifacts/sfwb-v1-3-memops-pilot-20260822-001/runs/b0-run/blocks/memops-001-A01__Update-B0_NATIVE_SERIAL/attempt-001",
+      "block_id": "memops-001-A01__Update-B0_NATIVE_SERIAL",
+      "method": "B0_NATIVE_SERIAL",
+      "metrics": {
+        "application_gate_count": 0,
+        "artificial_sleep_count": 0,
+        "attempt_id": "attempt-001",
+        "attempt_ordinal": 1,
+        "attempt_root": "/data/predator/ly/MemBind/saturated_fixed_work_baseline_v1_3/artifacts/sfwb-v1-3-memops-pilot-20260822-001/runs/b0-run/blocks/memops-001-A01__Update-B0_NATIVE_SERIAL/attempt-001",
+        "block_id": "memops-001-A01__Update-B0_NATIVE_SERIAL",
+        "build_makespan_ns": 68658505541,
+        "build_makespan_s": 68.658505541,
+        "canonical_exact_match": true,
+        "canonical_graph_hash": "4bdf1ee72eb5461be69fc4faedda1fe46a4544ac365589add7195e57184491c7",
+        "configured_max_inflight": null,
+        "created_sequences": [
+          0,
+          1,
+          2
+        ],
+        "db_duration_p50_s": 0.005492942,
+        "db_duration_p95_s": 0.028628514,
+        "db_duration_p99_s": 0.031382959,
+        "db_metrics_availability": "MEASURED",
+        "db_writes": 3,
+        "direct_semantic_evidence_availability": "DERIVED",
+        "direct_semantic_evidence_records": [],
+        "direct_semantic_violations": 0,
+        "direct_semantic_violations_by_observation": {
+          "future_persistent_state_read": 0,
+          "stale_predecessor_write": 0,
+          "wrong_state_write": 0
+        },
+        "drain_tail_ns": 30155946548,
+        "embedding_duration_p50_s": 0.01723014,
+        "embedding_duration_p95_s": 0.029850518,
+        "embedding_duration_p99_s": 0.033935316,
+        "embedding_items": 64,
+        "embedding_metrics_availability": "MEASURED",
+        "episode_count": 3,
+        "execution_identity_sha256": "1183ad300b277531fd33586bb599459642af72994eae680e3301bb525ac92300",
+        "feeder_workload_await_count": 3,
+        "history_id": "memops-a01-update",
+        "instrumentation_error_spans": 0,
+        "inversion_count": 0,
+        "inversion_density": 0.0,
+        "kendall_tau": 1.0,
+        "llm_duration_p50_s": 1.998675827,
+        "llm_duration_p95_s": 22.119186852,
+        "llm_duration_p99_s": 22.119186852,
+        "llm_input_tokens": 35568,
+        "llm_logical_calls": 17,
+        "llm_metrics_availability": "MEASURED",
+        "llm_transport_attempts": 17,
+        "max_displacement": 0,
+        "method": "B0_NATIVE_SERIAL",
+        "namespace": "b0-run-MEMOPS-A01__Update-B0_NATIVE_SERIAL-attempt-001",
+        "ordering_observations_counted_as_direct": 0,
+        "phase_metrics_availability": "MEASURED",
+        "resource_availability": "NOT_EVALUATED",
+        "sampler_coverage": null,
+        "sampler_gap_max_s": null,
+        "sampler_gap_p95_s": null,
+        "sampler_source_coverage": {},
+        "schema_version": "membind.saturated-fixed-work.block-result.v1",
+        "seal_payload_sha256": "0384ff122a7731290173f60b5cfb18ab3040c8dc76b2497dcaf13594c6c0e8a3",
+        "source_tokens": 2665,
+        "source_tokens_per_s": 38.815292861400444,
+        "t0_ns": 12601295017517,
+        "t_durable_complete_ns": 12669953523058,
+        "t_validated_seal_ns": 12670053553700,
+        "valid": true,
+        "validation_seal_latency_ns": 100030642,
+        "whole_update_active_k_time_ns": {
+          "1": 68650203887
+        },
+        "whole_update_active_max": 1,
+        "whole_update_active_mean": 1.0
+      },
+      "namespace": "b0-run-MEMOPS-A01__Update-B0_NATIVE_SERIAL-attempt-001",
+      "qa_rows": [
+        {
+          "construction_calls": 0,
+          "correct": true,
+          "evaluation_setting": "adjacent_operation",
+          "evaluation_type": "CandidateDisambiguation",
+          "expected_answer": "Senior Data Analyst",
+          "failure_layer": null,
+          "gold_memory_state": "Current confirmed title: Senior Data Analyst. Prior titles (Junior Data Analyst, Data Analyst) are superseded. Lead Data Analyst is a planned but unfinalized future consolidation.",
+          "gold_provenance": [
+            {
+              "quote": "Diane told me yesterday that because I'm now the primary owner of the MedVantage quarterly deliverable, my title is being changed to Senior Data Analyst effective immediately",
+              "segment_index": 2,
+              "turn_index": 3
+            },
+            {
+              "quote": "HR sent an email today saying they're planning to consolidate all analyst roles under a single title of Lead Data Analyst by next quarter",
+              "segment_index": 3,
+              "turn_index": 5
+            }
+          ],
+          "gold_ranks": [
+            1,
+            3
+          ],
+          "graph_write_attempts": 0,
+          "invalid": false,
+          "invalid_reason": null,
+          "judge_rubric": {
+            "acceptable_paraphrases": [],
+            "harmful_extra": [
+              "selecting Lead Data Analyst because it was mentioned most recently",
+              "selecting Data Analyst because the February restructuring removed tiers"
+            ],
+            "harmless_extra": [],
+            "must_include": [
+              "Senior Data Analyst"
+            ],
+            "must_not_include": [
+              "Data Analyst as the answer without Senior prefix",
+              "Junior Data Analyst as the answer",
+              "Lead Data Analyst as the answer"
+            ]
+          },
+          "memops_official_judge": {
+            "answer_score": 1,
+            "completion_tokens": 105,
+            "extra_detail_postcheck_action": "none",
+            "extra_detail_postcheck_applied": false,
+            "extra_detail_type": "none",
+            "finish_reason": "stop",
+            "judge_operation_detection": {
+              "fn": 0,
+              "fp": 0,
+              "tp": 0
+            },
+            "judge_provenance_support": 1,
+            "official_prompt_builder": "build_evaluation_prompt",
+            "official_result_parser": "parse_judge_metrics",
+            "prompt_sha256": "4e4f90737fdbdea2710f8d01ce602ebfbd252a557ac82db56096153898bf4323",
+            "prompt_tokens": 5990,
+            "raw_prompt_persisted": false,
+            "raw_response_persisted": false,
+            "reason": "The model correctly selected 'Senior Data Analyst' as the current confirmed title, which aligns with the expected answer and is supported by the most recent confirmed update in the Gold operations.",
+            "response_sha256": "baa7e7503ea8e34b0fc972b7999c5775b32ca55872fcd1297034cf1f2da1d9b4",
+            "stale_value": 0
+          },
+          "mrr": 1.0,
+          "ndcg_at_10": 0.9197207891481876,
+          "question_id": "A01__Update:p4_candidate_disambiguation:adjacent_operation",
+          "question_pair_id": "p4_candidate_disambiguation",
+          "recall_at_1": 0.5,
+          "recall_at_10": 1.0,
+          "recall_at_3": 1.0,
+          "recall_at_5": 1.0,
+          "relevance_unit": "LONGMEMEVAL_GOLD_SESSION",
+          "sample_id": "A01__Update"
+        },
+        {
+          "construction_calls": 0,
+          "correct": true,
+          "evaluation_setting": "longitudinal_operation",
+          "evaluation_type": "CandidateDisambiguation",
+          "expected_answer": "Senior Data Analyst",
+          "failure_layer": null,
+          "gold_memory_state": "Current confirmed title: Senior Data Analyst. Prior titles (Junior Data Analyst, Data Analyst) are superseded. Lead Data Analyst is a planned but unfinalized future consolidation.",
+          "gold_provenance": [
+            {
+              "quote": "Diane told me yesterday that because I'm now the primary owner of the MedVantage quarterly deliverable, my title is being changed to Senior Data Analyst effective immediately",
+              "segment_index": 2,
+              "turn_index": 3
+            },
+            {
+              "quote": "HR sent an email today saying they're planning to consolidate all analyst roles under a single title of Lead Data Analyst by next quarter",
+              "segment_index": 3,
+              "turn_index": 5
+            }
+          ],
+          "gold_ranks": [
+            1,
+            3
+          ],
+          "graph_write_attempts": 0,
+          "invalid": false,
+          "invalid_reason": null,
+          "judge_rubric": {
+            "acceptable_paraphrases": [],
+            "harmful_extra": [
+              "selecting Lead Data Analyst because it was mentioned most recently",
+              "selecting Data Analyst because the February restructuring removed tiers"
+            ],
+            "harmless_extra": [],
+            "must_include": [
+              "Senior Data Analyst"
+            ],
+            "must_not_include": [
+              "Data Analyst as the answer without Senior prefix",
+              "Junior Data Analyst as the answer",
+              "Lead Data Analyst as the answer"
+            ]
+          },
+          "memops_official_judge": {
+            "answer_score": 1,
+            "completion_tokens": 106,
+            "extra_detail_postcheck_action": "none",
+            "extra_detail_postcheck_applied": false,
+            "extra_detail_type": "none",
+            "finish_reason": "stop",
+            "judge_operation_detection": {
+              "fn": 0,
+              "fp": 0,
+              "tp": 0
+            },
+            "judge_provenance_support": 1,
+            "official_prompt_builder": "build_evaluation_prompt",
+            "official_result_parser": "parse_judge_metrics",
+            "prompt_sha256": "4e4f90737fdbdea2710f8d01ce602ebfbd252a557ac82db56096153898bf4323",
+            "prompt_tokens": 5990,
+            "raw_prompt_persisted": false,
+            "raw_response_persisted": false,
+            "reason": "The model correctly selected 'Senior Data Analyst' as the current confirmed title, which is the expected answer. It did not include any harmful extra details or select a stale or tentative value.",
+            "response_sha256": "98cb6cb72e56d78d898e4a83dc1fbeebba3b2ae227f3e0a4a14dfa21f64785b0",
+            "stale_value": 0
+          },
+          "mrr": 1.0,
+          "ndcg_at_10": 0.9197207891481876,
+          "question_id": "A01__Update:p4_candidate_disambiguation:longitudinal_operation",
+          "question_pair_id": "p4_candidate_disambiguation",
+          "recall_at_1": 0.5,
+          "recall_at_10": 1.0,
+          "recall_at_3": 1.0,
+          "recall_at_5": 1.0,
+          "relevance_unit": "LONGMEMEVAL_GOLD_SESSION",
+          "sample_id": "A01__Update"
+        }
+      ],
+      "qa_summary": {
+        "all_correct": true,
+        "construction_calls": 0,
+        "correct_rows": 2,
+        "graph_hash_after_qa": "4bdf1ee72eb5461be69fc4faedda1fe46a4544ac365589add7195e57184491c7",
+        "graph_hash_before_qa": "4bdf1ee72eb5461be69fc4faedda1fe46a4544ac365589add7195e57184491c7",
+        "graph_mutated": false,
+        "graph_write_attempts": 0,
+        "method": "B0_NATIVE_SERIAL",
+        "namespace": "b0-run-MEMOPS-A01__Update-B0_NATIVE_SERIAL-attempt-001",
+        "rows": 2,
+        "sample_id": "A01__Update",
+        "stale_value_errors": 0,
+        "state_inspection": {
+          "active_current_mentions": 1,
+          "active_stale_conflicts": [],
+          "active_transition_mentions": [],
+          "canonical_graph_used_for_uuid_equality": false,
+          "current_value_active": true,
+          "current_value_in_entity_summary": true,
+          "expected_current_value": "Senior Data Analyst",
+          "inactive_mentions": [],
+          "observation_time": "2000-01-01T00:10:00Z",
+          "stale_active_mentions": [],
+          "stale_confirmed_values": [
+            "Junior Data Analyst",
+            "Data Analyst"
+          ],
+          "status": "PASS",
+          "target_id": "job_title",
+          "target_name": "Current job title at Bridgemark Solutions"
+        }
+      },
+      "sample_id": "A01__Update",
+      "state_inspection": {
+        "active_current_mentions": 1,
+        "active_stale_conflicts": [],
+        "active_transition_mentions": [],
+        "canonical_graph_used_for_uuid_equality": false,
+        "current_value_active": true,
+        "current_value_in_entity_summary": true,
+        "expected_current_value": "Senior Data Analyst",
+        "inactive_mentions": [],
+        "observation_time": "2000-01-01T00:10:00Z",
+        "stale_active_mentions": [],
+        "stale_confirmed_values": [
+          "Junior Data Analyst",
+          "Data Analyst"
+        ],
+        "status": "PASS",
+        "target_id": "job_title",
+        "target_name": "Current job title at Bridgemark Solutions"
+      },
+      "workload_sha256": "23935553bb0435f1b13783259b039c72cada6ae52d81a06c87b56628bc56a7ab"
+    },
+    {
+      "attempt_root": "/data/predator/ly/MemBind/saturated_fixed_work_baseline_v1_3/artifacts/sfwb-v1-3-memops-pilot-20260822-001/runs/b0-run/blocks/memops-002-A05__Update-B0_NATIVE_SERIAL/attempt-001",
+      "block_id": "memops-002-A05__Update-B0_NATIVE_SERIAL",
+      "method": "B0_NATIVE_SERIAL",
+      "metrics": {
+        "application_gate_count": 0,
+        "artificial_sleep_count": 0,
+        "attempt_id": "attempt-001",
+        "attempt_ordinal": 1,
+        "attempt_root": "/data/predator/ly/MemBind/saturated_fixed_work_baseline_v1_3/artifacts/sfwb-v1-3-memops-pilot-20260822-001/runs/b0-run/blocks/memops-002-A05__Update-B0_NATIVE_SERIAL/attempt-001",
+        "block_id": "memops-002-A05__Update-B0_NATIVE_SERIAL",
+        "build_makespan_ns": 121346886935,
+        "build_makespan_s": 121.346886935,
+        "canonical_exact_match": true,
+        "canonical_graph_hash": "b4ed58c624ed47dc001adabacef49fd3afa86f04aebdebba66e6eb0280cb7a4d",
+        "configured_max_inflight": null,
+        "created_sequences": [
+          0,
+          1,
+          2
+        ],
+        "db_duration_p50_s": 0.006279668,
+        "db_duration_p95_s": 0.087554839,
+        "db_duration_p99_s": 0.091563101,
+        "db_metrics_availability": "MEASURED",
+        "db_writes": 3,
+        "direct_semantic_evidence_availability": "DERIVED",
+        "direct_semantic_evidence_records": [],
+        "direct_semantic_violations": 0,
+        "direct_semantic_violations_by_observation": {
+          "future_persistent_state_read": 0,
+          "stale_predecessor_write": 0,
+          "wrong_state_write": 0
+        },
+        "drain_tail_ns": 55889454685,
+        "embedding_duration_p50_s": 0.028387473,
+        "embedding_duration_p95_s": 0.089933179,
+        "embedding_duration_p99_s": 0.093253042,
+        "embedding_items": 163,
+        "embedding_metrics_availability": "MEASURED",
+        "episode_count": 3,
+        "execution_identity_sha256": "c05eb2cc3c52323e8a49f0e7b0bbb345a9e6958afb4eab62f86ec7fbda930ceb",
+        "feeder_workload_await_count": 3,
+        "history_id": "memops-a05-update",
+        "instrumentation_error_spans": 0,
+        "inversion_count": 0,
+        "inversion_density": 0.0,
+        "kendall_tau": 1.0,
+        "llm_duration_p50_s": 1.826498517,
+        "llm_duration_p95_s": 30.268986738,
+        "llm_duration_p99_s": 38.182083184,
+        "llm_input_tokens": 50742,
+        "llm_logical_calls": 33,
+        "llm_metrics_availability": "MEASURED",
+        "llm_transport_attempts": 33,
+        "max_displacement": 0,
+        "method": "B0_NATIVE_SERIAL",
+        "namespace": "b0-run-MEMOPS-A05__Update-B0_NATIVE_SERIAL-attempt-001",
+        "ordering_observations_counted_as_direct": 0,
+        "phase_metrics_availability": "MEASURED",
+        "resource_availability": "NOT_EVALUATED",
+        "sampler_coverage": null,
+        "sampler_gap_max_s": null,
+        "sampler_gap_p95_s": null,
+        "sampler_source_coverage": {},
+        "schema_version": "membind.saturated-fixed-work.block-result.v1",
+        "seal_payload_sha256": "fbae07fe7637f8509d01ed3cf9fcae3093e99587d50b3f926979d42a15bf5900",
+        "source_tokens": 3110,
+        "source_tokens_per_s": 25.629005230813092,
+        "t0_ns": 12677452885075,
+        "t_durable_complete_ns": 12798799772010,
+        "t_validated_seal_ns": 12798918809067,
+        "valid": true,
+        "validation_seal_latency_ns": 119037057,
+        "whole_update_active_k_time_ns": {
+          "1": 121336682022
+        },
+        "whole_update_active_max": 1,
+        "whole_update_active_mean": 1.0
+      },
+      "namespace": "b0-run-MEMOPS-A05__Update-B0_NATIVE_SERIAL-attempt-001",
+      "qa_rows": [
+        {
+          "construction_calls": 0,
+          "correct": true,
+          "evaluation_setting": "adjacent_operation",
+          "evaluation_type": "CandidateDisambiguation",
+          "expected_answer": "Unit 4A",
+          "failure_layer": null,
+          "gold_memory_state": "Current confirmed unit is Unit 4A. Unit 3B was the initial value (superseded). Unit 3A was the landlord-corrected value (superseded by 4A). A possible revert to 3A next quarter is tentative and unconfirmed.",
+          "gold_provenance": [
+            {
+              "quote": "I got a letter from the building management today and they've officially re-designated my apartment as Unit 4A after the floor renumbering",
+              "segment_index": 2,
+              "turn_index": 3
+            },
+            {
+              "quote": "The building manager told me they're planning to switch my designation back to Unit 3A starting next quarter because residents complained about the renumbering",
+              "segment_index": 3,
+              "turn_index": 5
+            }
+          ],
+          "gold_ranks": [
+            2,
+            3
+          ],
+          "graph_write_attempts": 0,
+          "invalid": false,
+          "invalid_reason": null,
+          "judge_rubric": {
+            "acceptable_paraphrases": [
+              "4A"
+            ],
+            "harmful_extra": [
+              "selecting Unit 3A because of the tentative future revert",
+              "selecting Unit 3B because it was the first value given"
+            ],
+            "harmless_extra": [
+              "noting that the unit may change in the future once officially confirmed"
+            ],
+            "must_include": [
+              "Unit 4A"
+            ],
+            "must_not_include": [
+              "Unit 3B as current",
+              "Unit 3A as current"
+            ]
+          },
+          "memops_official_judge": {
+            "answer_score": 1,
+            "completion_tokens": 111,
+            "extra_detail_postcheck_action": "none",
+            "extra_detail_postcheck_applied": false,
+            "extra_detail_type": "none",
+            "finish_reason": "stop",
+            "judge_operation_detection": {
+              "fn": 0,
+              "fp": 0,
+              "tp": 1
+            },
+            "judge_provenance_support": 1,
+            "official_prompt_builder": "build_evaluation_prompt",
+            "official_result_parser": "parse_judge_metrics",
+            "prompt_sha256": "c8dfd99ecf226d0a7085726b5d572dcb9dc3f76f0dd0d290266ff9abc31fa39e",
+            "prompt_tokens": 6996,
+            "raw_prompt_persisted": false,
+            "raw_response_persisted": false,
+            "reason": "The model correctly selected Unit 4A as the current unit number, which is the confirmed and most recent value in the Gold operations. It did not include any harmful extra details or reference stale or tentative values.",
+            "response_sha256": "0a671579a2e51c2720ee95cfaf7bf5fe4c5693e02791cd553b7c6ab4e6500c13",
+            "stale_value": 0
+          },
+          "mrr": 0.5,
+          "ndcg_at_10": 0.6934264036172708,
+          "question_id": "A05__Update:p4_candidate_disambiguation:adjacent_operation",
+          "question_pair_id": "p4_candidate_disambiguation",
+          "recall_at_1": 0.0,
+          "recall_at_10": 1.0,
+          "recall_at_3": 1.0,
+          "recall_at_5": 1.0,
+          "relevance_unit": "LONGMEMEVAL_GOLD_SESSION",
+          "sample_id": "A05__Update"
+        },
+        {
+          "construction_calls": 0,
+          "correct": true,
+          "evaluation_setting": "longitudinal_operation",
+          "evaluation_type": "CandidateDisambiguation",
+          "expected_answer": "Unit 4A",
+          "failure_layer": null,
+          "gold_memory_state": "Current confirmed unit is Unit 4A. Unit 3B was the initial value (superseded). Unit 3A was the landlord-corrected value (superseded by 4A). A possible revert to 3A next quarter is tentative and unconfirmed.",
+          "gold_provenance": [
+            {
+              "quote": "I got a letter from the building management today and they've officially re-designated my apartment as Unit 4A after the floor renumbering",
+              "segment_index": 2,
+              "turn_index": 3
+            },
+            {
+              "quote": "The building manager told me they're planning to switch my designation back to Unit 3A starting next quarter because residents complained about the renumbering",
+              "segment_index": 3,
+              "turn_index": 5
+            }
+          ],
+          "gold_ranks": [
+            2,
+            3
+          ],
+          "graph_write_attempts": 0,
+          "invalid": false,
+          "invalid_reason": null,
+          "judge_rubric": {
+            "acceptable_paraphrases": [
+              "4A"
+            ],
+            "harmful_extra": [
+              "selecting Unit 3A because of the tentative future revert",
+              "selecting Unit 3B because it was the first value given"
+            ],
+            "harmless_extra": [
+              "noting that the unit may change in the future once officially confirmed"
+            ],
+            "must_include": [
+              "Unit 4A"
+            ],
+            "must_not_include": [
+              "Unit 3B as current",
+              "Unit 3A as current"
+            ]
+          },
+          "memops_official_judge": {
+            "answer_score": 1,
+            "completion_tokens": 110,
+            "extra_detail_postcheck_action": "none",
+            "extra_detail_postcheck_applied": false,
+            "extra_detail_type": "none",
+            "finish_reason": "stop",
+            "judge_operation_detection": {
+              "fn": 0,
+              "fp": 0,
+              "tp": 1
+            },
+            "judge_provenance_support": 1,
+            "official_prompt_builder": "build_evaluation_prompt",
+            "official_result_parser": "parse_judge_metrics",
+            "prompt_sha256": "7ccf7556bac97254333d576d8e037f44c31511f410ce73c039494dca06d1bd29",
+            "prompt_tokens": 7001,
+            "raw_prompt_persisted": false,
+            "raw_response_persisted": false,
+            "reason": "The model correctly selected Unit 4A as the current unit number, which is the confirmed and most recent valid value in the Gold operations. No harmful or unsupported extra details were included.",
+            "response_sha256": "6cbbd8cb89922543d04de8d4d85614b7939771be675fb98ba50333be08187b89",
+            "stale_value": 0
+          },
+          "mrr": 0.5,
+          "ndcg_at_10": 0.6934264036172708,
+          "question_id": "A05__Update:p4_candidate_disambiguation:longitudinal_operation",
+          "question_pair_id": "p4_candidate_disambiguation",
+          "recall_at_1": 0.0,
+          "recall_at_10": 1.0,
+          "recall_at_3": 1.0,
+          "recall_at_5": 1.0,
+          "relevance_unit": "LONGMEMEVAL_GOLD_SESSION",
+          "sample_id": "A05__Update"
+        }
+      ],
+      "qa_summary": {
+        "all_correct": true,
+        "construction_calls": 0,
+        "correct_rows": 2,
+        "graph_hash_after_qa": "b4ed58c624ed47dc001adabacef49fd3afa86f04aebdebba66e6eb0280cb7a4d",
+        "graph_hash_before_qa": "b4ed58c624ed47dc001adabacef49fd3afa86f04aebdebba66e6eb0280cb7a4d",
+        "graph_mutated": false,
+        "graph_write_attempts": 0,
+        "method": "B0_NATIVE_SERIAL",
+        "namespace": "b0-run-MEMOPS-A05__Update-B0_NATIVE_SERIAL-attempt-001",
+        "rows": 2,
+        "sample_id": "A05__Update",
+        "stale_value_errors": 0,
+        "state_inspection": {
+          "active_current_mentions": 4,
+          "active_stale_conflicts": [],
+          "active_transition_mentions": [
+            "unit 3a"
+          ],
+          "canonical_graph_used_for_uuid_equality": false,
+          "current_value_active": true,
+          "current_value_in_entity_summary": true,
+          "expected_current_value": "Unit 4A",
+          "inactive_mentions": [],
+          "observation_time": "2000-01-01T00:10:00Z",
+          "stale_active_mentions": [],
+          "stale_confirmed_values": [
+            "Unit 3B",
+            "Unit 3A"
+          ],
+          "status": "PASS",
+          "target_id": "birchwood_unit_number",
+          "target_name": "unit number at 742 Birchwood Lane, Ashford Heights"
+        }
+      },
+      "sample_id": "A05__Update",
+      "state_inspection": {
+        "active_current_mentions": 4,
+        "active_stale_conflicts": [],
+        "active_transition_mentions": [
+          "unit 3a"
+        ],
+        "canonical_graph_used_for_uuid_equality": false,
+        "current_value_active": true,
+        "current_value_in_entity_summary": true,
+        "expected_current_value": "Unit 4A",
+        "inactive_mentions": [],
+        "observation_time": "2000-01-01T00:10:00Z",
+        "stale_active_mentions": [],
+        "stale_confirmed_values": [
+          "Unit 3B",
+          "Unit 3A"
+        ],
+        "status": "PASS",
+        "target_id": "birchwood_unit_number",
+        "target_name": "unit number at 742 Birchwood Lane, Ashford Heights"
+      },
+      "workload_sha256": "16a925be4b7eefe5b3aa1d3ab4b2dc302adc25a834f717b6800cb126d536b9e2"
+    },
+    {
+      "attempt_root": "/data/predator/ly/MemBind/saturated_fixed_work_baseline_v1_3/artifacts/sfwb-v1-3-memops-pilot-20260822-001/runs/b0-run/blocks/memops-003-A13__Update-B0_NATIVE_SERIAL/attempt-001",
+      "block_id": "memops-003-A13__Update-B0_NATIVE_SERIAL",
+      "method": "B0_NATIVE_SERIAL",
+      "metrics": {
+        "application_gate_count": 0,
+        "artificial_sleep_count": 0,
+        "attempt_id": "attempt-001",
+        "attempt_ordinal": 1,
+        "attempt_root": "/data/predator/ly/MemBind/saturated_fixed_work_baseline_v1_3/artifacts/sfwb-v1-3-memops-pilot-20260822-001/runs/b0-run/blocks/memops-003-A13__Update-B0_NATIVE_SERIAL/attempt-001",
+        "block_id": "memops-003-A13__Update-B0_NATIVE_SERIAL",
+        "build_makespan_ns": 72913996839,
+        "build_makespan_s": 72.913996839,
+        "canonical_exact_match": true,
+        "canonical_graph_hash": "c7a99cb28bd0e96ee1135923cd5b12bafbf7105c8f2786737bbabe5872c2d6ff",
+        "configured_max_inflight": null,
+        "created_sequences": [
+          0,
+          1,
+          2
+        ],
+        "db_duration_p50_s": 0.00530513,
+        "db_duration_p95_s": 0.090913374,
+        "db_duration_p99_s": 0.094922193,
+        "db_metrics_availability": "MEASURED",
+        "db_writes": 3,
+        "direct_semantic_evidence_availability": "DERIVED",
+        "direct_semantic_evidence_records": [],
+        "direct_semantic_violations": 0,
+        "direct_semantic_violations_by_observation": {
+          "future_persistent_state_read": 0,
+          "stale_predecessor_write": 0,
+          "wrong_state_write": 0
+        },
+        "drain_tail_ns": 13814617566,
+        "embedding_duration_p50_s": 0.018368913,
+        "embedding_duration_p95_s": 0.028061247,
+        "embedding_duration_p99_s": 0.041947393,
+        "embedding_items": 114,
+        "embedding_metrics_availability": "MEASURED",
+        "episode_count": 3,
+        "execution_identity_sha256": "f184b982f48e5467c445fa0113de5e01f1a2ea966d3db0fd2356e8baa57d11fa",
+        "feeder_workload_await_count": 3,
+        "history_id": "memops-a13-update",
+        "instrumentation_error_spans": 0,
+        "inversion_count": 0,
+        "inversion_density": 0.0,
+        "kendall_tau": 1.0,
+        "llm_duration_p50_s": 1.421325433,
+        "llm_duration_p95_s": 23.441281499,
+        "llm_duration_p99_s": 24.018396797,
+        "llm_input_tokens": 39357,
+        "llm_logical_calls": 20,
+        "llm_metrics_availability": "MEASURED",
+        "llm_transport_attempts": 20,
+        "max_displacement": 0,
+        "method": "B0_NATIVE_SERIAL",
+        "namespace": "b0-run-MEMOPS-A13__Update-B0_NATIVE_SERIAL-attempt-001",
+        "ordering_observations_counted_as_direct": 0,
+        "phase_metrics_availability": "MEASURED",
+        "resource_availability": "NOT_EVALUATED",
+        "sampler_coverage": null,
+        "sampler_gap_max_s": null,
+        "sampler_gap_p95_s": null,
+        "sampler_source_coverage": {},
+        "schema_version": "membind.saturated-fixed-work.block-result.v1",
+        "seal_payload_sha256": "2fca97d12d653200acb3e0ea8f2abd2a0526e9f43f64a574611897ca7e3f5069",
+        "source_tokens": 2765,
+        "source_tokens_per_s": 37.92138848327494,
+        "t0_ns": 12808728650103,
+        "t_durable_complete_ns": 12881642646942,
+        "t_validated_seal_ns": 12881717870800,
+        "valid": true,
+        "validation_seal_latency_ns": 75223858,
+        "whole_update_active_k_time_ns": {
+          "1": 72902040415
+        },
+        "whole_update_active_max": 1,
+        "whole_update_active_mean": 1.0
+      },
+      "namespace": "b0-run-MEMOPS-A13__Update-B0_NATIVE_SERIAL-attempt-001",
+      "qa_rows": [
+        {
+          "construction_calls": 0,
+          "correct": true,
+          "evaluation_setting": "adjacent_operation",
+          "evaluation_type": "CandidateDisambiguation",
+          "expected_answer": "1000mg twice daily",
+          "failure_layer": null,
+          "gold_memory_state": "Current confirmed metformin dosage is 1000mg twice daily. Previous dosages of 500mg twice daily and 750mg twice daily are superseded. The 850mg extended-release once daily is a tentative future possibility that has not been enacted.",
+          "gold_provenance": [
+            {
+              "quote": "Dr. Patel actually bumped the metformin up again to 1000mg twice daily as of last Monday",
+              "segment_index": 2,
+              "turn_index": 3
+            },
+            {
+              "quote": "Dr. Patel said at my next visit she'll likely switch me to 850mg extended-release once daily instead",
+              "segment_index": 3,
+              "turn_index": 5
+            }
+          ],
+          "gold_ranks": [
+            1,
+            3
+          ],
+          "graph_write_attempts": 0,
+          "invalid": false,
+          "invalid_reason": null,
+          "judge_rubric": {
+            "acceptable_paraphrases": [
+              "1000 mg two times a day",
+              "1000mg BID"
+            ],
+            "harmful_extra": [
+              "Selecting any option other than 1000mg twice daily"
+            ],
+            "harmless_extra": [],
+            "must_include": [
+              "1000mg twice daily"
+            ],
+            "must_not_include": [
+              "750mg twice daily as current",
+              "500mg twice daily as current",
+              "850mg extended-release once daily as current"
+            ]
+          },
+          "memops_official_judge": {
+            "answer_score": 1,
+            "completion_tokens": 112,
+            "extra_detail_postcheck_action": "none",
+            "extra_detail_postcheck_applied": false,
+            "extra_detail_type": "none",
+            "finish_reason": "stop",
+            "judge_operation_detection": {
+              "fn": 0,
+              "fp": 0,
+              "tp": 1
+            },
+            "judge_provenance_support": 1,
+            "official_prompt_builder": "build_evaluation_prompt",
+            "official_result_parser": "parse_judge_metrics",
+            "prompt_sha256": "0b83e1c07bbf051f10810b826074c21782febe3d814093feed2f5f17492db549",
+            "prompt_tokens": 6243,
+            "raw_prompt_persisted": false,
+            "raw_response_persisted": false,
+            "reason": "The model correctly selected the confirmed current metformin dosage of 1000mg twice daily, which is the expected answer. It did not include any harmful extra details or select a stale or tentative value.",
+            "response_sha256": "5f960ef72e455f46a7bf330fc40fa1ad4c0349a9ebd51b6e766af7b7f24515a3",
+            "stale_value": 0
+          },
+          "mrr": 1.0,
+          "ndcg_at_10": 0.9197207891481876,
+          "question_id": "A13__Update:p4_candidate_disambiguation:adjacent_operation",
+          "question_pair_id": "p4_candidate_disambiguation",
+          "recall_at_1": 0.5,
+          "recall_at_10": 1.0,
+          "recall_at_3": 1.0,
+          "recall_at_5": 1.0,
+          "relevance_unit": "LONGMEMEVAL_GOLD_SESSION",
+          "sample_id": "A13__Update"
+        },
+        {
+          "construction_calls": 0,
+          "correct": true,
+          "evaluation_setting": "longitudinal_operation",
+          "evaluation_type": "CandidateDisambiguation",
+          "expected_answer": "1000mg twice daily",
+          "failure_layer": null,
+          "gold_memory_state": "Current confirmed metformin dosage is 1000mg twice daily. Previous dosages of 500mg twice daily and 750mg twice daily are superseded. The 850mg extended-release once daily is a tentative future possibility that has not been enacted.",
+          "gold_provenance": [
+            {
+              "quote": "Dr. Patel actually bumped the metformin up again to 1000mg twice daily as of last Monday",
+              "segment_index": 2,
+              "turn_index": 3
+            },
+            {
+              "quote": "Dr. Patel said at my next visit she'll likely switch me to 850mg extended-release once daily instead",
+              "segment_index": 3,
+              "turn_index": 5
+            }
+          ],
+          "gold_ranks": [
+            1,
+            3
+          ],
+          "graph_write_attempts": 0,
+          "invalid": false,
+          "invalid_reason": null,
+          "judge_rubric": {
+            "acceptable_paraphrases": [
+              "1000 mg two times a day",
+              "1000mg BID"
+            ],
+            "harmful_extra": [
+              "Selecting any option other than 1000mg twice daily"
+            ],
+            "harmless_extra": [],
+            "must_include": [
+              "1000mg twice daily"
+            ],
+            "must_not_include": [
+              "750mg twice daily as current",
+              "500mg twice daily as current",
+              "850mg extended-release once daily as current"
+            ]
+          },
+          "memops_official_judge": {
+            "answer_score": 1,
+            "completion_tokens": 112,
+            "extra_detail_postcheck_action": "none",
+            "extra_detail_postcheck_applied": false,
+            "extra_detail_type": "none",
+            "finish_reason": "stop",
+            "judge_operation_detection": {
+              "fn": 0,
+              "fp": 0,
+              "tp": 1
+            },
+            "judge_provenance_support": 1,
+            "official_prompt_builder": "build_evaluation_prompt",
+            "official_result_parser": "parse_judge_metrics",
+            "prompt_sha256": "0b83e1c07bbf051f10810b826074c21782febe3d814093feed2f5f17492db549",
+            "prompt_tokens": 6243,
+            "raw_prompt_persisted": false,
+            "raw_response_persisted": false,
+            "reason": "The model correctly selected the current confirmed metformin dosage of 1000mg twice daily, which is the expected answer. It did not include any harmful extra details or select a stale or tentative value.",
+            "response_sha256": "bf0bc45cd9b28596a9770999e6b703ad0f013e55232095057f6ecc6c661021e5",
+            "stale_value": 0
+          },
+          "mrr": 1.0,
+          "ndcg_at_10": 0.9197207891481876,
+          "question_id": "A13__Update:p4_candidate_disambiguation:longitudinal_operation",
+          "question_pair_id": "p4_candidate_disambiguation",
+          "recall_at_1": 0.5,
+          "recall_at_10": 1.0,
+          "recall_at_3": 1.0,
+          "recall_at_5": 1.0,
+          "relevance_unit": "LONGMEMEVAL_GOLD_SESSION",
+          "sample_id": "A13__Update"
+        }
+      ],
+      "qa_summary": {
+        "all_correct": true,
+        "construction_calls": 0,
+        "correct_rows": 2,
+        "graph_hash_after_qa": "c7a99cb28bd0e96ee1135923cd5b12bafbf7105c8f2786737bbabe5872c2d6ff",
+        "graph_hash_before_qa": "c7a99cb28bd0e96ee1135923cd5b12bafbf7105c8f2786737bbabe5872c2d6ff",
+        "graph_mutated": false,
+        "graph_write_attempts": 0,
+        "method": "B0_NATIVE_SERIAL",
+        "namespace": "b0-run-MEMOPS-A13__Update-B0_NATIVE_SERIAL-attempt-001",
+        "rows": 2,
+        "sample_id": "A13__Update",
+        "stale_value_errors": 0,
+        "state_inspection": {
+          "active_current_mentions": 2,
+          "active_stale_conflicts": [],
+          "active_transition_mentions": [],
+          "canonical_graph_used_for_uuid_equality": false,
+          "current_value_active": true,
+          "current_value_in_entity_summary": true,
+          "expected_current_value": "1000mg twice daily",
+          "inactive_mentions": [
+            "1000mg twice daily"
+          ],
+          "observation_time": "2000-01-01T00:10:00Z",
+          "stale_active_mentions": [],
+          "stale_confirmed_values": [
+            "500mg twice daily",
+            "750mg twice daily"
+          ],
+          "status": "PASS",
+          "target_id": "metformin_dosage",
+          "target_name": "Current metformin dosage"
+        }
+      },
+      "sample_id": "A13__Update",
+      "state_inspection": {
+        "active_current_mentions": 2,
+        "active_stale_conflicts": [],
+        "active_transition_mentions": [],
+        "canonical_graph_used_for_uuid_equality": false,
+        "current_value_active": true,
+        "current_value_in_entity_summary": true,
+        "expected_current_value": "1000mg twice daily",
+        "inactive_mentions": [
+          "1000mg twice daily"
+        ],
+        "observation_time": "2000-01-01T00:10:00Z",
+        "stale_active_mentions": [],
+        "stale_confirmed_values": [
+          "500mg twice daily",
+          "750mg twice daily"
+        ],
+        "status": "PASS",
+        "target_id": "metformin_dosage",
+        "target_name": "Current metformin dosage"
+      },
+      "workload_sha256": "844dc2b4805757725a3552a2031785065fca26d24bcd8715f5ea4d75e44527a9"
+    },
+    {
+      "attempt_root": "/data/predator/ly/MemBind/saturated_fixed_work_baseline_v1_3/artifacts/sfwb-v1-3-memops-pilot-20260822-001/runs/b0-run/blocks/memops-004-A14__Update-B0_NATIVE_SERIAL/attempt-001",
+      "block_id": "memops-004-A14__Update-B0_NATIVE_SERIAL",
+      "method": "B0_NATIVE_SERIAL",
+      "metrics": {
+        "application_gate_count": 0,
+        "artificial_sleep_count": 0,
+        "attempt_id": "attempt-001",
+        "attempt_ordinal": 1,
+        "attempt_root": "/data/predator/ly/MemBind/saturated_fixed_work_baseline_v1_3/artifacts/sfwb-v1-3-memops-pilot-20260822-001/runs/b0-run/blocks/memops-004-A14__Update-B0_NATIVE_SERIAL/attempt-001",
+        "block_id": "memops-004-A14__Update-B0_NATIVE_SERIAL",
+        "build_makespan_ns": 60214976541,
+        "build_makespan_s": 60.214976541,
+        "canonical_exact_match": true,
+        "canonical_graph_hash": "2e0aecc09f19cbb7ff6d9c40c50aae47d974b59855249dbeb9283ff99b8d7573",
+        "configured_max_inflight": null,
+        "created_sequences": [
+          0,
+          1,
+          2
+        ],
+        "db_duration_p50_s": 0.003485737,
+        "db_duration_p95_s": 0.029325537,
+        "db_duration_p99_s": 0.032504683,
+        "db_metrics_availability": "MEASURED",
+        "db_writes": 3,
+        "direct_semantic_evidence_availability": "DERIVED",
+        "direct_semantic_evidence_records": [],
+        "direct_semantic_violations": 0,
+        "direct_semantic_violations_by_observation": {
+          "future_persistent_state_read": 0,
+          "stale_predecessor_write": 0,
+          "wrong_state_write": 0
+        },
+        "drain_tail_ns": 28635506262,
+        "embedding_duration_p50_s": 0.01251059,
+        "embedding_duration_p95_s": 0.022995579,
+        "embedding_duration_p99_s": 0.024597198,
+        "embedding_items": 74,
+        "embedding_metrics_availability": "MEASURED",
+        "episode_count": 3,
+        "execution_identity_sha256": "30f177d4ce44858e7e0420d1262c4dcb805dbc41196cefa2b48b77daa93b0041",
+        "feeder_workload_await_count": 3,
+        "history_id": "memops-a14-update",
+        "instrumentation_error_spans": 0,
+        "inversion_count": 0,
+        "inversion_density": 0.0,
+        "kendall_tau": 1.0,
+        "llm_duration_p50_s": 0.827443237,
+        "llm_duration_p95_s": 13.958666192,
+        "llm_duration_p99_s": 18.213438878,
+        "llm_input_tokens": 38496,
+        "llm_logical_calls": 20,
+        "llm_metrics_availability": "MEASURED",
+        "llm_transport_attempts": 20,
+        "max_displacement": 0,
+        "method": "B0_NATIVE_SERIAL",
+        "namespace": "b0-run-MEMOPS-A14__Update-B0_NATIVE_SERIAL-attempt-001",
+        "ordering_observations_counted_as_direct": 0,
+        "phase_metrics_availability": "MEASURED",
+        "resource_availability": "NOT_EVALUATED",
+        "sampler_coverage": null,
+        "sampler_gap_max_s": null,
+        "sampler_gap_p95_s": null,
+        "sampler_source_coverage": {},
+        "schema_version": "membind.saturated-fixed-work.block-result.v1",
+        "seal_payload_sha256": "9e4a3456bc03c63766840073f4c4beb0d7c6fa5da69b8b53ca70511c4333926e",
+        "source_tokens": 2865,
+        "source_tokens_per_s": 47.57952530379613,
+        "t0_ns": 12890131336756,
+        "t_durable_complete_ns": 12950346313297,
+        "t_validated_seal_ns": 12950418707822,
+        "valid": true,
+        "validation_seal_latency_ns": 72394525,
+        "whole_update_active_k_time_ns": {
+          "1": 60206666542
+        },
+        "whole_update_active_max": 1,
+        "whole_update_active_mean": 1.0
+      },
+      "namespace": "b0-run-MEMOPS-A14__Update-B0_NATIVE_SERIAL-attempt-001",
+      "qa_rows": [
+        {
+          "construction_calls": 0,
+          "correct": true,
+          "evaluation_setting": "adjacent_operation",
+          "evaluation_type": "CandidateDisambiguation",
+          "expected_answer": "HG284139",
+          "failure_layer": null,
+          "gold_memory_state": "Brazilian passport number is HG284139, confirmed from the physical passport. HG284913 and HG284193 are superseded stale values. HG284931 is a tentative consulate system error pending correction. HG284319 belongs to a different applicant.",
+          "gold_provenance": [
+            {
+              "quote": "I pulled out the physical passport just now and the number printed on it is HG284139. I've been reading the last four digits wrong this whole time",
+              "segment_index": 2,
+              "turn_index": 3
+            }
+          ],
+          "gold_ranks": [
+            3
+          ],
+          "graph_write_attempts": 0,
+          "invalid": false,
+          "invalid_reason": null,
+          "judge_rubric": {
+            "acceptable_paraphrases": [],
+            "harmful_extra": [
+              "selecting any value other than HG284139"
+            ],
+            "harmless_extra": [],
+            "must_include": [
+              "HG284139"
+            ],
+            "must_not_include": [
+              "HG284913",
+              "HG284193",
+              "HG284931",
+              "HG284319"
+            ]
+          },
+          "memops_official_judge": {
+            "answer_score": 1,
+            "completion_tokens": 106,
+            "extra_detail_postcheck_action": "none",
+            "extra_detail_postcheck_applied": false,
+            "extra_detail_type": "none",
+            "finish_reason": "stop",
+            "judge_operation_detection": {
+              "fn": 0,
+              "fp": 0,
+              "tp": 1
+            },
+            "judge_provenance_support": 1,
+            "official_prompt_builder": "build_evaluation_prompt",
+            "official_result_parser": "parse_judge_metrics",
+            "prompt_sha256": "4d5732ba3cd689d038d903589f83d10561c137c11464aa9a77516a9978d0a747",
+            "prompt_tokens": 6173,
+            "raw_prompt_persisted": false,
+            "raw_response_persisted": false,
+            "reason": "The model correctly selected the confirmed current value HG284139 as the Brazilian passport number, which is the expected answer. No extra details were included.",
+            "response_sha256": "fdadba3a03d37e2c12d67ced6c310409dfca00e30cd011bca3504d3822b51afb",
+            "stale_value": 0
+          },
+          "mrr": 0.3333333333333333,
+          "ndcg_at_10": 0.5,
+          "question_id": "A14__Update:p4_candidate_disambiguation:adjacent_operation",
+          "question_pair_id": "p4_candidate_disambiguation",
+          "recall_at_1": 0.0,
+          "recall_at_10": 1.0,
+          "recall_at_3": 1.0,
+          "recall_at_5": 1.0,
+          "relevance_unit": "LONGMEMEVAL_GOLD_SESSION",
+          "sample_id": "A14__Update"
+        },
+        {
+          "construction_calls": 0,
+          "correct": true,
+          "evaluation_setting": "longitudinal_operation",
+          "evaluation_type": "CandidateDisambiguation",
+          "expected_answer": "HG284139",
+          "failure_layer": null,
+          "gold_memory_state": "Brazilian passport number is HG284139, confirmed from the physical passport. HG284913 and HG284193 are superseded stale values. HG284931 is a tentative consulate system error pending correction. HG284319 belongs to a different applicant.",
+          "gold_provenance": [
+            {
+              "quote": "I pulled out the physical passport just now and the number printed on it is HG284139. I've been reading the last four digits wrong this whole time",
+              "segment_index": 2,
+              "turn_index": 3
+            }
+          ],
+          "gold_ranks": [
+            3
+          ],
+          "graph_write_attempts": 0,
+          "invalid": false,
+          "invalid_reason": null,
+          "judge_rubric": {
+            "acceptable_paraphrases": [],
+            "harmful_extra": [
+              "selecting any value other than HG284139"
+            ],
+            "harmless_extra": [],
+            "must_include": [
+              "HG284139"
+            ],
+            "must_not_include": [
+              "HG284913",
+              "HG284193",
+              "HG284931",
+              "HG284319"
+            ]
+          },
+          "memops_official_judge": {
+            "answer_score": 1,
+            "completion_tokens": 105,
+            "extra_detail_postcheck_action": "none",
+            "extra_detail_postcheck_applied": false,
+            "extra_detail_type": "none",
+            "finish_reason": "stop",
+            "judge_operation_detection": {
+              "fn": 0,
+              "fp": 0,
+              "tp": 1
+            },
+            "judge_provenance_support": 1,
+            "official_prompt_builder": "build_evaluation_prompt",
+            "official_result_parser": "parse_judge_metrics",
+            "prompt_sha256": "4d5732ba3cd689d038d903589f83d10561c137c11464aa9a77516a9978d0a747",
+            "prompt_tokens": 6173,
+            "raw_prompt_persisted": false,
+            "raw_response_persisted": false,
+            "reason": "The model correctly selected the confirmed current value HG284139, which is the correct passport number from the physical document. No harmful or conflicting extra details were included.",
+            "response_sha256": "529ada4f372f039e344da51f707622f24df808b3154246db909ae42afdbfa687",
+            "stale_value": 0
+          },
+          "mrr": 0.3333333333333333,
+          "ndcg_at_10": 0.5,
+          "question_id": "A14__Update:p4_candidate_disambiguation:longitudinal_operation",
+          "question_pair_id": "p4_candidate_disambiguation",
+          "recall_at_1": 0.0,
+          "recall_at_10": 1.0,
+          "recall_at_3": 1.0,
+          "recall_at_5": 1.0,
+          "relevance_unit": "LONGMEMEVAL_GOLD_SESSION",
+          "sample_id": "A14__Update"
+        }
+      ],
+      "qa_summary": {
+        "all_correct": true,
+        "construction_calls": 0,
+        "correct_rows": 2,
+        "graph_hash_after_qa": "2e0aecc09f19cbb7ff6d9c40c50aae47d974b59855249dbeb9283ff99b8d7573",
+        "graph_hash_before_qa": "2e0aecc09f19cbb7ff6d9c40c50aae47d974b59855249dbeb9283ff99b8d7573",
+        "graph_mutated": false,
+        "graph_write_attempts": 0,
+        "method": "B0_NATIVE_SERIAL",
+        "namespace": "b0-run-MEMOPS-A14__Update-B0_NATIVE_SERIAL-attempt-001",
+        "rows": 2,
+        "sample_id": "A14__Update",
+        "stale_value_errors": 0,
+        "state_inspection": {
+          "active_current_mentions": 1,
+          "active_stale_conflicts": [],
+          "active_transition_mentions": [],
+          "canonical_graph_used_for_uuid_equality": false,
+          "current_value_active": true,
+          "current_value_in_entity_summary": true,
+          "expected_current_value": "HG284139",
+          "inactive_mentions": [],
+          "observation_time": "2000-01-01T00:10:00Z",
+          "stale_active_mentions": [],
+          "stale_confirmed_values": [
+            "HG284913",
+            "HG284193"
+          ],
+          "status": "PASS",
+          "target_id": "brazilian_passport_number",
+          "target_name": "Brazilian passport number"
+        }
+      },
+      "sample_id": "A14__Update",
+      "state_inspection": {
+        "active_current_mentions": 1,
+        "active_stale_conflicts": [],
+        "active_transition_mentions": [],
+        "canonical_graph_used_for_uuid_equality": false,
+        "current_value_active": true,
+        "current_value_in_entity_summary": true,
+        "expected_current_value": "HG284139",
+        "inactive_mentions": [],
+        "observation_time": "2000-01-01T00:10:00Z",
+        "stale_active_mentions": [],
+        "stale_confirmed_values": [
+          "HG284913",
+          "HG284193"
+        ],
+        "status": "PASS",
+        "target_id": "brazilian_passport_number",
+        "target_name": "Brazilian passport number"
+      },
+      "workload_sha256": "548ca9a8691106e3e1c0914193e1fdc1fcdecb5a57c6d1ec473280df403c7f46"
+    },
+    {
+      "attempt_root": "/data/predator/ly/MemBind/saturated_fixed_work_baseline_v1_3/artifacts/sfwb-v1-3-memops-pilot-20260822-001/runs/b0-run/blocks/memops-005-A28__Update-B0_NATIVE_SERIAL/attempt-001",
+      "block_id": "memops-005-A28__Update-B0_NATIVE_SERIAL",
+      "method": "B0_NATIVE_SERIAL",
+      "metrics": {
+        "application_gate_count": 0,
+        "artificial_sleep_count": 0,
+        "attempt_id": "attempt-001",
+        "attempt_ordinal": 1,
+        "attempt_root": "/data/predator/ly/MemBind/saturated_fixed_work_baseline_v1_3/artifacts/sfwb-v1-3-memops-pilot-20260822-001/runs/b0-run/blocks/memops-005-A28__Update-B0_NATIVE_SERIAL/attempt-001",
+        "block_id": "memops-005-A28__Update-B0_NATIVE_SERIAL",
+        "build_makespan_ns": 49947809352,
+        "build_makespan_s": 49.947809352,
+        "canonical_exact_match": true,
+        "canonical_graph_hash": "1249fb3221c422419cb07d75c40befe32668ee3b653356d6c236c0da5cfa7b9c",
+        "configured_max_inflight": null,
+        "created_sequences": [
+          0,
+          1,
+          2
+        ],
+        "db_duration_p50_s": 0.002960086,
+        "db_duration_p95_s": 0.034129724,
+        "db_duration_p99_s": 0.040643596,
+        "db_metrics_availability": "MEASURED",
+        "db_writes": 3,
+        "direct_semantic_evidence_availability": "DERIVED",
+        "direct_semantic_evidence_records": [],
+        "direct_semantic_violations": 0,
+        "direct_semantic_violations_by_observation": {
+          "future_persistent_state_read": 0,
+          "stale_predecessor_write": 0,
+          "wrong_state_write": 0
+        },
+        "drain_tail_ns": 16227344600,
+        "embedding_duration_p50_s": 0.013100831,
+        "embedding_duration_p95_s": 0.022329827,
+        "embedding_duration_p99_s": 0.023991175,
+        "embedding_items": 74,
+        "embedding_metrics_availability": "MEASURED",
+        "episode_count": 3,
+        "execution_identity_sha256": "898ecb44cce33465af1f500b0557e478d6287e5e18dbf4818d1a6c993075c0b2",
+        "feeder_workload_await_count": 3,
+        "history_id": "memops-a28-update",
+        "instrumentation_error_spans": 0,
+        "inversion_count": 0,
+        "inversion_density": 0.0,
+        "kendall_tau": 1.0,
+        "llm_duration_p50_s": 0.941077542,
+        "llm_duration_p95_s": 18.405645577,
+        "llm_duration_p99_s": 18.405645577,
+        "llm_input_tokens": 36208,
+        "llm_logical_calls": 19,
+        "llm_metrics_availability": "MEASURED",
+        "llm_transport_attempts": 19,
+        "max_displacement": 0,
+        "method": "B0_NATIVE_SERIAL",
+        "namespace": "b0-run-MEMOPS-A28__Update-B0_NATIVE_SERIAL-attempt-001",
+        "ordering_observations_counted_as_direct": 0,
+        "phase_metrics_availability": "MEASURED",
+        "resource_availability": "NOT_EVALUATED",
+        "sampler_coverage": null,
+        "sampler_gap_max_s": null,
+        "sampler_gap_p95_s": null,
+        "sampler_source_coverage": {},
+        "schema_version": "membind.saturated-fixed-work.block-result.v1",
+        "seal_payload_sha256": "352a99dd87d32be728d25e1288595d3d41fb8b8a51c146115a0e24bab2a670e5",
+        "source_tokens": 2888,
+        "source_tokens_per_s": 57.820353634475445,
+        "t0_ns": 12958195441891,
+        "t_durable_complete_ns": 13008143251243,
+        "t_validated_seal_ns": 13008206487173,
+        "valid": true,
+        "validation_seal_latency_ns": 63235930,
+        "whole_update_active_k_time_ns": {
+          "1": 49938638363
+        },
+        "whole_update_active_max": 1,
+        "whole_update_active_mean": 1.0
+      },
+      "namespace": "b0-run-MEMOPS-A28__Update-B0_NATIVE_SERIAL-attempt-001",
+      "qa_rows": [
+        {
+          "construction_calls": 0,
+          "correct": true,
+          "evaluation_setting": "adjacent_operation",
+          "evaluation_type": "CandidateDisambiguation",
+          "expected_answer": "July 1st",
+          "failure_layer": null,
+          "gold_memory_state": "Dr. Voss's confirmed sabbatical start date is July 1st. June 1st and June 15th are superseded earlier values. June 20th is an unconfirmed rumor from a third party.",
+          "gold_provenance": [
+            {
+              "quote": "her sabbatical has been pushed back to July 1st because of some administrative delay at UCSD",
+              "segment_index": 2,
+              "turn_index": 3
+            },
+            {
+              "quote": "James mentioned that the department secretary told him Dr. Voss might actually leave as early as June 20th because UCSD resolved the paperwork faster than expected",
+              "segment_index": 3,
+              "turn_index": 5
+            }
+          ],
+          "gold_ranks": [
+            2,
+            3
+          ],
+          "graph_write_attempts": 0,
+          "invalid": false,
+          "invalid_reason": null,
+          "judge_rubric": {
+            "acceptable_paraphrases": [
+              "July 1"
+            ],
+            "harmful_extra": [
+              "Selecting June 20th because it is the most recently mentioned date in the conversation"
+            ],
+            "harmless_extra": [
+              "Noting that June 20th was mentioned as a possibility but unconfirmed"
+            ],
+            "must_include": [
+              "July 1st"
+            ],
+            "must_not_include": [
+              "June 15th as current",
+              "June 20th as current",
+              "June 1st as current"
+            ]
+          },
+          "memops_official_judge": {
+            "answer_score": 1,
+            "completion_tokens": 95,
+            "extra_detail_postcheck_action": "none",
+            "extra_detail_postcheck_applied": false,
+            "extra_detail_type": "none",
+            "finish_reason": "stop",
+            "judge_operation_detection": {
+              "fn": 0,
+              "fp": 0,
+              "tp": 1
+            },
+            "judge_provenance_support": 1,
+            "official_prompt_builder": "build_evaluation_prompt",
+            "official_result_parser": "parse_judge_metrics",
+            "prompt_sha256": "7949b79df237e1d6cba5ec9cbf881e3945fc4061a050aa87ff9077c6d87e10f8",
+            "prompt_tokens": 6164,
+            "raw_prompt_persisted": false,
+            "raw_response_persisted": false,
+            "reason": "The model correctly selected the confirmed and most recent value, July 1st, without introducing harmful extra details.",
+            "response_sha256": "0472b0af2a6cfa8f861eaa92be8c5e9e306147004e6d547e20d0bd36a6d5f365",
+            "stale_value": 0
+          },
+          "mrr": 0.5,
+          "ndcg_at_10": 0.6934264036172708,
+          "question_id": "A28__Update:p4_candidate_disambiguation:adjacent_operation",
+          "question_pair_id": "p4_candidate_disambiguation",
+          "recall_at_1": 0.0,
+          "recall_at_10": 1.0,
+          "recall_at_3": 1.0,
+          "recall_at_5": 1.0,
+          "relevance_unit": "LONGMEMEVAL_GOLD_SESSION",
+          "sample_id": "A28__Update"
+        },
+        {
+          "construction_calls": 0,
+          "correct": true,
+          "evaluation_setting": "longitudinal_operation",
+          "evaluation_type": "CandidateDisambiguation",
+          "expected_answer": "July 1st",
+          "failure_layer": null,
+          "gold_memory_state": "Dr. Voss's confirmed sabbatical start date is July 1st. June 1st and June 15th are superseded earlier values. June 20th is an unconfirmed rumor from a third party.",
+          "gold_provenance": [
+            {
+              "quote": "her sabbatical has been pushed back to July 1st because of some administrative delay at UCSD",
+              "segment_index": 2,
+              "turn_index": 3
+            },
+            {
+              "quote": "James mentioned that the department secretary told him Dr. Voss might actually leave as early as June 20th because UCSD resolved the paperwork faster than expected",
+              "segment_index": 3,
+              "turn_index": 5
+            }
+          ],
+          "gold_ranks": [
+            2,
+            3
+          ],
+          "graph_write_attempts": 0,
+          "invalid": false,
+          "invalid_reason": null,
+          "judge_rubric": {
+            "acceptable_paraphrases": [
+              "July 1"
+            ],
+            "harmful_extra": [
+              "Selecting June 20th because it is the most recently mentioned date in the conversation"
+            ],
+            "harmless_extra": [
+              "Noting that June 20th was mentioned as a possibility but unconfirmed"
+            ],
+            "must_include": [
+              "July 1st"
+            ],
+            "must_not_include": [
+              "June 15th as current",
+              "June 20th as current",
+              "June 1st as current"
+            ]
+          },
+          "memops_official_judge": {
+            "answer_score": 1,
+            "completion_tokens": 109,
+            "extra_detail_postcheck_action": "none",
+            "extra_detail_postcheck_applied": false,
+            "extra_detail_type": "none",
+            "finish_reason": "stop",
+            "judge_operation_detection": {
+              "fn": 0,
+              "fp": 0,
+              "tp": 1
+            },
+            "judge_provenance_support": 1,
+            "official_prompt_builder": "build_evaluation_prompt",
+            "official_result_parser": "parse_judge_metrics",
+            "prompt_sha256": "7949b79df237e1d6cba5ec9cbf881e3945fc4061a050aa87ff9077c6d87e10f8",
+            "prompt_tokens": 6164,
+            "raw_prompt_persisted": false,
+            "raw_response_persisted": false,
+            "reason": "The model correctly selected the confirmed sabbatical start date of July 1st, which is the expected answer. It did not include any harmful extra details or select a superseded or tentative value.",
+            "response_sha256": "13a8e5480e12c277a3874eef5022bf501eafddeced0c6c63280c1980e3c1ce24",
+            "stale_value": 0
+          },
+          "mrr": 0.5,
+          "ndcg_at_10": 0.6934264036172708,
+          "question_id": "A28__Update:p4_candidate_disambiguation:longitudinal_operation",
+          "question_pair_id": "p4_candidate_disambiguation",
+          "recall_at_1": 0.0,
+          "recall_at_10": 1.0,
+          "recall_at_3": 1.0,
+          "recall_at_5": 1.0,
+          "relevance_unit": "LONGMEMEVAL_GOLD_SESSION",
+          "sample_id": "A28__Update"
+        }
+      ],
+      "qa_summary": {
+        "all_correct": true,
+        "construction_calls": 0,
+        "correct_rows": 2,
+        "graph_hash_after_qa": "1249fb3221c422419cb07d75c40befe32668ee3b653356d6c236c0da5cfa7b9c",
+        "graph_hash_before_qa": "1249fb3221c422419cb07d75c40befe32668ee3b653356d6c236c0da5cfa7b9c",
+        "graph_mutated": false,
+        "graph_write_attempts": 0,
+        "method": "B0_NATIVE_SERIAL",
+        "namespace": "b0-run-MEMOPS-A28__Update-B0_NATIVE_SERIAL-attempt-001",
+        "rows": 2,
+        "sample_id": "A28__Update",
+        "stale_value_errors": 0,
+        "state_inspection": {
+          "active_current_mentions": 0,
+          "active_stale_conflicts": [],
+          "active_transition_mentions": [],
+          "canonical_graph_used_for_uuid_equality": false,
+          "current_value_active": false,
+          "current_value_in_entity_summary": false,
+          "expected_current_value": "July 1st",
+          "inactive_mentions": [],
+          "observation_time": "2000-01-01T00:10:00Z",
+          "stale_active_mentions": [],
+          "stale_confirmed_values": [
+            "June 1st",
+            "June 15th"
+          ],
+          "status": "FAIL",
+          "target_id": "voss_sabbatical_start_date",
+          "target_name": "Dr. Voss sabbatical start date"
+        }
+      },
+      "sample_id": "A28__Update",
+      "state_inspection": {
+        "active_current_mentions": 0,
+        "active_stale_conflicts": [],
+        "active_transition_mentions": [],
+        "canonical_graph_used_for_uuid_equality": false,
+        "current_value_active": false,
+        "current_value_in_entity_summary": false,
+        "expected_current_value": "July 1st",
+        "inactive_mentions": [],
+        "observation_time": "2000-01-01T00:10:00Z",
+        "stale_active_mentions": [],
+        "stale_confirmed_values": [
+          "June 1st",
+          "June 15th"
+        ],
+        "status": "FAIL",
+        "target_id": "voss_sabbatical_start_date",
+        "target_name": "Dr. Voss sabbatical start date"
+      },
+      "workload_sha256": "61a89ef67dab2d496091756de4c824d1fc33b4f0861ee7e7c76b0f914fe0965e"
+    }
+  ],
+  "payload_sha256": "dc9d1add8be7646a9b3ec59cc866e7229c842a5aabfaa71986e3313ea5e7f36a",
+  "qualification_root": "/data/predator/ly/MemBind/saturated_fixed_work_baseline_v1_3/artifacts/sfwb-v1-3-memops-pilot-20260822-001/runs/b0-run",
+  "sample_ids": [
+    "A01__Update",
+    "A05__Update",
+    "A13__Update",
+    "A14__Update",
+    "A28__Update"
+  ],
+  "schema_version": "sfwb.v1.3.memops-live-qualification.v1",
+  "status": "LIVE_COMPLETE"
+}
