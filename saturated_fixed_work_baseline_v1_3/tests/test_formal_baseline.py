@@ -12,6 +12,7 @@ from saturated_fixed_work_baseline_v1_3.formal_baseline import (
     build_lifecycle_evidence,
     group_formal_matrix_by_history,
     reduce_baseline_outputs,
+    summarize_history_qa,
     validate_formal_matrix,
 )
 
@@ -118,3 +119,18 @@ def test_reducer_emits_only_b0_b1_and_required_main_columns(tmp_path: Path) -> N
     }
     assert all(row["policy"] in FORMAL_METHODS for row in result["main_table"])
     json.dumps(result)
+
+
+def test_history_qa_decision_fails_closed_for_invalid_rows() -> None:
+    rows = [
+        {
+            "invalid": True,
+            "correct": False,
+            "construction_calls": 0,
+            "graph_write_attempts": 0,
+        }
+        for _ in range(8)
+    ]
+    decision = summarize_history_qa("07741c45", rows)
+    assert decision["contract_status"] == "FAIL"
+    assert decision["invalid_row_count"] == 8

@@ -1,0 +1,93 @@
+{
+  "p0": {
+    "baseline": {
+      "block_seal_count": 6,
+      "formal_run_seal": false,
+      "producer_process": "2763708 bash -c env PYTHONUNBUFFERED=1 PYTHONPATH=saturated_fixed_work_baseline_v1_3/src:saturated_fixed_work_baseline_v1_2/src:paper-eval-v3/src:membind-validation/src membind-validation/.venv/bin/python -u saturated_fixed_work_baseline_v1_3/scripts/run_formal_baseline.py --run-root saturated_fixed_work_baseline_v1_3/artifacts/sfwb-v1-3-formal-baseline-20260822-002 > saturated_fixed_work_baseline_v1_3/artifacts/sfwb-v1-3-formal-baseline-20260822-002.log 2>&1\n2763709 membind-validation/.venv/bin/python -u saturated_fixed_work_baseline_v1_3/scripts/run_formal_baseline.py --run-root saturated_fixed_work_baseline_v1_3/artifacts/sfwb-v1-3-formal-baseline-20260822-002",
+      "root": "/data/predator/ly/MemBind/saturated_fixed_work_baseline_v1_3/artifacts/sfwb-v1-3-formal-baseline-20260822-002",
+      "status": "RUNNING"
+    },
+    "config_sha256": {
+      "saturated_fixed_work_baseline_v1_3/configs/frozen_backend_v1_3.json": "7255a701003f51780ea1d30e909f2e9bafbd5a0fcedb50dc7490bd6cab36d97a",
+      "saturated_fixed_work_baseline_v1_3/configs/frozen_client_v1_3.json": "5683df00ad4d216d2931f344a87a5debff76c7e3dc365a1470e1ddd2cfc16a57",
+      "saturated_fixed_work_baseline_v1_3/configs/resource_policy.json": "596eb514bdc25a398d916c43e6151ee135735a86996d83da0478bea4b4b7e640"
+    },
+    "graphiti_core_version": "0.29.3",
+    "live_inventory": {
+      "formal_process": "2763708 bash -c env PYTHONUNBUFFERED=1 PYTHONPATH=saturated_fixed_work_baseline_v1_3/src:saturated_fixed_work_baseline_v1_2/src:paper-eval-v3/src:membind-validation/src membind-validation/.venv/bin/python -u saturated_fixed_work_baseline_v1_3/scripts/run_formal_baseline.py --run-root saturated_fixed_work_baseline_v1_3/artifacts/sfwb-v1-3-formal-baseline-20260822-002 > saturated_fixed_work_baseline_v1_3/artifacts/sfwb-v1-3-formal-baseline-20260822-002.log 2>&1\n2763709 membind-validation/.venv/bin/python -u saturated_fixed_work_baseline_v1_3/scripts/run_formal_baseline.py --run-root saturated_fixed_work_baseline_v1_3/artifacts/sfwb-v1-3-formal-baseline-20260822-002",
+      "listening_ports": "State  Recv-Q Send-Q               Local Address:Port  Peer Address:PortProcess                                       \nLISTEN 0      5                          0.0.0.0:8000       0.0.0.0:*                                                 \nLISTEN 0      4096                     127.0.0.1:631        0.0.0.0:*                                                 \nLISTEN 0      4096                     127.0.0.1:7102       0.0.0.0:*                                                 \nLISTEN 0      4096                       0.0.0.0:22         0.0.0.0:*                                                 \nLISTEN 0      511                        0.0.0.0:80         0.0.0.0:*                                                 \nLISTEN 0      4096                     127.0.0.1:11434      0.0.0.0:*                                                 \nLISTEN 0      5                          0.0.0.0:9993       0.0.0.0:*                                                 \nLISTEN 0      32                      10.31.11.1:53         0.0.0.0:*                                                 \nLISTEN 0      511                      127.0.0.1:12894      0.0.0.0:*    users:((\"MainThread\",pid=3791378,fd=43))     \nLISTEN 0      128                      127.0.0.1:17897      0.0.0.0:*                                                 \nLISTEN 0      4096                 127.0.0.53%lo:53         0.0.0.0:*                                                 \nLISTEN 0      4096                    127.0.0.54:53         0.0.0.0:*                                                 \nLISTEN 0      4096                 100.64.138.86:53458      0.0.0.0:*                                                 \nLISTEN 0      128                      127.0.0.1:35935      0.0.0.0:*                                                 \nLISTEN 0      511                      127.0.0.1:36092      0.0.0.0:*                                                 \nLISTEN 0      128                      127.0.0.1:36369      0.0.0.0:*                                                 \nLISTEN 0      128                      127.0.0.1:35277      0.0.0.0:*                                                 \nLISTEN 0      128                      127.0.0.1:35051      0.0.0.0:*                                                 \nLISTEN 0      128                      127.0.0.1:34247      0.0.0.0:*                                                 \nLISTEN 0      128                      127.0.0.1:34287      0.0.0.0:*                                                 \nLISTEN 0      128                      127.0.0.1:34391      0.0.0.0:*                                                 \nLISTEN 0      511                      127.0.0.1:33019      0.0.0.0:*                                                 \nLISTEN 0      511                      127.0.0.1:33281      0.0.0.0:*                                                 \nLISTEN 0      4096                     127.0.0.1:33331      0.0.0.0:*                                                 \nLISTEN 0      128                      127.0.0.1:33365      0.0.0.0:*                                                 \nLISTEN 0      511                      127.0.0.1:40905      0.0.0.0:*                                                 \nLISTEN 0      128                      127.0.0.1:40953      0.0.0.0:*                                                 \nLISTEN 0      128                      127.0.0.1:39249      0.0.0.0:*                                                 \nLISTEN 0      511                      127.0.0.1:39059      0.0.0.0:*                                                 \nLISTEN 0      128                      127.0.0.1:39087      0.0.0.0:*                                                 \nLISTEN 0      128                      127.0.0.1:38007      0.0.0.0:*                                                 \nLISTEN 0      128                      127.0.0.1:36877      0.0.0.0:*                                                 \nLISTEN 0      128                      127.0.0.1:37013      0.0.0.0:*                                                 \nLISTEN 0      128                      127.0.0.1:37035      0.0.0.0:*    users:((\"code-df53daabb1\",pid=2895155,fd=11))\nLISTEN 0      128                      127.0.0.1:44635      0.0.0.0:*                                                 \nLISTEN 0      128                      127.0.0.1:44695      0.0.0.0:*                                                 \nLISTEN 0      511                      127.0.0.1:42431      0.0.0.0:*                                                 \nLISTEN 0      511                      127.0.0.1:42753      0.0.0.0:*                                                 \nLISTEN 0      511                      127.0.0.1:42955      0.0.0.0:*                                                 \nLISTEN 0      128                      127.0.0.1:41899      0.0.0.0:*                                                 \nLISTEN 0      32                   192.168.122.1:53         0.0.0.0:*                                                 \nLISTEN 0      128                      127.0.0.1:46707      0.0.0.0:*                                                 \nLISTEN 0      128                      127.0.0.1:45301      0.0.0.0:*                                                 \nLISTEN 0      128                      127.0.0.1:45647      0.0.0.0:*                                                 \nLISTEN 0      4096                     127.0.0.1:50172      0.0.0.0:*                                                 \nLISTEN 0      511                      127.0.0.1:55670      0.0.0.0:*                                                 \nLISTEN 0      4096                             *:7890             *:*                                                 \nLISTEN 0      50              [::ffff:127.0.0.1]:7474             *:*    users:((\"java\",pid=832477,fd=663))           \nLISTEN 0      4096            [::ffff:127.0.0.1]:7687             *:*    users:((\"java\",pid=832477,fd=661))           \nLISTEN 0      4096                          [::]:22            [::]:*                                                 \nLISTEN 0      511                           [::]:80            [::]:*                                                 \nLISTEN 0      4096                             *:1053             *:*                                                 \nLISTEN 0      1024                             *:12865            *:*                                                 \nLISTEN 0      4096                         [::1]:631           [::]:*                                                 \nLISTEN 0      4096                             *:9090             *:*                                                 \nLISTEN 0      5                                *:9993             *:*                                                 \nLISTEN 0      128                          [::1]:17897         [::]:*                                                 \nLISTEN 0      4096   [fd7a:115c:a1e0::4835:8a56]:64105         [::]:*",
+      "nvidia_smi": "0, NVIDIA GeForce RTX 3090 Ti, 211 MiB, 31 %\n1, NVIDIA GeForce RTX 3090 Ti, 124 MiB, 27 %",
+      "tmux": "membind-neo4j-paper-eval: 1 windows (created Fri Aug 14 18:54:18 2026)\npev3-s2-completion-20260814-001: 1 windows (created Fri Aug 14 20:30:29 2026)\npev3-s2r0-20260814-001: 1 windows (created Fri Aug 14 18:48:37 2026)\npev3-s2r0-20260814-002: 1 windows (created Fri Aug 14 19:17:14 2026)\nsfwb-v13-baseline-20260822-002: 1 windows (created Sat Aug 22 00:29:13 2026)"
+    },
+    "membind_commit": "c4c9577208ab41d1cd148778e0a6eab4daafe6ac",
+    "python": "/usr/bin/python3.12",
+    "python_version": "3.12.3 (main, Jun 19 2026, 12:46:00) [GCC 13.3.0]",
+    "repo_root": "/data/predator/ly/MemBind",
+    "schema_version": "membind.v5.p0-repository-qualification.v1",
+    "status": "PASS"
+  },
+  "p1": {
+    "callsites": {
+      "edge_operations.py": [
+        "generate_response"
+      ],
+      "graphiti.py": [
+        "extract_edges",
+        "extract_nodes",
+        "generate_response",
+        "resolve_extracted_nodes"
+      ],
+      "node_operations.py": [
+        "generate_response"
+      ]
+    },
+    "certificate": {
+      "abort_policy": "wasted_preparation_no_publication",
+      "assumptions": [
+        "fresh_isolated_namespace",
+        "single_writer",
+        "frozen_source_prefix",
+        "native_callsite_exact_binding",
+        "local_effects_non_escape",
+        "normal_control_source_closed"
+      ],
+      "certified_operators": [
+        "extract_nodes.generate_response",
+        "extract_edges.generate_response"
+      ],
+      "graphiti_revision": "v0.29.3/021d3a57d511f21b10adaf7fa923bd5c1fce5e9d",
+      "membind_revision": "c4c9577208ab41d1cd148778e0a6eab4daafe6ac",
+      "schema_version": "membind.v5.hoist-certificate.v1",
+      "source_hashes": {
+        "edge_operations.py": "b773ff4489968af2a996d5074e679cab9806cc0904a7ff9f2aecc74382325abe",
+        "graphiti.py": "7c65051a62982d8b510ebdbf37bae4d07020e74520e1f6d9bf8a0ffb26beeccb",
+        "node_operations.py": "14fc92a462bf7f1dd9b70d10a88e27e36a0ddc1594dc18381888209de7137fb4"
+      }
+    },
+    "certificate_digest": "adc24a1032355bc559f4e44353a0c007b7c57158e2878bdb152451509590b958",
+    "certified": [
+      "extract_nodes.generate_response",
+      "extract_edges.generate_response"
+    ],
+    "expected_commit": "021d3a57d511f21b10adaf7fa923bd5c1fce5e9d",
+    "opaque": [
+      "resolve_extracted_nodes",
+      "extract_attributes_from_nodes",
+      "process_episode_data"
+    ],
+    "package_version": "0.29.3",
+    "schema_version": "membind.v5.graphiti-0293-adapter.v1",
+    "source_files": {
+      "edge_operations.py": "/data/predator/ly/MemBind/membind-validation/.venv/lib/python3.12/site-packages/graphiti_core/utils/maintenance/edge_operations.py",
+      "graphiti.py": "/data/predator/ly/MemBind/membind-validation/.venv/lib/python3.12/site-packages/graphiti_core/graphiti.py",
+      "node_operations.py": "/data/predator/ly/MemBind/membind-validation/.venv/lib/python3.12/site-packages/graphiti_core/utils/maintenance/node_operations.py"
+    },
+    "source_hashes": {
+      "edge_operations.py": "b773ff4489968af2a996d5074e679cab9806cc0904a7ff9f2aecc74382325abe",
+      "graphiti.py": "7c65051a62982d8b510ebdbf37bae4d07020e74520e1f6d9bf8a0ffb26beeccb",
+      "node_operations.py": "14fc92a462bf7f1dd9b70d10a88e27e36a0ddc1594dc18381888209de7137fb4"
+    },
+    "status": "PASS"
+  },
+  "status": "PASS"
+}

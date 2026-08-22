@@ -11,6 +11,7 @@ import os
 from collections.abc import Awaitable, Callable, Mapping, Sequence
 from dataclasses import dataclass
 from pathlib import Path
+from types import SimpleNamespace
 from typing import Any
 
 from .qa_lane import (
@@ -48,6 +49,33 @@ def _canonical_bytes(value: Any) -> bytes:
 
 def _hash(value: Any) -> str:
     return hashlib.sha256(_canonical_bytes(value)).hexdigest()
+
+
+def _safe_error_message(error: BaseException) -> str:
+    """Keep QA diagnostics useful without persisting request or credential data."""
+
+    value = str(error).replace("\n", " ").replace("\r", " ").strip()
+    return value[:300] if value else "no_message"
+
+
+def _failure_result(
+    metrics: Mapping[str, float],
+    *,
+    error: BaseException,
+    failure_layer: str,
+) -> dict[str, Any]:
+    """Normalize one non-evaluable QA stage without turning it into quality=0."""
+
+    return {
+        **dict(metrics),
+        "correct": False,
+        "invalid": True,
+        "invalid_reason": f"{type(error).__module__}.{type(error).__qualname__}",
+        "error_message": _safe_error_message(error),
+        "failure_layer": failure_layer,
+        "construction_calls": 0,
+        "graph_write_attempts": 0,
+    }
 
 
 async def _await(value: Any) -> Any:
@@ -221,20 +249,18 @@ async def execute_production_qa(
                     except ProductionQAError:
                         raise
                     except Exception as error:
-                        result = {
-                            "recall_at_1": 0.0,
-                            "recall_at_3": 0.0,
-                            "recall_at_5": 0.0,
-                            "recall_at_10": 0.0,
-                            "mrr": 0.0,
-                            "ndcg_at_10": 0.0,
-                            "correct": False,
-                            "invalid": True,
-                            "invalid_reason": f"{type(error).__module__}.{type(error).__qualname__}",
-                            "failure_layer": "contract",
-                            "construction_calls": 0,
-                            "graph_write_attempts": 0,
-                        }
+                        result = _failure_result(
+                            {
+                                "recall_at_1": 0.0,
+                                "recall_at_3": 0.0,
+                                "recall_at_5": 0.0,
+                                "recall_at_10": 0.0,
+                                "mrr": 0.0,
+                                "ndcg_at_10": 0.0,
+                            },
+                            error=error,
+                            failure_layer="contract",
+                        )
                     writes += int(result["graph_write_attempts"])
                     constructions += int(result["construction_calls"])
                     row = {
@@ -262,9 +288,13 @@ async def execute_production_qa(
                     row.pop("payload_sha256", None)
                     row["payload_sha256"] = _hash(row)
             finally:
-                close = getattr(graphiti, "close", None)
-                if callable(close):
-                    await _await(close())
+                close_runtime = getattr(runtime, "aclose", None)
+                if callable(close_runtime):
+                    await _await(close_runtime())
+                else:
+                    close = getattr(graphiti, "close", None)
+                    if callable(close):
+                        await _await(close())
     finally:
         if dependencies.close is not None:
             await _await(dependencies.close())
@@ -316,6 +346,42 @@ def build_local_qa_components(
     return reader, judge, transport
 
 
+def build_formal_qa_judge_inputs(
+    *,
+    run_id: str,
+    question_id: str,
+    namespace: str,
+    question_type: str,
+    question_date: str,
+    question: str,
+    reference_answer: str,
+    gold_session_ids: Sequence[str],
+) -> Any:
+    """Project formal QA data into the qualified Judge's input protocol.
+
+    ``S2LiveInputs`` intentionally restricts the earlier S2-R0 namespace
+    family. Formal baseline QA uses fresh ``sfwb-v1-3-*`` namespaces, so it
+    must preserve the same field contract without pretending to be an S2-R0
+    input object.
+    """
+
+    text_fields = {
+        "run_id": run_id,
+        "history_id": question_id,
+        "namespace": namespace,
+        "question_type": question_type,
+        "question_date": question_date,
+        "question": question,
+        "reference_answer": reference_answer,
+    }
+    if any(not isinstance(value, str) or not value for value in text_fields.values()):
+        raise ValueError("formal QA Judge input text is invalid")
+    sessions = tuple(str(value) for value in gold_session_ids)
+    if not sessions or any(not value for value in sessions):
+        raise ValueError("formal QA Judge answer sessions are invalid")
+    return SimpleNamespace(**text_fields, answer_session_ids=sessions)
+
+
 def build_production_question_runner(
     *,
     repository_root: Path,
@@ -330,7 +396,6 @@ def build_production_question_runner(
     quality_module = import_paper_eval_module(
         repository_root, "paper_eval.quality_evaluation_v1"
     )
-    adapters = import_paper_eval_module(repository_root, "paper_eval.s2_adapters")
 
     async def run_question(
         *,
@@ -365,6 +430,13 @@ def build_production_question_runner(
             }
             if len(episode_map) != len(episodes):
                 raise ValueError("qa_corpus_mapping_incomplete")
+        except Exception as error:
+            return _failure_result(
+                metrics,
+                error=error,
+                failure_layer="retrieval_mapping",
+            )
+        try:
             retrieval = await retrieval_module.retrieve_quality_v1(
                 graph=graph,
                 query=str(public_question["question"]),
@@ -378,15 +450,7 @@ def build_production_question_runner(
                 )
             )
         except Exception as error:
-            return {
-                **metrics,
-                "correct": False,
-                "invalid": True,
-                "invalid_reason": f"{type(error).__module__}.{type(error).__qualname__}",
-                "failure_layer": "retrieval",
-                "construction_calls": 0,
-                "graph_write_attempts": 0,
-            }
+            return _failure_result(metrics, error=error, failure_layer="retrieval")
         record = {
             key: value
             for key, value in source_record_loader(seal.history_id).items()
@@ -406,21 +470,18 @@ def build_production_question_runner(
                 question=str(public_question["question"]),
             )
         except Exception as error:
-            return {
-                **metrics,
-                "correct": False,
-                "invalid": True,
-                "invalid_reason": f"{type(error).__module__}.{type(error).__qualname__}",
-                "failure_layer": "reader",
-                "construction_calls": 0,
-                "graph_write_attempts": 0,
-            }
-        inputs = adapters.S2LiveInputs(
+            return _failure_result(metrics, error=error, failure_layer="reader")
+        inputs = build_formal_qa_judge_inputs(
             run_id="SATURATED_FIXED_WORK_BASELINE_V1_2_QA",
-            history_id=str(public_question["question_id"]),
+            question_id=str(public_question["question_id"]),
+            namespace=seal.namespace,
             question_type=str(public_question["question_type"]),
+            question_date=str(public_question["question_date"]),
             question=str(public_question["question"]),
             reference_answer=str(private_evaluation["reference_answer"]),
+            gold_session_ids=tuple(
+                str(value) for value in private_evaluation["gold_session_ids"]
+            ),
         )
         try:
             verdict = await judge.evaluate(hypothesis=answer.answer, inputs=inputs)
@@ -429,15 +490,7 @@ def build_production_question_runner(
             ) is not bool:
                 raise ValueError("judge_verdict_invalid")
         except Exception as error:
-            return {
-                **metrics,
-                "correct": False,
-                "invalid": True,
-                "invalid_reason": f"{type(error).__module__}.{type(error).__qualname__}",
-                "failure_layer": "judge",
-                "construction_calls": 0,
-                "graph_write_attempts": 0,
-            }
+            return _failure_result(metrics, error=error, failure_layer="judge")
         return {
             **metrics,
             "correct": bool(verdict["label"]),
@@ -466,17 +519,27 @@ def build_production_qa_dependencies(
 ) -> ProductionQADependencies:
     """Compose the pinned read-only runtime and frozen QA data path."""
 
+    default_runtime = read_only_runtime_builder is None
     if env_loader is None:
         native = import_validation_module(repository_root, "graphiti_native")
         env_path = repository_root / "membind-validation/.env"
         env_loader = lambda: native.load_env_file(env_path)
     env = dict(env_loader())
     required = ("NEO4J_URI", "NEO4J_USER", "NEO4J_PASSWORD", "CONSTRUCTION_LLM_API_KEY")
+    if default_runtime:
+        required += (
+            "EMBEDDING_BASE_URL",
+            "EMBEDDING_API_KEY",
+            "EMBEDDING_MODEL",
+            "EMBEDDING_DIM",
+        )
     if any(not isinstance(env.get(name), str) or not env[name] for name in required):
         raise ProductionQAError("QA_PRODUCTION_ENV_INVALID")
     if read_only_runtime_builder is None:
-        runtime_module = import_paper_eval_module(repository_root, "paper_eval.s2_r0_live")
-        read_only_runtime_builder = runtime_module.build_read_only_graphiti
+        runtime_module = import_paper_eval_module(
+            repository_root, "paper_eval.graph_quality_live"
+        )
+        read_only_runtime_builder = runtime_module.build_graph_quality_runtime
     if graph_exporter is None:
         outputs = import_validation_module(repository_root, "live_outputs")
         graph_exporter = outputs.export_canonical_graph
@@ -537,6 +600,7 @@ __all__ = [
     "ProductionQADependencies",
     "ProductionQAError",
     "build_local_qa_components",
+    "build_formal_qa_judge_inputs",
     "build_production_qa_dependencies",
     "build_production_question_runner",
     "execute_production_qa",

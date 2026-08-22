@@ -1,0 +1,52 @@
+{
+  "backend_resource_identity": "inherited from frozen v1.3 contracts; recheck immediately before execution",
+  "baseline": {
+    "formal_seal_path": "/data/predator/ly/MemBind/saturated_fixed_work_baseline_v1_3/artifacts/sfwb-v1-3-formal-baseline-20260822-002/formal_run_seal.json",
+    "formal_seal_required": true,
+    "producer_process": "",
+    "root": "/data/predator/ly/MemBind/saturated_fixed_work_baseline_v1_3/artifacts/sfwb-v1-3-formal-baseline-20260822-002"
+  },
+  "created_at": "2026-08-21T19:16:50.295589+00:00",
+  "full_must_not_start_before": [
+    "baseline_formal_seal",
+    "endpoint_resource_idle_recheck",
+    "minimal_p8_seal"
+  ],
+  "gates": [
+    {
+      "name": "baseline_formal_seal",
+      "verify": "formal_run_seal.json + qualification/baseline_results.json"
+    },
+    {
+      "name": "endpoint_resource_idle_recheck",
+      "verify": "frozen model catalog + Neo4j canary + GPU/resource evidence"
+    },
+    {
+      "name": "minimal_v5_live",
+      "output_root": "/data/predator/ly/MemBind/saturated_fixed_work_baseline_v1_3/artifacts/sfwb-v1-3-v5-queue-20260822-031650/minimal",
+      "required": true
+    },
+    {
+      "name": "minimal_p8_seal",
+      "path": "/data/predator/ly/MemBind/saturated_fixed_work_baseline_v1_3/artifacts/sfwb-v1-3-v5-queue-20260822-031650/minimal/seal.json",
+      "required": true
+    },
+    {
+      "command": "run_v5_campaign.py --baseline-root <sealed-baseline>",
+      "name": "full_v5_campaign"
+    }
+  ],
+  "method": "V5_VERSIONED_ORACLE_HOIST",
+  "p8": {
+    "seal_path": null,
+    "verified": false
+  },
+  "repo_root": "/data/predator/ly/MemBind",
+  "schema_version": "membind.v5.queue-manifest.v1",
+  "session": {
+    "command": null,
+    "name": "sfwb-v5-gated-031650",
+    "pid": 266964
+  },
+  "status": "QUEUED_WITH_GATED_MINIMAL"
+}

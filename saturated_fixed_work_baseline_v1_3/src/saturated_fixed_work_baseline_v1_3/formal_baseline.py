@@ -440,7 +440,15 @@ async def run_formal_baseline_async(run_root: Path) -> dict[str, Any]:
     reduced = reduce_baseline_outputs(block_rows, qa_rows)
     for name, value in (("performance_table.json", reduced["performance_table"]), ("work_attribution.json", reduced["work_attribution"]), ("correctness_table.json", reduced["correctness_table"]), ("quality_table.json", reduced["quality_table"])):
         _write_new_json(root / "qualification" / name, {"rows": value})
-    _write_new_json(root / "qualification/baseline_results.json", {"schema_version": "sfwb.v1.3.formal-baseline.v1", "status": "PASS", "run_id": run_id, "formal_blocks": 8, "histories": list(FORMAL_HISTORIES), "methods": list(FORMAL_METHODS), "blocks": block_rows, "main_table": reduced["main_table"], "qa_rows": len(qa_rows), "qa_history_decisions": qa_history_decisions})
+    qa_contract_pass = (
+        len(qa_history_decisions) == len(FORMAL_HISTORIES)
+        and all(
+            decision.get("contract_status") == "PASS"
+            for decision in qa_history_decisions
+        )
+    )
+    qualification_status = "PASS" if qa_contract_pass else "FAIL_QA_CONTRACT"
+    _write_new_json(root / "qualification/baseline_results.json", {"schema_version": "sfwb.v1.3.formal-baseline.v1", "status": qualification_status, "run_id": run_id, "formal_blocks": 8, "histories": list(FORMAL_HISTORIES), "methods": list(FORMAL_METHODS), "blocks": block_rows, "main_table": reduced["main_table"], "qa_rows": len(qa_rows), "qa_history_decisions": qa_history_decisions})
     md_lines = ["# MemBind v1.3 Formal Baseline", "", "|Policy|History|Makespan|Throughput|LLM Calls|Tokens|Quality|", "|---|---|---:|---:|---:|---:|---:|"]
     for row in reduced["main_table"]:
         quality_text = "n/a" if row["quality"] is None else f"{row['quality']:.6f}"
@@ -448,7 +456,7 @@ async def run_formal_baseline_async(run_root: Path) -> dict[str, Any]:
     (root / "qualification/baseline_results.md").parent.mkdir(parents=True, exist_ok=True)
     (root / "qualification/baseline_results.md").write_text("\n".join(md_lines) + "\n", encoding="utf-8")
     _write_new_json(root / "formal_run_seal.json", {"schema_version": "sfwb.v1.3.formal-run-seal.v1", "status": "FORMAL_RUN_SEALED", "formal_blocks": 8, "selected_blocks": [{"ordinal": row["attempt_ordinal"], "block_id": row["block_id"], "method": row["method"], "history_id": row["history_id"], "namespace": row["namespace"], "attempt_root": row["attempt_root"]} for row in block_rows]})
-    return {"status": "PASS", "run_root": str(root), "formal_blocks": 8, "qa_rows": len(qa_rows), "qa_history_decisions": qa_history_decisions, "main_table": reduced["main_table"]}
+    return {"status": qualification_status, "run_root": str(root), "formal_blocks": 8, "qa_rows": len(qa_rows), "qa_history_decisions": qa_history_decisions, "main_table": reduced["main_table"]}
 
 
 def run_formal_baseline(run_root: Path) -> dict[str, Any]:

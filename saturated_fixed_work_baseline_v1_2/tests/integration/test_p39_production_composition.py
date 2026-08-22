@@ -16,6 +16,7 @@ from saturated_fixed_work_baseline_v1_2.production_dependencies import (
 )
 from saturated_fixed_work_baseline_v1_2.production_qa import (
     build_production_qa_dependencies,
+    build_formal_qa_judge_inputs,
 )
 from saturated_fixed_work_baseline_v1_2.qa_stage import execute_qa_stage
 from saturated_fixed_work_baseline_v1_2.sampler import PeriodicSampler
@@ -167,6 +168,22 @@ def test_live_dependency_composition_installs_six_source_periodic_sampler(
     assert isinstance(sampler, PeriodicSampler)
 
 
+def test_formal_qa_judge_projection_binds_namespace_date_and_gold_sessions() -> None:
+    inputs = build_formal_qa_judge_inputs(
+        run_id="formal-qa",
+        question_id="07741c45-ext-001",
+        namespace="sfwb-v1-3-B0_NATIVE_SERIAL-07741c45-run-attempt-001",
+        question_type="single-hop",
+        question_date="2024/03/01 (Fri) 12:00",
+        question="Where does Ravi work now?",
+        reference_answer="OpenAI",
+        gold_session_ids=("session-1", "session-2"),
+    )
+    assert inputs.namespace.startswith("sfwb-v1-3-")
+    assert inputs.question_date == "2024/03/01 (Fri) 12:00"
+    assert inputs.answer_session_ids == ("session-1", "session-2")
+
+
 @pytest.mark.asyncio
 async def test_production_qa_dependencies_use_frozen_source_and_read_only_runtime(
     repository_root: Path,
@@ -200,3 +217,55 @@ async def test_production_qa_dependencies_use_frozen_source_and_read_only_runtim
     await dependencies.snapshot_graph(runtime, seal)
     assert calls[0][0] == "runtime"
     assert calls[1] == ("snapshot", (graphiti, 49, "qa/ns"))
+
+
+@pytest.mark.asyncio
+async def test_default_quality_qa_runtime_binds_embedding_capable_graph_quality_path(
+    repository_root: Path,
+) -> None:
+    """Quality v1 Edge cosine must not be wired to the S2-R0 no-embedder runtime."""
+
+    imported: list[str] = []
+    runtime = SimpleNamespace(graphiti=SimpleNamespace())
+
+    class RuntimeModule:
+        @staticmethod
+        def build_graph_quality_runtime(*, env: dict[str, str]) -> Any:
+            assert env["EMBEDDING_MODEL"] == "qwen3-embedding-0.6b"
+            return runtime
+
+    def import_paper(_root: Path, module: str) -> Any:
+        imported.append(module)
+        if module == "paper_eval.graph_quality_live":
+            return RuntimeModule
+        raise AssertionError(f"unexpected paper module: {module}")
+
+    monkeypatch = pytest.MonkeyPatch()
+    monkeypatch.setattr(
+        "saturated_fixed_work_baseline_v1_2.production_qa.import_paper_eval_module",
+        import_paper,
+    )
+    try:
+        dependencies = build_production_qa_dependencies(
+            repository_root=repository_root,
+            env_loader=lambda: {
+                "NEO4J_URI": "bolt://localhost:7687",
+                "NEO4J_USER": "neo4j",
+                "NEO4J_PASSWORD": "secret",
+                "CONSTRUCTION_LLM_API_KEY": "secret",
+                "EMBEDDING_BASE_URL": "http://10.87.5.247:8001/v1",
+                "EMBEDDING_API_KEY": "embedding-secret",
+                "EMBEDDING_MODEL": "qwen3-embedding-0.6b",
+                "EMBEDDING_DIM": "1024",
+            },
+            component_builder=lambda **kwargs: (object(), object(), object()),
+            question_runner_builder=lambda **kwargs: (lambda **call: {}),
+        )
+        await dependencies.runtime_factory(
+            SimpleNamespace(history_id="07741c45", namespace="qa/ns")
+        )
+    finally:
+        monkeypatch.undo()
+
+    assert "paper_eval.graph_quality_live" in imported
+    assert "paper_eval.s2_r0_live" not in imported
