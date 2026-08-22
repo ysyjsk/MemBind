@@ -30,6 +30,7 @@ from .live_runner import (
     _episode_node,
     _graphiti_kwargs,
     _maybe_await,
+    _parse_reference_time,
     _write_jsonl,
     _write_new,
 )
@@ -137,13 +138,26 @@ class FrontierHistoryResult:
 
 
 def _native_previous_window(episodes: Sequence[Any], sequence: int) -> list[Any]:
-    """Mirror Graphiti 0.29.3 ``RELEVANT_SCHEMA_LIMIT`` for preparation."""
+    """Mirror Graphiti 0.29.3 previous-episode retrieval for preparation.
+
+    Neo4j filters on ``valid_at <= reference_time``, orders by ``valid_at DESC``,
+    limits to ``RELEVANT_SCHEMA_LIMIT``, and the Graphiti maintenance helper
+    reverses the result before returning it.  Source sequence is therefore not
+    a substitute for native temporal ordering.
+    """
 
     from graphiti_core.search.search_utils import RELEVANT_SCHEMA_LIMIT
 
     if sequence <= 0:
         return []
-    return list(episodes[max(0, sequence - RELEVANT_SCHEMA_LIMIT) : sequence])
+    current = _parse_reference_time(episodes[sequence].reference_time)
+    eligible = [
+        item
+        for item in episodes[:sequence]
+        if _parse_reference_time(item.reference_time) <= current
+    ]
+    eligible.sort(key=lambda item: _parse_reference_time(item.reference_time), reverse=True)
+    return list(reversed(eligible[:RELEVANT_SCHEMA_LIMIT]))
 
 
 async def run_frontier_history_async(
@@ -417,7 +431,8 @@ async def run_p9_full_live_async(
     if root.exists() and any(root.iterdir()):
         entries = {item.name for item in root.iterdir()}
         started_path = root / "campaign_started.json"
-        if entries in ({"campaign_started.json"}, {"campaign_started.json", "campaign_failure.json"}) and started_path.is_file():
+        failure_entries = {name for name in entries if name.startswith("campaign_failure") and name.endswith(".json")}
+        if entries == {"campaign_started.json"} | failure_entries and started_path.is_file():
             try:
                 previous_started = json.loads(started_path.read_text(encoding="utf-8"))
             except (OSError, UnicodeDecodeError, json.JSONDecodeError) as exc:
@@ -477,6 +492,12 @@ async def run_p9_full_live_async(
     except BaseException as exc:
         # Keep a sanitized durable failure marker for interrupted/failed runs.
         # Raw prompts, responses, tracebacks, and credentials remain excluded.
+        binding_diagnostics: dict[str, Any] = {}
+        if hasattr(exc, "reason"):
+            binding_diagnostics = {
+                "reason": str(getattr(exc, "reason", "unknown")),
+                "details": dict(getattr(exc, "details", {}) or {}),
+            }
         failure_name = "campaign_failure.json" if not (root / "campaign_failure.json").exists() else f"campaign_failure_{len(list(root.glob('campaign_failure*.json'))) + 1}.json"
         _write_new(
             root / failure_name,
@@ -487,6 +508,7 @@ async def run_p9_full_live_async(
                 "history_ids": list(config.history_ids),
                 "completed_history_ids": [row["history_id"] for row in history_results],
                 "error_type": f"{type(exc).__module__}.{type(exc).__qualname__}",
+                "binding_diagnostics": binding_diagnostics,
                 "native_characterization_c5_reused": False,
             },
         )

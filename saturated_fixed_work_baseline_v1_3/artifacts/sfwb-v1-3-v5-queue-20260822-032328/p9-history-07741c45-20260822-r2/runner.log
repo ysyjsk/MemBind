@@ -1,0 +1,15 @@
+Traceback (most recent call last):
+  File "<stdin>", line 33, in <module>
+  File "/usr/lib/python3.12/asyncio/runners.py", line 194, in run
+    return runner.run(main)
+           ^^^^^^^^^^^^^^^^
+  File "/usr/lib/python3.12/asyncio/runners.py", line 118, in run
+    return self._loop.run_until_complete(task)
+           ^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^
+  File "/usr/lib/python3.12/asyncio/base_events.py", line 687, in run_until_complete
+    return future.result()
+           ^^^^^^^^^^^^^^^
+  File "<stdin>", line 30, in main
+  File "/data/predator/ly/MemBind/saturated_fixed_work_baseline_v1_3/src/saturated_fixed_work_baseline_v1_3/membind_v5/p9_runner.py", line 444, in run_p9_full_live_async
+    raise P9RunnerError("P9 output root must be fresh")
+saturated_fixed_work_baseline_v1_3.membind_v5.p9_runner.P9RunnerError: P9 output root must be fresh

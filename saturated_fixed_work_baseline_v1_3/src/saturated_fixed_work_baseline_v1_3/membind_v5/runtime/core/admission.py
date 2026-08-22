@@ -5,7 +5,7 @@ from __future__ import annotations
 import asyncio
 from dataclasses import dataclass
 from enum import IntEnum, StrEnum
-from typing import Any
+from typing import Any, Callable
 
 
 class CapacityAuthorityError(ValueError):
@@ -75,49 +75,126 @@ _PRIORITY = {
 
 
 class AdmissionArbiter:
-    def __init__(self, authority: CapacityAuthority) -> None:
+    def __init__(self, authority: CapacityAuthority, *, event_sink: Callable[[dict[str, Any]], None] | None = None) -> None:
         self.authority = authority
+        self.event_sink = event_sink
         self._condition = asyncio.Condition()
         self._outstanding = 0
         self._future_outstanding = 0
-        self._waiters: list[tuple[int, int, AdmissionClass]] = []
+        self._waiters: list[tuple[int, int, int, AdmissionClass]] = []
         self._counter = 0
+        self._active_classes: dict[AdmissionClass, int] = {item: 0 for item in AdmissionClass}
+        self._events: list[dict[str, Any]] = []
 
     @property
     def outstanding(self) -> int:
         return self._outstanding
 
-    async def acquire(self, admission_class: AdmissionClass, *, source_sequence: int = 0) -> None:
+    def _emit(self, event: str, **fields: Any) -> None:
+        row = {
+            "event": event,
+            "monotonic_ns": __import__("time").monotonic_ns(),
+            **fields,
+        }
+        self._events.append(row)
+        if self.event_sink is not None:
+            self.event_sink(dict(row))
+
+    async def acquire(
+        self,
+        admission_class: AdmissionClass,
+        *,
+        source_sequence: int = 0,
+        class_resolver: Callable[[], AdmissionClass] | None = None,
+    ) -> AdmissionClass:
         if not isinstance(admission_class, AdmissionClass):
             admission_class = AdmissionClass(admission_class)
         async with self._condition:
             ticket = self._counter
             self._counter += 1
-            self._waiters.append((_PRIORITY[admission_class], ticket, admission_class))
+            source_sequence = int(source_sequence)
+            self._waiters.append((_PRIORITY[admission_class], source_sequence, ticket, admission_class))
+            self._emit(
+                "ADMISSION_ENQUEUE",
+                ticket=ticket,
+                source_sequence=source_sequence,
+                admission_class=admission_class.value,
+                outstanding=self._outstanding,
+                future_outstanding=self._future_outstanding,
+                reserved_future_credit=max(0, self.authority.value - 1 - self._future_outstanding),
+            )
             try:
                 while True:
-                    self._waiters.sort(key=lambda item: (item[0], item[1]))
-                    is_head = self._waiters and self._waiters[0][1] == ticket
+                    if class_resolver is not None:
+                        resolved = class_resolver()
+                        if not isinstance(resolved, AdmissionClass):
+                            resolved = AdmissionClass(resolved)
+                        if resolved != admission_class:
+                            admission_class = resolved
+                            self._waiters = [
+                                (priority, source, item_ticket, resolved if item_ticket == ticket else item_class)
+                                for priority, source, item_ticket, item_class in self._waiters
+                            ]
+                            self._waiters = [
+                                (_PRIORITY[item_class], source, item_ticket, item_class)
+                                for _priority, source, item_ticket, item_class in self._waiters
+                            ]
+                            self._emit(
+                                "ADMISSION_RECLASSIFY",
+                                ticket=ticket,
+                                source_sequence=source_sequence,
+                                admission_class=admission_class.value,
+                            )
+                    self._waiters.sort(key=lambda item: (item[0], item[1], item[2]))
+                    is_head = self._waiters and self._waiters[0][2] == ticket
                     future_allowed = admission_class != AdmissionClass.FUTURE_PREPARE or self.authority.value == 1 or self._future_outstanding < self.authority.value - 1
                     if is_head and self._outstanding < self.authority.value and future_allowed:
-                        self._waiters.pop(next(i for i, item in enumerate(self._waiters) if item[1] == ticket))
+                        self._waiters.pop(next(i for i, item in enumerate(self._waiters) if item[2] == ticket))
                         self._outstanding += 1
                         if admission_class == AdmissionClass.FUTURE_PREPARE:
                             self._future_outstanding += 1
-                        return
+                        self._active_classes[admission_class] += 1
+                        self._emit(
+                            "ADMISSION_ADMIT",
+                            ticket=ticket,
+                            source_sequence=source_sequence,
+                            admission_class=admission_class.value,
+                            outstanding=self._outstanding,
+                            future_outstanding=self._future_outstanding,
+                            reserved_future_credit=max(0, self.authority.value - 1 - self._future_outstanding),
+                        )
+                        return admission_class
                     await self._condition.wait()
             except BaseException:
-                self._waiters = [item for item in self._waiters if item[1] != ticket]
+                self._waiters = [item for item in self._waiters if item[2] != ticket]
+                self._emit(
+                    "ADMISSION_CANCEL",
+                    ticket=ticket,
+                    source_sequence=source_sequence,
+                    admission_class=admission_class.value,
+                )
                 self._condition.notify_all()
                 raise
 
     async def release(self, admission_class: AdmissionClass) -> None:
+        if not isinstance(admission_class, AdmissionClass):
+            admission_class = AdmissionClass(admission_class)
         async with self._condition:
             if self._outstanding <= 0:
                 raise RuntimeError("admission release without permit")
+            if self._active_classes.get(admission_class, 0) <= 0:
+                raise RuntimeError(f"admission release class mismatch: {admission_class.value}")
             self._outstanding -= 1
             if admission_class == AdmissionClass.FUTURE_PREPARE:
                 self._future_outstanding -= 1
+            self._active_classes[admission_class] -= 1
+            self._emit(
+                "ADMISSION_RELEASE",
+                admission_class=admission_class.value,
+                outstanding=self._outstanding,
+                future_outstanding=self._future_outstanding,
+                reserved_future_credit=max(0, self.authority.value - 1 - self._future_outstanding),
+            )
             self._condition.notify_all()
 
     def evidence(self) -> dict[str, Any]:
@@ -125,6 +202,12 @@ class AdmissionArbiter:
             "capacity": self.authority.to_dict(),
             "outstanding": self._outstanding,
             "future_outstanding": self._future_outstanding,
+            "reserved_future_credit": max(0, self.authority.value - 1 - self._future_outstanding),
+            "waiters": [
+                {"ticket": ticket, "source_sequence": source, "admission_class": admission_class.value}
+                for _priority, source, ticket, admission_class in self._waiters
+            ],
+            "events": list(self._events),
             "priority": ["NATIVE_FRONTIER", "FRONTIER_PREPARE", "FUTURE_PREPARE"],
         }
 

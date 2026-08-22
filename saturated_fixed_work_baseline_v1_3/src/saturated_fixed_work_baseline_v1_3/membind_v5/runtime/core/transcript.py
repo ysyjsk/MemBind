@@ -4,6 +4,7 @@ from __future__ import annotations
 
 import copy
 import contextvars
+import hashlib
 from contextlib import contextmanager
 from dataclasses import dataclass
 from typing import Any
@@ -21,7 +22,52 @@ class DuplicateCapture(TranscriptError):
 
 
 class BindingMismatch(TranscriptError):
-    pass
+    """Fail-closed replay error with a sanitized, machine-readable reason."""
+
+    def __init__(self, message: str, *, reason: str = "unknown", details: dict[str, Any] | None = None) -> None:
+        super().__init__(message)
+        self.reason = str(reason)
+        self.details = dict(details or {})
+
+
+def _digest_value(value: Any) -> str:
+    """Return a stable short digest without retaining prompts or responses."""
+
+    encoded = repr(value).encode("utf-8", errors="backslashreplace")
+    return hashlib.sha256(encoded).hexdigest()[:16]
+
+
+def _identity_diff(expected: RequestIdentity, actual: RequestIdentity) -> dict[str, Any]:
+    fields = (
+        "source_sequence",
+        "callsite",
+        "ordinal",
+        "messages",
+        "response_model",
+        "max_tokens",
+        "model_size",
+        "group_id",
+        "prompt_name",
+        "flags",
+        "client_identity",
+        "transport_identity",
+        "cache_salt",
+        "previous_context_digest",
+    )
+    changed: list[str] = []
+    for field in fields:
+        if getattr(expected, field) != getattr(actual, field):
+            changed.append(field)
+    return {
+        "expected_digest_prefix": expected.digest[:16],
+        "candidate_digest_prefix": actual.digest[:16],
+        "source_sequence": expected.source_sequence,
+        "callsite": expected.callsite,
+        "ordinal": expected.ordinal,
+        "changed_fields": changed,
+        "expected_messages_digest": _digest_value(expected.messages),
+        "candidate_messages_digest": _digest_value(actual.messages),
+    }
 
 
 @dataclass(frozen=True, slots=True)
@@ -59,10 +105,43 @@ class TranscriptStore:
     def consume(self, identity: RequestIdentity) -> Any:
         item = self._items.get(identity.digest)
         if item is None:
-            raise BindingMismatch(f"missing transcript: {identity.digest}")
+            same_key = [
+                candidate.identity
+                for candidate in self._items.values()
+                if candidate.identity.source_sequence == identity.source_sequence
+                and candidate.identity.callsite == identity.callsite
+                and candidate.identity.ordinal == identity.ordinal
+            ]
+            same_source = [
+                candidate.identity
+                for candidate in self._items.values()
+                if candidate.identity.source_sequence == identity.source_sequence
+            ]
+            if same_key:
+                details = _identity_diff(identity, same_key[0])
+                raise BindingMismatch(
+                    f"identity mismatch: {identity.digest}",
+                    reason="identity_mismatch",
+                    details=details,
+                )
+            raise BindingMismatch(
+                f"missing transcript: {identity.digest}",
+                reason="missing",
+                details={
+                    "source_sequence": identity.source_sequence,
+                    "callsite": identity.callsite,
+                    "ordinal": identity.ordinal,
+                    "same_source_count": len(same_source),
+                    "requested_digest_prefix": identity.digest[:16],
+                },
+            )
         if item.consumed:
             self._duplicates += 1
-            raise BindingMismatch(f"duplicate transcript consume: {identity.digest}")
+            raise BindingMismatch(
+                f"duplicate transcript consume: {identity.digest}",
+                reason="duplicate_consume",
+                details={"requested_digest_prefix": identity.digest[:16]},
+            )
         self._items[identity.digest] = Transcript(item.identity, item.response, item.transport_attempts, True)
         self._consumed += 1
         return item.copy_response()

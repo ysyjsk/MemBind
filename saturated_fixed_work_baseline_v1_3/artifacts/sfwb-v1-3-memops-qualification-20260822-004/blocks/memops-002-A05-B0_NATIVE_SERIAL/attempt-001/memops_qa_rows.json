@@ -1,0 +1,165 @@
+{
+  "payload_sha256": "e579b24d990ff988cc929ebd5993f48372b17bd63bf8b5ee8c0c8d5b9f4b846b",
+  "rows": [
+    {
+      "construction_calls": 0,
+      "correct": true,
+      "evaluation_setting": "adjacent_operation",
+      "evaluation_type": "CandidateDisambiguation",
+      "expected_answer": "Unit 4A",
+      "failure_layer": null,
+      "gold_memory_state": "Current confirmed unit is Unit 4A. Unit 3B was the initial value (superseded). Unit 3A was the landlord-corrected value (superseded by 4A). A possible revert to 3A next quarter is tentative and unconfirmed.",
+      "gold_provenance": [
+        {
+          "quote": "I got a letter from the building management today and they've officially re-designated my apartment as Unit 4A after the floor renumbering",
+          "segment_index": 2,
+          "turn_index": 3
+        },
+        {
+          "quote": "The building manager told me they're planning to switch my designation back to Unit 3A starting next quarter because residents complained about the renumbering",
+          "segment_index": 3,
+          "turn_index": 5
+        }
+      ],
+      "gold_ranks": [
+        2,
+        3
+      ],
+      "graph_write_attempts": 0,
+      "invalid": false,
+      "invalid_reason": null,
+      "judge_rubric": {
+        "acceptable_paraphrases": [
+          "4A"
+        ],
+        "harmful_extra": [
+          "selecting Unit 3A because of the tentative future revert",
+          "selecting Unit 3B because it was the first value given"
+        ],
+        "harmless_extra": [
+          "noting that the unit may change in the future once officially confirmed"
+        ],
+        "must_include": [
+          "Unit 4A"
+        ],
+        "must_not_include": [
+          "Unit 3B as current",
+          "Unit 3A as current"
+        ]
+      },
+      "memops_official_judge": {
+        "answer_score": 1,
+        "completion_tokens": 109,
+        "extra_detail_postcheck_action": "none",
+        "extra_detail_postcheck_applied": false,
+        "extra_detail_type": "none",
+        "finish_reason": "stop",
+        "judge_operation_detection": {
+          "fn": 0,
+          "fp": 0,
+          "tp": 1
+        },
+        "judge_provenance_support": 1,
+        "official_prompt_builder": "build_evaluation_prompt",
+        "official_result_parser": "parse_judge_metrics",
+        "prompt_sha256": "5842e4043dba818ff863b11a59552a69e5429d38e9ccec8eac904ddcb3e71603",
+        "prompt_tokens": 6985,
+        "raw_prompt_persisted": false,
+        "raw_response_persisted": false,
+        "reason": "The model correctly selected Unit 4A as the current confirmed unit number, which is the expected answer. It did not include any harmful extra details or reference stale or tentative values.",
+        "response_sha256": "76c074f6114493fce3a40763a4c5b2b6824b587d040764f66b43985cb90f6042",
+        "stale_value": 0
+      },
+      "mrr": 0.5,
+      "ndcg_at_10": 0.6934264036172708,
+      "question_id": "A05:p4_candidate_disambiguation:adjacent_operation",
+      "question_pair_id": "p4_candidate_disambiguation",
+      "recall_at_1": 0.0,
+      "recall_at_10": 1.0,
+      "recall_at_3": 1.0,
+      "recall_at_5": 1.0,
+      "relevance_unit": "LONGMEMEVAL_GOLD_SESSION",
+      "sample_id": "A05"
+    },
+    {
+      "construction_calls": 0,
+      "correct": true,
+      "evaluation_setting": "longitudinal_operation",
+      "evaluation_type": "CandidateDisambiguation",
+      "expected_answer": "Unit 4A",
+      "failure_layer": null,
+      "gold_memory_state": "Current confirmed unit is Unit 4A. Unit 3B was the initial value (superseded). Unit 3A was the landlord-corrected value (superseded by 4A). A possible revert to 3A next quarter is tentative and unconfirmed.",
+      "gold_provenance": [
+        {
+          "quote": "I got a letter from the building management today and they've officially re-designated my apartment as Unit 4A after the floor renumbering",
+          "segment_index": 2,
+          "turn_index": 3
+        },
+        {
+          "quote": "The building manager told me they're planning to switch my designation back to Unit 3A starting next quarter because residents complained about the renumbering",
+          "segment_index": 3,
+          "turn_index": 5
+        }
+      ],
+      "gold_ranks": [
+        2,
+        3
+      ],
+      "graph_write_attempts": 0,
+      "invalid": false,
+      "invalid_reason": null,
+      "judge_rubric": {
+        "acceptable_paraphrases": [
+          "4A"
+        ],
+        "harmful_extra": [
+          "selecting Unit 3A because of the tentative future revert",
+          "selecting Unit 3B because it was the first value given"
+        ],
+        "harmless_extra": [
+          "noting that the unit may change in the future once officially confirmed"
+        ],
+        "must_include": [
+          "Unit 4A"
+        ],
+        "must_not_include": [
+          "Unit 3B as current",
+          "Unit 3A as current"
+        ]
+      },
+      "memops_official_judge": {
+        "answer_score": 1,
+        "completion_tokens": 125,
+        "extra_detail_postcheck_action": "none",
+        "extra_detail_postcheck_applied": false,
+        "extra_detail_type": "none",
+        "finish_reason": "stop",
+        "judge_operation_detection": {
+          "fn": 0,
+          "fp": 0,
+          "tp": 1
+        },
+        "judge_provenance_support": 1,
+        "official_prompt_builder": "build_evaluation_prompt",
+        "official_result_parser": "parse_judge_metrics",
+        "prompt_sha256": "c8dfd99ecf226d0a7085726b5d572dcb9dc3f76f0dd0d290266ff9abc31fa39e",
+        "prompt_tokens": 6996,
+        "raw_prompt_persisted": false,
+        "raw_response_persisted": false,
+        "reason": "The model correctly selected Unit 4A as the current unit number, which is the confirmed and most recent valid value in the Gold operations. It did not select any stale or tentative values like Unit 3A or 3B, and the final answer is semantically correct.",
+        "response_sha256": "577e9dda65ae88354545dd53b62c8262174404becd591ae163993b42fdf60a73",
+        "stale_value": 0
+      },
+      "mrr": 0.5,
+      "ndcg_at_10": 0.6934264036172708,
+      "question_id": "A05:p4_candidate_disambiguation:longitudinal_operation",
+      "question_pair_id": "p4_candidate_disambiguation",
+      "recall_at_1": 0.0,
+      "recall_at_10": 1.0,
+      "recall_at_3": 1.0,
+      "recall_at_5": 1.0,
+      "relevance_unit": "LONGMEMEVAL_GOLD_SESSION",
+      "sample_id": "A05"
+    }
+  ]
+}

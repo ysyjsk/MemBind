@@ -1,0 +1,159 @@
+{
+  "payload_sha256": "3d6249a4f319bf85b2ddb2cfaa6a658809e659f0512611c8d585f884a911922b",
+  "rows": [
+    {
+      "construction_calls": 0,
+      "correct": true,
+      "evaluation_setting": "adjacent_operation",
+      "evaluation_type": "CandidateDisambiguation",
+      "expected_answer": "Senior Data Analyst",
+      "failure_layer": null,
+      "gold_memory_state": "Current confirmed title: Senior Data Analyst. Prior titles (Junior Data Analyst, Data Analyst) are superseded. Lead Data Analyst is a planned but unfinalized future consolidation.",
+      "gold_provenance": [
+        {
+          "quote": "Diane told me yesterday that because I'm now the primary owner of the MedVantage quarterly deliverable, my title is being changed to Senior Data Analyst effective immediately",
+          "segment_index": 2,
+          "turn_index": 3
+        },
+        {
+          "quote": "HR sent an email today saying they're planning to consolidate all analyst roles under a single title of Lead Data Analyst by next quarter",
+          "segment_index": 3,
+          "turn_index": 5
+        }
+      ],
+      "gold_ranks": [
+        1,
+        3
+      ],
+      "graph_write_attempts": 0,
+      "invalid": false,
+      "invalid_reason": null,
+      "judge_rubric": {
+        "acceptable_paraphrases": [],
+        "harmful_extra": [
+          "selecting Lead Data Analyst because it was mentioned most recently",
+          "selecting Data Analyst because the February restructuring removed tiers"
+        ],
+        "harmless_extra": [],
+        "must_include": [
+          "Senior Data Analyst"
+        ],
+        "must_not_include": [
+          "Data Analyst as the answer without Senior prefix",
+          "Junior Data Analyst as the answer",
+          "Lead Data Analyst as the answer"
+        ]
+      },
+      "memops_official_judge": {
+        "answer_score": 1,
+        "completion_tokens": 105,
+        "extra_detail_postcheck_action": "none",
+        "extra_detail_postcheck_applied": false,
+        "extra_detail_type": "none",
+        "finish_reason": "stop",
+        "judge_operation_detection": {
+          "fn": 0,
+          "fp": 0,
+          "tp": 0
+        },
+        "judge_provenance_support": 1,
+        "official_prompt_builder": "build_evaluation_prompt",
+        "official_result_parser": "parse_judge_metrics",
+        "prompt_sha256": "4e4f90737fdbdea2710f8d01ce602ebfbd252a557ac82db56096153898bf4323",
+        "prompt_tokens": 5990,
+        "raw_prompt_persisted": false,
+        "raw_response_persisted": false,
+        "reason": "The model correctly selected 'Senior Data Analyst' as the current confirmed title, which aligns with the expected answer and is supported by the most recent confirmed update in the Gold operations.",
+        "response_sha256": "baa7e7503ea8e34b0fc972b7999c5775b32ca55872fcd1297034cf1f2da1d9b4",
+        "stale_value": 0
+      },
+      "mrr": 1.0,
+      "ndcg_at_10": 0.9197207891481876,
+      "question_id": "A01:p4_candidate_disambiguation:adjacent_operation",
+      "question_pair_id": "p4_candidate_disambiguation",
+      "recall_at_1": 0.5,
+      "recall_at_10": 1.0,
+      "recall_at_3": 1.0,
+      "recall_at_5": 1.0,
+      "relevance_unit": "LONGMEMEVAL_GOLD_SESSION",
+      "sample_id": "A01"
+    },
+    {
+      "construction_calls": 0,
+      "correct": true,
+      "evaluation_setting": "longitudinal_operation",
+      "evaluation_type": "CandidateDisambiguation",
+      "expected_answer": "Senior Data Analyst",
+      "failure_layer": null,
+      "gold_memory_state": "Current confirmed title: Senior Data Analyst. Prior titles (Junior Data Analyst, Data Analyst) are superseded. Lead Data Analyst is a planned but unfinalized future consolidation.",
+      "gold_provenance": [
+        {
+          "quote": "Diane told me yesterday that because I'm now the primary owner of the MedVantage quarterly deliverable, my title is being changed to Senior Data Analyst effective immediately",
+          "segment_index": 2,
+          "turn_index": 3
+        },
+        {
+          "quote": "HR sent an email today saying they're planning to consolidate all analyst roles under a single title of Lead Data Analyst by next quarter",
+          "segment_index": 3,
+          "turn_index": 5
+        }
+      ],
+      "gold_ranks": [
+        1,
+        3
+      ],
+      "graph_write_attempts": 0,
+      "invalid": false,
+      "invalid_reason": null,
+      "judge_rubric": {
+        "acceptable_paraphrases": [],
+        "harmful_extra": [
+          "selecting Lead Data Analyst because it was mentioned most recently",
+          "selecting Data Analyst because the February restructuring removed tiers"
+        ],
+        "harmless_extra": [],
+        "must_include": [
+          "Senior Data Analyst"
+        ],
+        "must_not_include": [
+          "Data Analyst as the answer without Senior prefix",
+          "Junior Data Analyst as the answer",
+          "Lead Data Analyst as the answer"
+        ]
+      },
+      "memops_official_judge": {
+        "answer_score": 1,
+        "completion_tokens": 106,
+        "extra_detail_postcheck_action": "none",
+        "extra_detail_postcheck_applied": false,
+        "extra_detail_type": "none",
+        "finish_reason": "stop",
+        "judge_operation_detection": {
+          "fn": 0,
+          "fp": 0,
+          "tp": 0
+        },
+        "judge_provenance_support": 1,
+        "official_prompt_builder": "build_evaluation_prompt",
+        "official_result_parser": "parse_judge_metrics",
+        "prompt_sha256": "4e4f90737fdbdea2710f8d01ce602ebfbd252a557ac82db56096153898bf4323",
+        "prompt_tokens": 5990,
+        "raw_prompt_persisted": false,
+        "raw_response_persisted": false,
+        "reason": "The model correctly selected 'Senior Data Analyst' as the current confirmed title, which is the expected answer. It did not include any harmful extra details or select a stale or tentative value.",
+        "response_sha256": "98cb6cb72e56d78d898e4a83dc1fbeebba3b2ae227f3e0a4a14dfa21f64785b0",
+        "stale_value": 0
+      },
+      "mrr": 1.0,
+      "ndcg_at_10": 0.9197207891481876,
+      "question_id": "A01:p4_candidate_disambiguation:longitudinal_operation",
+      "question_pair_id": "p4_candidate_disambiguation",
+      "recall_at_1": 0.5,
+      "recall_at_10": 1.0,
+      "recall_at_3": 1.0,
+      "recall_at_5": 1.0,
+      "relevance_unit": "LONGMEMEVAL_GOLD_SESSION",
+      "sample_id": "A01"
+    }
+  ]
+}

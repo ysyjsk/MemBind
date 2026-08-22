@@ -17,13 +17,17 @@ class FrontierViolation(RuntimeError):
 class FrontierRuntime:
     source_count: int
     clock: Callable[[], int] = time.monotonic_ns
+    event_sink: Callable[[dict[str, Any]], None] | None = None
     durable_frontier: int = -1
     failed_sequence: int | None = None
     prepared: dict[int, Any] = field(default_factory=dict)
     events: list[dict[str, Any]] = field(default_factory=list)
 
     def _event(self, event: str, sequence: int | None = None, **extra: Any) -> None:
-        self.events.append({"event": event, "monotonic_ns": int(self.clock()), "source_sequence": sequence, **extra})
+        row = {"event": event, "monotonic_ns": int(self.clock()), "source_sequence": sequence, **extra}
+        self.events.append(row)
+        if self.event_sink is not None:
+            self.event_sink(dict(row))
 
     async def mark_prepared(self, sequence: int, transcript: Any) -> None:
         self._check_sequence(sequence)

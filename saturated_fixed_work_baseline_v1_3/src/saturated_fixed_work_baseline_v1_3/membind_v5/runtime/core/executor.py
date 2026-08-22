@@ -32,6 +32,7 @@ class FrontierExecutor:
         *,
         clock: Callable[[], int] = time.monotonic_ns,
         prepare_admission: bool = True,
+        event_sink: Callable[[dict[str, Any]], None] | None = None,
     ) -> None:
         if source_count < 0:
             raise ValueError("source_count must be non-negative")
@@ -40,7 +41,7 @@ class FrontierExecutor:
         self.authority = authority
         self.prepare_admission = bool(prepare_admission)
         self.admission = AdmissionArbiter(authority)
-        self.frontier = FrontierRuntime(source_count, clock=clock)
+        self.frontier = FrontierRuntime(source_count, clock=clock, event_sink=event_sink)
         self._tasks: list[asyncio.Task[Any]] = []
 
     async def run(
@@ -49,9 +50,6 @@ class FrontierExecutor:
         publish: Callable[[int, Any], Awaitable[Any]],
     ) -> ExecutionResult:
         timer_start = int(self.clock())
-        prep_results: dict[int, Any] = {}
-        prep_errors: list[BaseException] = []
-
         async def do_prepare(sequence: int) -> None:
             admission_class = AdmissionClass.FRONTIER_PREPARE if sequence == 0 else AdmissionClass.FUTURE_PREPARE
             if self.prepare_admission:
@@ -61,36 +59,73 @@ class FrontierExecutor:
                 self.frontier._event("PREPARE_SUBMITTED", sequence, admission_class=admission_class.value)
             try:
                 value = await prepare(sequence)
-                prep_results[sequence] = value
                 await self.frontier.mark_prepared(sequence, value)
             except BaseException as exc:
-                prep_errors.append(exc)
                 self.frontier._event("PREPARE_FAILURE", sequence, error_type=f"{type(exc).__module__}.{type(exc).__qualname__}")
                 raise
             finally:
                 if self.prepare_admission:
                     await self.admission.release(admission_class)
 
-        self._tasks = [asyncio.create_task(do_prepare(sequence)) for sequence in range(self.source_count)]
+        # Keep the coroutine window bounded by the frozen runtime-derived
+        # capacity.  Provider admission still controls outstanding calls; this
+        # scheduler bound prevents one task/future per source from accumulating
+        # memory and cancellation scope on a full history.
+        task_by_sequence: dict[int, asyncio.Task[Any]] = {}
+        next_sequence = 0
+        window = max(1, int(self.authority.value))
+
+        def schedule_window() -> None:
+            nonlocal next_sequence
+            active = sum(1 for task in task_by_sequence.values() if not task.done())
+            while next_sequence < self.source_count and active < window:
+                task = asyncio.create_task(do_prepare(next_sequence))
+                task_by_sequence[next_sequence] = task
+                self._tasks.append(task)
+                next_sequence += 1
+                active += 1
+
+        def harvest_done() -> None:
+            for sequence, task in list(task_by_sequence.items()):
+                if not task.done():
+                    continue
+                if task.cancelled():
+                    continue
+                error = task.exception()
+                if error is not None:
+                    self.frontier.failed_sequence = sequence
+                    raise error
+                task_by_sequence.pop(sequence, None)
+                if task in self._tasks:
+                    self._tasks.remove(task)
+
+        schedule_window()
         try:
             for sequence in range(self.source_count):
                 while sequence not in self.frontier.prepared:
-                    if any(task.done() and task.exception() is not None for task in self._tasks):
-                        error = next(task.exception() for task in self._tasks if task.done() and task.exception() is not None)
-                        self.frontier.failed_sequence = sequence
-                        raise error
-                    await asyncio.sleep(0)
+                    harvest_done()
+                    schedule_window()
+                    if sequence in self.frontier.prepared:
+                        break
+                    pending = [task for task in task_by_sequence.values() if not task.done()]
+                    if not pending:
+                        raise RuntimeError(f"preparation stalled at source {sequence}")
+                    await asyncio.wait(pending, return_when=asyncio.FIRST_COMPLETED)
+                harvest_done()
+                schedule_window()
                 await self.admission.acquire(AdmissionClass.NATIVE_FRONTIER, source_sequence=sequence)
                 self.frontier._event("ADMITTED", sequence, admission_class=AdmissionClass.NATIVE_FRONTIER.value)
                 try:
                     await self.frontier.publish(sequence, lambda value, seq=sequence: publish(seq, value))
                 finally:
                     await self.admission.release(AdmissionClass.NATIVE_FRONTIER)
+                task_by_sequence.pop(sequence, None)
+                schedule_window()
         except BaseException:
-            for task in self._tasks:
+            for task in task_by_sequence.values():
                 if not task.done():
                     task.cancel()
-            await asyncio.gather(*self._tasks, return_exceptions=True)
+            await asyncio.gather(*task_by_sequence.values(), return_exceptions=True)
             raise
         finally:
             self._tasks = []

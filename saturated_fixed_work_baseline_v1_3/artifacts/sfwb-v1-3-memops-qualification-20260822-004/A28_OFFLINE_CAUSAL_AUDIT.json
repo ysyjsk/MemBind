@@ -1,0 +1,71 @@
+{
+  "schema_version": "sfwb.v1.3.memops-b0-causal-audit.v1",
+  "audit_mode": "OFFLINE_READ_ONLY",
+  "sample_id": "A28",
+  "method": "B0_NATIVE_SERIAL",
+  "qualification_status": "STOP_MEMOPS_GRAPHITI_B0_INELIGIBLE",
+  "first_provable_failure_boundary": "NATIVE_GRAPHITI_EXTRACTION_RECALL",
+  "input_evidence": {
+    "source_sequence": 1,
+    "segment_index": 2,
+    "latest_confirmed_value": "July 1st",
+    "latest_confirmed_value_present_in_frozen_input": true,
+    "latest_confirmed_value_repeated_in_following_segment": true,
+    "workload_sha256": "7341cdb5c36545bcf7430cdf7c72b9e934c47be5c4d44ddde664f08d7da6228e"
+  },
+  "execution_evidence": {
+    "source_sequence_1": {
+      "node_extraction_status": "ok",
+      "edge_extraction_status": "ok",
+      "edge_extraction_output_tokens": 142,
+      "canonical_edge_count": 1,
+      "canonical_facts": [
+        "Sara's advisor is Dr. Kim."
+      ],
+      "existing_edges_invalidated": 0,
+      "new_edges_expired": 0,
+      "publication_status": "ok"
+    },
+    "source_sequence_2": {
+      "latest_confirmed_value_present_in_input": true,
+      "edge_extraction_status": "ok",
+      "edge_extraction_output_tokens": 390,
+      "canonical_edge_count": 4,
+      "latest_confirmed_value_in_canonical_edges": false,
+      "publication_status": "ok"
+    }
+  },
+  "final_graph_evidence": {
+    "latest_confirmed_value_in_entities": false,
+    "latest_confirmed_value_in_edges": false,
+    "previous_confirmed_fact": "Dr. Voss has a sabbatical at UC San Diego starting on June 15th.",
+    "previous_confirmed_fact_source_sequence": 0,
+    "entity_summary_retains_previous_confirmed_value": true,
+    "canonical_graph_sha256": "88d7175d0b0ae2d89d24aa1078c2387a2ddf7537e987861a537540c2926cc460"
+  },
+  "qa_evidence": {
+    "official_qa_correct": 2,
+    "official_qa_total": 2,
+    "stale_value_errors": 0,
+    "graph_write_attempts": 0,
+    "construction_calls": 0,
+    "graph_mutated": false,
+    "interpretation": "Reader correctness is supported by retrieved episodic evidence and does not prove that the canonical entity-edge state represents the current value."
+  },
+  "causal_exclusions": {
+    "b1_concurrency": "EXCLUDED_B1_NOT_RUN_AND_B0_IS_SERIAL",
+    "qa_mutation": "EXCLUDED_GRAPH_HASH_UNCHANGED_AND_ZERO_WRITES",
+    "publication_loss": "EXCLUDED_ALL_THREE_SOURCES_REACHED_DURABLE_PUBLICATION",
+    "reference_time_as_latest_value_absence_cause": "EXCLUDED_JULY_1ST_IS_ABSENT_FROM_ALL_CANONICAL_ENTITIES_AND_EDGES_AT_ANY_OBSERVATION_TIME",
+    "resolution_or_invalidation_as_primary_cause": "NOT_SUPPORTED_NO_JULY_1ST_CANDIDATE_IS_OBSERVED_BEFORE_PUBLICATION",
+    "llm_response_content": "NOT_DIRECTLY_OBSERVABLE_RAW_CONSTRUCTION_RESPONSE_WAS_NOT_PERSISTED"
+  },
+  "root_cause": "The native Graphiti construction path failed to materialize the confirmed July 1st update as an entity-edge fact. The earliest directly observable boundary is extraction output cardinality followed by a canonical source-sequence-1 edge set containing only an unrelated Sara-to-Dr-Kim fact. Resolution and publication completed successfully over that incomplete semantic output.",
+  "decision": "DO_NOT_RUN_B1",
+  "source_artifact_sha256": {
+    "b0_gate_json": "0087fb636dc4ca8046f14cce778635915616bfc0a12a554cc9f09dc71e80a2f2",
+    "b0_result_json": "8a4211cadfa4094567899976b1bbd3f351346ff3a886b44c010254658177d94a",
+    "canonical_graph_json": "88d7175d0b0ae2d89d24aa1078c2387a2ddf7537e987861a537540c2926cc460",
+    "native_trace_jsonl": "f8ec86306299b41fbede70babb1a91838557f6223bbd9ffe7b742b873c42d07b"
+  }
+}

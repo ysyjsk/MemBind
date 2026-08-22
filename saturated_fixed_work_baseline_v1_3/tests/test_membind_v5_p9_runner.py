@@ -145,10 +145,23 @@ def test_p9_resume_is_limited_to_matching_started_marker(tmp_path: Path) -> None
 
 
 def test_preparation_previous_window_matches_pinned_graphiti_limit() -> None:
-    episodes = [type("Episode", (), {"source_sequence": index})() for index in range(20)]
+    episodes = [
+        type("Episode", (), {"source_sequence": index, "reference_time": f"2026-01-{index + 1:02d}T00:00:00Z"})()
+        for index in range(20)
+    ]
     assert [row.source_sequence for row in _native_previous_window(episodes, 0)] == []
     assert [row.source_sequence for row in _native_previous_window(episodes, 5)] == [0, 1, 2, 3, 4]
-    assert [row.source_sequence for row in _native_previous_window(episodes, 20)] == list(range(10, 20))
+    assert [row.source_sequence for row in _native_previous_window(episodes, 19)] == list(range(9, 19))
+
+
+def test_preparation_previous_window_filters_future_valid_at_and_returns_chronological() -> None:
+    rows = [
+        type("Episode", (), {"source_sequence": 0, "reference_time": "2026-01-05T00:00:00Z"})(),
+        type("Episode", (), {"source_sequence": 1, "reference_time": "2026-01-02T00:00:00Z"})(),
+        type("Episode", (), {"source_sequence": 2, "reference_time": "2026-01-01T00:00:00Z"})(),
+        type("Episode", (), {"source_sequence": 3, "reference_time": "2026-01-04T00:00:00Z"})(),
+    ]
+    assert [row.source_sequence for row in _native_previous_window(rows, 3)] == [2, 1]
 
 
 def test_p9_context_budget_adapter_retries_only_wire_budget() -> None:
@@ -218,3 +231,35 @@ async def test_scoped_client_routes_capture_and_replay_without_provider_replay()
     assert capture_delegate.calls == 1
     assert replay_delegate.calls == 0
     assert replay.provider_calls[-1]["admitted"] is False
+
+
+@pytest.mark.asyncio
+async def test_concurrent_capture_source_identity_is_context_local() -> None:
+    class Delegate:
+        async def generate_response(self, messages, **kwargs):
+            await asyncio.sleep(0.005)
+            return {"source": kwargs["prompt_name"]}
+
+    from saturated_fixed_work_baseline_v1_3.membind_v5.runtime.core.admission import AdmissionArbiter
+
+    authority = CapacityAuthority.from_runtime(4, 4)
+    store = TranscriptStore()
+    client = FrontierAwareLLMClient(
+        Delegate(),
+        store=store,
+        arbiter=AdmissionArbiter(authority),
+        mode="capture",
+        durable_frontier=lambda: -1,
+        client_identity={"class": "Delegate", "source_hash": "concurrency-test"},
+    )
+
+    async def one(source_sequence: int) -> None:
+        with provider_scope(region="PREPARE", source_sequence=source_sequence):
+            await client.generate_response(
+                [{"role": "user", "content": f"source-{source_sequence}"}],
+                prompt_name="extract_nodes.extract_message",
+            )
+
+    await asyncio.gather(*(one(index) for index in range(4)))
+    identities = sorted(item.identity.source_sequence for item in store._items.values())
+    assert identities == [0, 1, 2, 3]

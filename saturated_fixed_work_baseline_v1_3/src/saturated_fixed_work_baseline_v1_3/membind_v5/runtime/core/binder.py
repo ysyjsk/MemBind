@@ -34,7 +34,16 @@ class NativeBindingScope(AbstractContextManager["NativeBindingScope"]):
     def __exit__(self, exc_type: Any, exc: Any, tb: Any) -> None:
         try:
             if exc is None and self.store.unconsumed_for_source(self.source_sequence):
-                raise BindingMismatch("unconsumed transcript at native scope finalization")
+                pending = self.store.unconsumed_for_source(self.source_sequence)
+                raise BindingMismatch(
+                    "unconsumed transcript at native scope finalization",
+                    reason="unconsumed",
+                    details={
+                        "source_sequence": self.source_sequence,
+                        "count": len(pending),
+                        "digest_prefixes": [item.digest[:16] for item in pending],
+                    },
+                )
         finally:
             if self._token is not None:
                 self._current.reset(self._token)
@@ -46,7 +55,15 @@ class NativeBindingScope(AbstractContextManager["NativeBindingScope"]):
 
     def consume(self, identity: RequestIdentity) -> Any:
         if identity.source_sequence != self.source_sequence:
-            raise BindingMismatch("source sequence mismatch")
+            raise BindingMismatch(
+                "source sequence mismatch",
+                reason="source_mismatch",
+                details={
+                    "scope_source_sequence": self.source_sequence,
+                    "request_source_sequence": identity.source_sequence,
+                    "requested_digest_prefix": identity.digest[:16],
+                },
+            )
         value = self.store.consume(identity)
         self._consumed.append(identity.digest)
         return value
@@ -81,4 +98,3 @@ def bind_or_delegate(
             raise BindingScopeError("certified call outside native binding scope")
         return delegate()
     return scope.invoke(identity, delegate, certified=certified)
-

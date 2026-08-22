@@ -141,6 +141,36 @@ def test_transcript_retry_is_one_logical_call_and_exact_consume() -> None:
         store.consume(identity)
 
 
+def test_transcript_binding_mismatch_reports_sanitized_identity_diff() -> None:
+    store = TranscriptStore()
+    kwargs = {
+        "source_sequence": 0,
+        "callsite": "extract_nodes.extract_message",
+        "ordinal": 0,
+        "response_model": {"type": "object"},
+        "max_tokens": 16,
+        "model_size": "large",
+        "group_id": "g",
+        "prompt_name": "extract_nodes.extract_message",
+        "flags": {},
+        "client_identity": {"class": "FakeClient", "source_hash": "abc"},
+        "transport_identity": {"top_p": 1.0, "seed": 7},
+        "cache_salt": "salt",
+        "previous_context_digest": "prev",
+    }
+    captured = build_request_identity(messages=[{"role": "user", "content": "captured"}], **kwargs)
+    requested = build_request_identity(messages=[{"role": "user", "content": "requested"}], **kwargs)
+    store.capture(captured, {"nodes": []})
+
+    with pytest.raises(BindingMismatch, match="identity mismatch") as error:
+        store.consume(requested)
+
+    assert error.value.reason == "identity_mismatch"
+    assert "messages" in error.value.details["changed_fields"]
+    assert "captured" not in repr(error.value.details)
+    assert "requested" not in repr(error.value.details)
+
+
 def test_capacity_authority_uses_runtime_value_and_rejects_mismatch() -> None:
     authority = CapacityAuthority.from_runtime(runtime_max_coroutines=8, graphiti_max_coroutines=8)
     assert authority.value == 8
@@ -209,6 +239,68 @@ async def test_executor_c1_degenerates_to_serial_and_cancels_after_failure() -> 
     assert published == [0, 1]
     assert executor.frontier.durable_frontier == 0
     assert executor.frontier.failed_sequence == 1
+
+
+@pytest.mark.asyncio
+async def test_executor_bounds_preparation_tasks_by_runtime_capacity() -> None:
+    """P9 must not materialize one coroutine/future per source."""
+    authority = CapacityAuthority.from_runtime(2, 2)
+    executor = FrontierExecutor(10, authority, prepare_admission=False)
+    active = 0
+    peak = 0
+
+    async def prepare(sequence: int) -> int:
+        nonlocal active, peak
+        active += 1
+        peak = max(peak, active)
+        await asyncio.sleep(0.001)
+        active -= 1
+        return sequence
+
+    async def publish(_sequence: int, _value: int) -> None:
+        await asyncio.sleep(0)
+
+    result = await executor.run(prepare, publish)
+    assert result.durable_frontier == 9
+    assert peak <= authority.value
+
+
+@pytest.mark.asyncio
+async def test_admission_and_provider_failure_are_durable_sanitized_events() -> None:
+    from saturated_fixed_work_baseline_v1_3.membind_v5.runtime.core.admission import AdmissionArbiter
+
+    events: list[dict[str, object]] = []
+
+    class FailingClient:
+        async def generate_response(self, messages, **kwargs):
+            raise RuntimeError("malformed structured output")
+
+    authority = CapacityAuthority.from_runtime(2, 2)
+    arbiter = AdmissionArbiter(authority, event_sink=events.append)
+    client = FrontierAwareLLMClient(
+        FailingClient(),
+        store=TranscriptStore(),
+        arbiter=arbiter,
+        mode="capture",
+        durable_frontier=lambda: -1,
+        client_identity={"class": "FailingClient", "source_hash": "test"},
+        event_sink=events.append,
+    )
+    with provider_scope(region="PREPARE", source_sequence=0):
+        with pytest.raises(RuntimeError, match="malformed"):
+            await client.generate_response(
+                [{"role": "user", "content": "x"}],
+                prompt_name="extract_nodes.extract_message",
+            )
+    assert any(row.get("event") == "ADMISSION_ENQUEUE" for row in events)
+    assert any(row.get("event") == "ADMISSION_RELEASE" for row in events)
+    assert len(client.provider_calls) == 1
+    failure = client.provider_calls[0]
+    assert failure["status"] == "failure"
+    assert failure["error_type"] == "builtins.RuntimeError"
+    assert failure["request_digest_prefix"]
+    assert "raw_prompt" not in failure
+    assert "raw_response" not in failure
 
 
 @pytest.mark.asyncio

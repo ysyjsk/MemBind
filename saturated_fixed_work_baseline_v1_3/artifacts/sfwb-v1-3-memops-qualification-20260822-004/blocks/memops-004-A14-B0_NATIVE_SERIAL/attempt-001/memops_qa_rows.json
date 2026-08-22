@@ -1,0 +1,147 @@
+{
+  "payload_sha256": "1d0a29587d8f2531dca8830c280df8853f08978246f96e9f6188c91773c9a344",
+  "rows": [
+    {
+      "construction_calls": 0,
+      "correct": true,
+      "evaluation_setting": "adjacent_operation",
+      "evaluation_type": "CandidateDisambiguation",
+      "expected_answer": "HG284139",
+      "failure_layer": null,
+      "gold_memory_state": "Brazilian passport number is HG284139, confirmed from the physical passport. HG284913 and HG284193 are superseded stale values. HG284931 is a tentative consulate system error pending correction. HG284319 belongs to a different applicant.",
+      "gold_provenance": [
+        {
+          "quote": "I pulled out the physical passport just now and the number printed on it is HG284139. I've been reading the last four digits wrong this whole time",
+          "segment_index": 2,
+          "turn_index": 3
+        }
+      ],
+      "gold_ranks": [
+        3
+      ],
+      "graph_write_attempts": 0,
+      "invalid": false,
+      "invalid_reason": null,
+      "judge_rubric": {
+        "acceptable_paraphrases": [],
+        "harmful_extra": [
+          "selecting any value other than HG284139"
+        ],
+        "harmless_extra": [],
+        "must_include": [
+          "HG284139"
+        ],
+        "must_not_include": [
+          "HG284913",
+          "HG284193",
+          "HG284931",
+          "HG284319"
+        ]
+      },
+      "memops_official_judge": {
+        "answer_score": 1,
+        "completion_tokens": 106,
+        "extra_detail_postcheck_action": "none",
+        "extra_detail_postcheck_applied": false,
+        "extra_detail_type": "none",
+        "finish_reason": "stop",
+        "judge_operation_detection": {
+          "fn": 0,
+          "fp": 0,
+          "tp": 1
+        },
+        "judge_provenance_support": 1,
+        "official_prompt_builder": "build_evaluation_prompt",
+        "official_result_parser": "parse_judge_metrics",
+        "prompt_sha256": "4d5732ba3cd689d038d903589f83d10561c137c11464aa9a77516a9978d0a747",
+        "prompt_tokens": 6173,
+        "raw_prompt_persisted": false,
+        "raw_response_persisted": false,
+        "reason": "The model correctly selected the confirmed current value HG284139 as the Brazilian passport number, which is the expected answer. No extra details were included.",
+        "response_sha256": "fdadba3a03d37e2c12d67ced6c310409dfca00e30cd011bca3504d3822b51afb",
+        "stale_value": 0
+      },
+      "mrr": 0.3333333333333333,
+      "ndcg_at_10": 0.5,
+      "question_id": "A14:p4_candidate_disambiguation:adjacent_operation",
+      "question_pair_id": "p4_candidate_disambiguation",
+      "recall_at_1": 0.0,
+      "recall_at_10": 1.0,
+      "recall_at_3": 1.0,
+      "recall_at_5": 1.0,
+      "relevance_unit": "LONGMEMEVAL_GOLD_SESSION",
+      "sample_id": "A14"
+    },
+    {
+      "construction_calls": 0,
+      "correct": true,
+      "evaluation_setting": "longitudinal_operation",
+      "evaluation_type": "CandidateDisambiguation",
+      "expected_answer": "HG284139",
+      "failure_layer": null,
+      "gold_memory_state": "Brazilian passport number is HG284139, confirmed from the physical passport. HG284913 and HG284193 are superseded stale values. HG284931 is a tentative consulate system error pending correction. HG284319 belongs to a different applicant.",
+      "gold_provenance": [
+        {
+          "quote": "I pulled out the physical passport just now and the number printed on it is HG284139. I've been reading the last four digits wrong this whole time",
+          "segment_index": 2,
+          "turn_index": 3
+        }
+      ],
+      "gold_ranks": [
+        3
+      ],
+      "graph_write_attempts": 0,
+      "invalid": false,
+      "invalid_reason": null,
+      "judge_rubric": {
+        "acceptable_paraphrases": [],
+        "harmful_extra": [
+          "selecting any value other than HG284139"
+        ],
+        "harmless_extra": [],
+        "must_include": [
+          "HG284139"
+        ],
+        "must_not_include": [
+          "HG284913",
+          "HG284193",
+          "HG284931",
+          "HG284319"
+        ]
+      },
+      "memops_official_judge": {
+        "answer_score": 1,
+        "completion_tokens": 105,
+        "extra_detail_postcheck_action": "none",
+        "extra_detail_postcheck_applied": false,
+        "extra_detail_type": "none",
+        "finish_reason": "stop",
+        "judge_operation_detection": {
+          "fn": 0,
+          "fp": 0,
+          "tp": 1
+        },
+        "judge_provenance_support": 1,
+        "official_prompt_builder": "build_evaluation_prompt",
+        "official_result_parser": "parse_judge_metrics",
+        "prompt_sha256": "4d5732ba3cd689d038d903589f83d10561c137c11464aa9a77516a9978d0a747",
+        "prompt_tokens": 6173,
+        "raw_prompt_persisted": false,
+        "raw_response_persisted": false,
+        "reason": "The model correctly selected the confirmed current value HG284139, which is the correct passport number from the physical document. No harmful or conflicting extra details were included.",
+        "response_sha256": "529ada4f372f039e344da51f707622f24df808b3154246db909ae42afdbfa687",
+        "stale_value": 0
+      },
+      "mrr": 0.3333333333333333,
+      "ndcg_at_10": 0.5,
+      "question_id": "A14:p4_candidate_disambiguation:longitudinal_operation",
+      "question_pair_id": "p4_candidate_disambiguation",
+      "recall_at_1": 0.0,
+      "recall_at_10": 1.0,
+      "recall_at_3": 1.0,
+      "recall_at_5": 1.0,
+      "relevance_unit": "LONGMEMEVAL_GOLD_SESSION",
+      "sample_id": "A14"
+    }
+  ]
+}

@@ -8,7 +8,7 @@ from typing import Any, Awaitable, Callable
 
 from .admission import AdmissionArbiter, AdmissionClass
 from .transcript import TranscriptStore
-from ..adapters.client_proxy import V5LLMClientProxy, CERTIFIED_CALLSITES
+from ..adapters.client_proxy import V5LLMClientProxy, CERTIFIED_CALLSITES, proxy_source_scope
 
 
 class ProviderAdmissionError(RuntimeError):
@@ -87,16 +87,16 @@ class FrontierAwareLLMClient:
         certified = prompt_name in CERTIFIED_CALLSITES
         # Replay certified calls are provider-free exact transcript hits.
         if self.mode == "replay" and certified:
-            self._proxy.source_sequence = source_sequence
-            result = await self._proxy.generate_response(messages, **kwargs)
+            with proxy_source_scope(source_sequence):
+                result = await self._proxy.generate_response(messages, **kwargs)
             self.provider_calls.append({"mode": self.mode, "region": region, "source_sequence": source_sequence, "prompt_name": prompt_name, "admitted": False, "replay": True})
             return result
 
         admission_class = self._admission_class(source_sequence, region)
         await self.arbiter.acquire(admission_class, source_sequence=source_sequence)
-        self._proxy.source_sequence = source_sequence
         try:
-            result = await self._proxy.generate_response(messages, **kwargs)
+            with proxy_source_scope(source_sequence):
+                result = await self._proxy.generate_response(messages, **kwargs)
             self.provider_calls.append({"mode": self.mode, "region": region, "source_sequence": source_sequence, "prompt_name": prompt_name, "admission_class": admission_class.value, "admitted": True, "replay": False})
             return result
         finally:

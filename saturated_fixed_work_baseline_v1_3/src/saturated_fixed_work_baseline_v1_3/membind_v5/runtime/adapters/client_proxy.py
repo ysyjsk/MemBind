@@ -3,9 +3,11 @@
 from __future__ import annotations
 
 import copy
+import contextvars
 import hashlib
 import inspect
 from dataclasses import dataclass
+from contextlib import contextmanager
 from typing import Any, Awaitable, Callable, Iterable
 
 from ..core.binder import BindingScopeError, NativeBindingScope
@@ -21,6 +23,29 @@ CERTIFIED_CALLSITES = frozenset(
         "extract_edges.edge",
     }
 )
+
+
+_PROXY_SOURCE_SEQUENCE: contextvars.ContextVar[int | None] = contextvars.ContextVar(
+    "membind_v5_proxy_source_sequence", default=None
+)
+_PROXY_REQUEST_IDENTITY: contextvars.ContextVar[Any | None] = contextvars.ContextVar(
+    "membind_v5_proxy_request_identity", default=None
+)
+
+
+@contextmanager
+def proxy_source_scope(source_sequence: int):
+    token = _PROXY_SOURCE_SEQUENCE.set(int(source_sequence))
+    try:
+        yield
+    finally:
+        _PROXY_SOURCE_SEQUENCE.reset(token)
+
+
+def current_proxy_request_identity() -> Any | None:
+    """Return the sanitized logical identity for the provider call in scope."""
+
+    return _PROXY_REQUEST_IDENTITY.get()
 
 
 def _client_identity(client: Any) -> dict[str, Any]:
@@ -52,13 +77,13 @@ class V5LLMClientProxy:
         if self.transport_identity is None:
             self.transport_identity = {"top_p": 1.0, "seed": 20260806}
 
-    def _identity(self, messages: Any, response_model: Any, max_tokens: int | None, model_size: Any, group_id: str | None, prompt_name: str | None, attribute_extraction: bool) -> Any:
+    def _identity(self, messages: Any, response_model: Any, max_tokens: int | None, model_size: Any, group_id: str | None, prompt_name: str | None, attribute_extraction: bool, source_sequence: int) -> Any:
         callsite = str(prompt_name or "unknown")
-        key = (int(self.source_sequence), callsite)
+        key = (int(source_sequence), callsite)
         ordinal = self._ordinals.get(key, 0)
         self._ordinals[key] = ordinal + 1
         return build_request_identity(
-            source_sequence=self.source_sequence,
+            source_sequence=source_sequence,
             callsite=callsite,
             ordinal=ordinal,
             messages=copy.deepcopy(messages),
@@ -98,8 +123,12 @@ class V5LLMClientProxy:
                 default = inspect.Parameter.empty
             if default is not inspect.Parameter.empty and default is not None:
                 model_size = default
-        identity = self._identity(messages, response_model, max_tokens, model_size, group_id, prompt_name, attribute_extraction)
+        source_sequence = _PROXY_SOURCE_SEQUENCE.get()
+        if source_sequence is None:
+            source_sequence = int(self.source_sequence)
+        identity = self._identity(messages, response_model, max_tokens, model_size, group_id, prompt_name, attribute_extraction, source_sequence)
         immutable_messages = copy.deepcopy(messages)
+        identity_token = _PROXY_REQUEST_IDENTITY.set(identity)
 
         async def delegate() -> Any:
             return await self.delegate.generate_response(
@@ -112,17 +141,20 @@ class V5LLMClientProxy:
                 attribute_extraction=attribute_extraction,
             )
 
-        certified = prompt_name in CERTIFIED_CALLSITES
-        if self.mode == "capture":
-            response = await delegate()
-            self.store.capture(identity, response, transport_attempts=1)
-            return copy.deepcopy(response)
-        scope = NativeBindingScope.current()
-        if scope is None and certified:
-            raise BindingScopeError("certified Graphiti call outside V5 native scope")
-        if scope is None:
-            return await delegate()
-        return await scope.invoke(identity, delegate, certified=certified)
+        try:
+            certified = prompt_name in CERTIFIED_CALLSITES
+            if self.mode == "capture":
+                response = await delegate()
+                self.store.capture(identity, response, transport_attempts=1)
+                return copy.deepcopy(response)
+            scope = NativeBindingScope.current()
+            if scope is None and certified:
+                raise BindingScopeError("certified Graphiti call outside V5 native scope")
+            if scope is None:
+                return await delegate()
+            return await scope.invoke(identity, delegate, certified=certified)
+        finally:
+            _PROXY_REQUEST_IDENTITY.reset(identity_token)
 
     def __getattr__(self, name: str) -> Any:
         return getattr(self.delegate, name)
