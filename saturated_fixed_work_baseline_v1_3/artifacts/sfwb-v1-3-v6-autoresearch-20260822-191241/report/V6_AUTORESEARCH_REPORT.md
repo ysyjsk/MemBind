@@ -1,12 +1,17 @@
-# V6 Autoresearch Report (Current State)
+# V6 Autoresearch Report
 
 ## Conclusion first
 
-V6 implementation and provider-free evidence are GREEN, but the real
-`8000/8001` Probe A/B and full `6071bd76` matched campaign have not started.
-The current `membind-validation/CURRENT_STATE.json` denies `LiveAction.FORMAL`
-with `action_not_authorized`.  No Graphiti namespace or provider request was
-created by this V6 attempt.
+The complete real Graphiti V6 full-history qualification is GREEN and sealed.
+Four 46-source arms ran on frozen `8000/8001`: control→V6 and V6→control.
+All arms reached durable frontier `45`, passed provider/frontier proof, and
+used the pinned Graphiti 0.29.3 native path.  The machine-checked result is
+`main/V6_MAIN_COMPARISON.json`.
+
+The result is intentionally `QUALIFICATION_ONLY`, not a general performance or
+correctness claim.  Two paired timer deltas (control minus candidate) were
+`1533.223 s` and `1011.468 s`; candidate replay was exact `92/92` in both arms,
+but request misses were `304` and `370`, and QA remains `INVALID_RETAINED`.
 
 ## What was implemented
 
@@ -26,30 +31,34 @@ created by this V6 attempt.
 
 ## Tests
 
-`29` V6 tests, `196` saturated v1.3 tests, and `60` pinned instrumentation/
-workplan tests pass.  Compileall and `git diff --check` pass.  The baseline
+`34` focused V6 tests (including the sealed-main comparison reducer) and `201`
+saturated v1.3 tests pass.  Compileall and `git diff --check` pass.  The baseline
 formal seal and P8 seal were read-only and unchanged.
 
-## Live preflight
+## Full-history evidence
 
-Direct no-proxy model catalogs and idle metrics passed for construction
-`8000`/embedding `8001`; Neo4j 5.26.0 HTTP/Bolt canary passed with project
-credentials; restricted remote status returned `readonly liuyi access OK`.
-Remote process argv/watchdog identity is not observable through the permitted
-read-only command set.  This is an evidence limitation, not a service outage.
+Both pair orders used fresh namespaces and the same executable/configuration.
+The first control/V6 pair measured `2884.676 s` vs `1351.453 s`; the reverse
+pair measured `1326.745 s` vs `2338.213 s`.  Candidate transport attempts were
+`396` and `462`; control attempts were `478` and `474`.  All usage and finish
+reasons were observed, with zero transport errors.  The first control retained
+a real `finish_reason=length` attempt followed by Graphiti retry recovery.
+
+Provider proof was unchanged in all arms: capacity `8`, max outstanding `8`,
+future max outstanding `7`.  Frontier proof was ordered and durable through
+source `45`; overlap was true in both candidate arms (106 and 125 pairs).
 
 ## Method status
 
-The `v6` arm is labelled `V6_REQUEST_STABILITY_PROBE` and
-`claim_status=QUALIFICATION_ONLY`.  It is not a final performance treatment:
-the attributes/summary native phase still needs complete real request identity
-evidence.  No quality or freshness claim is made because QA remains
-`INVALID_RETAINED`.
+The resulting narrow method is certified extraction replay with frontier-aware
+provider admission.  It changes no backend scheduling and leaves every miss
+and non-certified native request on the real provider.  It is not generic
+native replay: the broad request drift is an explicit negative result.  No
+quality or freshness claim is made because QA remains `INVALID_RETAINED`.
 
-## Required continuation
+## Completion and next campaign
 
-After the formal state transition is authorized, run a fresh 2-source
-matched-control and request-stability probe on `8000/8001` in detached tmux,
-then one AB/BA single-request interference probe.  Use those observations to
-select exact replay, certified repair, native input/delta reduction, or the
-null branch; do not start the 46-source campaign before that selection.
+The current V6 campaign is sealed at `R12`.  The next informative experiment is
+held-out histories with fresh same-time native B0/V5 controls and valid QA; do
+not treat this single development history as a general estimate.  Keep the
+baseline, P8, workload, backend configuration, and QA status unchanged.

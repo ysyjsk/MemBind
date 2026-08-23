@@ -1,0 +1,321 @@
+{
+  "attempt_roots": [
+    "/data/predator/ly/MemBind/saturated_fixed_work_baseline_v1_3/artifacts/sfwb-v1-3-v6-autoresearch-20260822-191241/main/v6-r06-control-r2",
+    "/data/predator/ly/MemBind/saturated_fixed_work_baseline_v1_3/artifacts/sfwb-v1-3-v6-autoresearch-20260822-191241/main/v6-r06-v6",
+    "/data/predator/ly/MemBind/saturated_fixed_work_baseline_v1_3/artifacts/sfwb-v1-3-v6-autoresearch-20260822-191241/main/v6-r07-v6",
+    "/data/predator/ly/MemBind/saturated_fixed_work_baseline_v1_3/artifacts/sfwb-v1-3-v6-autoresearch-20260822-191241/main/v6-r07-control"
+  ],
+  "claim_boundary": "single development history; two counterbalanced pairs; no multi-history or QA correctness claim",
+  "claim_status": "QUALIFICATION_ONLY",
+  "endpoint_identity": {
+    "construction": "http://10.87.5.247:8000/v1/",
+    "embedding": "http://10.87.5.247:8001/v1"
+  },
+  "history_id": "6071bd76",
+  "mechanism_evidence": {
+    "candidate_replay_captured": [
+      92,
+      92
+    ],
+    "candidate_replay_consumed": [
+      92,
+      92
+    ],
+    "candidate_replay_exact_single_consume": true,
+    "candidate_request_matches": [
+      92,
+      92
+    ],
+    "candidate_request_misses": [
+      304,
+      370
+    ],
+    "candidate_transport_attempts": [
+      396,
+      462
+    ],
+    "control_transport_attempts": [
+      478,
+      474
+    ],
+    "future_native_overlap": [
+      true,
+      true
+    ],
+    "overlap_pairs": [
+      106,
+      125
+    ]
+  },
+  "paired_timer_summary": {
+    "deltas_s_control_minus_candidate": [
+      1533.222764339,
+      1011.4677776019998
+    ],
+    "max_delta_s": 1533.222764339,
+    "mean_delta_s": 1272.3452709704998,
+    "median_delta_s": 1272.3452709704998,
+    "min_delta_s": 1011.4677776019998
+  },
+  "pairs": [
+    {
+      "candidate": {
+        "claim_status": "QUALIFICATION_ONLY",
+        "durable_frontier": 45,
+        "frontier_proof": {
+          "durable_frontier": 45,
+          "publication_count": 46,
+          "schema_version": "membind.v6.frontier-proof.v1",
+          "status": "PASS"
+        },
+        "history_id": "6071bd76",
+        "logical_work": {
+          "captured": 92,
+          "consumed": 92,
+          "duplicates": 0,
+          "unconsumed": 0
+        },
+        "method": "V6_REQUEST_STABILITY_PROBE",
+        "overlap": true,
+        "overlap_pairs": 106,
+        "policy": "v6",
+        "provider_call_count": 488,
+        "provider_proof": {
+          "admission_count": 396,
+          "capacity": 8,
+          "max_future_outstanding": 7,
+          "max_outstanding": 8,
+          "schema_version": "membind.v6.provider-proof.v1",
+          "status": "PASS"
+        },
+        "replay_proof": {
+          "logical_captured": 92,
+          "logical_consumed": 92,
+          "schema_version": "membind.v6.replay-proof.v1",
+          "status": "PASS"
+        },
+        "request_observation_count": 488,
+        "request_proof": {
+          "comparison_count": 396,
+          "match_count": 92,
+          "miss_count": 304,
+          "schema_version": "membind.v6.request-proof.v1",
+          "status": "PASS"
+        },
+        "root": "/data/predator/ly/MemBind/saturated_fixed_work_baseline_v1_3/artifacts/sfwb-v1-3-v6-autoresearch-20260822-191241/main/v6-r06-v6",
+        "source_count": 46,
+        "timer_s": 1351.453471953,
+        "transport_attempt_count": 396,
+        "transport_error_count": 0,
+        "transport_finish_reason_observed_count": 396,
+        "transport_finish_reasons": [
+          "stop"
+        ],
+        "transport_usage_observed_count": 396
+      },
+      "candidate_reduction_pct": 53.15060127197582,
+      "control": {
+        "claim_status": "QUALIFICATION_ONLY",
+        "durable_frontier": 45,
+        "frontier_proof": {
+          "durable_frontier": 45,
+          "publication_count": 46,
+          "schema_version": "membind.v6.frontier-proof.v1",
+          "status": "PASS"
+        },
+        "history_id": "6071bd76",
+        "logical_work": {
+          "captured": 477,
+          "consumed": 0,
+          "duplicates": 0,
+          "unconsumed": 477
+        },
+        "method": "V6_MATCHED_CONTROL",
+        "overlap": true,
+        "overlap_pairs": 58,
+        "policy": "matched-control",
+        "provider_call_count": 477,
+        "provider_proof": {
+          "admission_count": 477,
+          "capacity": 8,
+          "max_future_outstanding": 7,
+          "max_outstanding": 8,
+          "schema_version": "membind.v6.provider-proof.v1",
+          "status": "PASS"
+        },
+        "replay_proof": {
+          "schema_version": "membind.v6.replay-proof.v1",
+          "status": "NOT_APPLICABLE"
+        },
+        "request_observation_count": 477,
+        "request_proof": {
+          "comparison_count": 0,
+          "match_count": 0,
+          "miss_count": 0,
+          "schema_version": "membind.v6.request-proof.v1",
+          "status": "PASS"
+        },
+        "root": "/data/predator/ly/MemBind/saturated_fixed_work_baseline_v1_3/artifacts/sfwb-v1-3-v6-autoresearch-20260822-191241/main/v6-r06-control-r2",
+        "source_count": 46,
+        "timer_s": 2884.676236292,
+        "transport_attempt_count": 478,
+        "transport_error_count": 0,
+        "transport_finish_reason_observed_count": 478,
+        "transport_finish_reasons": [
+          "length",
+          "stop"
+        ],
+        "transport_usage_observed_count": 478
+      },
+      "order": "control_then_candidate",
+      "timer_delta_s_control_minus_candidate": 1533.222764339
+    },
+    {
+      "candidate": {
+        "claim_status": "QUALIFICATION_ONLY",
+        "durable_frontier": 45,
+        "frontier_proof": {
+          "durable_frontier": 45,
+          "publication_count": 46,
+          "schema_version": "membind.v6.frontier-proof.v1",
+          "status": "PASS"
+        },
+        "history_id": "6071bd76",
+        "logical_work": {
+          "captured": 92,
+          "consumed": 92,
+          "duplicates": 0,
+          "unconsumed": 0
+        },
+        "method": "V6_REQUEST_STABILITY_PROBE",
+        "overlap": true,
+        "overlap_pairs": 125,
+        "policy": "v6",
+        "provider_call_count": 554,
+        "provider_proof": {
+          "admission_count": 462,
+          "capacity": 8,
+          "max_future_outstanding": 7,
+          "max_outstanding": 8,
+          "schema_version": "membind.v6.provider-proof.v1",
+          "status": "PASS"
+        },
+        "replay_proof": {
+          "logical_captured": 92,
+          "logical_consumed": 92,
+          "schema_version": "membind.v6.replay-proof.v1",
+          "status": "PASS"
+        },
+        "request_observation_count": 554,
+        "request_proof": {
+          "comparison_count": 462,
+          "match_count": 92,
+          "miss_count": 370,
+          "schema_version": "membind.v6.request-proof.v1",
+          "status": "PASS"
+        },
+        "root": "/data/predator/ly/MemBind/saturated_fixed_work_baseline_v1_3/artifacts/sfwb-v1-3-v6-autoresearch-20260822-191241/main/v6-r07-v6",
+        "source_count": 46,
+        "timer_s": 1326.745131315,
+        "transport_attempt_count": 462,
+        "transport_error_count": 0,
+        "transport_finish_reason_observed_count": 462,
+        "transport_finish_reasons": [
+          "stop"
+        ],
+        "transport_usage_observed_count": 462
+      },
+      "candidate_reduction_pct": 43.258155565931155,
+      "control": {
+        "claim_status": "QUALIFICATION_ONLY",
+        "durable_frontier": 45,
+        "frontier_proof": {
+          "durable_frontier": 45,
+          "publication_count": 46,
+          "schema_version": "membind.v6.frontier-proof.v1",
+          "status": "PASS"
+        },
+        "history_id": "6071bd76",
+        "logical_work": {
+          "captured": 474,
+          "consumed": 0,
+          "duplicates": 0,
+          "unconsumed": 474
+        },
+        "method": "V6_MATCHED_CONTROL",
+        "overlap": true,
+        "overlap_pairs": 56,
+        "policy": "matched-control",
+        "provider_call_count": 474,
+        "provider_proof": {
+          "admission_count": 474,
+          "capacity": 8,
+          "max_future_outstanding": 7,
+          "max_outstanding": 8,
+          "schema_version": "membind.v6.provider-proof.v1",
+          "status": "PASS"
+        },
+        "replay_proof": {
+          "schema_version": "membind.v6.replay-proof.v1",
+          "status": "NOT_APPLICABLE"
+        },
+        "request_observation_count": 474,
+        "request_proof": {
+          "comparison_count": 0,
+          "match_count": 0,
+          "miss_count": 0,
+          "schema_version": "membind.v6.request-proof.v1",
+          "status": "PASS"
+        },
+        "root": "/data/predator/ly/MemBind/saturated_fixed_work_baseline_v1_3/artifacts/sfwb-v1-3-v6-autoresearch-20260822-191241/main/v6-r07-control",
+        "source_count": 46,
+        "timer_s": 2338.212908917,
+        "transport_attempt_count": 474,
+        "transport_error_count": 0,
+        "transport_finish_reason_observed_count": 474,
+        "transport_finish_reasons": [
+          "stop"
+        ],
+        "transport_usage_observed_count": 474
+      },
+      "order": "candidate_then_control",
+      "timer_delta_s_control_minus_candidate": 1011.4677776019998
+    }
+  ],
+  "provider_invariants": {
+    "all_frontier_proofs_pass": true,
+    "all_provider_proofs_pass": true,
+    "capacity": [
+      8
+    ],
+    "max_future_outstanding": 7,
+    "max_outstanding": 8
+  },
+  "qa": {
+    "quality_claim": false,
+    "status": "INVALID_RETAINED"
+  },
+  "schema_version": "membind.v6.main-comparison.v1",
+  "source_count": 46,
+  "status": "PASS",
+  "transport_evidence": {
+    "all_finish_reasons_observed": true,
+    "all_usage_observed": true,
+    "finish_reasons_by_attempt": [
+      [
+        "length",
+        "stop"
+      ],
+      [
+        "stop"
+      ],
+      [
+        "stop"
+      ],
+      [
+        "stop"
+      ]
+    ],
+    "transport_errors": 0
+  }
+}
