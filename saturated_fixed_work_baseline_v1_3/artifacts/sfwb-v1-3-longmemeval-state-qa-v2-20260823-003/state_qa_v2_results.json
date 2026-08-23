@@ -1,0 +1,1807 @@
+{
+  "answer_accuracy": {
+    "authority": "OFFICIAL_LONGMEMEVAL_JUDGE_ONLY",
+    "b0_accuracy": 0.0,
+    "b0_attempted": 4,
+    "b0_pass": 0,
+    "b0_scored": 4,
+    "b1_accuracy": 0.0,
+    "b1_attempted": 4,
+    "b1_pass": 0,
+    "b1_scored": 4,
+    "scored_rows": 8
+  },
+  "b1_unsafe_claim_authorized": false,
+  "decision": "NO_PAIRED_OFFICIAL_ANSWER_DIVERGENCE",
+  "manifest": {
+    "answer_accuracy_authority": "OFFICIAL_LONGMEMEVAL_JUDGE_ONLY",
+    "construction_calls": 0,
+    "entity_summary_as_current_answer": false,
+    "graph_writes": 0,
+    "histories": [
+      "07741c45",
+      "b6019101",
+      "6071bd76",
+      "a2f3aa27"
+    ],
+    "methods": [
+      "B0_NATIVE_SERIAL",
+      "B1_NAIVE_WHOLE_UPDATE_ASYNC"
+    ],
+    "schema_version": "sfwb.v1.3.longmemeval-state-qa-v2-manifest.v1",
+    "source_local_evidence_used": false,
+    "source_results": "/data/predator/ly/MemBind/saturated_fixed_work_baseline_v1_3/artifacts/sfwb-v1-3-longmemeval-state-qa-20260823-004/state_qa_results.json",
+    "source_results_payload_sha256": "9b401490503991c8c66a1f47088e682810c57c62f1a8805657f267dd54e044ca",
+    "state_diagnostic_authority": "CONSERVATIVE_DIRECT_GRAPH_PREDICATE_ONLY",
+    "status": "LAYERED_GRAPH_ONLY_QA_ANALYSIS",
+    "v5_started": false
+  },
+  "paired": [
+    {
+      "answer_decision_authority": "OFFICIAL_LONGMEMEVAL_JUDGE",
+      "answer_divergence": false,
+      "b0_answer_pass": false,
+      "b0_answer_status": "FAIL",
+      "b1_answer_pass": false,
+      "b1_answer_status": "FAIL",
+      "concrete_b1_answer_failure": false,
+      "history_id": "07741c45",
+      "state_diagnostic_is_separate": true
+    },
+    {
+      "answer_decision_authority": "OFFICIAL_LONGMEMEVAL_JUDGE",
+      "answer_divergence": false,
+      "b0_answer_pass": false,
+      "b0_answer_status": "FAIL",
+      "b1_answer_pass": false,
+      "b1_answer_status": "FAIL",
+      "concrete_b1_answer_failure": false,
+      "history_id": "b6019101",
+      "state_diagnostic_is_separate": true
+    },
+    {
+      "answer_decision_authority": "OFFICIAL_LONGMEMEVAL_JUDGE",
+      "answer_divergence": false,
+      "b0_answer_pass": false,
+      "b0_answer_status": "FAIL",
+      "b1_answer_pass": false,
+      "b1_answer_status": "FAIL",
+      "concrete_b1_answer_failure": false,
+      "history_id": "6071bd76",
+      "state_diagnostic_is_separate": true
+    },
+    {
+      "answer_decision_authority": "OFFICIAL_LONGMEMEVAL_JUDGE",
+      "answer_divergence": false,
+      "b0_answer_pass": false,
+      "b0_answer_status": "FAIL",
+      "b1_answer_pass": false,
+      "b1_answer_status": "FAIL",
+      "concrete_b1_answer_failure": false,
+      "history_id": "a2f3aa27",
+      "state_diagnostic_is_separate": true
+    }
+  ],
+  "payload_sha256": "ca262b008bbbb8e2223128f1e4960762185636ac9020a22ad3599a2c4a8f1146",
+  "rows": [
+    {
+      "answer_evaluation": {
+        "correct": false,
+        "judge_label": false,
+        "judge_status": "SUCCESS",
+        "semantic_authority": "OFFICIAL_LONGMEMEVAL_JUDGE",
+        "status": "FAIL",
+        "surface_diagnostic": {
+          "expected_answer_normalized": "in a shoe rack in my closet",
+          "official_judge_required": true,
+          "reader_answer_normalized": "the information provided does not specify where you currently keep your old sneakers.",
+          "semantic_authority": "NONE",
+          "status": "LEXICAL_NO_MATCH"
+        }
+      },
+      "failure_boundary": "GRAPH_EVIDENCE_NOT_SUPPORTING_OFFICIAL_ANSWER",
+      "history_id": "07741c45",
+      "judge_projection_supplied": true,
+      "method": "B0_NATIVE_SERIAL",
+      "official_current_answer": "in a shoe rack in my closet",
+      "question": "Where do I currently keep my old sneakers?",
+      "reader_answer": "The information provided does not specify where you currently keep your old sneakers.",
+      "retrieval": {
+        "episode_count": 20,
+        "fact_count": 20,
+        "facts": [
+          {
+            "expired_at": null,
+            "fact": "The user purchased white sneakers at the Adidas store and a grey t-shirt from H&M on the same day, last Saturday.",
+            "invalid_at": null,
+            "rank": 1,
+            "relation": "COINCIDENT_PURCHASE_AT_SAME_TIME",
+            "valid_at": "2023-05-21T00:00:00+00:00"
+          },
+          {
+            "expired_at": null,
+            "fact": "Maya Angelou authored the work 'I Know Why the Caged Bird Sings'.",
+            "invalid_at": null,
+            "rank": 2,
+            "relation": "AUTHORED",
+            "valid_at": "1969-04-01T00:00:00+00:00"
+          },
+          {
+            "expired_at": null,
+            "fact": "Sephora is currently offering 10% off the La Roche-Posay Toleriane Ultra Fluid Face Moisturizer SPF 50.",
+            "invalid_at": null,
+            "rank": 3,
+            "relation": "HAS_SALE_ON",
+            "valid_at": "2023-05-26T10:23:00+00:00"
+          },
+          {
+            "expired_at": null,
+            "fact": "The silver necklace was purchased from a new boutique on Main Street.",
+            "invalid_at": null,
+            "rank": 4,
+            "relation": "PURCHASED_AT",
+            "valid_at": "2023-05-26T03:45:00+00:00"
+          },
+          {
+            "expired_at": null,
+            "fact": "The user owns a Honda Civic and is scheduling a tire replacement for it next month.",
+            "invalid_at": null,
+            "rank": 5,
+            "relation": "OWNS",
+            "valid_at": "2023-05-26T01:30:00+00:00"
+          },
+          {
+            "expired_at": null,
+            "fact": "Sephora currently has a 10% off promotion on the La Roche-Posay Toleriane Ultra Fluid Face Moisturizer SPF 50.",
+            "invalid_at": null,
+            "rank": 6,
+            "relation": "HAS_PROMOTION_ON",
+            "valid_at": "2023-05-26T10:23:00+00:00"
+          },
+          {
+            "expired_at": null,
+            "fact": "The user is planning to replace the tire on their Honda Civic next month.",
+            "invalid_at": null,
+            "rank": 7,
+            "relation": "PLANS_TO_MAINTAIN",
+            "valid_at": null
+          },
+          {
+            "expired_at": null,
+            "fact": "Maya Angelou authored the poem 'Still I Rise', which speaks to themes of resilience and strength in the face of adversity.",
+            "invalid_at": null,
+            "rank": 8,
+            "relation": "AUTHORED",
+            "valid_at": null
+          },
+          {
+            "expired_at": null,
+            "fact": "The user is considering Continental as a potential tire brand for their Honda Civic.",
+            "invalid_at": null,
+            "rank": 9,
+            "relation": "CONSIDERS_USING",
+            "valid_at": "2023-05-26T01:30:00+00:00"
+          },
+          {
+            "expired_at": null,
+            "fact": "Angostura bitters and Woodford Reserve Double Oaked whiskey are used in combination to create a perfect Old Fashioned cocktail.",
+            "invalid_at": null,
+            "rank": 10,
+            "relation": "USED_IN_COMBINATION_WITH",
+            "valid_at": null
+          },
+          {
+            "expired_at": null,
+            "fact": "The VoluntEARS event at the Disneyland Resort involves volunteering at the Anaheim Food Bank, where participants pack and sort food boxes.",
+            "invalid_at": null,
+            "rank": 11,
+            "relation": "INVOLVES_VOLUNTEERING_AT",
+            "valid_at": null
+          },
+          {
+            "expired_at": null,
+            "fact": "The user is considering Goodyear as a potential tire brand for their Honda Civic.",
+            "invalid_at": null,
+            "rank": 12,
+            "relation": "CONSIDERS_USING",
+            "valid_at": "2023-05-26T01:30:00+00:00"
+          },
+          {
+            "expired_at": null,
+            "fact": "Diwali is a popular festival in Amritsar, where the user plans to travel and experience the local culture.",
+            "invalid_at": null,
+            "rank": 13,
+            "relation": "OCCURS_IN",
+            "valid_at": null
+          },
+          {
+            "expired_at": null,
+            "fact": "USER purchased onesies as part of the baby shower gift for their best friend.",
+            "invalid_at": null,
+            "rank": 14,
+            "relation": "PURCHASED",
+            "valid_at": null
+          },
+          {
+            "expired_at": null,
+            "fact": "Diwali is a popular festival in Jaipur, where the user plans to travel and experience the local culture.",
+            "invalid_at": null,
+            "rank": 15,
+            "relation": "OCCURS_IN",
+            "valid_at": null
+          },
+          {
+            "expired_at": null,
+            "fact": "The user is considering Michelin as a potential tire brand for their Honda Civic.",
+            "invalid_at": null,
+            "rank": 16,
+            "relation": "CONSIDERS_USING",
+            "valid_at": "2023-05-26T01:30:00+00:00"
+          },
+          {
+            "expired_at": null,
+            "fact": "Diwali is a popular festival in Mumbai, where the user plans to travel and experience the local culture.",
+            "invalid_at": null,
+            "rank": 17,
+            "relation": "OCCURS_IN",
+            "valid_at": null
+          },
+          {
+            "expired_at": null,
+            "fact": "The narrator asked the man for the loan of a match.",
+            "invalid_at": null,
+            "rank": 18,
+            "relation": "ASKED_FOR_MATCH",
+            "valid_at": "2023-05-25T21:12:00+00:00"
+          },
+          {
+            "expired_at": null,
+            "fact": "The River Walks have several picnic spots along the way, including Haysden Country Park, where families can sit and enjoy their lunch.",
+            "invalid_at": null,
+            "rank": 19,
+            "relation": "HAS_PICNIC_SPOT",
+            "valid_at": null
+          },
+          {
+            "expired_at": null,
+            "fact": "Diwali is a popular festival in Punjab, where the user plans to travel and experience the local culture.",
+            "invalid_at": null,
+            "rank": 20,
+            "relation": "OCCURS_IN",
+            "valid_at": null
+          }
+        ],
+        "graphiti_search_calls": 1,
+        "neo4j_read_requests": 4,
+        "search_config_sha256": "62535d82129d01d6cbf8c3d5c13f656e60d89d821a9d9b9ca7bc1ed51c53fa7d"
+      },
+      "state_diagnostic": {
+        "active_edge_count": 182,
+        "active_expected_edge_count": 0,
+        "conflict_detection": "STRUCTURAL_GROUP_MULTIPLICITY_ONLY",
+        "current_value_active": false,
+        "current_value_entity_summary_only": false,
+        "current_value_inactive": false,
+        "diagnostic_only": true,
+        "entity_summary_match_count": 0,
+        "expected_answer": "in a shoe rack in my closet",
+        "headline_answer_accuracy": false,
+        "inactive_expected_edge_count": 0,
+        "observation_time": "2023/06/23 (Fri) 07:31",
+        "old_new_value_source": "NOT_EXPOSED_BY_LONGMEMEVAL",
+        "predicate_authoritative": true,
+        "predicate_version": "longmemeval-current-state-v1",
+        "reader_answer_not_substituted": true,
+        "semantic_stale_value_status": "NOT_PROVABLE",
+        "status": "FAIL",
+        "structural_ambiguities": [],
+        "unrelated_expected_match_count": 0
+      }
+    },
+    {
+      "answer_evaluation": {
+        "correct": false,
+        "judge_label": false,
+        "judge_status": "SUCCESS",
+        "semantic_authority": "OFFICIAL_LONGMEMEVAL_JUDGE",
+        "status": "FAIL",
+        "surface_diagnostic": {
+          "expected_answer_normalized": "in a shoe rack in my closet",
+          "official_judge_required": true,
+          "reader_answer_normalized": "the information provided does not specify where you currently keep your old sneakers.",
+          "semantic_authority": "NONE",
+          "status": "LEXICAL_NO_MATCH"
+        }
+      },
+      "failure_boundary": "GRAPH_EVIDENCE_NOT_SUPPORTING_OFFICIAL_ANSWER",
+      "history_id": "07741c45",
+      "judge_projection_supplied": true,
+      "method": "B1_NAIVE_WHOLE_UPDATE_ASYNC",
+      "official_current_answer": "in a shoe rack in my closet",
+      "question": "Where do I currently keep my old sneakers?",
+      "reader_answer": "The information provided does not specify where you currently keep your old sneakers.",
+      "retrieval": {
+        "episode_count": 20,
+        "fact_count": 20,
+        "facts": [
+          {
+            "expired_at": null,
+            "fact": "User purchased white sneakers at the Adidas store.",
+            "invalid_at": null,
+            "rank": 1,
+            "relation": "PURCHASED_AT",
+            "valid_at": "2023-05-28T00:00:00+00:00"
+          },
+          {
+            "expired_at": null,
+            "fact": "Maya Angelou has a work called 'I Know Why the Caged Bird Sings'.",
+            "invalid_at": null,
+            "rank": 2,
+            "relation": "HAS_WORK",
+            "valid_at": null
+          },
+          {
+            "expired_at": null,
+            "fact": "User is considering purchasing cargo pants from Zappos.",
+            "invalid_at": null,
+            "rank": 3,
+            "relation": "CONSIDERING_PURCHASING_FROM",
+            "valid_at": "2023-05-28T12:43:00+00:00"
+          },
+          {
+            "expired_at": null,
+            "fact": "Sephora is currently offering 10% off the La Roche-Posay Toleriane Ultra Fluid Face Moisturizer SPF 50 with the code LRP10.",
+            "invalid_at": null,
+            "rank": 4,
+            "relation": "HAS_PROMOTION",
+            "valid_at": "2023-05-26T10:23:00+00:00"
+          },
+          {
+            "expired_at": null,
+            "fact": "User is considering purchasing cargo pants from Dickies.",
+            "invalid_at": null,
+            "rank": 5,
+            "relation": "CONSIDERING_PURCHASING_FROM",
+            "valid_at": "2023-05-28T12:43:00+00:00"
+          },
+          {
+            "expired_at": null,
+            "fact": "Maya Angelou has a poem called 'Still I Rise', which speaks to themes of resilience and strength in the face of adversity.",
+            "invalid_at": null,
+            "rank": 6,
+            "relation": "HAS_WORK",
+            "valid_at": null
+          },
+          {
+            "expired_at": null,
+            "fact": "User is considering purchasing cargo pants from Levi's.",
+            "invalid_at": null,
+            "rank": 7,
+            "relation": "CONSIDERING_PURCHASING_FROM",
+            "valid_at": "2023-05-28T12:43:00+00:00"
+          },
+          {
+            "expired_at": null,
+            "fact": "FINRA works closely with the SEC to create and enforce rules that protect investors and maintain the integrity of the financial industry. FINRA also has the authority to create its own rules and regulations that govern the conduct of its member firms and their employees, as long as those rules do not conflict with SEC regulations.",
+            "invalid_at": null,
+            "rank": 8,
+            "relation": "ENFORCES",
+            "valid_at": null
+          },
+          {
+            "expired_at": null,
+            "fact": "User is considering purchasing cargo pants from Amazon.",
+            "invalid_at": null,
+            "rank": 9,
+            "relation": "CONSIDERING_PURCHASING_FROM",
+            "valid_at": "2023-05-28T12:43:00+00:00"
+          },
+          {
+            "expired_at": null,
+            "fact": "Angostura bitters are used with Woodford Reserve Double Oaked whiskey in a perfect combination for an Old Fashioned, as they add a complex, aromatic flavor profile that complements the whiskey's rich, velvety texture and deep, complex flavor.",
+            "invalid_at": null,
+            "rank": 10,
+            "relation": "USED_WITH",
+            "valid_at": null
+          },
+          {
+            "expired_at": null,
+            "fact": "User is considering purchasing cargo pants from ASOS.",
+            "invalid_at": null,
+            "rank": 11,
+            "relation": "CONSIDERING_PURCHASING_FROM",
+            "valid_at": "2023-05-28T12:43:00+00:00"
+          },
+          {
+            "expired_at": null,
+            "fact": "User is considering purchasing cargo pants from Carhartt.",
+            "invalid_at": null,
+            "rank": 12,
+            "relation": "CONSIDERING_PURCHASING_FROM",
+            "valid_at": "2023-05-28T12:43:00+00:00"
+          },
+          {
+            "expired_at": null,
+            "fact": "User is considering purchasing cargo pants from The North Face.",
+            "invalid_at": null,
+            "rank": 13,
+            "relation": "CONSIDERING_PURCHASING_FROM",
+            "valid_at": "2023-05-28T12:43:00+00:00"
+          },
+          {
+            "expired_at": null,
+            "fact": "User is close to redeeming a free skincare product from Sephora, needing a total of 300 points.",
+            "invalid_at": null,
+            "rank": 14,
+            "relation": "CLOSE_TO_REDEEMING",
+            "valid_at": "2023-05-26T10:23:00+00:00"
+          },
+          {
+            "expired_at": null,
+            "fact": "User purchased a grey t-shirt from H&M.",
+            "invalid_at": null,
+            "rank": 15,
+            "relation": "PURCHASED_AT",
+            "valid_at": "2023-05-28T12:43:00+00:00"
+          },
+          {
+            "expired_at": null,
+            "fact": "The user plans to travel back to India soon.",
+            "invalid_at": null,
+            "rank": 16,
+            "relation": "PLANS_TO_TRAVEL_TO",
+            "valid_at": null
+          },
+          {
+            "expired_at": null,
+            "fact": "User is recommended to check the Sephora website, app, or store for additional promotions, discounts, or offers on the La Roche-Posay Toleriane Ultra Fluid Face Moisturizer SPF 50.",
+            "invalid_at": null,
+            "rank": 17,
+            "relation": "RECOMMENDED_TO_CHECK",
+            "valid_at": null
+          },
+          {
+            "expired_at": null,
+            "fact": "USER is interested in Meetup, a platform for finding local groups focused on environmental conservation, outdoor activities, and community engagement.",
+            "invalid_at": null,
+            "rank": 18,
+            "relation": "INTERESTED_IN",
+            "valid_at": null
+          },
+          {
+            "expired_at": null,
+            "fact": "USER is interested in local chapters of the Surfrider Foundation, which focus on coastal conservation, beach cleanups, and environmental education.",
+            "invalid_at": null,
+            "rank": 19,
+            "relation": "INTERESTED_IN",
+            "valid_at": null
+          },
+          {
+            "expired_at": null,
+            "fact": "The user is thinking of using Ancestry.com's Family Trees to manage and share their research.",
+            "invalid_at": null,
+            "rank": 20,
+            "relation": "USES",
+            "valid_at": "2023-06-08T08:54:00+00:00"
+          }
+        ],
+        "graphiti_search_calls": 1,
+        "neo4j_read_requests": 4,
+        "search_config_sha256": "62535d82129d01d6cbf8c3d5c13f656e60d89d821a9d9b9ca7bc1ed51c53fa7d"
+      },
+      "state_diagnostic": {
+        "active_edge_count": 174,
+        "active_expected_edge_count": 0,
+        "conflict_detection": "STRUCTURAL_GROUP_MULTIPLICITY_ONLY",
+        "current_value_active": false,
+        "current_value_entity_summary_only": false,
+        "current_value_inactive": false,
+        "diagnostic_only": true,
+        "entity_summary_match_count": 0,
+        "expected_answer": "in a shoe rack in my closet",
+        "headline_answer_accuracy": false,
+        "inactive_expected_edge_count": 0,
+        "observation_time": "2023/06/23 (Fri) 07:31",
+        "old_new_value_source": "NOT_EXPOSED_BY_LONGMEMEVAL",
+        "predicate_authoritative": true,
+        "predicate_version": "longmemeval-current-state-v1",
+        "reader_answer_not_substituted": true,
+        "semantic_stale_value_status": "NOT_PROVABLE",
+        "status": "FAIL",
+        "structural_ambiguities": [],
+        "unrelated_expected_match_count": 0
+      }
+    },
+    {
+      "answer_evaluation": {
+        "correct": false,
+        "judge_label": false,
+        "judge_status": "SUCCESS",
+        "semantic_authority": "OFFICIAL_LONGMEMEVAL_JUDGE",
+        "status": "FAIL",
+        "surface_diagnostic": {
+          "expected_answer_normalized": "5",
+          "official_judge_required": true,
+          "reader_answer_normalized": "0",
+          "semantic_authority": "NONE",
+          "status": "LEXICAL_NO_MATCH"
+        }
+      },
+      "failure_boundary": "GRAPH_EVIDENCE_NOT_SUPPORTING_OFFICIAL_ANSWER",
+      "history_id": "b6019101",
+      "judge_projection_supplied": true,
+      "method": "B0_NATIVE_SERIAL",
+      "official_current_answer": "5",
+      "question": "How many MCU films did I watch in the last 3 months?",
+      "reader_answer": "0",
+      "retrieval": {
+        "episode_count": 20,
+        "fact_count": 20,
+        "facts": [
+          {
+            "expired_at": null,
+            "fact": "The USER was speechless after the plot twist in The Sixth Sense and plans to re-watch the movie with the new perspective.",
+            "invalid_at": null,
+            "rank": 1,
+            "relation": "HAS_TWIST_REACTION",
+            "valid_at": "2023-04-28T10:39:00+00:00"
+          },
+          {
+            "expired_at": null,
+            "fact": "The USER has seen Fight Club and acknowledges that it has an amazing twist ending.",
+            "invalid_at": null,
+            "rank": 2,
+            "relation": "HAS_TWIST_REACTION",
+            "valid_at": "2023-04-28T10:39:00+00:00"
+          },
+          {
+            "expired_at": null,
+            "fact": "The user is considering supporting Human Rights Watch (HRW), an international non-governmental organization that investigates human rights abuses worldwide, including in Tibet.",
+            "invalid_at": null,
+            "rank": 3,
+            "relation": "SUPPORTS",
+            "valid_at": "2023-04-21T12:20:00+00:00"
+          },
+          {
+            "expired_at": null,
+            "fact": "The USER recently watched Oldboy and was left speechless by the twist at the end.",
+            "invalid_at": null,
+            "rank": 4,
+            "relation": "HAS_TWIST_REACTION",
+            "valid_at": "2023-04-28T10:39:00+00:00"
+          },
+          {
+            "expired_at": null,
+            "fact": "The user is considering supporting China Labor Watch (CLW), a non-profit organization that works to improve working conditions and labor rights in China.",
+            "invalid_at": null,
+            "rank": 5,
+            "relation": "SUPPORTS",
+            "valid_at": "2023-04-21T12:20:00+00:00"
+          },
+          {
+            "expired_at": null,
+            "fact": "The USER has seen The Usual Suspects and agrees that it has an amazing twist ending.",
+            "invalid_at": null,
+            "rank": 6,
+            "relation": "HAS_TWIST_REACTION",
+            "valid_at": null
+          },
+          {
+            "expired_at": null,
+            "fact": "The Spoofer Project measured 12.3% of tested IPv6 /40 prefixes did not filter packets with spoofed source addresses in the year ending August 2019.",
+            "invalid_at": null,
+            "rank": 7,
+            "relation": "MEASURED_FOR",
+            "valid_at": "2019-08-01T00:00:00+00:00"
+          },
+          {
+            "expired_at": null,
+            "fact": "A treasure hunt inspired by The Goonies is planned as part of the movie marathon, which also includes The Lion King and Back to the Future.",
+            "invalid_at": null,
+            "rank": 8,
+            "relation": "THemed_ACTIVITY_INSPIRED_BY",
+            "valid_at": null
+          },
+          {
+            "expired_at": null,
+            "fact": "The user learned how to make croissants from scratch in a baking class at a local culinary school.",
+            "invalid_at": null,
+            "rank": 9,
+            "relation": "LEARNED_TO_MAKE",
+            "valid_at": "2023-04-21T02:08:00+00:00"
+          },
+          {
+            "expired_at": null,
+            "fact": "Instagram uses Instagram Stories to share behind-the-scenes content, sneak peeks, or exclusive deals to keep followers engaged.",
+            "invalid_at": null,
+            "rank": 10,
+            "relation": "USES_FEATURE",
+            "valid_at": "2023-05-06T07:19:00+00:00"
+          },
+          {
+            "expired_at": null,
+            "fact": "The Spoofer Project measured 14.9% of IPv4/24 prefixes and 30.5% of ASes tested did not block spoofed-source packets in the year ending August 2019.",
+            "invalid_at": null,
+            "rank": 11,
+            "relation": "MEASURED_FOR",
+            "valid_at": "2019-08-01T00:00:00+00:00"
+          },
+          {
+            "expired_at": null,
+            "fact": "The Goonies and Back to the Future are both included in a family movie marathon planned by the user over the upcoming long weekend.",
+            "invalid_at": null,
+            "rank": 12,
+            "relation": "INCLUDED_IN",
+            "valid_at": "2023-05-29T02:47:00+00:00"
+          },
+          {
+            "expired_at": null,
+            "fact": "The Spoofer Project has clients in Comcast, who reported measurements in nearly all weeks between May 2016 and August 2019.",
+            "invalid_at": null,
+            "rank": 13,
+            "relation": "HAS_CLIENT",
+            "valid_at": "2019-08-01T00:00:00+00:00"
+          },
+          {
+            "expired_at": null,
+            "fact": "The Spoofer Project measured 18.3% of IPv4/24 prefixes and 20.4% of ASes tested did not block spoofed-source packets from leaving their networks in the week of May 2006.",
+            "invalid_at": null,
+            "rank": 14,
+            "relation": "MEASURED_FOR",
+            "valid_at": "2006-05-07T00:00:00+00:00"
+          },
+          {
+            "expired_at": null,
+            "fact": "The Goonies and The Lion King are both included in a family movie marathon planned by the user over the upcoming long weekend.",
+            "invalid_at": null,
+            "rank": 15,
+            "relation": "INCLUDED_IN",
+            "valid_at": "2023-05-29T02:47:00+00:00"
+          },
+          {
+            "expired_at": null,
+            "fact": "The song 'I Believe in Miracles' by Jackson Browne is thematically related to the passage in Luke 7:1-17, as it expresses faith in the power of God to heal and perform miracles.",
+            "invalid_at": null,
+            "rank": 16,
+            "relation": "THEME_RELATED_TO",
+            "valid_at": null
+          },
+          {
+            "expired_at": null,
+            "fact": "A \"guess the movie poster\" game is suggested as an additional activity for the movie marathon, which includes The Goonies and Back to the Future.",
+            "invalid_at": null,
+            "rank": 17,
+            "relation": "THemed_GAME_INSPIRED_BY",
+            "valid_at": null
+          },
+          {
+            "expired_at": null,
+            "fact": "Mike and Emma finalized the adoption of their 3-year-old son, Ethan, from China.",
+            "invalid_at": null,
+            "rank": 18,
+            "relation": "ADOPTED",
+            "valid_at": "2023-05-17T00:52:00+00:00"
+          },
+          {
+            "expired_at": null,
+            "fact": "Mike and Emma finalized the adoption of their 3-year-old son, Ethan, from China.",
+            "invalid_at": null,
+            "rank": 19,
+            "relation": "ADOPTED",
+            "valid_at": "2023-05-17T00:52:00+00:00"
+          },
+          {
+            "expired_at": null,
+            "fact": "A treasure hunt inspired by The Goonies is planned as part of the movie marathon, alongside snacks and activities for The Lion King.",
+            "invalid_at": null,
+            "rank": 20,
+            "relation": "THemed_ACTIVITY_INSPIRED_BY",
+            "valid_at": null
+          }
+        ],
+        "graphiti_search_calls": 1,
+        "neo4j_read_requests": 4,
+        "search_config_sha256": "62535d82129d01d6cbf8c3d5c13f656e60d89d821a9d9b9ca7bc1ed51c53fa7d"
+      },
+      "state_diagnostic": {
+        "active_edge_count": 234,
+        "active_expected_edge_count": 0,
+        "conflict_detection": "STRUCTURAL_GROUP_MULTIPLICITY_ONLY",
+        "current_value_active": false,
+        "current_value_entity_summary_only": false,
+        "current_value_inactive": false,
+        "diagnostic_only": true,
+        "entity_summary_match_count": 0,
+        "expected_answer": "5",
+        "headline_answer_accuracy": false,
+        "inactive_expected_edge_count": 0,
+        "observation_time": "2023/06/17 (Sat) 16:20",
+        "old_new_value_source": "NOT_EXPOSED_BY_LONGMEMEVAL",
+        "predicate_authoritative": true,
+        "predicate_version": "longmemeval-current-state-v1",
+        "reader_answer_not_substituted": true,
+        "semantic_stale_value_status": "NOT_PROVABLE",
+        "status": "NOT_PROVABLE",
+        "structural_ambiguities": [],
+        "unrelated_expected_match_count": 1
+      }
+    },
+    {
+      "answer_evaluation": {
+        "correct": false,
+        "judge_label": false,
+        "judge_status": "SUCCESS",
+        "semantic_authority": "OFFICIAL_LONGMEMEVAL_JUDGE",
+        "status": "FAIL",
+        "surface_diagnostic": {
+          "expected_answer_normalized": "5",
+          "official_judge_required": true,
+          "reader_answer_normalized": "the provided memory evidence does not contain any information about mcu films or the number watched in the last 3 months. therefore, it is not possible to answer the question based on the given data.",
+          "semantic_authority": "NONE",
+          "status": "LEXICAL_NO_MATCH"
+        }
+      },
+      "failure_boundary": "GRAPH_EVIDENCE_NOT_SUPPORTING_OFFICIAL_ANSWER",
+      "history_id": "b6019101",
+      "judge_projection_supplied": true,
+      "method": "B1_NAIVE_WHOLE_UPDATE_ASYNC",
+      "official_current_answer": "5",
+      "question": "How many MCU films did I watch in the last 3 months?",
+      "reader_answer": "The provided memory evidence does not contain any information about MCU films or the number watched in the last 3 months. Therefore, it is not possible to answer the question based on the given data.",
+      "retrieval": {
+        "episode_count": 20,
+        "fact_count": 20,
+        "facts": [
+          {
+            "expired_at": null,
+            "fact": "The song 'I Believe in Miracles' was authored by Jackson Browne.",
+            "invalid_at": null,
+            "rank": 1,
+            "relation": "AUTHORED_BY",
+            "valid_at": null
+          },
+          {
+            "expired_at": null,
+            "fact": "The movie trivia and guess the movie poster game are both suggested as engaging and fun movie-themed games for a movie marathon.",
+            "invalid_at": null,
+            "rank": 2,
+            "relation": "SIMILAR_TO",
+            "valid_at": null
+          },
+          {
+            "expired_at": null,
+            "fact": "Jesus responded to the centurion's faith by saying, 'I tell you, I have not found such great faith even in Israel!' and healed the servant at that very hour.",
+            "invalid_at": null,
+            "rank": 3,
+            "relation": "RESPONDED_TO",
+            "valid_at": null
+          },
+          {
+            "expired_at": null,
+            "fact": "The movie trivia and quote-along competition are both suggested as fun and easy-to-set-up activities for a movie marathon.",
+            "invalid_at": null,
+            "rank": 4,
+            "relation": "SIMILAR_TO",
+            "valid_at": null
+          },
+          {
+            "expired_at": null,
+            "fact": "The user supports China Labor Watch (CLW) by considering making a donation or volunteering to help improve working conditions and labor rights in China.",
+            "invalid_at": null,
+            "rank": 5,
+            "relation": "SUPPORTS",
+            "valid_at": "2023-04-21T12:20:00+00:00"
+          },
+          {
+            "expired_at": null,
+            "fact": "'The Usual Suspects' is similar to 'The Sixth Sense' in that both have iconic plot twists that have been emulated in many movies since.",
+            "invalid_at": null,
+            "rank": 6,
+            "relation": "IS_SIMILAR_TO",
+            "valid_at": null
+          },
+          {
+            "expired_at": null,
+            "fact": "The quote-along competition and guess the movie poster game are both suggested as fun and interactive movie-themed games for a movie marathon.",
+            "invalid_at": null,
+            "rank": 7,
+            "relation": "SIMILAR_TO",
+            "valid_at": null
+          },
+          {
+            "expired_at": null,
+            "fact": "12.3% of tested IPv6 prefixes did not filter when a NAT router was not present.",
+            "invalid_at": null,
+            "rank": 8,
+            "relation": "HAS_DEPLOYMENT_ISSUE",
+            "valid_at": "2019-08-01T00:00:00+00:00"
+          },
+          {
+            "expired_at": null,
+            "fact": "The movie 'Oldboy' was mentioned by the user as having a twist ending that left them speechless.",
+            "invalid_at": null,
+            "rank": 9,
+            "relation": "MENTIONED_BY",
+            "valid_at": null
+          },
+          {
+            "expired_at": null,
+            "fact": "USER asked to summarize the chat in bullets.",
+            "invalid_at": null,
+            "rank": 10,
+            "relation": "SUMMARIZES_CHAT",
+            "valid_at": "2023-05-11T02:01:00+00:00"
+          },
+          {
+            "expired_at": null,
+            "fact": "The user is interested in exploring more of Julien Baker's music.",
+            "invalid_at": null,
+            "rank": 11,
+            "relation": "IS_INTERESTED_IN",
+            "valid_at": null
+          },
+          {
+            "expired_at": null,
+            "fact": "The user supports Human Rights Watch (HRW) by considering making a donation to help investigate and report on human rights abuses against Tibetan Buddhists in China.",
+            "invalid_at": null,
+            "rank": 12,
+            "relation": "SUPPORTS",
+            "valid_at": "2023-04-21T12:20:00+00:00"
+          },
+          {
+            "expired_at": null,
+            "fact": "USER asked how to raise awareness about the importance of clothing recycling and the impact it has on the environment.",
+            "invalid_at": null,
+            "rank": 13,
+            "relation": "ASKS_ABOUT",
+            "valid_at": null
+          },
+          {
+            "expired_at": null,
+            "fact": "In the year ending August 2019, the Spoofer system received reports from 12.3% of tested IPv6 /40 prefixes that did not filter packets with spoofed source addresses.",
+            "invalid_at": null,
+            "rank": 14,
+            "relation": "RECEIVED_TESTS",
+            "valid_at": "2019-08-01T00:00:00+00:00"
+          },
+          {
+            "expired_at": null,
+            "fact": "The hymn 'Heal Me, O Lord' was authored by William Walsham How.",
+            "invalid_at": null,
+            "rank": 15,
+            "relation": "AUTHORED_BY",
+            "valid_at": null
+          },
+          {
+            "expired_at": null,
+            "fact": "The user intends to check out Chamber's Leather Milk after receiving a recommendation.",
+            "invalid_at": null,
+            "rank": 16,
+            "relation": "INTENDS_TO_PURCHASE",
+            "valid_at": null
+          },
+          {
+            "expired_at": null,
+            "fact": "Figure 4 shows that 12.3% of tested IPv6/40 prefixes did not filter packets with spoofed source addresses for the year ending August 2019.",
+            "invalid_at": null,
+            "rank": 17,
+            "relation": "SHOWS_DEPLOYMENT_STATISTICS",
+            "valid_at": "2019-08-01T00:00:00+00:00"
+          },
+          {
+            "expired_at": null,
+            "fact": "USER asked if they would be willing to do some research or take some time to learn more about the benefits of clothing recycling and share that information with friends and family.",
+            "invalid_at": null,
+            "rank": 18,
+            "relation": "ASKS_ABOUT",
+            "valid_at": null
+          },
+          {
+            "expired_at": null,
+            "fact": "IPv6 NATs are rare, and 12.3% of tested IPv6 /40 prefixes did not filter packets with spoofed source addresses for the year ending August 2019.",
+            "invalid_at": null,
+            "rank": 19,
+            "relation": "HAS_FAILURE_MODE",
+            "valid_at": "2019-08-01T00:00:00+00:00"
+          },
+          {
+            "expired_at": null,
+            "fact": "Vince Camuto was recommended to the user as a brand that offers similar styles to Zara at a similar price point.",
+            "invalid_at": null,
+            "rank": 20,
+            "relation": "RECOMMENDED_TO",
+            "valid_at": null
+          }
+        ],
+        "graphiti_search_calls": 1,
+        "neo4j_read_requests": 4,
+        "search_config_sha256": "62535d82129d01d6cbf8c3d5c13f656e60d89d821a9d9b9ca7bc1ed51c53fa7d"
+      },
+      "state_diagnostic": {
+        "active_edge_count": 229,
+        "active_expected_edge_count": 0,
+        "conflict_detection": "STRUCTURAL_GROUP_MULTIPLICITY_ONLY",
+        "current_value_active": false,
+        "current_value_entity_summary_only": false,
+        "current_value_inactive": false,
+        "diagnostic_only": true,
+        "entity_summary_match_count": 0,
+        "expected_answer": "5",
+        "headline_answer_accuracy": false,
+        "inactive_expected_edge_count": 0,
+        "observation_time": "2023/06/17 (Sat) 16:20",
+        "old_new_value_source": "NOT_EXPOSED_BY_LONGMEMEVAL",
+        "predicate_authoritative": true,
+        "predicate_version": "longmemeval-current-state-v1",
+        "reader_answer_not_substituted": true,
+        "semantic_stale_value_status": "NOT_PROVABLE",
+        "status": "NOT_PROVABLE",
+        "structural_ambiguities": [],
+        "unrelated_expected_match_count": 4
+      }
+    },
+    {
+      "answer_evaluation": {
+        "correct": false,
+        "judge_label": false,
+        "judge_status": "SUCCESS",
+        "semantic_authority": "OFFICIAL_LONGMEMEVAL_JUDGE",
+        "status": "FAIL",
+        "surface_diagnostic": {
+          "expected_answer_normalized": "you switched to less water (5 ounces) per tablespoon of coffee.",
+          "official_judge_required": true,
+          "reader_answer_normalized": "you have not mentioned switching to a different coffee-to-water ratio. the current effective information is that you use 1 tablespoon of coffee for every 6 ounces of water in your french press.",
+          "semantic_authority": "NONE",
+          "status": "LEXICAL_NO_MATCH"
+        }
+      },
+      "failure_boundary": "GRAPH_EVIDENCE_NOT_SUPPORTING_OFFICIAL_ANSWER",
+      "history_id": "6071bd76",
+      "judge_projection_supplied": true,
+      "method": "B0_NATIVE_SERIAL",
+      "official_current_answer": "You switched to less water (5 ounces) per tablespoon of coffee.",
+      "question": "For the coffee-to-water ratio in my French press, did I switch to more water per tablespoon of coffee, or less?",
+      "reader_answer": "You have not mentioned switching to a different coffee-to-water ratio. The current effective information is that you use 1 tablespoon of coffee for every 6 ounces of water in your French press.",
+      "retrieval": {
+        "episode_count": 20,
+        "fact_count": 20,
+        "facts": [
+          {
+            "expired_at": null,
+            "fact": "The user is excited to try out new coffee beans in their French press and has found that 1 tablespoon of coffee for every 6 ounces of water is the perfect ratio for them.",
+            "invalid_at": null,
+            "rank": 1,
+            "relation": "USES",
+            "valid_at": "2023-02-11T11:41:00+00:00"
+          },
+          {
+            "expired_at": null,
+            "fact": "The user plans to use their French press to brew the new coffee beans they received in their subscription shipment, as they believe the bright, vibrant flavors will pair well with the citrus notes they are experimenting with.",
+            "invalid_at": null,
+            "rank": 2,
+            "relation": "USES_FOR",
+            "valid_at": "2023-02-11T11:41:00+00:00"
+          },
+          {
+            "expired_at": null,
+            "fact": "The user plans to try Kenyan coffee first for their citrus-infused coffee experiment.",
+            "invalid_at": null,
+            "rank": 3,
+            "relation": "PLANS_TO_TRY",
+            "valid_at": "2023-02-11T11:41:00+00:00"
+          },
+          {
+            "expired_at": null,
+            "fact": "User adds coffee grounds to their compost bin.",
+            "invalid_at": null,
+            "rank": 4,
+            "relation": "ADDS_TO",
+            "valid_at": "2023-05-27T16:08:00+00:00"
+          },
+          {
+            "expired_at": null,
+            "fact": "The user plans to try Earl Grey tea to pair with their citrus-infused coffee.",
+            "invalid_at": null,
+            "rank": 5,
+            "relation": "PLANS_TO_TRY",
+            "valid_at": "2023-02-11T11:41:00+00:00"
+          },
+          {
+            "expired_at": null,
+            "fact": "User turns the compost bin every week or so to keep everything aerated and speed up the decomposition process.",
+            "invalid_at": null,
+            "rank": 6,
+            "relation": "TURNS",
+            "valid_at": null
+          },
+          {
+            "expired_at": null,
+            "fact": "Coach is considered a more practical and affordable option for daily use compared to the Chanel handbag.",
+            "invalid_at": null,
+            "rank": 7,
+            "relation": "MORE_PRACTICAL_THAN",
+            "valid_at": null
+          },
+          {
+            "expired_at": null,
+            "fact": "ASSISTANT recommends a Scavenger Hunt as an activity for a family game night, as it involves creating a list of items or challenges for family members to complete around the house or backyard, with the first one to finish winning.",
+            "invalid_at": null,
+            "rank": 8,
+            "relation": "RECOMMENDS",
+            "valid_at": null
+          },
+          {
+            "expired_at": null,
+            "fact": "User adds tea bags to their compost bin.",
+            "invalid_at": null,
+            "rank": 9,
+            "relation": "ADDS_TO",
+            "valid_at": "2023-05-27T16:08:00+00:00"
+          },
+          {
+            "expired_at": null,
+            "fact": "Kate Spade is considered a more practical and affordable option for daily use compared to the Chanel handbag.",
+            "invalid_at": null,
+            "rank": 10,
+            "relation": "MORE_PRACTICAL_THAN",
+            "valid_at": null
+          },
+          {
+            "expired_at": null,
+            "fact": "The user enjoys making pasta from scratch and has noticed a significant difference in flavor and texture compared to store-bought pasta.",
+            "invalid_at": null,
+            "rank": 11,
+            "relation": "ENJOYS_COOKING",
+            "valid_at": null
+          },
+          {
+            "expired_at": null,
+            "fact": "rose tea pairs well with shortbread cookies because the buttery, crumbly texture and subtle sweetness of the cookies complement the tea's floral notes nicely.",
+            "invalid_at": null,
+            "rank": 12,
+            "relation": "PAIRS_WELL_WITH",
+            "valid_at": null
+          },
+          {
+            "expired_at": null,
+            "fact": "User maintains a balance of brown materials like dried leaves or shredded newspaper in their compost bin.",
+            "invalid_at": null,
+            "rank": 13,
+            "relation": "MAINTAINS_BALANCE_WITH",
+            "valid_at": "2023-05-27T16:08:00+00:00"
+          },
+          {
+            "expired_at": null,
+            "fact": "The 'one in, one out' policy influences the storage of dresses, as the user is looking for ways to store and organize them efficiently to maintain the policy.",
+            "invalid_at": null,
+            "rank": 14,
+            "relation": "INFLUENCES_STORAGE_OF",
+            "valid_at": "2023-07-12T11:03:00+00:00"
+          },
+          {
+            "expired_at": null,
+            "fact": "The 'one in, one out' policy influences the storage of skirts, as the user is looking for ways to store and organize them efficiently to maintain the policy.",
+            "invalid_at": null,
+            "rank": 15,
+            "relation": "INFLUENCES_STORAGE_OF",
+            "valid_at": "2023-07-12T11:03:00+00:00"
+          },
+          {
+            "expired_at": null,
+            "fact": "Solar Renewable Energy Credits (SRECs) allow homeowners and businesses to earn credits for the energy their solar panels produce. These credits can be sold to utilities or other consumers who need to meet certain renewable energy requirements.",
+            "invalid_at": null,
+            "rank": 16,
+            "relation": "PROVIDES_INCENTIVE_FOR",
+            "valid_at": null
+          },
+          {
+            "expired_at": null,
+            "fact": "The user has experimented with making pasta from scratch and has enjoyed the process.",
+            "invalid_at": null,
+            "rank": 17,
+            "relation": "EXPERIMENTED_WITH",
+            "valid_at": "2023-07-04T09:29:00+00:00"
+          },
+          {
+            "expired_at": null,
+            "fact": "The user uses shiitake mushrooms to add depth and umami flavor to dishes.",
+            "invalid_at": null,
+            "rank": 18,
+            "relation": "USES_FOR_DEPTH",
+            "valid_at": null
+          },
+          {
+            "expired_at": null,
+            "fact": "The user has been cooking Indian curries, which are rich and creamy.",
+            "invalid_at": null,
+            "rank": 19,
+            "relation": "COOKS",
+            "valid_at": "2023-07-04T09:29:00+00:00"
+          },
+          {
+            "expired_at": null,
+            "fact": "The user uses oyster mushrooms to add depth and umami flavor to dishes.",
+            "invalid_at": null,
+            "rank": 20,
+            "relation": "USES_FOR_DEPTH",
+            "valid_at": "2023-07-04T09:29:00+00:00"
+          }
+        ],
+        "graphiti_search_calls": 1,
+        "neo4j_read_requests": 4,
+        "search_config_sha256": "62535d82129d01d6cbf8c3d5c13f656e60d89d821a9d9b9ca7bc1ed51c53fa7d"
+      },
+      "state_diagnostic": {
+        "active_edge_count": 121,
+        "active_expected_edge_count": 0,
+        "conflict_detection": "STRUCTURAL_GROUP_MULTIPLICITY_ONLY",
+        "current_value_active": false,
+        "current_value_entity_summary_only": false,
+        "current_value_inactive": false,
+        "diagnostic_only": true,
+        "entity_summary_match_count": 0,
+        "expected_answer": "You switched to less water (5 ounces) per tablespoon of coffee.",
+        "headline_answer_accuracy": false,
+        "inactive_expected_edge_count": 0,
+        "observation_time": "2023/07/30 (Sun) 05:53",
+        "old_new_value_source": "NOT_EXPOSED_BY_LONGMEMEVAL",
+        "predicate_authoritative": true,
+        "predicate_version": "longmemeval-current-state-v1",
+        "reader_answer_not_substituted": true,
+        "semantic_stale_value_status": "NOT_PROVABLE",
+        "status": "FAIL",
+        "structural_ambiguities": [],
+        "unrelated_expected_match_count": 0
+      }
+    },
+    {
+      "answer_evaluation": {
+        "correct": false,
+        "judge_label": false,
+        "judge_status": "SUCCESS",
+        "semantic_authority": "OFFICIAL_LONGMEMEVAL_JUDGE",
+        "status": "FAIL",
+        "surface_diagnostic": {
+          "expected_answer_normalized": "you switched to less water (5 ounces) per tablespoon of coffee.",
+          "official_judge_required": true,
+          "reader_answer_normalized": "you have not indicated a change in the coffee-to-water ratio for your french press. the optimal ratio you found is 1 tablespoon of coffee for every 6 ounces of water, and there is no evidence that you have switched to more or less water per tablespoon of coffee.",
+          "semantic_authority": "NONE",
+          "status": "LEXICAL_NO_MATCH"
+        }
+      },
+      "failure_boundary": "GRAPH_EVIDENCE_NOT_SUPPORTING_OFFICIAL_ANSWER",
+      "history_id": "6071bd76",
+      "judge_projection_supplied": true,
+      "method": "B1_NAIVE_WHOLE_UPDATE_ASYNC",
+      "official_current_answer": "You switched to less water (5 ounces) per tablespoon of coffee.",
+      "question": "For the coffee-to-water ratio in my French press, did I switch to more water per tablespoon of coffee, or less?",
+      "reader_answer": "You have not indicated a change in the coffee-to-water ratio for your French press. The optimal ratio you found is 1 tablespoon of coffee for every 6 ounces of water, and there is no evidence that you have switched to more or less water per tablespoon of coffee.",
+      "retrieval": {
+        "episode_count": 20,
+        "fact_count": 20,
+        "facts": [
+          {
+            "expired_at": null,
+            "fact": "User has found that 1 tablespoon of coffee for every 6 ounces of water is the perfect ratio for their French press.",
+            "invalid_at": null,
+            "rank": 1,
+            "relation": "HAS_OPTIMAL_RATIO",
+            "valid_at": "2023-02-11T11:41:00+00:00"
+          },
+          {
+            "expired_at": null,
+            "fact": "User is experimenting with citrus-infused coffee and has found that 1 tablespoon of coffee for every 6 ounces of water is the perfect ratio for their French press.",
+            "invalid_at": null,
+            "rank": 2,
+            "relation": "EXPERIMENTING_WITH",
+            "valid_at": "2023-02-11T11:41:00+00:00"
+          },
+          {
+            "expired_at": null,
+            "fact": "User prefers using a French press for brewing coffee and is excited to try new beans in it.",
+            "invalid_at": null,
+            "rank": 3,
+            "relation": "PREFERRED_BREWER",
+            "valid_at": "2023-02-11T11:41:00+00:00"
+          },
+          {
+            "expired_at": null,
+            "fact": "User might want to adjust the grind size and steeping time for their French press to bring out the optimal flavor from their chosen coffee beans.",
+            "invalid_at": null,
+            "rank": 4,
+            "relation": "ADJUSTING_GRIND_AND_STEEPING_TIME_FOR",
+            "valid_at": null
+          },
+          {
+            "expired_at": null,
+            "fact": "User is excited to try out new coffee beans in their French press, as they believe the bright, vibrant flavors will pair well with citrus notes.",
+            "invalid_at": null,
+            "rank": 5,
+            "relation": "USES_FOR_BREWER",
+            "valid_at": "2023-02-11T11:41:00+00:00"
+          },
+          {
+            "expired_at": null,
+            "fact": "User plans to try Kenyan coffee first, as it is known for its bright acidity and citrus notes like lemon, orange, and grapefruit.",
+            "invalid_at": null,
+            "rank": 6,
+            "relation": "PLANS_TO_TRY",
+            "valid_at": null
+          },
+          {
+            "expired_at": null,
+            "fact": "User plans to try Earl Grey tea with their citrus-infused coffee, as it is flavored with bergamot oil, a natural citrus flavor.",
+            "invalid_at": null,
+            "rank": 7,
+            "relation": "PLANS_TO_TRY",
+            "valid_at": null
+          },
+          {
+            "expired_at": null,
+            "fact": "When cooking with seitan or tempeh, it is recommended to press and drain excess liquid to prevent sogginess.",
+            "invalid_at": null,
+            "rank": 8,
+            "relation": "COOKING_TIP_RELATED",
+            "valid_at": null
+          },
+          {
+            "expired_at": null,
+            "fact": "The user has experimented with different pasta shapes and flavors, including adding herbs or spices to the dough.",
+            "invalid_at": null,
+            "rank": 9,
+            "relation": "EXPERIMENTED_WITH",
+            "valid_at": null
+          },
+          {
+            "expired_at": null,
+            "fact": "User intends to try out the new rose tea introduced by their sister.",
+            "invalid_at": null,
+            "rank": 10,
+            "relation": "INTENDS_TO_TRY",
+            "valid_at": null
+          },
+          {
+            "expired_at": null,
+            "fact": "ASSISTANT recommends a Scavenger Hunt as an activity for a family game night, as it involves creating a list of items or challenges for family members to complete around the house or backyard.",
+            "invalid_at": null,
+            "rank": 11,
+            "relation": "RECOMMENDS",
+            "valid_at": null
+          },
+          {
+            "expired_at": null,
+            "fact": "User considers pairing rose tea with shortbread cookies.",
+            "invalid_at": null,
+            "rank": 12,
+            "relation": "CONSIDERS_PAIRING_WITH",
+            "valid_at": "2023-06-30T13:14:00+00:00"
+          },
+          {
+            "expired_at": null,
+            "fact": "The User is interested in using Solar Renewable Energy Credits (SRECs), which are available in some states and allow homeowners and businesses to earn credits for the energy their solar panels produce, which can be sold to utilities or other consumers.",
+            "invalid_at": null,
+            "rank": 13,
+            "relation": "USES_INCENTIVE",
+            "valid_at": "2023-06-20T19:09:00+00:00"
+          },
+          {
+            "expired_at": null,
+            "fact": "The user has tried making Indian flatbreads, like naan or roti.",
+            "invalid_at": null,
+            "rank": 14,
+            "relation": "TRIED_MAKING_FLATBREADS",
+            "valid_at": "2023-07-04T09:29:00+00:00"
+          },
+          {
+            "expired_at": null,
+            "fact": "The user plans to invest in a practical handbag from Coach for daily use.",
+            "invalid_at": null,
+            "rank": 15,
+            "relation": "PLANS_TO_INVEST_IN",
+            "valid_at": null
+          },
+          {
+            "expired_at": null,
+            "fact": "User is considering giving a personalized surfboard or a monogrammed beach towel to Emily and Mike for their wedding.",
+            "invalid_at": null,
+            "rank": 16,
+            "relation": "GIVES_GIFT",
+            "valid_at": null
+          },
+          {
+            "expired_at": null,
+            "fact": "The user has enjoyed making pasta from scratch and has noticed a significant difference in flavor and texture.",
+            "invalid_at": null,
+            "rank": 17,
+            "relation": "ENJOYS_MAKING",
+            "valid_at": "2023-07-04T09:29:00+00:00"
+          },
+          {
+            "expired_at": null,
+            "fact": "A small baby block or footprint icon is planned to be included in the 'Liam 3/12' onesie design by User.",
+            "invalid_at": null,
+            "rank": 18,
+            "relation": "ICON_DESIGN_INCLUDED_IN",
+            "valid_at": null
+          },
+          {
+            "expired_at": null,
+            "fact": "The user has started to notice that their Chanel handbag is not as practical as they thought it would be for daily use.",
+            "invalid_at": null,
+            "rank": 19,
+            "relation": "NOTED_ISSUES_WITH",
+            "valid_at": "2023-07-13T11:22:00+00:00"
+          },
+          {
+            "expired_at": null,
+            "fact": "Marinating or seasoning seitan and tempeh before cooking can enhance their flavor.",
+            "invalid_at": null,
+            "rank": 20,
+            "relation": "COOKING_TIP_RELATED",
+            "valid_at": null
+          }
+        ],
+        "graphiti_search_calls": 1,
+        "neo4j_read_requests": 4,
+        "search_config_sha256": "62535d82129d01d6cbf8c3d5c13f656e60d89d821a9d9b9ca7bc1ed51c53fa7d"
+      },
+      "state_diagnostic": {
+        "active_edge_count": 115,
+        "active_expected_edge_count": 0,
+        "conflict_detection": "STRUCTURAL_GROUP_MULTIPLICITY_ONLY",
+        "current_value_active": false,
+        "current_value_entity_summary_only": false,
+        "current_value_inactive": false,
+        "diagnostic_only": true,
+        "entity_summary_match_count": 0,
+        "expected_answer": "You switched to less water (5 ounces) per tablespoon of coffee.",
+        "headline_answer_accuracy": false,
+        "inactive_expected_edge_count": 0,
+        "observation_time": "2023/07/30 (Sun) 05:53",
+        "old_new_value_source": "NOT_EXPOSED_BY_LONGMEMEVAL",
+        "predicate_authoritative": true,
+        "predicate_version": "longmemeval-current-state-v1",
+        "reader_answer_not_substituted": true,
+        "semantic_stale_value_status": "NOT_PROVABLE",
+        "status": "FAIL",
+        "structural_ambiguities": [],
+        "unrelated_expected_match_count": 0
+      }
+    },
+    {
+      "answer_evaluation": {
+        "correct": false,
+        "judge_label": false,
+        "judge_status": "SUCCESS",
+        "semantic_authority": "OFFICIAL_LONGMEMEVAL_JUDGE",
+        "status": "FAIL",
+        "surface_diagnostic": {
+          "expected_answer_normalized": "1300",
+          "official_judge_required": true,
+          "reader_answer_normalized": "the provided memory evidence does not include information about the number of followers on instagram.",
+          "semantic_authority": "NONE",
+          "status": "LEXICAL_NO_MATCH"
+        }
+      },
+      "failure_boundary": "GRAPH_EVIDENCE_NOT_SUPPORTING_OFFICIAL_ANSWER",
+      "history_id": "a2f3aa27",
+      "judge_projection_supplied": true,
+      "method": "B0_NATIVE_SERIAL",
+      "official_current_answer": 1300,
+      "question": "How many followers do I have on Instagram now?",
+      "reader_answer": "The provided memory evidence does not include information about the number of followers on Instagram.",
+      "retrieval": {
+        "episode_count": 20,
+        "fact_count": 20,
+        "facts": [
+          {
+            "expired_at": null,
+            "fact": "Instagram Live includes a Q&A session as a feature for engaging with the audience in real-time.",
+            "invalid_at": null,
+            "rank": 1,
+            "relation": "INCLUDES",
+            "valid_at": null
+          },
+          {
+            "expired_at": null,
+            "fact": "NFC chip may have certification according to EMVCo.",
+            "invalid_at": null,
+            "rank": 2,
+            "relation": "HAS_CERTIFICATION",
+            "valid_at": null
+          },
+          {
+            "expired_at": null,
+            "fact": "Slickdeals tracks prices for the Dell Inspiron 14 5000.",
+            "invalid_at": null,
+            "rank": 3,
+            "relation": "TRACKS_PRICE",
+            "valid_at": "2023-05-25T16:57:00+00:00"
+          },
+          {
+            "expired_at": null,
+            "fact": "NFC chip may have certification according to Common Criteria.",
+            "invalid_at": null,
+            "rank": 4,
+            "relation": "HAS_CERTIFICATION",
+            "valid_at": null
+          },
+          {
+            "expired_at": null,
+            "fact": "CamelCamelCamel tracks prices for the Dell Inspiron 14 5000.",
+            "invalid_at": null,
+            "rank": 5,
+            "relation": "TRACKS_PRICE",
+            "valid_at": "2023-05-25T16:57:00+00:00"
+          },
+          {
+            "expired_at": null,
+            "fact": "NFC chip may have certification according to FIPS 140-3.",
+            "invalid_at": null,
+            "rank": 6,
+            "relation": "HAS_CERTIFICATION",
+            "valid_at": null
+          },
+          {
+            "expired_at": null,
+            "fact": "Zazzle and Redbubble are both websites that offer a wide range of designs and quotes for customized coffee mugs.",
+            "invalid_at": null,
+            "rank": 7,
+            "relation": "SIMILAR_TO",
+            "valid_at": null
+          },
+          {
+            "expired_at": null,
+            "fact": "NFC chip may have certification according to FIPS 140-2.",
+            "invalid_at": null,
+            "rank": 8,
+            "relation": "HAS_CERTIFICATION",
+            "valid_at": null
+          },
+          {
+            "expired_at": null,
+            "fact": "User visited the island of Oahu during a previous trip to Hawaii with their family.",
+            "invalid_at": null,
+            "rank": 9,
+            "relation": "VISITED",
+            "valid_at": null
+          },
+          {
+            "expired_at": null,
+            "fact": "Goofy's Kitchen focuses on Goofy and his friends, while Mickey's Tales of Adventure Breakfast Buffet focuses on Mickey Mouse and adventure-themed characters.",
+            "invalid_at": null,
+            "rank": 10,
+            "relation": "DIFFERENT_CHARACTER_FOCUS",
+            "valid_at": null
+          },
+          {
+            "expired_at": null,
+            "fact": "User is planning a trip to Waikiki, Hawaii.",
+            "invalid_at": null,
+            "rank": 11,
+            "relation": "PLANS_TO_VISIT",
+            "valid_at": "2023-05-24T15:18:00+00:00"
+          },
+          {
+            "expired_at": null,
+            "fact": "User brings a Kindle on the hike to read books during downtime and reflection.",
+            "invalid_at": null,
+            "rank": 12,
+            "relation": "BRINGS",
+            "valid_at": "2023-05-25T05:48:00+00:00"
+          },
+          {
+            "expired_at": null,
+            "fact": "The USS Arizona Memorial is located on the island of Oahu.",
+            "invalid_at": null,
+            "rank": 13,
+            "relation": "LOCATED_ON",
+            "valid_at": "2023-05-24T15:18:00+00:00"
+          },
+          {
+            "expired_at": null,
+            "fact": "User plans to purchase a 3-day Go Oahu Card to make the most of their time in Waikiki.",
+            "invalid_at": null,
+            "rank": 14,
+            "relation": "PURCHASED",
+            "valid_at": null
+          },
+          {
+            "expired_at": null,
+            "fact": "Terumo Corporation and Fujifilm Corporation are both Japanese companies developing AI-powered medical devices, with Terumo focusing on surgical robots and Fujifilm on medical imaging platforms and retinal scanners.",
+            "invalid_at": null,
+            "rank": 15,
+            "relation": "COOPERATES_WITH",
+            "valid_at": null
+          },
+          {
+            "expired_at": null,
+            "fact": "The Sonos app allows users to adjust the speech enhancement level of the Sonos Beam.",
+            "invalid_at": null,
+            "rank": 16,
+            "relation": "ADJUSTS_SPEECH_ENHANCEMENT_OF",
+            "valid_at": "2023-06-08T20:21:00+00:00"
+          },
+          {
+            "expired_at": null,
+            "fact": "Becoming Odyssa: Epic Adventures on the Appalachian Trail is recommended for a solo hike, as it is a fun, lighthearted memoir about Jennifer Pharr Davis's journey on the Appalachian Trail, perfect for a solo hike.",
+            "invalid_at": null,
+            "rank": 17,
+            "relation": "RECOMMENDS",
+            "valid_at": null
+          },
+          {
+            "expired_at": null,
+            "fact": "Omron Healthcare and Fujifilm Corporation are both Japanese companies developing AI-powered medical devices, with Omron focusing on blood glucose monitors and wound care systems, and Fujifilm on medical imaging platforms and retinal scanners.",
+            "invalid_at": null,
+            "rank": 18,
+            "relation": "COOPERATES_WITH",
+            "valid_at": null
+          },
+          {
+            "expired_at": null,
+            "fact": "The Sonos app allows users to adjust the loudness setting of the Sonos Beam, with options for Off, Low, or High.",
+            "invalid_at": null,
+            "rank": 19,
+            "relation": "ADJUSTS_LOUDNESS_OF",
+            "valid_at": "2023-06-08T20:21:00+00:00"
+          },
+          {
+            "expired_at": null,
+            "fact": "User has visited Hawaii before with their family, spending 7 days exploring the islands of Oahu and Maui.",
+            "invalid_at": null,
+            "rank": 20,
+            "relation": "VISITED",
+            "valid_at": null
+          }
+        ],
+        "graphiti_search_calls": 1,
+        "neo4j_read_requests": 4,
+        "search_config_sha256": "62535d82129d01d6cbf8c3d5c13f656e60d89d821a9d9b9ca7bc1ed51c53fa7d"
+      },
+      "state_diagnostic": {
+        "active_edge_count": 113,
+        "active_expected_edge_count": 0,
+        "conflict_detection": "STRUCTURAL_GROUP_MULTIPLICITY_ONLY",
+        "current_value_active": false,
+        "current_value_entity_summary_only": false,
+        "current_value_inactive": false,
+        "diagnostic_only": true,
+        "entity_summary_match_count": 0,
+        "expected_answer": "1300",
+        "headline_answer_accuracy": false,
+        "inactive_expected_edge_count": 0,
+        "observation_time": "2023/06/15 (Thu) 23:26",
+        "old_new_value_source": "NOT_EXPOSED_BY_LONGMEMEVAL",
+        "predicate_authoritative": true,
+        "predicate_version": "longmemeval-current-state-v1",
+        "reader_answer_not_substituted": true,
+        "semantic_stale_value_status": "NOT_PROVABLE",
+        "status": "FAIL",
+        "structural_ambiguities": [],
+        "unrelated_expected_match_count": 0
+      }
+    },
+    {
+      "answer_evaluation": {
+        "correct": false,
+        "judge_label": false,
+        "judge_status": "SUCCESS",
+        "semantic_authority": "OFFICIAL_LONGMEMEVAL_JUDGE",
+        "status": "FAIL",
+        "surface_diagnostic": {
+          "expected_answer_normalized": "1300",
+          "official_judge_required": true,
+          "reader_answer_normalized": "the available information does not provide any data on the number of followers you have on instagram.",
+          "semantic_authority": "NONE",
+          "status": "LEXICAL_NO_MATCH"
+        }
+      },
+      "failure_boundary": "GRAPH_EVIDENCE_NOT_SUPPORTING_OFFICIAL_ANSWER",
+      "history_id": "a2f3aa27",
+      "judge_projection_supplied": true,
+      "method": "B1_NAIVE_WHOLE_UPDATE_ASYNC",
+      "official_current_answer": 1300,
+      "question": "How many followers do I have on Instagram now?",
+      "reader_answer": "The available information does not provide any data on the number of followers you have on Instagram.",
+      "retrieval": {
+        "episode_count": 20,
+        "fact_count": 20,
+        "facts": [
+          {
+            "expired_at": null,
+            "fact": "The user is thinking of visiting the USS Arizona Memorial while in Waikiki and is seeking information on how to plan the visit.",
+            "invalid_at": null,
+            "rank": 1,
+            "relation": "PLANS_TO_VISIT",
+            "valid_at": "2023-05-24T15:18:00+00:00"
+          },
+          {
+            "expired_at": "2026-08-21T19:13:14.687289+00:00",
+            "fact": "User has been following James Charles' channel, where they've watched around 10 videos in the past month.",
+            "invalid_at": "2023-05-25T00:00:00+00:00",
+            "rank": 2,
+            "relation": "FOLLOWS_CHANNEL",
+            "valid_at": "2023-04-25T00:00:00+00:00"
+          },
+          {
+            "expired_at": null,
+            "fact": "User has been watching a lot of ASMR videos on YouTube lately.",
+            "invalid_at": null,
+            "rank": 3,
+            "relation": "WATCHING_CONTENT_ON",
+            "valid_at": "2023-05-25T09:56:00+00:00"
+          },
+          {
+            "expired_at": null,
+            "fact": "The Espoir Sport tires are used on the Specialized Sirrus.",
+            "invalid_at": null,
+            "rank": 4,
+            "relation": "USED_ON",
+            "valid_at": null
+          },
+          {
+            "expired_at": null,
+            "fact": "The Dell Inspiron 14 5000 is available for purchase on Amazon.",
+            "invalid_at": null,
+            "rank": 5,
+            "relation": "AVAILABLE_AT",
+            "valid_at": "2023-05-25T16:57:00+00:00"
+          },
+          {
+            "expired_at": null,
+            "fact": "User can see why ASMR has become so popular after watching a lot of ASMR videos.",
+            "invalid_at": null,
+            "rank": 6,
+            "relation": "FINDS_POPULAR",
+            "valid_at": null
+          },
+          {
+            "expired_at": null,
+            "fact": "Becoming Odyssa: Epic Adventures on the Appalachian Trail is recommended for a solo hike because it is a fun, lighthearted memoir about Jennifer Pharr Davis's journey on the Appalachian Trail.",
+            "invalid_at": null,
+            "rank": 7,
+            "relation": "RECOMMENDS",
+            "valid_at": null
+          },
+          {
+            "expired_at": null,
+            "fact": "User is considering trying out YNAB to see which budgeting app they like better.",
+            "invalid_at": null,
+            "rank": 8,
+            "relation": "CONSIDERING_USING",
+            "valid_at": "2023-05-25T09:56:00+00:00"
+          },
+          {
+            "expired_at": null,
+            "fact": "The Dell Inspiron 14 5000 can be tracked for deals on CamelCamelCamel.",
+            "invalid_at": null,
+            "rank": 9,
+            "relation": "AVAILABLE_AT",
+            "valid_at": "2023-05-25T16:57:00+00:00"
+          },
+          {
+            "expired_at": null,
+            "fact": "The Dell Inspiron 14 5000 can be tracked for deals on Slickdeals.",
+            "invalid_at": null,
+            "rank": 10,
+            "relation": "AVAILABLE_AT",
+            "valid_at": null
+          },
+          {
+            "expired_at": null,
+            "fact": "The Dell Inspiron 14 5000 is available for purchase on Best Buy.",
+            "invalid_at": null,
+            "rank": 11,
+            "relation": "AVAILABLE_AT",
+            "valid_at": "2023-05-25T16:57:00+00:00"
+          },
+          {
+            "expired_at": null,
+            "fact": "The user is considering using Instacart as a grocery delivery service for ordering ingredients.",
+            "invalid_at": null,
+            "rank": 12,
+            "relation": "CONSIDERING_SERVICE",
+            "valid_at": "2023-05-25T15:30:00+00:00"
+          },
+          {
+            "expired_at": null,
+            "fact": "The user is considering using Peapod as an online grocery store for ordering ingredients.",
+            "invalid_at": null,
+            "rank": 13,
+            "relation": "CONSIDERING_SERVICE",
+            "valid_at": "2023-05-25T15:30:00+00:00"
+          },
+          {
+            "expired_at": null,
+            "fact": "User is interested in creating ASMR content in the future.",
+            "invalid_at": null,
+            "rank": 14,
+            "relation": "INTERESTED_IN_CREATING",
+            "valid_at": null
+          },
+          {
+            "expired_at": null,
+            "fact": "User is considering trying out Mint to see which budgeting app they like better.",
+            "invalid_at": null,
+            "rank": 15,
+            "relation": "CONSIDERING_USING",
+            "valid_at": "2023-05-25T09:56:00+00:00"
+          },
+          {
+            "expired_at": null,
+            "fact": "The Dell Inspiron 14 5000 is available for purchase on Dell's website.",
+            "invalid_at": null,
+            "rank": 16,
+            "relation": "AVAILABLE_AT",
+            "valid_at": "2023-05-25T16:57:00+00:00"
+          },
+          {
+            "expired_at": null,
+            "fact": "The user is considering using Zazzle to purchase a customized coffee mug with a funny quote for their best friend.",
+            "invalid_at": null,
+            "rank": 17,
+            "relation": "CONSIDERS_USING",
+            "valid_at": null
+          },
+          {
+            "expired_at": null,
+            "fact": "Goofy's Kitchen has a fun, lively, and colorful atmosphere with a focus on Goofy's silly antics, while Mickey's Tales of Adventure Breakfast Buffet has an adventurous and exciting atmosphere with a focus on Mickey's travels around the world.",
+            "invalid_at": null,
+            "rank": 18,
+            "relation": "DIFFERENT_ATMOSPHERE",
+            "valid_at": null
+          },
+          {
+            "expired_at": null,
+            "fact": "The user tried out a new food delivery service, GrubHub, earlier this week and was impressed with their options.",
+            "invalid_at": null,
+            "rank": 19,
+            "relation": "USED_SERVICE",
+            "valid_at": "2023-05-22T00:00:00+00:00"
+          },
+          {
+            "expired_at": null,
+            "fact": "The Espoir Sport tires on the Specialized Sirrus are designed for comfort, durability, and puncture resistance.",
+            "invalid_at": null,
+            "rank": 20,
+            "relation": "HAS_ATTRIBUTE",
+            "valid_at": null
+          }
+        ],
+        "graphiti_search_calls": 1,
+        "neo4j_read_requests": 4,
+        "search_config_sha256": "62535d82129d01d6cbf8c3d5c13f656e60d89d821a9d9b9ca7bc1ed51c53fa7d"
+      },
+      "state_diagnostic": {
+        "active_edge_count": 141,
+        "active_expected_edge_count": 0,
+        "conflict_detection": "STRUCTURAL_GROUP_MULTIPLICITY_ONLY",
+        "current_value_active": false,
+        "current_value_entity_summary_only": false,
+        "current_value_inactive": false,
+        "diagnostic_only": true,
+        "entity_summary_match_count": 0,
+        "expected_answer": "1300",
+        "headline_answer_accuracy": false,
+        "inactive_expected_edge_count": 0,
+        "observation_time": "2023/06/15 (Thu) 23:26",
+        "old_new_value_source": "NOT_EXPOSED_BY_LONGMEMEVAL",
+        "predicate_authoritative": true,
+        "predicate_version": "longmemeval-current-state-v1",
+        "reader_answer_not_substituted": true,
+        "semantic_stale_value_status": "NOT_PROVABLE",
+        "status": "FAIL",
+        "structural_ambiguities": [],
+        "unrelated_expected_match_count": 0
+      }
+    }
+  ],
+  "schema_version": "sfwb.v1.3.longmemeval-state-qa-v2-results.v1",
+  "state_diagnostic": {
+    "b0_direct_predicate_pass": 0,
+    "b1_direct_predicate_pass": 0,
+    "headline_answer_accuracy": false
+  },
+  "status": "LAYERED_GRAPH_ONLY_QA_ANALYSIS_COMPLETE"
+}

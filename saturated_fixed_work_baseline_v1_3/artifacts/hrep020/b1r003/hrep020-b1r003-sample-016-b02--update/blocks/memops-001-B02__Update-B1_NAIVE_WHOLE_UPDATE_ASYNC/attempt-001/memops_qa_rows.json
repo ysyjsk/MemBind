@@ -1,0 +1,157 @@
+{
+  "payload_sha256": "187cc572379b38511e495d8f7f69e676d3ae2b86ef0f611dce8371c78d17408e",
+  "rows": [
+    {
+      "construction_calls": 0,
+      "correct": true,
+      "evaluation_setting": "adjacent_operation",
+      "evaluation_type": "CandidateDisambiguation",
+      "expected_answer": "773-505-9241",
+      "failure_layer": null,
+      "gold_memory_state": "Danny's confirmed personal phone is 773-505-9241. 773-505-8214 was the initial wrong number. 773-505-8241 was the corrected number before the carrier port. 773-505-9300 is a tentative future number not yet active.",
+      "gold_provenance": [
+        {
+          "quote": "Danny just texted me that his carrier ported him to a new number. It's 773-505-9241 now. Same prefix, but that 8 became a 9",
+          "segment_index": 2,
+          "turn_index": 3
+        },
+        {
+          "quote": "Danny mentioned the carrier is issuing him yet another number because of some billing glitch. He said it'll be 773-505-9300 once it goes through",
+          "segment_index": 3,
+          "turn_index": 5
+        }
+      ],
+      "gold_ranks": [
+        1,
+        3
+      ],
+      "graph_write_attempts": 0,
+      "invalid": false,
+      "invalid_reason": null,
+      "judge_rubric": {
+        "acceptable_paraphrases": [],
+        "harmful_extra": [
+          "selecting any number other than 773-505-9241"
+        ],
+        "harmless_extra": [],
+        "must_include": [
+          "773-505-9241"
+        ],
+        "must_not_include": [
+          "773-505-8214",
+          "773-505-8241",
+          "773-505-9300"
+        ]
+      },
+      "memops_official_judge": {
+        "answer_score": 1,
+        "completion_tokens": 108,
+        "extra_detail_postcheck_action": "none",
+        "extra_detail_postcheck_applied": false,
+        "extra_detail_type": "none",
+        "finish_reason": "stop",
+        "judge_operation_detection": {
+          "fn": 0,
+          "fp": 0,
+          "tp": 0
+        },
+        "judge_provenance_support": 1,
+        "official_prompt_builder": "build_evaluation_prompt",
+        "official_result_parser": "parse_judge_metrics",
+        "prompt_sha256": "cccc737ce05089a2f8364565f51dc1dda3191f5c1679a86e0ab148b4680c5388",
+        "prompt_tokens": 6636,
+        "raw_prompt_persisted": false,
+        "raw_response_persisted": false,
+        "reason": "The model correctly selected the confirmed current phone number 773-505-9241, which is the expected answer. No extra details were included.",
+        "response_sha256": "9e54fe2df0b206b8a6ae4378fd6cbe8228972c702e884adeda03d2859a5f4ee1",
+        "stale_value": 0
+      },
+      "mrr": 1.0,
+      "ndcg_at_10": 0.9197207891481876,
+      "question_id": "B02__Update:p4_candidate_disambiguation:adjacent_operation",
+      "question_pair_id": "p4_candidate_disambiguation",
+      "recall_at_1": 0.5,
+      "recall_at_10": 1.0,
+      "recall_at_3": 1.0,
+      "recall_at_5": 1.0,
+      "relevance_unit": "LONGMEMEVAL_GOLD_SESSION",
+      "sample_id": "B02__Update"
+    },
+    {
+      "construction_calls": 0,
+      "correct": true,
+      "evaluation_setting": "longitudinal_operation",
+      "evaluation_type": "CandidateDisambiguation",
+      "expected_answer": "773-505-9241",
+      "failure_layer": null,
+      "gold_memory_state": "Danny's confirmed personal phone is 773-505-9241. 773-505-8214 was the initial wrong number. 773-505-8241 was the corrected number before the carrier port. 773-505-9300 is a tentative future number not yet active.",
+      "gold_provenance": [
+        {
+          "quote": "Danny just texted me that his carrier ported him to a new number. It's 773-505-9241 now. Same prefix, but that 8 became a 9",
+          "segment_index": 2,
+          "turn_index": 3
+        },
+        {
+          "quote": "Danny mentioned the carrier is issuing him yet another number because of some billing glitch. He said it'll be 773-505-9300 once it goes through",
+          "segment_index": 3,
+          "turn_index": 5
+        }
+      ],
+      "gold_ranks": [
+        1,
+        3
+      ],
+      "graph_write_attempts": 0,
+      "invalid": false,
+      "invalid_reason": null,
+      "judge_rubric": {
+        "acceptable_paraphrases": [],
+        "harmful_extra": [
+          "selecting any number other than 773-505-9241"
+        ],
+        "harmless_extra": [],
+        "must_include": [
+          "773-505-9241"
+        ],
+        "must_not_include": [
+          "773-505-8214",
+          "773-505-8241",
+          "773-505-9300"
+        ]
+      },
+      "memops_official_judge": {
+        "answer_score": 1,
+        "completion_tokens": 111,
+        "extra_detail_postcheck_action": "none",
+        "extra_detail_postcheck_applied": false,
+        "extra_detail_type": "none",
+        "finish_reason": "stop",
+        "judge_operation_detection": {
+          "fn": 0,
+          "fp": 0,
+          "tp": 0
+        },
+        "judge_provenance_support": 1,
+        "official_prompt_builder": "build_evaluation_prompt",
+        "official_result_parser": "parse_judge_metrics",
+        "prompt_sha256": "cccc737ce05089a2f8364565f51dc1dda3191f5c1679a86e0ab148b4680c5388",
+        "prompt_tokens": 6636,
+        "raw_prompt_persisted": false,
+        "raw_response_persisted": false,
+        "reason": "The model correctly selected the confirmed current phone number 773-505-9241, which is the expected answer. No extra details or harmful content were included.",
+        "response_sha256": "5c585a9b34f204037215e7898d679e2b0c15d50d5d6ac6ebdcd11e0e18dc218f",
+        "stale_value": 0
+      },
+      "mrr": 1.0,
+      "ndcg_at_10": 0.9197207891481876,
+      "question_id": "B02__Update:p4_candidate_disambiguation:longitudinal_operation",
+      "question_pair_id": "p4_candidate_disambiguation",
+      "recall_at_1": 0.5,
+      "recall_at_10": 1.0,
+      "recall_at_3": 1.0,
+      "recall_at_5": 1.0,
+      "relevance_unit": "LONGMEMEVAL_GOLD_SESSION",
+      "sample_id": "B02__Update"
+    }
+  ]
+}

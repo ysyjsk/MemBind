@@ -1,0 +1,165 @@
+{
+  "payload_sha256": "5e11b4b2d32d395eec0827d9dee47f11ab17427d4de93c0fe8c5ec37bbf3207e",
+  "rows": [
+    {
+      "construction_calls": 0,
+      "correct": true,
+      "evaluation_setting": "adjacent_operation",
+      "evaluation_type": "CandidateDisambiguation",
+      "expected_answer": "68 out of 100",
+      "failure_layer": null,
+      "gold_memory_state": "The confirmed current placement score is 68 out of 100, established after the official recalculation due to the idiomatic expressions grading error. The value 72 was the prior confirmed score before recalculation and also the tentative value from a potential appeal that has not been confirmed. The value 74 was the initial self-reported score that was corrected by email. The score has not been confirmed at 70 at any point.",
+      "gold_provenance": [
+        {
+          "quote": "Professor Cláudia Mendes emailed me today saying they recalculated scores because of a grading error on the idiomatic expressions section, and my corrected score is now 68 out of 100",
+          "segment_index": 2,
+          "turn_index": 5
+        },
+        {
+          "quote": "Professor Cláudia said there might be another adjustment because some students appealed, and if the appeal goes through my score would go back up to 72",
+          "segment_index": 3,
+          "turn_index": 5
+        }
+      ],
+      "gold_ranks": [
+        2,
+        3
+      ],
+      "graph_write_attempts": 0,
+      "invalid": false,
+      "invalid_reason": null,
+      "judge_rubric": {
+        "acceptable_paraphrases": [
+          "68/100",
+          "68"
+        ],
+        "harmful_extra": [
+          "selecting 72 because of the pending appeal",
+          "selecting 74 as the original score"
+        ],
+        "harmless_extra": [],
+        "must_include": [
+          "68 out of 100"
+        ],
+        "must_not_include": [
+          "72 out of 100 as current",
+          "74 out of 100 as current",
+          "70 out of 100"
+        ]
+      },
+      "memops_official_judge": {
+        "answer_score": 1,
+        "completion_tokens": 116,
+        "extra_detail_postcheck_action": "none",
+        "extra_detail_postcheck_applied": false,
+        "extra_detail_type": "none",
+        "finish_reason": "stop",
+        "judge_operation_detection": {
+          "fn": 0,
+          "fp": 0,
+          "tp": 1
+        },
+        "judge_provenance_support": 1,
+        "official_prompt_builder": "build_evaluation_prompt",
+        "official_result_parser": "parse_judge_metrics",
+        "prompt_sha256": "f5d29222eeba39516e2228a7e1b92210c23895c48cb03f2caec8c19372a8bd07",
+        "prompt_tokens": 6581,
+        "raw_prompt_persisted": false,
+        "raw_response_persisted": false,
+        "reason": "The model correctly selects 68 out of 100, which is the most recent confirmed score after the grading error was corrected. The response is concise and aligns with the expected answer and gold operations.",
+        "response_sha256": "40fb6f9f8ea60ee0d552fcce3875097c5e7eba30f3ed048c06dbbeb3655ab9ac",
+        "stale_value": 0
+      },
+      "mrr": 0.5,
+      "ndcg_at_10": 0.6934264036172708,
+      "question_id": "A29__Update:p4_candidate_disambiguation:adjacent_operation",
+      "question_pair_id": "p4_candidate_disambiguation",
+      "recall_at_1": 0.0,
+      "recall_at_10": 1.0,
+      "recall_at_3": 1.0,
+      "recall_at_5": 1.0,
+      "relevance_unit": "LONGMEMEVAL_GOLD_SESSION",
+      "sample_id": "A29__Update"
+    },
+    {
+      "construction_calls": 0,
+      "correct": true,
+      "evaluation_setting": "longitudinal_operation",
+      "evaluation_type": "CandidateDisambiguation",
+      "expected_answer": "68 out of 100",
+      "failure_layer": null,
+      "gold_memory_state": "The confirmed current placement score is 68 out of 100, established after the official recalculation due to the idiomatic expressions grading error. The value 72 was the prior confirmed score before recalculation and also the tentative value from a potential appeal that has not been confirmed. The value 74 was the initial self-reported score that was corrected by email. The score has not been confirmed at 70 at any point.",
+      "gold_provenance": [
+        {
+          "quote": "Professor Cláudia Mendes emailed me today saying they recalculated scores because of a grading error on the idiomatic expressions section, and my corrected score is now 68 out of 100",
+          "segment_index": 2,
+          "turn_index": 5
+        },
+        {
+          "quote": "Professor Cláudia said there might be another adjustment because some students appealed, and if the appeal goes through my score would go back up to 72",
+          "segment_index": 3,
+          "turn_index": 5
+        }
+      ],
+      "gold_ranks": [
+        2,
+        3
+      ],
+      "graph_write_attempts": 0,
+      "invalid": false,
+      "invalid_reason": null,
+      "judge_rubric": {
+        "acceptable_paraphrases": [
+          "68/100",
+          "68"
+        ],
+        "harmful_extra": [
+          "selecting 72 because of the pending appeal",
+          "selecting 74 as the original score"
+        ],
+        "harmless_extra": [],
+        "must_include": [
+          "68 out of 100"
+        ],
+        "must_not_include": [
+          "72 out of 100 as current",
+          "74 out of 100 as current",
+          "70 out of 100"
+        ]
+      },
+      "memops_official_judge": {
+        "answer_score": 1,
+        "completion_tokens": 109,
+        "extra_detail_postcheck_action": "none",
+        "extra_detail_postcheck_applied": false,
+        "extra_detail_type": "none",
+        "finish_reason": "stop",
+        "judge_operation_detection": {
+          "fn": 0,
+          "fp": 0,
+          "tp": 1
+        },
+        "judge_provenance_support": 1,
+        "official_prompt_builder": "build_evaluation_prompt",
+        "official_result_parser": "parse_judge_metrics",
+        "prompt_sha256": "f5d29222eeba39516e2228a7e1b92210c23895c48cb03f2caec8c19372a8bd07",
+        "prompt_tokens": 6581,
+        "raw_prompt_persisted": false,
+        "raw_response_persisted": false,
+        "reason": "The model correctly selects 68 out of 100 as the confirmed current score, which is the expected answer. It does not include any harmful extra details and cites the correct provenance.",
+        "response_sha256": "89daa77cfb8fc577e556f2e571f9afc8457a7ca1b81e296a6adba98869cfe23d",
+        "stale_value": 0
+      },
+      "mrr": 0.5,
+      "ndcg_at_10": 0.6934264036172708,
+      "question_id": "A29__Update:p4_candidate_disambiguation:longitudinal_operation",
+      "question_pair_id": "p4_candidate_disambiguation",
+      "recall_at_1": 0.0,
+      "recall_at_10": 1.0,
+      "recall_at_3": 1.0,
+      "recall_at_5": 1.0,
+      "relevance_unit": "LONGMEMEVAL_GOLD_SESSION",
+      "sample_id": "A29__Update"
+    }
+  ]
+}

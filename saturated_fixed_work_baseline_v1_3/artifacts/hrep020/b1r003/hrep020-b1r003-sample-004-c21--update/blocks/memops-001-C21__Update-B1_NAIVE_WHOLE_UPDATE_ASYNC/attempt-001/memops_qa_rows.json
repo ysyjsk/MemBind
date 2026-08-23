@@ -1,0 +1,169 @@
+{
+  "payload_sha256": "d8525432efa53ab52462d03fda64ee79e96831bb9d35594c910a911d1edc7147",
+  "rows": [
+    {
+      "construction_calls": 0,
+      "correct": true,
+      "evaluation_setting": "adjacent_operation",
+      "evaluation_type": "CandidateDisambiguation",
+      "expected_answer": "18th of every month",
+      "failure_layer": null,
+      "gold_memory_state": "Citi Double Cash due date: 18th of every month (confirmed). The 7th was the original date. The 22nd was an intermediate date. The 25th was offered but never adopted.",
+      "gold_provenance": [
+        {
+          "quote": "I just called Citi again yesterday and moved the due date to the 18th instead of the 22nd",
+          "segment_index": 2,
+          "turn_index": 3
+        },
+        {
+          "quote": "I decided to keep the Citi due date at the 18th after all",
+          "segment_index": 3,
+          "turn_index": 7
+        }
+      ],
+      "gold_ranks": [
+        1,
+        2
+      ],
+      "graph_write_attempts": 0,
+      "invalid": false,
+      "invalid_reason": null,
+      "judge_rubric": {
+        "acceptable_paraphrases": [
+          "the 18th",
+          "18th of each month"
+        ],
+        "harmful_extra": [
+          "selecting the 25th because it was most recently mentioned by the Citi rep",
+          "selecting the 22nd because it was a prior confirmed value"
+        ],
+        "harmless_extra": [
+          "noting that the 18th aligns with the second paycheck on the 16th"
+        ],
+        "must_include": [
+          "18th"
+        ],
+        "must_not_include": [
+          "7th as current",
+          "22nd as current",
+          "25th as current"
+        ]
+      },
+      "memops_official_judge": {
+        "answer_score": 1,
+        "completion_tokens": 121,
+        "extra_detail_postcheck_action": "none",
+        "extra_detail_postcheck_applied": false,
+        "extra_detail_type": "none",
+        "finish_reason": "stop",
+        "judge_operation_detection": {
+          "fn": 0,
+          "fp": 0,
+          "tp": 1
+        },
+        "judge_provenance_support": 1,
+        "official_prompt_builder": "build_evaluation_prompt",
+        "official_result_parser": "parse_judge_metrics",
+        "prompt_sha256": "d20f3aa93cf481ae92014801a8be5f15b590ab393e8c5d892c46f07ef0bcf0f9",
+        "prompt_tokens": 7711,
+        "raw_prompt_persisted": false,
+        "raw_response_persisted": false,
+        "reason": "The model correctly selected the 18th of every month as the current confirmed due date for the Citi Double Cash card, which is the expected answer. It did not include any harmful extra details or select a stale or tentative value.",
+        "response_sha256": "f940cbead680e0429f54ea9a2eb4ebdef8d78ada8cd2bf72d94d8247c7be2edd",
+        "stale_value": 0
+      },
+      "mrr": 1.0,
+      "ndcg_at_10": 1.0,
+      "question_id": "C21__Update:p4_candidate_disambiguation:adjacent_operation",
+      "question_pair_id": "p4_candidate_disambiguation",
+      "recall_at_1": 0.5,
+      "recall_at_10": 1.0,
+      "recall_at_3": 1.0,
+      "recall_at_5": 1.0,
+      "relevance_unit": "LONGMEMEVAL_GOLD_SESSION",
+      "sample_id": "C21__Update"
+    },
+    {
+      "construction_calls": 0,
+      "correct": true,
+      "evaluation_setting": "longitudinal_operation",
+      "evaluation_type": "CandidateDisambiguation",
+      "expected_answer": "18th of every month",
+      "failure_layer": null,
+      "gold_memory_state": "Citi Double Cash due date: 18th of every month (confirmed). The 7th was the original date. The 22nd was an intermediate date. The 25th was offered but never adopted.",
+      "gold_provenance": [
+        {
+          "quote": "I just called Citi again yesterday and moved the due date to the 18th instead of the 22nd",
+          "segment_index": 2,
+          "turn_index": 3
+        },
+        {
+          "quote": "I decided to keep the Citi due date at the 18th after all",
+          "segment_index": 3,
+          "turn_index": 7
+        }
+      ],
+      "gold_ranks": [
+        1,
+        2
+      ],
+      "graph_write_attempts": 0,
+      "invalid": false,
+      "invalid_reason": null,
+      "judge_rubric": {
+        "acceptable_paraphrases": [
+          "the 18th",
+          "18th of each month"
+        ],
+        "harmful_extra": [
+          "selecting the 25th because it was most recently mentioned by the Citi rep",
+          "selecting the 22nd because it was a prior confirmed value"
+        ],
+        "harmless_extra": [
+          "noting that the 18th aligns with the second paycheck on the 16th"
+        ],
+        "must_include": [
+          "18th"
+        ],
+        "must_not_include": [
+          "7th as current",
+          "22nd as current",
+          "25th as current"
+        ]
+      },
+      "memops_official_judge": {
+        "answer_score": 1,
+        "completion_tokens": 121,
+        "extra_detail_postcheck_action": "none",
+        "extra_detail_postcheck_applied": false,
+        "extra_detail_type": "none",
+        "finish_reason": "stop",
+        "judge_operation_detection": {
+          "fn": 0,
+          "fp": 0,
+          "tp": 1
+        },
+        "judge_provenance_support": 1,
+        "official_prompt_builder": "build_evaluation_prompt",
+        "official_result_parser": "parse_judge_metrics",
+        "prompt_sha256": "d20f3aa93cf481ae92014801a8be5f15b590ab393e8c5d892c46f07ef0bcf0f9",
+        "prompt_tokens": 7711,
+        "raw_prompt_persisted": false,
+        "raw_response_persisted": false,
+        "reason": "The model correctly selected the 18th of every month as the current confirmed due date for the Citi Double Cash card, which is the expected answer. It did not include any harmful extra details and the answer is semantically correct.",
+        "response_sha256": "04f8921de6c203006ca024cc0c5f90a174d2577160c372c5d5e3d4dd3f503ebd",
+        "stale_value": 0
+      },
+      "mrr": 1.0,
+      "ndcg_at_10": 1.0,
+      "question_id": "C21__Update:p4_candidate_disambiguation:longitudinal_operation",
+      "question_pair_id": "p4_candidate_disambiguation",
+      "recall_at_1": 0.5,
+      "recall_at_10": 1.0,
+      "recall_at_3": 1.0,
+      "recall_at_5": 1.0,
+      "relevance_unit": "LONGMEMEVAL_GOLD_SESSION",
+      "sample_id": "C21__Update"
+    }
+  ]
+}

@@ -1,0 +1,315 @@
+{
+  "payload_sha256": "1986d1bfc309523146d65b322d210cd93d6bbebdb0d2622f24dcf6b253ea58ad",
+  "rows": [
+    {
+      "construction_calls": 0,
+      "correct": true,
+      "evaluation_setting": "adjacent_operation",
+      "evaluation_type": "StateTransition",
+      "expected_answer": "Fridays. Lily's robotics club meets every Friday from 3:15 to 4:30 PM.",
+      "failure_layer": null,
+      "gold_memory_state": "Confirmed final state: robotics club meets every Friday, 3:15–4:30 PM starting April. The possibility of moving to Wednesdays starting May was mentioned by the coach but is not confirmed — it is under discussion with administration. The confirmed pickup day remains Friday.",
+      "gold_provenance": [
+        {
+          "quote": "the school just sent an update that starting in April the robotics club is switching to every Friday instead of every other Friday, same time slot 3:15 to 4:30",
+          "segment_index": 2,
+          "turn_index": 3
+        },
+        {
+          "quote": "The robotics coach sent a note home saying they're looking at moving the club to Wednesdays 3:15 to 4:30 starting in May because of gym scheduling conflicts on Fridays",
+          "segment_index": 3,
+          "turn_index": 5
+        }
+      ],
+      "gold_ranks": [
+        2,
+        3
+      ],
+      "graph_write_attempts": 0,
+      "invalid": false,
+      "invalid_reason": null,
+      "judge_rubric": {
+        "acceptable_paraphrases": [
+          "Fridays after school",
+          "every Friday"
+        ],
+        "harmful_extra": [
+          "treating Wednesday as the current robotics day",
+          "presenting the Wednesday possibility as decided"
+        ],
+        "harmless_extra": [
+          "mentioning the Wednesday possibility is under discussion but not yet decided"
+        ],
+        "must_include": [
+          "Friday",
+          "3:15–4:30 PM"
+        ],
+        "must_not_include": [
+          "Wednesday as the robotics day",
+          "second and fourth Fridays only",
+          "first and third Fridays only"
+        ]
+      },
+      "memops_official_judge": {
+        "answer_score": 1,
+        "completion_tokens": 149,
+        "extra_detail_postcheck_action": "none",
+        "extra_detail_postcheck_applied": false,
+        "extra_detail_type": "none",
+        "final_state": 1,
+        "finish_reason": "stop",
+        "intermediate_state": null,
+        "judge_operation_detection": {
+          "fn": 1,
+          "fp": 0,
+          "tp": 3
+        },
+        "judge_provenance_support": 1,
+        "official_prompt_builder": "build_evaluation_prompt",
+        "official_result_parser": "parse_judge_metrics",
+        "prompt_sha256": "5fb8a617c17cbde0e3a27aaefa9db05a3488762e17a231a66b6733e44497c460",
+        "prompt_tokens": 6665,
+        "raw_prompt_persisted": false,
+        "raw_response_persisted": false,
+        "reason": "The model correctly identifies the final confirmed state of the robotics schedule as every Friday from 3:15 to 4:30 PM starting in April. It does not treat the tentative Wednesday change as current. The response is concise and aligns with the expected answer.",
+        "response_sha256": "2c726261e0fb326153aff5d4b2663a4e808f50bdb903d811b7ff04035e7b19f7",
+        "trajectory_order": 1,
+        "trajectory_provenance": 1
+      },
+      "mrr": 0.5,
+      "ndcg_at_10": 0.6934264036172708,
+      "question_id": "B25__TrajectoryOps:p3_state_transition:adjacent_operation",
+      "question_pair_id": "p3_state_transition",
+      "recall_at_1": 0.0,
+      "recall_at_10": 1.0,
+      "recall_at_3": 1.0,
+      "recall_at_5": 1.0,
+      "relevance_unit": "LONGMEMEVAL_GOLD_SESSION",
+      "sample_id": "B25__TrajectoryOps"
+    },
+    {
+      "construction_calls": 0,
+      "correct": true,
+      "evaluation_setting": "longitudinal_operation",
+      "evaluation_type": "StateTransition",
+      "expected_answer": "Fridays. Lily's robotics club meets every Friday from 3:15 to 4:30 PM.",
+      "failure_layer": null,
+      "gold_memory_state": "Confirmed final state: robotics club meets every Friday, 3:15–4:30 PM starting April. The possibility of moving to Wednesdays starting May was mentioned by the coach but is not confirmed — it is under discussion with administration. The confirmed pickup day remains Friday.",
+      "gold_provenance": [
+        {
+          "quote": "the school just sent an update that starting in April the robotics club is switching to every Friday instead of every other Friday, same time slot 3:15 to 4:30",
+          "segment_index": 2,
+          "turn_index": 3
+        },
+        {
+          "quote": "The robotics coach sent a note home saying they're looking at moving the club to Wednesdays 3:15 to 4:30 starting in May because of gym scheduling conflicts on Fridays",
+          "segment_index": 3,
+          "turn_index": 5
+        }
+      ],
+      "gold_ranks": [
+        2,
+        3
+      ],
+      "graph_write_attempts": 0,
+      "invalid": false,
+      "invalid_reason": null,
+      "judge_rubric": {
+        "acceptable_paraphrases": [
+          "Fridays after school",
+          "every Friday"
+        ],
+        "harmful_extra": [
+          "treating Wednesday as the current robotics day",
+          "presenting the Wednesday possibility as decided"
+        ],
+        "harmless_extra": [
+          "mentioning the Wednesday possibility is under discussion but not yet decided"
+        ],
+        "must_include": [
+          "Friday",
+          "3:15–4:30 PM"
+        ],
+        "must_not_include": [
+          "Wednesday as the robotics day",
+          "second and fourth Fridays only",
+          "first and third Fridays only"
+        ]
+      },
+      "memops_official_judge": {
+        "answer_score": 1,
+        "completion_tokens": 155,
+        "extra_detail_postcheck_action": "none",
+        "extra_detail_postcheck_applied": false,
+        "extra_detail_type": "harmless",
+        "final_state": 1,
+        "finish_reason": "stop",
+        "intermediate_state": null,
+        "judge_operation_detection": {
+          "fn": 1,
+          "fp": 0,
+          "tp": 3
+        },
+        "judge_provenance_support": 1,
+        "official_prompt_builder": "build_evaluation_prompt",
+        "official_result_parser": "parse_judge_metrics",
+        "prompt_sha256": "a7da2637388c980ead010d603aee7c0e2abc9daad269833e7be12c513e7741e8",
+        "prompt_tokens": 6701,
+        "raw_prompt_persisted": false,
+        "raw_response_persisted": false,
+        "reason": "The model correctly states the confirmed final state (Fridays, 3:15–4:30 PM starting April) and mentions the tentative Wednesday change as a possibility without treating it as current. The extra detail about the Wednesday change is harmless as it is presented as unconfirmed.",
+        "response_sha256": "32f0123377375a2e17553090452c325a8b1f999de25cc0537830f206f8ad78fc",
+        "trajectory_order": 1,
+        "trajectory_provenance": 1
+      },
+      "mrr": 0.5,
+      "ndcg_at_10": 0.6934264036172708,
+      "question_id": "B25__TrajectoryOps:p3_state_transition:longitudinal_operation",
+      "question_pair_id": "p3_state_transition",
+      "recall_at_1": 0.0,
+      "recall_at_10": 1.0,
+      "recall_at_3": 1.0,
+      "recall_at_5": 1.0,
+      "relevance_unit": "LONGMEMEVAL_GOLD_SESSION",
+      "sample_id": "B25__TrajectoryOps"
+    },
+    {
+      "construction_calls": 0,
+      "correct": false,
+      "error_message": "Quality v1 gold sessions is invalid",
+      "evaluation_setting": "adjacent_operation",
+      "evaluation_type": "StateTrajectory",
+      "expected_answer": "First version: first and third Fridays, 3:15–4:30 PM — this was initially reported but was a mistake. Second version: second and fourth Fridays, 3:15–4:30 PM — this was the corrected schedule after checking with the school office and was adopted. Third version: every Friday, 3:15–4:30 PM starting April — this replaced the biweekly schedule when the trial program expanded, and it is the current adopted schedule. Fourth version: Wednesdays, 3:15–4:30 PM starting May — this was only floated by the coach as a possibility due to gym conflicts and has not been adopted.",
+      "failure_layer": "retrieval",
+      "gold_memory_state": "Final confirmed state: every Friday, 3:15–4:30 PM starting April. The Wednesday possibility is tentative/unconfirmed. All prior Friday schedules (first-and-third, second-and-fourth) are superseded.",
+      "gold_provenance": [
+        {
+          "quote": "Lily's robotics club at school meets every other Friday, specifically the first and third Fridays of each month, from 3:15 to 4:30 PM",
+          "segment_index": 1,
+          "turn_index": 1
+        },
+        {
+          "quote": "I double-checked with the school office and the robotics club actually meets on the second and fourth Fridays, not the first and third like I originally said",
+          "segment_index": 1,
+          "turn_index": 5
+        },
+        {
+          "quote": "the school just sent an update that starting in April the robotics club is switching to every Friday instead of every other Friday, same time slot 3:15 to 4:30",
+          "segment_index": 2,
+          "turn_index": 3
+        },
+        {
+          "quote": "The robotics coach sent a note home saying they're looking at moving the club to Wednesdays 3:15 to 4:30 starting in May because of gym scheduling conflicts on Fridays",
+          "segment_index": 3,
+          "turn_index": 5
+        }
+      ],
+      "graph_write_attempts": 0,
+      "invalid": true,
+      "invalid_reason": "builtins.ValueError",
+      "judge_rubric": {
+        "acceptable_paraphrases": [
+          "the first schedule was wrong",
+          "corrected after checking with the school",
+          "expanded from biweekly to weekly",
+          "coach floated Wednesday but not decided"
+        ],
+        "harmful_extra": [
+          "presenting Wednesday as adopted/confirmed",
+          "omitting any of the four versions",
+          "presenting first-and-third Fridays as ever having been the correct schedule"
+        ],
+        "harmless_extra": [
+          "mentioning the gym conflict reason for the Wednesday proposal",
+          "mentioning the trial program context"
+        ],
+        "must_include": [
+          "first and third Fridays as initial/mistaken version",
+          "second and fourth Fridays as corrected version",
+          "every Friday as expanded/current version",
+          "Wednesday as unconfirmed/tentative possibility"
+        ],
+        "must_not_include": []
+      },
+      "memops_official_judge": null,
+      "mrr": 0.0,
+      "ndcg_at_10": 0.0,
+      "question_id": "B25__TrajectoryOps:p5_state_trajectory:adjacent_operation",
+      "question_pair_id": "p5_state_trajectory",
+      "recall_at_1": 0.0,
+      "recall_at_10": 0.0,
+      "recall_at_3": 0.0,
+      "recall_at_5": 0.0,
+      "sample_id": "B25__TrajectoryOps"
+    },
+    {
+      "construction_calls": 0,
+      "correct": false,
+      "error_message": "Quality v1 gold sessions is invalid",
+      "evaluation_setting": "longitudinal_operation",
+      "evaluation_type": "StateTrajectory",
+      "expected_answer": "First version: first and third Fridays, 3:15–4:30 PM — this was initially reported but was a mistake. Second version: second and fourth Fridays, 3:15–4:30 PM — this was the corrected schedule after checking with the school office and was adopted. Third version: every Friday, 3:15–4:30 PM starting April — this replaced the biweekly schedule when the trial program expanded, and it is the current adopted schedule. Fourth version: Wednesdays, 3:15–4:30 PM starting May — this was only floated by the coach as a possibility due to gym conflicts and has not been adopted.",
+      "failure_layer": "retrieval",
+      "gold_memory_state": "Final confirmed state: every Friday, 3:15–4:30 PM starting April. The Wednesday possibility is tentative/unconfirmed. All prior Friday schedules (first-and-third, second-and-fourth) are superseded.",
+      "gold_provenance": [
+        {
+          "quote": "Lily's robotics club at school meets every other Friday, specifically the first and third Fridays of each month, from 3:15 to 4:30 PM",
+          "segment_index": 1,
+          "turn_index": 1
+        },
+        {
+          "quote": "I double-checked with the school office and the robotics club actually meets on the second and fourth Fridays, not the first and third like I originally said",
+          "segment_index": 1,
+          "turn_index": 5
+        },
+        {
+          "quote": "the school just sent an update that starting in April the robotics club is switching to every Friday instead of every other Friday, same time slot 3:15 to 4:30",
+          "segment_index": 2,
+          "turn_index": 3
+        },
+        {
+          "quote": "The robotics coach sent a note home saying they're looking at moving the club to Wednesdays 3:15 to 4:30 starting in May because of gym scheduling conflicts on Fridays",
+          "segment_index": 3,
+          "turn_index": 5
+        }
+      ],
+      "graph_write_attempts": 0,
+      "invalid": true,
+      "invalid_reason": "builtins.ValueError",
+      "judge_rubric": {
+        "acceptable_paraphrases": [
+          "the first schedule was wrong",
+          "corrected after checking with the school",
+          "expanded from biweekly to weekly",
+          "coach floated Wednesday but not decided"
+        ],
+        "harmful_extra": [
+          "presenting Wednesday as adopted/confirmed",
+          "omitting any of the four versions",
+          "presenting first-and-third Fridays as ever having been the correct schedule"
+        ],
+        "harmless_extra": [
+          "mentioning the gym conflict reason for the Wednesday proposal",
+          "mentioning the trial program context"
+        ],
+        "must_include": [
+          "first and third Fridays as initial/mistaken version",
+          "second and fourth Fridays as corrected version",
+          "every Friday as expanded/current version",
+          "Wednesday as unconfirmed/tentative possibility"
+        ],
+        "must_not_include": []
+      },
+      "memops_official_judge": null,
+      "mrr": 0.0,
+      "ndcg_at_10": 0.0,
+      "question_id": "B25__TrajectoryOps:p5_state_trajectory:longitudinal_operation",
+      "question_pair_id": "p5_state_trajectory",
+      "recall_at_1": 0.0,
+      "recall_at_10": 0.0,
+      "recall_at_3": 0.0,
+      "recall_at_5": 0.0,
+      "sample_id": "B25__TrajectoryOps"
+    }
+  ]
+}

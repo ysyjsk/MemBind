@@ -68,6 +68,10 @@ class V5LLMClientProxy:
     cache_salt: str = ""
     previous_context_digest: str = ""
     identity_sink: Callable[[RequestIdentity], None] | None = None
+    # V6 may extend the certified seam after a request-stability probe.  The
+    # default remains the frozen V5 callsite set, so existing captures/replays
+    # retain exactly their prior behavior.
+    certified_callsites: frozenset[str] = CERTIFIED_CALLSITES
 
     def __post_init__(self) -> None:
         if self.mode not in {"capture", "replay"}:
@@ -145,7 +149,7 @@ class V5LLMClientProxy:
             )
 
         try:
-            certified = prompt_name in CERTIFIED_CALLSITES
+            certified = prompt_name in self.certified_callsites
             if self.mode == "capture":
                 response = await delegate()
                 self.store.capture(identity, response, transport_attempts=1)

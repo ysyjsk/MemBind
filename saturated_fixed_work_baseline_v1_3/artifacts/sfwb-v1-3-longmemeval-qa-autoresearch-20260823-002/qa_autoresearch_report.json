@@ -1,0 +1,170 @@
+{
+  "authority_contract": {
+    "graph_native": "ZEP_SHAPED_FACT_ENTITY_DIAGNOSTIC",
+    "headline": "OFFICIAL_LONGMEMEVAL_SESSION_VALUE_END_TO_END",
+    "judge": "PINNED_OFFICIAL_LONGMEMEVAL_JUDGE_ONLY",
+    "reader_calibration": "GOLD_ONLY_ORACLE_SESSION_READER_DEVELOPMENT_ONLY",
+    "retrieval_metric": "POST_HOC_OFFICIAL_SESSION_EVIDENCE_RECALL",
+    "strict_state": "DIRECT_GRAPH_CURRENT_STATE_PREDICATE_DIAGNOSTIC"
+  },
+  "b1_attack_decision": "STOP_NO_REPRODUCIBLE_B0_PASS_B1_FAIL",
+  "candidate_matrix": {
+    "A_SESSION_VALUE": {
+      "artifact": "/data/predator/ly/MemBind/saturated_fixed_work_baseline_v1_3/artifacts/sfwb-v1-3-longmemeval-session-value-qa-20260823-001/session_value_results.json",
+      "authority": "HEADLINE_ELIGIBLE",
+      "b0_accuracy": 0.5,
+      "b0_pass": 2,
+      "b0_pass_b1_fail": 0,
+      "b1_accuracy": 0.5,
+      "b1_pass": 2,
+      "finding": "retrieval recall is complete, but two graphs do not contain the later current-state evidence",
+      "session_recall_at_10_b0_macro": 1.0,
+      "session_recall_at_10_b1_macro": 1.0
+    },
+    "B_GRAPH_NATIVE": {
+      "artifact": "/data/predator/ly/MemBind/saturated_fixed_work_baseline_v1_3/artifacts/sfwb-v1-3-longmemeval-graph-native-qa-20260823-001/graph_native_results.json",
+      "authority": "DIAGNOSTIC_ONLY",
+      "b0_accuracy": 0.0,
+      "b0_pass": 0,
+      "b0_pass_b1_fail": 0,
+      "b1_accuracy": 0.0,
+      "b1_pass": 0,
+      "finding": "Zep-shaped facts/entities surface is not sufficient for these current graphs"
+    },
+    "C_STRICT_GRAPH_STATE": {
+      "artifact": "/data/predator/ly/MemBind/saturated_fixed_work_baseline_v1_3/artifacts/sfwb-v1-3-longmemeval-state-qa-v2-20260823-004/state_qa_v2_results.json",
+      "authority": "SEMANTIC_STATE_DIAGNOSTIC_ONLY",
+      "b0_pass": 0,
+      "b0_pass_b1_fail": 0,
+      "b1_pass": 0,
+      "finding": "B0 graph evidence coverage is insufficient; no unsafe claim is authorized"
+    },
+    "D_ORACLE_READER_CALIBRATION": {
+      "artifact": "/data/predator/ly/MemBind/paper-eval-v3/artifacts/paper_eval/qa_decomposition/runs/qd-dev-20260817-001/QA_DECOMPOSITION_RESULTS.json",
+      "authority": "READER_UPPER_BOUND_CALIBRATION_ONLY",
+      "finding": "oracle sessions separate Reader capability from retrieval/context failure",
+      "variants": {
+        "gold_only": {
+          "qa_accuracy": 0.75,
+          "question_count": 4
+        },
+        "top10": {
+          "qa_accuracy": 0.25,
+          "question_count": 4
+        }
+      }
+    }
+  },
+  "construction_calls": 0,
+  "decision": "GO_FREEZE_LAYERED_REVIEWER_SAFE_QA_PROTOCOL",
+  "graph_writes": 0,
+  "mechanism_claim": {
+    "reason": "no history has B0 official PASS and B1 official FAIL; no direct current-state B0 PASS/B1 FAIL pair exists",
+    "unordered_admission_to_semantic_failure": "NOT_ESTABLISHED"
+  },
+  "payload_sha256": "24832e7a8352204dd1c3292dd1519f1f21dcf5924a98c0035638b80270da7cee",
+  "per_history": [
+    {
+      "graph_native": {
+        "b0_status": "FAIL",
+        "b1_status": "FAIL",
+        "state_b0": "FAIL",
+        "state_b1": "FAIL"
+      },
+      "history_id": "07741c45",
+      "session_value": {
+        "b0_b1_answer_divergence": false,
+        "b0_status": "FAIL",
+        "b1_status": "FAIL",
+        "session_recall_b0": 1.0,
+        "session_recall_b1": 1.0
+      },
+      "strict_graph_state": {
+        "b0_failure_boundary": "GRAPH_EVIDENCE_NOT_SUPPORTING_OFFICIAL_ANSWER",
+        "b0_status": null,
+        "b1_failure_boundary": "GRAPH_EVIDENCE_NOT_SUPPORTING_OFFICIAL_ANSWER",
+        "b1_status": null
+      }
+    },
+    {
+      "graph_native": {
+        "b0_status": "FAIL",
+        "b1_status": "FAIL",
+        "state_b0": "NOT_PROVABLE",
+        "state_b1": "NOT_PROVABLE"
+      },
+      "history_id": "b6019101",
+      "session_value": {
+        "b0_b1_answer_divergence": false,
+        "b0_status": "PASS",
+        "b1_status": "PASS",
+        "session_recall_b0": 1.0,
+        "session_recall_b1": 1.0
+      },
+      "strict_graph_state": {
+        "b0_failure_boundary": "GRAPH_EVIDENCE_NOT_SUPPORTING_OFFICIAL_ANSWER",
+        "b0_status": null,
+        "b1_failure_boundary": "GRAPH_EVIDENCE_NOT_SUPPORTING_OFFICIAL_ANSWER",
+        "b1_status": null
+      }
+    },
+    {
+      "graph_native": {
+        "b0_status": "FAIL",
+        "b1_status": "FAIL",
+        "state_b0": "FAIL",
+        "state_b1": "FAIL"
+      },
+      "history_id": "6071bd76",
+      "session_value": {
+        "b0_b1_answer_divergence": false,
+        "b0_status": "PASS",
+        "b1_status": "PASS",
+        "session_recall_b0": 1.0,
+        "session_recall_b1": 1.0
+      },
+      "strict_graph_state": {
+        "b0_failure_boundary": "GRAPH_EVIDENCE_NOT_SUPPORTING_OFFICIAL_ANSWER",
+        "b0_status": null,
+        "b1_failure_boundary": "GRAPH_EVIDENCE_NOT_SUPPORTING_OFFICIAL_ANSWER",
+        "b1_status": null
+      }
+    },
+    {
+      "graph_native": {
+        "b0_status": "FAIL",
+        "b1_status": "FAIL",
+        "state_b0": "FAIL",
+        "state_b1": "FAIL"
+      },
+      "history_id": "a2f3aa27",
+      "session_value": {
+        "b0_b1_answer_divergence": false,
+        "b0_status": "FAIL",
+        "b1_status": "FAIL",
+        "session_recall_b0": 1.0,
+        "session_recall_b1": 1.0
+      },
+      "strict_graph_state": {
+        "b0_failure_boundary": "GRAPH_EVIDENCE_NOT_SUPPORTING_OFFICIAL_ANSWER",
+        "b0_status": null,
+        "b1_failure_boundary": "GRAPH_EVIDENCE_NOT_SUPPORTING_OFFICIAL_ANSWER",
+        "b1_status": null
+      }
+    }
+  ],
+  "reviewer_safe_reporting": [
+    "Report A session-value QA and official session evidence recall as separate columns.",
+    "Report D oracle Reader calibration only as an upper bound, never as end-to-end performance.",
+    "Report B facts/entities and C strict state as graph-usability diagnostics, never merge them into headline QA.",
+    "Classify missing graph evidence as ingestion/representation coverage, not Reader or B1 semantic failure.",
+    "Authorize a B1 unsafe claim only for a preregistered B0 PASS to B1 FAIL paired outcome under the same Reader/Judge identity."
+  ],
+  "schema_version": "sfwb.v1.3.longmemeval-qa-autoresearch-report.v1",
+  "source_artifacts": {
+    "literature_audit": "/data/predator/ly/MemBind/paper-eval-v3/LITERATURE_AND_PUBLIC_CODE_AUDIT_LONGMEMEVAL_GRAPHITI_QWEN_20260816.md",
+    "qa_decomposition_report": "/data/predator/ly/MemBind/paper-eval-v3/QA_DECOMPOSITION_RESULT_REPORT_20260817.md"
+  },
+  "status": "QA_PROTOCOL_AUTORESEARCH_COMPLETE",
+  "v5_started": false
+}

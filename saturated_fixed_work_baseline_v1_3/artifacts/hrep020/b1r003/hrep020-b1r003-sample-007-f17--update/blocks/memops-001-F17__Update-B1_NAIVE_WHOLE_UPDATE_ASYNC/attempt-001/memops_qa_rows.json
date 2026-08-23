@@ -1,0 +1,165 @@
+{
+  "payload_sha256": "73242d5744a3228181e5bf0b1f5c8f6e18bc50320c48bb148be48f616f2f28f1",
+  "rows": [
+    {
+      "construction_calls": 0,
+      "correct": true,
+      "evaluation_setting": "adjacent_operation",
+      "evaluation_type": "CandidateDisambiguation",
+      "expected_answer": "1.1 ng/mL",
+      "failure_layer": null,
+      "gold_memory_state": "AMH level: 1.1 ng/mL (confirmed from rerun after calibration issue, reaffirmed after dismissing 1.6 ng/mL external lab mislabel). Current prenatal vitamin: Thorne Basic Prenatal.",
+      "gold_provenance": [
+        {
+          "quote": "Dr. Reyes had the lab rerun the AMH because there was a flagged calibration issue. The new result is 1.1 ng/mL",
+          "segment_index": 2,
+          "turn_index": 3
+        },
+        {
+          "quote": "Dr. Reyes just emailed me. She said the external lab result was from a mislabeled vial, so it's not mine. The confirmed AMH is still 1.1 ng/mL from the rerun",
+          "segment_index": 3,
+          "turn_index": 7
+        }
+      ],
+      "gold_ranks": [
+        1,
+        3
+      ],
+      "graph_write_attempts": 0,
+      "invalid": false,
+      "invalid_reason": null,
+      "judge_rubric": {
+        "acceptable_paraphrases": [
+          "1.1"
+        ],
+        "harmful_extra": [
+          "selecting any value other than 1.1 ng/mL"
+        ],
+        "harmless_extra": [
+          "explaining that the rerun confirmed 1.1"
+        ],
+        "must_include": [
+          "1.1 ng/mL"
+        ],
+        "must_not_include": [
+          "1.2 ng/mL as the answer",
+          "1.4 ng/mL as the answer",
+          "1.6 ng/mL as the answer"
+        ]
+      },
+      "memops_official_judge": {
+        "answer_score": 1,
+        "completion_tokens": 118,
+        "extra_detail_postcheck_action": "none",
+        "extra_detail_postcheck_applied": false,
+        "extra_detail_type": "none",
+        "finish_reason": "stop",
+        "judge_operation_detection": {
+          "fn": 0,
+          "fp": 0,
+          "tp": 1
+        },
+        "judge_provenance_support": 1,
+        "official_prompt_builder": "build_evaluation_prompt",
+        "official_result_parser": "parse_judge_metrics",
+        "prompt_sha256": "604e97e8648b327c13059d57275bcb33425dea0d2bdabb86bd6ceb36eac7c4ee",
+        "prompt_tokens": 6851,
+        "raw_prompt_persisted": false,
+        "raw_response_persisted": false,
+        "reason": "The model correctly selects 1.1 ng/mL as the confirmed AMH level, citing the rerun and ruling out the external lab's mislabeled result. The response is concise and aligns with the expected answer and gold provenance.",
+        "response_sha256": "7b74c37485f588f7d6cb9d0caae19f18b5954cd496712af30d0c6d198b24163a",
+        "stale_value": 0
+      },
+      "mrr": 1.0,
+      "ndcg_at_10": 0.9197207891481876,
+      "question_id": "F17__Update:p4_candidate_disambiguation:adjacent_operation",
+      "question_pair_id": "p4_candidate_disambiguation",
+      "recall_at_1": 0.5,
+      "recall_at_10": 1.0,
+      "recall_at_3": 1.0,
+      "recall_at_5": 1.0,
+      "relevance_unit": "LONGMEMEVAL_GOLD_SESSION",
+      "sample_id": "F17__Update"
+    },
+    {
+      "construction_calls": 0,
+      "correct": true,
+      "evaluation_setting": "longitudinal_operation",
+      "evaluation_type": "CandidateDisambiguation",
+      "expected_answer": "1.1 ng/mL",
+      "failure_layer": null,
+      "gold_memory_state": "AMH level: 1.1 ng/mL (confirmed from rerun after calibration issue, reaffirmed after dismissing 1.6 ng/mL external lab mislabel). Current prenatal vitamin: Thorne Basic Prenatal.",
+      "gold_provenance": [
+        {
+          "quote": "Dr. Reyes had the lab rerun the AMH because there was a flagged calibration issue. The new result is 1.1 ng/mL",
+          "segment_index": 2,
+          "turn_index": 3
+        },
+        {
+          "quote": "Dr. Reyes just emailed me. She said the external lab result was from a mislabeled vial, so it's not mine. The confirmed AMH is still 1.1 ng/mL from the rerun",
+          "segment_index": 3,
+          "turn_index": 7
+        }
+      ],
+      "gold_ranks": [
+        1,
+        3
+      ],
+      "graph_write_attempts": 0,
+      "invalid": false,
+      "invalid_reason": null,
+      "judge_rubric": {
+        "acceptable_paraphrases": [
+          "1.1"
+        ],
+        "harmful_extra": [
+          "selecting any value other than 1.1 ng/mL"
+        ],
+        "harmless_extra": [
+          "explaining that the rerun confirmed 1.1"
+        ],
+        "must_include": [
+          "1.1 ng/mL"
+        ],
+        "must_not_include": [
+          "1.2 ng/mL as the answer",
+          "1.4 ng/mL as the answer",
+          "1.6 ng/mL as the answer"
+        ]
+      },
+      "memops_official_judge": {
+        "answer_score": 1,
+        "completion_tokens": 139,
+        "extra_detail_postcheck_action": "none",
+        "extra_detail_postcheck_applied": false,
+        "extra_detail_type": "none",
+        "finish_reason": "stop",
+        "judge_operation_detection": {
+          "fn": 1,
+          "fp": 0,
+          "tp": 5
+        },
+        "judge_provenance_support": 1,
+        "official_prompt_builder": "build_evaluation_prompt",
+        "official_result_parser": "parse_judge_metrics",
+        "prompt_sha256": "604e97e8648b327c13059d57275bcb33425dea0d2bdabb86bd6ceb36eac7c4ee",
+        "prompt_tokens": 6851,
+        "raw_prompt_persisted": false,
+        "raw_response_persisted": false,
+        "reason": "The model correctly selects 1.1 ng/mL as the confirmed AMH value, citing the rerun and ruling out the external lab's mislabeled result. The final answer is semantically correct and aligns with the expected answer. The model does not select any harmful extra values. The response is concise and includes only relevant, supported information.",
+        "response_sha256": "cd72041abfa49915bd140e61c05a27d82d1ba3214e13617a9bd32aff3840a5fa",
+        "stale_value": 0
+      },
+      "mrr": 1.0,
+      "ndcg_at_10": 0.9197207891481876,
+      "question_id": "F17__Update:p4_candidate_disambiguation:longitudinal_operation",
+      "question_pair_id": "p4_candidate_disambiguation",
+      "recall_at_1": 0.5,
+      "recall_at_10": 1.0,
+      "recall_at_3": 1.0,
+      "recall_at_5": 1.0,
+      "relevance_unit": "LONGMEMEVAL_GOLD_SESSION",
+      "sample_id": "F17__Update"
+    }
+  ]
+}

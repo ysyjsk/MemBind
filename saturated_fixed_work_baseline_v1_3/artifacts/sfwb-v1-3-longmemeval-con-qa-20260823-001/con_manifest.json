@@ -1,0 +1,50 @@
+{
+  "construction_calls": 0,
+  "graph_writes": 0,
+  "history_ids": [
+    "07741c45",
+    "b6019101",
+    "6071bd76",
+    "a2f3aa27"
+  ],
+  "judge": {
+    "base_url": "http://10.87.5.247:8002/v1",
+    "implementation": "existing_graph_quality_private_longmemeval_judge",
+    "raw_output_persisted": false
+  },
+  "methods": [
+    "B0_NATIVE_SERIAL",
+    "B1_NAIVE_WHOLE_UPDATE_ASYNC"
+  ],
+  "operation_root": "/data/predator/ly/MemBind/saturated_fixed_work_baseline_v1_3/artifacts/sfwb-v1-3-longmemeval-sf-operation-20260823-001",
+  "payload_sha256": "2355bdfdee7fadc26d7b1aa279e1b4c088dad509bffda74b58fa0187f144a244",
+  "reader": {
+    "answer_max_tokens": 800,
+    "answer_prompt_sha256": "9e2b3110622929ab896696dd8937231c7436740ec3b9586f653f97346e19ab2c",
+    "con": true,
+    "cot": true,
+    "effective_enable_thinking": false,
+    "history_format": "json",
+    "implementation": "longmemeval_json_chain_of_note_reader",
+    "max_attempts": 1,
+    "n": 1,
+    "note_max_tokens": 500,
+    "note_prompt_sha256": "1afab7da2e46782b717d009f6a208516611d691ad0e931e95e2b5c58eb2a23c8",
+    "retriever_type": "flat-session",
+    "sdk_hidden_retries": 0,
+    "source_text": "READ_ONLY_NEO4J_EPISODIC_CONTENT_ONLY",
+    "temperature": 0,
+    "thinking_control": "client_request",
+    "topk_context": 10,
+    "transport_config_sha256": "0577f4093d3d909b20c3502d34a250673ad7153f1c6205e5112d6f9aac554167",
+    "upstream_commit": "9e0b455f4ef0e2ab8f2e582289761153549043fc",
+    "upstream_repository": "xiaowu0162/LongMemEval",
+    "upstream_source_path": "src/generation/run_generation.py",
+    "upstream_source_sha256": "4f1eb3c69d7ad40f04065b9c0bc86f6582441018fc6ff751d162d66c95baf672"
+  },
+  "reader_text_source": "READ_ONLY_NEO4J_EPISODIC_CONTENT_ONLY",
+  "retrieval": "EXISTING_QUALITY_V1_TOP20_RRF_GOLD_BLIND",
+  "schema_version": "sfwb.v1.3.longmemeval-con-qa-manifest.v1",
+  "status": "READ_ONLY_CON_QA_AUTHORIZED",
+  "v5_started": false
+}

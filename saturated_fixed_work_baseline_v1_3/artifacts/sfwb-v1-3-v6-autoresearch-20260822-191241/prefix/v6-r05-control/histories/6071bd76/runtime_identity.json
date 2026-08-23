@@ -1,0 +1,31 @@
+{
+  "classification": "U0",
+  "construction": {
+    "base_url": "http://10.87.5.247:8000/v1/",
+    "context_limit": 65536,
+    "enable_thinking": false,
+    "model_revision": "6e2312b85c2ae9a31f629f24493b79d8b02eab1a",
+    "requested_max_tokens": 16384,
+    "safety_margin_tokens": 32,
+    "seed": 20260806,
+    "served_model_id": "qwen3-32b-fp8",
+    "structured_output_mode": "json_schema",
+    "temperature": 0.0,
+    "top_p": 1.0
+  },
+  "embedding": {
+    "base_url": "http://10.87.5.247:8001/v1",
+    "dimension": 1024,
+    "served_model_id": "qwen3-embedding-0.6b"
+  },
+  "max_coroutines": 8,
+  "neo4j": {
+    "uri": "bolt://localhost:7687"
+  },
+  "policies": {
+    "cross_run_cache_carry_over": "prohibited",
+    "deterministic_candidate_ordering": false,
+    "embedding_cache": false,
+    "prompt_cache": false
+  }
+}

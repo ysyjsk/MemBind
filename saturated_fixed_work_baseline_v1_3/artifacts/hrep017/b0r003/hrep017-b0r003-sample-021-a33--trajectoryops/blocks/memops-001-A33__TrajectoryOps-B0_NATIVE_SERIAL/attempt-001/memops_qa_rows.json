@@ -1,0 +1,339 @@
+{
+  "payload_sha256": "a20683aa74e791ce2629bced2ba8aa0e5fe8cf5fe09bbe654e39c2c66958bddc",
+  "rows": [
+    {
+      "construction_calls": 0,
+      "correct": true,
+      "evaluation_setting": "adjacent_operation",
+      "evaluation_type": "StateTransition",
+      "expected_answer": "5'11¼\" based on your most recent verified home measurement, or 5'11\" from your March 12th clinical measurement. The chiropractor's projection has not been clinically verified, so it should not be used on official documents yet.",
+      "failure_layer": null,
+      "gold_memory_state": "User's last confirmed height is 5'11¼\" (home morning measurement). The clinical measurement of 5'11\" from March 12th is also confirmed. The chiropractor's 5'11½\" is tentative and not adopted — the user explicitly said he would not count on it until verified at a doctor's office. The old 6'0\" is superseded. The urgent care 5'11¾\" was explicitly disregarded.",
+      "gold_provenance": [
+        {
+          "quote": "I measured myself at home first thing in the morning against the door frame and I got 5'11 and a quarter inches. So my morning height is 5'11¼\".",
+          "segment_index": 2,
+          "turn_index": 3
+        },
+        {
+          "quote": "the nurse measured me at 5'11\". I asked her to do it twice and both times it came back 5'11\". So that's my confirmed height now, 5'11\".",
+          "segment_index": 1,
+          "turn_index": 5
+        },
+        {
+          "quote": "My chiropractor told me that after the alignment sessions I should be measuring closer to 5'11½\". He says once the adjustments settle, that'll be my real height.",
+          "segment_index": 3,
+          "turn_index": 5
+        }
+      ],
+      "gold_ranks": [
+        1,
+        2,
+        3
+      ],
+      "graph_write_attempts": 0,
+      "invalid": false,
+      "invalid_reason": null,
+      "judge_rubric": {
+        "acceptable_paraphrases": [
+          "5 foot 11 and a quarter",
+          "5 foot 11",
+          "five eleven and a quarter inches",
+          "five eleven"
+        ],
+        "harmful_extra": [
+          "Using the chiropractor's tentative 5'11½\" as the official height",
+          "Using the old 6'0\" belief",
+          "Using the disregarded urgent care 5'11¾\""
+        ],
+        "harmless_extra": [
+          "Mentioning both 5'11\" and 5'11¼\" as confirmed options",
+          "Noting that the chiropractor projection exists but is unverified"
+        ],
+        "must_include": [
+          "5'11¼\" or 5'11\" as the usable value"
+        ],
+        "must_not_include": [
+          "5'11½\" as the recommended value for the ID",
+          "6'0\" as the recommended value",
+          "5'11¾\" as the recommended value"
+        ]
+      },
+      "memops_official_judge": {
+        "answer_score": 1,
+        "completion_tokens": 146,
+        "extra_detail_postcheck_action": "none",
+        "extra_detail_postcheck_applied": false,
+        "extra_detail_type": "none",
+        "final_state": 1,
+        "finish_reason": "stop",
+        "intermediate_state": null,
+        "judge_operation_detection": {
+          "fn": 0,
+          "fp": 0,
+          "tp": 0
+        },
+        "judge_provenance_support": 1,
+        "official_prompt_builder": "build_evaluation_prompt",
+        "official_result_parser": "parse_judge_metrics",
+        "prompt_sha256": "e00d305b2d0fb0a3189466af798ad3aa6e5ad7a141a2c3330cf2be14d6dc5524",
+        "prompt_tokens": 6430,
+        "raw_prompt_persisted": false,
+        "raw_response_persisted": false,
+        "reason": "The model correctly recommends 5'11\" as the height to use on the ID application, which is a confirmed value from the March 12th clinical measurement. It does not include any harmful extra details and cites the correct provenance.",
+        "response_sha256": "9d321e15c5168a684115c3ab9c349f1d47c016fba634b899e11b5d99242920a3",
+        "trajectory_order": null,
+        "trajectory_provenance": null
+      },
+      "mrr": 1.0,
+      "ndcg_at_10": 1.0,
+      "question_id": "A33__TrajectoryOps:p3_state_transition:adjacent_operation",
+      "question_pair_id": "p3_state_transition",
+      "recall_at_1": 0.3333333333333333,
+      "recall_at_10": 1.0,
+      "recall_at_3": 1.0,
+      "recall_at_5": 1.0,
+      "relevance_unit": "LONGMEMEVAL_GOLD_SESSION",
+      "sample_id": "A33__TrajectoryOps"
+    },
+    {
+      "construction_calls": 0,
+      "correct": true,
+      "evaluation_setting": "longitudinal_operation",
+      "evaluation_type": "StateTransition",
+      "expected_answer": "5'11¼\" based on your most recent verified home measurement, or 5'11\" from your March 12th clinical measurement. The chiropractor's projection has not been clinically verified, so it should not be used on official documents yet.",
+      "failure_layer": null,
+      "gold_memory_state": "User's last confirmed height is 5'11¼\" (home morning measurement). The clinical measurement of 5'11\" from March 12th is also confirmed. The chiropractor's 5'11½\" is tentative and not adopted — the user explicitly said he would not count on it until verified at a doctor's office. The old 6'0\" is superseded. The urgent care 5'11¾\" was explicitly disregarded.",
+      "gold_provenance": [
+        {
+          "quote": "I measured myself at home first thing in the morning against the door frame and I got 5'11 and a quarter inches. So my morning height is 5'11¼\".",
+          "segment_index": 2,
+          "turn_index": 3
+        },
+        {
+          "quote": "the nurse measured me at 5'11\". I asked her to do it twice and both times it came back 5'11\". So that's my confirmed height now, 5'11\".",
+          "segment_index": 1,
+          "turn_index": 5
+        },
+        {
+          "quote": "My chiropractor told me that after the alignment sessions I should be measuring closer to 5'11½\". He says once the adjustments settle, that'll be my real height.",
+          "segment_index": 3,
+          "turn_index": 5
+        }
+      ],
+      "gold_ranks": [
+        1,
+        2,
+        3
+      ],
+      "graph_write_attempts": 0,
+      "invalid": false,
+      "invalid_reason": null,
+      "judge_rubric": {
+        "acceptable_paraphrases": [
+          "5 foot 11 and a quarter",
+          "5 foot 11",
+          "five eleven and a quarter inches",
+          "five eleven"
+        ],
+        "harmful_extra": [
+          "Using the chiropractor's tentative 5'11½\" as the official height",
+          "Using the old 6'0\" belief",
+          "Using the disregarded urgent care 5'11¾\""
+        ],
+        "harmless_extra": [
+          "Mentioning both 5'11\" and 5'11¼\" as confirmed options",
+          "Noting that the chiropractor projection exists but is unverified"
+        ],
+        "must_include": [
+          "5'11¼\" or 5'11\" as the usable value"
+        ],
+        "must_not_include": [
+          "5'11½\" as the recommended value for the ID",
+          "6'0\" as the recommended value",
+          "5'11¾\" as the recommended value"
+        ]
+      },
+      "memops_official_judge": {
+        "answer_score": 1,
+        "completion_tokens": 147,
+        "extra_detail_postcheck_action": "none",
+        "extra_detail_postcheck_applied": false,
+        "extra_detail_type": "none",
+        "final_state": 1,
+        "finish_reason": "stop",
+        "intermediate_state": null,
+        "judge_operation_detection": {
+          "fn": 0,
+          "fp": 0,
+          "tp": 0
+        },
+        "judge_provenance_support": 1,
+        "official_prompt_builder": "build_evaluation_prompt",
+        "official_result_parser": "parse_judge_metrics",
+        "prompt_sha256": "e00d305b2d0fb0a3189466af798ad3aa6e5ad7a141a2c3330cf2be14d6dc5524",
+        "prompt_tokens": 6430,
+        "raw_prompt_persisted": false,
+        "raw_response_persisted": false,
+        "reason": "The model correctly recommends 5'11\" as the height to use on the ID application, citing the confirmed clinical measurement from March 12th. It does not include any harmful extra details and aligns with the gold memory state by excluding tentative or outdated values.",
+        "response_sha256": "2d0deee86473a168d6c4d29b931bbf6ed55d25daf00f95751b6c150fd83bbcca",
+        "trajectory_order": null,
+        "trajectory_provenance": null
+      },
+      "mrr": 1.0,
+      "ndcg_at_10": 1.0,
+      "question_id": "A33__TrajectoryOps:p3_state_transition:longitudinal_operation",
+      "question_pair_id": "p3_state_transition",
+      "recall_at_1": 0.3333333333333333,
+      "recall_at_10": 1.0,
+      "recall_at_3": 1.0,
+      "recall_at_5": 1.0,
+      "relevance_unit": "LONGMEMEVAL_GOLD_SESSION",
+      "sample_id": "A33__TrajectoryOps"
+    },
+    {
+      "construction_calls": 0,
+      "correct": false,
+      "error_message": "Quality v1 gold sessions is invalid",
+      "evaluation_setting": "adjacent_operation",
+      "evaluation_type": "StateTrajectory",
+      "expected_answer": "The sequence was: (1) 6'0\" — your long-held self-reported belief, adopted initially. (2) 5'11\" — confirmed by a nurse at your March 12th physical, measured twice, adopted as your new height. (3) 5'11¼\" — confirmed by your own home morning measurement against a door frame, adopted as your most precise verified height. (4) 5'11½\" — projected by your chiropractor after alignment sessions, but not yet verified clinically, so not adopted. Your current usable height is 5'11¼\". The urgent care reading of 5'11¾\" also appeared on a health form but was explicitly disregarded as unreliable due to socks and evening timing.",
+      "failure_layer": "retrieval",
+      "gold_memory_state": "Full trajectory for user's height: 6'0\" (confirmed, initial belief) → 5'11\" (confirmed, clinical measurement) → 5'11¼\" (confirmed, home morning measurement) → 5'11½\" (tentative, chiropractor projection, not adopted). Final confirmed state: 5'11¼\". Urgent care 5'11¾\" was noise, never adopted. Mom's height 5'4\" is a separate control target, unchanged.",
+      "gold_provenance": [
+        {
+          "quote": "I've always considered myself 6 feet tall. That's what I've been telling people for years and it's what my old driver's license says.",
+          "segment_index": 1,
+          "turn_index": 1
+        },
+        {
+          "quote": "the nurse measured me at 5'11\". I asked her to do it twice and both times it came back 5'11\". So that's my confirmed height now, 5'11\".",
+          "segment_index": 1,
+          "turn_index": 5
+        },
+        {
+          "quote": "I measured myself at home first thing in the morning against the door frame and I got 5'11 and a quarter inches. So my morning height is 5'11¼\".",
+          "segment_index": 2,
+          "turn_index": 3
+        },
+        {
+          "quote": "My chiropractor told me that after the alignment sessions I should be measuring closer to 5'11½\". He says once the adjustments settle, that'll be my real height.",
+          "segment_index": 3,
+          "turn_index": 5
+        }
+      ],
+      "graph_write_attempts": 0,
+      "invalid": true,
+      "invalid_reason": "builtins.ValueError",
+      "judge_rubric": {
+        "acceptable_paraphrases": [
+          "six feet",
+          "five eleven",
+          "five eleven and a quarter",
+          "five eleven and a half"
+        ],
+        "harmful_extra": [
+          "Presenting the chiropractor's 5'11½\" as the final adopted value",
+          "Including 5'11¾\" as a legitimate trajectory step",
+          "Omitting any of the four trajectory steps"
+        ],
+        "harmless_extra": [
+          "Mentioning the urgent care value as explicitly disregarded noise",
+          "Mentioning the mom's height as a separate record"
+        ],
+        "must_include": [
+          "6'0\" as the starting value",
+          "5'11\" as the first confirmed update",
+          "5'11¼\" as the second confirmed update and current value",
+          "5'11½\" as tentative/projected/not yet verified"
+        ],
+        "must_not_include": [
+          "5'11½\" listed as confirmed or adopted",
+          "5'11¾\" listed as a valid step in the trajectory"
+        ]
+      },
+      "memops_official_judge": null,
+      "mrr": 0.0,
+      "ndcg_at_10": 0.0,
+      "question_id": "A33__TrajectoryOps:p5_state_trajectory:adjacent_operation",
+      "question_pair_id": "p5_state_trajectory",
+      "recall_at_1": 0.0,
+      "recall_at_10": 0.0,
+      "recall_at_3": 0.0,
+      "recall_at_5": 0.0,
+      "sample_id": "A33__TrajectoryOps"
+    },
+    {
+      "construction_calls": 0,
+      "correct": false,
+      "error_message": "Quality v1 gold sessions is invalid",
+      "evaluation_setting": "longitudinal_operation",
+      "evaluation_type": "StateTrajectory",
+      "expected_answer": "The sequence was: (1) 6'0\" — your long-held self-reported belief, adopted initially. (2) 5'11\" — confirmed by a nurse at your March 12th physical, measured twice, adopted as your new height. (3) 5'11¼\" — confirmed by your own home morning measurement against a door frame, adopted as your most precise verified height. (4) 5'11½\" — projected by your chiropractor after alignment sessions, but not yet verified clinically, so not adopted. Your current usable height is 5'11¼\". The urgent care reading of 5'11¾\" also appeared on a health form but was explicitly disregarded as unreliable due to socks and evening timing.",
+      "failure_layer": "retrieval",
+      "gold_memory_state": "Full trajectory for user's height: 6'0\" (confirmed, initial belief) → 5'11\" (confirmed, clinical measurement) → 5'11¼\" (confirmed, home morning measurement) → 5'11½\" (tentative, chiropractor projection, not adopted). Final confirmed state: 5'11¼\". Urgent care 5'11¾\" was noise, never adopted. Mom's height 5'4\" is a separate control target, unchanged.",
+      "gold_provenance": [
+        {
+          "quote": "I've always considered myself 6 feet tall. That's what I've been telling people for years and it's what my old driver's license says.",
+          "segment_index": 1,
+          "turn_index": 1
+        },
+        {
+          "quote": "the nurse measured me at 5'11\". I asked her to do it twice and both times it came back 5'11\". So that's my confirmed height now, 5'11\".",
+          "segment_index": 1,
+          "turn_index": 5
+        },
+        {
+          "quote": "I measured myself at home first thing in the morning against the door frame and I got 5'11 and a quarter inches. So my morning height is 5'11¼\".",
+          "segment_index": 2,
+          "turn_index": 3
+        },
+        {
+          "quote": "My chiropractor told me that after the alignment sessions I should be measuring closer to 5'11½\". He says once the adjustments settle, that'll be my real height.",
+          "segment_index": 3,
+          "turn_index": 5
+        }
+      ],
+      "graph_write_attempts": 0,
+      "invalid": true,
+      "invalid_reason": "builtins.ValueError",
+      "judge_rubric": {
+        "acceptable_paraphrases": [
+          "six feet",
+          "five eleven",
+          "five eleven and a quarter",
+          "five eleven and a half"
+        ],
+        "harmful_extra": [
+          "Presenting the chiropractor's 5'11½\" as the final adopted value",
+          "Including 5'11¾\" as a legitimate trajectory step",
+          "Omitting any of the four trajectory steps"
+        ],
+        "harmless_extra": [
+          "Mentioning the urgent care value as explicitly disregarded noise",
+          "Mentioning the mom's height as a separate record"
+        ],
+        "must_include": [
+          "6'0\" as the starting value",
+          "5'11\" as the first confirmed update",
+          "5'11¼\" as the second confirmed update and current value",
+          "5'11½\" as tentative/projected/not yet verified"
+        ],
+        "must_not_include": [
+          "5'11½\" listed as confirmed or adopted",
+          "5'11¾\" listed as a valid step in the trajectory"
+        ]
+      },
+      "memops_official_judge": null,
+      "mrr": 0.0,
+      "ndcg_at_10": 0.0,
+      "question_id": "A33__TrajectoryOps:p5_state_trajectory:longitudinal_operation",
+      "question_pair_id": "p5_state_trajectory",
+      "recall_at_1": 0.0,
+      "recall_at_10": 0.0,
+      "recall_at_3": 0.0,
+      "recall_at_5": 0.0,
+      "sample_id": "A33__TrajectoryOps"
+    }
+  ]
+}

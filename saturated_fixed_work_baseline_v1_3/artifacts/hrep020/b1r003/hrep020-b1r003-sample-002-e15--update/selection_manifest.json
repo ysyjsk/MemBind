@@ -1,0 +1,47 @@
+{
+  "benchmark": "MemOps",
+  "official_qa_evaluator": {
+    "path": "/data/predator/ly/third_party/MemOps/5.5-evaluate_operation_metrics.py",
+    "prompt_builder": "build_evaluation_prompt",
+    "result_parser": "parse_judge_metrics",
+    "sha256": "17c24362c174239eb7ef5e543bc651afed60ae445a4becd49acf24f6d3c646f0"
+  },
+  "parent_cohort_selection_manifest_sha256": "4f6b21e51ce577864545865c45f6aa0e2c4e3997d6f0ea89624db018f9491891",
+  "payload_sha256": "030d385bd2b422cbd5e263a4a2c816027f3226225d2bbef156e794e508c82f5e",
+  "pilot_policy_set": [
+    "B1_NAIVE_WHOLE_UPDATE_ASYNC"
+  ],
+  "replication_contract": {
+    "b0_failure_does_not_gate_next_sample_or_b1": true,
+    "same_source_order": true,
+    "single_sample_subroot": true,
+    "v5_started": false
+  },
+  "sample_count": 1,
+  "sample_order": [
+    "E15__Update"
+  ],
+  "samples": [
+    {
+      "cohort_sample_id": "E15__Update",
+      "hazard_score": 405,
+      "history_id": "memops-e15-update",
+      "max_confirmed_chain_length": 4,
+      "max_same_target_confirmed_mutations": 3,
+      "official_sample_id": "E15",
+      "operation_type": "Update",
+      "qualifying_qa_types": [
+        "CandidateDisambiguation"
+      ],
+      "sample_id": "E15__Update",
+      "source_file": "/data/predator/ly/third_party/MemOps/generated_result/2-evidence_conversation/E15_update.json",
+      "source_sha256": "7086723408fce31ede9f4a67071792aaa88df25aba1aae47160ffaf1b4ec1b5e",
+      "state_dependency_pair_count": 1,
+      "target_id": "downgrade_vs_upgrade_ratio",
+      "target_name": "ratio of downgraded to upgraded priority incidents"
+    }
+  ],
+  "schema_version": "sfwb.v1.3.memops-hazard-single-sample-selection.v1",
+  "selection_basis": "gold-only hazard score; fixed type quotas Update=18 and TrajectoryOps=6; no B0/B1 artifacts read",
+  "status": "OFFLINE_HAZARD_COHORT_FROZEN"
+}

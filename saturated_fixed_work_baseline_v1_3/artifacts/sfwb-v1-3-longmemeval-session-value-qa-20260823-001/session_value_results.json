@@ -1,0 +1,1384 @@
+{
+  "answer_accuracy": {
+    "authority": "OFFICIAL_LONGMEMEVAL_JUDGE_ONLY",
+    "b0_pass": 2,
+    "b0_scored": 4,
+    "b1_pass": 2,
+    "b1_scored": 4
+  },
+  "b0_b1_concrete_answer_divergence": [],
+  "construction_calls": 0,
+  "graph_writes": 0,
+  "paired": [
+    {
+      "answer_decision_authority": "OFFICIAL_LONGMEMEVAL_JUDGE",
+      "answer_divergence": false,
+      "b0_answer_pass": false,
+      "b0_answer_status": "FAIL",
+      "b1_answer_pass": false,
+      "b1_answer_status": "FAIL",
+      "concrete_b1_answer_failure": false,
+      "history_id": "07741c45",
+      "state_diagnostic_is_separate": true
+    },
+    {
+      "answer_decision_authority": "OFFICIAL_LONGMEMEVAL_JUDGE",
+      "answer_divergence": false,
+      "b0_answer_pass": true,
+      "b0_answer_status": "PASS",
+      "b1_answer_pass": true,
+      "b1_answer_status": "PASS",
+      "concrete_b1_answer_failure": false,
+      "history_id": "b6019101",
+      "state_diagnostic_is_separate": true
+    },
+    {
+      "answer_decision_authority": "OFFICIAL_LONGMEMEVAL_JUDGE",
+      "answer_divergence": false,
+      "b0_answer_pass": true,
+      "b0_answer_status": "PASS",
+      "b1_answer_pass": true,
+      "b1_answer_status": "PASS",
+      "concrete_b1_answer_failure": false,
+      "history_id": "6071bd76",
+      "state_diagnostic_is_separate": true
+    },
+    {
+      "answer_decision_authority": "OFFICIAL_LONGMEMEVAL_JUDGE",
+      "answer_divergence": false,
+      "b0_answer_pass": false,
+      "b0_answer_status": "FAIL",
+      "b1_answer_pass": false,
+      "b1_answer_status": "FAIL",
+      "concrete_b1_answer_failure": false,
+      "history_id": "a2f3aa27",
+      "state_diagnostic_is_separate": true
+    }
+  ],
+  "payload_sha256": "5b2f4a5c0e1f73264bd78e7c348158b581fcbf4d54d1b382cb03fd644bb06372",
+  "rows": [
+    {
+      "answer_evaluation": {
+        "correct": false,
+        "judge_label": false,
+        "judge_status": "SUCCESS",
+        "semantic_authority": "OFFICIAL_LONGMEMEVAL_JUDGE",
+        "status": "FAIL",
+        "surface_diagnostic": {
+          "expected_answer_normalized": "in a shoe rack in my closet",
+          "official_judge_required": true,
+          "reader_answer_normalized": "you currently keep your old sneakers under your bed for storage.",
+          "semantic_authority": "NONE",
+          "status": "LEXICAL_NO_MATCH"
+        }
+      },
+      "canonical_graph_path": "/data/predator/ly/MemBind/saturated_fixed_work_baseline_v1_3/artifacts/sfwb-v1-3-formal-baseline-20260822-002/blocks/formal-001-07741c45-B0_NATIVE_SERIAL/attempt-001/canonical_graph.json",
+      "evidence_surface": "EPISODIC_CONTENT_FROM_NEO4J",
+      "history_id": "07741c45",
+      "method": "B0_NATIVE_SERIAL",
+      "namespace": "sfwb-v1-3-B0_NATIVE_SERIAL-07741c45-sfwb-v1-3-formal-baseline-20260822-002-attempt-001",
+      "official_judge": {
+        "config_sha256": "8606ab170a70ba6e908d8cd3759afc178c1733bee8399a72471989cfff300aae",
+        "error_class": null,
+        "label": false,
+        "model": "qwen3-32b-fp8",
+        "output_byte_count": 2,
+        "output_character_count": 2,
+        "output_sha256": "9390298f3fb0c5b160498935d79cb139aef28e1c47358b4bbba61862b9c26e59",
+        "parse_status": "NO",
+        "prompt_sha256": "15fd690ffc924d04f2c5535883a3ae0b58fa413599b34ef65baf92845ae0aa66",
+        "raw_output_persisted": false,
+        "retry_count": 0,
+        "status": "SUCCESS"
+      },
+      "question": "Where do I currently keep my old sneakers?",
+      "question_date": "2023/06/23 (Fri) 07:31",
+      "reader": {
+        "completion_tokens": 13,
+        "config_sha256": "d84697f95fd6232c6c8f882cdae7a9eab54049e6e3cc4a69501e28ac9cd31bbc",
+        "model": "qwen3-32b-fp8",
+        "output_byte_count": 64,
+        "output_character_count": 64,
+        "output_sha256": "cf41cd1bc40acfdf8fda62eb3dba40b459ae6ab790c5bb26d7fb947b3e97e9c6",
+        "prompt_byte_count": 121219,
+        "prompt_character_count": 121219,
+        "prompt_sha256": "bd04b2dd31a2d070a2480fecf54184535648c13564e1b019363b71940913cb61",
+        "prompt_tokens": 27814,
+        "status": "SUCCESS",
+        "truncation_count": 0
+      },
+      "reader_answer": "You currently keep your old sneakers under your bed for storage.",
+      "retrieval": {
+        "episode_count": 20,
+        "fact_count": 20,
+        "graphiti_search_calls": 1,
+        "neo4j_read_requests": 4,
+        "ranked_session_ids": [
+          "answer_7e9ad7b4_2",
+          "answer_7e9ad7b4_1",
+          "af4a2fd1",
+          "ultrachat_162268",
+          "604de0a3_2",
+          "9918640f",
+          "ce21f0e4",
+          "df846730",
+          "66c23110_2",
+          "37d65d40_3"
+        ],
+        "search_config_sha256": "62535d82129d01d6cbf8c3d5c13f656e60d89d821a9d9b9ca7bc1ed51c53fa7d",
+        "session_content_identity_sha256": "404ff6261bf94b48c66e8e53e5c3750f9fd5ed79cc0a9139d6e52b1b2ff75279",
+        "top_k_context": 10
+      },
+      "session_materialization": [
+        {
+          "content_sha256": "7802201af66d77ba443e5d0c6a29eb931135d6ce5d94b36b906f750c35abf98b",
+          "retrieval_rank": 2,
+          "session_date": "2023/05/25 (Thu) 10:04",
+          "session_id": "answer_7e9ad7b4_1",
+          "source_sequence": 2,
+          "turn_count": 12
+        },
+        {
+          "content_sha256": "295bd0b09a1ea8ff5af1e7681b6f2ed3ee0c313322cb5fc4dd862961d8a86288",
+          "retrieval_rank": 6,
+          "session_date": "2023/05/26 (Fri) 01:00",
+          "session_id": "9918640f",
+          "source_sequence": 14,
+          "turn_count": 12
+        },
+        {
+          "content_sha256": "27f060590b92376d75109d3b420db9e31b55001d97fb2af176b41d5f51308b0e",
+          "retrieval_rank": 9,
+          "session_date": "2023/05/26 (Fri) 10:23",
+          "session_id": "66c23110_2",
+          "source_sequence": 15,
+          "turn_count": 10
+        },
+        {
+          "content_sha256": "7fbdf45e8845016a2549020eadb8eb4124bfc55913ecff1486c699aa8f55b37b",
+          "retrieval_rank": 8,
+          "session_date": "2023/05/27 (Sat) 12:23",
+          "session_id": "df846730",
+          "source_sequence": 18,
+          "turn_count": 12
+        },
+        {
+          "content_sha256": "185729c5fd1d4e7e11ff031c7be1a78ca17fd65e908052e4a85213d4baf430d3",
+          "retrieval_rank": 5,
+          "session_date": "2023/05/28 (Sun) 02:56",
+          "session_id": "604de0a3_2",
+          "source_sequence": 23,
+          "turn_count": 12
+        },
+        {
+          "content_sha256": "4cf861e96d73733f320a4007e37c4a7a6765e6560529499d62afb78963509a56",
+          "retrieval_rank": 4,
+          "session_date": "2023/05/28 (Sun) 07:49",
+          "session_id": "ultrachat_162268",
+          "source_sequence": 27,
+          "turn_count": 8
+        },
+        {
+          "content_sha256": "b269bba3925f807947d5da1f9a963e43a33c0f0a01ce90319cd79b0984eef928",
+          "retrieval_rank": 3,
+          "session_date": "2023/05/28 (Sun) 12:43",
+          "session_id": "af4a2fd1",
+          "source_sequence": 26,
+          "turn_count": 12
+        },
+        {
+          "content_sha256": "e3fa6624dd982cab7425e3493ab49df0fb3e11a233acc692f5ddd51d354e2453",
+          "retrieval_rank": 1,
+          "session_date": "2023/05/29 (Mon) 15:01",
+          "session_id": "answer_7e9ad7b4_2",
+          "source_sequence": 31,
+          "turn_count": 12
+        },
+        {
+          "content_sha256": "ba454c8953ff36400bcc55fa8e9e0999d306155908844ae2ff2c3752917ef7ac",
+          "retrieval_rank": 10,
+          "session_date": "2023/06/05 (Mon) 18:29",
+          "session_id": "37d65d40_3",
+          "source_sequence": 36,
+          "turn_count": 12
+        },
+        {
+          "content_sha256": "7235d8cce7bf76894a7eeff0f883b79339f3ed41d9a0fd42e8f3f6cba39140cd",
+          "retrieval_rank": 7,
+          "session_date": "2023/06/09 (Fri) 19:50",
+          "session_id": "ce21f0e4",
+          "source_sequence": 39,
+          "turn_count": 12
+        }
+      ],
+      "session_recall_posthoc": {
+        "authority": "POST_HOC_PROVENANCE_METRIC_ONLY",
+        "gold_hits_at_10": 2,
+        "gold_ranks": [
+          1,
+          2
+        ],
+        "gold_session_count": 2,
+        "recall_at_10": 1.0
+      }
+    },
+    {
+      "answer_evaluation": {
+        "correct": false,
+        "judge_label": false,
+        "judge_status": "SUCCESS",
+        "semantic_authority": "OFFICIAL_LONGMEMEVAL_JUDGE",
+        "status": "FAIL",
+        "surface_diagnostic": {
+          "expected_answer_normalized": "in a shoe rack in my closet",
+          "official_judge_required": true,
+          "reader_answer_normalized": "you currently keep your old sneakers under your bed for storage.",
+          "semantic_authority": "NONE",
+          "status": "LEXICAL_NO_MATCH"
+        }
+      },
+      "canonical_graph_path": "/data/predator/ly/MemBind/saturated_fixed_work_baseline_v1_3/artifacts/sfwb-v1-3-formal-baseline-20260822-002/blocks/formal-002-07741c45-B1_NAIVE_WHOLE_UPDATE_ASYNC/attempt-001/canonical_graph.json",
+      "evidence_surface": "EPISODIC_CONTENT_FROM_NEO4J",
+      "history_id": "07741c45",
+      "method": "B1_NAIVE_WHOLE_UPDATE_ASYNC",
+      "namespace": "sfwb-v1-3-B1_NAIVE_WHOLE_UPDATE_ASYNC-07741c45-sfwb-v1-3-formal-baseline-20260822-002-attempt-001",
+      "official_judge": {
+        "config_sha256": "8606ab170a70ba6e908d8cd3759afc178c1733bee8399a72471989cfff300aae",
+        "error_class": null,
+        "label": false,
+        "model": "qwen3-32b-fp8",
+        "output_byte_count": 2,
+        "output_character_count": 2,
+        "output_sha256": "9390298f3fb0c5b160498935d79cb139aef28e1c47358b4bbba61862b9c26e59",
+        "parse_status": "NO",
+        "prompt_sha256": "15fd690ffc924d04f2c5535883a3ae0b58fa413599b34ef65baf92845ae0aa66",
+        "raw_output_persisted": false,
+        "retry_count": 0,
+        "status": "SUCCESS"
+      },
+      "question": "Where do I currently keep my old sneakers?",
+      "question_date": "2023/06/23 (Fri) 07:31",
+      "reader": {
+        "completion_tokens": 13,
+        "config_sha256": "d84697f95fd6232c6c8f882cdae7a9eab54049e6e3cc4a69501e28ac9cd31bbc",
+        "model": "qwen3-32b-fp8",
+        "output_byte_count": 64,
+        "output_character_count": 64,
+        "output_sha256": "cf41cd1bc40acfdf8fda62eb3dba40b459ae6ab790c5bb26d7fb947b3e97e9c6",
+        "prompt_byte_count": 121219,
+        "prompt_character_count": 121219,
+        "prompt_sha256": "bd04b2dd31a2d070a2480fecf54184535648c13564e1b019363b71940913cb61",
+        "prompt_tokens": 27814,
+        "status": "SUCCESS",
+        "truncation_count": 0
+      },
+      "reader_answer": "You currently keep your old sneakers under your bed for storage.",
+      "retrieval": {
+        "episode_count": 20,
+        "fact_count": 20,
+        "graphiti_search_calls": 1,
+        "neo4j_read_requests": 4,
+        "ranked_session_ids": [
+          "answer_7e9ad7b4_2",
+          "answer_7e9ad7b4_1",
+          "af4a2fd1",
+          "ultrachat_162268",
+          "604de0a3_2",
+          "9918640f",
+          "ce21f0e4",
+          "df846730",
+          "66c23110_2",
+          "37d65d40_3"
+        ],
+        "search_config_sha256": "62535d82129d01d6cbf8c3d5c13f656e60d89d821a9d9b9ca7bc1ed51c53fa7d",
+        "session_content_identity_sha256": "271a5e436f1b70d85e66dc7e7410ac91754e3258d5d3279c23b2b2d9afc63158",
+        "top_k_context": 10
+      },
+      "session_materialization": [
+        {
+          "content_sha256": "7802201af66d77ba443e5d0c6a29eb931135d6ce5d94b36b906f750c35abf98b",
+          "retrieval_rank": 2,
+          "session_date": "2023/05/25 (Thu) 10:04",
+          "session_id": "answer_7e9ad7b4_1",
+          "source_sequence": 2,
+          "turn_count": 12
+        },
+        {
+          "content_sha256": "295bd0b09a1ea8ff5af1e7681b6f2ed3ee0c313322cb5fc4dd862961d8a86288",
+          "retrieval_rank": 6,
+          "session_date": "2023/05/26 (Fri) 01:00",
+          "session_id": "9918640f",
+          "source_sequence": 14,
+          "turn_count": 12
+        },
+        {
+          "content_sha256": "27f060590b92376d75109d3b420db9e31b55001d97fb2af176b41d5f51308b0e",
+          "retrieval_rank": 9,
+          "session_date": "2023/05/26 (Fri) 10:23",
+          "session_id": "66c23110_2",
+          "source_sequence": 15,
+          "turn_count": 10
+        },
+        {
+          "content_sha256": "7fbdf45e8845016a2549020eadb8eb4124bfc55913ecff1486c699aa8f55b37b",
+          "retrieval_rank": 8,
+          "session_date": "2023/05/27 (Sat) 12:23",
+          "session_id": "df846730",
+          "source_sequence": 18,
+          "turn_count": 12
+        },
+        {
+          "content_sha256": "185729c5fd1d4e7e11ff031c7be1a78ca17fd65e908052e4a85213d4baf430d3",
+          "retrieval_rank": 5,
+          "session_date": "2023/05/28 (Sun) 02:56",
+          "session_id": "604de0a3_2",
+          "source_sequence": 23,
+          "turn_count": 12
+        },
+        {
+          "content_sha256": "4cf861e96d73733f320a4007e37c4a7a6765e6560529499d62afb78963509a56",
+          "retrieval_rank": 4,
+          "session_date": "2023/05/28 (Sun) 07:49",
+          "session_id": "ultrachat_162268",
+          "source_sequence": 27,
+          "turn_count": 8
+        },
+        {
+          "content_sha256": "b269bba3925f807947d5da1f9a963e43a33c0f0a01ce90319cd79b0984eef928",
+          "retrieval_rank": 3,
+          "session_date": "2023/05/28 (Sun) 12:43",
+          "session_id": "af4a2fd1",
+          "source_sequence": 26,
+          "turn_count": 12
+        },
+        {
+          "content_sha256": "e3fa6624dd982cab7425e3493ab49df0fb3e11a233acc692f5ddd51d354e2453",
+          "retrieval_rank": 1,
+          "session_date": "2023/05/29 (Mon) 15:01",
+          "session_id": "answer_7e9ad7b4_2",
+          "source_sequence": 31,
+          "turn_count": 12
+        },
+        {
+          "content_sha256": "ba454c8953ff36400bcc55fa8e9e0999d306155908844ae2ff2c3752917ef7ac",
+          "retrieval_rank": 10,
+          "session_date": "2023/06/05 (Mon) 18:29",
+          "session_id": "37d65d40_3",
+          "source_sequence": 36,
+          "turn_count": 12
+        },
+        {
+          "content_sha256": "7235d8cce7bf76894a7eeff0f883b79339f3ed41d9a0fd42e8f3f6cba39140cd",
+          "retrieval_rank": 7,
+          "session_date": "2023/06/09 (Fri) 19:50",
+          "session_id": "ce21f0e4",
+          "source_sequence": 39,
+          "turn_count": 12
+        }
+      ],
+      "session_recall_posthoc": {
+        "authority": "POST_HOC_PROVENANCE_METRIC_ONLY",
+        "gold_hits_at_10": 2,
+        "gold_ranks": [
+          1,
+          2
+        ],
+        "gold_session_count": 2,
+        "recall_at_10": 1.0
+      }
+    },
+    {
+      "answer_evaluation": {
+        "correct": true,
+        "judge_label": true,
+        "judge_status": "SUCCESS",
+        "semantic_authority": "OFFICIAL_LONGMEMEVAL_JUDGE",
+        "status": "PASS",
+        "surface_diagnostic": {
+          "expected_answer_normalized": "5",
+          "official_judge_required": true,
+          "reader_answer_normalized": "based on the information provided in your question, you mentioned that you have watched 12 films in the last 3 months, including 5 mcu films. therefore, the number of mcu films you watched in the last 3 months is **5**.",
+          "semantic_authority": "NONE",
+          "status": "LEXICAL_MATCH"
+        }
+      },
+      "canonical_graph_path": "/data/predator/ly/MemBind/saturated_fixed_work_baseline_v1_3/artifacts/sfwb-v1-3-formal-baseline-20260822-002/blocks/formal-003-b6019101-B0_NATIVE_SERIAL/attempt-001/canonical_graph.json",
+      "evidence_surface": "EPISODIC_CONTENT_FROM_NEO4J",
+      "history_id": "b6019101",
+      "method": "B0_NATIVE_SERIAL",
+      "namespace": "sfwb-v1-3-B0_NATIVE_SERIAL-b6019101-sfwb-v1-3-formal-baseline-20260822-002-attempt-001",
+      "official_judge": {
+        "config_sha256": "8606ab170a70ba6e908d8cd3759afc178c1733bee8399a72471989cfff300aae",
+        "error_class": null,
+        "label": true,
+        "model": "qwen3-32b-fp8",
+        "output_byte_count": 3,
+        "output_character_count": 3,
+        "output_sha256": "8a798890fe93817163b10b5f7bd2ca4d25d84c52739a645a889c173eee7d9d3d",
+        "parse_status": "YES",
+        "prompt_sha256": "578458fc322ed04363bbf4d27860eaf4727f3013da818caea28a1278e31c7f2c",
+        "raw_output_persisted": false,
+        "retry_count": 0,
+        "status": "SUCCESS"
+      },
+      "question": "How many MCU films did I watch in the last 3 months?",
+      "question_date": "2023/06/17 (Sat) 16:20",
+      "reader": {
+        "completion_tokens": 53,
+        "config_sha256": "d84697f95fd6232c6c8f882cdae7a9eab54049e6e3cc4a69501e28ac9cd31bbc",
+        "model": "qwen3-32b-fp8",
+        "output_byte_count": 219,
+        "output_character_count": 219,
+        "output_sha256": "0d500cda20cea020ee22f6defa53d9141d313251d9362bd1e14ab5f476c33644",
+        "prompt_byte_count": 114447,
+        "prompt_character_count": 114447,
+        "prompt_sha256": "e90001c3f4be2eac26bf3f1f25d173373cae641e3e5fef21a45a8da48669d2ea",
+        "prompt_tokens": 26253,
+        "status": "SUCCESS",
+        "truncation_count": 0
+      },
+      "reader_answer": "Based on the information provided in your question, you mentioned that you have watched 12 films in the last 3 months, including 5 MCU films. Therefore, the number of MCU films you watched in the last 3 months is **5**.",
+      "retrieval": {
+        "episode_count": 20,
+        "fact_count": 20,
+        "graphiti_search_calls": 1,
+        "neo4j_read_requests": 4,
+        "ranked_session_ids": [
+          "answer_67074b4b_1",
+          "answer_67074b4b_2",
+          "ultrachat_72569",
+          "sharegpt_CvVLg2J_18",
+          "9bd36386",
+          "ultrachat_146343",
+          "2ed7c45e_1",
+          "ac089c83_4",
+          "ultrachat_331484",
+          "ultrachat_242137"
+        ],
+        "search_config_sha256": "62535d82129d01d6cbf8c3d5c13f656e60d89d821a9d9b9ca7bc1ed51c53fa7d",
+        "session_content_identity_sha256": "5d47e73a519e5ef6c9d813a0ad7fa30ae4a76e1a7180e249d9b1cf52aa41a6a4",
+        "top_k_context": 10
+      },
+      "session_materialization": [
+        {
+          "content_sha256": "ca9c1597c04aa5dea717af685c311341a5b34e4b8d9dd8cbdabffab2f9be7e55",
+          "retrieval_rank": 6,
+          "session_date": "2023/04/21 (Fri) 12:20",
+          "session_id": "ultrachat_146343",
+          "source_sequence": 1,
+          "turn_count": 14
+        },
+        {
+          "content_sha256": "5102ba581ac574c15cbf58750d54678c5d0a106e4816cd6736f9b7fb22589abb",
+          "retrieval_rank": 9,
+          "session_date": "2023/04/27 (Thu) 03:54",
+          "session_id": "ultrachat_331484",
+          "source_sequence": 7,
+          "turn_count": 12
+        },
+        {
+          "content_sha256": "808782279e2672cbca02bf2d7602f7a4334d73c3f60e58ec54e67dfa6655259a",
+          "retrieval_rank": 3,
+          "session_date": "2023/04/28 (Fri) 10:39",
+          "session_id": "ultrachat_72569",
+          "source_sequence": 10,
+          "turn_count": 14
+        },
+        {
+          "content_sha256": "c8b15c2702fe4e508b7da24359d79033d048a79f0958ff4e95934d662cb67f80",
+          "retrieval_rank": 10,
+          "session_date": "2023/05/02 (Tue) 22:49",
+          "session_id": "ultrachat_242137",
+          "source_sequence": 12,
+          "turn_count": 10
+        },
+        {
+          "content_sha256": "b88a9da51d2832058ea992cdd098f620688399e2a0ab83470643d419a43dae8a",
+          "retrieval_rank": 5,
+          "session_date": "2023/05/08 (Mon) 22:43",
+          "session_id": "9bd36386",
+          "source_sequence": 24,
+          "turn_count": 12
+        },
+        {
+          "content_sha256": "ceee068b8110b64b20da267a5315914a066a8339ebff12b69d97d60c99769e6c",
+          "retrieval_rank": 4,
+          "session_date": "2023/05/09 (Tue) 18:53",
+          "session_id": "sharegpt_CvVLg2J_18",
+          "source_sequence": 27,
+          "turn_count": 2
+        },
+        {
+          "content_sha256": "cd466ec77ea8c5a46181107002d638ddf228fa54bdb02f86e3c04dcfa9308a74",
+          "retrieval_rank": 7,
+          "session_date": "2023/05/18 (Thu) 19:29",
+          "session_id": "2ed7c45e_1",
+          "source_sequence": 37,
+          "turn_count": 12
+        },
+        {
+          "content_sha256": "907c0488d3ff5d0fb752cd26f4357c562c4a9ae444f4d8b3cc83ccebc93e3bea",
+          "retrieval_rank": 8,
+          "session_date": "2023/05/18 (Thu) 20:47",
+          "session_id": "ac089c83_4",
+          "source_sequence": 38,
+          "turn_count": 12
+        },
+        {
+          "content_sha256": "5f95b59b5126900af7d90138a1c49d7eebefbc4ac6c6121ae9e10e175d5d3b51",
+          "retrieval_rank": 1,
+          "session_date": "2023/05/20 (Sat) 04:54",
+          "session_id": "answer_67074b4b_1",
+          "source_sequence": 41,
+          "turn_count": 12
+        },
+        {
+          "content_sha256": "591192914463145e93a6fe66eb404be79fbbf08d8ff886eb16b92b42e10786d4",
+          "retrieval_rank": 2,
+          "session_date": "2023/05/29 (Mon) 02:47",
+          "session_id": "answer_67074b4b_2",
+          "source_sequence": 45,
+          "turn_count": 10
+        }
+      ],
+      "session_recall_posthoc": {
+        "authority": "POST_HOC_PROVENANCE_METRIC_ONLY",
+        "gold_hits_at_10": 2,
+        "gold_ranks": [
+          1,
+          2
+        ],
+        "gold_session_count": 2,
+        "recall_at_10": 1.0
+      }
+    },
+    {
+      "answer_evaluation": {
+        "correct": true,
+        "judge_label": true,
+        "judge_status": "SUCCESS",
+        "semantic_authority": "OFFICIAL_LONGMEMEVAL_JUDGE",
+        "status": "PASS",
+        "surface_diagnostic": {
+          "expected_answer_normalized": "5",
+          "official_judge_required": true,
+          "reader_answer_normalized": "based on the information provided in your question, you mentioned that you have watched **12 films in the last 3 months**, including **5 mcu films**. therefore, the number of mcu films you watched in the last 3 months is **5**.",
+          "semantic_authority": "NONE",
+          "status": "LEXICAL_MATCH"
+        }
+      },
+      "canonical_graph_path": "/data/predator/ly/MemBind/saturated_fixed_work_baseline_v1_3/artifacts/sfwb-v1-3-formal-baseline-20260822-002/blocks/formal-004-b6019101-B1_NAIVE_WHOLE_UPDATE_ASYNC/attempt-001/canonical_graph.json",
+      "evidence_surface": "EPISODIC_CONTENT_FROM_NEO4J",
+      "history_id": "b6019101",
+      "method": "B1_NAIVE_WHOLE_UPDATE_ASYNC",
+      "namespace": "sfwb-v1-3-B1_NAIVE_WHOLE_UPDATE_ASYNC-b6019101-sfwb-v1-3-formal-baseline-20260822-002-attempt-001",
+      "official_judge": {
+        "config_sha256": "8606ab170a70ba6e908d8cd3759afc178c1733bee8399a72471989cfff300aae",
+        "error_class": null,
+        "label": true,
+        "model": "qwen3-32b-fp8",
+        "output_byte_count": 3,
+        "output_character_count": 3,
+        "output_sha256": "8a798890fe93817163b10b5f7bd2ca4d25d84c52739a645a889c173eee7d9d3d",
+        "parse_status": "YES",
+        "prompt_sha256": "1e88062d4626d2f152158f22969d202f3f947aaf3d8aa2cadd170d68e0fe3267",
+        "raw_output_persisted": false,
+        "retry_count": 0,
+        "status": "SUCCESS"
+      },
+      "question": "How many MCU films did I watch in the last 3 months?",
+      "question_date": "2023/06/17 (Sat) 16:20",
+      "reader": {
+        "completion_tokens": 54,
+        "config_sha256": "d84697f95fd6232c6c8f882cdae7a9eab54049e6e3cc4a69501e28ac9cd31bbc",
+        "model": "qwen3-32b-fp8",
+        "output_byte_count": 227,
+        "output_character_count": 227,
+        "output_sha256": "3d4de5ead9da68fe90374424ad44fa271c70869000fcf13c1962b0e62771a058",
+        "prompt_byte_count": 114447,
+        "prompt_character_count": 114447,
+        "prompt_sha256": "e90001c3f4be2eac26bf3f1f25d173373cae641e3e5fef21a45a8da48669d2ea",
+        "prompt_tokens": 26253,
+        "status": "SUCCESS",
+        "truncation_count": 0
+      },
+      "reader_answer": "Based on the information provided in your question, you mentioned that you have watched **12 films in the last 3 months**, including **5 MCU films**. Therefore, the number of MCU films you watched in the last 3 months is **5**.",
+      "retrieval": {
+        "episode_count": 20,
+        "fact_count": 20,
+        "graphiti_search_calls": 1,
+        "neo4j_read_requests": 4,
+        "ranked_session_ids": [
+          "answer_67074b4b_1",
+          "answer_67074b4b_2",
+          "ultrachat_72569",
+          "sharegpt_CvVLg2J_18",
+          "9bd36386",
+          "ultrachat_146343",
+          "2ed7c45e_1",
+          "ac089c83_4",
+          "ultrachat_331484",
+          "ultrachat_242137"
+        ],
+        "search_config_sha256": "62535d82129d01d6cbf8c3d5c13f656e60d89d821a9d9b9ca7bc1ed51c53fa7d",
+        "session_content_identity_sha256": "0c7734a8e8f3238a7bb7ed221867a814d6ed0356b604e8dcf560ae9ba1716399",
+        "top_k_context": 10
+      },
+      "session_materialization": [
+        {
+          "content_sha256": "ca9c1597c04aa5dea717af685c311341a5b34e4b8d9dd8cbdabffab2f9be7e55",
+          "retrieval_rank": 6,
+          "session_date": "2023/04/21 (Fri) 12:20",
+          "session_id": "ultrachat_146343",
+          "source_sequence": 1,
+          "turn_count": 14
+        },
+        {
+          "content_sha256": "5102ba581ac574c15cbf58750d54678c5d0a106e4816cd6736f9b7fb22589abb",
+          "retrieval_rank": 9,
+          "session_date": "2023/04/27 (Thu) 03:54",
+          "session_id": "ultrachat_331484",
+          "source_sequence": 7,
+          "turn_count": 12
+        },
+        {
+          "content_sha256": "808782279e2672cbca02bf2d7602f7a4334d73c3f60e58ec54e67dfa6655259a",
+          "retrieval_rank": 3,
+          "session_date": "2023/04/28 (Fri) 10:39",
+          "session_id": "ultrachat_72569",
+          "source_sequence": 10,
+          "turn_count": 14
+        },
+        {
+          "content_sha256": "c8b15c2702fe4e508b7da24359d79033d048a79f0958ff4e95934d662cb67f80",
+          "retrieval_rank": 10,
+          "session_date": "2023/05/02 (Tue) 22:49",
+          "session_id": "ultrachat_242137",
+          "source_sequence": 12,
+          "turn_count": 10
+        },
+        {
+          "content_sha256": "b88a9da51d2832058ea992cdd098f620688399e2a0ab83470643d419a43dae8a",
+          "retrieval_rank": 5,
+          "session_date": "2023/05/08 (Mon) 22:43",
+          "session_id": "9bd36386",
+          "source_sequence": 24,
+          "turn_count": 12
+        },
+        {
+          "content_sha256": "ceee068b8110b64b20da267a5315914a066a8339ebff12b69d97d60c99769e6c",
+          "retrieval_rank": 4,
+          "session_date": "2023/05/09 (Tue) 18:53",
+          "session_id": "sharegpt_CvVLg2J_18",
+          "source_sequence": 27,
+          "turn_count": 2
+        },
+        {
+          "content_sha256": "cd466ec77ea8c5a46181107002d638ddf228fa54bdb02f86e3c04dcfa9308a74",
+          "retrieval_rank": 7,
+          "session_date": "2023/05/18 (Thu) 19:29",
+          "session_id": "2ed7c45e_1",
+          "source_sequence": 37,
+          "turn_count": 12
+        },
+        {
+          "content_sha256": "907c0488d3ff5d0fb752cd26f4357c562c4a9ae444f4d8b3cc83ccebc93e3bea",
+          "retrieval_rank": 8,
+          "session_date": "2023/05/18 (Thu) 20:47",
+          "session_id": "ac089c83_4",
+          "source_sequence": 38,
+          "turn_count": 12
+        },
+        {
+          "content_sha256": "5f95b59b5126900af7d90138a1c49d7eebefbc4ac6c6121ae9e10e175d5d3b51",
+          "retrieval_rank": 1,
+          "session_date": "2023/05/20 (Sat) 04:54",
+          "session_id": "answer_67074b4b_1",
+          "source_sequence": 41,
+          "turn_count": 12
+        },
+        {
+          "content_sha256": "591192914463145e93a6fe66eb404be79fbbf08d8ff886eb16b92b42e10786d4",
+          "retrieval_rank": 2,
+          "session_date": "2023/05/29 (Mon) 02:47",
+          "session_id": "answer_67074b4b_2",
+          "source_sequence": 45,
+          "turn_count": 10
+        }
+      ],
+      "session_recall_posthoc": {
+        "authority": "POST_HOC_PROVENANCE_METRIC_ONLY",
+        "gold_hits_at_10": 2,
+        "gold_ranks": [
+          1,
+          2
+        ],
+        "gold_session_count": 2,
+        "recall_at_10": 1.0
+      }
+    },
+    {
+      "answer_evaluation": {
+        "correct": true,
+        "judge_label": true,
+        "judge_status": "SUCCESS",
+        "semantic_authority": "OFFICIAL_LONGMEMEVAL_JUDGE",
+        "status": "PASS",
+        "surface_diagnostic": {
+          "expected_answer_normalized": "you switched to less water (5 ounces) per tablespoon of coffee.",
+          "official_judge_required": true,
+          "reader_answer_normalized": "based on the history of your chats, you initially mentioned using **1 tablespoon of coffee for every 6 ounces of water** in your french press. later, when discussing the coffee-to-water ratio again, you stated that your **new ratio is 1 tablespoon of coffee for every 5 ounces of water**. this means you have **switched to using less water per tablespoon of coffee**.",
+          "semantic_authority": "NONE",
+          "status": "LEXICAL_NO_MATCH"
+        }
+      },
+      "canonical_graph_path": "/data/predator/ly/MemBind/saturated_fixed_work_baseline_v1_3/artifacts/sfwb-v1-3-formal-baseline-20260822-002/blocks/formal-005-6071bd76-B0_NATIVE_SERIAL/attempt-001/canonical_graph.json",
+      "evidence_surface": "EPISODIC_CONTENT_FROM_NEO4J",
+      "history_id": "6071bd76",
+      "method": "B0_NATIVE_SERIAL",
+      "namespace": "sfwb-v1-3-B0_NATIVE_SERIAL-6071bd76-sfwb-v1-3-formal-baseline-20260822-002-attempt-001",
+      "official_judge": {
+        "config_sha256": "8606ab170a70ba6e908d8cd3759afc178c1733bee8399a72471989cfff300aae",
+        "error_class": null,
+        "label": true,
+        "model": "qwen3-32b-fp8",
+        "output_byte_count": 3,
+        "output_character_count": 3,
+        "output_sha256": "85a39ab345d672ff8ca9b9c6876f3adcacf45ee7c1e2dbd2408fd338bd55e07e",
+        "parse_status": "YES",
+        "prompt_sha256": "76904a4337c3345d7a09064618323f3dbc6bea567a89c3549671ce0d983d00a7",
+        "raw_output_persisted": false,
+        "retry_count": 0,
+        "status": "SUCCESS"
+      },
+      "question": "For the coffee-to-water ratio in my French press, did I switch to more water per tablespoon of coffee, or less?",
+      "question_date": "2023/07/30 (Sun) 05:53",
+      "reader": {
+        "completion_tokens": 81,
+        "config_sha256": "d84697f95fd6232c6c8f882cdae7a9eab54049e6e3cc4a69501e28ac9cd31bbc",
+        "model": "qwen3-32b-fp8",
+        "output_byte_count": 368,
+        "output_character_count": 368,
+        "output_sha256": "eb136f379fddfd55681e212d5af0fc235cefa32ae1fe9d13baed244ace091d3d",
+        "prompt_byte_count": 138035,
+        "prompt_character_count": 138035,
+        "prompt_sha256": "4b0ee17156411d14eb0dfc1f6ea0a1f1f9580c2a0c49907c1f84c23fbe695c85",
+        "prompt_tokens": 31490,
+        "status": "SUCCESS",
+        "truncation_count": 0
+      },
+      "reader_answer": "Based on the history of your chats, you initially mentioned using **1 tablespoon of coffee for every 6 ounces of water** in your French press. Later, when discussing the coffee-to-water ratio again, you stated that your **new ratio is 1 tablespoon of coffee for every 5 ounces of water**.\n\nThis means you have **switched to using less water per tablespoon of coffee**.",
+      "retrieval": {
+        "episode_count": 20,
+        "fact_count": 20,
+        "graphiti_search_calls": 1,
+        "neo4j_read_requests": 4,
+        "ranked_session_ids": [
+          "answer_4dac77cb_2",
+          "answer_4dac77cb_1",
+          "9de53d68_1",
+          "8d0b4363",
+          "a58eeaf8",
+          "ultrachat_551846",
+          "ultrachat_56513",
+          "a8899aee_1",
+          "e6b6353d",
+          "04616813_2"
+        ],
+        "search_config_sha256": "62535d82129d01d6cbf8c3d5c13f656e60d89d821a9d9b9ca7bc1ed51c53fa7d",
+        "session_content_identity_sha256": "df52c63bae472e025707b148f10d971db0b066e3721f6bebea5e584438d2e166",
+        "top_k_context": 10
+      },
+      "session_materialization": [
+        {
+          "content_sha256": "db04d3b196a80cad03e700cad863caac8ba1251770f9e77a243a355c0e0a8015",
+          "retrieval_rank": 2,
+          "session_date": "2023/02/11 (Sat) 11:41",
+          "session_id": "answer_4dac77cb_1",
+          "source_sequence": 1,
+          "turn_count": 12
+        },
+        {
+          "content_sha256": "3ca22b898789f47d98f602ede0ec03de2d82751eb4cc6649101eee4792e47cba",
+          "retrieval_rank": 4,
+          "session_date": "2023/02/17 (Fri) 09:58",
+          "session_id": "8d0b4363",
+          "source_sequence": 2,
+          "turn_count": 12
+        },
+        {
+          "content_sha256": "abc238b10bd8be36241067ab232b3f6b146c457a51196002039ab22eed178f8a",
+          "retrieval_rank": 7,
+          "session_date": "2023/03/14 (Tue) 06:56",
+          "session_id": "ultrachat_56513",
+          "source_sequence": 6,
+          "turn_count": 14
+        },
+        {
+          "content_sha256": "39404cd32b1b8d0700689e9f0ed162d4a6e61b4a0e25a8fe7df7cc8c31010a27",
+          "retrieval_rank": 5,
+          "session_date": "2023/04/04 (Tue) 00:00",
+          "session_id": "a58eeaf8",
+          "source_sequence": 9,
+          "turn_count": 12
+        },
+        {
+          "content_sha256": "816b5e3124b2a4ef1d9be847a94078c36002ed4ec86165d8bd08611e23d2af15",
+          "retrieval_rank": 8,
+          "session_date": "2023/04/30 (Sun) 01:15",
+          "session_id": "a8899aee_1",
+          "source_sequence": 11,
+          "turn_count": 12
+        },
+        {
+          "content_sha256": "078ac29ae164878706b9e8700ad4f464a53c04b86f5159a73c5b50f03b5de4d5",
+          "retrieval_rank": 3,
+          "session_date": "2023/05/27 (Sat) 16:08",
+          "session_id": "9de53d68_1",
+          "source_sequence": 16,
+          "turn_count": 12
+        },
+        {
+          "content_sha256": "2e8be83c0d94092eb4e98c7fe87c80b550a413abc7f555e383d5270b258d1fdd",
+          "retrieval_rank": 1,
+          "session_date": "2023/06/30 (Fri) 13:14",
+          "session_id": "answer_4dac77cb_2",
+          "source_sequence": 19,
+          "turn_count": 12
+        },
+        {
+          "content_sha256": "1a8e75c66cba5c6cea4dae9c3c0052c335114d476c5056ccf875f414a080ff0a",
+          "retrieval_rank": 6,
+          "session_date": "2023/07/13 (Thu) 04:18",
+          "session_id": "ultrachat_551846",
+          "source_sequence": 31,
+          "turn_count": 14
+        },
+        {
+          "content_sha256": "ac3aa3acbcba52ec6e3aeed78efffd93e3f782dd523ce97d09e0e16b962fbb04",
+          "retrieval_rank": 10,
+          "session_date": "2023/07/13 (Thu) 11:22",
+          "session_id": "04616813_2",
+          "source_sequence": 32,
+          "turn_count": 12
+        },
+        {
+          "content_sha256": "a548a61c3f632274be7c9476928c1a43b6a223bba46112692f323559e1a6b2ce",
+          "retrieval_rank": 9,
+          "session_date": "2023/07/20 (Thu) 21:36",
+          "session_id": "e6b6353d",
+          "source_sequence": 38,
+          "turn_count": 12
+        }
+      ],
+      "session_recall_posthoc": {
+        "authority": "POST_HOC_PROVENANCE_METRIC_ONLY",
+        "gold_hits_at_10": 2,
+        "gold_ranks": [
+          1,
+          2
+        ],
+        "gold_session_count": 2,
+        "recall_at_10": 1.0
+      }
+    },
+    {
+      "answer_evaluation": {
+        "correct": true,
+        "judge_label": true,
+        "judge_status": "SUCCESS",
+        "semantic_authority": "OFFICIAL_LONGMEMEVAL_JUDGE",
+        "status": "PASS",
+        "surface_diagnostic": {
+          "expected_answer_normalized": "you switched to less water (5 ounces) per tablespoon of coffee.",
+          "official_judge_required": true,
+          "reader_answer_normalized": "based on the history, you initially used **1 tablespoon of coffee for every 6 ounces of water** in your french press. later, in the current context, you mentioned using **1 tablespoon of coffee for every 5 ounces of water**. this means you have **switched to using less water per tablespoon of coffee**.",
+          "semantic_authority": "NONE",
+          "status": "LEXICAL_NO_MATCH"
+        }
+      },
+      "canonical_graph_path": "/data/predator/ly/MemBind/saturated_fixed_work_baseline_v1_3/artifacts/sfwb-v1-3-formal-baseline-20260822-002/blocks/formal-006-6071bd76-B1_NAIVE_WHOLE_UPDATE_ASYNC/attempt-001/canonical_graph.json",
+      "evidence_surface": "EPISODIC_CONTENT_FROM_NEO4J",
+      "history_id": "6071bd76",
+      "method": "B1_NAIVE_WHOLE_UPDATE_ASYNC",
+      "namespace": "sfwb-v1-3-B1_NAIVE_WHOLE_UPDATE_ASYNC-6071bd76-sfwb-v1-3-formal-baseline-20260822-002-attempt-001",
+      "official_judge": {
+        "config_sha256": "8606ab170a70ba6e908d8cd3759afc178c1733bee8399a72471989cfff300aae",
+        "error_class": null,
+        "label": true,
+        "model": "qwen3-32b-fp8",
+        "output_byte_count": 3,
+        "output_character_count": 3,
+        "output_sha256": "85a39ab345d672ff8ca9b9c6876f3adcacf45ee7c1e2dbd2408fd338bd55e07e",
+        "parse_status": "YES",
+        "prompt_sha256": "9db7879de936288c015832e77335b5dcaad3e3f521f97dbcee2fc34bcea573d5",
+        "raw_output_persisted": false,
+        "retry_count": 0,
+        "status": "SUCCESS"
+      },
+      "question": "For the coffee-to-water ratio in my French press, did I switch to more water per tablespoon of coffee, or less?",
+      "question_date": "2023/07/30 (Sun) 05:53",
+      "reader": {
+        "completion_tokens": 69,
+        "config_sha256": "d84697f95fd6232c6c8f882cdae7a9eab54049e6e3cc4a69501e28ac9cd31bbc",
+        "model": "qwen3-32b-fp8",
+        "output_byte_count": 305,
+        "output_character_count": 305,
+        "output_sha256": "d3b092d2d81288b4428ebd82a4490c0d0668ce06ccfc9a584e40b7dfb1231371",
+        "prompt_byte_count": 138035,
+        "prompt_character_count": 138035,
+        "prompt_sha256": "4b0ee17156411d14eb0dfc1f6ea0a1f1f9580c2a0c49907c1f84c23fbe695c85",
+        "prompt_tokens": 31490,
+        "status": "SUCCESS",
+        "truncation_count": 0
+      },
+      "reader_answer": "Based on the history, you initially used **1 tablespoon of coffee for every 6 ounces of water** in your French press. Later, in the current context, you mentioned using **1 tablespoon of coffee for every 5 ounces of water**. \n\nThis means you have **switched to using less water per tablespoon of coffee**.",
+      "retrieval": {
+        "episode_count": 20,
+        "fact_count": 20,
+        "graphiti_search_calls": 1,
+        "neo4j_read_requests": 4,
+        "ranked_session_ids": [
+          "answer_4dac77cb_2",
+          "answer_4dac77cb_1",
+          "9de53d68_1",
+          "8d0b4363",
+          "a58eeaf8",
+          "ultrachat_551846",
+          "ultrachat_56513",
+          "a8899aee_1",
+          "e6b6353d",
+          "04616813_2"
+        ],
+        "search_config_sha256": "62535d82129d01d6cbf8c3d5c13f656e60d89d821a9d9b9ca7bc1ed51c53fa7d",
+        "session_content_identity_sha256": "c8561d1eee54b90624295ff25b5026cf5d7efc19d5435f2e49569da4d8fca681",
+        "top_k_context": 10
+      },
+      "session_materialization": [
+        {
+          "content_sha256": "db04d3b196a80cad03e700cad863caac8ba1251770f9e77a243a355c0e0a8015",
+          "retrieval_rank": 2,
+          "session_date": "2023/02/11 (Sat) 11:41",
+          "session_id": "answer_4dac77cb_1",
+          "source_sequence": 1,
+          "turn_count": 12
+        },
+        {
+          "content_sha256": "3ca22b898789f47d98f602ede0ec03de2d82751eb4cc6649101eee4792e47cba",
+          "retrieval_rank": 4,
+          "session_date": "2023/02/17 (Fri) 09:58",
+          "session_id": "8d0b4363",
+          "source_sequence": 2,
+          "turn_count": 12
+        },
+        {
+          "content_sha256": "abc238b10bd8be36241067ab232b3f6b146c457a51196002039ab22eed178f8a",
+          "retrieval_rank": 7,
+          "session_date": "2023/03/14 (Tue) 06:56",
+          "session_id": "ultrachat_56513",
+          "source_sequence": 6,
+          "turn_count": 14
+        },
+        {
+          "content_sha256": "39404cd32b1b8d0700689e9f0ed162d4a6e61b4a0e25a8fe7df7cc8c31010a27",
+          "retrieval_rank": 5,
+          "session_date": "2023/04/04 (Tue) 00:00",
+          "session_id": "a58eeaf8",
+          "source_sequence": 9,
+          "turn_count": 12
+        },
+        {
+          "content_sha256": "816b5e3124b2a4ef1d9be847a94078c36002ed4ec86165d8bd08611e23d2af15",
+          "retrieval_rank": 8,
+          "session_date": "2023/04/30 (Sun) 01:15",
+          "session_id": "a8899aee_1",
+          "source_sequence": 11,
+          "turn_count": 12
+        },
+        {
+          "content_sha256": "078ac29ae164878706b9e8700ad4f464a53c04b86f5159a73c5b50f03b5de4d5",
+          "retrieval_rank": 3,
+          "session_date": "2023/05/27 (Sat) 16:08",
+          "session_id": "9de53d68_1",
+          "source_sequence": 16,
+          "turn_count": 12
+        },
+        {
+          "content_sha256": "2e8be83c0d94092eb4e98c7fe87c80b550a413abc7f555e383d5270b258d1fdd",
+          "retrieval_rank": 1,
+          "session_date": "2023/06/30 (Fri) 13:14",
+          "session_id": "answer_4dac77cb_2",
+          "source_sequence": 19,
+          "turn_count": 12
+        },
+        {
+          "content_sha256": "1a8e75c66cba5c6cea4dae9c3c0052c335114d476c5056ccf875f414a080ff0a",
+          "retrieval_rank": 6,
+          "session_date": "2023/07/13 (Thu) 04:18",
+          "session_id": "ultrachat_551846",
+          "source_sequence": 31,
+          "turn_count": 14
+        },
+        {
+          "content_sha256": "ac3aa3acbcba52ec6e3aeed78efffd93e3f782dd523ce97d09e0e16b962fbb04",
+          "retrieval_rank": 10,
+          "session_date": "2023/07/13 (Thu) 11:22",
+          "session_id": "04616813_2",
+          "source_sequence": 32,
+          "turn_count": 12
+        },
+        {
+          "content_sha256": "a548a61c3f632274be7c9476928c1a43b6a223bba46112692f323559e1a6b2ce",
+          "retrieval_rank": 9,
+          "session_date": "2023/07/20 (Thu) 21:36",
+          "session_id": "e6b6353d",
+          "source_sequence": 38,
+          "turn_count": 12
+        }
+      ],
+      "session_recall_posthoc": {
+        "authority": "POST_HOC_PROVENANCE_METRIC_ONLY",
+        "gold_hits_at_10": 2,
+        "gold_ranks": [
+          1,
+          2
+        ],
+        "gold_session_count": 2,
+        "recall_at_10": 1.0
+      }
+    },
+    {
+      "answer_evaluation": {
+        "correct": false,
+        "judge_label": false,
+        "judge_status": "SUCCESS",
+        "semantic_authority": "OFFICIAL_LONGMEMEVAL_JUDGE",
+        "status": "FAIL",
+        "surface_diagnostic": {
+          "expected_answer_normalized": "1300",
+          "official_judge_required": true,
+          "reader_answer_normalized": "based on the information you provided in session 5, you had 1,250 followers on instagram as of may 25, 2023. since your current date is june 15, 2023, and no specific updates to your follower count have been mentioned in the history, i cannot determine the exact number of followers you have now. to find your current follower count, simply check your instagram profile. if you're looking for an estimate or want to track your growth, you can use instagram insights (if your account is a business or creator account) to monitor changes in your follower count over time.",
+          "semantic_authority": "NONE",
+          "status": "LEXICAL_NO_MATCH"
+        }
+      },
+      "canonical_graph_path": "/data/predator/ly/MemBind/saturated_fixed_work_baseline_v1_3/artifacts/sfwb-v1-3-formal-baseline-20260822-002/blocks/formal-007-a2f3aa27-B0_NATIVE_SERIAL/attempt-001/canonical_graph.json",
+      "evidence_surface": "EPISODIC_CONTENT_FROM_NEO4J",
+      "history_id": "a2f3aa27",
+      "method": "B0_NATIVE_SERIAL",
+      "namespace": "sfwb-v1-3-B0_NATIVE_SERIAL-a2f3aa27-sfwb-v1-3-formal-baseline-20260822-002-attempt-001",
+      "official_judge": {
+        "config_sha256": "8606ab170a70ba6e908d8cd3759afc178c1733bee8399a72471989cfff300aae",
+        "error_class": null,
+        "label": false,
+        "model": "qwen3-32b-fp8",
+        "output_byte_count": 3,
+        "output_character_count": 3,
+        "output_sha256": "38178a20b470cfd18299fb1593dd4ba706f1a83321dac051d01086efd8b7a96f",
+        "parse_status": "NO",
+        "prompt_sha256": "1af8a47bef2cd60de5e4891590d5202dc744d646cc2a0afcf7aefb40b294e4b5",
+        "raw_output_persisted": false,
+        "retry_count": 0,
+        "status": "SUCCESS"
+      },
+      "question": "How many followers do I have on Instagram now?",
+      "question_date": "2023/06/15 (Thu) 23:26",
+      "reader": {
+        "completion_tokens": 133,
+        "config_sha256": "d84697f95fd6232c6c8f882cdae7a9eab54049e6e3cc4a69501e28ac9cd31bbc",
+        "model": "qwen3-32b-fp8",
+        "output_byte_count": 571,
+        "output_character_count": 571,
+        "output_sha256": "f1b53ae483fbad3e0c4af15eb1f2a3167a12b79291ad531ec35e6d92c8426370",
+        "prompt_byte_count": 136360,
+        "prompt_character_count": 136360,
+        "prompt_sha256": "bf7b63f5cc0a1702ce4fc583e4c38b60d5554f3084fe83a5dd83e5fd108084ba",
+        "prompt_tokens": 30605,
+        "status": "SUCCESS",
+        "truncation_count": 0
+      },
+      "reader_answer": "Based on the information you provided in Session 5, you had 1,250 followers on Instagram as of May 25, 2023. Since your current date is June 15, 2023, and no specific updates to your follower count have been mentioned in the history, I cannot determine the exact number of followers you have now. \n\nTo find your current follower count, simply check your Instagram profile. If you're looking for an estimate or want to track your growth, you can use Instagram Insights (if your account is a Business or Creator account) to monitor changes in your follower count over time.",
+      "retrieval": {
+        "episode_count": 20,
+        "fact_count": 20,
+        "graphiti_search_calls": 1,
+        "neo4j_read_requests": 4,
+        "ranked_session_ids": [
+          "answer_5126c02d_1",
+          "answer_5126c02d_2",
+          "b65f51fb_5",
+          "ultrachat_475462",
+          "2fa50779_2",
+          "a8028ce7_2",
+          "57bf4122_1",
+          "104055de",
+          "1d015773_1",
+          "61d3fec4_4"
+        ],
+        "search_config_sha256": "62535d82129d01d6cbf8c3d5c13f656e60d89d821a9d9b9ca7bc1ed51c53fa7d",
+        "session_content_identity_sha256": "72fdcc8013f512c8aecbf1a73637334c449660b08c7d1c692fefc8f8b989a57f",
+        "top_k_context": 10
+      },
+      "session_materialization": [
+        {
+          "content_sha256": "da80b324f42385f17d9168187f0efd8365f2c5b4402e16500c66034b4e5894f0",
+          "retrieval_rank": 9,
+          "session_date": "2023/05/03 (Wed) 14:25",
+          "session_id": "1d015773_1",
+          "source_sequence": 2,
+          "turn_count": 12
+        },
+        {
+          "content_sha256": "7d32a20374ce086b4f3cfa57be122d24e72239013f11e4f87b06d5756a2b94cb",
+          "retrieval_rank": 5,
+          "session_date": "2023/05/04 (Thu) 20:03",
+          "session_id": "2fa50779_2",
+          "source_sequence": 4,
+          "turn_count": 12
+        },
+        {
+          "content_sha256": "2692dce42dbac22ae2bb8925cad7e3273c993bcff157cb2c8ccf652fc512d31f",
+          "retrieval_rank": 6,
+          "session_date": "2023/05/21 (Sun) 23:30",
+          "session_id": "a8028ce7_2",
+          "source_sequence": 9,
+          "turn_count": 12
+        },
+        {
+          "content_sha256": "bdff3fce0233e0996698c56b3daa19b5b5b291eb93e8ec6e6e1bb83fce330f56",
+          "retrieval_rank": 4,
+          "session_date": "2023/05/25 (Thu) 03:27",
+          "session_id": "ultrachat_475462",
+          "source_sequence": 30,
+          "turn_count": 14
+        },
+        {
+          "content_sha256": "92b94d7dc994e411fbfbb8c1065856f9bd1a55434614a7830a4b63d26a03f39e",
+          "retrieval_rank": 1,
+          "session_date": "2023/05/25 (Thu) 05:26",
+          "session_id": "answer_5126c02d_1",
+          "source_sequence": 12,
+          "turn_count": 10
+        },
+        {
+          "content_sha256": "7f793c107da125cb72747369af8e2b202060b6b63bedc24fe7732541ad46e5fe",
+          "retrieval_rank": 2,
+          "session_date": "2023/05/25 (Thu) 09:28",
+          "session_id": "answer_5126c02d_2",
+          "source_sequence": 39,
+          "turn_count": 10
+        },
+        {
+          "content_sha256": "b3cc7b73cd7682912edbfa5139e5e68503b1ad3f9ff3f81237993e61deedd69b",
+          "retrieval_rank": 10,
+          "session_date": "2023/05/25 (Thu) 15:05",
+          "session_id": "61d3fec4_4",
+          "source_sequence": 27,
+          "turn_count": 12
+        },
+        {
+          "content_sha256": "e8a4f41495f435fad69ffb27c8ba30491ec9a0f2c572a34340c8df859ac96460",
+          "retrieval_rank": 3,
+          "session_date": "2023/05/25 (Thu) 15:40",
+          "session_id": "b65f51fb_5",
+          "source_sequence": 26,
+          "turn_count": 12
+        },
+        {
+          "content_sha256": "524d35472f3b374fccb31d2a9cd184efe9028c7ba08817eaca5b79f6581e1597",
+          "retrieval_rank": 8,
+          "session_date": "2023/05/25 (Thu) 16:20",
+          "session_id": "104055de",
+          "source_sequence": 14,
+          "turn_count": 12
+        },
+        {
+          "content_sha256": "546e15a9392b57491ab65508659904232c4dc393bc8719c05018e0470d42ae84",
+          "retrieval_rank": 7,
+          "session_date": "2023/05/25 (Thu) 19:24",
+          "session_id": "57bf4122_1",
+          "source_sequence": 17,
+          "turn_count": 12
+        }
+      ],
+      "session_recall_posthoc": {
+        "authority": "POST_HOC_PROVENANCE_METRIC_ONLY",
+        "gold_hits_at_10": 2,
+        "gold_ranks": [
+          1,
+          2
+        ],
+        "gold_session_count": 2,
+        "recall_at_10": 1.0
+      }
+    },
+    {
+      "answer_evaluation": {
+        "correct": false,
+        "judge_label": false,
+        "judge_status": "SUCCESS",
+        "semantic_authority": "OFFICIAL_LONGMEMEVAL_JUDGE",
+        "status": "FAIL",
+        "surface_diagnostic": {
+          "expected_answer_normalized": "1300",
+          "official_judge_required": true,
+          "reader_answer_normalized": "based on the information you provided in session 5, you had 1,250 followers on instagram as of may 25, 2023. since the current date is june 15, 2023, and no specific updates to your follower count have been mentioned, i cannot determine the exact number of followers you have now. to find your current follower count, simply check your instagram profile. if you're looking for an estimate or want to track growth, you can use instagram insights (if your account is a business or creator account) or third-party tools to monitor changes over time.",
+          "semantic_authority": "NONE",
+          "status": "LEXICAL_NO_MATCH"
+        }
+      },
+      "canonical_graph_path": "/data/predator/ly/MemBind/saturated_fixed_work_baseline_v1_3/artifacts/sfwb-v1-3-formal-baseline-20260822-002/blocks/formal-008-a2f3aa27-B1_NAIVE_WHOLE_UPDATE_ASYNC/attempt-001/canonical_graph.json",
+      "evidence_surface": "EPISODIC_CONTENT_FROM_NEO4J",
+      "history_id": "a2f3aa27",
+      "method": "B1_NAIVE_WHOLE_UPDATE_ASYNC",
+      "namespace": "sfwb-v1-3-B1_NAIVE_WHOLE_UPDATE_ASYNC-a2f3aa27-sfwb-v1-3-formal-baseline-20260822-002-attempt-001",
+      "official_judge": {
+        "config_sha256": "8606ab170a70ba6e908d8cd3759afc178c1733bee8399a72471989cfff300aae",
+        "error_class": null,
+        "label": false,
+        "model": "qwen3-32b-fp8",
+        "output_byte_count": 2,
+        "output_character_count": 2,
+        "output_sha256": "9390298f3fb0c5b160498935d79cb139aef28e1c47358b4bbba61862b9c26e59",
+        "parse_status": "NO",
+        "prompt_sha256": "008a37a213dc7f894cb1752b664aade1c66d25b0ceb8f0eedcb2d114c3e39d82",
+        "raw_output_persisted": false,
+        "retry_count": 0,
+        "status": "SUCCESS"
+      },
+      "question": "How many followers do I have on Instagram now?",
+      "question_date": "2023/06/15 (Thu) 23:26",
+      "reader": {
+        "completion_tokens": 129,
+        "config_sha256": "d84697f95fd6232c6c8f882cdae7a9eab54049e6e3cc4a69501e28ac9cd31bbc",
+        "model": "qwen3-32b-fp8",
+        "output_byte_count": 548,
+        "output_character_count": 548,
+        "output_sha256": "fa7595f0fe928e2ed47c2fae928f3b9a0f9a92e816b9fda845de8a46ef89396f",
+        "prompt_byte_count": 136360,
+        "prompt_character_count": 136360,
+        "prompt_sha256": "bf7b63f5cc0a1702ce4fc583e4c38b60d5554f3084fe83a5dd83e5fd108084ba",
+        "prompt_tokens": 30605,
+        "status": "SUCCESS",
+        "truncation_count": 0
+      },
+      "reader_answer": "Based on the information you provided in Session 5, you had 1,250 followers on Instagram as of May 25, 2023. Since the current date is June 15, 2023, and no specific updates to your follower count have been mentioned, I cannot determine the exact number of followers you have now. \n\nTo find your current follower count, simply check your Instagram profile. If you're looking for an estimate or want to track growth, you can use Instagram Insights (if your account is a Business or Creator account) or third-party tools to monitor changes over time.",
+      "retrieval": {
+        "episode_count": 20,
+        "fact_count": 20,
+        "graphiti_search_calls": 1,
+        "neo4j_read_requests": 4,
+        "ranked_session_ids": [
+          "answer_5126c02d_1",
+          "answer_5126c02d_2",
+          "b65f51fb_5",
+          "ultrachat_475462",
+          "2fa50779_2",
+          "a8028ce7_2",
+          "57bf4122_1",
+          "104055de",
+          "1d015773_1",
+          "61d3fec4_4"
+        ],
+        "search_config_sha256": "62535d82129d01d6cbf8c3d5c13f656e60d89d821a9d9b9ca7bc1ed51c53fa7d",
+        "session_content_identity_sha256": "bf4eeba500aa8027333cc54128424dabda08a8e5e7fedadfc8443dcb44fddb59",
+        "top_k_context": 10
+      },
+      "session_materialization": [
+        {
+          "content_sha256": "da80b324f42385f17d9168187f0efd8365f2c5b4402e16500c66034b4e5894f0",
+          "retrieval_rank": 9,
+          "session_date": "2023/05/03 (Wed) 14:25",
+          "session_id": "1d015773_1",
+          "source_sequence": 2,
+          "turn_count": 12
+        },
+        {
+          "content_sha256": "7d32a20374ce086b4f3cfa57be122d24e72239013f11e4f87b06d5756a2b94cb",
+          "retrieval_rank": 5,
+          "session_date": "2023/05/04 (Thu) 20:03",
+          "session_id": "2fa50779_2",
+          "source_sequence": 4,
+          "turn_count": 12
+        },
+        {
+          "content_sha256": "2692dce42dbac22ae2bb8925cad7e3273c993bcff157cb2c8ccf652fc512d31f",
+          "retrieval_rank": 6,
+          "session_date": "2023/05/21 (Sun) 23:30",
+          "session_id": "a8028ce7_2",
+          "source_sequence": 9,
+          "turn_count": 12
+        },
+        {
+          "content_sha256": "bdff3fce0233e0996698c56b3daa19b5b5b291eb93e8ec6e6e1bb83fce330f56",
+          "retrieval_rank": 4,
+          "session_date": "2023/05/25 (Thu) 03:27",
+          "session_id": "ultrachat_475462",
+          "source_sequence": 30,
+          "turn_count": 14
+        },
+        {
+          "content_sha256": "92b94d7dc994e411fbfbb8c1065856f9bd1a55434614a7830a4b63d26a03f39e",
+          "retrieval_rank": 1,
+          "session_date": "2023/05/25 (Thu) 05:26",
+          "session_id": "answer_5126c02d_1",
+          "source_sequence": 12,
+          "turn_count": 10
+        },
+        {
+          "content_sha256": "7f793c107da125cb72747369af8e2b202060b6b63bedc24fe7732541ad46e5fe",
+          "retrieval_rank": 2,
+          "session_date": "2023/05/25 (Thu) 09:28",
+          "session_id": "answer_5126c02d_2",
+          "source_sequence": 39,
+          "turn_count": 10
+        },
+        {
+          "content_sha256": "b3cc7b73cd7682912edbfa5139e5e68503b1ad3f9ff3f81237993e61deedd69b",
+          "retrieval_rank": 10,
+          "session_date": "2023/05/25 (Thu) 15:05",
+          "session_id": "61d3fec4_4",
+          "source_sequence": 27,
+          "turn_count": 12
+        },
+        {
+          "content_sha256": "e8a4f41495f435fad69ffb27c8ba30491ec9a0f2c572a34340c8df859ac96460",
+          "retrieval_rank": 3,
+          "session_date": "2023/05/25 (Thu) 15:40",
+          "session_id": "b65f51fb_5",
+          "source_sequence": 26,
+          "turn_count": 12
+        },
+        {
+          "content_sha256": "524d35472f3b374fccb31d2a9cd184efe9028c7ba08817eaca5b79f6581e1597",
+          "retrieval_rank": 8,
+          "session_date": "2023/05/25 (Thu) 16:20",
+          "session_id": "104055de",
+          "source_sequence": 14,
+          "turn_count": 12
+        },
+        {
+          "content_sha256": "546e15a9392b57491ab65508659904232c4dc393bc8719c05018e0470d42ae84",
+          "retrieval_rank": 7,
+          "session_date": "2023/05/25 (Thu) 19:24",
+          "session_id": "57bf4122_1",
+          "source_sequence": 17,
+          "turn_count": 12
+        }
+      ],
+      "session_recall_posthoc": {
+        "authority": "POST_HOC_PROVENANCE_METRIC_ONLY",
+        "gold_hits_at_10": 2,
+        "gold_ranks": [
+          1,
+          2
+        ],
+        "gold_session_count": 2,
+        "recall_at_10": 1.0
+      }
+    }
+  ],
+  "schema_version": "sfwb.v1.3.longmemeval-session-value-qa-results.v1",
+  "status": "READ_ONLY_SESSION_VALUE_QA_COMPLETE",
+  "v5_started": false
+}

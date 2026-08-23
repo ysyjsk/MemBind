@@ -1,0 +1,67 @@
+{
+  "construction_catalog": {
+    "endpoint": "http://10.87.5.247:8000/v1/models",
+    "http_evidence": {
+      "body_bytes": 484,
+      "body_sha256": "89278731f29e7716f3b0185593f552e0a104d70cf777aab8e31fbf0551e23c67",
+      "content_type": "application/json",
+      "proxy_policy": "DISABLED",
+      "schema_version": "membind.saturated-fixed-work.direct-http-evidence.v1",
+      "status_code": 200,
+      "url": "http://10.87.5.247:8000/v1/models"
+    },
+    "max_model_len": 65536,
+    "model": "qwen3-32b-fp8",
+    "model_root": "/home/lhx/liuyi/models/Qwen3-32B-FP8",
+    "response_sha256": "6d3cf334987ffa78955a7fc54272c40aaafadeabe386a8e6cf1c53460d9f0505",
+    "schema_version": "membind.saturated-fixed-work.model-catalog-evidence.v1",
+    "status": "PASS"
+  },
+  "construction_metrics_initial": {
+    "vllm:kv_cache_usage_perc": "0.0",
+    "vllm:num_requests_running": "0.0",
+    "vllm:num_requests_waiting": "0.0",
+    "vllm:num_requests_waiting_by_reason": "0.0"
+  },
+  "current_state_path": "membind-validation/CURRENT_STATE.json",
+  "embedding_catalog": {
+    "endpoint": "http://10.87.5.247:8001/v1/models",
+    "http_evidence": {
+      "body_bytes": 498,
+      "body_sha256": "8975a17bf2f465480a72c4e2c437181d91da7f072b82a5d6d8eee46943c82f79",
+      "content_type": "application/json",
+      "proxy_policy": "DISABLED",
+      "schema_version": "membind.saturated-fixed-work.direct-http-evidence.v1",
+      "status_code": 200,
+      "url": "http://10.87.5.247:8001/v1/models"
+    },
+    "max_model_len": 32768,
+    "model": "qwen3-embedding-0.6b",
+    "model_root": "/home/lhx/liuyi/models/Qwen3-Embedding-0.6B",
+    "response_sha256": "5999a074a76278008197bfb3796219df997d43b3cd6cf2bbf5c8a9b84eceea21",
+    "schema_version": "membind.saturated-fixed-work.model-catalog-evidence.v1",
+    "status": "PASS"
+  },
+  "endpoint_policy": "direct_no_proxy",
+  "frozen_config_hashes": {
+    "backend": "7255a701003f51780ea1d30e909f2e9bafbd5a0fcedb50dc7490bd6cab36d97a",
+    "client": "5683df00ad4d216d2931f344a87a5debff76c7e3dc365a1470e1ddd2cfc16a57",
+    "resource_policy": "596eb514bdc25a398d916c43e6151ee135735a86996d83da0478bea4b4b7e640"
+  },
+  "git_commit": "932bef51cc868d0c38e8965b7b67e0d9ce478781",
+  "hostname": "aces-System-Product-Name",
+  "live_gate_formal": {
+    "action": "formal",
+    "allowed": false,
+    "reason": "action_not_authorized"
+  },
+  "neo4j": {
+    "canary": 1,
+    "status": "PASS",
+    "uri": "bolt://localhost:7687"
+  },
+  "remote_forced_status": "readonly liuyi access OK",
+  "schema_version": "membind.v6.preflight.v1",
+  "service_process_identity": "NOT_OBSERVABLE_FROM_RESTRICTED_READONLY_ENDPOINT",
+  "watchdog_identity": "NOT_OBSERVABLE_FROM_RESTRICTED_READONLY_ENDPOINT"
+}

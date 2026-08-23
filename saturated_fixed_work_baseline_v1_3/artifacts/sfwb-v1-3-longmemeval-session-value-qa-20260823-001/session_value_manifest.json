@@ -1,0 +1,40 @@
+{
+  "construction_calls": 0,
+  "graph_writes": 0,
+  "history_ids": [
+    "07741c45",
+    "b6019101",
+    "6071bd76",
+    "a2f3aa27"
+  ],
+  "judge": {
+    "base_url": "http://10.87.5.247:8002/v1",
+    "implementation": "existing_graph_quality_private_longmemeval_judge",
+    "raw_output_persisted": false
+  },
+  "methods": [
+    "B0_NATIVE_SERIAL",
+    "B1_NAIVE_WHOLE_UPDATE_ASYNC"
+  ],
+  "operation_root": "/data/predator/ly/MemBind/saturated_fixed_work_baseline_v1_3/artifacts/sfwb-v1-3-longmemeval-sf-operation-20260823-001",
+  "payload_sha256": "02021e36ede9ab05ff35882a7e1dfafc84622032e7258756969b414eaf60c797",
+  "reader": {
+    "base_url": "http://10.87.5.247:8002/v1",
+    "implementation": "paper_eval.s2_session_reader.OfficialSessionReader",
+    "model": "qwen3-32b-fp8",
+    "official_session_value_contract": true,
+    "raw_source_bodies_in_reader_context": false,
+    "source_text": "READ_ONLY_NEO4J_EPISODIC_CONTENT_ONLY"
+  },
+  "retrieval": {
+    "edge_and_episode_rrf": true,
+    "embedding_base_url": "http://10.87.5.247:8003/v1",
+    "gold_inputs_during_selection": false,
+    "graphiti_search_limit": 20,
+    "implementation": "existing_quality_v1_retrieve_quality_v1"
+  },
+  "schema_version": "sfwb.v1.3.longmemeval-session-value-qa-manifest.v1",
+  "status": "READ_ONLY_SESSION_VALUE_QA_AUTHORIZED",
+  "top_k_context": 10,
+  "v5_started": false
+}

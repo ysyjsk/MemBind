@@ -1,0 +1,163 @@
+{
+  "payload_sha256": "af4a18d308503513b902913dd8733a5892c5f402660740658ce575a00af915c3",
+  "rows": [
+    {
+      "construction_calls": 0,
+      "correct": true,
+      "evaluation_setting": "adjacent_operation",
+      "evaluation_type": "CandidateDisambiguation",
+      "expected_answer": "1.9 kg",
+      "failure_layer": null,
+      "gold_memory_state": "Mochi's confirmed current weight is 1.9 kg from the most recent actual weigh-in. 1.2 kg was the user's initial misremembering. 1.4 kg was the corrected first-checkup weight, now superseded by the follow-up. 2.3 kg is only a vet tech's prediction for a future visit, not a confirmed measurement.",
+      "gold_provenance": [
+        {
+          "quote": "So I took Mochi in for a follow-up weigh-in last week and she's now at 1.9 kg. She's been growing so fast.",
+          "segment_index": 2,
+          "turn_index": 3
+        },
+        {
+          "quote": "The vet tech mentioned she'll probably be around 2.3 kg by then based on her growth curve.",
+          "segment_index": 3,
+          "turn_index": 5
+        }
+      ],
+      "gold_ranks": [
+        1,
+        2
+      ],
+      "graph_write_attempts": 0,
+      "invalid": false,
+      "invalid_reason": null,
+      "judge_rubric": {
+        "acceptable_paraphrases": [
+          "1.9"
+        ],
+        "harmful_extra": [
+          "selecting 2.3 kg because it is the most recent number mentioned",
+          "selecting 1.4 kg because it was the corrected first-checkup weight"
+        ],
+        "harmless_extra": [],
+        "must_include": [
+          "1.9 kg"
+        ],
+        "must_not_include": [
+          "1.2 kg as the answer",
+          "1.4 kg as the answer",
+          "2.3 kg as the answer"
+        ]
+      },
+      "memops_official_judge": {
+        "answer_score": 1,
+        "completion_tokens": 139,
+        "extra_detail_postcheck_action": "none",
+        "extra_detail_postcheck_applied": false,
+        "extra_detail_type": "harmless",
+        "finish_reason": "stop",
+        "judge_operation_detection": {
+          "fn": 1,
+          "fp": 0,
+          "tp": 3
+        },
+        "judge_provenance_support": 1,
+        "official_prompt_builder": "build_evaluation_prompt",
+        "official_result_parser": "parse_judge_metrics",
+        "prompt_sha256": "f9660b51a0f352f7e4ace8501f6433c72d32958359fe8b88a38a06c2974effed",
+        "prompt_tokens": 6531,
+        "raw_prompt_persisted": false,
+        "raw_response_persisted": false,
+        "reason": "The model correctly selects 1.9 kg as the most recent confirmed weight and explains why 2.3 kg is a projection and 1.2 kg and 1.4 kg are outdated. This is fully aligned with the Gold memory state and provenance. The model does not select any harmful extra details and provides harmless clarification.",
+        "response_sha256": "904852d6c652a524baeb6c73c7765a434cd832fab1fd801455c185d3234eefd6",
+        "stale_value": 0
+      },
+      "mrr": 1.0,
+      "ndcg_at_10": 1.0,
+      "question_id": "B10__Update:p4_candidate_disambiguation:adjacent_operation",
+      "question_pair_id": "p4_candidate_disambiguation",
+      "recall_at_1": 0.5,
+      "recall_at_10": 1.0,
+      "recall_at_3": 1.0,
+      "recall_at_5": 1.0,
+      "relevance_unit": "LONGMEMEVAL_GOLD_SESSION",
+      "sample_id": "B10__Update"
+    },
+    {
+      "construction_calls": 0,
+      "correct": true,
+      "evaluation_setting": "longitudinal_operation",
+      "evaluation_type": "CandidateDisambiguation",
+      "expected_answer": "1.9 kg",
+      "failure_layer": null,
+      "gold_memory_state": "Mochi's confirmed current weight is 1.9 kg from the most recent actual weigh-in. 1.2 kg was the user's initial misremembering. 1.4 kg was the corrected first-checkup weight, now superseded by the follow-up. 2.3 kg is only a vet tech's prediction for a future visit, not a confirmed measurement.",
+      "gold_provenance": [
+        {
+          "quote": "So I took Mochi in for a follow-up weigh-in last week and she's now at 1.9 kg. She's been growing so fast.",
+          "segment_index": 2,
+          "turn_index": 3
+        },
+        {
+          "quote": "The vet tech mentioned she'll probably be around 2.3 kg by then based on her growth curve.",
+          "segment_index": 3,
+          "turn_index": 5
+        }
+      ],
+      "gold_ranks": [
+        1,
+        2
+      ],
+      "graph_write_attempts": 0,
+      "invalid": false,
+      "invalid_reason": null,
+      "judge_rubric": {
+        "acceptable_paraphrases": [
+          "1.9"
+        ],
+        "harmful_extra": [
+          "selecting 2.3 kg because it is the most recent number mentioned",
+          "selecting 1.4 kg because it was the corrected first-checkup weight"
+        ],
+        "harmless_extra": [],
+        "must_include": [
+          "1.9 kg"
+        ],
+        "must_not_include": [
+          "1.2 kg as the answer",
+          "1.4 kg as the answer",
+          "2.3 kg as the answer"
+        ]
+      },
+      "memops_official_judge": {
+        "answer_score": 1,
+        "completion_tokens": 121,
+        "extra_detail_postcheck_action": "none",
+        "extra_detail_postcheck_applied": false,
+        "extra_detail_type": "harmless",
+        "finish_reason": "stop",
+        "judge_operation_detection": {
+          "fn": 1,
+          "fp": 0,
+          "tp": 3
+        },
+        "judge_provenance_support": 1,
+        "official_prompt_builder": "build_evaluation_prompt",
+        "official_result_parser": "parse_judge_metrics",
+        "prompt_sha256": "74653a6063ab306474076ca76c0ffa0154fbea1d5eeb5415a41e76f489a60716",
+        "prompt_tokens": 6515,
+        "raw_prompt_persisted": false,
+        "raw_response_persisted": false,
+        "reason": "The model correctly selects 1.9 kg as the most recent confirmed weight and explains that 2.3 kg is a projection, which is supported by the evidence. The extra detail about the projection is harmless and does not change the core answer.",
+        "response_sha256": "04fff61ec502c7279ee67d1888674eeace3367111d44198db03eee529477a3f9",
+        "stale_value": 0
+      },
+      "mrr": 1.0,
+      "ndcg_at_10": 1.0,
+      "question_id": "B10__Update:p4_candidate_disambiguation:longitudinal_operation",
+      "question_pair_id": "p4_candidate_disambiguation",
+      "recall_at_1": 0.5,
+      "recall_at_10": 1.0,
+      "recall_at_3": 1.0,
+      "recall_at_5": 1.0,
+      "relevance_unit": "LONGMEMEVAL_GOLD_SESSION",
+      "sample_id": "B10__Update"
+    }
+  ]
+}

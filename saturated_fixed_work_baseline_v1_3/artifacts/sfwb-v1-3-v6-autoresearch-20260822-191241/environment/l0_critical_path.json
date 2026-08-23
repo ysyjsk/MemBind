@@ -1,0 +1,95 @@
+{
+  "critical_path": {
+    "decomposition_residual_ns": 0,
+    "first_native_start_ns": 23277995688853,
+    "inter_native_gap_ns": 187354224,
+    "last_native_end_ns": 24593981056138,
+    "native_chain_ns": 1315798013061,
+    "post_native_tail_ns": 2137132,
+    "source0_prepare_to_first_native_ns": 206530169066
+  },
+  "durable_frontier": 45,
+  "future_ready_slack_ns": {
+    "count": 45,
+    "median": 755224169292,
+    "min": 103879216802,
+    "p95": 849764711677
+  },
+  "history_id": "6071bd76",
+  "phase_attribution": {
+    "add-episode": {
+      "overlap_safe": false,
+      "span_count": 46,
+      "total_duration_ns": 1315794129821
+    },
+    "attributes-summary": {
+      "overlap_safe": false,
+      "span_count": 46,
+      "total_duration_ns": 697133248462
+    },
+    "database": {
+      "overlap_safe": false,
+      "span_count": 1214,
+      "total_duration_ns": 70848637935
+    },
+    "database-transaction": {
+      "overlap_safe": false,
+      "span_count": 46,
+      "total_duration_ns": 471103813
+    },
+    "edge-extraction": {
+      "overlap_safe": false,
+      "span_count": 46,
+      "total_duration_ns": 89318393
+    },
+    "edge-resolution": {
+      "overlap_safe": false,
+      "span_count": 46,
+      "total_duration_ns": 98115457979
+    },
+    "embedding": {
+      "overlap_safe": false,
+      "span_count": 436,
+      "total_duration_ns": 9403103216
+    },
+    "llm": {
+      "overlap_safe": false,
+      "span_count": 429,
+      "total_duration_ns": 6881554169284
+    },
+    "llm-transport": {
+      "overlap_safe": false,
+      "span_count": 429,
+      "total_duration_ns": 6880891908804
+    },
+    "node-extraction": {
+      "overlap_safe": false,
+      "span_count": 46,
+      "total_duration_ns": 84005537
+    },
+    "node-resolution": {
+      "overlap_safe": false,
+      "span_count": 46,
+      "total_duration_ns": 519497583503
+    },
+    "previous-context": {
+      "overlap_safe": false,
+      "span_count": 46,
+      "total_duration_ns": 94082459
+    },
+    "publication": {
+      "overlap_safe": false,
+      "span_count": 46,
+      "total_duration_ns": 772676282
+    }
+  },
+  "phase_attribution_method": "span_totals_for_attribution_only",
+  "schema_version": "membind.v6.critical-path.v1",
+  "source_count": 46,
+  "timer": {
+    "build_makespan_ns": 1522517673483,
+    "reconstructed_from_events": true,
+    "timer_start_ns": 23071465519787,
+    "timer_stop_ns": 24593983193270
+  }
+}
