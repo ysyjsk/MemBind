@@ -46,9 +46,38 @@ class CertificateResult:
     invalid_keys: tuple[str, ...] = ()
 
 
+def _operator_kind(operator: str) -> str | None:
+    if operator.startswith("node_"):
+        return "node"
+    if operator.startswith("edge_"):
+        return "edge"
+    return None
+
+
+def _operation(change: Any) -> str:
+    explicit = str(getattr(change, "operation", "update")).lower()
+    if explicit in {"insert", "create", "add", "delete", "remove"}:
+        return explicit
+    # Older delta producers did not carry an operation.  A missing before
+    # image with a non-empty after image is conservatively a possible insert.
+    if not change.before and change.after:
+        return "insert"
+    return explicit
+
+
 def _changed_relevant(witness: Witness, delta: StateDelta) -> tuple[Any, ...]:
     domain = set(witness.domain)
-    return tuple(change for change in delta.changes if change.key in domain)
+    kind = _operator_kind(witness.operator)
+    return tuple(
+        change
+        for change in delta.changes
+        if (kind is None or change.kind == kind)
+        and (
+            change.key in domain
+            or _operation(change) in {"insert", "create", "add"}
+            or _operation(change) == "update"
+        )
+    )
 
 
 def certify_exact_topk(witness: Witness, delta: StateDelta) -> CertificateResult:
@@ -58,20 +87,73 @@ def certify_exact_topk(witness: Witness, delta: StateDelta) -> CertificateResult
         return CertificateResult(CertificateStatus.UNKNOWN, "operator is not exact cosine")
     if not witness.query_epoch or not witness.index_epoch:
         return CertificateResult(CertificateStatus.UNKNOWN, "query/index epoch is missing")
+    required_epochs = frozenset(
+        witness.proof_data.get(
+            "required_epochs",
+            ("query_epoch", "index_epoch", "embedder_epoch", "config_epoch"),
+        )
+    )
+    changed_epochs = frozenset(delta.environment_changes & required_epochs)
+    if changed_epochs:
+        return CertificateResult(
+            CertificateStatus.UNKNOWN,
+            "required semantic epoch changed",
+            tuple(sorted(changed_epochs)),
+        )
     changed = _changed_relevant(witness, delta)
     if not changed:
         return CertificateResult(CertificateStatus.STABLE, "no domain observable changed")
-    if witness.ties:
-        return CertificateResult(CertificateStatus.UNKNOWN, "consumer-visible tie order has no contract")
-    if len(witness.result) < witness.k or witness.cutoff is None:
-        if witness.proof_data.get("no_new_eligible") is True and witness.proof_data.get("tie_contract"):
-            return CertificateResult(CertificateStatus.STABLE, "explicit short-result exclusion proof")
-        return CertificateResult(CertificateStatus.UNKNOWN, "short result has no kth cutoff")
     invalid = tuple(change.key for change in changed if change.key in witness.result)
     if invalid:
         return CertificateResult(CertificateStatus.INVALID, "result member changed", invalid)
+    changed_nonmembers = tuple(
+        change
+        for change in changed
+        if _operation(change) not in {"delete", "remove"}
+    )
+    if witness.ties:
+        return CertificateResult(CertificateStatus.UNKNOWN, "consumer-visible tie order has no contract")
+    if len(witness.result) < witness.k or witness.cutoff is None:
+        if not changed_nonmembers:
+            return CertificateResult(CertificateStatus.STABLE, "only short-result nonmembers were deleted")
+        scores = witness.proof_data.get("post_scores", {})
+        min_score = witness.proof_data.get("min_score")
+        if (
+            witness.proof_data.get("no_new_eligible") is True
+            and witness.proof_data.get("tie_contract")
+            and isinstance(scores, Mapping)
+            and isinstance(min_score, (int, float))
+            and not isinstance(min_score, bool)
+        ):
+            try:
+                excluded = all(
+                    change.key in scores and float(scores[change.key]) <= float(min_score)
+                    for change in changed_nonmembers
+                )
+            except (TypeError, ValueError):
+                excluded = False
+            if excluded:
+                return CertificateResult(CertificateStatus.STABLE, "explicit short-result exclusion proof")
+        return CertificateResult(CertificateStatus.UNKNOWN, "short result has no kth cutoff")
+    if not changed_nonmembers:
+        return CertificateResult(CertificateStatus.STABLE, "only non-result candidates were deleted")
     scores = witness.proof_data.get("post_scores", {})
-    if isinstance(scores, Mapping) and all(key in scores and float(scores[key]) < float(witness.cutoff) for key in (change.key for change in changed)):
+    if isinstance(scores, Mapping):
+        for change in changed_nonmembers:
+            if change.key not in scores:
+                return CertificateResult(CertificateStatus.UNKNOWN, "non-member score bound is unavailable")
+            try:
+                score = float(scores[change.key])
+            except (TypeError, ValueError):
+                return CertificateResult(CertificateStatus.UNKNOWN, "non-member score bound is invalid")
+            if score > float(witness.cutoff):
+                return CertificateResult(CertificateStatus.INVALID, "new candidate exceeds kth cutoff", (change.key,))
+            if score == float(witness.cutoff):
+                if not witness.proof_data.get("tie_contract"):
+                    return CertificateResult(CertificateStatus.UNKNOWN, "new candidate reaches kth cutoff")
+                post_order = witness.proof_data.get("post_order")
+                if post_order is None or tuple(post_order) != tuple(witness.result):
+                    return CertificateResult(CertificateStatus.UNKNOWN, "post-delta boundary order is unavailable")
         if witness.proof_data.get("tie_contract"):
             return CertificateResult(CertificateStatus.STABLE, "post-delta score bounds remain below cutoff")
     # Without a post-delta score bound, an updated non-member may cross the

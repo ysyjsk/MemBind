@@ -1,13 +1,25 @@
 {
-  "schema_version": "membind.v7.pin-verification.v1",
-  "planned_membind_pin": "2832d94b56db72fcf993154bde47e16b31ade724",
-  "observed_membind_head": "aaf2829855ce58dad5c94af92c1ca6e10e179cdc",
-  "membind_pin_match": false,
+  "schema_version": "membind.v7.pin-verification.v2",
+  "native_subject_pin": "2832d94b56db72fcf993154bde47e16b31ade724",
+  "v7_harness_pin": "bddc1c5627a2ed49d8503a8cbab2d457f022f543",
+  "observed_harness_head": "bddc1c5627a2ed49d8503a8cbab2d457f022f543",
+  "native_subject_tree": "membind-validation/src",
+  "expected_native_subject_tree_identity": "9ccda897c9ae07b1bddaa414c131b9289786a383",
+  "observed_native_subject_tree_identity": "9ccda897c9ae07b1bddaa414c131b9289786a383",
+  "native_subject_source_hashes": {
+    "membind-validation/src/graphiti_native.py": "f25141000494a8899a40b87f2bf5fb5e5cb519ab2d480d72973aeaf9e0d9c8cc",
+    "membind-validation/src/graphiti_membind.py": "69c95b088a0fe886cfe89624716cd2752f462fab1dfeaa3f6dcf27184c65d2de",
+    "membind-validation/src/instrumentation.py": "d500cccbf70ab2ba0036373c39f52c26d8f68e495f85b17f480eff997cc1c6a3",
+    "saturated_fixed_work_baseline_v1_3/src/saturated_fixed_work_baseline_v1_3/membind_adapter.py": "87e7d2dc47612290e6e5631ff3afa57a3112eba8521183b83b982cfa3f3d0cb5"
+  },
+  "native_subject_changed_paths": [],
+  "native_subject_match": true,
+  "membind_pin_match": true,
   "planned_graphiti_version": "0.29.3",
   "planned_graphiti_commit": "021d3a57d511f21b10adaf7fa923bd5c1fce5e9d",
   "observed_graphiti_version": "0.29.3",
   "observed_graphiti_source_hashes_match": true,
-  "status": "BLOCKED_PIN_MISMATCH",
-  "consequence": "No sealed V7 performance or publication claim may use current HEAD as the planned MemBind pin; theory/reference tests remain valid and treatment remains disabled.",
-  "required_action": "Run R0 again on an exact 2832d94 worktree or explicitly version a new pin before observer campaign."
+  "status": "PASS_SPLIT_SUBJECT_HARNESS_IDENTITY",
+  "consequence": "Post-subject V7 harness changes do not alter native subject identity; treatment remains disabled pending real R1-R3 and Gate A-E.",
+  "required_action": "Seal the final V7.1 harness source manifest before any GPU live campaign."
 }

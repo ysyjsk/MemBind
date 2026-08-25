@@ -5,6 +5,7 @@ from __future__ import annotations
 import asyncio
 import hashlib
 import importlib
+import inspect
 import json
 from copy import deepcopy
 from dataclasses import dataclass
@@ -45,10 +46,13 @@ def normalize_siliconflow_chat_request(
 class SiliconFlowChatCompletions:
     """One transparent request-normalization layer at the actual HTTP boundary."""
 
-    def __init__(self, inner: object) -> None:
+    def __init__(self, inner: object, *, response_observer: Any | None = None) -> None:
         if inner is None or not callable(getattr(inner, "create", None)):
             raise ValueError("SILICONFLOW_CHAT_COMPLETIONS_INVALID")
+        if response_observer is not None and not callable(response_observer):
+            raise ValueError("SILICONFLOW_RESPONSE_OBSERVER_INVALID")
         self._inner = inner
+        self._response_observer = response_observer
 
     def __getattr__(self, name: str) -> Any:
         return getattr(self._inner, name)
@@ -59,14 +63,63 @@ class SiliconFlowChatCompletions:
         )
         if not hasattr(result, "__await__"):
             raise TypeError("SILICONFLOW_CHAT_COMPLETION_MUST_BE_ASYNC")
-        return await result
+        response = await result
+        if self._response_observer is not None:
+            choices = (
+                response.get("choices", [])
+                if isinstance(response, Mapping)
+                else getattr(response, "choices", [])
+            )
+            choice = list(choices or ())[0] if choices else None
+            message = (
+                choice.get("message")
+                if isinstance(choice, Mapping)
+                else getattr(choice, "message", None)
+            )
+            content = (
+                message.get("content")
+                if isinstance(message, Mapping)
+                else getattr(message, "content", None)
+            )
+            content_bytes = str(content or "").encode("utf-8")
+            usage = (
+                response.get("usage")
+                if isinstance(response, Mapping)
+                else getattr(response, "usage", None)
+            )
+
+            def usage_value(name: str) -> int:
+                raw = usage.get(name, 0) if isinstance(usage, Mapping) else getattr(usage, name, 0)
+                try:
+                    return max(0, int(raw or 0))
+                except (TypeError, ValueError):
+                    return 0
+
+            finish_reason = (
+                choice.get("finish_reason")
+                if isinstance(choice, Mapping)
+                else getattr(choice, "finish_reason", None)
+            )
+            observed = self._response_observer(
+                {
+                    "finish_reason": None if finish_reason is None else str(finish_reason),
+                    "prompt_tokens": usage_value("prompt_tokens"),
+                    "completion_tokens": usage_value("completion_tokens"),
+                    "content_bytes": len(content_bytes),
+                    "content_sha256": hashlib.sha256(content_bytes).hexdigest(),
+                }
+            )
+            if inspect.isawaitable(observed):
+                await observed
+        return response
 
 
 class SiliconFlowChat:
-    def __init__(self, inner: object) -> None:
+    def __init__(self, inner: object, *, response_observer: Any | None = None) -> None:
         self._inner = inner
         self.completions = SiliconFlowChatCompletions(
-            getattr(inner, "completions", None)
+            getattr(inner, "completions", None),
+            response_observer=response_observer,
         )
 
     def __getattr__(self, name: str) -> Any:
@@ -76,9 +129,11 @@ class SiliconFlowChat:
 class SiliconFlowOpenAITransport:
     """Preserve the SDK surface while normalizing only chat requests."""
 
-    def __init__(self, inner: object) -> None:
+    def __init__(self, inner: object, *, response_observer: Any | None = None) -> None:
         self._inner = inner
-        self.chat = SiliconFlowChat(getattr(inner, "chat", None))
+        self.chat = SiliconFlowChat(
+            getattr(inner, "chat", None), response_observer=response_observer
+        )
         if hasattr(inner, "embeddings"):
             self.embeddings = getattr(inner, "embeddings")
 

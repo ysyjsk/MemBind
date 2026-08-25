@@ -2,7 +2,7 @@
   "schema_version": "membind.v7.core-theory-freeze.v1",
   "decision": "CORE_THEORY_CONDITIONAL_FREEZE",
   "scope": {"delta_depth": 1, "profiles": ["M1_CORE", "M2_CONDITIONAL"]},
-  "theorems": {"T1": "CLOSED_CONDITIONAL", "T2": "CLOSED_SCOPED", "T3": "CLOSED_GUARDED", "T4": "CLOSED_CONDITIONAL", "T5": "CLOSED_CONDITIONAL", "T6": "CLOSED_CONDITIONAL", "T6b": "P7_REFINEMENT_REQUIRED", "T7": "CONDITIONAL_M2_ONLY", "T8": "CONDITIONAL_M2_ONLY"},
+  "theorems": {"T1": "CLOSED_CONDITIONAL", "T2": "CLOSED_SCOPED", "T3": "CLOSED_GUARDED_PHANTOM_AND_EPOCH_SAFE", "T4": "CLOSED_CONDITIONAL", "T5": "CLOSED_CONDITIONAL_MISSING_REPAIR_FAIL_CLOSED", "T6": "CLOSED_CONDITIONAL", "T6b": "CLOSED_FOR_GUARDED_DEFAULT_GRAPHITI_TAIL", "T7": "CONDITIONAL_M2_ONLY", "T8": "CONDITIONAL_M2_ONLY"},
   "unknown_first_class": true,
   "replay_split": {"frozen_oracle": "allowed_under_exact_artifact", "live": "contract_required", "current_live_status": "UNKNOWN_FRESH_RESPONSE"},
   "reference_tests": {"focused": "GREEN", "treatment_calls": 0, "native_equivalence_mode": "observer_only"},

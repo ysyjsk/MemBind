@@ -17,7 +17,7 @@
     "A13": {"status": "CONDITIONAL_ONLY", "evidence": ["m2_theory.py"], "affected_theorems": ["T7", "T8"]},
     "A14": {"status": "CONDITIONAL_ONLY", "evidence": ["m2_theory.py"], "affected_theorems": ["T8"]},
     "A15": {"status": "SUPPORTED_BY_REFERENCE_MODEL", "evidence": ["propagation.py", "nonterminating_trace_test"], "affected_theorems": ["T4", "T5", "T6"]},
-    "A16": {"status": "PENDING_P7", "evidence": ["theory/native_continuation_refinement.md", "ignored_id_test"], "affected_theorems": ["T6b"]}
+    "A16": {"status": "SUPPORTED_WITH_GUARD", "evidence": ["theory/native_continuation_refinement.md", "continuation.py", "ignored_id_test", "continuation_source_hash_audit"], "guard": "pre_process_episode_data; no saga/community; embeddings complete; exact K; Neo4j epoch/frontier sealed", "affected_theorems": ["T6b"]}
   },
   "orphan_assumptions": [],
   "implicit_assumptions": [],

@@ -1,0 +1,115 @@
+{
+  "schema_version": "membind.v7.r1-r3-protocol-freeze.v2",
+  "status": "FROZEN_BEFORE_REAL_GRAPHITI_CAMPAIGN",
+  "frozen_at": "2026-08-25",
+  "provider": {
+    "authority": "siliconflow-openai-compatible-v1",
+    "base_url": "https://api.siliconflow.cn/v1",
+    "construction_model": "Qwen/Qwen3-32B",
+    "embedding_model": "Qwen/Qwen3-Embedding-0.6B",
+    "embedding_dimension": 1024,
+    "temperature": 0.0,
+    "requested_max_tokens": 8192,
+    "http_timeout_seconds": 900.0,
+    "sdk_max_retries": 0,
+    "hard_attempt_limit_per_request": 1,
+    "structured_output_mode": "json_schema",
+    "replay_allowed": "UNKNOWN",
+    "response_replay": false
+  },
+  "infrastructure_reauthorization": {
+    "previous_terminal_state": "V7_THEORY_OR_SYSTEM_BLOCKED",
+    "previous_protocol_sha256": "2e475cfd7df57688a8d10d3ce5e4148b599666c309ec7d635bf046978b095904",
+    "previous_terminal_manifest_sha256": "d0da4c6bd04e6dfa71310f81c022a8d39b5117fe4511e48d4857464faac58e27",
+    "changed_fields": [
+      "provider.requested_max_tokens"
+    ],
+    "diagnostic_probe_sha256": [
+      "e02bbb3c67b200f8067e69d2aa9a551e9680b16a71e11ae97c036d5fdd328d98",
+      "6446c00c0fa6a4ed01a84ab1e42ef5aac45400f4fcc7b7d16d0ca616d93c79e5"
+    ],
+    "diagnostic_probe_status": [
+      "PASS",
+      "PASS"
+    ],
+    "diagnostic_contract": "same context-0 source-0 Graphiti entity extraction schema; one HTTP attempt; no Neo4j; no embedding; no response replay; secret-free artifacts"
+  },
+  "backend": {
+    "provider": "neo4j",
+    "uri": "bolt://localhost:7687",
+    "isolation": "fresh_group_namespace_per_block",
+    "concurrent_external_writes_allowed": false
+  },
+  "workload": {
+    "dataset": "ai-hyz/MemoryAgentBench",
+    "dataset_revision": "7ea066982b140a19337e17e60d45d4076e042faf",
+    "local_file_sha256": "97fd80207f3419fc57c3684db824334224546d6bdd62c17ef52cd116eec9ffc8",
+    "r1_r2": {
+      "context_index": 0,
+      "source_start": 0,
+      "source_count": 2
+    },
+    "r3_blocks": [
+      {
+        "block_id": "R3-A",
+        "context_index": 1,
+        "source_start": 0,
+        "source_count": 6,
+        "seed": 17
+      },
+      {
+        "block_id": "R3-B",
+        "context_index": 2,
+        "source_start": 0,
+        "source_count": 6,
+        "seed": 23
+      }
+    ]
+  },
+  "selected_characterization_region": {
+    "operator": "node_cosine",
+    "seam": "graphiti.add_episode.pre_process_episode_data",
+    "operator_guard": "exact filtered full scan; complete domain and score; strict cutoff separation; no boundary tie",
+    "continuation_guard": "no saga; no communities; all node/edge embeddings complete; Neo4j; exact K; sealed backend epoch and publication frontier"
+  },
+  "thresholds": {
+    "false_stable_max": 0,
+    "false_unaffected_max": 0,
+    "csp_min": 0.1,
+    "sca_work_max": 4.0,
+    "affected_fraction_max": 0.5,
+    "reconvergence_min": 0.25,
+    "required_headroom_floor_ns": 100000000,
+    "required_headroom_ratio": 0.1,
+    "stable_prediction_min": 1,
+    "gross_saved_cp_min_ns": 1
+  },
+  "cost_rules": {
+    "baseline": "semantic DAG longest path with phase/read fork-join nodes",
+    "gross": "zero only soundly stable selected-region work and recompute longest path",
+    "costed": "add certificate and repair upper-bound nodes once and recompute longest path",
+    "resource_units": [
+      "wall_ns",
+      "provider_tokens",
+      "gpu_seconds",
+      "embedding_items",
+      "database_reads",
+      "cpu_db_work"
+    ],
+    "cross_resource_ratios": false
+  },
+  "stopping_rules": {
+    "instrumentation_bug": "invalidate block and start a new fresh campaign root",
+    "any_false_stable": "select NULL",
+    "any_false_unaffected": "select NULL",
+    "core_assumption_unknown": "select NULL",
+    "gate_b_failure": "select NULL",
+    "gate_c_failure": "select NULL",
+    "gate_d_failure": "select NULL",
+    "method_switch_after_gate": false
+  },
+  "treatment_authorized": false,
+  "old_read_return_allowed": false,
+  "native_demand_skip_allowed": false,
+  "repair_apply_allowed": false
+}

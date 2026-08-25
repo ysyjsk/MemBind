@@ -10,9 +10,16 @@ from __future__ import annotations
 
 import argparse
 import importlib
+import sys
 from pathlib import Path
 
+_PROJECT_ROOT = Path(__file__).resolve().parents[1]
+if str(_PROJECT_ROOT / "src") not in sys.path:
+    sys.path.insert(0, str(_PROJECT_ROOT / "src"))
+
 from saturated_fixed_work_baseline_v1_3.membind_v7.live_runner import (
+    SILICONFLOW_CONSTRUCTION_MODEL,
+    SILICONFLOW_EMBEDDING_MODEL,
     V7LiveConfig,
     run_v7_live,
 )
@@ -28,8 +35,8 @@ def main() -> int:
     parser.add_argument("--api-key-env", default="SILICONFLOW_API_KEY")
     parser.add_argument("--construction-base-url", default="https://api.siliconflow.cn/v1")
     parser.add_argument("--embedding-base-url", default="https://api.siliconflow.cn/v1")
-    parser.add_argument("--construction-model", default="")
-    parser.add_argument("--embedding-model", default="")
+    parser.add_argument("--construction-model", default=SILICONFLOW_CONSTRUCTION_MODEL)
+    parser.add_argument("--embedding-model", default=SILICONFLOW_EMBEDDING_MODEL)
     parser.add_argument("--source-count", type=int, default=2)
     parser.add_argument("--adapter", help="live adapter as module:function; required with --live")
     args = parser.parse_args()

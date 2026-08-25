@@ -8,11 +8,11 @@ paired with an executable negative/positive test in
 |---|---|---|---|
 | T1 | every Read inherits one SnapshotToken; A2 forbids writes | mixed versions; write before seam | conditional |
 | T2 | projection equality by primitive-local delta extractor | omit embedding/epoch field | scoped conditional |
-| T3 | witness domain, cutoff, tie and rank invariants | short result; boundary tie; missing BM25 contract | guarded conditional |
+| T3 | complete domain, phantom candidates, cutoff, tie, rank and epoch invariants | insert outside old domain; deletion of kth; boundary tie; epoch change; missing BM25 contract | guarded conditional |
 | T4 | topological induction over six Dep kinds | previous-window or predecessor change | conditional |
-| T5 | finite worklist plus canonical-output reconvergence | output-changing branch; cycle/max bound | conditional |
+| T5 | finite worklist plus actual-repair canonical-output reconvergence | missing repair result; output-changing branch; cycle/max bound | conditional |
 | T6 | memo-free counterpart expansion and canonical trace induction | order-only divergence; UNKNOWN treated as stable | conditional |
-| T6b | step-local equivariance over continuation-observable K | ignored endpoint UUID; stale frontier; hidden saga read | P7 pending |
+| T6b | step-local equivariance over exact continuation-observable K | ignored endpoint UUID; stale frontier; missing embedding; hidden saga/community work | closed for guarded default tail; other tails UNKNOWN |
 
 `Complete_rho` is never inferred from a final-state coincidence. Unknown backend
 contracts are represented explicitly and cause fresh execution. The d=1

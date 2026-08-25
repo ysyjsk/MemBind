@@ -5,13 +5,20 @@ from __future__ import annotations
 from dataclasses import dataclass
 from typing import Any, Mapping
 
+from .semantics import alpha_equivalent
+
+
+# ``None`` is a valid operator result.  A separate identity sentinel is
+# therefore required to represent a repair that has not been executed.
+MISSING_REPAIR = object()
+
 
 @dataclass(frozen=True, slots=True)
 class PropagationNode:
     node_id: str
     output: Any
     dirty: bool = False
-    repaired_output: Any = None
+    repaired_output: Any = MISSING_REPAIR
     unknown: bool = False
 
 
@@ -21,6 +28,7 @@ class PropagationResult:
     affected: frozenset[str]
     unaffected: frozenset[str]
     iterations: int
+    unknown: frozenset[str] = frozenset()
 
 
 def propagate(
@@ -54,6 +62,7 @@ def propagate(
     dirty = {node_id for node_id, node in nodes.items() if node.dirty or node.unknown}
     queue = list(dirty)
     repaired: set[str] = set()
+    unknown: set[str] = set()
     affected: set[str] = set(dirty)
     iterations = 0
     while queue:
@@ -62,17 +71,27 @@ def propagate(
         if max_repairs is not None and iterations > max_repairs:
             raise ValueError("propagation did not terminate within bound")
         node = nodes[current]
-        repaired.add(current)
-        old = node.output
-        new = old if node.repaired_output is None else node.repaired_output
-        if new == old and not node.unknown:
+        if node.unknown:
+            unknown.add(current)
+            for successor in successors[current]:
+                if successor not in affected:
+                    affected.add(successor)
+                    queue.append(successor)
             continue
+        if node.dirty and node.repaired_output is not MISSING_REPAIR:
+            repaired.add(current)
+            if alpha_equivalent(node.output, node.repaired_output):
+                continue
+        else:
+            # A dirty node without an actual repair result, or a clean
+            # successor reached after a changed predecessor, is unknown.
+            unknown.add(current)
         for successor in successors[current]:
             if successor not in affected:
                 affected.add(successor)
                 queue.append(successor)
     unaffected = set(nodes) - affected
-    return PropagationResult(frozenset(repaired), frozenset(affected), frozenset(unaffected), iterations)
+    return PropagationResult(frozenset(repaired), frozenset(affected), frozenset(unaffected), iterations, frozenset(unknown))
 
 
-__all__ = ["PropagationNode", "PropagationResult", "propagate"]
+__all__ = ["MISSING_REPAIR", "PropagationNode", "PropagationResult", "propagate"]

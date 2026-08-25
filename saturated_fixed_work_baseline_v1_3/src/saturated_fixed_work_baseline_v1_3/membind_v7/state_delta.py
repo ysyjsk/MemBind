@@ -13,11 +13,16 @@ class DeltaChange:
     changed_fields: frozenset[str] = frozenset()
     before: Mapping[str, Any] = field(default_factory=dict)
     after: Mapping[str, Any] = field(default_factory=dict)
+    operation: str = "update"
 
     def __post_init__(self) -> None:
         if not self.kind or not self.key:
             raise ValueError("delta change kind and key are required")
         object.__setattr__(self, "changed_fields", frozenset(self.changed_fields))
+        operation = str(self.operation).lower()
+        if operation not in {"insert", "create", "add", "update", "delete", "remove"}:
+            raise ValueError("delta change operation is not recognized")
+        object.__setattr__(self, "operation", operation)
 
 
 @dataclass(frozen=True, slots=True)
@@ -72,6 +77,16 @@ def complete_delta(delta: StateDelta, spec: ObservableSpec) -> DeltaCompleteness
     """Check completeness only for ``spec``; unrelated UNKNOWN must not poison it."""
 
     relevant = tuple(change for change in delta.changes if spec.kind is None or change.kind == spec.kind)
+    changed_epochs = frozenset(delta.environment_changes & spec.required_epochs)
+    if changed_epochs:
+        # An epoch transition changes the observable contract even when no
+        # entity row changed.  The delta names the transition but does not
+        # prove that the old and new operator semantics are equivalent.
+        return DeltaCompleteness(
+            "UNKNOWN",
+            missing_epochs=changed_epochs,
+            relevant_changes=relevant,
+        )
     changed_fields = frozenset(field for change in relevant for field in change.changed_fields)
     missing = frozenset(spec.required_fields - changed_fields) if relevant else frozenset()
     # For a changed field, after-values are required to establish exact native
@@ -93,6 +108,10 @@ def apply_state(state: Mapping[str, Any], delta: StateDelta) -> dict[str, Any]:
         if change.kind != "node":
             continue
         nodes = dict(result.get("nodes", {}))
+        if change.operation in {"delete", "remove"}:
+            nodes.pop(change.key, None)
+            result["nodes"] = nodes
+            continue
         current = dict(nodes.get(change.key, {}))
         current.update(change.after)
         nodes[change.key] = current

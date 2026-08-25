@@ -16,7 +16,7 @@ not authorize a treatment runtime.
 | hybrid/RRF | UNKNOWN | BM25 channel and RRF tie order are not closed | always UNKNOWN/fresh |
 | ANN | UNKNOWN | no backend proof in pinned contract | always UNKNOWN/fresh |
 | previous episode retrieval | SUPPORTED_WITH_GUARD | selector result flows into node, edge and attribute extraction | selector/window/order/projection/digest is a required state dependency |
-| `_process_episode_data` seam | UNKNOWN | bulk may embed before writes; saga can read/write afterward | M1 requires continuation K refinement; otherwise move seam/block |
+| guarded `_process_episode_data` seam | SUPPORTED_WITH_GUARD | embeddings are already produced by normal node/edge construction; exact K and pinned bulk/write proof close the default no-saga/no-community tail | missing embedding, saga, community, epoch/frontier or K field -> UNKNOWN/native fallback |
 | closed M2 Apply | UNSUPPORTED | embedding/bulk/saga reads are not a closed plan | M2 blocked; native continuation remains legal |
 | live provider replay | UNKNOWN | V6 exact identity/single-consume is not a semantic provider contract | fresh response unless deployment declaration exists |
 
@@ -24,10 +24,12 @@ not authorize a treatment runtime.
 
 `_process_episode_data` calls `add_nodes_and_edges_bulk` with the embedder,
 then may perform saga get/create, previous-episode lookup, NEXT_EPISODE and
-HAS_EPISODE writes, and saga save. `add_nodes_and_edges_bulk_tx` generates
-missing node/edge embeddings before the four bulk writes inside one
-`execute_write` callback. Therefore this path is a native continuation/publish
-seam candidate, not an already closed staged Apply.
+HAS_EPISODE writes, and saga save. Normal node/edge construction generates
+embeddings before this point. The selected guard verifies that none are
+missing, and excludes saga/community paths. Under that guard the remaining
+tail derives MENTIONS edges and performs four UUID-keyed writes in one native
+`execute_write` callback. This closes T6b for the guarded native continuation;
+it does not turn the tail into a closed staged Apply.
 
 Node and edge cosine search are filtered exact full scans. The source has no
 secondary UUID tie contract. BM25, hybrid/RRF and ANN are consequently

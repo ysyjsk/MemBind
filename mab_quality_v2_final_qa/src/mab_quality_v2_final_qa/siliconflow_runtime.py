@@ -71,12 +71,17 @@ def _production_components() -> RuntimeComponents:
     from paper_eval.membind_v1.admission import AdmittedLLMClient
     from paper_eval.membind_v1.admission import RequestAdmission
 
-    def openai_client_factory(*, api_key: str, base_url: str) -> Any:
+    def openai_client_factory(
+        *,
+        api_key: str,
+        base_url: str,
+        timeout_seconds: float = SILICONFLOW_HTTP_TIMEOUT_SECONDS,
+    ) -> Any:
         timeout = httpx.Timeout(
             connect=10.0,
-            read=SILICONFLOW_HTTP_TIMEOUT_SECONDS,
-            write=SILICONFLOW_HTTP_TIMEOUT_SECONDS,
-            pool=SILICONFLOW_HTTP_TIMEOUT_SECONDS,
+            read=timeout_seconds,
+            write=timeout_seconds,
+            pool=timeout_seconds,
         )
         http_client = httpx.AsyncClient(
             timeout=timeout, follow_redirects=False, trust_env=False
@@ -104,7 +109,12 @@ def _production_components() -> RuntimeComponents:
     )
 
 
-def _public_identity(topology: RuntimeTopology) -> dict[str, object]:
+def _public_identity(
+    topology: RuntimeTopology,
+    *,
+    requested_max_tokens: int,
+    http_timeout_seconds: float,
+) -> dict[str, object]:
     if topology.provider != SILICONFLOW_PROVIDER:
         raise ValueError("SILICONFLOW_RUNTIME_PROVIDER_MISMATCH")
     return {
@@ -113,7 +123,7 @@ def _public_identity(topology: RuntimeTopology) -> dict[str, object]:
         "construction": {
             "base_url": topology.construction.base_url,
             "served_model_id": topology.construction.model,
-            "requested_max_tokens": REQUESTED_MAX_TOKENS,
+            "requested_max_tokens": requested_max_tokens,
             "structured_output_mode": "json_schema",
             "enable_thinking": False,
         },
@@ -130,8 +140,9 @@ def _public_identity(topology: RuntimeTopology) -> dict[str, object]:
         "neo4j": {"uri": topology.neo4j_uri},
         "graphiti_max_coroutines": 8,
         "global_llm_admission_k": 2,
+        "logical_retry_policy": "single_attempt_direct_no_tenacity",
         "provider_cache_salt_sent": False,
-        "http_timeout_seconds": SILICONFLOW_HTTP_TIMEOUT_SECONDS,
+        "http_timeout_seconds": http_timeout_seconds,
     }
 
 
@@ -140,9 +151,29 @@ def _build_shared(
     env: Mapping[str, str],
     request_id_prefix: str,
     components: RuntimeComponents | None,
+    requested_max_tokens: int = REQUESTED_MAX_TOKENS,
+    http_timeout_seconds: float = SILICONFLOW_HTTP_TIMEOUT_SECONDS,
+    response_observer: Any | None = None,
 ) -> SiliconFlowRuntime:
+    if (
+        isinstance(requested_max_tokens, bool)
+        or not isinstance(requested_max_tokens, int)
+        or requested_max_tokens <= 0
+    ):
+        raise ValueError("SILICONFLOW_REQUESTED_MAX_TOKENS_INVALID")
+    if (
+        isinstance(http_timeout_seconds, bool)
+        or not isinstance(http_timeout_seconds, (int, float))
+        or http_timeout_seconds <= 0
+    ):
+        raise ValueError("SILICONFLOW_HTTP_TIMEOUT_INVALID")
+    http_timeout_seconds = float(http_timeout_seconds)
     topology = RuntimeTopology.from_env(env)
-    public_identity = _public_identity(topology)
+    public_identity = _public_identity(
+        topology,
+        requested_max_tokens=requested_max_tokens,
+        http_timeout_seconds=http_timeout_seconds,
+    )
     construction_key = _required(env, "CONSTRUCTION_LLM_API_KEY")
     embedding_key = _required(env, "EMBEDDING_API_KEY")
     neo4j_user = _required(env, "NEO4J_USER")
@@ -161,21 +192,47 @@ def _build_shared(
         small_model=topology.construction.model,
         base_url=topology.construction.base_url,
         temperature=0.0,
-        max_tokens=REQUESTED_MAX_TOKENS,
+        max_tokens=requested_max_tokens,
     )
     raw_llm = selected.qwen_client_type(
         config=llm_config,
-        max_tokens=REQUESTED_MAX_TOKENS,
+        max_tokens=requested_max_tokens,
         structured_output_mode="json_schema",
         vllm_options_enabled=False,
         client=selected.openai_client_factory(
-            api_key=construction_key, base_url=topology.construction.base_url
+            api_key=construction_key,
+            base_url=topology.construction.base_url,
+            timeout_seconds=http_timeout_seconds,
         ),
     )
+    # Graphiti's generic client wraps application/JSON errors in a tenacity
+    # retry decorator.  V7's provider envelope is explicitly one HTTP attempt;
+    # replace only this SiliconFlow instance's wrapper with a direct call.  The
+    # historical local-vLLM runners retain their upstream retry behavior.
+    native_generate_response = raw_llm._generate_response
+
+    async def _single_attempt_generate_response(
+        messages: Any,
+        response_model: Any = None,
+        max_tokens: int = 4096,
+        model_size: Any = None,
+    ) -> Any:
+        kwargs: dict[str, Any] = {
+            "messages": messages,
+            "response_model": response_model,
+            "max_tokens": max_tokens,
+        }
+        if model_size is not None:
+            kwargs["model_size"] = model_size
+        return await native_generate_response(**kwargs)
+
+    raw_llm._generate_response_with_retry = _single_attempt_generate_response
     raw_transport = getattr(raw_llm, "client", None)
     if raw_transport is None:
         raise ValueError("SILICONFLOW_CONSTRUCTION_TRANSPORT_UNAVAILABLE")
-    raw_llm.client = SiliconFlowOpenAITransport(raw_transport)
+    raw_llm.client = SiliconFlowOpenAITransport(
+        raw_transport, response_observer=response_observer
+    )
 
     embedder_config = selected.embedder_config_type(
         api_key=embedding_key,
@@ -186,7 +243,9 @@ def _build_shared(
     embedder = selected.embedder_type(
         embedder_config,
         client=selected.openai_client_factory(
-            api_key=embedding_key, base_url=topology.embedding.base_url
+            api_key=embedding_key,
+            base_url=topology.embedding.base_url,
+            timeout_seconds=http_timeout_seconds,
         ),
     )
     reranker = selected.reranker_type(llm_config, client=raw_llm.client)
@@ -232,11 +291,19 @@ def build_siliconflow_u0_runtime(
     env: Mapping[str, str],
     request_id_prefix: str,
     components: RuntimeComponents | None = None,
+    requested_max_tokens: int = REQUESTED_MAX_TOKENS,
+    http_timeout_seconds: float = SILICONFLOW_HTTP_TIMEOUT_SECONDS,
+    response_observer: Any | None = None,
 ) -> SiliconFlowRuntime:
     """Build the U0 Graphiti runtime against exact SiliconFlow model IDs."""
 
     return _build_shared(
-        env=env, request_id_prefix=request_id_prefix, components=components
+        env=env,
+        request_id_prefix=request_id_prefix,
+        components=components,
+        requested_max_tokens=requested_max_tokens,
+        http_timeout_seconds=http_timeout_seconds,
+        response_observer=response_observer,
     )
 
 

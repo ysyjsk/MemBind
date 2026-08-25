@@ -1,11 +1,23 @@
 {
-  "schema_version": "membind.v7.method-selection.v1",
-  "status": "BLOCKED",
+  "schema_version": "membind.v7.method-selection.v3",
+  "status": "NOT_EVALUATED_SYSTEM_BLOCKED",
   "authorized": false,
   "treatment_authorized": false,
   "selected_method": null,
   "selected_operator": null,
   "selected_seam": null,
-  "reason": "PIN_VERIFICATION mismatch and P7 native-continuation refinement UNKNOWN; R3 synthetic observer evidence is not a Graphiti opportunity gate.",
-  "next_action": "Run exact-pin P7/R1-R3 campaign and select one legal terminal method only after Gate A-E."
+  "gates": {
+    "A": "NOT_EVALUATED",
+    "B": "NOT_EVALUATED",
+    "C": "NOT_EVALUATED",
+    "D": "NOT_EVALUATED",
+    "E": "NOT_EVALUATED"
+  },
+  "reason_codes": [
+    "REAL_R1_INCOMPLETE",
+    "SILICONFLOW_STRUCTURED_EXTRACTION_TIMEOUT"
+  ],
+  "terminal_artifact": "artifacts/v7-system-blocked-20260825-001",
+  "terminal_manifest_sha256": "d0da4c6bd04e6dfa71310f81c022a8d39b5117fe4511e48d4857464faac58e27",
+  "next_action": "Start a new preregistered campaign only after the frozen structured-extraction provider can complete R1; do not run treatment."
 }

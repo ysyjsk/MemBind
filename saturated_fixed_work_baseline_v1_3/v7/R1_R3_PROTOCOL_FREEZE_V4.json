@@ -1,0 +1,150 @@
+{
+  "schema_version": "membind.v7.r1-r3-protocol-freeze.v4",
+  "status": "FROZEN_BEFORE_REAL_GRAPHITI_CAMPAIGN",
+  "frozen_at": "2026-08-25",
+  "provider": {
+    "authority": "siliconflow-openai-compatible-v1",
+    "base_url": "https://api.siliconflow.cn/v1",
+    "construction_model": "Qwen/Qwen3-32B",
+    "embedding_model": "Qwen/Qwen3-Embedding-0.6B",
+    "embedding_dimension": 1024,
+    "temperature": 0.0,
+    "requested_max_tokens": 16384,
+    "http_timeout_seconds": 900.0,
+    "sdk_max_retries": 0,
+    "hard_attempt_limit_per_request": 1,
+    "structured_output_mode": "json_schema",
+    "replay_allowed": "UNKNOWN",
+    "response_replay": false
+  },
+  "infrastructure_reauthorization": {
+    "previous_terminal_state": "V7_THEORY_OR_SYSTEM_BLOCKED",
+    "previous_protocol_sha256": "a942974ca0b12f4b9dc72d5a7e5678ba3f6925eee96e91cfc95f14f2d5fa3191",
+    "previous_terminal_manifest_sha256": "d0da4c6bd04e6dfa71310f81c022a8d39b5117fe4511e48d4857464faac58e27",
+    "changed_fields": [
+      "provider.requested_max_tokens",
+      "observer_harness.source_sha256"
+    ],
+    "diagnostic_probe_sha256": [
+      "e02bbb3c67b200f8067e69d2aa9a551e9680b16a71e11ae97c036d5fdd328d98",
+      "6446c00c0fa6a4ed01a84ab1e42ef5aac45400f4fcc7b7d16d0ca616d93c79e5"
+    ],
+    "diagnostic_probe_status": [
+      "PASS",
+      "PASS"
+    ],
+    "invalid_attempt": {
+      "run_id": "v7-real-observer-v3-20260825-005",
+      "attempt_journal_sha256": "8faf160a4d0de54bd49818f04021e93b829e08e233f2487ef02a9eefd75ad43a",
+      "failure_artifact_sha256": "824b0b554ff74a35f4177a4d69be7e1fede12236225dee48953405cd5c00008b",
+      "completed_block_count": 1,
+      "failure_class": "INFRASTRUCTURE_PROVIDER_STRUCTURED_OUTPUT_INVALID",
+      "error_type": "json.decoder.JSONDecodeError",
+      "finish_reason": "length",
+      "completion_tokens": 8192,
+      "previous_requested_max_tokens": 8192,
+      "gate_outcome": "NOT_EVALUATED",
+      "treatment_calls": 0,
+      "response_replay_calls": 0
+    },
+    "diagnostic_contract": "same frozen workload, model, timeout and single-attempt transport; raise only requested_max_tokens from 8192 to 16384 after durable finish_reason=length at exactly 8192 completion tokens; retain sanitized metadata and source binding; no prompt, response, key, replay or treatment retention"
+  },
+  "observer_harness": {
+    "schema_version": "membind.v7.observer-harness-freeze.v1",
+    "source_sha256": {
+      "mab_quality_v2_final_qa/src/mab_quality_v2_final_qa/live_adapters.py": "88a39fd2c557d2e398e0a5f36279f7d82da025b190f7c14728fcd2e852f42ef3",
+      "mab_quality_v2_final_qa/src/mab_quality_v2_final_qa/siliconflow_runtime.py": "214c044fa81a99e4354613962aeda9ca6c04191308342d6e11fa4950cb7bc3e1",
+      "membind-validation/src/native_characterization_instrumentation.py": "c0be9ad8bf1acf5663b21523242c92c5dbba7f3bc7c01b4edd0d5477e73b16ac",
+      "membind-validation/src/native_characterization_tracing.py": "999e3f70780a3d3bc48d0d65a50c86b90010239b47d08dfe20c55808738f64a0",
+      "saturated_fixed_work_baseline_v1_3/scripts/run_v7_observer_campaign.py": "5c701ec37fcd97665067004f03a517420dae06b80430ac720eebc0438e35dd8e",
+      "saturated_fixed_work_baseline_v1_3/src/saturated_fixed_work_baseline_v1_3/membind_v7/certificates.py": "ee15f5629b3317d885930a98ab2b8b8d54e9804ea6aee4f18170839000dae24d",
+      "saturated_fixed_work_baseline_v1_3/src/saturated_fixed_work_baseline_v1_3/membind_v7/characterization.py": "68300af98f3579e4f321d519ff02ad47850b1fa2502d20819e33d6b79a579c1b",
+      "saturated_fixed_work_baseline_v1_3/src/saturated_fixed_work_baseline_v1_3/membind_v7/continuation.py": "c362cceba5d695dd43b6fda026b3cfe782c2b4edf8276b8580bbb02492d3a6c4",
+      "saturated_fixed_work_baseline_v1_3/src/saturated_fixed_work_baseline_v1_3/membind_v7/gates.py": "8b8151d100edc9df370852a63b0403f9558df63ea6f5239ed5c1f6bc5d0bca19",
+      "saturated_fixed_work_baseline_v1_3/src/saturated_fixed_work_baseline_v1_3/membind_v7/graphiti_observer.py": "3214ba84efd2bd949aa1bd870bbd61390187525d384fa8c2d555c4149e8ef656",
+      "saturated_fixed_work_baseline_v1_3/src/saturated_fixed_work_baseline_v1_3/membind_v7/observer_campaign.py": "728fd735aaef2628fd73a5dd469fe4649a9d821a71f77ec7591291d80013901a",
+      "saturated_fixed_work_baseline_v1_3/src/saturated_fixed_work_baseline_v1_3/membind_v7/opportunity.py": "8057cd54ce8426c9dae308ef405aaf88b477a08a4c1ab3f07892cbe2588b7574",
+      "saturated_fixed_work_baseline_v1_3/src/saturated_fixed_work_baseline_v1_3/membind_v7/pins.py": "a84854d046c619a50e702a1269dcfb71c8b065d3aa72be1c36b16de1cc9b3c30",
+      "saturated_fixed_work_baseline_v1_3/src/saturated_fixed_work_baseline_v1_3/membind_v7/state_delta.py": "acd3e61de41656b353afc31f2af9fe9258f250295423d033ac1fd50430597b67"
+    }
+  },
+  "backend": {
+    "provider": "neo4j",
+    "uri": "bolt://localhost:7687",
+    "isolation": "fresh_group_namespace_per_block",
+    "concurrent_external_writes_allowed": false
+  },
+  "workload": {
+    "dataset": "ai-hyz/MemoryAgentBench",
+    "dataset_revision": "7ea066982b140a19337e17e60d45d4076e042faf",
+    "local_file_sha256": "97fd80207f3419fc57c3684db824334224546d6bdd62c17ef52cd116eec9ffc8",
+    "r1_r2": {
+      "context_index": 0,
+      "source_start": 0,
+      "source_count": 2
+    },
+    "r3_blocks": [
+      {
+        "block_id": "R3-A",
+        "context_index": 1,
+        "source_start": 0,
+        "source_count": 6,
+        "seed": 17
+      },
+      {
+        "block_id": "R3-B",
+        "context_index": 2,
+        "source_start": 0,
+        "source_count": 6,
+        "seed": 23
+      }
+    ]
+  },
+  "selected_characterization_region": {
+    "operator": "node_cosine",
+    "seam": "graphiti.add_episode.pre_process_episode_data",
+    "operator_guard": "exact filtered full scan; complete domain and score; strict cutoff separation; no boundary tie",
+    "continuation_guard": "no saga; no communities; all node/edge embeddings complete; Neo4j; exact K; sealed backend epoch and publication frontier"
+  },
+  "thresholds": {
+    "false_stable_max": 0,
+    "false_unaffected_max": 0,
+    "csp_min": 0.1,
+    "sca_work_max": 4.0,
+    "affected_fraction_max": 0.5,
+    "reconvergence_min": 0.25,
+    "required_headroom_floor_ns": 100000000,
+    "required_headroom_ratio": 0.1,
+    "stable_prediction_min": 1,
+    "gross_saved_cp_min_ns": 1
+  },
+  "cost_rules": {
+    "baseline": "source-bound semantic DAG longest path with pinned phase chain and node-read fork/join nodes",
+    "gross": "zero only soundly stable selected-region work and recompute longest path with path switching",
+    "costed": "add explicit certificate and repair upper-bound nodes once and recompute longest path",
+    "resource_units": [
+      "wall_ns",
+      "provider_tokens",
+      "gpu_seconds",
+      "embedding_items",
+      "database_reads",
+      "cpu_db_work"
+    ],
+    "cross_resource_ratios": false
+  },
+  "stopping_rules": {
+    "instrumentation_bug": "invalidate block and start a new fresh campaign root",
+    "provider_structured_output_invalid": "invalidate attempt; retain sanitized finish metadata; replacement requires fresh run id and namespace",
+    "any_false_stable": "select NULL",
+    "any_false_unaffected": "select NULL",
+    "core_assumption_unknown": "select NULL",
+    "gate_b_failure": "select NULL",
+    "gate_c_failure": "select NULL",
+    "gate_d_failure": "select NULL",
+    "method_switch_after_gate": false
+  },
+  "treatment_authorized": false,
+  "old_read_return_allowed": false,
+  "native_demand_skip_allowed": false,
+  "repair_apply_allowed": false
+}

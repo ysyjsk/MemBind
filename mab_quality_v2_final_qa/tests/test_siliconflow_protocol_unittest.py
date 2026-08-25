@@ -9,7 +9,10 @@ from types import SimpleNamespace
 from unittest import mock
 
 from mab_quality_v2_final_qa.autoresearch import select_probe_qa
-from mab_quality_v2_final_qa.live_adapters import normalize_siliconflow_chat_request
+from mab_quality_v2_final_qa.live_adapters import (
+    SiliconFlowChatCompletions,
+    normalize_siliconflow_chat_request,
+)
 from mab_quality_v2_final_qa.live_workflow import (
     _execution_methods,
     _overlay_siliconflow_env,
@@ -126,6 +129,11 @@ class SiliconFlowRuntimeTests(unittest.TestCase):
                 self.config = config
                 self.kwargs = kwargs
                 self.client = Transport()
+                self.raw_calls = 0
+
+            async def _generate_response(self, **_kwargs: object):
+                self.raw_calls += 1
+                return {}
 
             async def generate_response(self, *_args: object, **_kwargs: object):
                 return {}
@@ -204,8 +212,81 @@ class SiliconFlowRuntimeTests(unittest.TestCase):
         self.assertNotIn("test-secret", json.dumps(runtime.public_identity))
         self.assertIs(runtime.graphiti.llm_client, runtime.admitted_llm)
 
+        observer_runtime = build_siliconflow_u0_runtime(
+            env=env,
+            request_id_prefix="mab-test-v7-observer",
+            components=components,
+            requested_max_tokens=8_192,
+            http_timeout_seconds=600.0,
+        )
+        self.assertEqual(
+            observer_runtime.raw_llm.config.kwargs["max_tokens"], 8_192
+        )
+        self.assertEqual(observer_runtime.raw_llm.kwargs["max_tokens"], 8_192)
+        self.assertEqual(
+            observer_runtime.public_identity["construction"]["requested_max_tokens"],
+            8_192,
+        )
+        self.assertEqual(
+            observer_runtime.public_identity["http_timeout_seconds"], 600.0
+        )
+        self.assertEqual(
+            observer_runtime.raw_llm.kwargs["client"].timeout_seconds, 600.0
+        )
+        assert observer_runtime.public_identity["logical_retry_policy"] == (
+            "single_attempt_direct_no_tenacity"
+        )
+        self.assertFalse(
+            hasattr(observer_runtime.raw_llm._generate_response_with_retry, "retry")
+        )
+        import asyncio
+
+        asyncio.run(
+            observer_runtime.raw_llm._generate_response_with_retry(
+                [], None, 1, None
+            )
+        )
+        self.assertEqual(observer_runtime.raw_llm.raw_calls, 1)
+
 
 class SiliconFlowRequestTests(unittest.TestCase):
+    def test_chat_transport_observer_records_only_finish_usage_size_and_digest(
+        self,
+    ) -> None:
+        class Completion:
+            async def create(self, **_kwargs: object) -> object:
+                return SimpleNamespace(
+                    choices=[
+                        SimpleNamespace(
+                            finish_reason="length",
+                            message=SimpleNamespace(content="private response body"),
+                        )
+                    ],
+                    usage=SimpleNamespace(prompt_tokens=123, completion_tokens=8192),
+                )
+
+        observations: list[dict[str, object]] = []
+        transport = SiliconFlowChatCompletions(
+            Completion(), response_observer=observations.append
+        )
+        import asyncio
+
+        asyncio.run(
+            transport.create(
+                model=CHAT_MODEL,
+                messages=[{"role": "user", "content": "private prompt"}],
+            )
+        )
+        self.assertEqual(len(observations), 1)
+        self.assertEqual(observations[0]["finish_reason"], "length")
+        self.assertEqual(observations[0]["prompt_tokens"], 123)
+        self.assertEqual(observations[0]["completion_tokens"], 8192)
+        self.assertEqual(observations[0]["content_bytes"], 21)
+        self.assertEqual(len(str(observations[0]["content_sha256"])), 64)
+        encoded = json.dumps(observations[0], sort_keys=True)
+        self.assertNotIn("private prompt", encoded)
+        self.assertNotIn("private response body", encoded)
+
     def test_chat_request_maps_thinking_and_removes_vllm_cache_salt(self) -> None:
         request = normalize_siliconflow_chat_request(
             {

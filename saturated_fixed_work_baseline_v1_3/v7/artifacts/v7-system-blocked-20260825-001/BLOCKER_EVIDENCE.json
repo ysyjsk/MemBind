@@ -1,0 +1,80 @@
+{
+  "attempt_count": 3,
+  "attempts": [
+    {
+      "attempt_validity": "INVALID_FOR_R1_R3_GATES",
+      "completed_block_count": 0,
+      "error_message_sha256": "98123ccc69040363d9434252c4fad917e2548c4123cc330f2d891bdc4eb30865",
+      "error_type": "openai.APITimeoutError",
+      "failure_class": "INFRASTRUCTURE_PROVIDER_TIMEOUT",
+      "gate_outcome": "NOT_EVALUATED",
+      "replacement_of": null,
+      "response_replay_calls": 0,
+      "run_id": "v7-real-observer-20260825-004",
+      "selected_method": null,
+      "treatment_calls": 0
+    },
+    {
+      "attempt_validity": "INVALID_FOR_R1_R3_GATES",
+      "completed_block_count": 0,
+      "error_message_sha256": "e66d9deace46d3e8d9d2c9159380a19f96697d9075848f399d3537a51174f860",
+      "error_type": "graphiti_core.errors.NodeNotFoundError",
+      "failure_class": "OBSERVER_RUNTIME_FAILURE",
+      "gate_outcome": "NOT_EVALUATED",
+      "replacement_of": "v7-real-observer-20260825-004",
+      "response_replay_calls": 0,
+      "run_id": "v7-real-observer-20260825-005",
+      "selected_method": null,
+      "treatment_calls": 0
+    },
+    {
+      "attempt_validity": "INVALID_FOR_R1_R3_GATES",
+      "completed_block_count": 0,
+      "error_message_sha256": "98123ccc69040363d9434252c4fad917e2548c4123cc330f2d891bdc4eb30865",
+      "error_type": "openai.APITimeoutError",
+      "failure_class": "INFRASTRUCTURE_PROVIDER_TIMEOUT",
+      "gate_outcome": "NOT_EVALUATED",
+      "replacement_of": "v7-real-observer-20260825-005",
+      "response_replay_calls": 0,
+      "run_id": "v7-real-observer-20260825-006",
+      "selected_method": null,
+      "treatment_calls": 0
+    }
+  ],
+  "blocker": "SILICONFLOW_STRUCTURED_EXTRACTION_TIMEOUT",
+  "evidence_files": [
+    {
+      "path": ".v7-real-observer-20260825-004.failure.json",
+      "sha256": "15f9e79c79252eac2f024c45dc3c6a12291f1c8c752b9ff2e30ae128ffb08a1a"
+    },
+    {
+      "path": ".v7-real-observer-20260825-005.failure.json",
+      "sha256": "15719a3c15f33d13d6222feafeb91554ecd4933c2c71da3224a1b9ad80ce9716"
+    },
+    {
+      "path": ".v7-real-observer-20260825-005.attempt.jsonl",
+      "sha256": "a7608020e2f22d1af35d85b3621a5316ac86604ac93773ac5911a127def16071"
+    },
+    {
+      "path": ".v7-real-observer-20260825-006.failure.json",
+      "sha256": "744d9b513568c7c3d2e6c24a48309db282bf61d05b4906bc1b970ebfe82fb59c"
+    },
+    {
+      "path": ".v7-real-observer-20260825-006.attempt.jsonl",
+      "sha256": "b1053568151fc217edbe1108490f7fd57e1dcfaccd050b6ae2ba1a26f672ddbe"
+    }
+  ],
+  "gate_a_e_evaluated": false,
+  "harness_failure_run_id": "v7-real-observer-20260825-005",
+  "harness_source_sha256": "b84e761154694e1cd67743bd65ceaf73a26706e83f4308d709df53084e116c3d",
+  "post_fix_timeout_run_id": "v7-real-observer-20260825-006",
+  "protocol_sha256": "2e475cfd7df57688a8d10d3ce5e4148b599666c309ec7d635bf046978b095904",
+  "response_replay_calls": 0,
+  "schema_version": "membind.v7.system-blocker-evidence.v1",
+  "selected_method": null,
+  "status": "SEALED_SYSTEM_BLOCKER",
+  "terminal_state": "V7_THEORY_OR_SYSTEM_BLOCKED",
+  "timeout_attempt_count": 2,
+  "timeout_error_message_sha256": "98123ccc69040363d9434252c4fad917e2548c4123cc330f2d891bdc4eb30865",
+  "treatment_calls": 0
+}
