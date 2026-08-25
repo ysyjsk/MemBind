@@ -1,0 +1,20 @@
+# T1-T6b Proof Audit
+
+This is a proof-obligation audit, not empirical evidence. Each obligation is
+paired with an executable negative/positive test in
+`tests/test_membind_v7_theory.py`.
+
+| theorem | induction/invariant | executable falsifier | current closure |
+|---|---|---|---|
+| T1 | every Read inherits one SnapshotToken; A2 forbids writes | mixed versions; write before seam | conditional |
+| T2 | projection equality by primitive-local delta extractor | omit embedding/epoch field | scoped conditional |
+| T3 | witness domain, cutoff, tie and rank invariants | short result; boundary tie; missing BM25 contract | guarded conditional |
+| T4 | topological induction over six Dep kinds | previous-window or predecessor change | conditional |
+| T5 | finite worklist plus canonical-output reconvergence | output-changing branch; cycle/max bound | conditional |
+| T6 | memo-free counterpart expansion and canonical trace induction | order-only divergence; UNKNOWN treated as stable | conditional |
+| T6b | step-local equivariance over continuation-observable K | ignored endpoint UUID; stale frontier; hidden saga read | P7 pending |
+
+`Complete_rho` is never inferred from a final-state coincidence. Unknown backend
+contracts are represented explicitly and cause fresh execution. The d=1
+restriction is part of every statement; no multi-delta composition theorem is
+claimed.

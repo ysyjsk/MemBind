@@ -1,0 +1,19 @@
+{
+  "schema_version": "membind.v7.required-observation-fields.v1",
+  "treatment_allowed": false,
+  "required_fields": [
+    "snapshot", "read_operator", "observable_projection", "query", "filter",
+    "limit", "ranking", "tie_contract", "index_epoch", "witness", "delta",
+    "completeness_status", "previous_episode_selector", "previous_episode_window",
+    "previous_episode_order", "previous_episode_projection", "previous_episode_digest",
+    "dependency_edges", "demand_existence", "demand_binding", "demand_predecessors",
+    "request_identity", "continuation_observable_k", "logical_id_bijection",
+    "native_read_epoch", "native_oracle_epoch", "native_effect_epoch",
+    "replay_contract", "mutation_intent", "post_backend_diff", "resource_cost",
+    "semantic_critical_path"
+  ],
+  "dependency_edge_kinds": [
+    "data", "control", "existence", "ordered-collection", "environment/oracle", "effect/publication"
+  ],
+  "semantic_order_excludes": ["async_completion_order", "provider_arrival_order", "runtime_task_identity"]
+}

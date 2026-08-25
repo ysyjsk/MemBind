@@ -1,0 +1,210 @@
+{
+  "canonical_seam_equal": true,
+  "completion_order_counted": false,
+  "fresh_trace_digest": {
+    "edges": [
+      [
+        "read:nodes",
+        "demand:episode-0"
+      ]
+    ],
+    "frontier": 1,
+    "nodes": [
+      {
+        "id": "read:nodes",
+        "kind": "Read",
+        "metadata": {},
+        "snapshot": {
+          "epoch": "reference-db",
+          "version": 1,
+          "writer_fence": 1
+        },
+        "value": [
+          [
+            "n1",
+            {
+              "embedding": [
+                0.0,
+                1.0
+              ],
+              "name": "name-0-changed"
+            }
+          ]
+        ],
+        "writes_state": false
+      },
+      {
+        "id": "demand:episode-0",
+        "kind": "Demand",
+        "metadata": {},
+        "snapshot": {
+          "epoch": "reference-db",
+          "version": 1,
+          "writer_fence": 1
+        },
+        "value": {
+          "episode": "episode-0",
+          "nodes": [
+            [
+              "n1",
+              {
+                "embedding": [
+                  0.0,
+                  1.0
+                ],
+                "name": "name-0-changed"
+              }
+            ]
+          ]
+        },
+        "writes_state": false
+      }
+    ],
+    "seam_output": {
+      "episode": "episode-0",
+      "logical_nodes": [
+        "n1"
+      ]
+    }
+  },
+  "maintained_trace_digest": {
+    "edges": [
+      [
+        "read:nodes",
+        "demand:episode-0"
+      ]
+    ],
+    "frontier": 1,
+    "nodes": [
+      {
+        "id": "read:nodes",
+        "kind": "Read",
+        "metadata": {},
+        "snapshot": {
+          "epoch": "reference-db",
+          "version": 1,
+          "writer_fence": 1
+        },
+        "value": [
+          [
+            "n1",
+            {
+              "embedding": [
+                0.0,
+                1.0
+              ],
+              "name": "name-0-changed"
+            }
+          ]
+        ],
+        "writes_state": false
+      },
+      {
+        "id": "demand:episode-0",
+        "kind": "Demand",
+        "metadata": {},
+        "snapshot": {
+          "epoch": "reference-db",
+          "version": 1,
+          "writer_fence": 1
+        },
+        "value": {
+          "episode": "episode-0",
+          "nodes": [
+            [
+              "n1",
+              {
+                "embedding": [
+                  0.0,
+                  1.0
+                ],
+                "name": "name-0-changed"
+              }
+            ]
+          ]
+        },
+        "writes_state": false
+      }
+    ],
+    "seam_output": {
+      "episode": "episode-0",
+      "logical_nodes": [
+        "n1"
+      ]
+    }
+  },
+  "missing_side_is_coverage_only": true,
+  "mutation_locality": 1.0,
+  "old_trace_digest": {
+    "edges": [
+      [
+        "read:nodes",
+        "demand:episode-0"
+      ]
+    ],
+    "frontier": 0,
+    "nodes": [
+      {
+        "id": "read:nodes",
+        "kind": "Read",
+        "metadata": {},
+        "snapshot": {
+          "epoch": "reference-db",
+          "version": 0,
+          "writer_fence": 0
+        },
+        "value": [
+          [
+            "n1",
+            {
+              "embedding": [
+                1.0,
+                0.0
+              ],
+              "name": "name-0"
+            }
+          ]
+        ],
+        "writes_state": false
+      },
+      {
+        "id": "demand:episode-0",
+        "kind": "Demand",
+        "metadata": {},
+        "snapshot": {
+          "epoch": "reference-db",
+          "version": 0,
+          "writer_fence": 0
+        },
+        "value": {
+          "episode": "episode-0",
+          "nodes": [
+            [
+              "n1",
+              {
+                "embedding": [
+                  1.0,
+                  0.0
+                ],
+                "name": "name-0"
+              }
+            ]
+          ]
+        },
+        "writes_state": false
+      }
+    ],
+    "seam_output": {
+      "episode": "episode-0",
+      "logical_nodes": [
+        "n1"
+      ]
+    }
+  },
+  "publication_calls": 0,
+  "schema_version": "membind.v7.r2-observer.v1",
+  "seed": 17,
+  "source_count": 2,
+  "status": "OBSERVER_ONLY",
+  "treatment_calls": 0
+}

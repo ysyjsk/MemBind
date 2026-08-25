@@ -1,0 +1,15 @@
+{
+  "schema_version": "membind.v7.r0-freeze.v1",
+  "status": "BLOCKED_PIN_MISMATCH",
+  "theory": "CORE_THEORY_CONDITIONAL_FREEZE",
+  "p7": "PASS_WITH_GUARDS_AND_BLOCKERS",
+  "observer_schema": "FROZEN",
+  "observer_off_native_equivalence": "GREEN_REFERENCE_MODEL",
+  "v5_v6_targeted_regression": {"status": "PASS", "passed": 163},
+  "baseline_regression": {"status": "PASS", "passed": 281, "skipped": 0},
+  "pin_verification": "PIN_VERIFICATION.json",
+  "treatment_calls": 0,
+  "live_provider_calls": 0,
+  "consequence": "R1-R3 artifacts are observer/reference only; no Graphiti opportunity gate or online economics claim is authorized.",
+  "next_action": "Resolve exact MemBind pin, rerun P7/R1-R3 on the sealed worktree, then create METHOD_SELECTION only if Gate A-E pass."
+}

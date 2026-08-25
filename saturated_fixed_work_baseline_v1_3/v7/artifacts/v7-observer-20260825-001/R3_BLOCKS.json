@@ -1,0 +1,186 @@
+[
+  {
+    "certifiable_stable_portion": 0.0,
+    "claim_boundary": "synthetic_reference_contract_only",
+    "confusion_matrix": {
+      "INVALID/CHANGED": 5,
+      "INVALID/SAME": 0,
+      "STABLE/CHANGED": 0,
+      "STABLE/SAME": 1,
+      "UNKNOWN/CHANGED": 0,
+      "UNKNOWN/SAME": 0
+    },
+    "counterfactual": {
+      "baseline_cp": 6.0,
+      "candidate_cp": 4.0,
+      "gross_saved_cp": 2.0,
+      "path": [
+        "demand",
+        "publish"
+      ]
+    },
+    "false_stable_rate": 0.0,
+    "live_interference_measured": false,
+    "predictions": [
+      "INVALID",
+      "INVALID",
+      "INVALID",
+      "INVALID",
+      "STABLE",
+      "INVALID"
+    ],
+    "publication_calls": 0,
+    "rows": [
+      {
+        "certificate_reason": "result member changed",
+        "changed": true,
+        "prediction": "INVALID",
+        "source_sequence": 0,
+        "truth": "CHANGED"
+      },
+      {
+        "certificate_reason": "result member changed",
+        "changed": true,
+        "prediction": "INVALID",
+        "source_sequence": 1,
+        "truth": "CHANGED"
+      },
+      {
+        "certificate_reason": "result member changed",
+        "changed": true,
+        "prediction": "INVALID",
+        "source_sequence": 2,
+        "truth": "CHANGED"
+      },
+      {
+        "certificate_reason": "result member changed",
+        "changed": true,
+        "prediction": "INVALID",
+        "source_sequence": 3,
+        "truth": "CHANGED"
+      },
+      {
+        "certificate_reason": "no domain observable changed",
+        "changed": false,
+        "prediction": "STABLE",
+        "source_sequence": 4,
+        "truth": "SAME"
+      },
+      {
+        "certificate_reason": "result member changed",
+        "changed": true,
+        "prediction": "INVALID",
+        "source_sequence": 5,
+        "truth": "CHANGED"
+      }
+    ],
+    "schema_version": "membind.v7.r3-observer-block.v1",
+    "seed": 17,
+    "semantic_change_amplification": {
+      "wall": 2.0
+    },
+    "source_count": 6,
+    "status": "OBSERVER_ONLY",
+    "treatment_calls": 0,
+    "truths": [
+      "CHANGED",
+      "CHANGED",
+      "CHANGED",
+      "CHANGED",
+      "SAME",
+      "CHANGED"
+    ]
+  },
+  {
+    "certifiable_stable_portion": 0.0,
+    "claim_boundary": "synthetic_reference_contract_only",
+    "confusion_matrix": {
+      "INVALID/CHANGED": 4,
+      "INVALID/SAME": 0,
+      "STABLE/CHANGED": 0,
+      "STABLE/SAME": 2,
+      "UNKNOWN/CHANGED": 0,
+      "UNKNOWN/SAME": 0
+    },
+    "counterfactual": {
+      "baseline_cp": 6.0,
+      "candidate_cp": 4.0,
+      "gross_saved_cp": 2.0,
+      "path": [
+        "demand",
+        "publish"
+      ]
+    },
+    "false_stable_rate": 0.0,
+    "live_interference_measured": false,
+    "predictions": [
+      "INVALID",
+      "STABLE",
+      "STABLE",
+      "INVALID",
+      "INVALID",
+      "INVALID"
+    ],
+    "publication_calls": 0,
+    "rows": [
+      {
+        "certificate_reason": "result member changed",
+        "changed": true,
+        "prediction": "INVALID",
+        "source_sequence": 0,
+        "truth": "CHANGED"
+      },
+      {
+        "certificate_reason": "no domain observable changed",
+        "changed": false,
+        "prediction": "STABLE",
+        "source_sequence": 1,
+        "truth": "SAME"
+      },
+      {
+        "certificate_reason": "no domain observable changed",
+        "changed": false,
+        "prediction": "STABLE",
+        "source_sequence": 2,
+        "truth": "SAME"
+      },
+      {
+        "certificate_reason": "result member changed",
+        "changed": true,
+        "prediction": "INVALID",
+        "source_sequence": 3,
+        "truth": "CHANGED"
+      },
+      {
+        "certificate_reason": "result member changed",
+        "changed": true,
+        "prediction": "INVALID",
+        "source_sequence": 4,
+        "truth": "CHANGED"
+      },
+      {
+        "certificate_reason": "result member changed",
+        "changed": true,
+        "prediction": "INVALID",
+        "source_sequence": 5,
+        "truth": "CHANGED"
+      }
+    ],
+    "schema_version": "membind.v7.r3-observer-block.v1",
+    "seed": 23,
+    "semantic_change_amplification": {
+      "wall": 2.0
+    },
+    "source_count": 6,
+    "status": "OBSERVER_ONLY",
+    "treatment_calls": 0,
+    "truths": [
+      "CHANGED",
+      "SAME",
+      "SAME",
+      "CHANGED",
+      "CHANGED",
+      "CHANGED"
+    ]
+  }
+]

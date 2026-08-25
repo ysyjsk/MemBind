@@ -1,0 +1,87 @@
+schema_version: membind.v7.assumptions.v1
+scope:
+  delta_depth: 1
+  trace_profiles: [CORE_M1, M2_EXTENSION]
+  unknown_is_first_class: true
+assumptions:
+  A1:
+    statement: selected BuildTrace uses one logical snapshot
+    used_by: [T1, T6, T6b]
+    status: PENDING_P7
+    fallback: fresh_native_or_block_m1_m2
+  A2:
+    statement: no persistent write before maintained seam
+    used_by: [T1, T6]
+    status: PENDING_P7
+    fallback: move_seam_or_block_m1_m2
+  A3:
+    statement: selected operator writers and primitive delta decoders are complete
+    used_by: [T2, T3, T5, T6]
+    status: SCOPED_OPERATOR
+    fallback: dependent_region_unknown_fresh
+  A4:
+    statement: all six semantic dependency edge kinds are captured
+    used_by: [T4, T5, T6]
+    status: PENDING_R1
+    fallback: affected_or_fresh
+  A5:
+    statement: stable names and alignment are unique
+    used_by: [T4, T5, T6]
+    status: PENDING_R1
+    fallback: ambiguous_region_affected
+  A6:
+    statement: pure/control/request builders are deterministic under captured epochs
+    used_by: [T4, T6, T6b]
+    status: PENDING_P7
+    fallback: fresh_builder
+  A7:
+    statement: each STABLE certificate class has a sound proof guard
+    used_by: [T3, T4, T5, T6]
+    status: PENDING_P7
+    fallback: disable_certificate_class
+  A8:
+    statement: query/rank/filter/tie/backend epochs are captured
+    used_by: [T3, T4, T6]
+    status: PENDING_P7
+    fallback: unknown_read_fresh
+  A9:
+    statement: live ReplayAllowed is declared by provider/deployment contract
+    used_by: [T4, T6, T6b, M0]
+    status: UNKNOWN
+    fallback: fresh_response
+  A10:
+    statement: request/model/schema/tool/config/policy identity and response artifact are exact
+    used_by: [T4, T6, T6b, M0]
+    status: PENDING_R1
+    fallback: fresh_request_or_response
+  A11:
+    statement: M2 plan is closed and has no hidden Apply read
+    used_by: [T7]
+    status: CONDITIONAL_ONLY
+    fallback: block_m2
+  A12:
+    statement: Apply validates frontier/predicate/idempotency
+    used_by: [T7]
+    status: CONDITIONAL_ONLY
+    fallback: abort_rebuild
+  A13:
+    statement: ordered publication is atomic and recoverable
+    used_by: [T7, T8]
+    status: CONDITIONAL_ONLY
+    fallback: block_m2
+  A14:
+    statement: journal/receipt gives logical exactly-once recovery
+    used_by: [T8]
+    status: CONDITIONAL_ONLY
+    fallback: block_m2
+  A15:
+    statement: trace expansion and repair have a well-founded finite measure
+    used_by: [T4, T5, T6]
+    status: SUPPORTED_BY_REFERENCE_MODEL
+    fallback: fresh_native_or_block
+  A16:
+    statement: native continuation observes only declared seam K and closed epochs
+    used_by: [T6b]
+    status: PENDING_P7
+    fallback: move_seam_or_block_m1_m2
+use_map_complete: true

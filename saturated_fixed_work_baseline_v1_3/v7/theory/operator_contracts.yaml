@@ -1,0 +1,39 @@
+schema_version: membind.v7.graphiti.operator-contracts.v1
+graphiti_version: 0.29.3
+graphiti_commit: 021d3a57d511f21b10adaf7fa923bd5c1fce5e9d
+operators:
+  exact_key:
+    status: SUPPORTED_WITH_GUARD
+    observable_fields: [logical_key, projection, domain_epoch]
+    certificate: exact_key
+    fallback: UNKNOWN_FRESH_REGION
+  node_cosine:
+    status: SUPPORTED_WITH_GUARD
+    observable_fields: [name_embedding, group_id, labels, query_vector, filter, k, min_score, index_epoch, tie_contract, projection]
+    certificate: guarded_exact_topk
+    fallback: UNKNOWN_FRESH_REGION
+  edge_cosine:
+    status: SUPPORTED_WITH_GUARD
+    observable_fields: [fact_embedding, source_node_uuid, target_node_uuid, group_id, query_vector, filter, k, min_score, index_epoch, tie_contract, projection]
+    certificate: guarded_exact_topk
+    fallback: UNKNOWN_FRESH_REGION
+  bm25:
+    status: UNKNOWN
+    observable_fields: [corpus, analyzer, index_epoch, statistics_epoch, tie_contract]
+    certificate: null
+    fallback: FRESH
+  hybrid_rrf:
+    status: UNKNOWN
+    observable_fields: [bm25_channel, cosine_channel, rrf_k, union_order, tie_contract]
+    certificate: null
+    fallback: FRESH
+  ann:
+    status: UNKNOWN
+    observable_fields: [backend_epoch, index_epoch, recall_contract, tie_contract]
+    certificate: null
+    fallback: FRESH
+  previous_episodes:
+    status: SUPPORTED_WITH_GUARD
+    observable_fields: [reference_time, last_n, group_id, source, explicit_uuids, result_order, result_window, projection_digest]
+    certificate: dependency_input_only
+    fallback: AFFECTED_DEMAND

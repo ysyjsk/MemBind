@@ -1,0 +1,25 @@
+{
+  "schema_version": "membind.v7.assumption-status.v1",
+  "status": "R0_R1_PENDING",
+  "assumptions": {
+    "A1": {"status": "PENDING_P7", "evidence": ["theory/semantics.md", "observer/mixed_snapshot_test"], "affected_theorems": ["T1", "T6", "T6b"]},
+    "A2": {"status": "PENDING_P7", "evidence": ["theory/semantics.md", "observer/write_fence_test"], "affected_theorems": ["T1", "T6"]},
+    "A3": {"status": "SCOPED_OPERATOR", "evidence": ["theory/operator_contracts.yaml", "missing_delta_field_test"], "affected_theorems": ["T2", "T3", "T5", "T6"]},
+    "A4": {"status": "PENDING_R1", "evidence": ["theory/previous_episode_dependency.md", "lineage_tests"], "affected_theorems": ["T4", "T5", "T6"]},
+    "A5": {"status": "PENDING_R1", "evidence": ["ambiguous_alignment_test"], "affected_theorems": ["T4", "T5", "T6"]},
+    "A6": {"status": "PENDING_P7", "evidence": ["theory/semantics.md"], "affected_theorems": ["T4", "T6", "T6b"]},
+    "A7": {"status": "PENDING_P7", "evidence": ["certificates.py", "topk_tie_unknown_test"], "affected_theorems": ["T3", "T4", "T5", "T6"]},
+    "A8": {"status": "PENDING_P7", "evidence": ["schemas/required_observation_fields.json"], "affected_theorems": ["T3", "T4", "T6"]},
+    "A9": {"status": "UNKNOWN", "evidence": ["theory/provider_replay_contract.md", "replay_contract_test"], "affected_theorems": ["T4", "T6", "T6b", "M0"]},
+    "A10": {"status": "PENDING_R1", "evidence": ["theory/provider_replay_contract.md"], "affected_theorems": ["T4", "T6", "T6b", "M0"]},
+    "A11": {"status": "CONDITIONAL_ONLY", "evidence": ["m2_theory.py"], "affected_theorems": ["T7"]},
+    "A12": {"status": "CONDITIONAL_ONLY", "evidence": ["m2_theory.py"], "affected_theorems": ["T7"]},
+    "A13": {"status": "CONDITIONAL_ONLY", "evidence": ["m2_theory.py"], "affected_theorems": ["T7", "T8"]},
+    "A14": {"status": "CONDITIONAL_ONLY", "evidence": ["m2_theory.py"], "affected_theorems": ["T8"]},
+    "A15": {"status": "SUPPORTED_BY_REFERENCE_MODEL", "evidence": ["propagation.py", "nonterminating_trace_test"], "affected_theorems": ["T4", "T5", "T6"]},
+    "A16": {"status": "PENDING_P7", "evidence": ["theory/native_continuation_refinement.md", "ignored_id_test"], "affected_theorems": ["T6b"]}
+  },
+  "orphan_assumptions": [],
+  "implicit_assumptions": [],
+  "treatment_authorized": false
+}
