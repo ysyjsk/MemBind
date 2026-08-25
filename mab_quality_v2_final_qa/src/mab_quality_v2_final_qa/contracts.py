@@ -130,6 +130,7 @@ class MABQA:
     question_date: str
     question_type: str
     gold_session_ids: tuple[str, ...]
+    gold_mapping_status: str = "COMPLETE"
 
     def __post_init__(self) -> None:
         object.__setattr__(self, "qa_pair_id", _text(self.qa_pair_id, "qa_pair_id"))
@@ -149,8 +150,18 @@ class MABQA:
         object.__setattr__(
             self,
             "gold_session_ids",
-            _unique_texts(self.gold_session_ids, "gold_session_ids"),
+            _unique_texts(
+                self.gold_session_ids,
+                "gold_session_ids",
+                allow_empty=True,
+            ),
         )
+        status = _text(self.gold_mapping_status, "gold_mapping_status")
+        if status not in {"COMPLETE", "PARTIAL_GOLD_MAPPING"}:
+            raise ValueError("gold_mapping_status is invalid")
+        if status == "COMPLETE" and not self.gold_session_ids:
+            raise ValueError("complete gold mapping must contain a session")
+        object.__setattr__(self, "gold_mapping_status", status)
 
     def public_dict(self) -> dict[str, str]:
         return {
@@ -165,6 +176,7 @@ class MABQA:
             question_type=self.question_type,
             reference_answers=self.reference_answers,
             gold_session_ids=self.gold_session_ids,
+            gold_mapping_status=self.gold_mapping_status,
         )
 
 
@@ -258,6 +270,7 @@ class PrivateQALabels:
     question_type: str
     reference_answers: tuple[str, ...]
     gold_session_ids: tuple[str, ...]
+    gold_mapping_status: str = "COMPLETE"
 
     def as_dict(self) -> dict[str, Any]:
         return {
@@ -265,6 +278,7 @@ class PrivateQALabels:
             "question_type": self.question_type,
             "reference_answers": list(self.reference_answers),
             "gold_session_ids": list(self.gold_session_ids),
+            "gold_mapping_status": self.gold_mapping_status,
         }
 
 

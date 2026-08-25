@@ -1,0 +1,350 @@
+{
+  "payload_sha256": "f4f89f5d9ee2ae6815ccbdd9f36c8c3f15bd353a543e51ef449f78f6631c5e9c",
+  "rows": [
+    {
+      "ablation": {
+        "answer_evaluation": {
+          "correct": true,
+          "judge_label": true,
+          "judge_status": "SUCCESS",
+          "semantic_authority": "OFFICIAL_LONGMEMEVAL_JUDGE",
+          "status": "PASS",
+          "surface_diagnostic": {
+            "expected_answer_normalized": "you switched to less water (5 ounces) per tablespoon of coffee.",
+            "official_judge_required": true,
+            "reader_answer_normalized": "based on the history, you initially used **1 tablespoon of coffee for every 6 ounces of water** in your french press. later, in the current context, you mentioned using **1 tablespoon of coffee for every 5 ounces of water**. this means you have **switched to using less water per tablespoon of coffee**.",
+            "semantic_authority": "NONE",
+            "status": "LEXICAL_NO_MATCH"
+          }
+        },
+        "lane": "OFFICIAL_SESSION_VALUE_NO_CON",
+        "official_judge": {
+          "config_sha256": "97fc7c64f9ce991383e68269054254dcd36790dc493d9795418f58b763d27d6d",
+          "error_class": null,
+          "label": true,
+          "model": "qwen3-32b-fp8",
+          "output_byte_count": 3,
+          "output_character_count": 3,
+          "output_sha256": "8a798890fe93817163b10b5f7bd2ca4d25d84c52739a645a889c173eee7d9d3d",
+          "parse_status": "YES",
+          "prompt_sha256": "9db7879de936288c015832e77335b5dcaad3e3f521f97dbcee2fc34bcea573d5",
+          "raw_output_persisted": false,
+          "retry_count": 0,
+          "status": "SUCCESS"
+        },
+        "reader": {
+          "completion_tokens": 69,
+          "config_sha256": "d84697f95fd6232c6c8f882cdae7a9eab54049e6e3cc4a69501e28ac9cd31bbc",
+          "model": "qwen3-32b-fp8",
+          "output_byte_count": 305,
+          "output_character_count": 305,
+          "output_sha256": "d3b092d2d81288b4428ebd82a4490c0d0668ce06ccfc9a584e40b7dfb1231371",
+          "prompt_byte_count": 138035,
+          "prompt_character_count": 138035,
+          "prompt_sha256": "4b0ee17156411d14eb0dfc1f6ea0a1f1f9580c2a0c49907c1f84c23fbe695c85",
+          "prompt_tokens": 31490,
+          "status": "SUCCESS",
+          "truncation_count": 0
+        },
+        "reader_answer": "Based on the history, you initially used **1 tablespoon of coffee for every 6 ounces of water** in your French press. Later, in the current context, you mentioned using **1 tablespoon of coffee for every 5 ounces of water**. \n\nThis means you have **switched to using less water per tablespoon of coffee**."
+      },
+      "candidate_id": "v6-r06-v6",
+      "candidate_root": "/data/predator/ly/MemBind/saturated_fixed_work_baseline_v1_3/artifacts/sfwb-v1-3-v6-autoresearch-20260822-191241/main/v6-r06-v6",
+      "evidence_surface": "READ_ONLY_NEO4J_EPISODIC_CONTENT_ONLY",
+      "headline": {
+        "answer_evaluation": {
+          "correct": true,
+          "judge_label": true,
+          "judge_status": "SUCCESS",
+          "semantic_authority": "OFFICIAL_LONGMEMEVAL_JUDGE",
+          "status": "PASS",
+          "surface_diagnostic": {
+            "expected_answer_normalized": "you switched to less water (5 ounces) per tablespoon of coffee.",
+            "official_judge_required": true,
+            "reader_answer_normalized": "### step 1: extract relevant information from the chat history, we have two relevant notes about the user's coffee-to-water ratio for their french press: 1. \"1 tablespoon of coffee for every 6 ounces of water is the perfect ratio.\" 2. \"they have their french press ratio down to a science: **1 tablespoon of coffee for every 5 ounces of water**.\" ### step 2: compare the two ratios - in the first note, the ratio is **1 tablespoon of coffee for every 6 ounces of water**. - in the second note, the ratio is **1 tablespoon of coffee for every 5 ounces of water**. this means the user is now using **less water per tablespoon of coffee** (5 ounces instead of 6 ounces). ### step 3: final answer you switched to **less water per tablespoon of coffee**.",
+            "semantic_authority": "NONE",
+            "status": "LEXICAL_NO_MATCH"
+          }
+        },
+        "lane": "JSON_CHAIN_OF_NOTE",
+        "official_judge": {
+          "config_sha256": "97fc7c64f9ce991383e68269054254dcd36790dc493d9795418f58b763d27d6d",
+          "error_class": null,
+          "label": true,
+          "model": "qwen3-32b-fp8",
+          "output_byte_count": 3,
+          "output_character_count": 3,
+          "output_sha256": "8a798890fe93817163b10b5f7bd2ca4d25d84c52739a645a889c173eee7d9d3d",
+          "parse_status": "YES",
+          "prompt_sha256": "bca66be32b0299d8ffa177e06eb7fbbae2c5f0d2d93ccdd98d4d20f0325c5885",
+          "raw_output_persisted": false,
+          "retry_count": 0,
+          "status": "SUCCESS"
+        },
+        "reader": {
+          "completion_tokens": 368,
+          "config_sha256": "570d3ccf0ad38e00f8cd86a970a2ee41fff62998287b87478f9ab345d7ee0aeb",
+          "model": "qwen3-32b-fp8",
+          "note_calls": 10,
+          "note_output_sha256": [
+            "a3fa5c3c3e8045d27fa98676fb4f25a591403ee2d7751e2f3b77aee482b5a128",
+            "81b83e181b9786290dd91e0ca25fd9589aaa601d73ecca78e060f2aece0bde43",
+            "864f6ac638ee52c798842ec39efcf0c10407b784039d108a6cb97e2580b78533",
+            "81b83e181b9786290dd91e0ca25fd9589aaa601d73ecca78e060f2aece0bde43",
+            "864f6ac638ee52c798842ec39efcf0c10407b784039d108a6cb97e2580b78533",
+            "81b83e181b9786290dd91e0ca25fd9589aaa601d73ecca78e060f2aece0bde43",
+            "9c1bdbd4db03c4e8976bb9e074190bb259ac333ec7617c1d48ad9983a2d41ea1",
+            "864f6ac638ee52c798842ec39efcf0c10407b784039d108a6cb97e2580b78533",
+            "81b83e181b9786290dd91e0ca25fd9589aaa601d73ecca78e060f2aece0bde43",
+            "81b83e181b9786290dd91e0ca25fd9589aaa601d73ecca78e060f2aece0bde43"
+          ],
+          "note_prompt_sha256": [
+            "27aeca9cf61410b47e2d81d0dc839d3dbf1f1c065e7dfb504c643185e9478939",
+            "c4f99ddd6fb057d48573b26a398a3db55fbd8b45090af74e5253761b3c71e67e",
+            "c50ca529aeafe3d9526248e6e277f845bd04ef92ff683fa6f4ec61b95c664f8c",
+            "1f89b8be0d160e002f55478286a88e824f745023516aa85afde386e269e2c959",
+            "7e75ff9478f4977f3b8054d49f85e4574bfbc0aa9446b21d8d7e9ff845ef3bda",
+            "4ec090ad752823070cede399660f3fefbded7785ca494371aa62e63f758e6cb4",
+            "e80ae5c6831ebe5721c30dcc467574712e157e2bc79e5abc59181e808fae513e",
+            "0b5a226a00ef4b3044450c74f53e6827a9781eaf5538138a952e15cf94f9cdc9",
+            "ffff8ea540d86f2d678ba754ee9792c85034de409286901a29eafb1818448286",
+            "0b400c3c7c698389ce990e7f27918307af4d9ecc5acd2aa64127ecb5cc0dfa73"
+          ],
+          "output_byte_count": 752,
+          "output_character_count": 752,
+          "output_sha256": "f0d451a9da33822c6868d6606e4d10f48cdfb0c5a212f9a6338c3e2352ff3bb3",
+          "prompt_byte_count": 1656,
+          "prompt_character_count": 1656,
+          "prompt_sha256": "301a5293e8ae7420380dd004f2859aa35faac46f06910849b4b0f756414c9daa",
+          "prompt_tokens": 32993,
+          "status": "SUCCESS",
+          "truncation_count": 0
+        },
+        "reader_answer": "### Step 1: Extract Relevant Information\nFrom the chat history, we have two relevant notes about the user's coffee-to-water ratio for their French press:\n1. \"1 tablespoon of coffee for every 6 ounces of water is the perfect ratio.\"\n2. \"They have their French press ratio down to a science: **1 tablespoon of coffee for every 5 ounces of water**.\"\n\n### Step 2: Compare the Two Ratios\n- In the first note, the ratio is **1 tablespoon of coffee for every 6 ounces of water**.\n- In the second note, the ratio is **1 tablespoon of coffee for every 5 ounces of water**.\n\nThis means the user is now using **less water per tablespoon of coffee** (5 ounces instead of 6 ounces).\n\n### Step 3: Final Answer\nYou switched to **less water per tablespoon of coffee**."
+      },
+      "history_id": "6071bd76",
+      "namespace": "membind-v6-v6-r06-v6-6071bd76-0fcfe1d3d8",
+      "question": "For the coffee-to-water ratio in my French press, did I switch to more water per tablespoon of coffee, or less?",
+      "retrieval": {
+        "episode_count": 20,
+        "fact_count": 20,
+        "gold_inputs_during_selection": false,
+        "graphiti_search_calls": 1,
+        "neo4j_read_requests": 4,
+        "ranked_session_ids": [
+          "answer_4dac77cb_1",
+          "8d0b4363",
+          "ultrachat_56513",
+          "a58eeaf8",
+          "a8899aee_1",
+          "9de53d68_1",
+          "answer_4dac77cb_2",
+          "ultrachat_551846",
+          "04616813_2",
+          "e6b6353d"
+        ],
+        "retrieval_identity_sha256": "9196ce6bdd093d41b2bdc14a66925efb06458369324e1734e2f7d24c945f34e7",
+        "search_config_sha256": "62535d82129d01d6cbf8c3d5c13f656e60d89d821a9d9b9ca7bc1ed51c53fa7d",
+        "top_k_context": 10
+      },
+      "session_recall_posthoc": {
+        "authority": "POST_HOC_PROVENANCE_METRIC_ONLY",
+        "gold_hits_at_10": 2,
+        "gold_ranks": [
+          1,
+          7
+        ],
+        "gold_session_count": 2,
+        "recall_at_10": 1.0
+      }
+    },
+    {
+      "ablation": {
+        "answer_evaluation": {
+          "correct": true,
+          "judge_label": true,
+          "judge_status": "SUCCESS",
+          "semantic_authority": "OFFICIAL_LONGMEMEVAL_JUDGE",
+          "status": "PASS",
+          "surface_diagnostic": {
+            "expected_answer_normalized": "you switched to less water (5 ounces) per tablespoon of coffee.",
+            "official_judge_required": true,
+            "reader_answer_normalized": "based on the history, you initially used **1 tablespoon of coffee for every 6 ounces of water** in your french press. later, in the current context, you mentioned using **1 tablespoon of coffee for every 5 ounces of water**. this means you have **switched to using less water per tablespoon of coffee**.",
+            "semantic_authority": "NONE",
+            "status": "LEXICAL_NO_MATCH"
+          }
+        },
+        "lane": "OFFICIAL_SESSION_VALUE_NO_CON",
+        "official_judge": {
+          "config_sha256": "97fc7c64f9ce991383e68269054254dcd36790dc493d9795418f58b763d27d6d",
+          "error_class": null,
+          "label": true,
+          "model": "qwen3-32b-fp8",
+          "output_byte_count": 3,
+          "output_character_count": 3,
+          "output_sha256": "8a798890fe93817163b10b5f7bd2ca4d25d84c52739a645a889c173eee7d9d3d",
+          "parse_status": "YES",
+          "prompt_sha256": "9db7879de936288c015832e77335b5dcaad3e3f521f97dbcee2fc34bcea573d5",
+          "raw_output_persisted": false,
+          "retry_count": 0,
+          "status": "SUCCESS"
+        },
+        "reader": {
+          "completion_tokens": 69,
+          "config_sha256": "d84697f95fd6232c6c8f882cdae7a9eab54049e6e3cc4a69501e28ac9cd31bbc",
+          "model": "qwen3-32b-fp8",
+          "output_byte_count": 305,
+          "output_character_count": 305,
+          "output_sha256": "d3b092d2d81288b4428ebd82a4490c0d0668ce06ccfc9a584e40b7dfb1231371",
+          "prompt_byte_count": 138035,
+          "prompt_character_count": 138035,
+          "prompt_sha256": "4b0ee17156411d14eb0dfc1f6ea0a1f1f9580c2a0c49907c1f84c23fbe695c85",
+          "prompt_tokens": 31490,
+          "status": "SUCCESS",
+          "truncation_count": 0
+        },
+        "reader_answer": "Based on the history, you initially used **1 tablespoon of coffee for every 6 ounces of water** in your French press. Later, in the current context, you mentioned using **1 tablespoon of coffee for every 5 ounces of water**. \n\nThis means you have **switched to using less water per tablespoon of coffee**."
+      },
+      "candidate_id": "v6-r07-v6",
+      "candidate_root": "/data/predator/ly/MemBind/saturated_fixed_work_baseline_v1_3/artifacts/sfwb-v1-3-v6-autoresearch-20260822-191241/main/v6-r07-v6",
+      "evidence_surface": "READ_ONLY_NEO4J_EPISODIC_CONTENT_ONLY",
+      "headline": {
+        "answer_evaluation": {
+          "correct": true,
+          "judge_label": true,
+          "judge_status": "SUCCESS",
+          "semantic_authority": "OFFICIAL_LONGMEMEVAL_JUDGE",
+          "status": "PASS",
+          "surface_diagnostic": {
+            "expected_answer_normalized": "you switched to less water (5 ounces) per tablespoon of coffee.",
+            "official_judge_required": true,
+            "reader_answer_normalized": "### step 1: extract relevant information from the chat history, we have two relevant notes about the user's coffee-to-water ratio for their french press: 1. \"1 tablespoon of coffee for every 6 ounces of water is the perfect ratio.\" 2. \"they have their french press ratio down to a science: **1 tablespoon of coffee for every 5 ounces of water**.\" ### step 2: compare the two ratios - in the first note, the ratio is **1 tablespoon of coffee for every 6 ounces of water**. - in the second note, the ratio is **1 tablespoon of coffee for every 5 ounces of water**. this means the user is now using **less water per tablespoon of coffee** (5 ounces instead of 6 ounces). ### step 3: final answer you switched to **less water per tablespoon of coffee**.",
+            "semantic_authority": "NONE",
+            "status": "LEXICAL_NO_MATCH"
+          }
+        },
+        "lane": "JSON_CHAIN_OF_NOTE",
+        "official_judge": {
+          "config_sha256": "97fc7c64f9ce991383e68269054254dcd36790dc493d9795418f58b763d27d6d",
+          "error_class": null,
+          "label": true,
+          "model": "qwen3-32b-fp8",
+          "output_byte_count": 3,
+          "output_character_count": 3,
+          "output_sha256": "8a798890fe93817163b10b5f7bd2ca4d25d84c52739a645a889c173eee7d9d3d",
+          "parse_status": "YES",
+          "prompt_sha256": "bca66be32b0299d8ffa177e06eb7fbbae2c5f0d2d93ccdd98d4d20f0325c5885",
+          "raw_output_persisted": false,
+          "retry_count": 0,
+          "status": "SUCCESS"
+        },
+        "reader": {
+          "completion_tokens": 368,
+          "config_sha256": "570d3ccf0ad38e00f8cd86a970a2ee41fff62998287b87478f9ab345d7ee0aeb",
+          "model": "qwen3-32b-fp8",
+          "note_calls": 10,
+          "note_output_sha256": [
+            "a3fa5c3c3e8045d27fa98676fb4f25a591403ee2d7751e2f3b77aee482b5a128",
+            "81b83e181b9786290dd91e0ca25fd9589aaa601d73ecca78e060f2aece0bde43",
+            "864f6ac638ee52c798842ec39efcf0c10407b784039d108a6cb97e2580b78533",
+            "81b83e181b9786290dd91e0ca25fd9589aaa601d73ecca78e060f2aece0bde43",
+            "864f6ac638ee52c798842ec39efcf0c10407b784039d108a6cb97e2580b78533",
+            "81b83e181b9786290dd91e0ca25fd9589aaa601d73ecca78e060f2aece0bde43",
+            "9c1bdbd4db03c4e8976bb9e074190bb259ac333ec7617c1d48ad9983a2d41ea1",
+            "864f6ac638ee52c798842ec39efcf0c10407b784039d108a6cb97e2580b78533",
+            "81b83e181b9786290dd91e0ca25fd9589aaa601d73ecca78e060f2aece0bde43",
+            "81b83e181b9786290dd91e0ca25fd9589aaa601d73ecca78e060f2aece0bde43"
+          ],
+          "note_prompt_sha256": [
+            "27aeca9cf61410b47e2d81d0dc839d3dbf1f1c065e7dfb504c643185e9478939",
+            "c4f99ddd6fb057d48573b26a398a3db55fbd8b45090af74e5253761b3c71e67e",
+            "c50ca529aeafe3d9526248e6e277f845bd04ef92ff683fa6f4ec61b95c664f8c",
+            "1f89b8be0d160e002f55478286a88e824f745023516aa85afde386e269e2c959",
+            "7e75ff9478f4977f3b8054d49f85e4574bfbc0aa9446b21d8d7e9ff845ef3bda",
+            "4ec090ad752823070cede399660f3fefbded7785ca494371aa62e63f758e6cb4",
+            "e80ae5c6831ebe5721c30dcc467574712e157e2bc79e5abc59181e808fae513e",
+            "0b5a226a00ef4b3044450c74f53e6827a9781eaf5538138a952e15cf94f9cdc9",
+            "ffff8ea540d86f2d678ba754ee9792c85034de409286901a29eafb1818448286",
+            "0b400c3c7c698389ce990e7f27918307af4d9ecc5acd2aa64127ecb5cc0dfa73"
+          ],
+          "output_byte_count": 752,
+          "output_character_count": 752,
+          "output_sha256": "f0d451a9da33822c6868d6606e4d10f48cdfb0c5a212f9a6338c3e2352ff3bb3",
+          "prompt_byte_count": 1656,
+          "prompt_character_count": 1656,
+          "prompt_sha256": "301a5293e8ae7420380dd004f2859aa35faac46f06910849b4b0f756414c9daa",
+          "prompt_tokens": 32993,
+          "status": "SUCCESS",
+          "truncation_count": 0
+        },
+        "reader_answer": "### Step 1: Extract Relevant Information\nFrom the chat history, we have two relevant notes about the user's coffee-to-water ratio for their French press:\n1. \"1 tablespoon of coffee for every 6 ounces of water is the perfect ratio.\"\n2. \"They have their French press ratio down to a science: **1 tablespoon of coffee for every 5 ounces of water**.\"\n\n### Step 2: Compare the Two Ratios\n- In the first note, the ratio is **1 tablespoon of coffee for every 6 ounces of water**.\n- In the second note, the ratio is **1 tablespoon of coffee for every 5 ounces of water**.\n\nThis means the user is now using **less water per tablespoon of coffee** (5 ounces instead of 6 ounces).\n\n### Step 3: Final Answer\nYou switched to **less water per tablespoon of coffee**."
+      },
+      "history_id": "6071bd76",
+      "namespace": "membind-v6-v6-r07-v6-6071bd76-d6fd221e9e",
+      "question": "For the coffee-to-water ratio in my French press, did I switch to more water per tablespoon of coffee, or less?",
+      "retrieval": {
+        "episode_count": 20,
+        "fact_count": 20,
+        "gold_inputs_during_selection": false,
+        "graphiti_search_calls": 1,
+        "neo4j_read_requests": 4,
+        "ranked_session_ids": [
+          "answer_4dac77cb_1",
+          "8d0b4363",
+          "ultrachat_56513",
+          "a58eeaf8",
+          "a8899aee_1",
+          "9de53d68_1",
+          "answer_4dac77cb_2",
+          "ultrachat_551846",
+          "04616813_2",
+          "e6b6353d"
+        ],
+        "retrieval_identity_sha256": "87e60ea9d1c76de74ddbf2e145f4deb4480453774e4700ebbaf6e85d2153e47f",
+        "search_config_sha256": "62535d82129d01d6cbf8c3d5c13f656e60d89d821a9d9b9ca7bc1ed51c53fa7d",
+        "top_k_context": 10
+      },
+      "session_recall_posthoc": {
+        "authority": "POST_HOC_PROVENANCE_METRIC_ONLY",
+        "gold_hits_at_10": 2,
+        "gold_ranks": [
+          1,
+          7
+        ],
+        "gold_session_count": 2,
+        "recall_at_10": 1.0
+      }
+    }
+  ],
+  "runtime_evidence": {
+    "candidate_roots_unchanged": true,
+    "construction_calls": 0,
+    "endpoint_health": {
+      "chat": {
+        "base_url": "http://10.87.5.247:8000/v1",
+        "model": "qwen3-32b-fp8",
+        "model_ids": [
+          "qwen3-32b-fp8"
+        ],
+        "status": "PASS"
+      },
+      "embedding": {
+        "base_url": "http://10.87.5.247:8001/v1",
+        "model": "qwen3-embedding-0.6b",
+        "model_ids": [
+          "qwen3-embedding-0.6b"
+        ],
+        "status": "PASS"
+      },
+      "neo4j": {
+        "neo4j_read_requests": 1,
+        "status": "PASS"
+      }
+    },
+    "graph_writes": 0,
+    "neo4j_read_requests": 9,
+    "qa_reader_judge_calls": 24
+  },
+  "schema_version": "membind.v6.final-qa-results.v1",
+  "status": "READ_ONLY_V6_FINAL_QA_COMPLETE"
+}

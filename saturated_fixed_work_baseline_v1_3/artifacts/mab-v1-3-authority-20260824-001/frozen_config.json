@@ -1,0 +1,55 @@
+{
+  "arm_orders": [
+    [
+      "B0",
+      "B1",
+      "V6"
+    ],
+    [
+      "B1",
+      "V6",
+      "B0"
+    ],
+    [
+      "V6",
+      "B0",
+      "B1"
+    ]
+  ],
+  "arrival": {
+    "arrival_offset_s": 0.0,
+    "mode": "SATURATED"
+  },
+  "config_sha256": "93615aab9936c4bd36ae01fc39557ee711cfff1310d4c6351ac11489eb381000",
+  "dataset_file_sha256": "97fd80207f3419fc57c3684db824334224546d6bdd62c17ef52cd116eec9ffc8",
+  "dataset_revision": "7ea066982b140a19337e17e60d45d4076e042faf",
+  "formal": {
+    "context_indices": [
+      0,
+      1,
+      2,
+      3,
+      4
+    ],
+    "qa_per_context": 60,
+    "repeats": 3
+  },
+  "methods": {
+    "B0": {
+      "label": "B0 Native Serial",
+      "semantic_class": "ORDERED_REFERENCE"
+    },
+    "B1": {
+      "label": "B1 Naive Whole-Update Async",
+      "semantic_class": "RELAXED_ORDER_REFERENCE"
+    },
+    "V6": {
+      "label": "MemBind V6",
+      "semantic_class": "ORDERED_REFINEMENT"
+    }
+  },
+  "primary_endpoint": "last PUBLICATION_DURABLE - FORMAL_START",
+  "qa_role": "OFFICIAL_ENDPOINT_QUALITY_GUARD_ONLY",
+  "schema_version": "membind.v1.3.frozen-config.v1",
+  "source_filter": "longmemeval_s*"
+}

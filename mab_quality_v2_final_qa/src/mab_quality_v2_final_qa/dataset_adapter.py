@@ -27,6 +27,7 @@ class DatasetMappingError(ValueError):
 
 
 _CHAT_TIME = re.compile(r"^\s*Chat\s+Time\s*:\s*(.+?)\s*$", re.IGNORECASE)
+KNOWN_PARTIAL_GOLD_QUESTION_ID = "0ddfec37_abs"
 
 
 def _mapping(value: Any, field: str) -> Mapping[str, Any]:
@@ -365,9 +366,16 @@ class MABDatasetAdapter:
                         if seq not in used
                     ]
                     if not choices:
-                        raise DatasetMappingError(
-                            f"question {index} gold session is absent from common context"
-                        )
+                        # The pinned MAB component contains one declared gold
+                        # provenance mismatch.  Keep the question and answer
+                        # lane usable while making evidence metrics explicitly
+                        # unavailable; construction must never be shrunk to a
+                        # post-hoc four-context subset.
+                        if q_ids[index] != KNOWN_PARTIAL_GOLD_QUESTION_ID:
+                            raise DatasetMappingError(
+                                f"question {index} gold session is absent from common context"
+                            )
+                        continue
                     sequence = choices[0]
                     used.add(sequence)
                     gold_ids.append(sessions[sequence].session_id)
@@ -391,6 +399,12 @@ class MABDatasetAdapter:
             answers_for_question = _as_answers(answers[index], index)
             if not answers_for_question:
                 raise DatasetMappingError(f"answers[{index}] is empty")
+            mapping_status = (
+                "PARTIAL_GOLD_MAPPING"
+                if q_ids[index] == KNOWN_PARTIAL_GOLD_QUESTION_ID
+                and len(gold_ids) != len(groups[index])
+                else "COMPLETE"
+            )
             qa_items.append(
                 MABQA(
                     qa_pair_id=_nonempty(pair_ids[index], f"qa_pair_ids[{index}]"),
@@ -400,6 +414,7 @@ class MABDatasetAdapter:
                     question_date=_timestamp(dates[index]),
                     question_type=_nonempty(types[index], f"question_types[{index}]"),
                     gold_session_ids=tuple(gold_ids),
+                    gold_mapping_status=mapping_status,
                 )
             )
         try:
@@ -453,10 +468,17 @@ class MABDatasetAdapter:
                         item.question_type,
                         list(item.reference_answers),
                         list(item.gold_session_ids),
+                        item.gold_mapping_status,
                     ]
                     for context in contexts
                     for item in context.qa_items
                 ]
+            ),
+            "partial_gold_mapping_question_ids": sorted(
+                item.question_id
+                for context in contexts
+                for item in context.qa_items
+                if item.gold_mapping_status == "PARTIAL_GOLD_MAPPING"
             ),
         }
         body["dataset_manifest_sha256"] = canonical_sha256(body)
@@ -479,4 +501,8 @@ class MABDatasetAdapter:
         return self._contexts
 
 
-__all__ = ["DatasetMappingError", "MABDatasetAdapter"]
+__all__ = [
+    "DatasetMappingError",
+    "KNOWN_PARTIAL_GOLD_QUESTION_ID",
+    "MABDatasetAdapter",
+]

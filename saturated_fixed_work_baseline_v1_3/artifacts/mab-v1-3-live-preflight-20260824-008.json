@@ -1,0 +1,95 @@
+{
+  "authority": {
+    "authority_checks": {
+      "context_count": true,
+      "known_partial_mapping": true,
+      "qa_counts": true,
+      "question_type_counts": true,
+      "session_counts": true,
+      "source_filter": true,
+      "total_qa": true,
+      "total_sessions": true
+    },
+    "authority_sha256": "7dae7013022d0e09475a054d2a684aff9cffaf72b2667145842d40bd15a84b61",
+    "authority_status": "FULL_OFFICIAL_COMPONENT",
+    "benchmark": "MemoryAgentBench",
+    "context_count": 5,
+    "context_ids": [
+      "longmemeval_s*:3c7e614ecadaf1a6",
+      "longmemeval_s*:68e0c0a3c1784bc0",
+      "longmemeval_s*:9b8cbac923a7a2d1",
+      "longmemeval_s*:92fa22f6540b0e82",
+      "longmemeval_s*:59a4da8d7a3c57bc"
+    ],
+    "hf_dataset": "ai-hyz/MemoryAgentBench",
+    "local_file": "/data/predator/ly/MemBind/mab_quality_v2_final_qa/data/official_5_contexts.json",
+    "local_file_sha256": "97fd80207f3419fc57c3684db824334224546d6bdd62c17ef52cd116eec9ffc8",
+    "partial_gold_mapping_question_ids": [
+      "0ddfec37_abs"
+    ],
+    "qa_counts": [
+      60,
+      60,
+      60,
+      60,
+      60
+    ],
+    "qa_per_context": 60,
+    "question_type_counts": {
+      "knowledge-update": 45,
+      "multi-session": 75,
+      "single-session-assistant": 30,
+      "single-session-preference": 30,
+      "single-session-user": 45,
+      "temporal-reasoning": 75
+    },
+    "revision": "7ea066982b140a19337e17e60d45d4076e042faf",
+    "schema_version": "membind.v1.3.dataset-authority.v1",
+    "session_counts": [
+      111,
+      107,
+      116,
+      111,
+      110
+    ],
+    "source_filter": "longmemeval_s*",
+    "task": "Accurate Retrieval",
+    "total_qa": 300,
+    "total_sessions": 555
+  },
+  "authority_status": "PASS",
+  "blocked_gates": [],
+  "construction_endpoint": {
+    "body_sha256": "1d96b75d4cdf87b5aa03e59f0f924e5df381a5c2fec70bfedb0baaec88b9f395",
+    "expected_model": "qwen3-32b-fp8",
+    "model_ids": [
+      "qwen3-32b-fp8"
+    ],
+    "status": "PASS",
+    "url": "http://10.87.5.247:8000/v1/models"
+  },
+  "embedding_endpoint": {
+    "body_sha256": "3b59da5a3899a955d6bb2652216cf9fef3c2d7bb4766f1acbff33feb27683f76",
+    "expected_model": "qwen3-embedding-0.6b",
+    "model_ids": [
+      "qwen3-embedding-0.6b"
+    ],
+    "status": "PASS",
+    "url": "http://10.87.5.247:8001/v1/models"
+  },
+  "frozen_root": "/data/predator/ly/MemBind/saturated_fixed_work_baseline_v1_3/artifacts/mab-v1-3-authority-20260824-002",
+  "gates": {
+    "authority": true,
+    "construction_endpoint": true,
+    "embedding_endpoint": true,
+    "neo4j": true
+  },
+  "neo4j": {
+    "host": "localhost",
+    "port": 7687,
+    "status": "TCP_REACHABLE"
+  },
+  "schema_version": "membind.v1.3.live-preflight.v1",
+  "scope": "A3_REAL_CONTEXT0_1_2_8_PROBE",
+  "status": "READY_FOR_A3"
+}

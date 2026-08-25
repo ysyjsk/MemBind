@@ -1,0 +1,25 @@
+{
+  "status": "STOP_WITH_EXTERNAL_DIAGNOSIS",
+  "classification": "REMOTE_CONSTRUCTION_VLLM_STALL",
+  "observation_point": "direct_control_host_and_restricted_remote_readonly_channel",
+  "construction_endpoint": "http://10.87.5.247:8000/v1/",
+  "embedding_endpoint": "http://10.87.5.247:8001/v1",
+  "construction_probe": {
+    "health": "TIMEOUT",
+    "models": "TIMEOUT",
+    "direct_no_proxy": true
+  },
+  "embedding_probe": "RESPONSIVE",
+  "neo4j_probe": "RESPONSIVE",
+  "remote_log_tail": "qwen3-32b-fp8-server-gpu0.log stopped at 02:33:36 with Running: 1 reqs and no later completion",
+  "remote_access": "READ_ONLY_NO_SERVICE_ADMIN",
+  "last_attempt": {
+    "run_id": "firstpass-c0",
+    "method": "B0",
+    "context_index": 0,
+    "namespace": "mab-v13-firstpass-c0-c0-b0-cd8524b0d353",
+    "completed_prefix_count": 39,
+    "attempt_status": "FAILED_VLLM_STALL"
+  },
+  "resume_policy": "require construction vLLM recovery and fresh namespace; retain all existing attempts"
+}

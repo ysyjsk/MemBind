@@ -1,0 +1,39 @@
+{
+  "schema_version": "membind.v1.3.tdd-evidence.v1",
+  "red": [
+    {
+      "scope": "dataset/workload",
+      "command": "mab_quality_v2_final_qa/.venv/bin/pytest -q tests/test_v13_workplan_contracts.py",
+      "result": "RED",
+      "earliest_witness": "ModuleNotFoundError: mab_quality_v2_final_qa.mab_main_dataset"
+    },
+    {
+      "scope": "trace/reducer/QA/orchestrator/seal",
+      "result": "RED",
+      "earliest_witness": "tests were added before the corresponding modules"
+    }
+  ],
+  "green": {
+    "mab_quality_v2_final_qa": {
+      "command": "mab_quality_v2_final_qa/.venv/bin/pytest -q",
+      "passed": 38,
+      "skipped": 2,
+      "failed": 0
+    },
+    "v13_new_contracts": {
+      "command": "membind-validation/.venv/bin/pytest -q tests/test_v13_trace_contracts.py tests/test_v13_reducer.py tests/test_v13_qa_lane.py tests/test_three_way_campaign.py tests/test_v13_orchestrator.py tests/test_v13_qa_reducer.py tests/test_v13_seals.py",
+      "passed": 22,
+      "failed": 0
+    },
+    "saturated_fixed_work_baseline_v1_3": {
+      "command": "membind-validation/.venv/bin/pytest -q",
+      "passed": 243,
+      "failed": 0
+    }
+  },
+  "static_checks": {
+    "compileall": "PASS",
+    "git_diff_check": "PASS"
+  },
+  "method_or_protocol_changed": false
+}

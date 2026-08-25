@@ -1,0 +1,143 @@
+{
+  "ablation_reader": {
+    "con": false,
+    "cot": false,
+    "effective_enable_thinking": false,
+    "has_answer_label_removed": true,
+    "history_format": "json",
+    "implementation": "longmemeval_official_session_reader",
+    "input_representation": "longmemeval_flat_session_item",
+    "max_attempts": 1,
+    "max_tokens": 500,
+    "merge_key_expansion_into_value": "none",
+    "messages": [
+      "user"
+    ],
+    "model": "qwen3-32b-fp8",
+    "n": 1,
+    "official_flat_session_item_semantics": true,
+    "presentation_order": "chronological_after_top_k_rank_stable_ties",
+    "prompt_template_sha256": "e427ff913456e51a132ec865b1b5038d562bdc36890976943ad421cc9b365c9d",
+    "retriever_type": "flat-session",
+    "retry_delays_seconds": [],
+    "sdk_hidden_retries": 0,
+    "session_value_source": "frozen_dataset_haystack_sessions",
+    "system_prompt": null,
+    "temperature": 0,
+    "thinking_control": "client_request",
+    "thinking_parameter_sent": true,
+    "topk_context": 10,
+    "truncation_policy": "FAIL_CLOSED_IF_CONTEXT_EXCEEDED",
+    "upstream_commit": "9e0b455f4ef0e2ab8f2e582289761153549043fc",
+    "upstream_file_sha256": "4f1eb3c69d7ad40f04065b9c0bc86f6582441018fc6ff751d162d66c95baf672",
+    "upstream_repository": "xiaowu0162/LongMemEval",
+    "upstream_source_path": "src/generation/run_generation.py",
+    "useronly": false
+  },
+  "baseline_formal_seal_sha256": "695cb71c9b6e305ad9c3e26b90c1b9d9487c54e32200fed65e40ff9a1205e8c2",
+  "baseline_graph": "/data/predator/ly/MemBind/saturated_fixed_work_baseline_v1_3/artifacts/sfwb-v1-3-formal-baseline-20260822-002/blocks/formal-005-6071bd76-B0_NATIVE_SERIAL/attempt-001/canonical_graph.json",
+  "candidate_count": 2,
+  "candidates": [
+    {
+      "candidate_id": "v6-r06-v6",
+      "canonical_graph_path": "/data/predator/ly/MemBind/saturated_fixed_work_baseline_v1_3/artifacts/sfwb-v1-3-v6-autoresearch-20260822-191241/main/v6-r06-v6/histories/6071bd76/canonical_graph.json",
+      "episode_mapping_sha256": "0f4a38a5593485a2d28746a71d03f6dd8e2595efbe34f222272d8fc10d743502",
+      "history_id": "6071bd76",
+      "input_artifact_sha256": {
+        "canonical_graph": "d146d1464a7dac0ca6f74ece2c982ac5e93afb765554e8342a9cf03db5e31c11",
+        "manifest": "91f8a35056984a9cd86dbca31ac35be48ab9d5a16d1df27a602cdc6bddb5e0ca",
+        "proof": "cbb2d5bf30d9697f76b5a485c12f313fc5233ae3049841dbbbf5fc2711aad11b",
+        "seal": "79b71808ade96c7bf935e16286ca8f35d84f83c98998a109067fa03ae4d26a91"
+      },
+      "namespace": "membind-v6-v6-r06-v6-6071bd76-0fcfe1d3d8",
+      "root": "/data/predator/ly/MemBind/saturated_fixed_work_baseline_v1_3/artifacts/sfwb-v1-3-v6-autoresearch-20260822-191241/main/v6-r06-v6",
+      "root_unchanged": true,
+      "source_count": 46,
+      "tree_sha256_after": "e3a178e08bd0e7c54860521163ea5978f87c1cd8df597a1ada1f63dd86666fa7",
+      "tree_sha256_before": "e3a178e08bd0e7c54860521163ea5978f87c1cd8df597a1ada1f63dd86666fa7"
+    },
+    {
+      "candidate_id": "v6-r07-v6",
+      "canonical_graph_path": "/data/predator/ly/MemBind/saturated_fixed_work_baseline_v1_3/artifacts/sfwb-v1-3-v6-autoresearch-20260822-191241/main/v6-r07-v6/histories/6071bd76/canonical_graph.json",
+      "episode_mapping_sha256": "0f4a38a5593485a2d28746a71d03f6dd8e2595efbe34f222272d8fc10d743502",
+      "history_id": "6071bd76",
+      "input_artifact_sha256": {
+        "canonical_graph": "c03a5bb3915cd2988f8ce93bc0c58a2c8df82585dd6cf2ae851b60c7f2538678",
+        "manifest": "91f8a35056984a9cd86dbca31ac35be48ab9d5a16d1df27a602cdc6bddb5e0ca",
+        "proof": "07302ff949eb88ad06fd10285dde2e75751d2d6ecfeaffdbdf60209e419f24d3",
+        "seal": "79b71808ade96c7bf935e16286ca8f35d84f83c98998a109067fa03ae4d26a91"
+      },
+      "namespace": "membind-v6-v6-r07-v6-6071bd76-d6fd221e9e",
+      "root": "/data/predator/ly/MemBind/saturated_fixed_work_baseline_v1_3/artifacts/sfwb-v1-3-v6-autoresearch-20260822-191241/main/v6-r07-v6",
+      "root_unchanged": true,
+      "source_count": 46,
+      "tree_sha256_after": "9851cb0fc6a9df6cca998e4b21dbf225e861581b89db3e5200e250c084c9a0f0",
+      "tree_sha256_before": "9851cb0fc6a9df6cca998e4b21dbf225e861581b89db3e5200e250c084c9a0f0"
+    }
+  ],
+  "construction_calls": 0,
+  "graph_writes": 0,
+  "headline_reader": {
+    "answer_max_tokens": 800,
+    "answer_prompt_sha256": "9e2b3110622929ab896696dd8937231c7436740ec3b9586f653f97346e19ab2c",
+    "con": true,
+    "cot": true,
+    "effective_enable_thinking": false,
+    "history_format": "json",
+    "implementation": "longmemeval_json_chain_of_note_reader",
+    "max_attempts": 1,
+    "n": 1,
+    "note_max_tokens": 500,
+    "note_prompt_sha256": "1afab7da2e46782b717d009f6a208516611d691ad0e931e95e2b5c58eb2a23c8",
+    "retriever_type": "flat-session",
+    "sdk_hidden_retries": 0,
+    "source_text": "READ_ONLY_NEO4J_EPISODIC_CONTENT_ONLY",
+    "temperature": 0,
+    "thinking_control": "client_request",
+    "topk_context": 10,
+    "transport_config_sha256": "5d82acc8342a09b01e87205684869740f949fa6fa4c4f46de8619756a8889cab",
+    "upstream_commit": "9e0b455f4ef0e2ab8f2e582289761153549043fc",
+    "upstream_repository": "xiaowu0162/LongMemEval",
+    "upstream_source_path": "src/generation/run_generation.py",
+    "upstream_source_sha256": "4f1eb3c69d7ad40f04065b9c0bc86f6582441018fc6ff751d162d66c95baf672"
+  },
+  "history_id": "6071bd76",
+  "judge": {
+    "base_url": "http://10.87.5.247:8000/v1",
+    "implementation": "PINNED_OFFICIAL_LONGMEMEVAL_JUDGE",
+    "raw_output_persisted": false
+  },
+  "payload_sha256": "a80b7a29d4ef03b27ef6eb37c9ad0a4c526fb5a8a6a913fc3be23e44367bfd90",
+  "retrieval": "EXISTING_QUALITY_V1_TOP20_RRF_GOLD_BLIND",
+  "runtime_evidence": {
+    "candidate_roots_unchanged": true,
+    "construction_calls": 0,
+    "endpoint_health": {
+      "chat": {
+        "base_url": "http://10.87.5.247:8000/v1",
+        "model": "qwen3-32b-fp8",
+        "model_ids": [
+          "qwen3-32b-fp8"
+        ],
+        "status": "PASS"
+      },
+      "embedding": {
+        "base_url": "http://10.87.5.247:8001/v1",
+        "model": "qwen3-embedding-0.6b",
+        "model_ids": [
+          "qwen3-embedding-0.6b"
+        ],
+        "status": "PASS"
+      },
+      "neo4j": {
+        "neo4j_read_requests": 1,
+        "status": "PASS"
+      }
+    },
+    "graph_writes": 0,
+    "neo4j_read_requests": 9,
+    "qa_reader_judge_calls": 24
+  },
+  "schema_version": "membind.v6.final-qa-manifest.v1",
+  "status": "READ_ONLY_V6_FINAL_QA_COMPLETE"
+}

@@ -1,0 +1,51 @@
+{
+  "ablation_statuses": [
+    "PASS",
+    "PASS"
+  ],
+  "answer_divergence": false,
+  "authority": "OFFICIAL_LONGMEMEVAL_JSON_CHAIN_OF_NOTE_AND_PINNED_JUDGE",
+  "candidate_count": 2,
+  "complete_posthoc_recall": true,
+  "headline_pass_count": 2,
+  "headline_statuses": [
+    "PASS",
+    "PASS"
+  ],
+  "payload_sha256": "492f5f5c3f286fc55a540eeb65c5adb70a7869ba96c79fd807500ec3798ec3f6",
+  "quality_claim": true,
+  "read_only_evidence_valid": true,
+  "repetition_stable": true,
+  "retrieval_identity_divergence": true,
+  "runtime_evidence": {
+    "candidate_roots_unchanged": true,
+    "construction_calls": 0,
+    "endpoint_health": {
+      "chat": {
+        "base_url": "http://10.87.5.247:8000/v1",
+        "model": "qwen3-32b-fp8",
+        "model_ids": [
+          "qwen3-32b-fp8"
+        ],
+        "status": "PASS"
+      },
+      "embedding": {
+        "base_url": "http://10.87.5.247:8001/v1",
+        "model": "qwen3-embedding-0.6b",
+        "model_ids": [
+          "qwen3-embedding-0.6b"
+        ],
+        "status": "PASS"
+      },
+      "neo4j": {
+        "neo4j_read_requests": 1,
+        "status": "PASS"
+      }
+    },
+    "graph_writes": 0,
+    "neo4j_read_requests": 9,
+    "qa_reader_judge_calls": 24
+  },
+  "schema_version": "membind.v6.final-qa-verdict.v1",
+  "verdict": "VALID_QA_PASS"
+}
