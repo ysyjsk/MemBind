@@ -1,0 +1,89 @@
+{
+  "schema_version": "membind.v7.engineering-provider-freeze.v2",
+  "status": "ENGINEERING_VALIDATION_ONLY",
+  "frozen_at": "2026-08-26",
+  "authority": "alibaba-bailian-openai-compatible-engineering-json-object-v1",
+  "base_url": "https://dashscope.aliyuncs.com/compatible-mode/v1",
+  "construction_model": "qwen3.5-35b-a3b",
+  "api_key_env": "DASHSCOPE_API_KEY",
+  "temperature": 0.0,
+  "top_p": 1.0,
+  "structured_output_mode": "json_object",
+  "request_extension": {
+    "extra_body": {
+      "enable_thinking": false
+    }
+  },
+  "schema_policy": {
+    "prompt_schema_injection": "graphiti-json-object-constrained-pydantic-v1",
+    "response_validation": "pydantic-v2",
+    "free_form_acceptance": false
+  },
+  "output_limit_policy": {
+    "max_tokens_sent": false,
+    "logical_graphiti_node_max_tokens": 16384,
+    "logical_graphiti_edge_max_tokens": 16384,
+    "provider_output_limit": "PROVIDER_DEFAULT_UNKNOWN",
+    "completion_requirement": "finish_reason_stop_and_pydantic_valid"
+  },
+  "probe_budgets": {
+    "minimal_json_schema_max_tokens": 256,
+    "extract_nodes_extract_message_max_tokens": 16384,
+    "extract_edges_edge_max_tokens": 16384
+  },
+  "probe_workload": {
+    "dataset_sha256": "97fd80207f3419fc57c3684db824334224546d6bdd62c17ef52cd116eec9ffc8",
+    "context_index": 1,
+    "source_sequence": 0
+  },
+  "model_list_identity_probe": {
+    "http_status": 200,
+    "target_present": true,
+    "model_count": 241,
+    "response_content_bytes": 21392,
+    "response_content_sha256": "3a6834f03f8d80ec974e82bb68c2144f42b76f3f2ae68e2d7d48fb1270b010a1"
+  },
+  "provider_contract_evidence": {
+    "url": "https://help.aliyun.com/zh/model-studio/qwen-structured-output",
+    "retrieved_at": "2026-08-26",
+    "response_content_bytes": 263087,
+    "response_content_sha256": "1f4eedf51e17b12c0a39ef6394dd69ffd303795a7f31994420e85b53152ab183",
+    "qwen3_5_open_source_json_object_supported": true,
+    "qwen3_5_open_source_json_schema_listed": false,
+    "json_schema_strict_true_documented": true,
+    "structured_output_disable_max_tokens_documented": true
+  },
+  "infrastructure_reauthorization": {
+    "previous_provider_freeze_sha256": "9ad6994b4b3bb64a2d4ff46c78c97d72b8c7fd2ca65127233969b61e3dd4052b",
+    "failed_probe_artifact_sha256": [
+      "bc8cbd1307e1a50a3e6644dcb0f908042ee97466350f21bd5617f9361c51592e",
+      "f547c526a1da9cf00907aa98593a47fa4035b221be8f4aac7f3635f6e74ee63b"
+    ],
+    "changed_fields": [
+      "authority",
+      "structured_output_mode",
+      "schema_policy",
+      "output_limit_policy"
+    ],
+    "reason": "official provider contract excludes this Qwen3.5 open-source model from JSON Schema support while listing JSON Object support; use explicit prompt schema injection and retain Pydantic validation as engineering-only compatibility evidence"
+  },
+  "embedding": {
+    "status": "NOT_FROZEN",
+    "model": null,
+    "dimension": null
+  },
+  "sdk_max_retries": 0,
+  "hard_attempt_limit_per_probe": 1,
+  "formal_r1_r3_eligible": false,
+  "gate_a_e_evaluated": false,
+  "gate_outcome": "NOT_EVALUATED",
+  "treatment_authorized": false,
+  "diagnostic_only": true,
+  "scientific_method_selection_update_allowed": false,
+  "database_allowed": false,
+  "embedding_allowed": false,
+  "response_replay_allowed": false,
+  "raw_request_persistence_allowed": false,
+  "raw_response_persistence_allowed": false,
+  "credential_persistence_allowed": false
+}

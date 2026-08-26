@@ -1,0 +1,137 @@
+{
+  "schema_version": "membind.v7.composite-development-protocol.v1",
+  "status": "FROZEN_BEFORE_DEVELOPMENT_R1_R3",
+  "frozen_at": "2026-08-26",
+  "campaign_scope": "TEMPORARY_PROVIDER_DEVELOPMENT",
+  "provider_identity_kind": "COMPOSITE_ENGINEERING_ONLY",
+  "composite_provider_freeze": {
+    "path": "BAILIAN_SILICONFLOW_ENGINEERING_OBSERVER_FREEZE.json",
+    "sha256": "428826c09bf0ed33e72cbdb220721e0714124222c740f7af37a0d158538d4742"
+  },
+  "source_methodology_protocol": {
+    "path": "R1_R3_PROTOCOL_FREEZE_V5.json",
+    "sha256": "a3abb7e6ea481952ed868886bfd958bad9060812e42ca1eb3d96e46a1d77dd0a",
+    "thresholds_reused_unchanged": true,
+    "workload_reused_unchanged": true
+  },
+  "construction": {
+    "authority": "alibaba-bailian-openai-compatible-engineering-json-object-v1",
+    "base_url": "https://dashscope.aliyuncs.com/compatible-mode/v1",
+    "model": "qwen3.5-35b-a3b",
+    "api_key_env": "DASHSCOPE_API_KEY",
+    "temperature": 0.0,
+    "top_p": 1.0,
+    "structured_output_mode": "json_object",
+    "prompt_schema_injection": "graphiti-json-object-constrained-pydantic-v1",
+    "response_validation": "pydantic-v2",
+    "max_tokens_sent_for_structured_output": false,
+    "enable_thinking": false,
+    "sdk_max_retries": 0,
+    "hard_attempt_limit_per_request": 1
+  },
+  "embedding": {
+    "authority": "siliconflow-openai-compatible-v1",
+    "base_url": "https://api.siliconflow.cn/v1",
+    "model": "Qwen/Qwen3-Embedding-0.6B",
+    "dimension": 1024,
+    "api_key_env": "SILICONFLOW_API_KEY",
+    "dimension_policy": "EXACT_NO_TRUNCATION",
+    "sdk_max_retries": 0,
+    "hard_attempt_limit_per_request": 1
+  },
+  "backend": {
+    "provider": "neo4j",
+    "uri": "bolt://localhost:7687",
+    "isolation": "fresh_group_namespace_per_block",
+    "concurrent_external_writes_allowed": false
+  },
+  "runtime": {
+    "graphiti_version": "0.29.3",
+    "graphiti_pin": "021d3a57d511f21b10adaf7fa923bd5c1fce5e9d",
+    "max_coroutines": 8,
+    "global_llm_admission": 2,
+    "http_timeout_seconds": 900.0,
+    "logical_retry_policy": "single_attempt_direct_no_tenacity"
+  },
+  "workload": {
+    "dataset": "ai-hyz/MemoryAgentBench",
+    "dataset_revision": "7ea066982b140a19337e17e60d45d4076e042faf",
+    "local_file_sha256": "97fd80207f3419fc57c3684db824334224546d6bdd62c17ef52cd116eec9ffc8",
+    "r1_r2": {
+      "context_index": 0,
+      "source_start": 0,
+      "source_count": 2
+    },
+    "r3_blocks": [
+      {
+        "block_id": "R3-A",
+        "context_index": 1,
+        "source_start": 0,
+        "source_count": 6,
+        "seed": 17
+      },
+      {
+        "block_id": "R3-B",
+        "context_index": 2,
+        "source_start": 0,
+        "source_count": 6,
+        "seed": 23
+      }
+    ]
+  },
+  "thresholds": {
+    "false_stable_max": 0,
+    "false_unaffected_max": 0,
+    "csp_min": 0.1,
+    "sca_work_max": 4.0,
+    "affected_fraction_max": 0.5,
+    "reconvergence_min": 0.25,
+    "required_headroom_floor_ns": 100000000,
+    "required_headroom_ratio": 0.1,
+    "stable_prediction_min": 1,
+    "gross_saved_cp_min_ns": 1
+  },
+  "observer_harness": {
+    "schema_version": "membind.v7.development-observer-harness.v1",
+    "source_sha256": {
+      "mab_quality_v2_final_qa/src/mab_quality_v2_final_qa/mab_main_dataset.py": "a236f957cdde0c8a3235abd497f76c3a18a58ce65a34c8225aa377971fdaa94e",
+      "membind-validation/.venv/lib/python3.12/site-packages/graphiti_core/embedder/openai.py": "6c84e15282cc7869471b6fb75629332ba2597ce1ca9f83cabd4331e6c1f1272f",
+      "membind-validation/.venv/lib/python3.12/site-packages/graphiti_core/graphiti.py": "7c65051a62982d8b510ebdbf37bae4d07020e74520e1f6d9bf8a0ffb26beeccb",
+      "membind-validation/.venv/lib/python3.12/site-packages/graphiti_core/llm_client/openai_generic_client.py": "62d198e838030f4e309df2eeb0eb7cf1770e3bb32cbe34c8a9f3ee3dc0ca7705",
+      "membind-validation/src/graphiti_native.py": "f25141000494a8899a40b87f2bf5fb5e5cb519ab2d480d72973aeaf9e0d9c8cc",
+      "membind-validation/src/native_characterization_instrumentation.py": "c0be9ad8bf1acf5663b21523242c92c5dbba7f3bc7c01b4edd0d5477e73b16ac",
+      "membind-validation/src/native_characterization_tracing.py": "999e3f70780a3d3bc48d0d65a50c86b90010239b47d08dfe20c55808738f64a0",
+      "saturated_fixed_work_baseline_v1_3/scripts/run_v7_composite_development_campaign.py": "b0ccd232caa8e9e14fe7b6a9970405720db6b3ae3f620cf1e46fc4326473d445",
+      "saturated_fixed_work_baseline_v1_3/src/saturated_fixed_work_baseline_v1_3/membind_v7/certificates.py": "ee15f5629b3317d885930a98ab2b8b8d54e9804ea6aee4f18170839000dae24d",
+      "saturated_fixed_work_baseline_v1_3/src/saturated_fixed_work_baseline_v1_3/membind_v7/characterization.py": "68300af98f3579e4f321d519ff02ad47850b1fa2502d20819e33d6b79a579c1b",
+      "saturated_fixed_work_baseline_v1_3/src/saturated_fixed_work_baseline_v1_3/membind_v7/continuation.py": "c362cceba5d695dd43b6fda026b3cfe782c2b4edf8276b8580bbb02492d3a6c4",
+      "saturated_fixed_work_baseline_v1_3/src/saturated_fixed_work_baseline_v1_3/membind_v7/development_campaign.py": "75032c0cad51cae410329e7e2eb1c7b927d6793d5f24a97e05eae0f0c51555bc",
+      "saturated_fixed_work_baseline_v1_3/src/saturated_fixed_work_baseline_v1_3/membind_v7/engineering_observer_runtime.py": "235286d46cf890366bdb6d5048756eb915a6b60973e53f897ea687824a86765e",
+      "saturated_fixed_work_baseline_v1_3/src/saturated_fixed_work_baseline_v1_3/membind_v7/gates.py": "8b8151d100edc9df370852a63b0403f9558df63ea6f5239ed5c1f6bc5d0bca19",
+      "saturated_fixed_work_baseline_v1_3/src/saturated_fixed_work_baseline_v1_3/membind_v7/graphiti_observer.py": "3214ba84efd2bd949aa1bd870bbd61390187525d384fa8c2d555c4149e8ef656",
+      "saturated_fixed_work_baseline_v1_3/src/saturated_fixed_work_baseline_v1_3/membind_v7/observer_campaign.py": "d9d032eec24fc9ba3f4c027c1531d687271247a372ec3fb050f93c1a411541ef",
+      "saturated_fixed_work_baseline_v1_3/src/saturated_fixed_work_baseline_v1_3/membind_v7/opportunity.py": "8057cd54ce8426c9dae308ef405aaf88b477a08a4c1ab3f07892cbe2588b7574",
+      "saturated_fixed_work_baseline_v1_3/src/saturated_fixed_work_baseline_v1_3/membind_v7/state_delta.py": "acd3e61de41656b353afc31f2af9fe9258f250295423d033ac1fd50430597b67"
+    }
+  },
+  "scientific_method_selection": {
+    "path": "METHOD_SELECTION.json",
+    "sha256": "0a2958aeeedc2b7b8762247d5d6cf15252e2b6b737b5807a51a127461a632c53",
+    "update_allowed": false
+  },
+  "development_gate_output": "PROVISIONAL_GATE_RESULT.json",
+  "development_selection_output": "DEVELOPMENT_METHOD_SELECTION.json",
+  "formal_method_selection_output_forbidden": "METHOD_SELECTION.json",
+  "formal_r1_r3_eligible": false,
+  "live_treatment_authorized": false,
+  "scientific_method_selection_update_allowed": false,
+  "provider_swap_requires_new_formal_campaign": true,
+  "response_replay_allowed": false,
+  "old_read_return_allowed": false,
+  "native_demand_skip_allowed": false,
+  "repair_apply_allowed": false,
+  "raw_request_persistence_allowed": false,
+  "raw_response_persistence_allowed": false,
+  "raw_embedding_persistence_allowed": false,
+  "credential_persistence_allowed": false
+}

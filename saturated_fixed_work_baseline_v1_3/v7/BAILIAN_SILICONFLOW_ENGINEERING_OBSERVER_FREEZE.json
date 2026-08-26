@@ -1,0 +1,94 @@
+{
+  "schema_version": "membind.v7.composite-engineering-observer-freeze.v1",
+  "status": "FROZEN_BEFORE_ENGINEERING_OBSERVER",
+  "frozen_at": "2026-08-26",
+  "provider_identity_kind": "COMPOSITE_ENGINEERING_ONLY",
+  "construction": {
+    "authority": "alibaba-bailian-openai-compatible-engineering-json-object-v1",
+    "base_url": "https://dashscope.aliyuncs.com/compatible-mode/v1",
+    "model": "qwen3.5-35b-a3b",
+    "api_key_env": "DASHSCOPE_API_KEY",
+    "temperature": 0.0,
+    "top_p": 1.0,
+    "structured_output_mode": "json_object",
+    "prompt_schema_injection": "graphiti-json-object-constrained-pydantic-v1",
+    "response_validation": "pydantic-v2",
+    "max_tokens_sent_for_structured_output": false,
+    "enable_thinking": false,
+    "sdk_max_retries": 0,
+    "hard_attempt_limit_per_request": 1,
+    "provider_freeze_path": "BAILIAN_ENGINEERING_PROVIDER_FREEZE_V2.json",
+    "provider_freeze_sha256": "05a79792a1ace075671c9c03d300ec510e84b38dc9bf37ee2932e5396db31bba",
+    "compatibility_artifact_path": "artifacts/v7-bailian-engineering-json-object-20260826-003.json",
+    "compatibility_artifact_sha256": "953d71abe978ff74ed549243ef5676b425b31b204c07223902a97a7fb6edba22"
+  },
+  "embedding": {
+    "authority": "siliconflow-openai-compatible-v1",
+    "base_url": "https://api.siliconflow.cn/v1",
+    "model": "Qwen/Qwen3-Embedding-0.6B",
+    "dimension": 1024,
+    "api_key_env": "SILICONFLOW_API_KEY",
+    "sdk_max_retries": 0,
+    "hard_attempt_limit_per_request": 1,
+    "source_protocol_path": "R1_R3_PROTOCOL_FREEZE_V5.json",
+    "source_protocol_sha256": "a3abb7e6ea481952ed868886bfd958bad9060812e42ca1eb3d96e46a1d77dd0a",
+    "runtime_dimension_policy": "EXACT_NO_TRUNCATION"
+  },
+  "backend": {
+    "provider": "neo4j",
+    "uri": "bolt://localhost:7687",
+    "isolation": "fresh_group_namespace",
+    "concurrent_external_writes_allowed": false
+  },
+  "runtime": {
+    "graphiti_version": "0.29.3",
+    "graphiti_pin": "021d3a57d511f21b10adaf7fa923bd5c1fce5e9d",
+    "max_coroutines": 8,
+    "global_llm_admission": 2,
+    "http_timeout_seconds": 900.0,
+    "logical_retry_policy": "single_attempt_direct_no_tenacity"
+  },
+  "workload": {
+    "dataset": "ai-hyz/MemoryAgentBench",
+    "dataset_revision": "7ea066982b140a19337e17e60d45d4076e042faf",
+    "local_file_sha256": "97fd80207f3419fc57c3684db824334224546d6bdd62c17ef52cd116eec9ffc8",
+    "context_index": 0,
+    "source_start": 0,
+    "source_count": 2
+  },
+  "observer_harness": {
+    "schema_version": "membind.v7.composite-engineering-observer-harness.v1",
+    "source_sha256": {
+      "mab_quality_v2_final_qa/src/mab_quality_v2_final_qa/mab_main_dataset.py": "a236f957cdde0c8a3235abd497f76c3a18a58ce65a34c8225aa377971fdaa94e",
+      "membind-validation/.venv/lib/python3.12/site-packages/graphiti_core/embedder/openai.py": "6c84e15282cc7869471b6fb75629332ba2597ce1ca9f83cabd4331e6c1f1272f",
+      "membind-validation/.venv/lib/python3.12/site-packages/graphiti_core/graphiti.py": "7c65051a62982d8b510ebdbf37bae4d07020e74520e1f6d9bf8a0ffb26beeccb",
+      "membind-validation/.venv/lib/python3.12/site-packages/graphiti_core/llm_client/openai_generic_client.py": "62d198e838030f4e309df2eeb0eb7cf1770e3bb32cbe34c8a9f3ee3dc0ca7705",
+      "membind-validation/src/graphiti_native.py": "f25141000494a8899a40b87f2bf5fb5e5cb519ab2d480d72973aeaf9e0d9c8cc",
+      "membind-validation/src/native_characterization_instrumentation.py": "c0be9ad8bf1acf5663b21523242c92c5dbba7f3bc7c01b4edd0d5477e73b16ac",
+      "membind-validation/src/native_characterization_tracing.py": "999e3f70780a3d3bc48d0d65a50c86b90010239b47d08dfe20c55808738f64a0",
+      "saturated_fixed_work_baseline_v1_3/scripts/run_v7_composite_engineering_observer.py": "d4ed8b9904ee6f095657d0e61c018b41514b1340ba1eb6b83ebed657038d3b39",
+      "saturated_fixed_work_baseline_v1_3/src/saturated_fixed_work_baseline_v1_3/membind_v7/engineering_observer_runtime.py": "235286d46cf890366bdb6d5048756eb915a6b60973e53f897ea687824a86765e",
+      "saturated_fixed_work_baseline_v1_3/src/saturated_fixed_work_baseline_v1_3/membind_v7/graphiti_observer.py": "3214ba84efd2bd949aa1bd870bbd61390187525d384fa8c2d555c4149e8ef656",
+      "saturated_fixed_work_baseline_v1_3/src/saturated_fixed_work_baseline_v1_3/membind_v7/observer_campaign.py": "d9d032eec24fc9ba3f4c027c1531d687271247a372ec3fb050f93c1a411541ef"
+    }
+  },
+  "scientific_method_selection": {
+    "path": "METHOD_SELECTION.json",
+    "sha256": "0a2958aeeedc2b7b8762247d5d6cf15252e2b6b737b5807a51a127461a632c53",
+    "update_allowed": false
+  },
+  "observer_only": true,
+  "formal_r1_r3_eligible": false,
+  "gate_a_e_evaluated": false,
+  "gate_outcome": "NOT_EVALUATED",
+  "treatment_authorized": false,
+  "old_read_return_allowed": false,
+  "native_demand_skip_allowed": false,
+  "repair_apply_allowed": false,
+  "response_replay_allowed": false,
+  "scientific_method_selection_update_allowed": false,
+  "raw_request_persistence_allowed": false,
+  "raw_response_persistence_allowed": false,
+  "raw_embedding_persistence_allowed": false,
+  "credential_persistence_allowed": false
+}

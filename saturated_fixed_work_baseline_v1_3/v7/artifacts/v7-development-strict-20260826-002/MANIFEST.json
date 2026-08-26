@@ -1,0 +1,213 @@
+{
+  "campaign_identity": {
+    "backend": {
+      "concurrent_external_writes_allowed": false,
+      "isolation": "fresh_group_namespace_per_block",
+      "provider": "neo4j",
+      "uri": "bolt://localhost:7687"
+    },
+    "campaign_scope": "TEMPORARY_PROVIDER_DEVELOPMENT",
+    "construction": {
+      "authority": "alibaba-bailian-openai-compatible-strict-schema-selected-v1",
+      "base_url": "https://dashscope.aliyuncs.com/compatible-mode/v1",
+      "model": "qwen3-max-2026-01-23",
+      "strict_json_schema": true,
+      "structured_output_mode": "json_schema"
+    },
+    "credentials_recorded": false,
+    "embedding": {
+      "authority": "siliconflow-openai-compatible-v1",
+      "base_url": "https://api.siliconflow.cn/v1",
+      "dimension": 1024,
+      "dimension_policy": "EXACT_NO_TRUNCATION",
+      "model": "Qwen/Qwen3-Embedding-0.6B"
+    },
+    "embedding_preflights": [
+      {
+        "authority": "siliconflow-openai-compatible-v1",
+        "dimension": 1024,
+        "duration_ns": 148392174,
+        "formal_r1_r3_eligible": false,
+        "gate_outcome": "NOT_EVALUATED",
+        "input_persisted": false,
+        "model": "Qwen/Qwen3-Embedding-0.6B",
+        "schema_version": "membind.v7.engineering-embedding-preflight.v1",
+        "status": "PASS",
+        "vector_persisted": false
+      },
+      {
+        "authority": "siliconflow-openai-compatible-v1",
+        "dimension": 1024,
+        "duration_ns": 135511688,
+        "formal_r1_r3_eligible": false,
+        "gate_outcome": "NOT_EVALUATED",
+        "input_persisted": false,
+        "model": "Qwen/Qwen3-Embedding-0.6B",
+        "schema_version": "membind.v7.engineering-embedding-preflight.v1",
+        "status": "PASS",
+        "vector_persisted": false
+      },
+      {
+        "authority": "siliconflow-openai-compatible-v1",
+        "dimension": 1024,
+        "duration_ns": 134642244,
+        "formal_r1_r3_eligible": false,
+        "gate_outcome": "NOT_EVALUATED",
+        "input_persisted": false,
+        "model": "Qwen/Qwen3-Embedding-0.6B",
+        "schema_version": "membind.v7.engineering-embedding-preflight.v1",
+        "status": "PASS",
+        "vector_persisted": false
+      }
+    ],
+    "formal_r1_r3_eligible": false,
+    "live_treatment_authorized": false,
+    "observer_harness": {
+      "schema_version": "membind.v7.strict-development-observer-harness-verification.v1",
+      "source_sha256": {
+        "mab_quality_v2_final_qa/src/mab_quality_v2_final_qa/mab_main_dataset.py": "a236f957cdde0c8a3235abd497f76c3a18a58ce65a34c8225aa377971fdaa94e",
+        "membind-validation/.venv/lib/python3.12/site-packages/graphiti_core/embedder/openai.py": "6c84e15282cc7869471b6fb75629332ba2597ce1ca9f83cabd4331e6c1f1272f",
+        "membind-validation/.venv/lib/python3.12/site-packages/graphiti_core/graphiti.py": "7c65051a62982d8b510ebdbf37bae4d07020e74520e1f6d9bf8a0ffb26beeccb",
+        "membind-validation/.venv/lib/python3.12/site-packages/graphiti_core/llm_client/openai_generic_client.py": "62d198e838030f4e309df2eeb0eb7cf1770e3bb32cbe34c8a9f3ee3dc0ca7705",
+        "membind-validation/src/graphiti_native.py": "f25141000494a8899a40b87f2bf5fb5e5cb519ab2d480d72973aeaf9e0d9c8cc",
+        "membind-validation/src/native_characterization_instrumentation.py": "c0be9ad8bf1acf5663b21523242c92c5dbba7f3bc7c01b4edd0d5477e73b16ac",
+        "membind-validation/src/native_characterization_tracing.py": "999e3f70780a3d3bc48d0d65a50c86b90010239b47d08dfe20c55808738f64a0",
+        "saturated_fixed_work_baseline_v1_3/scripts/run_v7_composite_development_campaign.py": "b0ccd232caa8e9e14fe7b6a9970405720db6b3ae3f620cf1e46fc4326473d445",
+        "saturated_fixed_work_baseline_v1_3/scripts/run_v7_strict_development_campaign.py": "c847e82539259cdb8339bb44c7cb2ec06bccf09c69bb0dd0ba05d42822dcd390",
+        "saturated_fixed_work_baseline_v1_3/src/saturated_fixed_work_baseline_v1_3/membind_v7/certificates.py": "ee15f5629b3317d885930a98ab2b8b8d54e9804ea6aee4f18170839000dae24d",
+        "saturated_fixed_work_baseline_v1_3/src/saturated_fixed_work_baseline_v1_3/membind_v7/characterization.py": "68300af98f3579e4f321d519ff02ad47850b1fa2502d20819e33d6b79a579c1b",
+        "saturated_fixed_work_baseline_v1_3/src/saturated_fixed_work_baseline_v1_3/membind_v7/continuation.py": "c362cceba5d695dd43b6fda026b3cfe782c2b4edf8276b8580bbb02492d3a6c4",
+        "saturated_fixed_work_baseline_v1_3/src/saturated_fixed_work_baseline_v1_3/membind_v7/development_campaign.py": "75032c0cad51cae410329e7e2eb1c7b927d6793d5f24a97e05eae0f0c51555bc",
+        "saturated_fixed_work_baseline_v1_3/src/saturated_fixed_work_baseline_v1_3/membind_v7/development_provider_diagnostics.py": "ccc0925b56d911afad1d96a603ccc08e4d2f7340957fb23ddf9a5c3593f29288",
+        "saturated_fixed_work_baseline_v1_3/src/saturated_fixed_work_baseline_v1_3/membind_v7/engineering_observer_runtime.py": "235286d46cf890366bdb6d5048756eb915a6b60973e53f897ea687824a86765e",
+        "saturated_fixed_work_baseline_v1_3/src/saturated_fixed_work_baseline_v1_3/membind_v7/gates.py": "8b8151d100edc9df370852a63b0403f9558df63ea6f5239ed5c1f6bc5d0bca19",
+        "saturated_fixed_work_baseline_v1_3/src/saturated_fixed_work_baseline_v1_3/membind_v7/graphiti_observer.py": "3214ba84efd2bd949aa1bd870bbd61390187525d384fa8c2d555c4149e8ef656",
+        "saturated_fixed_work_baseline_v1_3/src/saturated_fixed_work_baseline_v1_3/membind_v7/observer_campaign.py": "d9d032eec24fc9ba3f4c027c1531d687271247a372ec3fb050f93c1a411541ef",
+        "saturated_fixed_work_baseline_v1_3/src/saturated_fixed_work_baseline_v1_3/membind_v7/opportunity.py": "8057cd54ce8426c9dae308ef405aaf88b477a08a4c1ab3f07892cbe2588b7574",
+        "saturated_fixed_work_baseline_v1_3/src/saturated_fixed_work_baseline_v1_3/membind_v7/provider_independent_development_campaign.py": "8fddc2a4c6e7befb59a9e4ae9c825f7c52d8606d54c7e639366330857faad414",
+        "saturated_fixed_work_baseline_v1_3/src/saturated_fixed_work_baseline_v1_3/membind_v7/state_delta.py": "acd3e61de41656b353afc31f2af9fe9258f250295423d033ac1fd50430597b67",
+        "saturated_fixed_work_baseline_v1_3/src/saturated_fixed_work_baseline_v1_3/membind_v7/strict_development_campaign.py": "a568aaecda6c9a7468bf949bdfcb23b1869b5dd2fd799ab1bbde7dc5e74fde4a",
+        "saturated_fixed_work_baseline_v1_3/src/saturated_fixed_work_baseline_v1_3/membind_v7/strict_development_runtime.py": "2da30a506d2b13a62de1bf14ff695c1c10242a687767a336cf84dd5065459233"
+      },
+      "status": "PASS"
+    },
+    "protocol_sha256": "981374439f55fde0a712bde744715f7a463294e17a7456b635823caf71252010",
+    "provider_identity_kind": "COMPOSITE_DEVELOPMENT_STRICT_SCHEMA_TEMPORARY",
+    "provider_observation_summary": {
+      "all_structured_finish_reason_stop": true,
+      "completion_tokens": 25643,
+      "construction_call_count": 190,
+      "nonstructured_call_count": 0,
+      "prompt_tokens": 1050479,
+      "response_content_bytes": 86396,
+      "response_content_hashes_persisted": false,
+      "structured_call_count": 190
+    },
+    "provider_swap_requires_new_formal_campaign": true,
+    "raw_embedding_persisted": false,
+    "raw_request_persisted": false,
+    "raw_response_persisted": false,
+    "response_content_hashes_persisted": false,
+    "response_replay_calls": 0,
+    "run_id": "v7-development-strict-20260826-002",
+    "schema_version": "membind.v7.development-campaign-identity.v2",
+    "scientific_method_selection_sha256": "0a2958aeeedc2b7b8762247d5d6cf15252e2b6b737b5807a51a127461a632c53",
+    "source_methodology_protocol_sha256": "a3abb7e6ea481952ed868886bfd958bad9060812e42ca1eb3d96e46a1d77dd0a",
+    "strict_runtime_freeze_sha256": "396ff16865c2fd97d188d2af34be4291dd79ba7729ee6db3cf4cde74bc6ff548",
+    "thresholds": {
+      "affected_fraction_max": 0.5,
+      "csp_min": 0.1,
+      "false_stable_max": 0,
+      "false_unaffected_max": 0,
+      "gross_saved_cp_min_ns": 1,
+      "reconvergence_min": 0.25,
+      "required_headroom_floor_ns": 100000000,
+      "required_headroom_ratio": 0.1,
+      "sca_work_max": 4.0,
+      "stable_prediction_min": 1
+    },
+    "treatment_calls": 0,
+    "workload": {
+      "dataset": "ai-hyz/MemoryAgentBench",
+      "dataset_revision": "7ea066982b140a19337e17e60d45d4076e042faf",
+      "local_file_sha256": "97fd80207f3419fc57c3684db824334224546d6bdd62c17ef52cd116eec9ffc8",
+      "r1_r2": {
+        "context_index": 0,
+        "source_count": 2,
+        "source_start": 0
+      },
+      "r3_blocks": [
+        {
+          "block_id": "R3-A",
+          "context_index": 1,
+          "seed": 17,
+          "source_count": 6,
+          "source_start": 0
+        },
+        {
+          "block_id": "R3-B",
+          "context_index": 2,
+          "seed": 23,
+          "source_count": 6,
+          "source_start": 0
+        }
+      ]
+    }
+  },
+  "files": [
+    {
+      "path": "AFFECTED_SET_ORACLE.json",
+      "sha256": "6c2d226cfd4d6e1178ca9e9d666f5f0db8f08d19b88b50be6f55a7eef47e915f"
+    },
+    {
+      "path": "CERTIFICATE_CONFUSION.json",
+      "sha256": "0f45ae68bf460bcfc4e536c5f12283fe2f3d841afe2c8356e611d526cea0c0ee"
+    },
+    {
+      "path": "CRITICAL_OPPORTUNITY.json",
+      "sha256": "e697672cbc82967f22d76a536c4c9d64eda8946a9ab76b9262bdc2c819a58432"
+    },
+    {
+      "path": "CSP_SCA.json",
+      "sha256": "846a2ca36863896228d965ee23ae80cf8e8f5cc3af57bcc5945dfbb82c7e7faa"
+    },
+    {
+      "path": "DEVELOPMENT_METHOD_SELECTION.json",
+      "sha256": "e7ebed3a634ae93c3f309faec184b981ae566b1c3ac56ab888289e1e9bcb149e"
+    },
+    {
+      "path": "EVIDENCE_MANIFEST.json",
+      "sha256": "1f98e9dd2fa564b9b2ffccb052b17bbc3486ca6b78087020dc3d481f888f4a83"
+    },
+    {
+      "path": "PROPAGATION_MATRIX.json",
+      "sha256": "12135247ffbe91435af93bc6be63ed7a4d27536771be3f334d1e395a1cd0992d"
+    },
+    {
+      "path": "PROVISIONAL_GATE_RESULT.json",
+      "sha256": "7966b3f4a25fded265730c0f23c7425593850116715f86ff050bdf12552b6e84"
+    },
+    {
+      "path": "R1_ASSUMPTION_AUDIT.json",
+      "sha256": "51180a6c236343360b7dc676e377ffededc7c8f16d25b648e53c164b32ad9040"
+    },
+    {
+      "path": "R2_TWO_SOURCE_CAUSAL_TRACE.json",
+      "sha256": "e4a158431d8322a15d91d881e6162a1db9224668046a7c171a0e81af2daea441"
+    },
+    {
+      "path": "R3_BLOCKS.json",
+      "sha256": "fd717f8b84b1aa7761fa9e488cea1e1332bf53f6ae49e25bbf7015808286c7fb"
+    },
+    {
+      "path": "R3_DECISION_INPUT.json",
+      "sha256": "6db04d8ee31af9f3ddd29baedd9301fae5bd0f3eb8d5c402dc3e9bf4129ae6de"
+    },
+    {
+      "path": "WORK_AMPLIFICATION.json",
+      "sha256": "51ffe8b731979718e6c052511aef30fb1a23337100035f9236e16278eb81503a"
+    }
+  ],
+  "schema_version": "membind.v7.observer-manifest.v2",
+  "status": "SEALED"
+}

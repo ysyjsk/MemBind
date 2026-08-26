@@ -23,11 +23,75 @@ class V7LiveRunnerError(RuntimeError):
 
 
 SILICONFLOW_BASE_URL = "https://api.siliconflow.cn/v1"
+SILICONFLOW_AUTHORITY = "siliconflow-openai-compatible-v1"
 SILICONFLOW_CONSTRUCTION_MODEL = "Qwen/Qwen3-32B"
 SILICONFLOW_EMBEDDING_MODEL = "Qwen/Qwen3-Embedding-0.6B"
+SILICONFLOW_EMBEDDING_DIMENSION = 1024
 SILICONFLOW_HTTP_TIMEOUT_SECONDS = 900.0
 V7_METHODS = frozenset({"OBSERVER_ONLY", "M0", "M1", "M2", "NULL"})
 _DIGEST = re.compile(r"[0-9a-f]{64}")
+_ENV_NAME = re.compile(r"[A-Za-z_][A-Za-z0-9_]*")
+
+
+@dataclass(frozen=True, slots=True)
+class V7ProviderLane:
+    authority: str
+    base_url: str
+    model: str
+    api_key_env: str
+    dimension: int | None = None
+
+    def __post_init__(self) -> None:
+        if not all(
+            isinstance(value, str) and bool(value)
+            for value in (self.authority, self.base_url, self.model, self.api_key_env)
+        ):
+            raise V7LiveRunnerError("V7 provider lane identity is incomplete")
+        if not self.base_url.startswith(("https://", "http://")):
+            raise V7LiveRunnerError("V7 provider lane base URL is invalid")
+        if _ENV_NAME.fullmatch(self.api_key_env) is None:
+            raise V7LiveRunnerError("V7 provider lane key environment is invalid")
+        if self.dimension is not None and (
+            isinstance(self.dimension, bool)
+            or not isinstance(self.dimension, int)
+            or self.dimension <= 0
+        ):
+            raise V7LiveRunnerError("V7 provider lane dimension is invalid")
+
+
+@dataclass(frozen=True, slots=True)
+class V7ProviderProfile:
+    identity_kind: str
+    construction: V7ProviderLane
+    embedding: V7ProviderLane
+
+    def __post_init__(self) -> None:
+        if not isinstance(self.identity_kind, str) or not self.identity_kind:
+            raise V7LiveRunnerError("V7 provider profile identity kind is invalid")
+        if not isinstance(self.construction, V7ProviderLane) or not isinstance(
+            self.embedding, V7ProviderLane
+        ):
+            raise V7LiveRunnerError("V7 provider profile lanes are invalid")
+        if self.construction.dimension is not None or self.embedding.dimension is None:
+            raise V7LiveRunnerError("V7 provider profile lane roles are invalid")
+
+
+DEFAULT_V7_PROVIDER_PROFILE = V7ProviderProfile(
+    identity_kind="SINGLE_PROVIDER_OPENAI_COMPATIBLE_FORMAL",
+    construction=V7ProviderLane(
+        authority=SILICONFLOW_AUTHORITY,
+        base_url=SILICONFLOW_BASE_URL,
+        model=SILICONFLOW_CONSTRUCTION_MODEL,
+        api_key_env="SILICONFLOW_API_KEY",
+    ),
+    embedding=V7ProviderLane(
+        authority=SILICONFLOW_AUTHORITY,
+        base_url=SILICONFLOW_BASE_URL,
+        model=SILICONFLOW_EMBEDDING_MODEL,
+        api_key_env="SILICONFLOW_API_KEY",
+        dimension=SILICONFLOW_EMBEDDING_DIMENSION,
+    ),
+)
 
 
 @dataclass(frozen=True, slots=True)
@@ -37,11 +101,7 @@ class V7LiveConfig:
     method: str = "OBSERVER_ONLY"
     dry_run: bool = True
     gate_path: Path | None = None
-    api_key_env: str = "SILICONFLOW_API_KEY"
-    construction_base_url: str = SILICONFLOW_BASE_URL
-    embedding_base_url: str = SILICONFLOW_BASE_URL
-    construction_model: str = SILICONFLOW_CONSTRUCTION_MODEL
-    embedding_model: str = SILICONFLOW_EMBEDDING_MODEL
+    provider_profile: V7ProviderProfile = DEFAULT_V7_PROVIDER_PROFILE
     source_count: int = 2
 
     def __post_init__(self) -> None:
@@ -53,21 +113,60 @@ class V7LiveConfig:
             raise V7LiveRunnerError("source_count must be positive")
         if not self.dry_run and self.method in {"OBSERVER_ONLY", "NULL"}:
             raise V7LiveRunnerError("live run requires a selected M0, M1 or M2 method")
-        if not self.dry_run and (
-            self.construction_base_url != SILICONFLOW_BASE_URL
-            or self.embedding_base_url != SILICONFLOW_BASE_URL
-            or self.construction_model != SILICONFLOW_CONSTRUCTION_MODEL
-            or self.embedding_model != SILICONFLOW_EMBEDDING_MODEL
-            or self.source_count != 2
-        ):
+        if not isinstance(self.provider_profile, V7ProviderProfile):
+            raise V7LiveRunnerError("V7 provider profile is invalid")
+        if not self.dry_run and self.source_count != 2:
             raise V7LiveRunnerError("live execution envelope differs from the gated two-source profile")
-        if not self.api_key_env or "=" in self.api_key_env:
-            raise V7LiveRunnerError("api_key_env must be an environment variable name")
+
+    @property
+    def construction_base_url(self) -> str:
+        return self.provider_profile.construction.base_url
+
+    @property
+    def embedding_base_url(self) -> str:
+        return self.provider_profile.embedding.base_url
+
+    @property
+    def construction_model(self) -> str:
+        return self.provider_profile.construction.model
+
+    @property
+    def embedding_model(self) -> str:
+        return self.provider_profile.embedding.model
+
+    @property
+    def api_key_env(self) -> str | None:
+        construction = self.provider_profile.construction.api_key_env
+        embedding = self.provider_profile.embedding.api_key_env
+        return construction if construction == embedding else None
 
 
-def _api_key(config: V7LiveConfig) -> str | None:
-    value = os.environ.get(config.api_key_env)
+def _lane_key(lane: V7ProviderLane) -> str | None:
+    value = os.environ.get(lane.api_key_env)
     return value if value else None
+
+
+def _provider_profile_projection(
+    profile: V7ProviderProfile, *, include_key_presence: bool
+) -> dict[str, Any]:
+    def lane(value: V7ProviderLane) -> dict[str, Any]:
+        result = {
+            "authority": value.authority,
+            "base_url": value.base_url,
+            "model": value.model,
+            "api_key_env": value.api_key_env,
+        }
+        if value.dimension is not None:
+            result["dimension"] = value.dimension
+        if include_key_presence:
+            result["api_key_present"] = _lane_key(value) is not None
+        return result
+
+    return {
+        "identity_kind": profile.identity_kind,
+        "construction": lane(profile.construction),
+        "embedding": lane(profile.embedding),
+    }
 
 
 def redact_config(config: V7LiveConfig) -> dict[str, Any]:
@@ -77,8 +176,17 @@ def redact_config(config: V7LiveConfig) -> dict[str, Any]:
         "run_id": config.run_id,
         "method": config.method,
         "dry_run": config.dry_run,
-        "api_key_env": config.api_key_env,
-        "api_key_present": _api_key(config) is not None,
+        "api_key_present": all(
+            _lane_key(lane) is not None
+            for lane in (
+                config.provider_profile.construction,
+                config.provider_profile.embedding,
+            )
+        ),
+        "provider_profile": _provider_profile_projection(
+            config.provider_profile,
+            include_key_presence=True,
+        ),
         "construction_base_url": config.construction_base_url,
         "embedding_base_url": config.embedding_base_url,
         "construction_model": config.construction_model,
@@ -99,11 +207,62 @@ def _read_gate(path: Path) -> Mapping[str, Any]:
     return value
 
 
+def _lane_matches(frozen: Mapping[str, Any], lane: V7ProviderLane) -> bool:
+    frozen_model = frozen.get("model", frozen.get("served_model_id"))
+    return (
+        frozen.get("authority") == lane.authority
+        and frozen.get("base_url") == lane.base_url
+        and frozen_model == lane.model
+        and (
+            lane.dimension is None
+            or frozen.get("dimension") == lane.dimension
+        )
+    )
+
+
+def validate_provider_profile_binding(
+    profile: V7ProviderProfile,
+    campaign_identity: Mapping[str, Any],
+) -> None:
+    """Require the requested live provider profile to match formal Gate evidence."""
+
+    if not isinstance(profile, V7ProviderProfile) or not isinstance(
+        campaign_identity, Mapping
+    ):
+        raise V7LiveRunnerError("formal campaign provider profile is invalid")
+    construction = campaign_identity.get("construction")
+    embedding = campaign_identity.get("embedding")
+    if isinstance(construction, Mapping) and isinstance(embedding, Mapping):
+        valid = (
+            campaign_identity.get("provider_identity_kind") == profile.identity_kind
+            and _lane_matches(construction, profile.construction)
+            and _lane_matches(embedding, profile.embedding)
+        )
+    else:
+        # The original formal protocol recorded only model IDs. It is accepted
+        # exclusively for the frozen legacy default profile.
+        provider = campaign_identity.get("provider")
+        valid = (
+            profile == DEFAULT_V7_PROVIDER_PROFILE
+            and isinstance(provider, Mapping)
+            and provider.get("construction_model") == profile.construction.model
+            and provider.get("embedding_model") == profile.embedding.model
+        )
+    if not valid:
+        raise V7LiveRunnerError(
+            "formal campaign provider profile does not match live configuration"
+        )
+
+
 def validate_live_gate(config: V7LiveConfig) -> Mapping[str, Any] | None:
     if config.dry_run:
         return None
     if config.gate_path is None:
         raise V7LiveRunnerError("method selection seal is required before live run")
+    if Path(config.gate_path).name == "DEVELOPMENT_METHOD_SELECTION.json":
+        raise V7LiveRunnerError(
+            "development method selection cannot authorize live treatment"
+        )
     gate = _read_gate(Path(config.gate_path))
     authorized = gate.get("authorized") is True
     selected = gate.get("selected_method") or gate.get("method") or gate.get("winner")
@@ -126,7 +285,6 @@ def validate_live_gate(config: V7LiveConfig) -> Mapping[str, Any] | None:
     except Exception as exc:
         raise V7LiveRunnerError("method selection is not hash-sealed R3 evidence") from exc
     identity = verification.get("campaign_identity")
-    provider = identity.get("provider") if isinstance(identity, Mapping) else None
     workload = identity.get("workload") if isinstance(identity, Mapping) else None
     region = (
         identity.get("selected_characterization_region")
@@ -136,17 +294,23 @@ def validate_live_gate(config: V7LiveConfig) -> Mapping[str, Any] | None:
     harness = identity.get("observer_harness") if isinstance(identity, Mapping) else None
     r12 = workload.get("r1_r2") if isinstance(workload, Mapping) else None
     r3 = workload.get("r3_blocks") if isinstance(workload, Mapping) else None
+    try:
+        validate_provider_profile_binding(config.provider_profile, identity)
+        provider_profile_valid = True
+    except V7LiveRunnerError:
+        provider_profile_valid = False
     campaign_identity_valid = (
         isinstance(identity, Mapping)
         and identity.get("schema_version")
-        == "membind.v7.real-observer-campaign-identity.v1"
+        in {
+            "membind.v7.real-observer-campaign-identity.v1",
+            "membind.v7.real-observer-campaign-identity.v2",
+        }
         and identity.get("treatment_calls") == 0
         and identity.get("response_replay_calls") == 0
         and isinstance(identity.get("protocol_sha256"), str)
         and _DIGEST.fullmatch(str(identity.get("protocol_sha256"))) is not None
-        and isinstance(provider, Mapping)
-        and provider.get("construction_model") == SILICONFLOW_CONSTRUCTION_MODEL
-        and provider.get("embedding_model") == SILICONFLOW_EMBEDDING_MODEL
+        and provider_profile_valid
         and isinstance(r12, Mapping)
         and r12.get("source_count") == 2
         and isinstance(r3, list)
@@ -171,17 +335,19 @@ def validate_live_gate(config: V7LiveConfig) -> Mapping[str, Any] | None:
     return gate
 
 
-def build_siliconflow_client(config: V7LiveConfig) -> Any:
-    """Build an OpenAI-compatible async client without logging the API key."""
-
-    key = _api_key(config)
+def _build_provider_client(lane: V7ProviderLane) -> Any:
+    key = _lane_key(lane)
     if key is None:
-        raise V7LiveRunnerError(f"{config.api_key_env} is required for a live provider call")
+        raise V7LiveRunnerError(
+            f"{lane.api_key_env} is required for a live provider call"
+        )
     try:
         import httpx
         from openai import AsyncOpenAI
     except ImportError as exc:
-        raise V7LiveRunnerError("openai package is required for SiliconFlow live run") from exc
+        raise V7LiveRunnerError(
+            "openai package is required for an OpenAI-compatible V7 live run"
+        ) from exc
     timeout = httpx.Timeout(
         connect=10.0,
         read=SILICONFLOW_HTTP_TIMEOUT_SECONDS,
@@ -191,46 +357,44 @@ def build_siliconflow_client(config: V7LiveConfig) -> Any:
     http_client = httpx.AsyncClient(timeout=timeout, follow_redirects=False, trust_env=False)
     return AsyncOpenAI(
         api_key=key,
-        base_url=config.construction_base_url,
+        base_url=lane.base_url,
         timeout=timeout,
         max_retries=0,
         http_client=http_client,
     )
+
+
+def build_construction_client(config: V7LiveConfig) -> Any:
+    """Build the configured construction client without logging credentials."""
+
+    return _build_provider_client(config.provider_profile.construction)
+
+
+def build_embedding_client(config: V7LiveConfig) -> Any:
+    """Build the configured embedding client without logging credentials."""
+
+    return _build_provider_client(config.provider_profile.embedding)
+
+
+def build_siliconflow_client(config: V7LiveConfig) -> Any:
+    """Compatibility alias for the configured construction lane."""
+
+    return build_construction_client(config)
 
 
 def build_siliconflow_embedding_client(config: V7LiveConfig) -> Any:
-    """Build the same OpenAI-compatible client against the embedding endpoint."""
+    """Compatibility alias for the configured embedding lane."""
 
-    key = _api_key(config)
-    if key is None:
-        raise V7LiveRunnerError(f"{config.api_key_env} is required for a live provider call")
-    try:
-        import httpx
-        from openai import AsyncOpenAI
-    except ImportError as exc:
-        raise V7LiveRunnerError("openai package is required for SiliconFlow live run") from exc
-    timeout = httpx.Timeout(
-        connect=10.0,
-        read=SILICONFLOW_HTTP_TIMEOUT_SECONDS,
-        write=SILICONFLOW_HTTP_TIMEOUT_SECONDS,
-        pool=SILICONFLOW_HTTP_TIMEOUT_SECONDS,
-    )
-    http_client = httpx.AsyncClient(timeout=timeout, follow_redirects=False, trust_env=False)
-    return AsyncOpenAI(
-        api_key=key,
-        base_url=config.embedding_base_url,
-        timeout=timeout,
-        max_retries=0,
-        http_client=http_client,
-    )
+    return build_embedding_client(config)
 
 
 async def _maybe_await(value: Any) -> Any:
     return await value if inspect.isawaitable(value) else value
 
 
-def _write_new(path: Path, value: Mapping[str, Any], *, mode: int = 0o644) -> None:
-    path.parent.mkdir(parents=True, exist_ok=True)
+def _write_new(path: Path, value: Mapping[str, Any], *, mode: int = 0o600) -> None:
+    path.parent.mkdir(parents=True, exist_ok=True, mode=0o700)
+    os.chmod(path.parent, 0o700)
     payload = (
         json.dumps(
             dict(value),
@@ -354,14 +518,28 @@ async def run_v7_live_async(
 
     gate = validate_live_gate(config)
     if not config.dry_run:
-        if _api_key(config) is None:
-            raise V7LiveRunnerError(f"{config.api_key_env} is required for live provider call")
+        missing_key_environments = sorted(
+            {
+                lane.api_key_env
+                for lane in (
+                    config.provider_profile.construction,
+                    config.provider_profile.embedding,
+                )
+                if _lane_key(lane) is None
+            }
+        )
+        if missing_key_environments:
+            raise V7LiveRunnerError(
+                "required live provider key environment is missing: "
+                + ", ".join(missing_key_environments)
+            )
         if provider_call is None:
             raise V7LiveRunnerError("live runner requires an injected provider/native callback")
     root = Path(config.output_root).resolve()
     if root.exists() and any(root.iterdir()):
         raise V7LiveRunnerError("V7 output root must be fresh")
-    root.mkdir(parents=True, exist_ok=True)
+    root.mkdir(parents=True, exist_ok=True, mode=0o700)
+    os.chmod(root, 0o700)
     status = "DRY_RUN"
     provider_calls = 0
     treatment_calls = 0
@@ -400,7 +578,10 @@ async def run_v7_live_async(
         "schema_version": "membind.v7.live-runner-manifest.v2",
         "status": status,
         "runner_source_sha256": _sha256(Path(__file__).resolve()),
-        "provider": "siliconflow",
+        "provider_profile": _provider_profile_projection(
+            config.provider_profile,
+            include_key_presence=False,
+        ),
         "method": config.method,
         "adapter_invocations": adapter_invocations,
         "provider_calls": provider_calls,
@@ -462,16 +643,22 @@ def run_v7_live(config: V7LiveConfig, *, provider_call: Callable[[], Awaitable[A
 
 
 __all__ = [
+    "DEFAULT_V7_PROVIDER_PROFILE",
     "SILICONFLOW_BASE_URL",
     "SILICONFLOW_CONSTRUCTION_MODEL",
     "SILICONFLOW_EMBEDDING_MODEL",
     "V7LiveConfig",
     "V7LiveRunnerError",
+    "V7ProviderLane",
+    "V7ProviderProfile",
+    "build_construction_client",
+    "build_embedding_client",
     "build_siliconflow_client",
     "build_siliconflow_embedding_client",
     "redact_config",
     "run_v7_live",
     "run_v7_live_async",
     "validate_live_gate",
+    "validate_provider_profile_binding",
     "verify_v7_live_artifacts",
 ]

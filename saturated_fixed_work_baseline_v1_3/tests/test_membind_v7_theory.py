@@ -384,20 +384,40 @@ def test_v7_live_runner_rejects_invalid_adapter_result_after_persisting_failure(
     assert failure["adapter_invocations"] == 1
 
 
-def test_v7_live_config_pins_two_source_siliconflow_models() -> None:
-    from saturated_fixed_work_baseline_v1_3.membind_v7.live_runner import V7LiveConfig, V7LiveRunnerError
+def test_v7_live_config_defaults_to_legacy_profile_but_accepts_explicit_provider() -> None:
+    from saturated_fixed_work_baseline_v1_3.membind_v7.live_runner import (
+        V7LiveConfig,
+        V7LiveRunnerError,
+        V7ProviderLane,
+        V7ProviderProfile,
+    )
 
     config = V7LiveConfig(output_root=__import__("pathlib").Path("unused"), run_id="v7-live", method="M1", dry_run=False)
     assert config.construction_model == "Qwen/Qwen3-32B"
     assert config.embedding_model == "Qwen/Qwen3-Embedding-0.6B"
-    with pytest.raises(V7LiveRunnerError, match="execution envelope"):
-        V7LiveConfig(
-            output_root=__import__("pathlib").Path("unused"),
-            run_id="v7-live",
-            method="M1",
-            dry_run=False,
-            construction_model="other",
-        )
+    alternate = V7ProviderProfile(
+        identity_kind="COMPOSITE_FORMAL_TEST",
+        construction=V7ProviderLane(
+            authority="construction-test",
+            base_url="https://construction.example/v1",
+            model="other",
+            api_key_env="CONSTRUCTION_API_KEY",
+        ),
+        embedding=V7ProviderLane(
+            authority="embedding-test",
+            base_url="https://embedding.example/v1",
+            model="embedding-test",
+            api_key_env="EMBEDDING_API_KEY",
+            dimension=1024,
+        ),
+    )
+    assert V7LiveConfig(
+        output_root=__import__("pathlib").Path("unused"),
+        run_id="v7-live",
+        method="M1",
+        dry_run=False,
+        provider_profile=alternate,
+    ).construction_model == "other"
     with pytest.raises(V7LiveRunnerError, match="source_count"):
         V7LiveConfig(
             output_root=__import__("pathlib").Path("unused"),

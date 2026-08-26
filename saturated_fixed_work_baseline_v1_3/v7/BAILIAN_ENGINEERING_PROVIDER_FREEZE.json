@@ -1,0 +1,53 @@
+{
+  "schema_version": "membind.v7.engineering-provider-freeze.v1",
+  "status": "ENGINEERING_VALIDATION_ONLY",
+  "frozen_at": "2026-08-26",
+  "authority": "alibaba-bailian-openai-compatible-engineering-v1",
+  "base_url": "https://dashscope.aliyuncs.com/compatible-mode/v1",
+  "construction_model": "qwen3.5-35b-a3b",
+  "api_key_env": "DASHSCOPE_API_KEY",
+  "temperature": 0.0,
+  "top_p": 1.0,
+  "structured_output_mode": "json_schema",
+  "request_extension": {
+    "extra_body": {
+      "enable_thinking": false
+    }
+  },
+  "probe_budgets": {
+    "minimal_json_schema_max_tokens": 256,
+    "extract_nodes_extract_message_max_tokens": 16384,
+    "extract_edges_edge_max_tokens": 16384
+  },
+  "probe_workload": {
+    "dataset_sha256": "97fd80207f3419fc57c3684db824334224546d6bdd62c17ef52cd116eec9ffc8",
+    "context_index": 1,
+    "source_sequence": 0
+  },
+  "model_list_identity_probe": {
+    "http_status": 200,
+    "target_present": true,
+    "model_count": 241,
+    "response_content_bytes": 21392,
+    "response_content_sha256": "3a6834f03f8d80ec974e82bb68c2144f42b76f3f2ae68e2d7d48fb1270b010a1"
+  },
+  "embedding": {
+    "status": "NOT_FROZEN",
+    "model": null,
+    "dimension": null
+  },
+  "sdk_max_retries": 0,
+  "hard_attempt_limit_per_probe": 1,
+  "formal_r1_r3_eligible": false,
+  "gate_a_e_evaluated": false,
+  "gate_outcome": "NOT_EVALUATED",
+  "treatment_authorized": false,
+  "diagnostic_only": true,
+  "scientific_method_selection_update_allowed": false,
+  "database_allowed": false,
+  "embedding_allowed": false,
+  "response_replay_allowed": false,
+  "raw_request_persistence_allowed": false,
+  "raw_response_persistence_allowed": false,
+  "credential_persistence_allowed": false
+}

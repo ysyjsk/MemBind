@@ -1,0 +1,78 @@
+{
+  "schema_version": "membind.v7.strict-schema-candidate-protocol.v1",
+  "status": "FROZEN_BEFORE_STRICT_SCHEMA_PROBES",
+  "frozen_at": "2026-08-26",
+  "authority": "alibaba-bailian-openai-compatible-strict-schema-candidate-v1",
+  "base_url": "https://dashscope.aliyuncs.com/compatible-mode/v1",
+  "api_key_env": "DASHSCOPE_API_KEY",
+  "structured_output_mode": "json_schema",
+  "strict_json_schema": true,
+  "prompt_schema_injection": false,
+  "response_validation": "pydantic-v2",
+  "temperature": 0.0,
+  "top_p": 1.0,
+  "enable_thinking": false,
+  "max_tokens_sent": false,
+  "sdk_max_retries": 0,
+  "hard_attempt_limit_per_probe": 1,
+  "candidates": [
+    "qwen3.5-plus-2026-04-20",
+    "qwen3-max-2026-01-23"
+  ],
+  "lanes": [
+    {
+      "lane_id": "context-0-source-1",
+      "context_index": 0,
+      "source_sequence": 1
+    },
+    {
+      "lane_id": "context-1-source-2",
+      "context_index": 1,
+      "source_sequence": 2
+    },
+    {
+      "lane_id": "context-2-source-2",
+      "context_index": 2,
+      "source_sequence": 2
+    }
+  ],
+  "repetitions_per_lane": 2,
+  "selection_rule": "FIRST_ALL_LANES_FULL_PASS_IN_FROZEN_ORDER",
+  "maximum_http_attempts": 25,
+  "dataset_sha256": "97fd80207f3419fc57c3684db824334224546d6bdd62c17ef52cd116eec9ffc8",
+  "failure_evidence": {
+    "development_protocol_path": "BAILIAN_122B_SILICONFLOW_V7_DEVELOPMENT_PROTOCOL.json",
+    "development_protocol_sha256": "a1196c2b21e7df4030be08445951b72e01204462c9be88c06fec103dea677b13",
+    "failed_run_id": "v7-development-selected-122b-20260826-001",
+    "failure_artifact_path": "artifacts/.v7-development-selected-122b-20260826-001.failure.json",
+    "failure_artifact_sha256": "d8521e957fec19a90eb05a6be9b39ba3cb8d3abbeedb7db53833c0a8405fcb83",
+    "prompt_name": "extract_nodes.extract_message",
+    "response_model": "graphiti_core.prompts.extract_nodes.ExtractedEntities",
+    "validation_location": [
+      "extracted_entities"
+    ],
+    "validation_type": "missing"
+  },
+  "source_sha256": {
+    "mab_quality_v2_final_qa/src/mab_quality_v2_final_qa/mab_main_dataset.py": "a236f957cdde0c8a3235abd497f76c3a18a58ce65a34c8225aa377971fdaa94e",
+    "membind-validation/.venv/lib/python3.12/site-packages/graphiti_core/prompts/extract_edges.py": "df268b68ae4ae3c1e515b4c3b4ee29efd78b7c8902947e91a76767f3c6657582",
+    "membind-validation/.venv/lib/python3.12/site-packages/graphiti_core/prompts/extract_nodes.py": "e0d3da2be310b6048cefada866271a64ec21845279faf6fb389754dbb54b5775",
+    "membind-validation/src/graphiti_native.py": "f25141000494a8899a40b87f2bf5fb5e5cb519ab2d480d72973aeaf9e0d9c8cc",
+    "membind-validation/src/structured_output.py": "62cd24dec938c2cb743cf9c1cba99a54e49af31b918ae142e10094e4bad0a0a6",
+    "saturated_fixed_work_baseline_v1_3/scripts/probe_v7_bailian_strict_schema_candidates.py": "ec8539605519e60f56279c91c07f3df21673d5ce8d625c3fcce4983604d81f9b",
+    "saturated_fixed_work_baseline_v1_3/src/saturated_fixed_work_baseline_v1_3/membind_v7/development_model_probe.py": "62498cadfa7a3531e7f701ca2bad8736ea29f11a899c513bbea2440b0afe1f21",
+    "saturated_fixed_work_baseline_v1_3/src/saturated_fixed_work_baseline_v1_3/membind_v7/provider_diagnostics.py": "9b715eb4efe29fcd0f90a3f7e4282e3f3bfb9fb7034f7ccd70e8544cd6fde47f",
+    "saturated_fixed_work_baseline_v1_3/src/saturated_fixed_work_baseline_v1_3/membind_v7/strict_schema_candidates.py": "675cb75b9ba56a8aa755654f9826fa4c4baa412f00f5299a633a43986e065a85"
+  },
+  "database_allowed": false,
+  "embedding_allowed": false,
+  "treatment_allowed": false,
+  "response_replay_allowed": false,
+  "formal_r1_r3_eligible": false,
+  "gate_outcome": "NOT_EVALUATED",
+  "live_treatment_authorized": false,
+  "raw_request_persistence_allowed": false,
+  "raw_response_persistence_allowed": false,
+  "response_hash_persistence_allowed": false,
+  "credential_persistence_allowed": false
+}

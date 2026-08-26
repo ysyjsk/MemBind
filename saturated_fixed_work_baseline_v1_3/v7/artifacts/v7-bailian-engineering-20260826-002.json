@@ -1,0 +1,210 @@
+{
+  "classification": "BAILIAN_CONSTRUCTION_INCOMPATIBLE",
+  "construction_probe": {
+    "classification": "BAILIAN_CONSTRUCTION_INCOMPATIBLE",
+    "construction_probe_passed": false,
+    "credentials_recorded": false,
+    "database_called": false,
+    "diagnostic_only": true,
+    "embedding_called": false,
+    "formal_r1_r3_eligible": false,
+    "gate_a_e_evaluated": false,
+    "gate_outcome": "NOT_EVALUATED",
+    "http_attempt_count": 2,
+    "probe_order_complete": false,
+    "probes": [
+      {
+        "classification": "STRUCTURED_EXTRACTION_PARSED",
+        "credentials_recorded": false,
+        "database_called": false,
+        "duration_ns": 663855534,
+        "embedding_called": false,
+        "error_message_sha256": null,
+        "error_type": null,
+        "finish_reason": "stop",
+        "http_attempt_count": 1,
+        "parsed_edge_count": null,
+        "parsed_entity_count": null,
+        "parsed_item_count": 1,
+        "probe_contract": {
+          "chat_template_kwargs": {},
+          "database_called": false,
+          "embedding_called": false,
+          "json_schema_name": "_EngineeringSchemaAck",
+          "json_schema_sha256": "9522c09a6188fd447523b49f441d56ed920bff1a6f7e18eda66304f4c59c644e",
+          "max_tokens": 256,
+          "message_content_byte_lengths": [
+            37,
+            31
+          ],
+          "message_content_lengths": [
+            37,
+            31
+          ],
+          "message_content_sha256": [
+            "80f5846b37cca36e7e03d55342e48acecb507ee023cc4129870763f60bb06567",
+            "a6e4e2e457f9b8e94570e7bafb00327b5e74a0cb188cf55aee0a6fdd0f7380b3"
+          ],
+          "message_count": 2,
+          "message_roles": [
+            "system",
+            "user"
+          ],
+          "mode": "one_exact_wire_attempt_no_database_no_embedding",
+          "model": "qwen3.5-35b-a3b",
+          "probe_kind": "minimal_json_schema",
+          "request_envelope_sha256": "3ea49e14836cf6311736a973660cdcfe8d120949beaf600d438cb7e9441a5fd4",
+          "response_format_sha256": "3b6b2fd8ba0adf47a582467aa609bed852a8a1829e6d75ce456cee80c03f9ff5",
+          "response_format_type": "json_schema",
+          "response_replay_calls": 0,
+          "schema_version": "membind.v7.structured-extraction-probe-contract.v2",
+          "seed": null,
+          "structured_output_backend_requested": null,
+          "temperature": 0.0,
+          "top_p": 1.0
+        },
+        "probe_kind": "minimal_json_schema",
+        "provider_error": null,
+        "raw_request_persisted": false,
+        "raw_response_persisted": false,
+        "response_content_bytes": 15,
+        "response_content_sha256": "a29ee2b15c494311c52521766e44af56a3ad2248e7a8ab465e5206463c13d288",
+        "response_replay_calls": 0,
+        "schema_version": "membind.v7.structured-extraction-probe-result.v2",
+        "status": "PASS",
+        "usage": {
+          "completion_tokens": 5,
+          "prompt_tokens": 34,
+          "total_tokens": 39
+        }
+      },
+      {
+        "classification": "STRUCTURED_EXTRACTION_REQUEST_REJECTED",
+        "credentials_recorded": false,
+        "database_called": false,
+        "duration_ns": 269281092,
+        "embedding_called": false,
+        "error_message_sha256": "9df92d67bfb3887ea914ecc3c00a6fd565ad915838a2a8b79d02c15ea26a933a",
+        "error_type": "openai.BadRequestError",
+        "finish_reason": null,
+        "http_attempt_count": 1,
+        "parsed_edge_count": null,
+        "parsed_entity_count": null,
+        "parsed_item_count": null,
+        "probe_contract": {
+          "chat_template_kwargs": {},
+          "context_id_sha256": "8d00c702928a35890b43d53998837d508e43693fb7dda956888362eb36c53e7f",
+          "database_called": false,
+          "embedding_called": false,
+          "json_schema_name": "ExtractedEntities",
+          "json_schema_sha256": "96cedd296936b90ddbed2156b20411b1662389f1c94c7a0b57df00f3cadd21d5",
+          "max_tokens": 16384,
+          "message_content_byte_lengths": [
+            391,
+            23004
+          ],
+          "message_content_lengths": [
+            391,
+            22982
+          ],
+          "message_content_sha256": [
+            "0e8619b822b5e9b316819b46abc1b3c5bd616801f85c976fc2f2bcc1cd44574c",
+            "bad37414bfc038445a86cc50e2987f1644efe48b966d1160deff02866d34b1b2"
+          ],
+          "message_count": 2,
+          "message_roles": [
+            "system",
+            "user"
+          ],
+          "mode": "one_exact_wire_attempt_no_database_no_embedding",
+          "model": "qwen3.5-35b-a3b",
+          "namespace_sha256": "e06b2868d7b5925b605f62a26366662a395b057d4281b2b7080728dc8a22ff09",
+          "previous_episode_count": 0,
+          "probe_kind": "extract_nodes.extract_message",
+          "request_envelope_sha256": "ceb6484e40b8aba2488d07aa13afe69878b8746e59e335c51930e5bada0e1082",
+          "response_format_sha256": "8e07a3d3669c75c478a4375feb6e4067728a01d9f0e3eb6b6ecfe67683bb1f32",
+          "response_format_type": "json_schema",
+          "response_replay_calls": 0,
+          "schema_version": "membind.v7.structured-extraction-probe-contract.v2",
+          "seed": null,
+          "source_body_sha256": "f8b8643c582218bd24b87027a4d242415a8a15c1864d447c466fca2f0542e784",
+          "source_sequence": 0,
+          "structured_output_backend_requested": null,
+          "temperature": 0.0,
+          "top_p": 1.0
+        },
+        "probe_kind": "extract_nodes.extract_message",
+        "provider_error": {
+          "code": "invalid_parameter_error",
+          "http_status": 400,
+          "param": null,
+          "type": "invalid_request_error"
+        },
+        "raw_request_persisted": false,
+        "raw_response_persisted": false,
+        "response_content_bytes": null,
+        "response_content_sha256": null,
+        "response_replay_calls": 0,
+        "schema_version": "membind.v7.structured-extraction-probe-result.v2",
+        "status": "FAIL",
+        "usage": {
+          "completion_tokens": null,
+          "prompt_tokens": null,
+          "total_tokens": null
+        }
+      }
+    ],
+    "raw_request_persisted": false,
+    "raw_response_persisted": false,
+    "response_replay_calls": 0,
+    "schema_version": "membind.v7.bailian-construction-probe-chain.v1",
+    "scientific_method_selection_updated": false,
+    "status": "FAIL",
+    "treatment_authorized": false,
+    "treatment_calls": 0
+  },
+  "credentials_recorded": false,
+  "database_called": false,
+  "dataset_sha256": "97fd80207f3419fc57c3684db824334224546d6bdd62c17ef52cd116eec9ffc8",
+  "diagnostic_only": true,
+  "embedding_called": false,
+  "embedding_identity_status": "NOT_FROZEN",
+  "engineering_observer_eligible": false,
+  "formal_r1_r3_eligible": false,
+  "gate_a_e_evaluated": false,
+  "gate_outcome": "NOT_EVALUATED",
+  "mode": "ENGINEERING_PROBE",
+  "provider": {
+    "authority": "alibaba-bailian-openai-compatible-engineering-v1",
+    "base_url": "https://dashscope.aliyuncs.com/compatible-mode/v1",
+    "construction_model": "qwen3.5-35b-a3b",
+    "enable_thinking": false,
+    "hard_attempt_limit_per_probe": 1,
+    "sdk_max_retries": 0,
+    "structured_output_mode": "json_schema",
+    "temperature": 0.0,
+    "top_p": 1.0
+  },
+  "provider_freeze_path": "BAILIAN_ENGINEERING_PROVIDER_FREEZE.json",
+  "provider_freeze_sha256": "9ad6994b4b3bb64a2d4ff46c78c97d72b8c7fd2ca65127233969b61e3dd4052b",
+  "raw_request_persisted": false,
+  "raw_response_persisted": false,
+  "response_replay_calls": 0,
+  "run_id": "v7-bailian-engineering-20260826-002",
+  "schema_version": "membind.v7.bailian-engineering-probe-artifact.v1",
+  "scientific_method_selection_updated": false,
+  "source_sha256": {
+    "graphiti_core/prompts/extract_edges.py": "df268b68ae4ae3c1e515b4c3b4ee29efd78b7c8902947e91a76767f3c6657582",
+    "graphiti_core/prompts/extract_nodes.py": "e0d3da2be310b6048cefada866271a64ec21845279faf6fb389754dbb54b5775",
+    "graphiti_core/utils/maintenance/edge_operations.py": "b773ff4489968af2a996d5074e679cab9806cc0904a7ff9f2aecc74382325abe",
+    "graphiti_core/utils/maintenance/node_operations.py": "14fc92a462bf7f1dd9b70d10a88e27e36a0ddc1594dc18381888209de7137fb4",
+    "membind-validation/src/graphiti_native.py": "f25141000494a8899a40b87f2bf5fb5e5cb519ab2d480d72973aeaf9e0d9c8cc",
+    "membind-validation/src/structured_output.py": "62cd24dec938c2cb743cf9c1cba99a54e49af31b918ae142e10094e4bad0a0a6",
+    "saturated_fixed_work_baseline_v1_3/scripts/probe_v7_bailian_engineering.py": "17e713501b88e1e532f0a2f6f14454dd12b026c96dbbf689fde25581789c7a47",
+    "saturated_fixed_work_baseline_v1_3/src/saturated_fixed_work_baseline_v1_3/membind_v7/provider_diagnostics.py": "53c751f5e4cb574211d55d09107bb9501b4f88568d7729023fc2b1df68346334"
+  },
+  "status": "FAIL",
+  "timeout_seconds": 900.0,
+  "treatment_authorized": false,
+  "treatment_calls": 0
+}
