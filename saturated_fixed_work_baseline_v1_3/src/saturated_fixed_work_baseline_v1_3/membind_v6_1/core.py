@@ -1,0 +1,205 @@
+"""Frozen MemBind-Core composition for the resource-matched 8B campaign.
+
+This module is the single ownership boundary for the V6 paper method.  The
+older ``membind_v6_1`` modules remain available for audited ablations and
+historical replay, but a headline Core run must enter through this file.  The
+entry points deliberately do not expose scheduler knobs or work-reduction
+switches: changing either creates a new V6.1 candidate/extension instead of
+silently changing the paper method.
+"""
+
+from __future__ import annotations
+
+from dataclasses import asdict
+from typing import Any, Callable, Mapping
+
+from .executor import DUAL_STREAMING_EXECUTION_STRATEGY
+from .mab import run_mab_v61_construction_async
+from .policy import V61Policy
+from .runtime_8b import (
+    build_8b_u0_runtime,
+    frozen_8b_config,
+    public_8b_environment,
+)
+
+
+MEMBIND_CORE_VERSION = "v6-membind-core-v1"
+MEMBIND_CORE_BOUNDARY = "MEMBIND_CORE"
+MEMBIND_CORE_EXECUTION_STRATEGY = DUAL_STREAMING_EXECUTION_STRATEGY
+MEMBIND_CORE_STATE_CONTRACT = "B0_SERIAL_STATEFUL_ORDERED_PUBLICATION"
+MEMBIND_CORE_ROUTE_POLICY = "semantic_phase_elastic_affinity"
+MEMBIND_CORE_CANDIDATE = "r63b-work-conserving-edge-admission"
+MEMBIND_CORE_POLICY = V61Policy(lookahead=2, future_cap=1, native_future_quota=0)
+
+
+class MemBindCoreConfigurationError(ValueError):
+    """Raised when a run attempts to mutate the frozen Core composition."""
+
+
+def core_policy() -> V61Policy:
+    """Return a fresh immutable copy of the selected policy."""
+
+    return V61Policy(**asdict(MEMBIND_CORE_POLICY))
+
+
+def assert_core_policy(policy: V61Policy) -> None:
+    """Reject scheduler tuning on the headline Core path."""
+
+    if not isinstance(policy, V61Policy) or policy != MEMBIND_CORE_POLICY:
+        raise MemBindCoreConfigurationError(
+            "MemBind-Core policy is frozen at lookahead=2, future_cap=1, "
+            "native_future_quota=0"
+        )
+
+
+def core_identity() -> dict[str, Any]:
+    """Return the stable identity written into campaign metadata."""
+
+    return {
+        "version": MEMBIND_CORE_VERSION,
+        "boundary": MEMBIND_CORE_BOUNDARY,
+        "execution_strategy": MEMBIND_CORE_EXECUTION_STRATEGY,
+        "state_contract": MEMBIND_CORE_STATE_CONTRACT,
+        "selected_candidate": MEMBIND_CORE_CANDIDATE,
+        "route_policy": MEMBIND_CORE_ROUTE_POLICY,
+        "allowed_transformations": [
+            "dependency_aware_prepare_execution_overlap",
+            "dependency_aware_admission_and_work_conserving_partition_dispatch",
+            "exact_certified_replay_of_dependency_free_extraction",
+            "ordered_authoritative_publication",
+        ],
+        "work_reduction_extensions_enabled": False,
+        "adaptive_scheduler_enabled": False,
+        "bootstrap_future_borrow_enabled": False,
+    }
+
+
+def _annotate(value: Mapping[str, Any]) -> dict[str, Any]:
+    return {**dict(value), "membind_core": core_identity()}
+
+
+def build_membind_core_runtime_8b(
+    *,
+    routing_contract: Mapping[str, Any],
+    route_event_sink: Callable[[dict[str, Any]], None] | None = None,
+) -> Any:
+    """Build the selected 8B runtime with all work-reduction extensions off."""
+
+    policy = routing_contract.get("router", {}).get("policy")
+    if policy != MEMBIND_CORE_ROUTE_POLICY:
+        raise MemBindCoreConfigurationError(
+            "MemBind-Core requires the retained semantic-phase elastic route; "
+            f"received {policy!r}"
+        )
+    runtime = build_8b_u0_runtime(
+        routing_contract=routing_contract,
+        route_event_sink=route_event_sink,
+        enable_grounded_summary_materialization=False,
+        enable_endpoint_schema_grounding=False,
+        enable_work_conserving_edge_admission=True,
+        enable_adaptive_edge_admission=False,
+    )
+    manifest = getattr(runtime, "_membind_8b_runtime_manifest", {})
+    construction = manifest.get("construction", {})
+    expected = {
+        "entity_summary_policy": "graphiti_native_batched_summary_v1",
+        "edge_endpoint_schema_policy": "graphiti_edge_endpoint_string_v1",
+        "edge_physical_admission_policy": "arbiter_work_conserving_partition_derived_v1",
+    }
+    for field, value in expected.items():
+        if construction.get(field) != value:
+            raise MemBindCoreConfigurationError(
+                f"Core runtime drifted at construction.{field}: "
+                f"{construction.get(field)!r} != {value!r}"
+            )
+    runtime._membind_core_identity = core_identity()
+    return runtime
+
+
+def frozen_membind_core_config_8b(
+    routing_contract: Mapping[str, Any],
+) -> dict[str, Any]:
+    """Return the frozen configuration plus the Core identity."""
+
+    return _annotate(
+        frozen_8b_config(
+            routing_contract,
+            enable_grounded_summary_materialization=False,
+            enable_endpoint_schema_grounding=False,
+            enable_work_conserving_edge_admission=True,
+            enable_adaptive_edge_admission=False,
+        )
+    )
+
+
+def public_membind_core_environment_8b(
+    routing_contract: Mapping[str, Any],
+    *,
+    repo_root: Any | None = None,
+) -> dict[str, Any]:
+    """Return public environment evidence for the selected Core runtime."""
+
+    return _annotate(
+        public_8b_environment(
+            routing_contract,
+            repo_root=repo_root,
+            enable_grounded_summary_materialization=False,
+            enable_endpoint_schema_grounding=False,
+            enable_work_conserving_edge_admission=True,
+            enable_adaptive_edge_admission=False,
+        )
+    )
+
+
+async def run_membind_core_construction_async(
+    *,
+    policy: V61Policy,
+    execution_strategy: str | None = None,
+    method_boundary: str | None = None,
+    **kwargs: Any,
+) -> dict[str, Any]:
+    """Run one frozen Core block; extension and tuning arguments are rejected."""
+
+    assert_core_policy(policy)
+    if execution_strategy not in {None, MEMBIND_CORE_EXECUTION_STRATEGY}:
+        raise MemBindCoreConfigurationError(
+            "MemBind-Core execution strategy is phase-isolated dual streaming"
+        )
+    if method_boundary not in {None, MEMBIND_CORE_BOUNDARY}:
+        raise MemBindCoreConfigurationError(
+            "work-reduction extensions cannot enter MemBind-Core"
+        )
+    if "artifact_method" in kwargs:
+        raise MemBindCoreConfigurationError(
+            "MemBind-Core artifact identity is fixed and cannot be overridden"
+        )
+    result = await run_mab_v61_construction_async(
+        policy=policy,
+        execution_strategy=MEMBIND_CORE_EXECUTION_STRATEGY,
+        method_boundary=MEMBIND_CORE_BOUNDARY,
+        artifact_method="MEMBIND_CORE",
+        **kwargs,
+    )
+    result["method"] = "MEMBIND_CORE"
+    result["method_boundary"] = MEMBIND_CORE_BOUNDARY
+    result["core_identity"] = core_identity()
+    return result
+
+
+__all__ = [
+    "MEMBIND_CORE_BOUNDARY",
+    "MEMBIND_CORE_CANDIDATE",
+    "MEMBIND_CORE_EXECUTION_STRATEGY",
+    "MEMBIND_CORE_POLICY",
+    "MEMBIND_CORE_ROUTE_POLICY",
+    "MEMBIND_CORE_STATE_CONTRACT",
+    "MEMBIND_CORE_VERSION",
+    "MemBindCoreConfigurationError",
+    "assert_core_policy",
+    "build_membind_core_runtime_8b",
+    "core_identity",
+    "core_policy",
+    "frozen_membind_core_config_8b",
+    "public_membind_core_environment_8b",
+    "run_membind_core_construction_async",
+]

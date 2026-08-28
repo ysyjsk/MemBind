@@ -45,6 +45,7 @@ def main() -> int:
     v61_state = state_contract(v61)
     native_boundary = native.get("method_boundary", {})
     v61_boundary = v61.get("method_boundary", {})
+    core_identity = v61.get("core_identity")
     b0_mode = "B0_SERIAL_STATEFUL_ORDERED_PUBLICATION"
     checks = {
         "schema": native.get("schema_version") == v61.get("schema_version") == "membind.8b-experiment-contract.v1",
@@ -85,6 +86,22 @@ def main() -> int:
                 "predicate_pushdown",
                 "grounded_or_deterministic_materialization",
             }
+        ),
+        "core_identity_frozen": (
+            isinstance(core_identity, dict)
+            and core_identity.get("version") == "v6-membind-core-v1"
+            and core_identity.get("boundary") == "MEMBIND_CORE"
+            and core_identity.get("execution_strategy")
+            == "phase_isolated_dual_streaming_v1"
+            and core_identity.get("route_policy") == "semantic_phase_elastic_affinity"
+            and set(core_identity.get("allowed_transformations", ()))
+            >= {
+                "dependency_aware_prepare_execution_overlap",
+                "dependency_aware_admission_and_work_conserving_partition_dispatch",
+                "exact_certified_replay_of_dependency_free_extraction",
+                "ordered_authoritative_publication",
+            }
+            and core_identity.get("work_reduction_extensions_enabled") is False
         ),
         "native_work_contract_declared": native_boundary.get("id") == "NATIVE_REFERENCE",
         "comparison_class": native.get("comparison_class") == "HEADLINE_B0_DUAL_RESOURCE_MATCHED"

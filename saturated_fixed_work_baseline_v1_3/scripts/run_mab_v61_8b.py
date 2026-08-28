@@ -30,8 +30,13 @@ from mab_quality_v2_final_qa.mab_main_dataset import build_authority, build_work
 from mab_quality_v2_final_qa.workload_contract import WorkloadManifest  # noqa: E402
 from saturated_fixed_work_baseline_v1_3.artifact_seals import verify_seal  # noqa: E402
 from saturated_fixed_work_baseline_v1_3.mab_live_runner import run_mab_construction_async  # noqa: E402
-from saturated_fixed_work_baseline_v1_3.membind_v6_1.executor import (  # noqa: E402
-    DUAL_STREAMING_EXECUTION_STRATEGY,
+from saturated_fixed_work_baseline_v1_3.membind_v6_1.core import (  # noqa: E402
+    MEMBIND_CORE_EXECUTION_STRATEGY,
+    MEMBIND_CORE_VERSION,
+    build_membind_core_runtime_8b,
+    frozen_membind_core_config_8b,
+    public_membind_core_environment_8b,
+    run_membind_core_construction_async,
 )
 from saturated_fixed_work_baseline_v1_3.membind_v6_1.identity import (  # noqa: E402
     implementation_bundle,
@@ -284,6 +289,19 @@ def _reusable_reference(
                 and _sha256(attempt_root / name) == expected
                 for name, expected in route_seal.get("members", {}).items()
             )
+            # Native references are immutable measurement anchors.  A change
+            # confined to V6.1/Core source must not force an expensive Native
+            # rerun; platform/workload/arm/seal identity below is the reuse
+            # contract.  V6.1 candidates remain implementation-hash bound.
+            implementation_matches = (
+                method != "V6_1"
+                or (
+                    contract.get("runner_implementation", {}).get("file_sha256")
+                    == runner_hash
+                    and contract.get("implementation_bundle", {}).get("payload_sha256")
+                    == implementation_hash
+                )
+            )
             matches = (
                 contract.get("profile_id") == PROFILE_ID_8B
                 and contract.get("arm") == expected_arm
@@ -291,10 +309,7 @@ def _reusable_reference(
                 == platform_payload_sha256
                 and contract.get("workload_manifest", {}).get("file_sha256")
                 == workload_file_sha256
-                and contract.get("runner_implementation", {}).get("file_sha256")
-                == runner_hash
-                and contract.get("implementation_bundle", {}).get("payload_sha256")
-                == implementation_hash
+                and implementation_matches
                 and (
                     (
                         method == "NATIVE_SERIAL"
@@ -436,8 +451,9 @@ async def _main(args: argparse.Namespace) -> int:
                 **METHODS[method],
                 "routing": routes[method],
                 "execution_strategy": (
-                    DUAL_STREAMING_EXECUTION_STRATEGY if method == "V6_1" else None
+                    MEMBIND_CORE_EXECUTION_STRATEGY if method == "V6_1" else None
                 ),
+                "core_version": MEMBIND_CORE_VERSION if method == "V6_1" else None,
             }
             for method in args.methods
         },
@@ -528,8 +544,9 @@ async def _main(args: argparse.Namespace) -> int:
                 "episode_count": len(inputs),
                 "routing_policy": routes[method]["router"]["policy"],
                 "execution_strategy": (
-                    DUAL_STREAMING_EXECUTION_STRATEGY if method == "V6_1" else None
+                    MEMBIND_CORE_EXECUTION_STRATEGY if method == "V6_1" else None
                 ),
+                "core_version": MEMBIND_CORE_VERSION if method == "V6_1" else None,
                 "attempt_phase": "ATTEMPT_PREPARATION",
                 "run_contract_sha256": contract["payload_sha256"],
                 "started_at_unix": time.time(),
@@ -544,21 +561,27 @@ async def _main(args: argparse.Namespace) -> int:
             def runtime_builder() -> Any:
                 if runtime_holder:
                     raise RuntimeError("attempt runtime builder was called more than once")
-                runtime = build_8b_u0_runtime(
-                    routing_contract=routes[method],
-                    route_event_sink=route_events.append,
-                    enable_grounded_summary_materialization=(
-                        method == "V6_1" and args.v61_boundary == "WORK_REDUCTION_EXTENSION"
-                    ),
-                    enable_endpoint_schema_grounding=(
-                        method == "V6_1" and args.v61_boundary == "WORK_REDUCTION_EXTENSION"
-                    ),
-                    enable_work_conserving_edge_admission=(method == "V6_1"),
-                    # The adaptive controller was rejected at r66a. Keep it
-                    # opt-in for an explicitly named ablation so the default
-                    # V6.1 substrate remains the retained fixed admission path.
-                    enable_adaptive_edge_admission=False,
-                )
+                if method == "V6_1" and args.v61_boundary == "MEMBIND_CORE":
+                    runtime = build_membind_core_runtime_8b(
+                        routing_contract=routes[method],
+                        route_event_sink=route_events.append,
+                    )
+                else:
+                    runtime = build_8b_u0_runtime(
+                        routing_contract=routes[method],
+                        route_event_sink=route_events.append,
+                        enable_grounded_summary_materialization=(
+                            method == "V6_1" and args.v61_boundary == "WORK_REDUCTION_EXTENSION"
+                        ),
+                        enable_endpoint_schema_grounding=(
+                            method == "V6_1" and args.v61_boundary == "WORK_REDUCTION_EXTENSION"
+                        ),
+                        enable_work_conserving_edge_admission=(method == "V6_1"),
+                        # The adaptive controller was rejected at r66a. Keep it
+                        # opt-in for an explicitly named ablation so the default
+                        # V6.1 substrate remains the retained fixed admission path.
+                        enable_adaptive_edge_admission=False,
+                    )
                 runtime_holder["runtime"] = runtime
                 return runtime
 
@@ -591,29 +614,35 @@ async def _main(args: argparse.Namespace) -> int:
                 ):
                     raise RuntimeError("attempt preparation evidence is invalid")
                 failure_phase = "MEASURED_CONSTRUCTION"
-                environment = public_8b_environment(
-                    routes[method],
-                    repo_root=ROOT,
-                    enable_grounded_summary_materialization=(
-                        method == "V6_1" and args.v61_boundary == "WORK_REDUCTION_EXTENSION"
-                    ),
-                    enable_endpoint_schema_grounding=(
-                        method == "V6_1" and args.v61_boundary == "WORK_REDUCTION_EXTENSION"
-                    ),
-                    enable_work_conserving_edge_admission=(method == "V6_1"),
-                    enable_adaptive_edge_admission=False,
-                )
-                frozen_config = frozen_8b_config(
-                    routes[method],
-                    enable_grounded_summary_materialization=(
-                        method == "V6_1" and args.v61_boundary == "WORK_REDUCTION_EXTENSION"
-                    ),
-                    enable_endpoint_schema_grounding=(
-                        method == "V6_1" and args.v61_boundary == "WORK_REDUCTION_EXTENSION"
-                    ),
-                    enable_work_conserving_edge_admission=(method == "V6_1"),
-                    enable_adaptive_edge_admission=False,
-                )
+                if method == "V6_1" and args.v61_boundary == "MEMBIND_CORE":
+                    environment = public_membind_core_environment_8b(
+                        routes[method], repo_root=ROOT
+                    )
+                    frozen_config = frozen_membind_core_config_8b(routes[method])
+                else:
+                    environment = public_8b_environment(
+                        routes[method],
+                        repo_root=ROOT,
+                        enable_grounded_summary_materialization=(
+                            method == "V6_1" and args.v61_boundary == "WORK_REDUCTION_EXTENSION"
+                        ),
+                        enable_endpoint_schema_grounding=(
+                            method == "V6_1" and args.v61_boundary == "WORK_REDUCTION_EXTENSION"
+                        ),
+                        enable_work_conserving_edge_admission=(method == "V6_1"),
+                        enable_adaptive_edge_admission=False,
+                    )
+                    frozen_config = frozen_8b_config(
+                        routes[method],
+                        enable_grounded_summary_materialization=(
+                            method == "V6_1" and args.v61_boundary == "WORK_REDUCTION_EXTENSION"
+                        ),
+                        enable_endpoint_schema_grounding=(
+                            method == "V6_1" and args.v61_boundary == "WORK_REDUCTION_EXTENSION"
+                        ),
+                        enable_work_conserving_edge_admission=(method == "V6_1"),
+                        enable_adaptive_edge_admission=False,
+                    )
                 common = {
                     "run_id": args.run_id,
                     "context_id": context.context_id,
@@ -637,12 +666,18 @@ async def _main(args: argparse.Namespace) -> int:
                     },
                 }
                 if method == "V6_1":
-                    result = await run_mab_v61_construction_async(
-                        policy=policy,
-                        execution_strategy=DUAL_STREAMING_EXECUTION_STRATEGY,
-                        method_boundary=args.v61_boundary,
-                        **common,
-                    )
+                    if args.v61_boundary == "MEMBIND_CORE":
+                        result = await run_membind_core_construction_async(
+                            policy=policy,
+                            **common,
+                        )
+                    else:
+                        result = await run_mab_v61_construction_async(
+                            policy=policy,
+                            execution_strategy=MEMBIND_CORE_EXECUTION_STRATEGY,
+                            method_boundary=args.v61_boundary,
+                            **common,
+                        )
                 else:
                     result = await run_mab_construction_async(
                         method=str(METHODS[method]["legacy_method"]), **common

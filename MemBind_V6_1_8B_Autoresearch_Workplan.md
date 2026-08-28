@@ -19,6 +19,35 @@
 > 资源匹配 Native baseline 获得稳定收益；随后启动五个完整 history 的正式实验队列，并在
 > 观察到持续进展、证据落盘和服务稳定后停止本轮执行。
 
+## 0.0 当前冻结决策（2026-08-29）
+
+V6 的论文核心已经从候选搜索状态转为一个独立、可复现的实现：
+`saturated_fixed_work_baseline_v1_3.membind_v6_1.core`，版本标识
+`v6-membind-core-v1`。冻结组合为：
+
+```text
+phase_isolated_dual_streaming_v1
++ bounded frontier (lookahead=2, future_cap=1, native_future_quota=0)
++ source lease + per-physical-transport admission
++ work-conserving partition-derived edge admission (4 physical page lanes)
++ exact certified capture/replay
++ B0 source-order authoritative publication
+```
+
+该选择对应 r63a/r63b 中可复现的 overlap/admission 收益方向（r63 历史栈含此前探索的
+work-reduction flags，故其数值不直接归因给 Core）；r67/r69 的
+`frontier_critical_path_resource_scheduler_v1` 已作为负消融保留，不能覆盖 Core 默认实现。
+Core 入口强制使用 `semantic_phase_elastic_affinity` 路由，关闭 adaptive controller、
+bootstrap borrowing、endpoint-schema grounding、summary/predicate pushdown 和任何
+grounded/deterministic materialization。后四类逻辑均属于独立的
+`WORK_REDUCTION_EXTENSION`，不得并入 V6 headline。V6 Core 的稳定身份、配置和环境由
+`core.py` 统一生成，任何 policy/strategy/route 改动都必须创建新的 V6.1 候选，而不是
+修改已冻结的 Core。
+
+V7 从此冻结点开始，研究第二个增量更新模块；其 provider-free 入口和 d=1 受影响闭包
+规划位于 `membind_v7/incremental_update.py`，研究计划见
+`MemBind_V7_Incremental_Update_Workplan.md`。V7 不修改 V6 Core 的代码或实验产物。
+
 ## 0.1 用户修订版推进规则（2026-08-28）
 
 本节优先级高于本文后续较早版本中的“必须完成三次 prefix-30 才能解锁”条款。用户
@@ -59,8 +88,9 @@
 > authoritative NATIVE 工作重叠，并通过 exact replay 和 ordered publication 改变执行时机，
 > 能否相对 B0/NATIVE_SERIAL 加速？
 
-Core 允许的机制只有 dependency-aware prepare/execution overlap、exact certified replay
-以及 ordered authoritative publication。`summary bypass`、`predicate pushdown`、
+Core 允许的机制只有 dependency-aware prepare/execution overlap、dependency-aware
+admission/partition dispatch、exact certified replay 以及 ordered authoritative publication。
+`summary bypass`、`predicate pushdown`、
 grounded/deterministic materialization，以及任何减少、替换或改变 Native 原生 provider
 工作量的逻辑，全部标记为 `WORK_REDUCTION_EXTENSION`，必须独立运行、独立归因、独立
 报告，不能进入 MemBind-Core headline 或与 Core 共用 speedup 结论。任何 Core run contract
@@ -70,7 +100,8 @@ grounded/deterministic materialization，以及任何减少、替换或改变 Na
 
 在完成本次 baseline/contract 纠偏并补跑 fresh B0 之前，暂停所有针对 B1 的 live
 autoresearch，包括 scheduler、lane、future-cap、borrow、spillover 或其他并发参数探索。
-不得为了追求 `1.3x vs NATIVE_PARALLEL` 继续修改方法。B1 仅保留已有 artifact 作为
+不得为了追求旧 B1 数字（例如 `1.3x vs NATIVE_PARALLEL`）继续修改方法。这里的阈值只
+适用于 B0/Core headline，不再针对 B1 做任何优化。B1 仅保留已有 artifact 作为
 performance ceiling；后续 live 工作只能服务于 B0 anchor 与 MemBind-Core 的同语义比较。
 
 本计划替代旧 14B workplan 中的 W/F/Q 参数搜索路线。Autoresearch 优化对象是
@@ -407,8 +438,8 @@ preferred 已占用后，按 `(outstanding + 1) / manifest_capacity_weight` 选�
 capacity，唯一可证伪假设是“消除 v40a 的 GPU0 burst pile-up 能保留 queue 降幅并恢复 service
 time”。prefix-8 若未明确优于 r42a/r42b，或 104/386/250/230 work、图/QA/proof 发生退化，
 则不扩 prefix-16，而是读取 per-endpoint service/queue 与 phase critical path 后重新设计。
-冻结 Native comparator 使用 `c58a480...`；当前 candidate runtime 使用更新后的
-`2e910b00d070...` manifest。两者必须通过机器可读 resource-identity diff 证明硬件、模型、
+历史候选曾使用 `c58a480...`/`2e910b00d070...` manifest；本次 B0/Core pair 已统一到
+`87f1d22e2afd...` manifest。两者必须通过机器可读 resource-identity diff 证明硬件、模型、
 端口、服务参数和 Embedding 身份不变；candidate route 作为 V6.1 方法合同写入
 campaign/run contract 并单独 hash，不因方法私有变化重跑已冻结 Native。
 
@@ -473,17 +504,19 @@ temporal rollback substrate、Quality-v1/grounding/proofs 不退化；若 servic
 
 ### 9.5 B0 Native headline gate（纠偏）
 
-当前没有 prefix-30 B0 comparator。此前冻结的 `NATIVE_PARALLEL/20597f72b70f`
+严格 B0 comparator 已完成：`d6e9e240c3ce`，`2636.463018176s`，30/30 durable
+publication，order/route proof PASS。此前冻结的 `NATIVE_PARALLEL/20597f72b70f`
 （`696.445710877s`）现重新归类为 `B1_RELAXED_ORDER_UPPER_BOUND`，只作辅助上界，
-不能用于 headline speedup。必须先在当前 8B 双 GPU profile 上完成一次严格
-`B0/NATIVE_SERIAL` (`native-serial-dual`) prefix-30 freeze；之后 V6.1 必须在同一
-workload/platform/cache protocol 下 fresh 运行，并按 B0-preserving contract 比较。
+不能用于 headline speedup。V6.1 必须在同一 workload/platform/cache protocol 下以
+`MEMBIND_CORE` contract fresh 运行，并按 B0-preserving contract 比较。
 
-1. 优先在 prefix-16 做 B0 Native/V6.1 两次 fresh 配对；若已有同尺度 B0 结果，直接计算
-   `speedup = T(B0_NATIVE_SERIAL) / T(V6_1_B0_PRESERVING)`。两次中位 speedup 达到约 `1.30x`（允许记录实际值和区间）
+1. 先在当前 B0 anchor 的同一 prefix-30 workload 上完成一次有效 `MemBind-Core` fresh
+   run，直接计算 `speedup = T(B0_NATIVE_SERIAL) / T(V6_1_B0_PRESERVING)`；若达到约
+   `1.30x`（允许记录实际值和区间）即视为明显方法收益。prefix-16 仅作后续诊断尺度，
+   不能替代 prefix-30 headline。
    即视为明显方法收益。
-2. 若 prefix-16 尚未达到 1.30x，但 prefix-30 单次结果已明显优于 Native 且关键路径变化
-   可解释，也允许冻结候选并启动 full5；不再要求机械完成三次 prefix-30。
+2. 若首次 prefix-30 未达到 1.30x，则先分析 Core 的 work inventory、关键路径和质量证据；
+   只有在同一 Core 代码的一次复验显示清晰且可解释的收益后，才冻结候选并启动 full5。
 3. 解锁只保留轻量保护：相同 workload/platform/cache protocol；QA 不出现明显崩溃、核心
    entity/edge coverage 不低于 Native 的 95%；construction、route、replay、shadow-write
    proof 通过。token、temporal、grounding、per-source timing 仍完整落盘，作为论文分析和
@@ -515,22 +548,23 @@ fresh retry。三次 heartbeat 均显示进展或可解释的长调用，且无 
 
 | 阶段 | 状态 | 当前证据/下一步 |
 | --- | --- | --- |
-| 平台 | `READY` | 8B 双副本 + Embedding 服务健康；冻结 Native manifest 为 `platform_manifest.20260827T210605Z.c58a48071201.json`（payload `c58a4807120189913c3450bccd54cdf75c865b0fb71c7e419656d7c686fafc1f`）；当前 candidate manifest 为 `platform_manifest.20260828T050058Z.2e910b00d070.json`（payload `2e910b00d070a56b90a8f302a786d1b55dccf3cd6cd475ae2cb4e05c1a6f8f90`）；不重跑 Native |
+| 平台 | `READY` | 8B 双副本 + Embedding 服务健康；本次 B0/Core pair 共用 manifest `platform_manifest.20260828T150345Z.87f1d22e2afd.json`（payload `87f1d22e2afd6e42d81d6842b046f9355ad37f58e815a5fa7f246960f34ef6d3`）。 |
 | prefix-2 诊断 | `COMPLETE_NONFORMAL` | 新四臂结果已封存；V6.1 同语义收益 28.6%-30.0% |
 | Phase A | `PREFIX4_CORRECTNESS_PASS` | source-grounded nodes 和 current-evidence certified extraction 已通过 live：r26 最终 188 个实体均来自 Native 的 grounded entity 集；92 条边全部有合法 `valid_at`，proof/replay/shadow DB 全 PASS |
-| Phase B | `PREFIX4_REFERENCE_COMPLETE_B0_B1_STATIC` | r27 的 Native Parallel 118.809s 现归类为 B1 upper-bound；StaticRole 456.186s，双臂 route/construction seal PASS。正式 headline 仍需严格 B0/NATIVE_SERIAL prefix-30 freeze。 |
-| Phase C | `B0_COMPARATOR_REQUIRED_BEFORE_HEADLINE` | 旧 B1 `20597f72b70f` prefix-30 `696.445710877s` 仅作 relaxed-order ceiling；V6.1 `705.136007872s` 不能计算 B0 headline speedup。下一步先完成当前 profile 的 fresh B0 prefix-30，再运行同尺度 V6.1。 |
+| Phase B | `PREFIX4_REFERENCE_COMPLETE_B0_B1_STATIC` | r27 的 Native Parallel 118.809s 现归类为 B1 upper-bound；StaticRole 456.186s，双臂 route/construction seal PASS。该历史阶段的 headline 尚未具备 B0 anchor，已由本轮 `d6e9e240c3ce` 补齐。 |
+| Phase C | `B0_ANCHOR_COMPLETE_CORE_PARTIAL_INTERRUPTED` | B0 `d6e9e240c3ce` prefix-30 `2636.463018176s`，30/30 publication、order/route proof PASS；Core `a2631b77f1e2` 因用户中止，完成 sources 0--2 的 partial engineering evidence，不能计算 speedup。下一步只运行 fresh Core prefix-30。 |
 | Phase D/full5 | `UNLOCK_ON_B0_SPEEDUP` | B0 comparator 与 V6.1 同尺度、同 contract；达到约 `1.30x`（或清晰可解释收益）且轻量质量/proof 通过后，主表使用 B0_NATIVE_SERIAL/STATIC_ROLE/V6_1，B1 仅 supplementary。 |
 
 ### 10.1 本次续执行事务（2026-08-28，Native 冻结修订）
 
-1. 保留被中断的 `phasec-p16-v42a-node-partition-pipeline-20260828-r54b`，不复用其
-   namespace 或中间 timing。
+1. 保留被中断的 `phasec-p16-v42a-node-partition-pipeline-20260828-r54b` 以及本次
+   Core partial `a2631b77f1e2`，不复用其 namespace 或中间 timing。
 2. `NATIVE_PARALLEL/20597f72b70f`（`696.445710877s`）保留为 B1 relaxed-order
    upper-bound；此前 r55a prefix-16 Native 仅作 append-only 辅助记录，排除出主表。
-3. 先以 `native-serial-dual` 在 fresh namespace 完成严格 B0 prefix-30 freeze；再运行
-   V6.1 fresh prefix-30，并按 `T(B0_NATIVE_SERIAL)/T(V6_1_B0_PRESERVING)` 计算 headline。
-   未达到目标时只提出一个方法代码假设，继续同尺度验证，不重跑已冻结 B0。
+3. 严格 B0 freeze 已由 `d6e9e240c3ce` 完成（`2636.463018176s`，30/30 publication）。
+   由于 Core `a2631b77f1e2` 被用户中止，下一步只运行 fresh `MemBind-Core` prefix-30，
+   并按 `T(B0_NATIVE_SERIAL)/T(V6_1_B0_PRESERVING)` 计算 headline。未达到目标时只提出
+   一个 Core 内方法代码假设，继续同尺度验证，不重跑已冻结 B0，也不启动 B1 live autoresearch。
 
 ## 11. Autoresearch 候选账本
 
@@ -658,10 +692,10 @@ provider proof 新增 source lease identity/promotion/terminal 守恒和 physica
 - 完整 provider-free suite：`126 passed, 1 warning`（2026-08-28）；scheduler `74/74`，
   routing/provider/runtime/MAB/summary/campaign 全部通过。
 
-当前仍不宣称性能收益，也不启动 full5。下一步只允许在 fresh namespace 运行一次 prefix-8
-V6.1，读取 endpoint-aware admission、source/physical critical path、work inventory、
-Quality-v1、node surface 和全部 proof；若无 headline gain，保留该实现作为系统消融并继续
-下一个单一方法假设，Native comparator 继续冻结不重跑。
+以上段落属于纠偏前的历史 ledger，仅保留用于追溯，不再作为当前执行指令。当前状态以
+第 0 节、9.1、9.5 和本次 correction report 为准：B0 anchor 已完成，Core partial
+attempt 已按用户要求中止；下一次 live 只允许 fresh Core prefix-30，有效结果必须按
+`T_B0/T_MemBind-Core` 评估。
 
 ### r37 结果与下一执行前沿
 
@@ -847,7 +881,8 @@ cache reset/warmup：
    只是 `book journals` 单复数形式。Native 有 9 个重复 entity rows，r26 无重复。这说明
    Native 118.809s 的一部分优势来自并发 episode 对跨 episode node dedupe 的规避，不能
    在不报告图合并质量的情况下当作等工作量 oracle。
-4. headline 仍按 Native 计：r26 慢 92.05%，所以当前不进入 prefix-8。trace 显示 r26
+4. **历史结论（已被 2026-08-28 baseline correction 取代）**：当时 headline 按旧 Native
+   计，r26 慢 92.05%，所以未进入 prefix-8。现在不再用该 B1/旧 baseline 计算 Core headline；trace 显示 r26
    173 个 PREPARE transports 全固定在 GPU1，81 个 NATIVE transports 全固定在 GPU0；
    3 次 node-dedupe prompt 为 13,325 / 19,322 / 25,050 tokens，service 共 63.125s。
    下一候选先做 provenance predicate pushdown：现有 name guard 最终必拒的 candidate

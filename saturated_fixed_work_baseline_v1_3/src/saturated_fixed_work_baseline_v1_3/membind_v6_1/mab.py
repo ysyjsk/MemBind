@@ -217,6 +217,8 @@ def _materialize(
     identity: Mapping[str, Any],
     result: Mapping[str, Any],
 ) -> dict[str, Any]:
+    method_boundary = result.get("method_boundary", "MEMBIND_CORE")
+    artifact_method = str(result.get("artifact_method", "V6_1"))
     if root.exists() and any(root.iterdir()):
         raise V61MABError("V6.1 artifact root is not fresh")
     root.mkdir(parents=True, exist_ok=True)
@@ -252,7 +254,7 @@ def _materialize(
     _write_json(
         root / "metrics.json",
         {
-            "method": "V6_1",
+            "method": artifact_method,
             "method_boundary": method_boundary,
             "t_build_ns": result["t_build_ns"],
             "durable_goodput": result["expected_episode_count"]
@@ -290,7 +292,7 @@ def _materialize(
         root,
         identity={
             **dict(identity),
-            "method": "V6_1",
+            "method": artifact_method,
             "workload_hash": manifest_hash,
             "dataset_authority_sha256": authority_body.get("authority_sha256"),
         },
@@ -317,6 +319,7 @@ async def run_mab_v61_construction_async(
     preflight: Mapping[str, Any],
     execution_strategy: str = STAGED_EXECUTION_STRATEGY,
     method_boundary: str = "MEMBIND_CORE",
+    artifact_method: str = "V6_1",
 ) -> dict[str, Any]:
     selected = tuple(episode_from_input(item) for item in episodes)
     if not selected or [item.source_sequence for item in selected] != list(range(len(selected))):
@@ -329,6 +332,8 @@ async def run_mab_v61_construction_async(
         raise V61MABError(f"unknown V6.1 execution strategy: {execution_strategy}")
     if method_boundary not in {"MEMBIND_CORE", "WORK_REDUCTION_EXTENSION"}:
         raise V61MABError(f"unknown V6.1 method boundary: {method_boundary}")
+    if artifact_method not in {"V6_1", "MEMBIND_CORE"}:
+        raise V61MABError(f"unknown V6.1 artifact method: {artifact_method}")
     root = Path(output_root).resolve()
     if root.exists() and any(root.iterdir()):
         raise V61MABError("V6.1 block root is not fresh")
@@ -847,6 +852,7 @@ async def run_mab_v61_construction_async(
             "schema_version": "membind.v6.1.mab-live-block.v1",
             "status": "PASS",
             "method": "V6_1",
+            "artifact_method": artifact_method,
             "method_boundary": method_boundary,
             "context_id": context_id,
             "namespace": namespace,

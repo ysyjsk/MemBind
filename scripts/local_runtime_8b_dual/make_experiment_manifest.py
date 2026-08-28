@@ -27,6 +27,10 @@ for source in (
 from saturated_fixed_work_baseline_v1_3.membind_v6_1.identity import (  # noqa: E402
     implementation_bundle,
 )
+from saturated_fixed_work_baseline_v1_3.membind_v6_1.core import (  # noqa: E402
+    MEMBIND_CORE_ROUTE_POLICY,
+    core_identity,
+)
 
 
 def read_json(path: Path) -> dict[str, Any]:
@@ -264,6 +268,14 @@ def main() -> int:
         raise RuntimeError("--extension-id is required for WORK_REDUCTION_EXTENSION")
     if args.method_boundary == "MEMBIND_CORE" and args.extension_id:
         raise RuntimeError("Core contracts cannot carry an extension id")
+    if (
+        args.arm == "v61-dual"
+        and args.method_boundary == "MEMBIND_CORE"
+        and route.get("router", {}).get("policy") != MEMBIND_CORE_ROUTE_POLICY
+    ):
+        raise RuntimeError(
+            "MemBind-Core contracts require the frozen semantic-phase elastic route"
+        )
     is_b1 = comparison_class == "RELAXED_ORDER_B1_UPPER_BOUND"
     method_boundary = {
         "id": (
@@ -276,6 +288,7 @@ def main() -> int:
         "allowed_transformations": (
             [
                 "dependency_aware_prepare_execution_overlap",
+                "dependency_aware_admission_and_work_conserving_partition_dispatch",
                 "exact_certified_replay_of_dependency_free_extraction",
                 "ordered_authoritative_publication",
             ]
@@ -303,6 +316,11 @@ def main() -> int:
         "native_execution_semantics": state_contract["mode"],
         "state_evolution_contract": state_contract,
         "method_boundary": method_boundary,
+        "core_identity": (
+            core_identity()
+            if args.arm == "v61-dual" and args.method_boundary == "MEMBIND_CORE"
+            else None
+        ),
         "comparison_class": comparison_class,
         "platform_manifest": {
             "path": str(args.platform_manifest.resolve()),

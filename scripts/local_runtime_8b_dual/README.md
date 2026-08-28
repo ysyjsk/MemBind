@@ -51,6 +51,27 @@ Changing the LLM requires a fresh Native8B baseline, fresh namespaces, and
 fresh embeddings/vector indexes. A frozen Native14B run cannot be relabeled
 as the 8B baseline even when the workload is otherwise identical.
 
+## MemBind-Core versus extensions
+
+The headline V6.1 arm is `MemBind-Core`. Its contract preserves Native's required computation
+and state semantics: only certified dependency-free PREPARE/execution is moved earlier, exact
+transcripts may be replayed, and authoritative publication remains in B0 source order.
+`summary_bypass`, `predicate_pushdown`, grounded or deterministic materialization, and any
+other work reduction/replacement are named `WORK_REDUCTION_EXTENSION` variants. They require a
+separate `extension_id`, separate run contract, and separate attribution; they are not included
+in Core speedup.
+
+The frozen Core implementation is
+`saturated_fixed_work_baseline_v1_3.membind_v6_1.core` (`v6-membind-core-v1`). It
+composes `phase_isolated_dual_streaming_v1` with the retained
+`semantic_phase_elastic_affinity` route, bounded frontier
+(`lookahead=2`, `future_cap=1`, `native_future_quota=0`), source/physical permit
+accounting, and work-conserving partition-derived edge admission. The
+critical-path route, adaptive controller, bootstrap borrowing, and other
+autoresearch candidates remain historical ablations. The Core entry point
+rejects those substitutions and writes its identity into the run contract and
+sealed block metadata.
+
 ## Safety and startup
 
 The normal startup preflight intentionally fails while the current 14B GPU

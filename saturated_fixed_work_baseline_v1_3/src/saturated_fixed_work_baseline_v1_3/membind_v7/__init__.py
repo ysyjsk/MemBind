@@ -7,6 +7,15 @@ any treatment method.
 
 from .semantics import NodeKind, SemanticTrace, SnapshotToken, TraceNode, alpha_equivalent
 from .state_delta import DeltaChange, ObservableSpec, StateDelta
+from .incremental_update import (
+    ArtifactKey,
+    ArtifactRecord,
+    IncrementalUpdateContractError,
+    IncrementalUpdatePlan,
+    affected_closure,
+    build_incremental_plan,
+    incremental_module_identity,
+)
 from .live_runner import V7LiveConfig, V7LiveRunnerError, run_v7_live, run_v7_live_async
 
 __all__ = [
@@ -17,6 +26,13 @@ __all__ = [
     "SnapshotToken",
     "StateDelta",
     "TraceNode",
+    "ArtifactKey",
+    "ArtifactRecord",
+    "IncrementalUpdateContractError",
+    "IncrementalUpdatePlan",
+    "affected_closure",
+    "build_incremental_plan",
+    "incremental_module_identity",
     "V7LiveConfig",
     "V7LiveRunnerError",
     "alpha_equivalent",

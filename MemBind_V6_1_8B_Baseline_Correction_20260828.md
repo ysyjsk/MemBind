@@ -35,8 +35,9 @@ claim that Core is ineffective.
 
 ## Method boundary
 
-The Core contract permits only dependency-aware prepare/execution overlap, exact certified
-replay, and ordered authoritative publication. `summary bypass`, `predicate pushdown`,
+The Core contract permits only dependency-aware prepare/execution overlap, dependency-aware
+admission/partition dispatch, exact certified replay, and ordered authoritative publication.
+`summary bypass`, `predicate pushdown`,
 grounded/deterministic materialization, and any optimization that reduces, replaces, or changes
 Native provider work are `WORK_REDUCTION_EXTENSION` variants. Each extension requires its own
 run contract, ablation, work inventory, semantic-quality report, and attribution. Extension
@@ -91,14 +92,21 @@ same platform/workload/endpoints/decoding/cache, B0 state evolution, source-orde
 and Core work-preservation boundary. The interrupted Core run therefore provides engineering
 evidence only; a fresh Core completion is still required for the primary speedup.
 
+The completed B0 run takes `2636.463s`, while the old B1 run took `696.446s` (`B0/B1 =
+3.786x`). This gap is not evidence that dependency-aware concurrency is useless: the two arms
+do not execute the same stateful computation. B0 carries the full ordered context and records
+`26.08M` prompt tokens across `858` logical requests; B1 records `3.06M` prompt tokens across
+`828` logical requests and may observe a different intermediate graph state. Transport counts
+(`1732` vs `1895`) and embedding work (`3394` vs `5301`) also differ. B1 is therefore a
+relaxed-order ceiling, not a same-work estimand.
+
 The prefix-2 result is not a formal claim: it is one small-sample diagnostic and must be
 repeated at prefix-30 against a fresh B0 contract.
 
 ## Required next sequence
 
 1. Do not run additional B1 scheduler, lane, or future-cap autoresearch.
-2. Using the current READY 8B dual-GPU profile, create one fresh `native-serial-dual` contract
-   and complete the strict B0 prefix-30 freeze. Do not delete or overwrite B1 artifacts.
+2. B0 freeze is complete as attempt `d6e9e240c3ce`; do not delete or overwrite its artifact.
 3. Run the selected `MemBind-Core` implementation at the same prefix/workload and with a fresh
    namespace. The V6.1 contract must declare `method_boundary.id=MEMBIND_CORE`.
 4. Run the updated fairness checker. It must verify B0 state semantics, source-order durable
@@ -110,8 +118,30 @@ repeated at prefix-30 against a fresh B0 contract.
 
 ## Current claim boundary
 
-Until step 2 completes, there is no formal prefix-30 Native headline anchor. The current data
-supports that V6.1 can beat B0 on the prefix-2 diagnostic, but it does not establish a full-scale
-Core result. The corrected design makes the answer falsifiable: Core either accelerates B0 while
-preserving Native work and state semantics, or the primary hypothesis is rejected; B1 cannot be
-used to redefine that outcome.
+The formal prefix-30 Native headline anchor now exists (`d6e9e240c3ce`, `2636.463s`). The
+current data still lacks a completed Core timing because attempt `a2631b77f1e2` was interrupted
+after sources 0--2. The corrected design makes the next answer falsifiable: Core either
+accelerates B0 while preserving Native work and state semantics, or the primary hypothesis is
+rejected; B1 cannot be used to redefine that outcome.
+
+## V6 MemBind-Core freeze and V7 handoff (2026-08-29)
+
+The implementation boundary is now frozen in
+`saturated_fixed_work_baseline_v1_3.membind_v6_1.core` as
+`v6-membind-core-v1`. The selected substrate is `phase_isolated_dual_streaming_v1` with the
+bounded frontier (`lookahead=2`, `future_cap=1`, `native_future_quota=0`), source/physical
+permit accounting, work-conserving partition-derived edge admission, exact capture/replay, and
+source-order authoritative publication. The profile default route is
+`semantic_phase_elastic_affinity`; critical-path, adaptive and borrowing candidates remain
+explicit ablations.
+
+This is a code/attribution freeze, not a new performance claim. Historical r63a/r63b timing
+demonstrates that the overlap/admission substrate has a reproducible small-prefix direction, but
+those attempts also carried earlier work-reduction flags. Therefore their speedup is not copied
+into the Core headline. A fresh B0-matched Core run remains the only valid source for
+`T_B0/T_MemBind-Core`.
+
+The second research module starts under V7 in
+`MemBind_V7_Incremental_Update_Workplan.md` and
+`membind_v7/incremental_update.py`. It is a provider-free d=1 affected-closure and
+content-addressed reuse planner; no V7 result may modify this V6 freeze or its artifacts.

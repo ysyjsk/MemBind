@@ -55,7 +55,10 @@ export MEMBIND_NEO4J_URI="${MEMBIND_8B_NEO4J_URI:-bolt://127.0.0.1:7687}"
 
 export MEMBIND_NATIVE_ROUTING_CONFIG="$SCRIPT_DIR/routing/native_dual_resource_matched.json"
 export MEMBIND_STATIC_ROLE_ROUTING_CONFIG="$SCRIPT_DIR/routing/native_dual_static_role.json"
-export MEMBIND_V61_ROUTING_CONFIG="$SCRIPT_DIR/routing/v61_dual_critical_path.json"
+# Frozen MemBind-Core route.  The previously explored critical-path route is
+# retained as an explicit ablation, but is not the paper method after r67/r69
+# showed no stable gain over the fixed work-conserving substrate.
+export MEMBIND_V61_ROUTING_CONFIG="$SCRIPT_DIR/routing/v61_dual_elastic_affinity.json"
 export MEMBIND_SINGLE_GPU_ROUTING_CONFIG="$SCRIPT_DIR/routing/single_gpu_ablation.json"
 
 export HF_HOME="${HF_HOME:-$MEMBIND_DATA_ROOT/cache/huggingface}"
