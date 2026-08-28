@@ -1,0 +1,59 @@
+#!/usr/bin/env bash
+set -euo pipefail
+SCRIPT_DIR="$(cd -- "$(dirname -- "${BASH_SOURCE[0]}")" && pwd)"
+source "$SCRIPT_DIR/local_env.sh"
+
+export VLLM_API_KEY="$MEMBIND_LOCAL_API_KEY"
+export NATIVE_LLM_API_KEY="$MEMBIND_LOCAL_API_KEY"
+export NATIVE_LLM_BASE_URL="http://$MEMBIND_NATIVE_LLM_HOST:$MEMBIND_NATIVE_LLM_PORT/v1"
+export NATIVE_LLM_MODEL="$MEMBIND_LLM_MODEL_NAME"
+export PREPARE_LLM_API_KEY="$MEMBIND_LOCAL_API_KEY"
+export PREPARE_LLM_BASE_URL="http://$MEMBIND_PREPARE_LLM_HOST:$MEMBIND_PREPARE_LLM_PORT/v1"
+export PREPARE_LLM_MODEL="$MEMBIND_LLM_MODEL_NAME"
+export MEMBIND_LLM_ENDPOINT_SET="$NATIVE_LLM_BASE_URL,$PREPARE_LLM_BASE_URL"
+export MEMBIND_PROVIDER_TOPOLOGY="dual_replica_phase_isolated"
+
+# Compatibility endpoint for legacy Graphiti construction clients. A run that
+# only consumes this variable is a single-GPU ablation, not the dual-replica
+# resource-matched headline comparison.
+export CONSTRUCTION_LLM_API_KEY="$MEMBIND_LOCAL_API_KEY"
+export CONSTRUCTION_LLM_BASE_URL="$NATIVE_LLM_BASE_URL"
+export CONSTRUCTION_LLM_MODEL="$MEMBIND_LLM_MODEL_NAME"
+export CONSTRUCTION_MODEL_REVISION="$MEMBIND_LLM_MODEL_REVISION"
+export CONSTRUCTION_EXPECTED_VLLM_VERSION="0.26.0"
+export CONSTRUCTION_MIN_CONTEXT_TOKENS="$MEMBIND_LLM_MAX_MODEL_LEN"
+export CONSTRUCTION_TEMPERATURE="0.0"
+export CONSTRUCTION_TOP_P="1.0"
+export CONSTRUCTION_MAX_TOKENS="32768"
+export CONSTRUCTION_OVERFLOW_MAX_TOKENS="32768"
+export CONSTRUCTION_CONTEXT_SAFETY_TOKENS="32"
+export CONSTRUCTION_HTTP_TIMEOUT_SECONDS="3600"
+export CONSTRUCTION_SDK_MAX_RETRIES="0"
+export CONSTRUCTION_SEED="20260806"
+
+export EMBEDDING_API_KEY="$MEMBIND_LOCAL_API_KEY"
+export EMBEDDING_BASE_URL="http://$MEMBIND_EMBED_HOST:$MEMBIND_EMBED_PORT/v1"
+export EMBEDDING_MODEL="$MEMBIND_EMBED_MODEL_NAME"
+export EMBEDDING_DIM="$MEMBIND_EMBED_DIMENSION"
+
+export NEO4J_URI="$MEMBIND_NEO4J_URI"
+export NEO4J_USER="${NEO4J_USER:-neo4j}"
+export NEO4J_PASSWORD="${NEO4J_PASSWORD:-password}"
+export NEO4J_DATABASE="${NEO4J_DATABASE:-neo4j}"
+export GRAPHITI_MAX_COROUTINES="8"
+export GRAPHITI_TELEMETRY_ENABLED="false"
+
+export NO_PROXY="127.0.0.1,localhost${NO_PROXY:+,$NO_PROXY}"
+export no_proxy="127.0.0.1,localhost${no_proxy:+,$no_proxy}"
+# Do not expose membind-validation/src globally: it contains a top-level
+# statistics.py that can shadow Python's standard-library module.  Entry points
+# that need the validation helpers add that source root explicitly after core
+# dependencies have loaded.
+export PYTHONPATH="$MEMBIND_REPO_ROOT/mab_quality_v2_final_qa/src:$MEMBIND_REPO_ROOT/saturated_fixed_work_baseline_v1_3/src:$MEMBIND_REPO_ROOT/paper-eval-v3/src"
+
+echo "Activated $MEMBIND_PROFILE_ID"
+echo "Python: $MEMBIND_ENV/bin/python"
+echo "Native LLM: $NATIVE_LLM_BASE_URL ($NATIVE_LLM_MODEL, GPU $MEMBIND_NATIVE_LLM_GPU)"
+echo "Prepare LLM: $PREPARE_LLM_BASE_URL ($PREPARE_LLM_MODEL, GPU $MEMBIND_PREPARE_LLM_GPU)"
+echo "Embedding: $EMBEDDING_BASE_URL ($EMBEDDING_MODEL, ${EMBEDDING_DIM}d, GPU $MEMBIND_EMBED_GPU)"
+echo "Experiment root: $MEMBIND_EXPERIMENT_ROOT"

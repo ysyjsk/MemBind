@@ -1,0 +1,153 @@
+{
+  "schema_version": "membind.v6_1.offline-experiment-matrix.v1",
+  "status": "REFERENCE_ONLY_SUPERSEDED_BY_LOCAL_LIVE_WORKPLAN",
+  "live_authorized": true,
+  "authorized_profile": "local-qwen3-14b-awq-v1",
+  "superseded_by": "MemBind_V6_1_Local_Qwen_Autoresearch_Workplan.md",
+  "primary_objective": "paired end-to-end T_build reduction versus frozen V6 under the same trace, service model, and random seed",
+  "constraints": [
+    "zero false replay",
+    "strict source-order durable publication",
+    "all misses and non-certified callsites use fallback",
+    "no authoritative graph writes during shadow preparation",
+    "no provider calls during offline evaluation"
+  ],
+  "input_corpus": [
+    {
+      "id": "mab_context_2_b0_v6",
+      "purpose": "primary 116-source diagnosis and fixed-work normalization",
+      "paired": true,
+      "scheduler_observability": "PARTIAL"
+    },
+    {
+      "id": "mab_context_0_b0_v6",
+      "purpose": "111-source cross-context robustness",
+      "paired": true,
+      "scheduler_observability": "PARTIAL"
+    },
+    {
+      "id": "mab_context_1_v6",
+      "purpose": "107-source candidate trace robustness only",
+      "paired": false,
+      "scheduler_observability": "PARTIAL"
+    },
+    {
+      "id": "v6_6071bd76_counterbalanced",
+      "purpose": "46-source admission and interval calibration",
+      "paired": true,
+      "scheduler_observability": "COMPLETE"
+    },
+    {
+      "id": "mab_context_0_prefix_1_2_8",
+      "purpose": "boundary and reconstruction sanity checks",
+      "paired": true,
+      "scheduler_observability": "PARTIAL"
+    }
+  ],
+  "service_models": [
+    {
+      "id": "M0",
+      "name": "observed_duration_replay",
+      "claim": "parser, state-machine, and timer reconstruction correctness"
+    },
+    {
+      "id": "M1",
+      "name": "token_conditioned_bootstrap",
+      "claim": "policy ranking and uncertainty under empirical service distributions"
+    },
+    {
+      "id": "M2",
+      "name": "interference_envelope",
+      "claim": "robustness from isolated median through observed tail conditions"
+    },
+    {
+      "id": "M3",
+      "name": "fixed_work_normalized",
+      "claim": "scheduler contribution with extraction responses, graph size, and suffix DAG fixed"
+    }
+  ],
+  "parameter_grid": {
+    "prepare_lookahead": [1, 2, 4, 8, "all"],
+    "future_cap": [0, 1, 2, 4, 7],
+    "native_guard": [0, 1, 2],
+    "ready_probability_min": [0.5, 0.75, 0.9],
+    "interference_budget": ["low", "medium", "high"],
+    "controller": ["static", "aimd"]
+  },
+  "arms": [
+    "A_FROZEN_V6",
+    "B_EVIDENCE_ONLY",
+    "C_CAP_ONLY",
+    "D_WINDOW_ONLY",
+    "E_GUARD_ONLY",
+    "F_STATIC_COMBINED",
+    "G_COST_AWARE",
+    "H_ADAPTIVE",
+    "I_TRAFFIC_ONLY",
+    "J_MAGIC_REPLAY",
+    "K_NO_FUTURE"
+  ],
+  "selection_order": [
+    "correctness_and_proof",
+    "native_p95_inflation",
+    "M1_paired_net_benefit_lower_bound",
+    "M2_worst_case_regression",
+    "timely_ready_and_wasted_work",
+    "policy_simplicity"
+  ],
+  "offline_gates": {
+    "A_isolation": {
+      "required": true,
+      "criteria": [
+        "frozen parent hashes unchanged",
+        "new v6_1 namespace only",
+        "zero sockets, provider calls, and graph writes"
+      ]
+    },
+    "B_correctness": {
+      "required": true,
+      "criteria": [
+        "all property, differential, and adversarial tests pass",
+        "zero false replay",
+        "zero publication inversion",
+        "zero duplicate consume"
+      ]
+    },
+    "C_evidence": {
+      "required": true,
+      "criteria": [
+        "non-vacuous admission proof",
+        "response and DB work accounting correct",
+        "complete queue, policy, and interval trace",
+        "M0 reconstruction error below 1 percent on complete traces"
+      ]
+    },
+    "D_robust_performance": {
+      "required": true,
+      "criteria": [
+        "M1 paired benefit 90 percent lower bound above zero",
+        "M2 worst-case T_build regression at most 5 percent",
+        "M3 native p95 inflation reduction at least 25 percent",
+        "completed but unused speculation at most 5 percent",
+        "no future admission while native waiter exists"
+      ]
+    },
+    "E_interpretability": {
+      "required": true,
+      "criteria": [
+        "cap, window, guard, cost, and adaptive mechanisms ablated",
+        "winner does not depend on one context or source outlier",
+        "work amplification separated from scheduler effect",
+        "no relaxed-order or invalid-QA equivalence claim"
+      ]
+    }
+  },
+  "default_prior_not_winner": {
+    "prepare_lookahead": 2,
+    "future_cap": 1,
+    "native_guard": 0,
+    "note": "This is a conservative search prior, not a selected policy."
+  },
+  "failure_state": "V6_1_OFFLINE_NOT_READY",
+  "success_state": "V6_1_OFFLINE_READY_FOR_IMPLEMENTATION_REVIEW"
+}

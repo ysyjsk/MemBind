@@ -18,6 +18,9 @@ class ProviderAdmissionError(RuntimeError):
 _region: contextvars.ContextVar[str | None] = contextvars.ContextVar("membind_v5_provider_region", default=None)
 _source: contextvars.ContextVar[int | None] = contextvars.ContextVar("membind_v5_provider_source", default=None)
 _identity: contextvars.ContextVar[Any | None] = contextvars.ContextVar("membind_v5_provider_identity", default=None)
+_request_tokens: contextvars.ContextVar[int | None] = contextvars.ContextVar(
+    "membind_v5_provider_request_tokens", default=None
+)
 
 
 @contextmanager
@@ -35,6 +38,22 @@ def provider_scope(*, region: str, source_sequence: int) -> Any:
 
 def current_provider_scope() -> tuple[str | None, int | None]:
     return _region.get(), _source.get()
+
+
+@contextmanager
+def provider_request_scope(*, request_tokens: int) -> Any:
+    normalized = int(request_tokens)
+    if normalized <= 0:
+        raise ProviderAdmissionError("provider request tokens must be positive")
+    token = _request_tokens.set(normalized)
+    try:
+        yield
+    finally:
+        _request_tokens.reset(token)
+
+
+def current_provider_request_tokens() -> int | None:
+    return _request_tokens.get()
 
 
 class FrontierAwareLLMClient:

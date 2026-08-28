@@ -1,0 +1,39 @@
+{
+  "schema_version": "membind.routing-policy.v1",
+  "profile_id": "local-qwen3-8b-awq-dualreplica-v1",
+  "arm": "V6_1_8B_DUAL_ELASTIC_PHASE_AFFINITY",
+  "formal_role": "headline_candidate",
+  "endpoint_set": [
+    {
+      "id": "native-replica",
+      "base_url": "http://127.0.0.1:18200/v1",
+      "served_model": "qwen3-8b-awq",
+      "physical_gpu": 0
+    },
+    {
+      "id": "prepare-replica",
+      "base_url": "http://127.0.0.1:18201/v1",
+      "served_model": "qwen3-8b-awq",
+      "physical_gpu": 1
+    }
+  ],
+  "router": {
+    "policy": "semantic_phase_elastic_affinity",
+    "phase_labels_visible": true,
+    "work_conserving": true,
+    "spillover": "idle_replica_only",
+    "bindings": {
+      "PREPARE": "prepare-replica",
+      "NATIVE": "native-replica"
+    },
+    "handoff_payload": "exact_extraction_transcript_no_kv_transfer",
+    "selection_evidence": "per_dispatch_outstanding_snapshot"
+  },
+  "constraints": {
+    "same_prompt_and_decoding_contract": true,
+    "same_endpoint_set_as_native": true,
+    "same_embedding_endpoint_as_native": true,
+    "authoritative_publication_only_in_native_phase": true,
+    "spillover_requires_alternate_outstanding_zero": true
+  }
+}

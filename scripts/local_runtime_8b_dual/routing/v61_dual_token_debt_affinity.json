@@ -1,0 +1,46 @@
+{
+  "schema_version": "membind.routing-policy.v1",
+  "profile_id": "local-qwen3-8b-awq-dualreplica-v1",
+  "arm": "V6_1_8B_DUAL_PER_TRANSPORT_TOKEN_DEBT_AFFINITY",
+  "formal_role": "autoresearch_candidate",
+  "endpoint_set": [
+    {
+      "id": "native-replica",
+      "base_url": "http://127.0.0.1:18200/v1",
+      "served_model": "qwen3-8b-awq",
+      "physical_gpu": 0
+    },
+    {
+      "id": "prepare-replica",
+      "base_url": "http://127.0.0.1:18201/v1",
+      "served_model": "qwen3-8b-awq",
+      "physical_gpu": 1
+    }
+  ],
+  "router": {
+    "policy": "semantic_phase_token_debt_affinity",
+    "phase_labels_visible": true,
+    "work_conserving": true,
+    "spillover": "per_transport_projected_token_debt",
+    "capacity_source": "observed_kv_tokens_in_platform_manifest",
+    "work_estimate_source": "admission_request_tokens",
+    "affinity_scope": "one_physical_transport",
+    "bindings": {
+      "PREPARE": "prepare-replica-preferred",
+      "NATIVE": "native-replica-preferred"
+    },
+    "tie_break": "semantic_phase_preferred_endpoint",
+    "handoff_payload": "exact-extraction-transcript-no-kv-transfer",
+    "selection_evidence": "per-dispatch-token-debt-before-after"
+  },
+  "constraints": {
+    "same_prompt_and_decoding_contract": true,
+    "same_endpoint_set_as_native": true,
+    "same_embedding_endpoint_as_native": true,
+    "authoritative_publication_only_in_native_phase": true,
+    "capacity_weights_from_platform_manifest": true,
+    "request_tokens_from_shared_admission": true,
+    "transport_continuations_remain_elastic": true,
+    "no_logical_call_pinning": true
+  }
+}

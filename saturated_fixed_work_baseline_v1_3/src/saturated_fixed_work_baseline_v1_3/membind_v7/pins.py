@@ -56,7 +56,15 @@ def _changed_paths(repo: Path, expected: str) -> set[str]:
     working = _git(repo, "diff", "--name-only")
     staged = _git(repo, "diff", "--cached", "--name-only")
     untracked = _git(repo, "ls-files", "--others", "--exclude-standard")
-    return {path for value in (committed, working, staged, untracked) for path in value.splitlines() if path}
+    # Packaging regenerates ``*.egg-info`` metadata as a side effect of
+    # installing the validation harness.  These files are not native subject
+    # source and must not invalidate the independent semantic pin.
+    return {
+        path
+        for value in (committed, working, staged, untracked)
+        for path in value.splitlines()
+        if path and ".egg-info/" not in path
+    }
 
 
 def _tree_identity(repo: Path, revision: str, path: str) -> str:

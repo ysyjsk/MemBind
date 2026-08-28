@@ -94,14 +94,44 @@ def materialize_construction_block(
         _write_jsonl(block_root / "replay_binding.jsonl", result.get("bindings", []))
     else:
         _write_jsonl(block_root / "replay_binding.jsonl", [{"status": "N/A", "reason": "replay refinement is not applicable to this method"}])
+    inventory_keys = (
+        "llm_logical_requests",
+        "llm_logical_requests_by_prompt",
+        "transport_attempts",
+        "transport_failed_attempts",
+        "transport_true_retry_attempts",
+        "compatibility_expansion_attempts",
+        "transport_retry_attempts",
+        "pagination_requests",
+        "pagination_continuation_requests",
+        "pagination_raw_unique_progress_edges",
+        "pagination_unique_delta_edges",
+        "pagination_duplicate_edges",
+        "pagination_duplicate_recovery_requests",
+        "pagination_duplicate_recovery_successes",
+        "pagination_invalid_endpoint_edges",
+        "pagination_zero_delta_terminations",
+        "pagination_empty_terminations",
+        "pagination_page_capacity",
+        "summary_response_audits",
+        "summary_unknown_rejected",
+        "summary_duplicate_rejected",
+        "summary_omitted_requested",
+        "prompt_tokens",
+        "completion_tokens",
+        "finish_reason_length_count",
+        "embedding_calls",
+        "embedding_items",
+        "db_reads",
+        "db_write_statements",
+        "db_write_transactions",
+        "db_writes",
+    )
     _write_json(block_root / "work_inventory.json", {
         "expected_episode_count": result.get("expected_episode_count"),
         "submitted_count": result.get("submitted_count"),
         "completed_count": result.get("completed_count"),
-        "llm_logical_requests": result.get("llm_logical_requests"),
-        "transport_attempts": result.get("transport_attempts"),
-        "embedding_items": result.get("embedding_items"),
-        "db_writes": result.get("db_writes"),
+        **{key: result.get(key) for key in inventory_keys},
     })
     _write_json(block_root / "lifecycle_validation.json", result.get("lifecycle_validation", {"contract_status": "INVALID"}))
     _write_json(block_root / "order_validation.json", result.get("order_validation", {"order_contract_status": "INVALID_TRACE"}))

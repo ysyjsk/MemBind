@@ -179,18 +179,14 @@ def _mab_graphiti_kwargs(episode: MABLiveEpisode, *, namespace: str) -> dict[str
     }
 
 
-def _span_metrics(recorder: Any) -> dict[str, int]:
-    records = list(getattr(recorder, "records", ()) or ())
-    phases = [str(getattr(row, "phase", "")) for row in records]
+def _span_metrics(
+    recorder: Any, *, extraction_diagnostics: Sequence[Mapping[str, Any]] = ()
+) -> dict[str, Any]:
+    from .membind_v6_1.evidence import extraction_work_inventory, span_work_inventory
+
     return {
-        "llm_logical_requests": sum(phase == "llm" for phase in phases),
-        "transport_attempts": sum(phase == "llm-transport" for phase in phases),
-        "embedding_items": sum(int((getattr(row, "metadata", {}) or {}).get("text_count", 0) or 0) for row in records if getattr(row, "phase", "") == "embedding"),
-        "db_writes": sum(
-            getattr(row, "phase", "") in {"database", "database-transaction"}
-            and str((getattr(row, "metadata", {}) or {}).get("operation_class", "")).casefold() in {"write", "transaction"}
-            for row in records
-        ),
+        **span_work_inventory(list(getattr(recorder, "records", ()) or ())),
+        **extraction_work_inventory(extraction_diagnostics),
     }
 
 
@@ -398,7 +394,12 @@ async def run_mab_construction_async(
             "refinement_validation": validate_v6_bindings(bindings) if method == "V6" else {"refinement_status": "N/A"},
             "graph_diagnostics": dict(canonical),
             "t_build_ns": lifecycle["build_makespan_ns"],
-            **_span_metrics(recorder),
+            **_span_metrics(
+                recorder,
+                extraction_diagnostics=list(
+                    getattr(runtime.llm_client, "_membind_extraction_diagnostics", ()) or ()
+                ),
+            ),
             "transport_evidence": _transport_evidence_summary(transport_rows),
         }
         if method == "V6":

@@ -1,0 +1,33 @@
+{
+  "schema_version": "membind.v6_1.version-boundary.v1",
+  "status": "LOCAL_LIVE_AUTORESEARCH_ACTIVE",
+  "version": "6.1",
+  "parent_version": "6",
+  "purpose": "Improve the end-to-end net benefit of V6 exact native-demand extraction replay without changing Graphiti semantics.",
+  "repository_head_at_design": "111f7b4440bbcd94157b6fcdd89cf227e0853d55",
+  "frozen_parent": {
+    "membind_v6_tree": "8457e93592eb94ec272f81ab6bfb6f11648f15e3",
+    "membind_v5_runtime_core_tree": "3aa8e37c303e84aa09c56bb55b33d4c0306f4438",
+    "mab_live_runner_blob": "14896bdf4a65cf6787eb32a0a1364d550192b378",
+    "v6_workplan_blob": "3585b4a46ec2c342251a0c1e40197ba8c7603d84"
+  },
+  "new_namespace": "saturated_fixed_work_baseline_v1_3.membind_v6_1",
+  "reserved_paths": [
+    "saturated_fixed_work_baseline_v1_3/src/saturated_fixed_work_baseline_v1_3/membind_v6_1/",
+    "saturated_fixed_work_baseline_v1_3/tests/test_membind_v6_1_*.py",
+    "saturated_fixed_work_baseline_v1_3/scripts/run_mab_v61_local.py",
+    "saturated_fixed_work_baseline_v1_3/v6_1/artifacts/"
+  ],
+  "forbidden_mutations": [
+    "saturated_fixed_work_baseline_v1_3/src/saturated_fixed_work_baseline_v1_3/membind_v6/",
+    "saturated_fixed_work_baseline_v1_3/src/saturated_fixed_work_baseline_v1_3/mab_live_runner.py",
+    "saturated_fixed_work_baseline_v1_3/src/saturated_fixed_work_baseline_v1_3/membind_v5/runtime/",
+    "sealed V6 and MAB artifact roots"
+  ],
+  "live_authorized": true,
+  "authorized_profile": "local-qwen3-14b-awq-v1",
+  "provider_calls_authorized": true,
+  "graph_writes_authorized": true,
+  "treatment_runtime_implemented": true,
+  "authorization_scope": "Fresh local-profile namespaces and /data/predator/ly/Mem experiment artifacts only; frozen 32B code, configs, and artifacts remain read-only."
+}

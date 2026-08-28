@@ -1,0 +1,52 @@
+#!/usr/bin/env bash
+set -euo pipefail
+SCRIPT_DIR="$(cd -- "$(dirname -- "${BASH_SOURCE[0]}")" && pwd)"
+source "$SCRIPT_DIR/local_env.sh"
+source "$SCRIPT_DIR/_common.sh"
+
+require_model "Prepare LLM" "$MEMBIND_LLM_MODEL_DIR"
+log="$MEMBIND_LOG_ROOT/construction/prepare-qwen3-8b-awq.log"
+pidfile="$MEMBIND_RUN_ROOT/prepare-llm.pid"
+command=(
+  "$MEMBIND_ENV/bin/vllm" serve "$MEMBIND_LLM_MODEL_DIR"
+  --served-model-name "$MEMBIND_LLM_MODEL_NAME"
+  --host "$MEMBIND_PREPARE_LLM_HOST"
+  --port "$MEMBIND_PREPARE_LLM_PORT"
+  --api-key "$MEMBIND_LOCAL_API_KEY"
+  --dtype auto
+  --max-model-len "$MEMBIND_LLM_MAX_MODEL_LEN"
+  --max-num-seqs "$MEMBIND_LLM_MAX_NUM_SEQS"
+  --max-num-batched-tokens "$MEMBIND_LLM_MAX_BATCHED_TOKENS"
+  --gpu-memory-utilization "$MEMBIND_PREPARE_LLM_GPU_MEMORY_UTILIZATION"
+  --hf-overrides '{"rope_parameters":{"rope_type":"yarn","factor":1.6,"original_max_position_embeddings":40960,"rope_theta":1000000}}'
+  --structured-outputs-config '{"backend":"xgrammar"}'
+  --enable-prefix-caching
+  --enable-chunked-prefill
+  --scheduling-policy fcfs
+  --seed 20260806
+  --default-chat-template-kwargs '{"enable_thinking":false}'
+)
+
+case "${1:-}" in
+  --dry-run)
+    print_command env -u PYTHONPATH "CUDA_VISIBLE_DEVICES=$MEMBIND_PREPARE_LLM_GPU" "${command[@]}"
+    exit 0
+    ;;
+  --foreground)
+    echo $$ >"$pidfile"
+    exec > >(tee -a "$log") 2>&1
+    echo "[$(date --iso-8601=seconds)] starting prepare $MEMBIND_LLM_MODEL_NAME on physical GPU $MEMBIND_PREPARE_LLM_GPU"
+    exec env -u PYTHONPATH CUDA_VISIBLE_DEVICES="$MEMBIND_PREPARE_LLM_GPU" "${command[@]}"
+    ;;
+  "") ;;
+  *) echo "usage: $0 [--foreground|--dry-run]" >&2; exit 2 ;;
+esac
+
+echo "Starting prepare replica at http://$MEMBIND_PREPARE_LLM_HOST:$MEMBIND_PREPARE_LLM_PORT/v1"
+launch_tmux_service \
+  "Prepare LLM" \
+  "$MEMBIND_PREPARE_LLM_TMUX_SESSION" \
+  "$MEMBIND_PREPARE_LLM_PORT" \
+  "$pidfile" \
+  "$log" \
+  "$SCRIPT_DIR/start_prepare_llm.sh"
