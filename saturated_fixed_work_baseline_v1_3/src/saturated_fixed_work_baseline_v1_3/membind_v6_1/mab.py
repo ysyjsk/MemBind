@@ -253,6 +253,7 @@ def _materialize(
         root / "metrics.json",
         {
             "method": "V6_1",
+            "method_boundary": method_boundary,
             "t_build_ns": result["t_build_ns"],
             "durable_goodput": result["expected_episode_count"]
             / (result["t_build_ns"] / 1_000_000_000),
@@ -315,6 +316,7 @@ async def run_mab_v61_construction_async(
     environment: Mapping[str, Any],
     preflight: Mapping[str, Any],
     execution_strategy: str = STAGED_EXECUTION_STRATEGY,
+    method_boundary: str = "MEMBIND_CORE",
 ) -> dict[str, Any]:
     selected = tuple(episode_from_input(item) for item in episodes)
     if not selected or [item.source_sequence for item in selected] != list(range(len(selected))):
@@ -325,6 +327,8 @@ async def run_mab_v61_construction_async(
         STAGED_EXECUTION_STRATEGY,
     }:
         raise V61MABError(f"unknown V6.1 execution strategy: {execution_strategy}")
+    if method_boundary not in {"MEMBIND_CORE", "WORK_REDUCTION_EXTENSION"}:
+        raise V61MABError(f"unknown V6.1 method boundary: {method_boundary}")
     root = Path(output_root).resolve()
     if root.exists() and any(root.iterdir()):
         raise V61MABError("V6.1 block root is not fresh")
@@ -444,9 +448,10 @@ async def run_mab_v61_construction_async(
         )
         if not isinstance(extraction_diagnostics, list):
             raise V61MABError("V6.1 extraction diagnostics seam is unavailable")
-        auxiliary_transport_restores.append(
-            install_edge_invalidation_predicate_pushdown(extraction_diagnostics)
-        )
+        if method_boundary == "WORK_REDUCTION_EXTENSION":
+            auxiliary_transport_restores.append(
+                install_edge_invalidation_predicate_pushdown(extraction_diagnostics)
+            )
         try:
             source_hash = hashlib.sha256(inspect.getsource(type(original_llm)).encode()).hexdigest()
         except (OSError, TypeError):
@@ -476,7 +481,13 @@ async def run_mab_v61_construction_async(
             client_identity=client_identity,
             token_counter=local_prompt_token_count,
             certified_message_transform=strip_certified_previous_context,
-            native_message_transform=incremental_native_summary_context,
+            # Core must preserve Native's non-certified provider context and
+            # work.  Incremental summary context is a work-changing extension.
+            native_message_transform=(
+                incremental_native_summary_context
+                if method_boundary == "WORK_REDUCTION_EXTENSION"
+                else None
+            ),
             event_sink=provider_sink,
         )
 
@@ -836,6 +847,7 @@ async def run_mab_v61_construction_async(
             "schema_version": "membind.v6.1.mab-live-block.v1",
             "status": "PASS",
             "method": "V6_1",
+            "method_boundary": method_boundary,
             "context_id": context_id,
             "namespace": namespace,
             "policy": policy.to_dict(),
@@ -865,6 +877,7 @@ async def run_mab_v61_construction_async(
             "order_validation": order_validation,
             "refinement_validation": {**refinement, "proof": proof},
             "scheduler_evidence": {
+                "method_boundary": method_boundary,
                 "execution_strategy": execution.execution_strategy,
                 "policy": policy.to_dict(),
                 "max_started_ahead": execution.max_started_ahead,
@@ -928,6 +941,7 @@ async def run_mab_v61_construction_async(
                 "run_id": run_id,
                 "policy": policy.to_dict(),
                 "execution_strategy": execution.execution_strategy,
+                "method_boundary": method_boundary,
             },
             result=result,
         )

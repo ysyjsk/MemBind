@@ -34,16 +34,18 @@ PREPARE work with authoritative NATIVE work.
 
 | Comparison | Native | V6.1 | Interpretation |
 | --- | --- | --- | --- |
-| Headline dual replica | Both 8B endpoints; capacity-weighted least-outstanding, phase-blind, work-conserving | Same two endpoints; PREPARE -> GPU 1, NATIVE -> GPU 0 | Measures semantic DAG-aware placement |
+| Headline B0 dual replica | Both 8B endpoints; capacity-weighted least-outstanding, phase-blind, work-conserving, strict source-order stateful publication | Same two endpoints; dependency-free PREPARE may run early, but authoritative NATIVE/replay and durable publication preserve B0 order | Measures dependency-aware overlap under identical B0 semantics |
+| B1 relaxed-order upper bound | Both endpoints; complete episodes may run concurrently and reorder publication | N/A | Aggressive performance ceiling only; may change state evolution and is never the Native headline |
 | Static-role strong baseline | Same two endpoints; Graphiti extraction requests -> GPU 1, other requests -> GPU 0; no capture/replay | Compared with V6.1 on the same platform | Separates simple request-class placement from certified semantic reuse |
 | Single-GPU ablation | GPU 0 endpoint only | Same GPU 0 endpoint only | Measures scheduling/code changes without an extra replica |
 | Cross-model context | Frozen 14B result | Fresh 8B result | Descriptive only; never reported as method speedup |
 
-The Native headline baseline is deliberately allowed to use both replicas.
-Giving only V6.1 a second GPU would confound method speedup with resource
-count. Conversely, V6.1's phase affinity is the system mechanism under test,
-so the phase-blind Native router remains work-conserving but cannot inspect
-MemBind phase labels.
+The Native headline baseline is **B0/NATIVE_SERIAL**: it is deliberately allowed to use both
+replicas, but each episode's stateful update and durable publication complete in source order.
+V6.1 receives the same resources and may only move certified dependency-free PREPARE work
+earlier; it must preserve the B0 state-evolution and publication-order contract. Giving only
+V6.1 a second GPU would confound method speedup with resource count. The B1 arm is retained as
+an auxiliary relaxed-order performance ceiling, not as a headline comparator.
 
 Changing the LLM requires a fresh Native8B baseline, fresh namespaces, and
 fresh embeddings/vector indexes. A frozen Native14B run cannot be relabeled
@@ -94,7 +96,7 @@ inside `/data/predator/ly/Mem/experiments/local-qwen3-8b-awq-dualreplica-v1`:
 source scripts/local_runtime_8b_dual/activate.sh
 
 python scripts/local_runtime_8b_dual/make_experiment_manifest.py \
-  --arm native-dual \
+  --arm native-serial-dual \
   --run-id mab-history0-native8b \
   --namespace local-qwen3-8b-awq-dualreplica-v1-mab-h0-native-001 \
   --platform-manifest /data/predator/ly/Mem/profiles/local-qwen3-8b-awq-dualreplica-v1/platform_manifest.TIMESTAMP.HASH.json \
@@ -103,7 +105,7 @@ python scripts/local_runtime_8b_dual/make_experiment_manifest.py \
   --output "$MEMBIND_EXPERIMENT_ROOT/mab-history0-native8b/run_contract.json"
 ```
 
-Create the V6.1 contract with `--arm v61-dual`, then check resource matching:
+Create the V6.1 Core contract with `--arm v61-dual --method-boundary MEMBIND_CORE`, then check resource matching:
 
 ```bash
 scripts/local_runtime_8b_dual/fairness_check.sh \

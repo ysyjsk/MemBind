@@ -50,6 +50,75 @@ def canonical_hash(value: Any) -> str:
     ).hexdigest()
 
 
+def semantics_for_arm(arm: str) -> tuple[str, str, dict[str, Any]]:
+    """Return method, comparison class, and the state/publication contract.
+
+    B0 is the only semantics-preserving Native comparator.  B1 intentionally
+    remains available as a relaxed-order ceiling, but can never be emitted as
+    a headline baseline by accident.
+    """
+    if arm == "native-parallel-dual":
+        return (
+            "NATIVE",
+            "RELAXED_ORDER_B1_UPPER_BOUND",
+            {
+                "mode": "RELAXED_ORDER_B1",
+                "episode_concurrency": "parallel",
+                "durable_publication_order": "not_guaranteed",
+                "may_change_state_evolution": True,
+                "dependency_free_early_execution": False,
+            },
+        )
+    if arm == "native-static-role-dual":
+        return (
+            "NATIVE_STATIC_ROLE",
+            "B0_STATIC_ROLE_ABLATION",
+            {
+                "mode": "B0_SERIAL_STATEFUL_ORDERED_PUBLICATION",
+                "episode_concurrency": 1,
+                "durable_publication_order": "source_sequence_ascending",
+                "may_change_state_evolution": False,
+                "dependency_free_early_execution": False,
+            },
+        )
+    if arm in {"native-dual", "native-serial-dual", "v61-dual"}:
+        comparison = (
+            "HEADLINE_B0_DUAL_RESOURCE_MATCHED"
+            if arm in {"native-serial-dual", "v61-dual"}
+            else "B0_LEGACY_ALIAS"
+        )
+        return (
+            "NATIVE" if arm != "v61-dual" else "V6_1",
+            comparison,
+            {
+                "mode": "B0_SERIAL_STATEFUL_ORDERED_PUBLICATION",
+                "episode_concurrency": 1,
+                "durable_publication_order": "source_sequence_ascending",
+                "authoritative_state_cut": "after_previous_source_durable_publication",
+                "may_change_state_evolution": False,
+                "dependency_free_early_execution": arm == "v61-dual",
+                "early_operation_scope": (
+                    "certified_dependency_free_prepare_or_replay_only"
+                    if arm == "v61-dual"
+                    else "none"
+                ),
+            },
+        )
+    if arm in {"native-single", "v61-single"}:
+        return (
+            "NATIVE" if arm == "native-single" else "V6_1",
+            "SINGLE_GPU_ABLATION",
+            {
+                "mode": "B0_SERIAL_STATEFUL_ORDERED_PUBLICATION",
+                "episode_concurrency": 1,
+                "durable_publication_order": "source_sequence_ascending",
+                "may_change_state_evolution": False,
+                "dependency_free_early_execution": arm == "v61-single",
+            },
+        )
+    raise ValueError(f"unknown arm: {arm}")
+
+
 def normalized_endpoints(value: dict[str, Any]) -> list[tuple[str, str, str, int]]:
     return sorted(
         (
@@ -113,6 +182,12 @@ def main() -> int:
     parser.add_argument("--platform-manifest", type=Path, required=True)
     parser.add_argument("--workload-manifest", type=Path, required=True)
     parser.add_argument("--runner-implementation", type=Path, required=True)
+    parser.add_argument(
+        "--method-boundary",
+        choices=("MEMBIND_CORE", "WORK_REDUCTION_EXTENSION"),
+        help="Required for V6.1: distinguish semantics-preserving Core from work-changing extensions.",
+    )
+    parser.add_argument("--extension-id", help="Stable identifier for a non-Core extension/ablation.")
     parser.add_argument("--output", type=Path, required=True)
     args = parser.parse_args()
 
@@ -180,14 +255,41 @@ def main() -> int:
     initial_counts = namespace_counts(args.namespace)
     if initial_counts != {"node_count": 0, "relationship_count": 0}:
         raise RuntimeError(f"namespace is not fresh: {initial_counts}")
-    method = (
-        "NATIVE_STATIC_ROLE"
-        if args.arm == "native-static-role-dual"
-        else "NATIVE"
-        if args.arm.startswith("native")
-        else "V6_1"
-    )
-    comparison_class = "HEADLINE_DUAL_RESOURCE_MATCHED" if args.arm.endswith("dual") else "SINGLE_GPU_ABLATION"
+    method, comparison_class, state_contract = semantics_for_arm(args.arm)
+    if args.arm == "v61-dual" and args.method_boundary is None:
+        raise RuntimeError("--method-boundary is required for v61-dual; do not mix Core with extensions")
+    if args.arm != "v61-dual" and args.method_boundary is not None:
+        raise RuntimeError("--method-boundary is only accepted for v61-dual")
+    if args.method_boundary == "WORK_REDUCTION_EXTENSION" and not args.extension_id:
+        raise RuntimeError("--extension-id is required for WORK_REDUCTION_EXTENSION")
+    if args.method_boundary == "MEMBIND_CORE" and args.extension_id:
+        raise RuntimeError("Core contracts cannot carry an extension id")
+    is_b1 = comparison_class == "RELAXED_ORDER_B1_UPPER_BOUND"
+    method_boundary = {
+        "id": (
+            "B1_RELAXED_ORDER_REFERENCE"
+            if is_b1
+            else args.method_boundary or "NATIVE_REFERENCE"
+        ),
+        "preserves_native_computation_semantics": not is_b1 and args.method_boundary != "WORK_REDUCTION_EXTENSION",
+        "preserves_native_work": not is_b1 and args.method_boundary != "WORK_REDUCTION_EXTENSION",
+        "allowed_transformations": (
+            [
+                "dependency_aware_prepare_execution_overlap",
+                "exact_certified_replay_of_dependency_free_extraction",
+                "ordered_authoritative_publication",
+            ]
+            if args.method_boundary == "MEMBIND_CORE"
+            else []
+        ),
+        "excluded_from_core": [
+            "summary_bypass",
+            "predicate_pushdown",
+            "grounded_or_deterministic_materialization",
+            "any_reduction_or_replacement_of_native_provider_work",
+        ],
+        "extension_id": args.extension_id,
+    }
     implementation = implementation_bundle(args.runner_implementation.resolve())
     payload = {
         "schema_version": "membind.8b-experiment-contract.v1",
@@ -196,13 +298,11 @@ def main() -> int:
         "namespace": args.namespace,
         "arm": args.arm,
         "method": method,
-        "native_execution_semantics": (
-            "B1_PARALLEL_EPISODES"
-            if args.arm == "native-parallel-dual"
-            else "B0_SERIAL_EPISODES"
-            if args.arm in {"native-dual", "native-serial-dual", "native-static-role-dual"}
-            else None
-        ),
+        # Kept for consumers of the v1 schema; the structured contract below
+        # is authoritative and is populated for Native, V6.1, and ablations.
+        "native_execution_semantics": state_contract["mode"],
+        "state_evolution_contract": state_contract,
+        "method_boundary": method_boundary,
         "comparison_class": comparison_class,
         "platform_manifest": {
             "path": str(args.platform_manifest.resolve()),

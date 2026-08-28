@@ -215,6 +215,8 @@ def _create_run_contract(
     platform_manifest: Path,
     workload_manifest: Path,
     output: Path,
+    method_boundary: str | None = None,
+    extension_id: str | None = None,
 ) -> dict[str, Any]:
     command = [
         sys.executable,
@@ -231,6 +233,8 @@ def _create_run_contract(
         str(workload_manifest),
         "--runner-implementation",
         str(Path(__file__).resolve()),
+        *( ["--method-boundary", method_boundary] if method_boundary else [] ),
+        *( ["--extension-id", extension_id] if extension_id else [] ),
         "--output",
         str(output),
     ]
@@ -291,6 +295,19 @@ def _reusable_reference(
                 == runner_hash
                 and contract.get("implementation_bundle", {}).get("payload_sha256")
                 == implementation_hash
+                and (
+                    (
+                        method == "NATIVE_SERIAL"
+                        and contract.get("comparison_class") == "HEADLINE_B0_DUAL_RESOURCE_MATCHED"
+                        and contract.get("method_boundary", {}).get("id") == "NATIVE_REFERENCE"
+                    )
+                    or (
+                        method == "NATIVE_PARALLEL"
+                        and contract.get("comparison_class") == "RELAXED_ORDER_B1_UPPER_BOUND"
+                        and contract.get("method_boundary", {}).get("id") == "B1_RELAXED_ORDER_REFERENCE"
+                    )
+                    or method == "STATIC_ROLE"
+                )
                 and complete.get("status") == "PASS"
                 and route_proof.get("status") == "PASS"
                 and route_seal.get("seal_sha256") == route_seal_hash
@@ -412,6 +429,8 @@ async def _main(args: argparse.Namespace) -> int:
         "contexts": list(args.contexts),
         "session_limit": args.session_limit,
         "methods": list(args.methods),
+        "v61_method_boundary": args.v61_boundary if "V6_1" in args.methods else None,
+        "v61_extension_id": args.v61_extension_id if "V6_1" in args.methods else None,
         "method_contracts": {
             method: {
                 **METHODS[method],
@@ -492,6 +511,8 @@ async def _main(args: argparse.Namespace) -> int:
                 platform_manifest=platform_path,
                 workload_manifest=workload_path,
                 output=contract_path,
+                method_boundary=(args.v61_boundary if method == "V6_1" else None),
+                extension_id=(args.v61_extension_id if method == "V6_1" else None),
             )
             attempt_preparation_path = attempt_root / "attempt_preparation.json"
             start = {
@@ -526,8 +547,12 @@ async def _main(args: argparse.Namespace) -> int:
                 runtime = build_8b_u0_runtime(
                     routing_contract=routes[method],
                     route_event_sink=route_events.append,
-                    enable_grounded_summary_materialization=(method == "V6_1"),
-                    enable_endpoint_schema_grounding=(method == "V6_1"),
+                    enable_grounded_summary_materialization=(
+                        method == "V6_1" and args.v61_boundary == "WORK_REDUCTION_EXTENSION"
+                    ),
+                    enable_endpoint_schema_grounding=(
+                        method == "V6_1" and args.v61_boundary == "WORK_REDUCTION_EXTENSION"
+                    ),
                     enable_work_conserving_edge_admission=(method == "V6_1"),
                     # The adaptive controller was rejected at r66a. Keep it
                     # opt-in for an explicitly named ablation so the default
@@ -569,15 +594,23 @@ async def _main(args: argparse.Namespace) -> int:
                 environment = public_8b_environment(
                     routes[method],
                     repo_root=ROOT,
-                    enable_grounded_summary_materialization=(method == "V6_1"),
-                    enable_endpoint_schema_grounding=(method == "V6_1"),
+                    enable_grounded_summary_materialization=(
+                        method == "V6_1" and args.v61_boundary == "WORK_REDUCTION_EXTENSION"
+                    ),
+                    enable_endpoint_schema_grounding=(
+                        method == "V6_1" and args.v61_boundary == "WORK_REDUCTION_EXTENSION"
+                    ),
                     enable_work_conserving_edge_admission=(method == "V6_1"),
                     enable_adaptive_edge_admission=False,
                 )
                 frozen_config = frozen_8b_config(
                     routes[method],
-                    enable_grounded_summary_materialization=(method == "V6_1"),
-                    enable_endpoint_schema_grounding=(method == "V6_1"),
+                    enable_grounded_summary_materialization=(
+                        method == "V6_1" and args.v61_boundary == "WORK_REDUCTION_EXTENSION"
+                    ),
+                    enable_endpoint_schema_grounding=(
+                        method == "V6_1" and args.v61_boundary == "WORK_REDUCTION_EXTENSION"
+                    ),
                     enable_work_conserving_edge_admission=(method == "V6_1"),
                     enable_adaptive_edge_admission=False,
                 )
@@ -607,6 +640,7 @@ async def _main(args: argparse.Namespace) -> int:
                     result = await run_mab_v61_construction_async(
                         policy=policy,
                         execution_strategy=DUAL_STREAMING_EXECUTION_STRATEGY,
+                        method_boundary=args.v61_boundary,
                         **common,
                     )
                 else:
@@ -736,6 +770,13 @@ def main() -> int:
     parser.add_argument("--lookahead", type=int, default=2)
     parser.add_argument("--future-cap", type=int, default=1)
     parser.add_argument("--native-future-quota", type=int, default=0)
+    parser.add_argument(
+        "--v61-boundary",
+        choices=("MEMBIND_CORE", "WORK_REDUCTION_EXTENSION"),
+        default="MEMBIND_CORE",
+        help="Declare whether V6.1 is the semantics-preserving Core or a named work-changing extension.",
+    )
+    parser.add_argument("--v61-extension-id")
     parser.add_argument("--continue-on-error", action="store_true")
     parser.add_argument("--force-reference-rerun", action="store_true")
     args = parser.parse_args()
@@ -743,6 +784,10 @@ def main() -> int:
         parser.error("context indices must be in 0..4")
     if args.session_limit is not None and args.session_limit <= 0:
         parser.error("--session-limit must be positive")
+    if args.v61_boundary == "WORK_REDUCTION_EXTENSION" and not args.v61_extension_id:
+        parser.error("--v61-extension-id is required for WORK_REDUCTION_EXTENSION")
+    if args.v61_boundary == "MEMBIND_CORE" and args.v61_extension_id:
+        parser.error("--v61-extension-id is only valid for WORK_REDUCTION_EXTENSION")
     try:
         return asyncio.run(_main(args))
     except BaseException as exc:

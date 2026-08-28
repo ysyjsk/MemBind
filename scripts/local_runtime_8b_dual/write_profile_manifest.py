@@ -204,11 +204,19 @@ def main() -> int:
             "single_gpu_ablation": single_route,
         },
         "fairness_contract": {
+            "headline_comparison_class": "HEADLINE_B0_DUAL_RESOURCE_MATCHED",
+            "headline_native_arm": "native-serial-dual",
+            "headline_native_state_evolution": "B0_SERIAL_STATEFUL_ORDERED_PUBLICATION",
+            "relaxed_order_upper_bound_arm": "native-parallel-dual",
+            "relaxed_order_upper_bound_class": "RELAXED_ORDER_B1_UPPER_BOUND",
+            "relaxed_order_may_change_state_evolution": True,
             "headline_endpoint_set_equal": True,
             "headline_model_checkpoint_equal": True,
             "headline_embedding_equal": True,
             "native_baseline_phase_blind": True,
             "native_baseline_work_conserving": True,
+            "native_b0_strict_source_order": True,
+            "v61_preserves_b0_state_and_publication_order": True,
             "v61_only_allowed_system_difference": (
                 "frontier_critical_path_resource_scheduler_or_semantic_phase_elastic_affinity"
                 "_and_exact_transcript_handoff"

@@ -1,5 +1,16 @@
 # MemBind V6.1 8B 双副本公平实验设计
 
+> **基线语义纠偏（2026-08-28，取代本文早期草案）**：此前将
+> `NATIVE_PARALLEL/B1` 写作 Native headline 是错误的。正式主比较现在固定为
+> `B0/NATIVE_SERIAL`（`native-serial-dual`）：在同样双 GPU、模型、Embedding、
+> workload、cache protocol 下，严格按 episode/source 顺序完成完整 stateful update
+> 与 durable publication。V6.1 只能提前执行已证明无依赖的 PREPARE/replay 子操作，
+> 且必须保持 B0 的 state evolution 与 publication order。`B1/NATIVE_PARALLEL`
+> 允许完整 episode 并发、可能改变状态演化，只保留为
+> `RELAXED_ORDER_B1_UPPER_BOUND` 性能上界；它不再参与 headline speedup，也不能据此
+> 断言 dependency-aware concurrency 无效。历史 JSON/artifact 不改写，以下结果按此
+> taxonomy 重新归类。
+
 > 日期：2026-08-27  
 > 新平台身份：`local-qwen3-8b-awq-dualreplica-v1`  
 > 状态（2026-08-28）：8B 双副本平台已启动并通过 live preflight；双 endpoint
@@ -71,7 +82,7 @@ reduction                 = 10%
 
 ## 3. 公平主比较
 
-### 3.1 Headline dual-replica comparison
+### 3.1 Headline B0 dual-replica comparison
 
 两个方法都获得完全相同的资源集合：
 
@@ -81,9 +92,9 @@ endpoint B: qwen3-8b-awq, GPU 1, 127.0.0.1:18201
 embedding:  qwen3-embedding-0.6b, GPU 1, 127.0.0.1:18202
 ```
 
-Native8B-DP 使用 `capacity_weighted_least_outstanding`：不读取 phase label，
-根据 platform manifest 中两个副本实测 KV capacity 做容量感知，空闲副本可接收
-任意到达请求，保持 work-conserving。
+`B0/NATIVE_SERIAL` 使用 `capacity_weighted_least_outstanding`：不读取 phase label，
+根据 platform manifest 中两个副本实测 KV capacity 做容量感知；但 episode 的
+stateful update 和 durable publication 始终按 source 顺序完成，路由不能改变状态演化。
 
 V6.1-Phase-Affinity 使用同样的 endpoint set，但允许使用 MemBind DAG 中本来就
 存在的 phase 信息：PREPARE 固定到 GPU 1，NATIVE 固定到 GPU 0，handoff 只传
@@ -93,13 +104,18 @@ exact extraction transcript。这个路由差异就是方法变量。
 翻倍；因此这种配置禁止作为 headline。反过来，要求 Native 也使用 V6.1 的 phase
 label 会把待评估的方法机制泄漏给 baseline，也不是合理对照。
 
+`B1/NATIVE_PARALLEL` 仅作为 relaxed-order performance ceiling：它可并发完整 episode，
+其 publication 顺序和中间状态可能不同，因此不能替代 B0 headline，也不能用来否定
+dependency-aware concurrency。
+
 ### 3.2 必须保留的消融
 
 | Arm | 资源 | 目的 |
 | --- | --- | --- |
 | Native8B-single | GPU 0 单 endpoint | 单卡算法基线 |
 | V6.1-single | 同一 GPU 0 endpoint | 隔离 replay/staging/scheduler 的算法收益与开销 |
-| Native8B-dual-DP | 两个 8B endpoint | resource-matched headline baseline |
+| B0 Native8B-dual-serial | 两个 8B endpoint；严格 source-order stateful/publication | resource-matched headline baseline |
+| B1 Native8B-dual-parallel | 两个 8B endpoint；完整 episode 并发，可改变 state evolution | relaxed-order performance ceiling（仅辅助） |
 | V6.1-dual-affinity | 同两个 endpoint | headline candidate |
 | Native8B-dual-static-role | 可选，两 endpoint 静态角色但无 replay | 区分简单分流与 MemBind semantic handoff |
 | TP2 | 可选，且 Native/V6.1 都需重跑 | 硬件策略消融，不进入主配置 |
@@ -109,6 +125,16 @@ V6.1 的效果，那么论文贡献应收缩为 phase placement；如果 V6.1 �
 exact certified reuse、authoritative replay 和应用 DAG 共同产生了额外价值。
 
 ## 4. 固定变量与唯一可变变量
+
+### 4.0 MemBind-Core boundary
+
+The primary method is `MemBind-Core`. It preserves Native's computation semantics and
+required work: only certified dependency-free PREPARE/execution may move earlier; exact
+replay substitutes an already certified transcript; authoritative state updates and durable
+publication remain in B0 source order. Summary bypass, predicate pushdown, grounded or
+deterministic materialization, and any other work reduction/replacement are
+`WORK_REDUCTION_EXTENSION` variants. They require separate contracts, ablations, and
+attribution and must never be combined with the Core headline speedup.
 
 Headline pair 必须相同：
 

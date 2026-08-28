@@ -28,6 +28,11 @@ def normalized_endpoints(value: dict[str, Any]) -> list[tuple[str, str, str, int
     )
 
 
+def state_contract(value: dict[str, Any]) -> dict[str, Any]:
+    contract = value.get("state_evolution_contract")
+    return contract if isinstance(contract, dict) else {}
+
+
 def main() -> int:
     parser = argparse.ArgumentParser()
     parser.add_argument("--native", type=Path, required=True)
@@ -36,11 +41,54 @@ def main() -> int:
     native = load(args.native.resolve())
     v61 = load(args.v61.resolve())
 
+    native_state = state_contract(native)
+    v61_state = state_contract(v61)
+    native_boundary = native.get("method_boundary", {})
+    v61_boundary = v61.get("method_boundary", {})
+    b0_mode = "B0_SERIAL_STATEFUL_ORDERED_PUBLICATION"
     checks = {
         "schema": native.get("schema_version") == v61.get("schema_version") == "membind.8b-experiment-contract.v1",
         "profile": native.get("profile_id") == v61.get("profile_id") == "local-qwen3-8b-awq-dualreplica-v1",
         "method_labels": native.get("method") == "NATIVE" and v61.get("method") == "V6_1",
-        "comparison_class": native.get("comparison_class") == v61.get("comparison_class"),
+        "headline_b0_native": (
+            native.get("arm") == "native-serial-dual"
+            and native.get("comparison_class") == "HEADLINE_B0_DUAL_RESOURCE_MATCHED"
+            and native.get("native_execution_semantics") == b0_mode
+        ),
+        "headline_b0_v61": (
+            v61.get("arm") == "v61-dual"
+            and v61.get("comparison_class") == "HEADLINE_B0_DUAL_RESOURCE_MATCHED"
+            and v61.get("native_execution_semantics") == b0_mode
+        ),
+        "not_b1_headline": native.get("comparison_class") != "RELAXED_ORDER_B1_UPPER_BOUND",
+        "state_contract_mode": native_state.get("mode") == b0_mode and v61_state.get("mode") == b0_mode,
+        "state_contract_order": (
+            native_state.get("durable_publication_order") == "source_sequence_ascending"
+            and v61_state.get("durable_publication_order") == "source_sequence_ascending"
+        ),
+        "state_contract_serial": native_state.get("episode_concurrency") == 1 and v61_state.get("episode_concurrency") == 1,
+        "state_evolution_preserved": native_state.get("may_change_state_evolution") is False and v61_state.get("may_change_state_evolution") is False,
+        "method_boundary_core": (
+            v61_boundary.get("id") == "MEMBIND_CORE"
+            and v61_boundary.get("preserves_native_computation_semantics") is True
+            and v61_boundary.get("preserves_native_work") is True
+            and not v61_boundary.get("extension_id")
+            and set(v61_boundary.get("allowed_transformations", ()))
+            >= {
+                "dependency_aware_prepare_execution_overlap",
+                "exact_certified_replay_of_dependency_free_extraction",
+                "ordered_authoritative_publication",
+            }
+            and set(v61_boundary.get("excluded_from_core", ()))
+            >= {
+                "summary_bypass",
+                "predicate_pushdown",
+                "grounded_or_deterministic_materialization",
+            }
+        ),
+        "native_work_contract_declared": native_boundary.get("id") == "NATIVE_REFERENCE",
+        "comparison_class": native.get("comparison_class") == "HEADLINE_B0_DUAL_RESOURCE_MATCHED"
+        and v61.get("comparison_class") == "HEADLINE_B0_DUAL_RESOURCE_MATCHED",
         "platform": native.get("platform_manifest", {}).get("payload_sha256") == v61.get("platform_manifest", {}).get("payload_sha256"),
         "workload": native.get("workload_manifest", {}).get("file_sha256") == v61.get("workload_manifest", {}).get("file_sha256"),
         "endpoint_set": normalized_endpoints(native) == normalized_endpoints(v61),
@@ -78,10 +126,10 @@ def main() -> int:
         ),
         "v61_exact_handoff": v61.get("routing", {}).get("router", {}).get("handoff_payload") == "exact_extraction_transcript_no_kv_transfer",
     }
-    headline = native.get("comparison_class") == "HEADLINE_DUAL_RESOURCE_MATCHED"
+    headline = native.get("comparison_class") == "HEADLINE_B0_DUAL_RESOURCE_MATCHED"
     checks["headline_endpoint_count"] = (len(normalized_endpoints(native)) == 2) if headline else True
     result = {
-        "schema_version": "membind.8b-fairness-check.v1",
+        "schema_version": "membind.8b-fairness-check.v2",
         "ok": all(checks.values()),
         "native_manifest": str(args.native.resolve()),
         "v61_manifest": str(args.v61.resolve()),
@@ -99,6 +147,10 @@ def main() -> int:
             "payload_sha256",
         ],
     }
+    if native.get("comparison_class") == "RELAXED_ORDER_B1_UPPER_BOUND" or native.get("arm") == "native-parallel-dual":
+        result["failure_reason"] = "B1_RELAXED_ORDER_UPPER_BOUND_NOT_HEADLINE; compare B1 only as an auxiliary ceiling"
+    if v61_boundary.get("id") == "WORK_REDUCTION_EXTENSION":
+        result["failure_reason"] = "WORK_REDUCTION_EXTENSION_NOT_CORE; evaluate as a separate ablation"
     print(json.dumps(result, indent=2, sort_keys=True))
     return 0 if result["ok"] else 1
 
