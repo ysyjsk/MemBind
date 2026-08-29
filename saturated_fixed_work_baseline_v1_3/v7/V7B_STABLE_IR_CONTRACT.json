@@ -1,0 +1,29 @@
+{
+  "schema_version": "membind.v7b.stable-ir-contract.v1",
+  "status": "FROZEN_PROVIDER_FREE_REFERENCE",
+  "operator": "source_local_mentions",
+  "source_inputs": [
+    "source_id",
+    "source_text",
+    "source_timestamp"
+  ],
+  "environment_epochs": [
+    "schema_epoch",
+    "model_epoch",
+    "parser_epoch"
+  ],
+  "forbidden_mutable_state_reads": [
+    "mutable_memory_state",
+    "previous_episode_retrieval",
+    "current_graph_candidates",
+    "current_entity_uuid",
+    "current_adjacency",
+    "mutable_summary",
+    "mutable_temporal_conflicts"
+  ],
+  "output_schema": "StableSemanticIR",
+  "stable_id_rule": "sha256(source_hash,operator,source_span,normalized,schema_epoch)",
+  "grounding_rule": "every mention carries source_id/span provenance",
+  "canonicalization_rule": "sorted JSON projection with UTF-8 SHA-256 digest",
+  "live_status": "NOT_AUTHORIZED_UNTIL_V7_FRESH_QUALIFICATION"
+}

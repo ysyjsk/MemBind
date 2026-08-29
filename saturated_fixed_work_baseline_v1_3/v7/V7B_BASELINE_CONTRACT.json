@@ -1,0 +1,38 @@
+{
+  "schema_version": "membind.v7b.baseline-contract.v1",
+  "headline": "B0_NATIVE_SERIAL",
+  "b0": {
+    "role": "Native headline baseline",
+    "artifact": "/data/predator/ly/Mem/experiments/local-qwen3-8b-awq-dualreplica-v1/baseline-correction-b0-prefix30/context-0/NATIVE_SERIAL/d6e9e240c3ce",
+    "t_build_ns": 2636463018176,
+    "episodes": 30,
+    "durable_publications": 30,
+    "ordered_state_evolution": true
+  },
+  "b1": {
+    "role": "Relaxed-order upper bound only",
+    "headline_eligible": false
+  },
+  "v6": {
+    "role": "Frozen concurrency-only predecessor",
+    "identity": "v6-membind-core-v1",
+    "evaluation_only": true
+  },
+  "v7_fresh": {
+    "role": "New-algorithm from-scratch control",
+    "same_resource_comparison_required": true
+  },
+  "v7_incremental": {
+    "role": "Final delta-local treatment",
+    "primary_estimand": "T(V7_FRESH)/T(V7_INCREMENTAL)",
+    "differential_equivalence_required": true
+  },
+  "fairness_contract": [
+    "same hardware and GPU allocation",
+    "same model/checkpoint and decoding contract",
+    "same embedding and Neo4j backend",
+    "same workload, cache reset and warmup",
+    "fresh namespace per arm",
+    "source-order durable publication"
+  ]
+}

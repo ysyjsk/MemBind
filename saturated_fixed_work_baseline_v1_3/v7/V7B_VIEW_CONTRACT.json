@@ -1,0 +1,16 @@
+{
+  "schema_version": "membind.v7b.view-contract.v1",
+  "status": "FROZEN_PROVIDER_FREE_REFERENCE",
+  "view_contract_rule": {
+    "stable_key": "kind:view_id",
+    "inputs": ["StableSemanticIR", "predecessor_views"],
+    "state_dependencies": "explicit projection; empty means unknown and must repair",
+    "certificate": "exact_digest_and_declared_state_projection",
+    "repair": "fresh_recompute_then_canonical_compare",
+    "canonical_equality": "sha256(sorted-json(value))",
+    "fallback": "FALLBACK_FRESH on unknown delta/environment or budget"
+  },
+  "supported_kinds": ["source_local", "stateful"],
+  "unsupported_policy": "fail closed before fresh or incremental execution",
+  "live_status": "NOT_AUTHORIZED_UNTIL_V7_FRESH_QUALIFICATION"
+}

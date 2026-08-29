@@ -1888,6 +1888,70 @@ def test_summary_response_rejects_unknown_entities_and_records_coverage() -> Non
     ]
 
 
+def test_summary_entity_partition_merges_pages_without_dropping_entities() -> None:
+    class Client:
+        max_tokens = 32_768
+
+        def __init__(self) -> None:
+            self.call_events: list[dict[str, object]] = []
+            self.page_names: list[list[str]] = []
+
+        async def generate_response(self, messages, response_model=None, **_kwargs):
+            content = messages[0]["content"]
+            start = content.index("<ENTITIES>") + len("<ENTITIES>")
+            end = content.index("</ENTITIES>")
+            entities = json.loads(content[start:end])
+            names = [str(item["name"]) for item in entities]
+            self.page_names.append(names)
+            self.call_events.append(
+                {
+                    "finish_reason": "stop",
+                    "token_usage": {"prompt_tokens": 100, "completion_tokens": 8},
+                }
+            )
+            return {"summaries": [{"name": name, "summary": f"summary:{name}"} for name in names]}
+
+    client = Client()
+    install_local_extraction_chunking_policy(
+        client,
+        token_counter=lambda _messages: 100,
+        summary_entity_page_capacity=2,
+    )
+    result = asyncio.run(
+        client.generate_response(
+            [
+                {
+                    "role": "user",
+                    "content": (
+                        '<ENTITIES>[{"name":"A"},{"name":"B"},{"name":"C"},'
+                        '{"name":"D"},{"name":"E"}]</ENTITIES>'
+                    ),
+                }
+            ],
+            prompt_name="extract_nodes.extract_summaries_batch",
+        )
+    )
+
+    assert client.page_names == [["A", "B"], ["C", "D"], ["E"]]
+    assert [row["name"] for row in result["summaries"]] == ["A", "B", "C", "D", "E"]
+    merge = [
+        row
+        for row in client._membind_extraction_diagnostics
+        if row.get("event") == "SUMMARY_ENTITY_PARTITION_MERGE"
+    ]
+    assert merge == [
+        {
+            "schema_version": "membind.v6.1.summary-partition.v1",
+            "event": "SUMMARY_ENTITY_PARTITION_MERGE",
+            "prompt_name": "extract_nodes.extract_summaries_batch",
+            "entity_count": 5,
+            "page_count": 3,
+            "page_capacity": 2,
+            "status": "merged",
+        }
+    ]
+
+
 def test_local_context_budget_adapter_uses_exact_remaining_context() -> None:
     class Completions:
         def __init__(self) -> None:

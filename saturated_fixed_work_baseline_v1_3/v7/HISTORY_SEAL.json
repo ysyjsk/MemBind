@@ -1,0 +1,30 @@
+{
+  "schema_version": "membind.v7.history-seal.v1",
+  "sealed_at": "2026-08-29",
+  "original_v7_methodology": "MemBind_V7_Methodology_Workplan.md",
+  "v7a_negative_evidence": "MemBind_V7_DEVELOPMENT_NULL_RESULT_20260826.md",
+  "v6_predecessor_identity": "v6-membind-core-v1",
+  "b0_reference": {
+    "arm": "B0_NATIVE_SERIAL",
+    "artifact_id": "d6e9e240c3ce",
+    "profile_id": "local-qwen3-8b-awq-dualreplica-v1",
+    "episodes": 30,
+    "t_build_ns": 2636463018176,
+    "durable_publications": 30,
+    "source_order_proof": "PASS",
+    "reusable_when": "public hardware/model/embedding/backend/workload/decoding/cache contract unchanged"
+  },
+  "b1_reference_role": "RELAXED_ORDER_UPPER_BOUND_ONLY",
+  "current_campaign": {
+    "profile_id": "local-qwen3-14b-awq-v1",
+    "role": "provider-free V7-B development only",
+    "headline_comparison_eligible": false,
+    "reason": "not resource-matched to sealed 8B dual-replica B0"
+  },
+  "sealed_files": [
+    "V7B_FRESH_ALGORITHM_FROZEN.json",
+    "V7B_BASELINE_CONTRACT.json",
+    "V7B_OFFLINE_GATE_RESULT.json"
+  ],
+  "live_treatment_authorized": false
+}

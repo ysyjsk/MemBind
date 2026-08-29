@@ -588,6 +588,10 @@ _TURN_MARKER_RE = re.compile(r"(?m)^\[(?:USER|ASSISTANT)\]\s*$")
 _ENTITIES_BLOCK_PATTERN = re.compile(
     r"(<ENTITIES>)(?P<body>.*?)(</ENTITIES>)", re.IGNORECASE | re.DOTALL
 )
+_EXISTING_ENTITIES_BLOCK_PATTERN = re.compile(
+    r"(<EXISTING ENTITIES>)(?P<body>.*?)(</EXISTING ENTITIES>)",
+    re.IGNORECASE | re.DOTALL,
+)
 
 
 def _message_content(value: Any) -> str | None:
@@ -674,6 +678,115 @@ def _replace_entity_block(
             setattr(message, "content", updated)
         return cloned
     return None
+
+
+def _existing_entity_block(
+    messages: Sequence[Any],
+) -> tuple[int, re.Match[str], list[dict[str, Any]]] | None:
+    """Parse the native dedupe prompt's complete existing-candidate block."""
+
+    for index, message in enumerate(messages):
+        content = _message_content(message)
+        if content is None:
+            continue
+        match = _EXISTING_ENTITIES_BLOCK_PATTERN.search(content)
+        if match is None:
+            continue
+        try:
+            values = json.loads(match.group("body"))
+        except json.JSONDecodeError:
+            return None
+        if not isinstance(values, list) or not all(isinstance(value, Mapping) for value in values):
+            return None
+        return index, match, [dict(value) for value in values]
+    return None
+
+
+def _replace_existing_entity_block(
+    messages: Sequence[Any],
+    *,
+    entity_values: Sequence[Mapping[str, Any]],
+) -> list[Any] | None:
+    """Clone a dedupe prompt while replacing only EXISTING ENTITIES JSON."""
+
+    cloned = deepcopy(list(messages))
+    for message in cloned:
+        content = _message_content(message)
+        if content is None:
+            continue
+        match = _EXISTING_ENTITIES_BLOCK_PATTERN.search(content)
+        if match is None:
+            continue
+        body = json.dumps(list(entity_values), ensure_ascii=False, indent=2)
+        instruction = (
+            "\n\n<DEDUPE_CANDIDATE_PAGE>\n"
+            "Only the EXISTING ENTITIES in this page are available candidates. "
+            "For every NEW entity, return the matching global candidate_id from this page, "
+            "or -1 when no candidate in this page is the same real-world entity. "
+            "Do not infer or fabricate candidates outside this page.\n"
+            "</DEDUPE_CANDIDATE_PAGE>\n"
+        )
+        updated = content[: match.start("body")] + "\n" + body + "\n" + content[match.end("body") :]
+        updated += instruction
+        if isinstance(message, Mapping):
+            message["content"] = updated
+        else:
+            setattr(message, "content", updated)
+        return cloned
+    return None
+
+
+def _merge_dedupe_page_responses(
+    responses: Sequence[Any],
+    *,
+    expected_count: int,
+    fallback_names: Sequence[str],
+) -> dict[str, list[dict[str, Any]]]:
+    """Union page-local NodeResolutions into one deterministic native shape."""
+
+    selected: dict[int, dict[str, Any]] = {}
+    candidates: dict[int, list[dict[str, Any]]] = {}
+    for response in responses:
+        if hasattr(response, "model_dump"):
+            response = response.model_dump()
+        if not isinstance(response, Mapping):
+            raise LocalRuntimeConfigurationError("dedupe candidate page response is not an object")
+        values = response.get("entity_resolutions")
+        if not isinstance(values, list):
+            raise LocalRuntimeConfigurationError("dedupe candidate page response has no resolutions")
+        for value in values:
+            if not isinstance(value, Mapping):
+                continue
+            try:
+                relative_id = int(value.get("id"))
+                duplicate_id = int(value.get("duplicate_candidate_id"))
+            except (TypeError, ValueError):
+                continue
+            if relative_id < 0 or relative_id >= expected_count:
+                continue
+            candidates.setdefault(relative_id, []).append(
+                {
+                    "id": relative_id,
+                    "name": str(value.get("name") or ""),
+                    "duplicate_candidate_id": duplicate_id,
+                }
+            )
+    for relative_id in range(expected_count):
+        values = candidates.get(relative_id, [])
+        positive = [value for value in values if int(value["duplicate_candidate_id"]) >= 0]
+        chosen = min(
+            positive,
+            key=lambda value: int(value["duplicate_candidate_id"]),
+        ) if positive else (values[0] if values else None)
+        if chosen is None:
+            name = fallback_names[relative_id] if relative_id < len(fallback_names) else ""
+            chosen = {
+                "id": relative_id,
+                "name": name,
+                "duplicate_candidate_id": -1,
+            }
+        selected[relative_id] = chosen
+    return {"entity_resolutions": [selected[index] for index in range(expected_count)]}
 
 
 def _distinct_entity_values(values: Sequence[Mapping[str, Any]]) -> list[dict[str, Any]]:
@@ -1534,6 +1647,8 @@ def install_local_extraction_chunking_policy(
     chunk_char_limit: int = LOCAL_EXTRACTION_CHUNK_CURRENT_CHARS,
     partition_extraction_by_turns: bool = False,
     partition_edge_candidates: bool = False,
+    summary_entity_page_capacity: int | None = None,
+    dedupe_candidate_page_capacity: int | None = None,
     node_partition_concurrency: int = LOCAL_NODE_PARTITION_CONCURRENCY,
     edge_partition_concurrency: int = LOCAL_EDGE_PARTITION_CONCURRENCY,
     edge_physical_concurrency: int = LOCAL_EDGE_PHYSICAL_CONCURRENCY,
@@ -1567,6 +1682,10 @@ def install_local_extraction_chunking_policy(
         raise LocalRuntimeConfigurationError("edge physical concurrency must be positive")
     if node_partition_concurrency < 1:
         raise LocalRuntimeConfigurationError("node partition concurrency must be positive")
+    if summary_entity_page_capacity is not None and summary_entity_page_capacity < 1:
+        raise LocalRuntimeConfigurationError("summary entity page capacity must be positive")
+    if dedupe_candidate_page_capacity is not None and dedupe_candidate_page_capacity < 1:
+        raise LocalRuntimeConfigurationError("dedupe candidate page capacity must be positive")
     if edge_page_capacity < 1:
         raise LocalRuntimeConfigurationError("edge page capacity must be positive")
     if edge_priority_burst is not None and edge_priority_burst < 1:
@@ -1761,6 +1880,119 @@ def install_local_extraction_chunking_policy(
                         row["observed_prompt_tokens"] = usage.get("prompt_tokens")
             diagnostics.append(row)
             return result
+
+        # Large source-local extraction partitions can produce a very large
+        # native summary prompt.  Keep the exact Graphiti summary operator and
+        # merge its per-entity results, but bound each structured response so a
+        # provider length stop cannot turn into malformed JSON.  This path is
+        # opt-in because the frozen V6 runtime must retain its historical wire
+        # shape; V7-FRESH enables it explicitly as an engineering guard.
+        if (
+            prompt_name in {
+                "extract_nodes.extract_summaries_batch",
+                "extract_nodes.extract_entity_summaries_from_episodes",
+            }
+            and summary_entity_page_capacity is not None
+        ):
+            entity_info = _entity_block(messages)
+            if entity_info is not None:
+                _entity_index, _entity_match, entity_values = entity_info
+                if len(entity_values) > summary_entity_page_capacity:
+                    pages = [
+                        entity_values[index : index + summary_entity_page_capacity]
+                        for index in range(0, len(entity_values), summary_entity_page_capacity)
+                    ]
+                    merged: list[Any] = []
+                    for page_index, page in enumerate(pages):
+                        page_messages = _replace_entity_block(
+                            messages,
+                            entity_values=page,
+                        )
+                        if page_messages is None:
+                            raise LocalRuntimeConfigurationError(
+                                "summary partition entity block seam is unavailable"
+                            )
+                        page_result = await invoke(
+                            page_messages,
+                            max_tokens,
+                            partition_id=page_index,
+                            partition_count=len(pages),
+                            partition_kind="summary_entities",
+                        )
+                        if not isinstance(page_result, Mapping):
+                            raise LocalRuntimeConfigurationError(
+                                "summary partition response is not a mapping"
+                            )
+                        page_summaries = page_result.get("summaries")
+                        if not isinstance(page_summaries, list):
+                            raise LocalRuntimeConfigurationError(
+                                "summary partition response has no summaries list"
+                            )
+                        merged.extend(page_summaries)
+                    diagnostics.append(
+                        {
+                            "schema_version": "membind.v6.1.summary-partition.v1",
+                            "event": "SUMMARY_ENTITY_PARTITION_MERGE",
+                            "prompt_name": prompt_name,
+                            "entity_count": len(entity_values),
+                            "page_count": len(pages),
+                            "page_capacity": summary_entity_page_capacity,
+                            "status": "merged",
+                        }
+                    )
+                    return {"summaries": merged}
+
+        # Large dedupe prompts can exceed the structured-output completion
+        # budget even after local context admission. Keep Graphiti's native
+        # dedupe operator/schema, but invoke it over a complete stable paging
+        # cover of EXISTING candidates and deterministically union global IDs.
+        if prompt_name == "dedupe_nodes.nodes" and dedupe_candidate_page_capacity is not None:
+            existing_info = _existing_entity_block(messages)
+            entity_info = _entity_block(messages)
+            if existing_info is not None and entity_info is not None:
+                _existing_index, _existing_match, existing_values = existing_info
+                _entity_index, _entity_match, extracted_values = entity_info
+                if len(existing_values) > dedupe_candidate_page_capacity:
+                    pages = [
+                        existing_values[index : index + dedupe_candidate_page_capacity]
+                        for index in range(0, len(existing_values), dedupe_candidate_page_capacity)
+                    ]
+                    page_responses: list[Any] = []
+                    for page_index, page in enumerate(pages):
+                        page_messages = _replace_existing_entity_block(messages, entity_values=page)
+                        if page_messages is None:
+                            raise LocalRuntimeConfigurationError(
+                                "dedupe candidate page existing-entity block seam is unavailable"
+                            )
+                        page_responses.append(
+                            await invoke(
+                                page_messages,
+                                max_tokens,
+                                response_model,
+                                partition_id=page_index,
+                                partition_count=len(pages),
+                                partition_kind="dedupe_existing_candidates",
+                            )
+                        )
+                    fallback_names = [str(value.get("name") or "") for value in extracted_values]
+                    merged = _merge_dedupe_page_responses(
+                        page_responses,
+                        expected_count=len(extracted_values),
+                        fallback_names=fallback_names,
+                    )
+                    diagnostics.append(
+                        {
+                            "schema_version": "membind.v6.1.dedupe-candidate-partition.v1",
+                            "event": "DEDUPE_EXISTING_CANDIDATE_PARTITION_MERGE",
+                            "prompt_name": prompt_name,
+                            "candidate_count": len(existing_values),
+                            "page_count": len(pages),
+                            "page_capacity": dedupe_candidate_page_capacity,
+                            "resolution_count": len(extracted_values),
+                            "status": "merged",
+                        }
+                    )
+                    return merged
 
         if prompt_name not in {
             "extract_nodes.extract_message",

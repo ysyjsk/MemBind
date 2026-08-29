@@ -1,0 +1,29 @@
+{
+  "schema_version": "membind.v7b.fresh-algorithm-freeze.v1",
+  "status": "PROVIDER_FREE_REFERENCE_FROZEN",
+  "method": "V7_FRESH",
+  "boundary": "V7_B_INCREMENTALIZABLE_MEMORY_CONSTRUCTION",
+  "source_local_stage": {
+    "implementation": "membind_v7.v7b.extract_source_ir",
+    "mutable_state_reads": false,
+    "identity": "source_hash+operator+source_span+schema_epoch",
+    "grounding_required": true,
+    "provider_calls_in_reference": 0
+  },
+  "stateful_views": [
+    "entity_resolution",
+    "relation_resolution",
+    "temporal_view",
+    "publication_plan"
+  ],
+  "incremental_contract": {
+    "delta_depth": 1,
+    "unknown_is_fresh": true,
+    "exact_reconvergence": true,
+    "ordered_publication": true,
+    "fresh_differential_required": true
+  },
+  "algorithm_change_after_freeze": "new_r0_required",
+  "live_treatment_authorized": false,
+  "quality_status": "NOT_QUALIFIED_AGAINST_B0"
+}

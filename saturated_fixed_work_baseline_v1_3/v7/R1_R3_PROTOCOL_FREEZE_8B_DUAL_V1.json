@@ -1,0 +1,115 @@
+{
+  "schema_version": "membind.v7.r1-r3-protocol-freeze.v3",
+  "status": "FROZEN_BEFORE_REAL_GRAPHITI_CAMPAIGN",
+  "provider": {
+    "authority": "local-openai-compatible-8b-dual-v1",
+    "base_url": "http://127.0.0.1:18200/v1",
+    "construction_model": "qwen3-8b-awq",
+    "embedding_base_url": "http://127.0.0.1:18202/v1",
+    "embedding_model": "qwen3-embedding-0.6b",
+    "embedding_dimension": 1024,
+    "temperature": 0.0,
+    "requested_max_tokens": 32768,
+    "http_timeout_seconds": 3600.0,
+    "sdk_max_retries": 0,
+    "hard_attempt_limit_per_request": 1,
+    "structured_output_mode": "json_schema",
+    "replay_allowed": "UNKNOWN",
+    "response_replay": false,
+    "profile_id": "local-qwen3-8b-awq-dualreplica-v1",
+    "routing_policy": "capacity_weighted_least_outstanding",
+    "routing_scope": "two-endpoint-work-conserving-capacity-pool"
+  },
+  "backend": {
+    "provider": "neo4j",
+    "uri": "bolt://127.0.0.1:7687",
+    "database": "neo4j",
+    "isolation": "fresh_group_namespace_per_block",
+    "concurrent_external_writes_allowed": false
+  },
+  "workload": {
+    "dataset": "ai-hyz/MemoryAgentBench",
+    "dataset_revision": "7ea066982b140a19337e17e60d45d4076e042faf",
+    "local_file_sha256": "97fd80207f3419fc57c3684db824334224546d6bdd62c17ef52cd116eec9ffc8",
+    "r1_r2": {
+      "context_index": 0,
+      "source_start": 0,
+      "source_count": 2
+    },
+    "r3_blocks": [
+      {
+        "block_id": "R3-A",
+        "context_index": 1,
+        "source_start": 0,
+        "source_count": 6,
+        "seed": 17
+      },
+      {
+        "block_id": "R3-B",
+        "context_index": 2,
+        "source_start": 0,
+        "source_count": 6,
+        "seed": 23
+      }
+    ]
+  },
+  "selected_characterization_region": {
+    "operator": "node_cosine",
+    "seam": "graphiti.add_episode.pre_process_episode_data",
+    "operator_guard": "exact filtered full scan; complete domain and score; strict cutoff separation; no boundary tie",
+    "continuation_guard": "no saga; no communities; all node/edge embeddings complete; Neo4j; exact K; sealed backend epoch and publication frontier"
+  },
+  "thresholds": {
+    "false_stable_max": 0,
+    "false_unaffected_max": 0,
+    "csp_min": 0.1,
+    "sca_work_max": 4.0,
+    "affected_fraction_max": 0.5,
+    "reconvergence_min": 0.25,
+    "required_headroom_floor_ns": 100000000,
+    "required_headroom_ratio": 0.1,
+    "stable_prediction_min": 1,
+    "gross_saved_cp_min_ns": 1
+  },
+  "treatment_authorized": false,
+  "old_read_return_allowed": false,
+  "native_demand_skip_allowed": false,
+  "repair_apply_allowed": false,
+  "observer_harness": {
+    "schema_version": "membind.v7.observer-harness-freeze.v1",
+    "source_sha256": {
+      "mab_quality_v2_final_qa/src/mab_quality_v2_final_qa/mab_main_dataset.py": "a236f957cdde0c8a3235abd497f76c3a18a58ce65a34c8225aa377971fdaa94e",
+      "membind-validation/src/native_characterization_instrumentation.py": "c0be9ad8bf1acf5663b21523242c92c5dbba7f3bc7c01b4edd0d5477e73b16ac",
+      "membind-validation/src/native_characterization_tracing.py": "999e3f70780a3d3bc48d0d65a50c86b90010239b47d08dfe20c55808738f64a0",
+      "saturated_fixed_work_baseline_v1_3/scripts/run_v7_observer_campaign_8b.py": "7ed4a0a0a9f91b57936ee4b0f52a7bc7185ea5b4ca567ce320dc9c6174b70b62",
+      "saturated_fixed_work_baseline_v1_3/src/saturated_fixed_work_baseline_v1_3/mab_live_runner.py": "e063f9cea35db28305ad4659fb06ab8143e78fe451fa54cb1512c24f2c1d9a71",
+      "saturated_fixed_work_baseline_v1_3/src/saturated_fixed_work_baseline_v1_3/membind_v6_1/runtime_8b.py": "c4c029ab42cd53fe348d5da6eae2b4638872b560abde117696e6d93c66f20afe",
+      "saturated_fixed_work_baseline_v1_3/src/saturated_fixed_work_baseline_v1_3/membind_v7/continuation.py": "c362cceba5d695dd43b6fda026b3cfe782c2b4edf8276b8580bbb02492d3a6c4",
+      "saturated_fixed_work_baseline_v1_3/src/saturated_fixed_work_baseline_v1_3/membind_v7/graphiti_observer.py": "3214ba84efd2bd949aa1bd870bbd61390187525d384fa8c2d555c4149e8ef656",
+      "saturated_fixed_work_baseline_v1_3/src/saturated_fixed_work_baseline_v1_3/membind_v7/observer_campaign.py": "d9d032eec24fc9ba3f4c027c1531d687271247a372ec3fb050f93c1a411541ef",
+      "saturated_fixed_work_baseline_v1_3/src/saturated_fixed_work_baseline_v1_3/membind_v7/pins.py": "2479546f1bd24fd895fc3a063587789b839e295a81ea46b7bc01e2d5e23c35f1"
+    }
+  },
+  "infrastructure_reauthorization": {
+    "previous_terminal_state": "V7_THEORY_OR_SYSTEM_BLOCKED",
+    "previous_protocol_sha256": "8daa5a195ccb8746cc51aa404387c37dd83969a8259cac0054fd49753549ea6c",
+    "previous_terminal_manifest_sha256": "d0da4c6bd04e6dfa71310f81c022a8d39b5117fe4511e48d4857464faac58e27",
+    "changed_fields": [
+      "provider.authority",
+      "provider.base_url",
+      "provider.construction_model",
+      "provider.embedding_base_url",
+      "provider.embedding_model",
+      "provider.profile_id",
+      "provider.routing_policy",
+      "backend.uri",
+      "observer_harness.source_sha256"
+    ],
+    "diagnostic_probe_sha256": [
+      "e02bbb3c67b200f8067e69d2aa9a551e9680b16a71e11ae97c036d5fdd328d98",
+      "6446c00c0fa6a4ed01a84ab1e42ef5aac45400f4fcc7b7d16d0ca616d93c79e5"
+    ],
+    "diagnostic_probe_status": ["PASS", "PASS"],
+    "diagnostic_contract": "same official workload and observer-only 2+6+6 state machine; local 8B dual endpoint and embedding profile are a resource-matched provider migration; one attempt per request; no replay, treatment, prompt, response or key retention"
+  }
+}

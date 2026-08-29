@@ -27,6 +27,7 @@ from .runtime import (
     _normalized_url,
     build_local_openai_transport,
     close_local_u0_runtime,
+    install_local_context_budget_adapter,
     install_local_extraction_chunking_policy,
     install_local_single_attempt_policy,
 )
@@ -168,6 +169,7 @@ def runtime_8b_manifest(
     enable_endpoint_schema_grounding: bool = False,
     enable_work_conserving_edge_admission: bool = False,
     enable_adaptive_edge_admission: bool = False,
+    dedupe_candidate_page_capacity: int | None = None,
 ) -> dict[str, Any]:
     """Validate runtime identity and resolve the selected fair routing arm."""
 
@@ -268,6 +270,11 @@ def runtime_8b_manifest(
             "semantic_shortcut_policy": "empty_edges_when_distinct_entity_count_lt_2_v1",
             "node_resolution_policy": (
                 "per_entity_candidate_provenance_name_predicate_pushdown_v3"
+            ),
+            "dedupe_candidate_partition_policy": (
+                f"native_dedupe_existing_candidate_pages_v1_capacity_{dedupe_candidate_page_capacity}"
+                if dedupe_candidate_page_capacity is not None
+                else "disabled"
             ),
             "entity_summary_policy": (
                 SUMMARY_POLICY_ID
@@ -378,6 +385,8 @@ def build_8b_u0_runtime(
     *,
     routing_contract: Mapping[str, Any],
     route_event_sink: Callable[[dict[str, Any]], None] | None = None,
+    summary_entity_page_capacity: int | None = None,
+    dedupe_candidate_page_capacity: int | None = None,
     enable_grounded_summary_materialization: bool = False,
     enable_endpoint_schema_grounding: bool = False,
     enable_work_conserving_edge_admission: bool = False,
@@ -391,6 +400,7 @@ def build_8b_u0_runtime(
         enable_endpoint_schema_grounding=enable_endpoint_schema_grounding,
         enable_work_conserving_edge_admission=enable_work_conserving_edge_admission,
         enable_adaptive_edge_admission=enable_adaptive_edge_admission,
+        dedupe_candidate_page_capacity=dedupe_candidate_page_capacity,
     )
     construction_key = _required("CONSTRUCTION_LLM_API_KEY")
     embedding_key = _required("EMBEDDING_API_KEY")
@@ -457,10 +467,13 @@ def build_8b_u0_runtime(
         structured_output_mode=config.structured_output_mode,
     )
     install_local_single_attempt_policy(llm_client)
+    context_budget_restore = install_local_context_budget_adapter(llm_client)
     install_local_extraction_chunking_policy(
         llm_client,
         partition_extraction_by_turns=True,
         partition_edge_candidates=True,
+        summary_entity_page_capacity=summary_entity_page_capacity,
+        dedupe_candidate_page_capacity=dedupe_candidate_page_capacity,
         node_partition_concurrency=NODE_PARTITION_WORKERS_8B,
         edge_page_capacity=2,
         actor_domain_cover=True,
@@ -518,6 +531,7 @@ def build_8b_u0_runtime(
     runtime._membind_route_prompt_restore = prompt_restore
     runtime._membind_semantic_shortcut_restore = shortcut_restore
     runtime._membind_candidate_provenance_restore = resolution_restore
+    runtime._membind_context_budget_restore = context_budget_restore
     runtime._membind_candidate_provenance_evidence = resolution_evidence
     runtime._membind_grounded_summary_restore = summary_restore
     runtime._membind_grounded_summary_evidence = summary_evidence
@@ -527,6 +541,7 @@ def build_8b_u0_runtime(
 
 async def close_8b_u0_runtime(runtime: U0Runtime) -> None:
     for name in (
+        "_membind_context_budget_restore",
         "_membind_grounded_summary_restore",
         "_membind_route_prompt_restore",
         "_membind_semantic_shortcut_restore",

@@ -16,7 +16,9 @@ if [[ "${1:-}" == "--foreground" ]]; then
   echo $$ >"$pidfile"
   exec > >(tee -a "$log") 2>&1
   echo "[$(date --iso-8601=seconds)] starting $MEMBIND_LLM_MODEL_NAME on GPU 0"
-  exec env CUDA_VISIBLE_DEVICES=0 \
+  # The validation harness contains ``statistics.py``; do not let its
+  # PYTHONPATH shadow the Python stdlib inside vLLM/torch startup.
+  exec env -u PYTHONPATH CUDA_VISIBLE_DEVICES=0 \
     "$MEMBIND_ENV/bin/vllm" serve "$MEMBIND_LLM_MODEL_DIR" \
     --served-model-name "$MEMBIND_LLM_MODEL_NAME" \
     --host "$MEMBIND_LLM_HOST" \

@@ -16,7 +16,8 @@ if [[ "${1:-}" == "--foreground" ]]; then
   echo $$ >"$pidfile"
   exec > >(tee -a "$log") 2>&1
   echo "[$(date --iso-8601=seconds)] starting $MEMBIND_EMBED_MODEL_NAME on GPU 1"
-  exec env CUDA_VISIBLE_DEVICES=1 \
+  # Keep the project import path out of vLLM so stdlib ``statistics`` wins.
+  exec env -u PYTHONPATH CUDA_VISIBLE_DEVICES=1 \
     "$MEMBIND_ENV/bin/vllm" serve "$MEMBIND_EMBED_MODEL_DIR" \
     --runner pooling \
     --served-model-name "$MEMBIND_EMBED_MODEL_NAME" \

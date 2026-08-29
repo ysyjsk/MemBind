@@ -22,7 +22,11 @@ NATIVE_SUBJECT_PATHS = (
     "membind-validation/src/instrumentation.py",
     "saturated_fixed_work_baseline_v1_3/src/saturated_fixed_work_baseline_v1_3/membind_adapter.py",
 )
-NATIVE_SUBJECT_TREES = ("membind-validation/src",)
+# Do not bind the entire validation harness tree: it intentionally evolves
+# independently of the Native subject.  Native semantic files are listed
+# explicitly in ``NATIVE_SUBJECT_PATHS`` above; callers can opt into an
+# additional subtree when they have a genuinely isolated subject tree.
+NATIVE_SUBJECT_TREES: tuple[str, ...] = ()
 
 
 def sha256_file(path: str | Path) -> str:
