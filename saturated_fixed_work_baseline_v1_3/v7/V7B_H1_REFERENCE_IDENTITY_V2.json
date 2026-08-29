@@ -1,0 +1,31 @@
+{
+  "schema_version": "membind.v7b-reference-identity.v2",
+  "status": "OFFLINE_QUALIFICATION_ONLY",
+  "algorithm_id": "V7B_H1_REFERENCE_V2",
+  "predecessor": "V7B_FRESH_ALGORITHM_FROZEN_V1",
+  "change_type": "CANONICAL_IDENTITY_HARDENING",
+  "change_summary": "Include source_id in stable mention identity so identical text from different sources cannot cross-hit an offline artifact.",
+  "method_boundary": {
+    "source_local_ir": "immutable and state-independent",
+    "identity_rule": "sha256(source_id,source_hash,operator,source_span,normalized,schema_epoch)",
+    "stateful_views": "node/entity/edge/attribute resolution remains explicit and fail-closed",
+    "publication": "ordered publication is unchanged",
+    "provider_work": "unchanged",
+    "live_treatment_authorized": false
+  },
+  "source_sha256": {
+    "saturated_fixed_work_baseline_v1_3/src/saturated_fixed_work_baseline_v1_3/membind_v7/v7b.py": "3c78a0151099d7a41ac3eeb0bd2deecf192c25e74d6e72ef5ef0090ca0e6bed5",
+    "saturated_fixed_work_baseline_v1_3/tests/test_membind_v7b_offline.py": "b4578cd92e6aada48f427077650692ac1cd52e3ef40d7d099318f50ef0120111",
+    "saturated_fixed_work_baseline_v1_3/scripts/run_v7b_counterfactual_campaign.py": "639a33abb1ad2ee609a14a46907c576a5c4eba440fdc74db6a690150958e724f"
+  },
+  "qualification": {
+    "targeted_tests": "13 passed",
+    "full_suite": "581 passed",
+    "counterfactual_campaign": "/data/predator/ly/Mem/experiments/local-qwen3-8b-awq-dualreplica-v1/v7_counterfactual/v3-h1-identity-20260829",
+    "canonical_differential": "13/13",
+    "provider_calls": 0,
+    "treatment_calls": 0
+  },
+  "requires_requalification_on_semantic_change": true,
+  "treatment_authorized": false
+}

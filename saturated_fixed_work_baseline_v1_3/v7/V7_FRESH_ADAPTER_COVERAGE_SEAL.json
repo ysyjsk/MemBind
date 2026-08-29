@@ -1,0 +1,45 @@
+{
+  "schema_version": "membind.v7-fresh-adapter-coverage-seal.v1",
+  "status": "PASS",
+  "algorithm_id": "V7_FRESH_CONTROL_V1",
+  "qualification_run": "r12-fresh-30source-dedupe-pages-20260829",
+  "coverage_contract": {
+    "original_logical_input_set": "UNION_OF_ALL_PARTITION_INPUT_SETS",
+    "candidate_global_identity": "stable_global_candidate_id",
+    "entity_partition_merge": "deterministic_union_without_silent_drop",
+    "summary_partition_merge": "all_pages_merged_under_native_summary_operator",
+    "context_budget": "wire_max_tokens_only_reduced_to_remaining_context_minus_safety_margin",
+    "early_stop_without_complete_domain": false,
+    "semantic_input_deletion": false,
+    "top_k_domain_reduction": false,
+    "source_evidence_deletion": false,
+    "duplicate_partition_detection": true,
+    "page_union_complete": true
+  },
+  "strict_work_coverage_evidence": {
+    "dedupe_candidate_page_capacity": 32,
+    "summary_entity_page_capacity": 24,
+    "dedupe_global_id_tdd": "test_dedupe_candidate_pages_union_global_ids_without_dropping_resolution",
+    "r12_provider_calls": 2050,
+    "r12_logical_llm_calls": 863,
+    "r12_embedding_calls": 1592,
+    "r12_database_reads": 4811,
+    "r12_database_writes": 150,
+    "r12_source_count": 30,
+    "r12_durable_publications": 30
+  },
+  "algorithm_identity_boundary": {
+    "partitioned_llm_exact_equivalence_to_hypothetical_unpartitioned_call": false,
+    "reason": "the hypothetical full call may be context-inadmissible or output-truncated",
+    "accepted_claim": "complete input/work coverage plus deterministic partition/merge and frozen V7_FRESH identity",
+    "quality_gate_required": true
+  },
+  "artifact_hashes": {
+    "r12_run_manifest_final": "0d0e24be42823ab422c9296b6d3b3d89b233729263958b2eb2b599f70e1fbe40",
+    "r12_construction_seal": "5e94a17d62d6265b9a8293ae71b56cd70e50c9067154168a7cc2440b3e6c00b2",
+    "r12_work_accounting": "b82456a1cafbe34795e156ee3e2d7139b9578e008bcfcb0d9b4fca9a07afd42d",
+    "r12_graph_semantic_sidecar": "1e1e86adf25e213e388b28987b673031e89c5ad2c7962284907b2a041faffc35"
+  },
+  "treatment_authorized": false,
+  "requalification_required_if_adapter_changes": true
+}

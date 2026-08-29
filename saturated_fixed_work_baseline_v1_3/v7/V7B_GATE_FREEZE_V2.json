@@ -1,0 +1,65 @@
+{
+  "schema_version": "membind.v7b-gate-freeze.v2",
+  "status": "FROZEN_BEFORE_C0_C1_AND_LIVE",
+  "algorithm_id": "V7_FRESH_CONTROL_V1",
+  "baseline": {
+    "id": "B0_NATIVE_SERIAL",
+    "artifact": "d6e9e240c3ce",
+    "makespan_seconds": 2636.463018176,
+    "rerun_allowed": false
+  },
+  "counterfactual_arms": {
+    "FRESH": "complete V7_FRESH_CONTROL_V1 from-scratch stateful reconciliation",
+    "C0": "full transitive dependency closure; all closure units fresh-repaired",
+    "C1": "guarded dynamic repair; fresh recompute dirty units, canonical compare old/new, propagate only on semantic or structure change, exact reconvergence otherwise"
+  },
+  "gate_a_correctness": {
+    "false_stable_max": 0,
+    "false_unaffected_max": 0,
+    "stage_a_mutable_memory_reads": 0,
+    "unknown_policy": "FAIL_CLOSED",
+    "canonical_mismatch_max": 0,
+    "ordered_publication_violations_max": 0,
+    "fallback_safety": "fallback may lose performance but may not change semantic result"
+  },
+  "gate_b_fresh_validity": {
+    "quality_contract": "V7_FRESH_VS_B0_NON_INFERIORITY",
+    "matched_quality_required": true,
+    "graph_semantic_surface_required": true,
+    "architecture_tax_audit_required": true
+  },
+  "gate_c_locality": {
+    "c1_affected_fraction_less_than_c0": true,
+    "c1_affected_fraction_less_than_fresh": true,
+    "nontrivial_exact_reconvergence_required": true,
+    "dominant_expensive_avoidable_work_required": true,
+    "unknown_or_fallback_must_not_cover_dominant_cost": true
+  },
+  "gate_d0_optimistic_safe_headroom": {
+    "estimator": "longest_path(V7_FRESH_EXECUTION_DAG with safe-reuse costs, UNKNOWN fresh, ordered publication retained)",
+    "invalid_estimator": "T_FRESH minus sum(saved_work)",
+    "required": "T_V7_IDEAL_CP < T_B0 * (1 - required_headroom_ratio)",
+    "required_headroom_ratio": 0.1,
+    "required_headroom_floor_seconds": 0.1,
+    "status": "PENDING"
+  },
+  "gate_d1_conservative_m1_economics": {
+    "estimator": "longest_path(C1 counterfactual DAG including dependency tracking, certificate, trace persistence, repair, fallback and safety overhead)",
+    "required": "T_C1_ESTIMATED_CP < T_B0 * (1 - required_headroom_ratio)",
+    "required_headroom_ratio": 0.1,
+    "required_headroom_floor_seconds": 0.1,
+    "status": "PENDING"
+  },
+  "gate_e_authorization": {
+    "selected_method": "M1_V7_INCREMENTAL",
+    "requires": ["A_PASS", "B_PASS", "C_PASS", "D0_PASS", "D1_PASS"],
+    "live_treatment_before_all_required_gates": false
+  },
+  "rescue_policy": {
+    "max_rounds": 1,
+    "hypotheses_per_round": 1,
+    "post_hoc_threshold_change": false,
+    "new_fresh_identity_on_semantic_change": true
+  },
+  "treatment_authorized": false
+}

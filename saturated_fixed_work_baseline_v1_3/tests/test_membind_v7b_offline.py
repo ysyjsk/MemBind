@@ -14,6 +14,7 @@ from saturated_fixed_work_baseline_v1_3.membind_v7.v7b import (
     apply_ordered_publication,
     extract_source_ir,
     materialize_offline_artifacts,
+    stable_mention_id,
     stable_ir_contract,
     view_contracts,
 )
@@ -79,6 +80,37 @@ def test_source_ir_is_stable_and_does_not_read_mutable_state() -> None:
     assert left.digest == right.digest
     assert left.grounded is True
     assert all(item.source_id == "s0" for item in left.mentions)
+
+
+def test_source_local_identity_is_state_independent_and_source_scoped() -> None:
+    text = "Alice met Bob on 2025-01-02."
+    same_source = extract_source_ir("s0", text)
+    same_source_after_state_change = extract_source_ir("s0", text)
+    other_source = extract_source_ir("s1", text)
+
+    # A cache key may be reused only for the same source identity and content;
+    # changing the authoritative frontier must not change source-local IR.
+    assert same_source.digest == same_source_after_state_change.digest
+    assert same_source.digest != other_source.digest
+    assert stable_mention_id(same_source, same_source.mentions[0]) == stable_mention_id(
+        same_source_after_state_change, same_source_after_state_change.mentions[0]
+    )
+    assert stable_mention_id(same_source, same_source.mentions[0]) != stable_mention_id(
+        other_source, other_source.mentions[0]
+    )
+
+
+def test_source_local_view_is_reused_across_state_versions_only() -> None:
+    definitions = _definitions()
+    engine = V7FreshEngine(definitions)
+    ir = extract_source_ir("s0", "Alice met Bob.")
+    before = engine.build(ir, {"frontier": 0, "entities": ("alice",)})
+    after = engine.build(
+        ir,
+        {"frontier": 1, "entities": ("alice", "bob"), "unrelated": "changed"},
+    )
+    assert before.views["source_ir"].digest == after.views["source_ir"].digest
+    assert before.views["source_ir"].value == after.views["source_ir"].value
 
 
 def test_fresh_and_incremental_match_with_localized_repair_and_reconvergence() -> None:
@@ -247,3 +279,47 @@ def test_contracts_are_explicitly_source_local_and_state_guarded() -> None:
     assert contracts["source_ir"]["kind"] == "source_local"
     assert contracts["entity_resolution"]["kind"] == "stateful"
     assert contracts["entity_resolution"]["state_dependencies"] == ["entities"]
+
+
+def test_guarded_dynamic_repair_stops_propagation_after_exact_reconvergence() -> None:
+    """C1 must not repair a successor whose dirty predecessor reconverges."""
+
+    definitions = (
+        ViewDefinition(
+            "source_ir", kind="source_local", cost=1.0,
+            compute=lambda ir, _state, _views: ir.digest,
+        ),
+        ViewDefinition(
+            "temporal_view", kind="stateful", predecessors=("source_ir",),
+            state_dependencies=frozenset({"temporal"}), cost=4.0,
+            compute=lambda _ir, state, _views: tuple(sorted(str(x) for x in state.get("temporal", ()))),
+        ),
+        ViewDefinition(
+            "year_bucket", kind="stateful", predecessors=("temporal_view",),
+            state_dependencies=frozenset({"temporal"}), cost=2.0,
+            compute=lambda _ir, state, _views: tuple(sorted({str(x)[:4] for x in state.get("temporal", ())})),
+        ),
+        ViewDefinition(
+            "year_only_consumer", kind="stateful", predecessors=("year_bucket",),
+            state_dependencies=frozenset({"unrelated"}), cost=9.0,
+            compute=lambda _ir, _state, views: {"year": views["year_bucket"]},
+        ),
+    )
+    ir = extract_source_ir("s0", "Alice met Bob")
+    engine = V7FreshEngine(definitions)
+    old_state = {"frontier": 0, "temporal": ("2025-01-01",)}
+    new_state = {"frontier": 1, "temporal": ("2025-01-01", "2025-01-02")}
+    old = engine.build(ir, old_state)
+    fresh = engine.build(ir, new_state)
+    delta = StateDelta(
+        0, 1,
+        changes=(DeltaChange("memory", "temporal", changed_fields=frozenset({"temporal"})),),
+    )
+    c0 = V7IncrementalEngine(definitions).maintain(old, ir, new_state, delta)
+    c1 = V7IncrementalEngine(definitions).maintain_guarded(old, ir, new_state, delta)
+    assert c0.canonical_views == fresh.canonical_views
+    assert c1.canonical_views == fresh.canonical_views
+    assert "year_only_consumer" in c0.repaired_view_ids
+    assert "year_only_consumer" in c1.reused_view_ids
+    assert "year_bucket" in c1.reconverged_view_ids
+    assert c1.work_cost < c0.work_cost

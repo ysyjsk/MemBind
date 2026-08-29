@@ -1,0 +1,72 @@
+{
+  "schema_version": "membind.v7b.observer-target-contract.v1",
+  "status": "FROZEN_BEFORE_TARGET_AUDIT",
+  "algorithm_id": "V7_FRESH_CONTROL_V1",
+  "profile_id": "local-qwen3-8b-awq-dualreplica-v1",
+  "target": "V7_FRESH_CONTROL_V1_STAGE_B_STATEFUL_SEMANTIC_COMPUTATION",
+  "must_characterize": [
+    "V7-FRESH source-local Stable Semantic IR handoff",
+    "previous-episode retrieval after Stage A completion",
+    "entity/node resolution",
+    "relation/edge resolution",
+    "attribute extraction/materialization",
+    "ordered native publication seam",
+    "state delta and publication frontier",
+    "semantic dependency edges and operator-scoped cost"
+  ],
+  "must_not_be_mistaken_for": [
+    "V7-A old Graphiti opaque trace",
+    "B1 relaxed-order whole-update concurrency",
+    "V7-INCREMENTAL treatment",
+    "summary bypass or predicate work reduction",
+    "synthetic provider-free fixture as live evidence"
+  ],
+  "stage_boundary": {
+    "stage_a": {
+      "operations": ["extract_source_nodes", "extract_source_edges"],
+      "previous_state_reads": 0,
+      "mutable_memory_access": false,
+      "stable_ir_required": true
+    },
+    "stage_b": {
+      "starts_after": "SOURCE_LOCAL_COMPLETE",
+      "operations": ["retrieve_previous", "resolve_nodes", "resolve_edges", "extract_attributes"],
+      "stateful": true,
+      "source_local_previous_count": 0
+    },
+    "publication": {
+      "seam": "graphiti._process_episode_data",
+      "ordered": true,
+      "durable_source_order": true
+    }
+  },
+  "semantic_ground_truth_requirements": {
+    "old_state_node_output": true,
+    "new_state_fresh_node_output": true,
+    "stable_name_alignment": true,
+    "canonical_output": true,
+    "existence_change": true,
+    "control_change": true,
+    "ordered_collection_change": true,
+    "structure_change": true,
+    "successor_lineage": true,
+    "execution_cost": true
+  },
+  "identity": {
+    "v7_fresh_source_sha256": "6a1c4a1b2b3674bea04df64c2f3af439c8700d388c7f2968ed19403c83bb3eae",
+    "v7_fresh_algorithm_identity_sha256": "e446fa459fd984c3b9a4d6b3698cab0695a956f42e9670b2763be2e4943a3aaf",
+    "stable_ir_contract": "saturated_fixed_work_baseline_v1_3/v7/V7B_STABLE_IR_CONTRACT.json",
+    "view_contract": "saturated_fixed_work_baseline_v1_3/v7/V7B_VIEW_CONTRACT.json",
+    "publication_contract": "B0_SERIAL_STATEFUL_ORDERED_PUBLICATION"
+  },
+  "observation_contract": {
+    "treatment_calls": 0,
+    "response_replay_calls": 0,
+    "provider_free": false,
+    "fresh_namespaces_per_block": true,
+    "no_authoritative_writes_by_observer": false,
+    "source_order": "0..N-1"
+  },
+  "failure_rule": "if target identity or paired semantic-node ground truth is incomplete, classify evidence as SUPPORTING_ONLY and do not authorize M1",
+  "treatment_authorized": false
+}

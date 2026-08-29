@@ -3170,3 +3170,123 @@ Graph semantic sidecar：`7/7 PASS`。首次 retrieval-only diagnostic 为 3 个
 - 首次 overlay attempt 因复用了历史固定 `qwen3-32b-fp8` Judge wrapper 而失败，未改变 namespace；`r2` 虽改为显式 8B generic backend 并得到相同数值，但其 artifact 暂存了不应持久化的参考答案诊断；最终独立 `r3` 同样绑定 8B generic backend 且仅保存 terminal judge projection，作为权威 QA 结果。首次失败与 `r2` 目录均保留为 append-only 工程审计，不纳入 QA 统计。
 
 判定：V7-FRESH downstream QA overlay `PASS`，但 scope 明确为 `V7_FRESH_PREFIX_DOWNSTREAM_QA_ENGINEERING_QUALIFICATION`。当前只有 12-source prefix、3 个 QA，不能计算 B0-relative headline speedup 或完整 5-history non-inferiority；`headline_noninferiority_authorized=false` 仍保持。该结果满足继续做 observer-only characterization 的质量前置条件，但 V7-INCREMENTAL live treatment 仍需 frozen differential correctness、opportunity gate、adaptive fallback contract 与 online economics gate，未获授权前不得启动。
+
+43. Final Methodology Closure Revision — 2026-08-29
+
+本节根据 `v7优化prompt.md` 对当前研究做最后收口；旧章节、NULL、failed attempts、sealed artifacts 与历史 ledger 均保留。后续执行顺序冻结为：
+
+`Theory / Contract Freeze -> Source Audit -> Observer-only Characterization -> Offline Counterfactual -> Opportunity Gate -> Minimum Method -> Provider-free Correctness -> Minimal Live -> Scale-up -> Publication Campaign`。
+
+43.1 研究问题与归因边界
+
+- V6 只回答 dependency slack 是否能在不改变 B0 logical work 与 ordered state evolution 的前提下改变执行时机；V6 已进入 evaluation-only。
+- V7-FRESH (`V7_FRESH_CONTROL_V1`) 先回答新的 stable source-local semantic boundary 是否具有质量与工程可行性。
+- C0 是全 closure 的保守理论参照；C1 是 guarded dynamic repair：dirty view fresh recompute 后与旧 canonical output 比较，只有 semantic/structure change 才向 successor 传播。
+- 最终 pure incremental estimand 固定为 `T(V7_FRESH_CONTROL_V1) / T(V7_INCREMENTAL)`；论文 headline 仍回到 `T(B0_NATIVE_SERIAL) / T(V7_INCREMENTAL)`；B1 永远只是 relaxed-order ceiling。
+
+43.2 本轮仅有的 methodology corrections
+
+1. LLM partition 不再声称与不可执行或会截断的 hypothetical unpartitioned call exact-equivalent；改为 exact input/work coverage + deterministic merge + frozen algorithm identity + B0 quality Gate。
+2. V6 dynamic work-preservation 提升为 per-call canonical logical identity 对齐，而不是笼统的总 work 相似。
+3. D0 必须用保留 ordered publication、resource/semantic dependency、UNKNOWN fresh 的 counterfactual DAG longest path，禁止用 saved-work 求和替代 makespan。
+4. Architecture Rescue 最多一轮、一次一个 evidence-selected hypothesis；改变 FRESH 语义即生成新 identity 并重新 qualification。
+5. 正式 publication 使用 paired same-history design、明确失败排除规则与 paired uncertainty；qualification 不自动成为 headline statistics。
+
+43.3 已冻结新增合同
+
+- `v7/V7_FRESH_ALGORITHM_IDENTITY.json`：冻结 V7-FRESH V1 的 Stage A/B、adapter、runtime、publication 与比较身份，锚定 r12 prefix-30。
+- `v7/V7_FRESH_ADAPTER_COVERAGE_SEAL.json`：严格记录 summary/dedupe/context partition 的完整输入覆盖；不作不可证明的 partitioned-LLM output theorem。
+- `v7/V7B_OBSERVER_TARGET_CONTRACT_8B.json`：规定 observer 必须指向 V7-FRESH Stage B/stateful semantic computation，不能把 V7-A opaque trace 当成 V7-B 证据。
+- `v7/V7B_GATE_FREEZE_V2.json`：冻结 A/B/C/D0/D1 的阈值、DAG 估计式、fallback safety、一次 rescue 限制与 treatment=false。
+- `v7/R1_R3_PROTOCOL_FREEZE_8B_DUAL_V1.json`：冻结当前 8B 双 GPU observer provider/routing/workload/harness 身份，独立于旧 SiliconFlow 协议。
+
+43.4 TDD 与 autoresearch 纪律
+
+- 所有方法变化先添加 provider-free failing test，再实现，再跑 targeted test，最后跑完整 suite；本轮最新完整结果为 `579 passed`。
+- scheduler/lane/future cap 等 deployment 参数不属于本轮方法搜索；不以最快一次 live run 选择 method。
+- 任何失败 attempt 必须使用新 run-id、新 namespace、append-only failure artifact；禁止重放、覆盖或把失败混入统计。
+- 当前 C1 reference 已通过 13 对 provider-free canonical differential；新增 `run_v7b_counterfactual_campaign.py` 输出 FRESH/C0/C1、reconvergence 与 conservative CP lower bound。该结果仅为离线 TDD 证据，不授权 live。
+
+43.5 当前执行状态与下一步
+
+- r12 是 `V7_FRESH_CONTROL_V1` candidate anchor：30/30 publication、7/7 graph semantic PASS；11 题 QA 仅为 engineering qualification，headline non-inferiority 仍 false。
+- r13 是 scope configuration failure；r14 在 R1-R2 尚未完成时被执行会话中断，已按 `INVALID_FOR_R1_R3_GATES` 封存，均不得进入统计。
+- 下一合法动作是以新 run-id 重跑 8B observer-only 2+6+6；其后完成 target audit、paired semantic-node ground truth、B0 read-only matched QA、algorithm-tax audit、FRESH/C0/C1 offline 与 D0/D1 决策。
+- 在 A/B/C/D0/D1 全部通过前，V7-INCREMENTAL live、M2、d>1、new scheduler、summary/predicate/work-reduction shortcut 均保持 blocked。
+
+任何后续结论必须同时给出：代码/identity hash、platform/workload contract、baseline role、quality scope、work/critical-path accounting、fallback 与失败样本；若条件不满足，`NULL` 是合法且优先于事后堆叠优化的研究结论。
+
+44. Execution Log — r16 observer characterization and architecture-rescue plan — 2026-08-29
+
+本轮先按 `v7优化prompt.md` 收口后的计划恢复并验证了完全统一的 `local-qwen3-8b-awq-dualreplica-v1` 平台：native `18200`、prepare `18201`、embedding `18202`、Neo4j Bolt `7687` 均 UP；模型、embedding、dataset hash、Graphiti `0.29.3`、routing contract 与 `R1_R3_PROTOCOL_FREEZE_8B_DUAL_V1.json` 一致。没有重跑 B0、没有修改 V6-Core、没有启动 B1 或 V7-INCREMENTAL treatment。
+
+新 attempt `r16-observer-2plus6plus6-20260829` 完成了冻结的 R1-R2、R3-A、R3-B 三个 observer-only block，状态 `SEALED`，`treatment_calls=0`、`response_replay_calls=0`，route event 1,826。所有 artifact 使用新 namespace；dangling-edge 日志仅作为 Graphiti 工程观测，最终以 semantic/provenance artifact 判定，不作为成功或失败的单行日志证据。
+
+44.1 结果驱动的判断
+
+- R1 assumption audit：`real_graphiti_evidence=true`、dependency edge kinds complete、`false_stable=0`、`false_unaffected=0`，但 A7/A9 为 `UNKNOWN`，因此 `core_assumptions_supported=false`，必须 fail-closed。
+- R2 causal trace：65 个 semantic reads、31 个 requests；当前 `node_cosine` seam 中 read query/filter/config identity 随 mutable previous state 改变，观测为 `demand_prediction=UNKNOWN`、`demand_truth=CHANGED`。这不是“证书阈值太保守”的证据，而是当前边界没有可证明的 early stable reuse。
+- R3 decision：两个独立 six-source block 均完成，但 `CSP=null`、`reconvergence_rate=0`、`stable_prediction_count=0`、`early_memory_specific=false`、`sca_work=7.895260057`，`CRITICAL_OPPORTUNITY.status=UNKNOWN_INCOMPLETE_SEMANTIC_DAG`。因此 Gate A-E 全部不通过，`METHOD_SELECTION.selected_method=NULL`，`treatment_authorized=false`。
+- 该结果不能支持任何线上 speedup 结论；也不能把 provider-free C1 的 work reduction 当作真实 Graphiti economics。当前最诚实的结论是：V7-B 的现有 `node_cosine` 目标尚未显示可归因的 incremental opportunity。
+
+44.2 唯一 architecture-rescue hypothesis（最多一轮）
+
+`H1-source-local-boundary`：如果把可复用边界严格限制为不读取 mutable memory 的 source-local semantic IR，并将 node resolution、edge resolution、attribute materialization 和 ordered publication 明确视为每次 state delta 后的 stateful views，那么可能获得可证明的局部维护；任何依赖 mutable query/filter/domain 的 `node_cosine` 结果仍保持 `UNKNOWN`，不得被放宽为 `STABLE`。
+
+该假设是对边界的验证，不是对证书、lane、future cap 或 lookahead 的参数搜索。若 H1 仍不能在 provider-free differential 中产生非零安全 reuse 或在 conservative DAG 中产生正的 critical-path margin，则正式记录 `V7B_ARCHITECTURE_NULL`，不再堆叠第二个 rescue 或启动 live treatment。
+
+44.3 H1 的 TDD/autoresearch 执行协议
+
+1. 先增加 provider-free failing tests：source-local IR 在任意 state/frontier 变化下 canonical identity 不变；不同 source hash 不得误命中同一 IR artifact；任何 unknown environment/delta 必须 fallback 到 FRESH；ordered publication 与 FRESH/C1 canonical differential 必须保持不变。
+2. 通过 targeted tests 后运行现有 13 对 C0/C1 counterfactual campaign，分别报告 safe reuse、exact reconvergence、affected work 与 conservative longest-path；禁止用 saved-work 求和替代 makespan。
+3. 只有 H1 的 correctness、quality、locality、D0、D1 全部满足冻结阈值，才生成新的 algorithm identity 并授权最小 M1 live；否则保留 `NULL`，不修改冻结 V7-FRESH V1，不进行部署参数 autoresearch。
+
+本节之后的停止条件因此明确为：完成 H1 的 provider-free TDD 与反事实审计；若无正的、可证明的 critical-path opportunity，V7-INCREMENTAL 以 architecture/economics NULL 结束，而不是为了得到正结果继续改变方法边界。
+
+45. H1 Execution Result and Stop Decision — 2026-08-29
+
+按 44.3 执行了 H1 的 TDD 与 provider-free 反事实审计。第一轮 targeted test 暴露 `stable_mention_id` 未包含 `source_id` 的跨 source identity collision；已将 `source_id` 加入 canonical digest，并新增同源复用、跨源隔离、跨 state version 稳定性测试。修复后 targeted `13 passed`，完整 `saturated_fixed_work_baseline_v1_3/tests`（正确 PYTHONPATH）`581 passed in 8.48s`。
+
+新的 `v7_counterfactual/v3-h1-identity-20260829` 保持 `13/13` FRESH/C0/C1 canonical differential；C0 affected-work fraction=`0.7019230769`，C1=`0.4769230769`，C1 相对 C0 provider-free work reduction=`0.3205479452`。这些数字只证明 reference engine 的 guarded repair accounting，不能转化为 live speedup。
+
+H1 修复了一个真实工程正确性问题，但没有改变 r16 的真实 Graphiti 证据：`node_cosine` 仍没有 certifiable STABLE observation，reconvergence=`0`，CSP=`null`，critical opportunity=`UNKNOWN_INCOMPLETE_SEMANTIC_DAG`，因此不能授权 M1 treatment。依据冻结的最多一轮 rescue policy，本研究在当前 V7-FRESH identity 下记录 `V7B_ARCHITECTURE_NULL` / `NULL_NO_ECONOMIC_OPPORTUNITY`，停止继续堆叠 V7-B 机制。
+
+本轮报告：`MemBind_V7_H1_ARCHITECTURE_RESCUE_REPORT_20260829.md`。未来若要继续，只能提出新的、明确改变 semantic boundary 的算法版本并新建 identity，重新执行全部 source audit、quality、observer、D0/D1 gate；不得在当前 identity 下重跑 treatment 或搜索 scheduler/lane/future-cap。
+
+## 46. Sealed B0/FRESH matched audit and closure — 2026-08-29
+
+在恢复同一 `local-qwen3-8b-awq-dualreplica-v1` 平台后，完成了 B0
+`NATIVE_SERIAL` 的只读 matched downstream QA overlay；没有重跑 B0，也没有
+修改任何 sealed artifact。B0 namespace 前后状态一致，数据库 mutation
+attempts/mutations=`0/0`，11/11 Judge 结果有效。
+
+同一 frozen Quality-v1 contract 下，B0 与 `V7_FRESH_CONTROL_V1` 的 prefix
+engineering qualification 完全一致：accuracy=`0.5454545455`，mean
+Recall@10=`0.9136363636`。该结果仍不是 full-five-history non-inferiority，
+`headline_noninferiority_authorized=false` 保持不变。
+
+完成了只读 sealed evidence audit：
+
+- 公共硬件、GPU UUID、Qwen3-8B revision、Embedding、Neo4j、软件和 workload
+  canonical digest 全部匹配；两次 platform manifest 的差异仅来自捕获时间
+  和 method-specific routing entries；
+- `T_B0=2636.463018176s`，`T_FRESH=3958.332938057s`；因此
+  `T_B0/T_FRESH=0.6660538816`，FRESH 相对 B0 为 `1.5013800348x`
+  (`+50.138%`) wall-clock tax。FRESH 是 control，不把该比值写成 V7
+  headline speedup；
+- FRESH 的 observed work 相对 B0 为：logical LLM `1.0058x`、transport
+  `1.1836x`、Embedding `1.4632x`、Neo4j reads `1.5220x`、writes `1.0x`。
+  logical operator span 显示 `dedupe_nodes.nodes` 从 `205.167s/19 calls`
+  增至 `2591.111s/29 calls`，说明当前 algorithm boundary 的 stateful
+  resolution tax 是主要问题，而非硬件不公平；
+- machine-readable audit：
+  `/data/predator/ly/Mem/experiments/local-qwen3-8b-awq-dualreplica-v1/v7_audit/sealed-evidence-audit-20260829/RESULT.json`；
+  human-readable report：`MemBind_V7_SEALED_EVIDENCE_AUDIT_20260829.md`。
+
+因此当前身份的结论继续冻结为 `V7B_ARCHITECTURE_NULL` /
+`NULL_NO_ECONOMIC_OPPORTUNITY`：D0=`UNKNOWN`（没有 live incremental DAG
+和安全 critical-path margin），D1=`UNKNOWN`（没有 online incremental
+economics），treatment 不授权。任何改变 semantic boundary 的后续研究
+必须新建 algorithm identity，并重新完成 source audit、quality、observer
+和 D0/D1 gates；当前身份不再启动 V7-INCREMENTAL、M2、d>1 或 scheduler
+autoresearch。

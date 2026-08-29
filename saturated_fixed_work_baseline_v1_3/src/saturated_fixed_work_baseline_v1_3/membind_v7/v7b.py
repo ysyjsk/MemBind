@@ -76,6 +76,7 @@ def stable_mention_id(ir: StableSemanticIR, mention: Mention) -> str:
         raise ValueError("mention does not belong to the supplied source IR")
     return _digest(
         {
+            "source_id": ir.source_id,
             "source_hash": ir.source_hash,
             "operator": "mention",
             "span": [mention.span_start, mention.span_end],
@@ -360,7 +361,15 @@ class V7FreshEngine:
 
 
 class V7IncrementalEngine:
-    """d=1 dirty-view maintenance with exact reconvergence and fallback."""
+    """d=1 dirty-view maintenance with conservative and guarded modes.
+
+    :meth:`maintain` is the C0 reference: it repairs the full transitive
+    closure of changed state roots.  :meth:`maintain_guarded` is the C1
+    candidate: a dirty view is freshly recomputed and compared with its prior
+    canonical output; only an actual semantic or structural change propagates
+    to successors.  Both modes fail closed on unknown environment/frontier
+    conditions and use the same fresh fallback.
+    """
 
     def __init__(
         self,
@@ -458,6 +467,126 @@ class V7IncrementalEngine:
                 # successors to be repaired.  The dirty set is only used for
                 # scheduling, so successors are still conservatively visited;
                 # they can themselves reconverge exactly.
+
+        publication = _publication_from_views(views, state_version=frontier)
+        return IncrementalResult(
+            ir=ir,
+            state_version=frontier,
+            views=views,
+            work_cost=sum(views[view_id].cost for view_id in repaired),
+            publication=publication,
+            reused_view_ids=tuple(reused),
+            repaired_view_ids=tuple(repaired),
+            reconverged_view_ids=tuple(reconverged),
+            dirty_root_ids=tuple(sorted(roots)),
+        )
+
+    def maintain_guarded(
+        self,
+        old: FreshResult | IncrementalResult,
+        ir: StableSemanticIR,
+        state: Mapping[str, Any],
+        delta: StateDelta,
+    ) -> IncrementalResult:
+        """C1 guarded repair with exact reconvergence propagation.
+
+        The conservative closure remains the safety envelope used for budget
+        admission.  Within that envelope, each candidate view is recomputed
+        once.  A candidate whose canonical digest is unchanged is marked
+        reconverged and does not dirty its successors; a changed or missing
+        prior artifact propagates normally.  This is deliberately exact and
+        never relies on fuzzy semantic similarity or an oracle of the fresh
+        result.
+        """
+
+        if delta.source_version + 1 != delta.target_version:
+            return self._fallback(old, ir, state, "delta_or_environment_unknown")
+        if delta.environment_changes:
+            return self._fallback(old, ir, state, "delta_or_environment_unknown")
+        if old.ir.digest != ir.digest:
+            return self._fallback(old, ir, state, "source_ir_changed")
+        try:
+            frontier = _state_version(state)
+        except ValueError:
+            return self._fallback(old, ir, state, "delta_or_environment_unknown")
+        if frontier != delta.target_version:
+            return self._fallback(old, ir, state, "delta_or_environment_unknown")
+
+        changed_fields = {
+            str(field)
+            for change in delta.changes
+            for field in (set(change.changed_fields) | {change.key})
+        }
+        roots = {
+            definition.view_id
+            for definition in self.graph.definitions
+            if definition.kind == "stateful"
+            and (
+                not definition.state_dependencies
+                or bool(definition.state_dependencies & changed_fields)
+            )
+        }
+
+        # Compute the conservative closure only for fail-safe admission and
+        # accounting.  C1 may repair fewer views after exact reconvergence.
+        closure = set(roots)
+        queue = deque(sorted(roots))
+        while queue:
+            current = queue.popleft()
+            for successor in self.graph.successors_for(current):
+                if successor not in closure:
+                    closure.add(successor)
+                    queue.append(successor)
+        total_cost = sum(definition.cost for definition in self.graph.definitions)
+        closure_cost = sum(self.graph.by_id[view_id].cost for view_id in closure)
+        if total_cost and len(closure) / len(self.graph.by_id) > self.fallback_policy.max_dirty_fraction:
+            return self._fallback(old, ir, state, "dirty_fraction_exceeded")
+        if (
+            self.fallback_policy.max_repair_cost is not None
+            and closure_cost + self.fallback_policy.headroom >= self.fallback_policy.max_repair_cost
+        ):
+            return self._fallback(old, ir, state, "repair_budget_exceeded")
+
+        views: dict[str, ViewArtifact] = {}
+        reused: list[str] = []
+        repaired: list[str] = []
+        reconverged: list[str] = []
+        pending = set(roots)
+        changed_views: set[str] = set()
+        for view_id in self.graph.order:
+            definition = self.graph.by_id[view_id]
+            prior = old.views.get(view_id)
+            candidate = view_id in pending
+            if not candidate:
+                if prior is None:
+                    return self._fallback(old, ir, state, "missing_prior_artifact")
+                views[view_id] = prior
+                reused.append(view_id)
+                continue
+
+            predecessor_values = {
+                key: views[key].value for key in definition.predecessors
+            }
+            value = definition.compute(ir, state, predecessor_values)
+            artifact = ViewArtifact(
+                view_id=view_id,
+                kind=definition.kind,
+                value=value,
+                digest=_digest(value),
+                cost=definition.cost,
+                predecessors=definition.predecessors,
+                state_dependencies=definition.state_dependencies,
+            )
+            views[view_id] = artifact
+            repaired.append(view_id)
+            if prior is not None and prior.digest == artifact.digest:
+                reconverged.append(view_id)
+                # Exact reconvergence is the guard: successors remain clean.
+                continue
+
+            changed_views.add(view_id)
+            for successor in self.graph.successors_for(view_id):
+                pending.add(successor)
 
         publication = _publication_from_views(views, state_version=frontier)
         return IncrementalResult(
