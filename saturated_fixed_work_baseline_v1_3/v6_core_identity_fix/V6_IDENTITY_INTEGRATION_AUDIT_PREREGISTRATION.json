@@ -1,0 +1,110 @@
+{
+  "schema_version": "membind.v6.identity-integration-audit-preregistration.v1",
+  "input_identity": {
+    "branch": "dmsv-b1r2-structural-closure",
+    "head": "ab22dc9838f7f2c5e3de168962712be347c86a3c",
+    "remote_head": "ab22dc9838f7f2c5e3de168962712be347c86a3c",
+    "method_identity": "v6-membind-core-v1",
+    "implementation_revision": "context-integrity-fix-v1",
+    "graphiti_version": "0.29.3",
+    "profile_id": "local-qwen3-8b-awq-dualreplica-v1",
+    "previous_result_commit": "a702e600f92bedbf4d6d32fffed20d16049c7b14",
+    "prompt_is_uncommitted_user_input": true
+  },
+  "hypothesis": {
+    "id": "H0-accounting-fallback",
+    "statement": "A full Core construction can represent exact replay, mismatch fresh fallback, and missing fresh fallback without treating fallback as replay or rejecting a valid construction.",
+    "highest_value_reason": "The current Core binding path can discard a mismatched transcript and execute fresh, but the construction proof still requires captured=consumed and forbids transport in the replay wrapper; this blocks the only authorized replacement V7 probe."
+  },
+  "paths_under_test": {
+    "exact": "captured transcript request equals Native request; consume exactly once; no fresh transport",
+    "mismatch": "captured candidate exists but request identity differs; do not consume candidate; discard it once; execute exactly one fresh Native transport",
+    "missing": "no transcript candidate exists; consume zero; execute exactly one fresh Native transport",
+    "fresh_failure": "fresh fallback transport fails; no durable publication or success seal",
+    "duplicate": "duplicate consume/capture is rejected, never silently converted to success",
+    "serialization_mismatch": "prompt/request serialization mismatch is a mismatch and follows fresh fallback"
+  },
+  "accounting_contract": {
+    "equation": "captured = exact_consumed + discarded_unconsumed + remaining_unconsumed",
+    "fresh_fallback_equation": "fresh_fallback = mismatch_fallback + missing_fallback",
+    "definitions": {
+      "captured": "logical transcripts captured by the prepare phase",
+      "exact_consumed": "transcripts consumed by exact replay only",
+      "discarded_unconsumed": "unconsumed candidates removed after mismatch fallback",
+      "remaining_unconsumed": "unconsumed transcripts at scope finalization; must be zero for success",
+      "mismatch_fallback": "fresh authoritative call after identity mismatch",
+      "missing_fallback": "fresh authoritative call with no candidate transcript",
+      "fresh_failure": "fallback attempt that fails before publication"
+    },
+    "required_binding_fields": [
+      "capture_count",
+      "consume_count",
+      "discard_count",
+      "match_status",
+      "fallback_type",
+      "external_transport_attempted",
+      "transport_attempt_count",
+      "request_identity_hash",
+      "native_request_hash"
+    ]
+  },
+  "transport_contract": {
+    "exact_replay": "external_transport_attempted=false and transport_attempt_count=0",
+    "mismatch_or_missing_fallback": "external_transport_attempted=true and transport_attempt_count=1 on success, with the real NATIVE admission class",
+    "provider_retry": "not an independent replicate; record every physical attempt and retry reason",
+    "pre_publication_db_write": "forbidden",
+    "ordered_publication": "source-order durable publication remains mandatory"
+  },
+  "success_failure_invalid": {
+    "success": [
+      "all accounting equations hold",
+      "exact consume and fresh fallback are distinct",
+      "no remaining unconsumed transcript",
+      "ordered publication and no-write-before-certification pass",
+      "artifact can be sealed from frozen manifest"
+    ],
+    "failure": [
+      "fresh provider failure prevents durable publication",
+      "duplicate or serialization mismatch is rejected or fresh-fallback accounted"
+    ],
+    "invalid": [
+      "provider truncation/timeout/transport instability",
+      "mixed snapshot or missing provenance",
+      "proof fields disagree with observed provider calls"
+    ]
+  },
+  "required_tests": [
+    "full construction exact binding",
+    "full construction intentional mismatch with one fresh call",
+    "full construction missing transcript with one fresh call",
+    "fresh fallback failure has no publication",
+    "duplicate/unconsumed/serialization mismatch",
+    "provider-free mock two-source complete construction",
+    "existing ordered publication and no-write tests",
+    "historical V6.1 strip behavior remains unchanged"
+  ],
+  "phase0_gate": {
+    "qualified_state": "V6_IDENTITY_INTEGRATION_QUALIFIED",
+    "incomplete_state": "V6_IDENTITY_FIX_INCOMPLETE",
+    "required": [
+      "exact, missing, mismatch accounting is consistent",
+      "fresh fallback is not marked replay",
+      "full mock two-source construction succeeds",
+      "fresh failure does not publish",
+      "all relevant targeted and full test suites pass",
+      "artifact identity and manifest are reproducible"
+    ],
+    "on_failure": "remain in Phase 0 and fix one falsifiable issue at a time; do not run provider/V7 experiments"
+  },
+  "forbidden_actions": [
+    "provider/live V7 experiment before Phase 0 qualification",
+    "held-out access",
+    "B0 rerun",
+    "B1 scheduler or parameter search",
+    "prompt/schema/workload change",
+    "modifying old sealed artifacts",
+    "editing or committing prompt.md",
+    "push",
+    "counting provider retries as replicates"
+  ]
+}
