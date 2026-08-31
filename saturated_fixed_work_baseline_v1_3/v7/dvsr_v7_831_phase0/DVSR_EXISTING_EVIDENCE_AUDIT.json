@@ -1,0 +1,561 @@
+{
+  "dataset_split": {
+    "compatibility_quarantine": [
+      "c6853660"
+    ],
+    "development_exposed": [
+      "07741c45",
+      "b6019101",
+      "6071bd76",
+      "a2f3aa27"
+    ],
+    "held_out_evaluation": [
+      "b01defab",
+      "0f05491a",
+      "6aeb4375",
+      "06db6396",
+      "89941a94",
+      "c4ea545c",
+      "ce6d2d27",
+      "08e075c7"
+    ],
+    "path": "/data/predator/ly/MemBind/membind-validation/artifacts/dataset/frozen_split_v1_3.json",
+    "protocol_version": "current-validation-v1.3",
+    "selection_uses_model_or_performance_results": false,
+    "sha256": "747946a8792422ea35e9d56b864efb1a137cb6eb8a8e16f97808fe86f938c091"
+  },
+  "evidence_manifest_sha256": "87eca4a8f482450c1acc48765d8f15a566d45c6dbe5ad5075ad840ffcbafef90",
+  "generated_at_utc": "2026-08-31T03:51:57.185998+00:00",
+  "graphiti_version": "0.29.3",
+  "missing_fields": [
+    "actual_touched_write_delta",
+    "canonical_stateful_request",
+    "continuation_k",
+    "foreground_interference",
+    "prepared_ready_frontier",
+    "prompt_visible_projection_digest",
+    "state_read_set"
+  ],
+  "next_authorized_phase": "PHASE_1_FROZEN_V6_PREPARED_NOREUSE_SEAM",
+  "profile_id": "local-qwen3-8b-awq-dualreplica-v1",
+  "prohibited_reruns": [
+    "B0/NATIVE_SERIAL",
+    "sealed V6 characterization",
+    "V4 legal-window analysis",
+    "old V7-FRESH",
+    "old V7-B NULL",
+    "typed-attribute hotspot check"
+  ],
+  "provenance_contract": {
+    "database_writes": 0,
+    "held_out_method_specific_outcomes_read": false,
+    "old_v7_fresh_used_as_oracle": false,
+    "provider_calls": 0,
+    "sealed_artifacts_modified": false
+  },
+  "rq_gate_metric_status": [
+    {
+      "evidence": "three sealed V6 critical-path reductions",
+      "id": "RQ1_v6_stateful_critical_path",
+      "next_action": "do not rerun characterization",
+      "status": "ALREADY_PROVEN"
+    },
+    {
+      "evidence": "typed attribute call count is zero in all three sealed traces",
+      "id": "RQ1_typed_attributes_current_hotspot",
+      "next_action": "exclude from first operator selection",
+      "status": "ALREADY_PROVEN"
+    },
+    {
+      "evidence": "no paired same-source read-set in checked-in artifacts",
+      "id": "RQ2_same_source_cross_snapshot_semantic_reads",
+      "next_action": "provider-free TDD then read-only observer",
+      "status": "REQUIRES_NEW_OBSERVER"
+    },
+    {
+      "evidence": "request_identity contains extraction fields only; no paired stateful identity",
+      "id": "RQ2_canonical_stateful_request_identity",
+      "next_action": "capture canonical request in observer",
+      "status": "REQUIRES_NEW_OBSERVER"
+    },
+    {
+      "evidence": "certificate code exists but adversarial closure is not sealed",
+      "id": "RQ3_certificate_soundness",
+      "next_action": "failing tests before observer",
+      "status": "REQUIRES_NEW_OBSERVER"
+    },
+    {
+      "evidence": "no paired repair/continuation oracle",
+      "id": "RQ4_exact_reconvergence",
+      "next_action": "single-call branch oracle after certificate TDD",
+      "status": "REQUIRES_NEW_OBSERVER"
+    },
+    {
+      "evidence": "no operator-specific validation/miss/repair ledger",
+      "id": "RQ5a_offline_operator_economics",
+      "next_action": "development observer only",
+      "status": "REQUIRES_NEW_OBSERVER"
+    },
+    {
+      "evidence": "cannot be inferred from offline traces",
+      "id": "RQ5b_online_foreground_interference",
+      "next_action": "selected operator and G4 only",
+      "status": "REQUIRES_NEW_LIVE"
+    },
+    {
+      "evidence": "V6 request fields show stripped extraction previous context, but paired B0 request audit is absent",
+      "id": "B0_to_v6_timing_only_equivalence",
+      "next_action": "do not claim Native-equivalence; optional separate audit",
+      "status": "PARTIALLY_SUPPORTED"
+    },
+    {
+      "evidence": "existing V6 does not expose prepared/no-reuse differential fields",
+      "id": "v6_based_no_reuse_seam",
+      "next_action": "implement minimal Frozen-V6 seam",
+      "status": "MISSING_FIELD"
+    },
+    {
+      "evidence": "no authorized DVSR treatment",
+      "id": "dvrs_end_to_end_speedup",
+      "next_action": "only after G6",
+      "status": "REQUIRES_NEW_LIVE"
+    }
+  ],
+  "schema_version": "membind.dvsr.existing-evidence-audit.v1",
+  "scope": "PHASE_0A_READ_ONLY_SEALED_EVIDENCE_CLOSURE",
+  "status": "PASS_WITH_EXPLICIT_MISSING_FIELDS",
+  "v6_artifacts": [
+    {
+      "artifact_root": "/data/predator/ly/MemBind/saturated_fixed_work_baseline_v1_3/artifacts/mab-v1-3-live-firstpass-c0-recovery-methods-20260825-011/context-0/V6/e78d9a9be2e5",
+      "artifact_tree_sha256": "734af7f882cfb5ece305761fe386b83b111ec91d047888476f0ded017fb0d2df",
+      "checked_in_fields": {
+        "actual_touched_write_delta": false,
+        "canonical_stateful_request": false,
+        "continuation_k": false,
+        "foreground_interference": false,
+        "prepared_ready_frontier": false,
+        "prompt_visible_projection_digest": false,
+        "state_read_set": false
+      },
+      "construction_seal_sha256": "85f61823945e35d4855e3c985be6588ffdfba15184f43387394bd20f63fc9fea",
+      "construction_status": "CONSTRUCTION_SEALED",
+      "critical_path": {
+        "critical_path": {
+          "build_makespan_ns": 5774875119133,
+          "decomposition_status": "MISSING_FIELD"
+        },
+        "missing_field": "NATIVE_INTERVAL/TIMER_STOP events required by generic reducer",
+        "phase_attribution": {
+          "add-episode": {
+            "overlap_safe": false,
+            "span_count": 111,
+            "total_duration_ns": 5489189691632
+          },
+          "attributes-summary": {
+            "overlap_safe": false,
+            "span_count": 111,
+            "total_duration_ns": 1852795686768
+          },
+          "database": {
+            "overlap_safe": false,
+            "span_count": 2958,
+            "total_duration_ns": 164138856305
+          },
+          "database-transaction": {
+            "overlap_safe": false,
+            "span_count": 111,
+            "total_duration_ns": 1103258739
+          },
+          "edge-extraction": {
+            "overlap_safe": false,
+            "span_count": 111,
+            "total_duration_ns": 186874371
+          },
+          "edge-resolution": {
+            "overlap_safe": false,
+            "span_count": 111,
+            "total_duration_ns": 1016686957073
+          },
+          "embedding": {
+            "overlap_safe": false,
+            "span_count": 1070,
+            "total_duration_ns": 26081681235
+          },
+          "llm": {
+            "overlap_safe": false,
+            "span_count": 1069,
+            "total_duration_ns": 28728190272735
+          },
+          "llm-transport": {
+            "overlap_safe": false,
+            "span_count": 1069,
+            "total_duration_ns": 28725998986940
+          },
+          "node-extraction": {
+            "overlap_safe": false,
+            "span_count": 111,
+            "total_duration_ns": 177335455
+          },
+          "node-resolution": {
+            "overlap_safe": false,
+            "span_count": 111,
+            "total_duration_ns": 2617161677631
+          },
+          "previous-context": {
+            "overlap_safe": false,
+            "span_count": 111,
+            "total_duration_ns": 279188421
+          },
+          "publication": {
+            "overlap_safe": false,
+            "span_count": 111,
+            "total_duration_ns": 1882086591
+          }
+        },
+        "reducer_error": "exactly one FORMAL_START and TIMER_STOP are required",
+        "reduction_status": "MISSING_FIELD",
+        "schema_version": "membind.dvsr.legacy-v6-critical-path-summary.v1",
+        "source_count": 111,
+        "timer": {
+          "build_makespan_ns": 5774875119133,
+          "reconstructed_from_lifecycle": true,
+          "timer_start_ns": 62555059619297,
+          "timer_stop_ns": 68329864872932
+        }
+      },
+      "extraction_observation": {
+        "extraction_request_count": 859,
+        "previous_context_digest_cardinality": 1,
+        "previous_context_digest_values": [
+          "12ae32cb1ec02d01eda3581b127c1fee3b0dc53572ed6baf239721a03d82e126"
+        ],
+        "prompt_counts": {
+          "dedupe_edges.resolve_edge": 329,
+          "dedupe_nodes.nodes": 103,
+          "extract_edges.edge": 111,
+          "extract_edges.extract_timestamps": 351,
+          "extract_nodes.extract_message": 111,
+          "extract_nodes.extract_summaries_batch": 64
+        },
+        "summary_call_count": 64,
+        "typed_attribute_call_count": 0
+      },
+      "frozen_config_revision": "7ea066982b140a19337e17e60d45d4076e042faf",
+      "frozen_config_sha256": "a9290f4ab34ce9393d958b4d60bf0a571fd55a19796a70a68b2968b0f58bfa2d",
+      "graphiti_version": "0.29.3",
+      "identity": {
+        "context_id": "longmemeval_s*:3c7e614ecadaf1a6",
+        "dataset_authority_sha256": "7dae7013022d0e09475a054d2a684aff9cffaf72b2667145842d40bd15a84b61",
+        "method": "V6",
+        "namespace": "mab-v13-firstpass-c0-recovery-methods-c0-v6-e78d9a9be2e5",
+        "run_id": "firstpass-c0-recovery-methods",
+        "workload_hash": "71782d1eb1ed29c03f08ec4b6a2ff355f9abab215ee17789c44aab8b98ec406a"
+      },
+      "order_contract_status": "PASS",
+      "phase_seconds": {
+        "attributes_summary": 1852.795686768,
+        "edge_resolution": 1016.686957073,
+        "node_resolution": 2617.161677631,
+        "publication": 1.882086591
+      },
+      "refinement_status": "PASS",
+      "work_inventory": {
+        "completed_count": 111,
+        "db_writes": 0,
+        "embedding_items": 2662,
+        "expected_episode_count": 111,
+        "llm_logical_requests": 1069,
+        "submitted_count": 111,
+        "transport_attempts": 1069
+      }
+    },
+    {
+      "artifact_root": "/data/predator/ly/MemBind/saturated_fixed_work_baseline_v1_3/artifacts/mab-v1-3-live-firstpass-context1-20260825-014/context-1/V6/6db1005726a9",
+      "artifact_tree_sha256": "c8c03499af8c779c8509ba2324637e7bb32b90648a59fa9141a720e42559e5cd",
+      "checked_in_fields": {
+        "actual_touched_write_delta": false,
+        "canonical_stateful_request": false,
+        "continuation_k": false,
+        "foreground_interference": false,
+        "prepared_ready_frontier": false,
+        "prompt_visible_projection_digest": false,
+        "state_read_set": false
+      },
+      "construction_seal_sha256": "16d9e376a7383657c2b1a32d3910a3f67e7c7c4b72736b5dbfa7b0250b14d371",
+      "construction_status": "CONSTRUCTION_SEALED",
+      "critical_path": {
+        "critical_path": {
+          "build_makespan_ns": 5520666216401,
+          "decomposition_status": "MISSING_FIELD"
+        },
+        "missing_field": "NATIVE_INTERVAL/TIMER_STOP events required by generic reducer",
+        "phase_attribution": {
+          "add-episode": {
+            "overlap_safe": false,
+            "span_count": 107,
+            "total_duration_ns": 5214636646006
+          },
+          "attributes-summary": {
+            "overlap_safe": false,
+            "span_count": 107,
+            "total_duration_ns": 1890137226245
+          },
+          "database": {
+            "overlap_safe": false,
+            "span_count": 3054,
+            "total_duration_ns": 191688475544
+          },
+          "database-transaction": {
+            "overlap_safe": false,
+            "span_count": 107,
+            "total_duration_ns": 1219540810
+          },
+          "edge-extraction": {
+            "overlap_safe": false,
+            "span_count": 107,
+            "total_duration_ns": 178408438
+          },
+          "edge-resolution": {
+            "overlap_safe": false,
+            "span_count": 107,
+            "total_duration_ns": 662168021565
+          },
+          "embedding": {
+            "overlap_safe": false,
+            "span_count": 1092,
+            "total_duration_ns": 31596713700
+          },
+          "llm": {
+            "overlap_safe": false,
+            "span_count": 1092,
+            "total_duration_ns": 28268109444322
+          },
+          "llm-transport": {
+            "overlap_safe": false,
+            "span_count": 1092,
+            "total_duration_ns": 28266093310523
+          },
+          "node-extraction": {
+            "overlap_safe": false,
+            "span_count": 107,
+            "total_duration_ns": 177270561
+          },
+          "node-resolution": {
+            "overlap_safe": false,
+            "span_count": 107,
+            "total_duration_ns": 2659782441907
+          },
+          "previous-context": {
+            "overlap_safe": false,
+            "span_count": 107,
+            "total_duration_ns": 258454363
+          },
+          "publication": {
+            "overlap_safe": false,
+            "span_count": 107,
+            "total_duration_ns": 1915240286
+          }
+        },
+        "reducer_error": "exactly one FORMAL_START and TIMER_STOP are required",
+        "reduction_status": "MISSING_FIELD",
+        "schema_version": "membind.dvsr.legacy-v6-critical-path-summary.v1",
+        "source_count": 107,
+        "timer": {
+          "build_makespan_ns": 5520666216401,
+          "reconstructed_from_lifecycle": true,
+          "timer_start_ns": 73791934446465,
+          "timer_stop_ns": 79312530758943
+        }
+      },
+      "extraction_observation": {
+        "extraction_request_count": 851,
+        "previous_context_digest_cardinality": 1,
+        "previous_context_digest_values": [
+          "12ae32cb1ec02d01eda3581b127c1fee3b0dc53572ed6baf239721a03d82e126"
+        ],
+        "prompt_counts": {
+          "dedupe_edges.resolve_edge": 363,
+          "dedupe_nodes.nodes": 92,
+          "extract_edges.edge": 107,
+          "extract_edges.extract_timestamps": 360,
+          "extract_nodes.extract_message": 107,
+          "extract_nodes.extract_summaries_batch": 63
+        },
+        "summary_call_count": 63,
+        "typed_attribute_call_count": 0
+      },
+      "frozen_config_revision": "7ea066982b140a19337e17e60d45d4076e042faf",
+      "frozen_config_sha256": "a9290f4ab34ce9393d958b4d60bf0a571fd55a19796a70a68b2968b0f58bfa2d",
+      "graphiti_version": "0.29.3",
+      "identity": {
+        "context_id": "longmemeval_s*:68e0c0a3c1784bc0",
+        "dataset_authority_sha256": "7dae7013022d0e09475a054d2a684aff9cffaf72b2667145842d40bd15a84b61",
+        "method": "V6",
+        "namespace": "mab-v13-firstpass-context1-c1-v6-6db1005726a9",
+        "run_id": "firstpass-context1",
+        "workload_hash": "f5bc189463f44f9c84fb96cb9dd250f6903e985218ee57235eca9bb426d3ca80"
+      },
+      "order_contract_status": "PASS",
+      "phase_seconds": {
+        "attributes_summary": 1890.137226245,
+        "edge_resolution": 662.168021565,
+        "node_resolution": 2659.782441907,
+        "publication": 1.915240286
+      },
+      "refinement_status": "PASS",
+      "work_inventory": {
+        "completed_count": 107,
+        "db_writes": 0,
+        "embedding_items": 2722,
+        "expected_episode_count": 107,
+        "llm_logical_requests": 1092,
+        "submitted_count": 107,
+        "transport_attempts": 1092
+      }
+    },
+    {
+      "artifact_root": "/data/predator/ly/MemBind/saturated_fixed_work_baseline_v1_3/artifacts/mab-v1-3-live-firstpass-context2-20260825-015/context-2/V6/8c4a5e4e66b5",
+      "artifact_tree_sha256": "7b42de267e90b9987a6f6f9095042f0c41ae940bc00b9e7c49d78c245850cf92",
+      "checked_in_fields": {
+        "actual_touched_write_delta": false,
+        "canonical_stateful_request": false,
+        "continuation_k": false,
+        "foreground_interference": false,
+        "prepared_ready_frontier": false,
+        "prompt_visible_projection_digest": false,
+        "state_read_set": false
+      },
+      "construction_seal_sha256": "1facb6854a9cf45a53dcce96fe8be74a1170a02dc7e87bded7c41188aae703c8",
+      "construction_status": "CONSTRUCTION_SEALED",
+      "critical_path": {
+        "critical_path": {
+          "build_makespan_ns": 7147375073924,
+          "decomposition_status": "MISSING_FIELD"
+        },
+        "missing_field": "NATIVE_INTERVAL/TIMER_STOP events required by generic reducer",
+        "phase_attribution": {
+          "add-episode": {
+            "overlap_safe": false,
+            "span_count": 116,
+            "total_duration_ns": 6835926912302
+          },
+          "attributes-summary": {
+            "overlap_safe": false,
+            "span_count": 116,
+            "total_duration_ns": 1970097420382
+          },
+          "database": {
+            "overlap_safe": false,
+            "span_count": 4153,
+            "total_duration_ns": 273275724427
+          },
+          "database-transaction": {
+            "overlap_safe": false,
+            "span_count": 116,
+            "total_duration_ns": 1485438235
+          },
+          "edge-extraction": {
+            "overlap_safe": false,
+            "span_count": 116,
+            "total_duration_ns": 200826267
+          },
+          "edge-resolution": {
+            "overlap_safe": false,
+            "span_count": 116,
+            "total_duration_ns": 1751753838626
+          },
+          "embedding": {
+            "overlap_safe": false,
+            "span_count": 1483,
+            "total_duration_ns": 68000282631
+          },
+          "llm": {
+            "overlap_safe": false,
+            "span_count": 1482,
+            "total_duration_ns": 36995979658379
+          },
+          "llm-transport": {
+            "overlap_safe": false,
+            "span_count": 1482,
+            "total_duration_ns": 36993570012694
+          },
+          "node-extraction": {
+            "overlap_safe": false,
+            "span_count": 116,
+            "total_duration_ns": 188038857
+          },
+          "node-resolution": {
+            "overlap_safe": false,
+            "span_count": 116,
+            "total_duration_ns": 3111094570880
+          },
+          "previous-context": {
+            "overlap_safe": false,
+            "span_count": 116,
+            "total_duration_ns": 293644000
+          },
+          "publication": {
+            "overlap_safe": false,
+            "span_count": 116,
+            "total_duration_ns": 2279010962
+          }
+        },
+        "reducer_error": "exactly one FORMAL_START and TIMER_STOP are required",
+        "reduction_status": "MISSING_FIELD",
+        "schema_version": "membind.dvsr.legacy-v6-critical-path-summary.v1",
+        "source_count": 116,
+        "timer": {
+          "build_makespan_ns": 7147375073924,
+          "reconstructed_from_lifecycle": true,
+          "timer_start_ns": 88733766376288,
+          "timer_stop_ns": 95881069599612
+        }
+      },
+      "extraction_observation": {
+        "extraction_request_count": 1070,
+        "previous_context_digest_cardinality": 1,
+        "previous_context_digest_values": [
+          "12ae32cb1ec02d01eda3581b127c1fee3b0dc53572ed6baf239721a03d82e126"
+        ],
+        "prompt_counts": {
+          "dedupe_edges.resolve_edge": 537,
+          "dedupe_nodes.nodes": 107,
+          "extract_edges.edge": 116,
+          "extract_edges.extract_timestamps": 539,
+          "extract_nodes.extract_message": 116,
+          "extract_nodes.extract_summaries_batch": 67
+        },
+        "summary_call_count": 67,
+        "typed_attribute_call_count": 0
+      },
+      "frozen_config_revision": "7ea066982b140a19337e17e60d45d4076e042faf",
+      "frozen_config_sha256": "a9290f4ab34ce9393d958b4d60bf0a571fd55a19796a70a68b2968b0f58bfa2d",
+      "graphiti_version": "0.29.3",
+      "identity": {
+        "context_id": "longmemeval_s*:9b8cbac923a7a2d1",
+        "dataset_authority_sha256": "7dae7013022d0e09475a054d2a684aff9cffaf72b2667145842d40bd15a84b61",
+        "method": "V6",
+        "namespace": "mab-v13-firstpass-context2-c2-v6-8c4a5e4e66b5",
+        "run_id": "firstpass-context2",
+        "workload_hash": "8a7fe8afbe5dbd550aae90aec06905a0a605dae9e533edf35d447d53d214cb12"
+      },
+      "order_contract_status": "PASS",
+      "phase_seconds": {
+        "attributes_summary": 1970.097420382,
+        "edge_resolution": 1751.753838626,
+        "node_resolution": 3111.09457088,
+        "publication": 2.279010962
+      },
+      "refinement_status": "PASS",
+      "work_inventory": {
+        "completed_count": 116,
+        "db_writes": 0,
+        "embedding_items": 3795,
+        "expected_episode_count": 116,
+        "llm_logical_requests": 1482,
+        "submitted_count": 116,
+        "transport_attempts": 1482
+      }
+    }
+  ]
+}

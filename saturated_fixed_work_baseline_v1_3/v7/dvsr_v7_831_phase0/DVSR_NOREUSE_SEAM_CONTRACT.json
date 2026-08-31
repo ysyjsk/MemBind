@@ -1,0 +1,28 @@
+{
+  "schema_version": "membind.dvsr.v6-prepared-noreuse-contract.v1",
+  "status": "PHASE_1_PROVIDER_FREE_SEAM_SEALED",
+  "algorithm_identity": "V6_PREPARED_NOREUSE_CONTROL",
+  "semantic_root": "Frozen V6",
+  "module": "saturated_fixed_work_baseline_v1_3/src/saturated_fixed_work_baseline_v1_3/membind_v7/dvsr_seam.py",
+  "module_sha256": "9e975cbc2754c3d1662c8c0468fa2e221df07318b7b62543173623869880d3b6",
+  "contracts": {
+    "prepared_extraction": "materialize once per source; return isolated clone; preserve source/V6/transcript/previous-context identity",
+    "stateful_resolution": "always fresh on current authoritative state; no speculative reuse; no database writes",
+    "publication": "contiguous source order from zero; completion order is ignored",
+    "foreign_identity": "reject an artifact from a different Frozen V6 identity",
+    "provider_calls": "one logical resolve call in the provider-free model",
+    "database_writes": 0
+  },
+  "forbidden": [
+    "V7-FRESH empty-history semantics",
+    "live provider calls",
+    "authoritative graph mutation",
+    "reuse or summary bypass",
+    "B1 execution"
+  ],
+  "test_artifact": {
+    "path": "saturated_fixed_work_baseline_v1_3/tests/test_dvsr_v6_prepared_noreuse_seam.py",
+    "sha256": "ae2a2440310e3aa68a92925fb07211ae6fa3e74c02067062d3d5535166679445",
+    "status": "5_PASS"
+  }
+}

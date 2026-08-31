@@ -1,0 +1,39 @@
+{
+  "schema_version": "membind.dvsr.certificate-observer-contract.v1",
+  "status": "PHASE_2_PROVIDER_FREE_TDD_SEALED",
+  "algorithm_identity": "DVSR_OPERATOR_NEUTRAL_OBSERVER_V1",
+  "semantic_root": "Frozen V6",
+  "certificate": {
+    "module": "saturated_fixed_work_baseline_v1_3/src/saturated_fixed_work_baseline_v1_3/membind_v7/dvsr_certificates.py",
+    "module_sha256": "79984303eff85fad837b9969df08f77b81816085d71d5964f8417e382b49ac10",
+    "false_valid_target": 0,
+    "unknown_policy": "fail_closed",
+    "c0_floor": "fresh requery; C1 valid set must be a subset of C0",
+    "preserved_legacy_boundary": "legacy certificates.py remains byte/hash frozen for old V7 protocols"
+  },
+  "observer": {
+    "module": "saturated_fixed_work_baseline_v1_3/src/saturated_fixed_work_baseline_v1_3/membind_v7/dvsr_observer.py",
+    "module_sha256": "be1890ac9c450ed7751e5b303cf81a642492115ff7ca1392009ee84c3722ac9b",
+    "required_schema_fields": "prepared artifact, read epoch/set, operator cut, ordered candidates/scores, prompt projection, canonical request, result/continuation, actual delta, no-write proof, semantic CP, validation/repair timing",
+    "observer_only": true,
+    "speculative_publication": false,
+    "database_writes": 0
+  },
+  "deep_prefix": {
+    "module": "saturated_fixed_work_baseline_v1_3/src/saturated_fixed_work_baseline_v1_3/membind_v7/deep_prefix.py",
+    "module_sha256": "3c9d89cae37b307672def809883744f6c18f79b1885822d5fb7b02dbb9f6a252",
+    "contract": "C0/C2 only; no Summary C1 delta theorem"
+  },
+  "tdd": {
+    "red": "9 adversarial false-accept cases observed before repair",
+    "green": "10 certificate adversarial + 64 legacy theory + 8 observer schema + 8 deep-prefix + 5 seam tests pass",
+    "test_hashes": {
+      "certificate": "88d79c05a9113b9f890eee9e8a9b8d5899a530d48db9795c06438298edbab98a",
+      "observer": "8f6cae292a89b3d60d2d98ef13a107fe04b3aa12e18c35b16bffe40009d8e360",
+      "deep_prefix": "a168e39438a4122e55512e1b37d9e63bf823a6185287fb47dedd48817ff3592f",
+      "seam": "ae2a2440310e3aa68a92925fb07211ae6fa3e74c02067062d3d5535166679445"
+    },
+    "full_regression": "604 passed"
+  },
+  "next_gate": "PHASE_3_DEVELOPMENT_CROSS_SNAPSHOT_OBSERVER"
+}

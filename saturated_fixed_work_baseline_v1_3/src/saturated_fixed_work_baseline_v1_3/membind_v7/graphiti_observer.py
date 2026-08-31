@@ -7,6 +7,7 @@ inject bindings to prove that the build stops before native publication.
 
 from __future__ import annotations
 
+import copy
 import hashlib
 import inspect
 import json
@@ -38,6 +39,11 @@ class _CaptureScope:
     state_version: int
     request_ordinal: int = 0
     read_ordinal: int = 0
+    request_prompt_ordinals: dict[str, int] | None = None
+
+    def __post_init__(self) -> None:
+        if self.request_prompt_ordinals is None:
+            self.request_prompt_ordinals = {}
 
 
 _CAPTURE_SCOPE: contextvars.ContextVar[_CaptureScope | None] = contextvars.ContextVar(
@@ -251,13 +257,19 @@ def build_semantic_cost_dag(build: Mapping[str, Any]) -> dict[str, Any]:
         read_rows.append((raw, duration, overhead))
 
     build_duration = build.get("duration_ns")
-    if isinstance(build_duration, bool) or not isinstance(build_duration, int) or build_duration < observer_overhead:
+    if isinstance(build_duration, bool) or not isinstance(build_duration, int) or build_duration < 0:
         return {"schema_version": "membind.v7.semantic-cost-dag.v1", "status": "UNKNOWN", "reason": "build cost is invalid"}
     durations = {name: concrete[index][1] - concrete[index][0] for index, name in enumerate(required)}
-    durations["node-resolution"] -= observer_overhead
+    # Read observers can run concurrently (one fork per candidate).  Their
+    # wrapper/domain-loader overhead is therefore not additive wall time and
+    # must not be subtracted once per read from the serial resolution phase.
+    # Keep it as explicit certificate cost nodes below; the phase interval and
+    # the longest native read determine the critical-path shell.
     longest_read = max((duration for _raw, duration, _overhead in read_rows), default=0)
     resolution_shell = durations["node-resolution"] - longest_read
-    native_duration = build_duration - observer_overhead
+    # The semantic root is the authoritative build clock.  Capture setup and
+    # teardown can surround it, so prefer its interval when available.
+    native_duration = root_interval[1] - root_interval[0]
     unattributed = native_duration - sum(durations.values())
     if resolution_shell < 0 or unattributed < 0:
         return {"schema_version": "membind.v7.semantic-cost-dag.v1", "status": "UNKNOWN", "reason": "phase costs do not decompose the build"}
@@ -359,6 +371,7 @@ class RequestObservationClient:
         *,
         sink: Callable[[dict[str, Any]], Any],
         model_epoch: str,
+        single_call_branch_oracle: bool = False,
     ) -> None:
         if not callable(getattr(delegate, "generate_response", None)):
             raise GraphitiObserverError("request observer delegate is invalid")
@@ -367,6 +380,8 @@ class RequestObservationClient:
         self.inner = delegate
         self._sink = sink
         self._model_epoch = str(model_epoch)
+        self._single_call_branch_oracle = bool(single_call_branch_oracle)
+        self._old_responses: dict[tuple[int, str, int, str], Any] = {}
 
     async def generate_response(self, messages: Any, **kwargs: Any) -> Any:
         scope = _CAPTURE_SCOPE.get()
@@ -374,6 +389,12 @@ class RequestObservationClient:
             raise GraphitiObserverError("provider call occurred outside observer capture scope")
         ordinal = scope.request_ordinal
         scope.request_ordinal += 1
+        prompt_name = str(kwargs.get("prompt_name") or "unknown")
+        prompt_ordinals = scope.request_prompt_ordinals
+        if prompt_ordinals is None:
+            raise GraphitiObserverError("request prompt ordinal state is missing")
+        prompt_ordinal = prompt_ordinals.get(prompt_name, 0)
+        prompt_ordinals[prompt_name] = prompt_ordinal + 1
         fields = {
             "messages": _canonical(messages),
             "response_model": _response_model_identity(kwargs.get("response_model")),
@@ -384,17 +405,29 @@ class RequestObservationClient:
         request_identity = canonical_digest(field_digests)
         start_ns = time.monotonic_ns()
         status = "PASS"
+        result: Any = None
+        transport_result: Any = None
+        response_binding = "PROVIDER_SINGLE_CALL"
         request_token = _REQUEST_SCOPE.set(
             {
                 "phase": scope.phase,
                 "source_sequence": scope.source_sequence,
                 "state_version": scope.state_version,
                 "request_ordinal": ordinal,
-                "prompt_name": str(kwargs.get("prompt_name") or "unknown"),
+                "prompt_name": prompt_name,
             }
         )
         try:
-            result = await _maybe_await(self.inner.generate_response(messages, **kwargs))
+            transport_result = await _maybe_await(self.inner.generate_response(messages, **kwargs))
+            result = transport_result
+            oracle_key = (scope.source_sequence, prompt_name, prompt_ordinal, request_identity)
+            if self._single_call_branch_oracle and scope.phase == "OLD":
+                self._old_responses[oracle_key] = copy.deepcopy(transport_result)
+            elif self._single_call_branch_oracle and scope.phase == "FRESH_NATIVE":
+                old_result = self._old_responses.get(oracle_key)
+                if old_result is not None:
+                    result = copy.deepcopy(old_result)
+                    response_binding = "OLD_SINGLE_CALL_REPLAY"
         except BaseException:
             status = "FAILED"
             raise
@@ -406,8 +439,12 @@ class RequestObservationClient:
                 "source_sequence": scope.source_sequence,
                 "state_version": scope.state_version,
                 "ordinal": ordinal,
-                "prompt_name": str(kwargs.get("prompt_name") or "unknown"),
+                "prompt_name": prompt_name,
+                "prompt_ordinal": prompt_ordinal,
                 "request_identity": request_identity,
+                "response_digest": canonical_digest(result) if status == "PASS" else None,
+                "transport_response_digest": canonical_digest(transport_result) if status == "PASS" else None,
+                "response_binding": response_binding if status == "PASS" else None,
                 "field_digests": field_digests,
                 "model_epoch": self._model_epoch,
                 "start_ns": start_ns,
@@ -508,6 +545,7 @@ class GraphitiCaptureInstallation:
         backend_epoch: str,
         node_module: Any | None = None,
         domain_loader: Callable[[Any, Sequence[str] | None], Any] | None = None,
+        single_call_branch_oracle: bool = False,
     ) -> None:
         self.graphiti = graphiti
         self.model_epoch = str(model_epoch)
@@ -523,6 +561,7 @@ class GraphitiCaptureInstallation:
             node_module = node_operations
         self.node_module = node_module
         self.domain_loader = domain_loader
+        self.single_call_branch_oracle = bool(single_call_branch_oracle)
         self.original_llm_client = graphiti.llm_client
         self._original_clients_llm = graphiti.clients.llm_client
         self._restorers: list[Callable[[], None]] = []
@@ -549,6 +588,7 @@ class GraphitiCaptureInstallation:
                 self.original_llm_client,
                 sink=self._request_sink,
                 model_epoch=self.model_epoch,
+                single_call_branch_oracle=self.single_call_branch_oracle,
             )
             self.graphiti.llm_client = observed_llm
             self.graphiti.clients.llm_client = observed_llm
@@ -1159,6 +1199,10 @@ class BuildStageResult:
     node_episode_index_map: Mapping[str, list[int]]
     continuation_k: Mapping[str, Any]
     publication_calls: int = 0
+    # Preserve the direct Node-resolution output separately from the hydrated
+    # continuation nodes.  CUT-N ends at Node resolution; comparing it with
+    # the post-Summary hydrated list would create a false continuation miss.
+    resolved_nodes: tuple[Any, ...] = ()
 
 
 def _field(value: Any, name: str) -> Any:
@@ -1174,6 +1218,64 @@ def _assert_complete_embeddings(nodes: Sequence[Any], edges: Sequence[Any]) -> N
 
 async def _maybe_await(value: Any) -> Any:
     return await value if inspect.isawaitable(value) else value
+
+
+def _ensure_single_partition_provenance(
+    graphiti: Any,
+    episode: Any,
+    extracted_nodes: Sequence[Any],
+) -> None:
+    """Bridge the 8B chunking seam when node extraction fits one partition.
+
+    The local 8B runtime's edge partitioner requires source provenance even
+    when the node prompt did not need to split.  Native V6 normally seeds this
+    through its partition worker; the observer calls the same Graphiti
+    functions directly, so seed the equivalent one-partition evidence only
+    when the runtime exposes its private provenance maps.
+    """
+
+    client = getattr(graphiti, "llm_client", None)
+    # Capture/instrumentation layers may wrap the runtime client more than
+    # once.  Walk only the conventional ``inner`` chain and stop on cycles;
+    # do not inspect arbitrary attributes or alter unrelated clients.
+    seen: set[int] = set()
+    sources_by_scope = hints_by_scope = None
+    for _ in range(8):
+        if client is None or id(client) in seen:
+            break
+        seen.add(id(client))
+        sources_by_scope = getattr(client, "_membind_entity_partition_sources_by_scope", None)
+        hints_by_scope = getattr(client, "_membind_entity_partition_hints_by_scope", None)
+        if isinstance(sources_by_scope, dict) and isinstance(hints_by_scope, dict):
+            break
+        client = getattr(client, "inner", None)
+    if not isinstance(sources_by_scope, dict) or not isinstance(hints_by_scope, dict):
+        return
+    try:
+        from ..membind_v5.runtime.core.provider_admission import current_provider_scope
+
+        scope = current_provider_scope()
+    except Exception:
+        scope = (None, None)
+    content = getattr(episode, "content", None)
+    if not isinstance(content, str) or not content:
+        return
+    scoped_sources = sources_by_scope.setdefault(scope, {})
+    scoped_sources.setdefault(0, content)
+    # A model entity can be semantically supported by the current source but
+    # not appear verbatim in any turn segment (for example, a normalized
+    # alias).  The runtime represents that conservative fallback as partition
+    # ``-1``; retain a complete source-text witness so the edge call remains
+    # auditable instead of failing before producing observer evidence.
+    scoped_sources.setdefault(-1, content)
+    scoped_hints = hints_by_scope.setdefault(scope, {})
+    for node in extracted_nodes:
+        name = node.get("name") if isinstance(node, Mapping) else getattr(node, "name", None)
+        identity = " ".join(str(name or "").split()).casefold()
+        if identity:
+            values = scoped_hints.setdefault(identity, [])
+            if 0 not in values:
+                values.append(0)
 
 
 def _default_bindings() -> BuildStageBindings:
@@ -1298,6 +1400,7 @@ async def build_to_seam_async(
     previous = tuple(await _maybe_await(selected.retrieve_previous(graphiti, kwargs)))
     episode = selected.make_episode(graphiti, kwargs, now)
     extracted_nodes, index_map = await _maybe_await(selected.extract_nodes(graphiti, episode, previous, kwargs))
+    _ensure_single_partition_provenance(graphiti, episode, extracted_nodes)
     nodes, uuid_map, _duplicates = await _maybe_await(
         selected.resolve_nodes(graphiti, extracted_nodes, episode, previous, kwargs)
     )
@@ -1345,6 +1448,7 @@ async def build_to_seam_async(
         dict(index_map),
         dict(k),
         0,
+        tuple(nodes),
     )
 
 

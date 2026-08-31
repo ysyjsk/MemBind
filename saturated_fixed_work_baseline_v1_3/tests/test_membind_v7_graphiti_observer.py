@@ -604,6 +604,18 @@ class _Delegate:
         return {"answer": kwargs.get("prompt_name")}
 
 
+class _FailingDelegate(_Delegate):
+    async def generate_response(self, messages, **kwargs):
+        self.calls += 1
+        raise RuntimeError("provider failed")
+
+
+class _SequencedDelegate(_Delegate):
+    async def generate_response(self, messages, **kwargs):
+        self.calls += 1
+        return {"answer": f"provider-secret-{self.calls}"}
+
+
 @pytest.mark.asyncio
 async def test_request_observer_records_complete_digest_identity_without_raw_prompt() -> None:
     delegate = _Delegate()
@@ -629,10 +641,73 @@ async def test_request_observer_records_complete_digest_identity_without_raw_pro
     assert row["phase"] == "OLD" and row["source_sequence"] == 2
     assert row["ordinal"] == 0
     assert len(row["request_identity"]) == 64
+    assert len(row["response_digest"]) == 64
     assert set(row["field_digests"]) >= {"messages", "response_model", "kwargs", "model_epoch"}
     encoded = json.dumps(row, sort_keys=True)
     assert "private episode body" not in encoded
     assert "must-not-be-recorded" not in encoded
+    assert "answer" not in encoded
+
+
+@pytest.mark.asyncio
+async def test_request_observer_failed_request_has_no_response_digest() -> None:
+    records: list[dict] = []
+    client = RequestObservationClient(
+        _FailingDelegate(),
+        sink=records.append,
+        model_epoch="qwen3-8b@local-v1",
+    )
+    with observer_capture_scope(phase="OLD", source_sequence=0, state_version=0):
+        with pytest.raises(RuntimeError, match="provider failed"):
+            await client.generate_response([], prompt_name="dedupe_nodes.nodes")
+
+    assert len(records) == 1
+    assert records[0]["status"] == "FAILED"
+    assert records[0]["response_digest"] is None
+
+
+@pytest.mark.asyncio
+async def test_request_observer_single_call_branch_oracle_replays_old_logical_response() -> None:
+    records: list[dict] = []
+    delegate = _SequencedDelegate()
+    client = RequestObservationClient(
+        delegate,
+        sink=records.append,
+        model_epoch="qwen3-8b@local-v1",
+        single_call_branch_oracle=True,
+    )
+    messages = [{"role": "user", "content": "same logical request"}]
+    with observer_capture_scope(phase="OLD", source_sequence=3, state_version=2):
+        old = await client.generate_response(messages, prompt_name="dedupe_nodes.nodes")
+    with observer_capture_scope(phase="FRESH_NATIVE", source_sequence=3, state_version=3):
+        fresh = await client.generate_response(messages, prompt_name="dedupe_nodes.nodes")
+
+    assert delegate.calls == 2  # second transport is retained for baseline timing
+    assert old == fresh == {"answer": "provider-secret-1"}
+    assert records[0]["response_binding"] == "PROVIDER_SINGLE_CALL"
+    assert records[1]["response_binding"] == "OLD_SINGLE_CALL_REPLAY"
+    assert records[1]["response_digest"] == records[0]["response_digest"]
+    assert records[1]["transport_response_digest"] != records[1]["response_digest"]
+    encoded = json.dumps(records, sort_keys=True)
+    assert "provider-secret" not in encoded
+
+
+@pytest.mark.asyncio
+async def test_request_observer_branch_oracle_does_not_replay_changed_request() -> None:
+    records: list[dict] = []
+    client = RequestObservationClient(
+        _SequencedDelegate(),
+        sink=records.append,
+        model_epoch="qwen3-8b@local-v1",
+        single_call_branch_oracle=True,
+    )
+    with observer_capture_scope(phase="OLD", source_sequence=3, state_version=2):
+        await client.generate_response([{"role": "user", "content": "old"}], prompt_name="dedupe_nodes.nodes")
+    with observer_capture_scope(phase="FRESH_NATIVE", source_sequence=3, state_version=3):
+        fresh = await client.generate_response([{"role": "user", "content": "changed"}], prompt_name="dedupe_nodes.nodes")
+
+    assert fresh == {"answer": "provider-secret-2"}
+    assert records[1]["response_binding"] == "PROVIDER_SINGLE_CALL"
 
 
 @pytest.mark.asyncio
@@ -1515,6 +1590,57 @@ def test_semantic_cost_dag_requires_pinned_phase_chain_and_binds_read_fork_join(
     unknown = build_semantic_cost_dag(broken)
     assert unknown["status"] == "UNKNOWN"
     assert unknown["reason"] == "required semantic phase is missing or ambiguous"
+
+
+def test_semantic_cost_dag_handles_overlapping_read_observer_overhead() -> None:
+    build = _build("OLD")
+    build.update({"start_ns": 0, "end_ns": 100, "duration_ns": 100})
+    build["reads"] = [
+        {
+            "operator": "node_cosine",
+            "occurrence": index,
+            "observer_start_ns": 20 + index,
+            "native_start_ns": 22 + index,
+            "native_end_ns": 58,
+            "observer_end_ns": 90 + index,
+        }
+        for index in range(9)
+    ]
+    build["trace"] = [
+        {
+            "span_id": "root",
+            "parent_span_id": None,
+            "phase": "build-to-seam",
+            "start_ns": 0,
+            "end_ns": 100,
+            "duration_ns": 100,
+            "status": "ok",
+        },
+        *[
+            {
+                "span_id": f"phase-{index}",
+                "parent_span_id": "root",
+                "phase": phase,
+                "start_ns": start,
+                "end_ns": end,
+                "duration_ns": end - start,
+                "status": "ok",
+            }
+            for index, (phase, start, end) in enumerate(
+                (
+                    ("previous-context", 0, 5),
+                    ("node-extraction", 5, 20),
+                    ("node-resolution", 20, 60),
+                    ("edge-extraction", 60, 75),
+                    ("edge-resolution", 75, 85),
+                    ("attributes-summary", 85, 95),
+                )
+            )
+        ],
+    ]
+    dag = build_semantic_cost_dag(build)
+    assert dag["status"] == "COMPLETE"
+    assert next(node for node in dag["nodes"] if node["node_id"] == "node-resolution-shell")["cost_ns"] == 4
 
 
 @pytest.mark.asyncio

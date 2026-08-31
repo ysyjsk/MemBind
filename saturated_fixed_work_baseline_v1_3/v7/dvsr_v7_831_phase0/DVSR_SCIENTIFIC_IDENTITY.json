@@ -1,0 +1,75 @@
+{
+  "algorithm_identity": "DVSR_OPERATOR_NEUTRAL_OBSERVER_V1",
+  "certificate_contract": {
+    "canonical_request_fields": [
+      "model",
+      "schema",
+      "flags",
+      "order",
+      "messages"
+    ],
+    "false_valid_target": 0,
+    "levels": [
+      "C0 fresh oracle",
+      "C1 semantic read certificate",
+      "C2 exact reconvergence"
+    ],
+    "unknown_policy": "fail_closed"
+  },
+  "frozen_data_roles": {
+    "compatibility_quarantine": [
+      "c6853660"
+    ],
+    "development_exposed": [
+      "07741c45",
+      "b6019101",
+      "6071bd76",
+      "a2f3aa27"
+    ],
+    "held_out_access": "forbidden until method, thresholds, lambda, admission, statistics, and stopping rules are frozen",
+    "held_out_evaluation": [
+      "b01defab",
+      "0f05491a",
+      "6aeb4375",
+      "06db6396",
+      "89941a94",
+      "c4ea545c",
+      "ce6d2d27",
+      "08e075c7"
+    ]
+  },
+  "identity_manifest_sha256": "2090ba00d245ab4f51b39d9d074edaa4540fb4a42f5e63394d4b27b0f01c638f",
+  "non_authorizations": [
+    "no DVSR live reuse",
+    "no B1 execution",
+    "no old V7-FRESH oracle",
+    "no V6 Core modification",
+    "no held-out method-specific outcome inspection",
+    "no rerun of sealed B0 or sealed V6 characterization"
+  ],
+  "operator_cuts": {
+    "CUT-D": "prepared extraction -> Node -> Edge -> Summary/Hydration -> publication seam (nested CUT-N)",
+    "CUT-E": "Edge direct reuse (deferred extension)",
+    "CUT-N": "prepared extraction -> Node Resolution",
+    "typed_attributes": "excluded from first selection because sealed V6 call count is zero"
+  },
+  "schema_version": "membind.dvsr.scientific-identity.v1",
+  "semantic_root": {
+    "claim": "DVSR preserves Frozen V6 logical inputs, state evolution, and ordered durable publication; Native-equivalence to B0 is not claimed by this identity",
+    "fallback": "fresh_resolve_on_current_authoritative_state",
+    "future_stateful_cap": 1,
+    "graphiti_version": "0.29.3",
+    "horizon": 1,
+    "method": "Frozen V6",
+    "profile_id": "local-qwen3-8b-awq-dualreplica-v1",
+    "publication": "ordered_authoritative",
+    "speculation_writes": 0,
+    "v6_artifact_seals": [
+      "85f61823945e35d4855e3c985be6588ffdfba15184f43387394bd20f63fc9fea",
+      "16d9e376a7383657c2b1a32d3910a3f67e7c7c4b72736b5dbfa7b0250b14d371",
+      "1facb6854a9cf45a53dcce96fe8be74a1170a02dc7e87bded7c41188aae703c8"
+    ],
+    "validation": "fail_closed"
+  },
+  "status": "SEALED_PHASE_0_IDENTITY_LIVE_TREATMENT_UNAUTHORIZED"
+}
