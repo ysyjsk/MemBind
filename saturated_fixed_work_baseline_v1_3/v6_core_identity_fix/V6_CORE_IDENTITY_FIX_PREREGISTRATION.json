@@ -1,0 +1,125 @@
+{
+  "schema_version": "membind.v6.core-identity-fix-preregistration.v1",
+  "input_identity": {
+    "public_base_commit": "37871aae8193d994a1642605e3a705712dd786e1",
+    "b1r2_prereg_commit": "5031f10dcd37df1f6f199ee1125e1fae1760d580",
+    "b1r2_result_commit": "a1aee32cc76e6c60a39c3aa28451a3241a6f9e63",
+    "input_commit": "74e8b3675476f9058718dee23e49fbe04e82e595",
+    "input_commit_parent": "a1aee32cc76e6c60a39c3aa28451a3241a6f9e63",
+    "branch": "dmsv-b1r2-structural-closure",
+    "remote_head": "37871aae8193d994a1642605e3a705712dd786e1",
+    "remote_identity_status": "VERIFIED",
+    "graphiti_version": "0.29.3",
+    "profile_id": "local-qwen3-8b-awq-dualreplica-v1",
+    "method_identity": "v6-membind-core-v1",
+    "implementation_revision": "context-integrity-fix-v1"
+  },
+  "eligible_headline_artifacts": {
+    "method": "MEMBIND_CORE",
+    "core_version": "v6-membind-core-v1",
+    "construction_status": "CONSTRUCTION_SEALED",
+    "completion_contract": "expected=submitted=completed",
+    "entry": "Frozen MemBind-Core headline only",
+    "exclude": [
+      "V6_1 autoresearch candidates",
+      "ablation or extension arms",
+      "V7 observer or diagnostic runs",
+      "failed or incomplete blocks",
+      "B0/B1 baselines"
+    ]
+  },
+  "dynamic_effect_fields": [
+    "CERTIFIED_CONTEXT_SELECTION",
+    "previous_context_chars_removed",
+    "previous_context_block_count",
+    "retained_previous_episode_count",
+    "prompt_name",
+    "region",
+    "source_sequence"
+  ],
+  "classification": {
+    "NOOP": "Every expected certified extraction call has an event, all removed chars are zero, and block count/body indicates no removal.",
+    "NONEMPTY_REMOVAL": "At least one eligible event has previous_context_chars_removed > 0.",
+    "MISSING": "Any eligible sealed block lacks a decision field or completion binding; missing events cannot be treated as NOOP."
+  },
+  "previous_window_equivalence": [
+    "membership",
+    "order",
+    "content_projection",
+    "valid_at/reference_time",
+    "group_id/source_filter",
+    "last_n",
+    "tie_behavior",
+    "prompt_serialization"
+  ],
+  "equivalence_status_values": [
+    "SAME_LOGICAL_REQUEST_PROVEN",
+    "NOT_EQUIVALENT",
+    "UNKNOWN_MISSING_BINDING",
+    "NOT_INVOKED_IN_WORKLOAD"
+  ],
+  "repair_branches": {
+    "BRANCH_A_NOOP": "All eligible headline blocks are NOOP; remove the strip from Core, preserve historical helper, and retain old headline usability.",
+    "BRANCH_B_RECONSTRUCTABLE": "NONEMPTY_REMOVAL exists but Native-equivalent previous window is proven; remove strip, require exact request before replay, and minimally requalify Core.",
+    "BRANCH_C_NOT_RECONSTRUCTABLE": "NONEMPTY_REMOVAL exists and equivalence is NOT_EQUIVALENT or UNKNOWN; remove strip, narrow Core certified callsites, and fresh-fallback unprovable calls.",
+    "BRANCH_MISSING_OLD_EFFECT": "Old dynamic fields are missing; do not reuse old timing-only headline and select B/C from provider-free binding evidence."
+  },
+  "qualification": {
+    "required": [
+      "Core transform is None",
+      "same-logical-request comparison precedes replay",
+      "exact request consumes one captured response",
+      "mismatch or unknown falls back fresh",
+      "no pre-publication DB write",
+      "source-order durable publication",
+      "work-reduction extensions disabled",
+      "Core identity includes implementation_revision"
+    ],
+    "allowed_status": [
+      "V6_IDENTITY_QUALIFIED",
+      "V6_IDENTITY_FIX_FAILED",
+      "V6_IDENTITY_FIX_BLOCKED_ENVIRONMENT"
+    ],
+    "no_b0_rerun": true
+  },
+  "two_source_probe": {
+    "authorized_after": "V6_IDENTITY_QUALIFIED",
+    "history_scope": "one non-held-out development history",
+    "sources": [0, 1],
+    "mode": "semantic observer only; no reuse",
+    "requirements": [
+      "same PreparedArtifact",
+      "same source and model/config/template/schema/index epoch",
+      "ordered publication",
+      "no speculative publication",
+      "record old/new state, previous window, Node request, and CP accounting"
+    ],
+    "allowed_status": [
+      "PROBE_INVALID",
+      "PROBE_VALID_POSITIVE_SIGNAL",
+      "PROBE_VALID_ZERO_SIGNAL_SINGLE_PAIR",
+      "STARTED_NOT_COMPLETED"
+    ],
+    "six_source_authorization": "Only a valid probe without structural proof of zero may authorize a future 6-source run; do not execute it in this round."
+  },
+  "forbidden_actions": [
+    "provider calls before preregistration and qualification",
+    "Neo4j writes before observer publication seam",
+    "B0 rerun",
+    "B1 scheduler/lane/quota search",
+    "DMSV theorem or new methodology gate",
+    "B1R3/B1R4",
+    "6-source expansion",
+    "held-out access",
+    "modifying old sealed artifacts",
+    "editing or committing prompt.md",
+    "push",
+    "stopping shared services"
+  ],
+  "wall_clock": {
+    "maximum_hours": 5,
+    "no_new_experiment_after_hours": 4.5,
+    "remaining_action": "seal artifacts, report, and stop only this round"
+  },
+  "result_commit_message": "seal Frozen V6 context identity fix and 2-source V7 probe"
+}

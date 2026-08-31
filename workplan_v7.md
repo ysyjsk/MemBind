@@ -3570,3 +3570,32 @@ The preregistration commit must precede every result artifact. A second local
 result commit seals the final vector state and report. The run stops at B1R2/B5
 regardless of outcome; no B2/B3 or live authorization can be inferred from a
 dirty witness.
+
+## 51. Frozen V6 Identity Fix and Experiment Resumption
+
+This append-only section authorizes one bounded identity correction followed by a
+single two-source V7 semantic observer. The intended Frozen V6 method identity
+remains `v6-membind-core-v1`: timing-only dependency-aware prepare/execution
+overlap, exact replay of the same logical request, and source-order authoritative
+publication. Earlier V6.1 code inherited `strip_certified_previous_context` from
+the historical extension path; this run first classifies its dynamic effect in
+eligible sealed headline artifacts as `NOOP`, `NONEMPTY_REMOVAL`, or `MISSING`.
+
+Before that scan, a content-hashed preregistration freezes the eligible-artifact
+definition, provider-free previous-window equality fields, repair branches
+`BRANCH_A_NOOP`, `BRANCH_B_RECONSTRUCTABLE`, `BRANCH_C_NOT_RECONSTRUCTABLE`, and
+`BRANCH_MISSING_OLD_EFFECT`, plus the corrected-V6 qualification and one
+non-held-out two-source observer. The pre-fix semantic-root history is retained;
+the post-fix Core identity adds only
+`implementation_revision=context-integrity-fix-v1`.
+
+On the Core path, `certified_message_transform=None`, same-logical-request
+identity is mandatory, unknown or mismatched previous-window bindings fall back to
+fresh Native execution, and `work_reduction_extensions_enabled=False` is enforced
+at runtime. Historical V6.1/extension paths may continue to expose the old helper
+when explicitly labeled context-elided; sealed historical artifacts are not
+rewritten. Qualification must pass before the observer starts. The observer uses
+the same prepared artifact, source, model/config/template/schema/index epoch,
+ordered publication, and no speculative database write; it records opportunities
+only and does not execute reuse. No B0 rerun, 6-source expansion, new theorem,
+Gate, treatment, or methodology closure is authorized in this run.
