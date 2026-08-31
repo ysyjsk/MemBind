@@ -3411,3 +3411,72 @@ Provider-free DMSV TDD 为 `3 passed`，纳入 DMSV 与全部 corrective contrac
 Phase 3A/3B、Top-K maintainer、scheduler search、held-out access 或 full
 evaluation。任何未来重开必须新建 algorithm identity，并先证明一个合法的
 timely BaseView 路径及完整 dominant request 的 exact preservation/localization。
+
+## 49. DMSV B1 closure repair — 2026-08-31 (append-only correction)
+
+本节纠正 `58a925f` 之前报告中的 provenance、diff-check 与因果结论边界；不
+修改或重写任何历史 sealed artifact。输入 revision 固定为
+`58a925f372db1a095c9e90b969ad74d101c4e96a`，parent 为
+`f91a0500beb87d5013644442e135e6d3afb4507c`，Graphiti 为 `0.29.3`。
+
+### 49.1 Provenance and integrity correction
+
+`f91a050..58a925f` 实际包含 32 个文件、3075 insertions 与 62 deletions；
+逐文件分类必须写入 `DMSV_COMMIT_SCOPE_AUDIT.json`，不得沿用旧报告的“9 个
+主要文件”摘要。对输入 commit 执行 `git show --check` 得到 FAIL，原因是旧
+`DMSV_PHASE2B_REPORT_20260831.md` 第 3、4 行 trailing whitespace。因此旧
+结论只能记为 `prior_commit_diff_check=FAIL`，不能 retroactively 改写旧报告。
+
+workplan hash 必须拆分为：
+`stage_a_input_workplan_sha256`、`stage_a_frozen_workplan_sha256`、
+`post_b4_append_workplan_sha256` 与 `correction_workplan_sha256`；旧报告中
+无法由当前 checkout 重现的 `7fc39e6d...` 记为
+`OLD_FROZEN_WORKPLAN_HASH_UNREPRODUCIBLE`。
+
+### 49.2 Dominant-request causal vocabulary
+
+provider-free synthetic mutation 只能证明：
+
+`Sensitivity = field mutation changes canonical request`。
+
+真实相邻 authoritative states 才能证明：
+
+`Inevitability = the field changes in an actual adjacent state pair`。
+
+只有再证明原生 `dedupe_nodes.nodes` batch boundary 没有合法 localization，
+才能声称：
+
+`Unavoidability = inevitable field change + no native localization seam`。
+
+已有 delta matrix 保留为 sensitivity evidence。真实 observer pair 若缺少
+`reference_time`、`group_id/source/last_n`、完整 `request_binding_digest`、
+config/schema/index epoch 或 decoding contract，必须输出
+`REAL_PAIR_WITNESS_MISSING_FIELD`，并将最终状态保持为
+`BLOCKED_DOMINANT_REQUEST_INEVITABILITY_UNPROVEN`；不得升级为
+`DMSV_NATIVE_NODE_NULL_DOMINANT_CALL_ALWAYS_DIRTY`。
+
+### 49.3 Repair execution order and stop state
+
+先写入并 hash `DMSV_B1_CLOSURE_REPAIR_PREREGISTRATION.json`，再执行 R3
+provider-free tests。R3 只允许使用 Graphiti 0.29.3 的真实 retrieval/prompt
+assembly、冻结 development observer 的 digest-only membership/order/request
+证据和可从固定 workload 合法恢复的字段；禁止用手工覆盖
+`previous_episodes` 冒充 causal witness。R5 必须在 parent/current clean
+checkout 中复现完整测试历史并逐项归类
+`PREEXISTING_FAILURE`、`COMMIT_INDUCED_SOURCE_HASH_DRIFT`、
+`ENVIRONMENT_DEPENDENT` 或 `UNRESOLVED`。
+
+本轮新增文件均为 append-only correction artifacts：
+`DMSV_B1_CLOSURE_REPAIR_PREREGISTRATION.json`、
+`DMSV_COMMIT_SCOPE_AUDIT.json`、`DMSV_DOMINANT_REQUEST_CAUSAL_WITNESSES.jsonl`、
+`DMSV_ADJACENT_STATE_REQUEST_CAUSAL_PROOF.md`、`DMSV_PHASE2B_CORRECTION.json`、
+`DMSV_PHASE2B_CORRECTION_20260831.md`、`DMSV_B1_CLOSURE_REPAIR_LEDGER.jsonl`
+和 `tests/test_dmsv_b1_closure_repair.py`。不得修改
+`DMSV_PHASE2B_REPORT_20260831.md`、`DMSV_B1_CLOSURE.json`、
+`DMSV_DOMINANT_REQUEST_DELTA_MATRIX.json` 或旧 ledger。
+
+固定终态约束：`MAIN_TRACK_CANDIDATE=false`、`B2_AUTHORIZED=false`、
+`B3_AUTHORIZED=false`、`PHASE3A_AUTHORIZED=false`、`LIVE_AUTHORIZED=false`。
+只有 complete real-pair witness、Graphiti actual chain、native boundary
+localization 证据与 identity/environment closure 全部通过，才可在未来新
+identity 下重新评估；本轮在 correction B4 后停止，不启动 provider/live。

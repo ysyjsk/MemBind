@@ -1,0 +1,53 @@
+{
+  "schema_version": "membind.dmsv.phase2b-correction.v1",
+  "status": "SEALED_APPEND_ONLY_CORRECTION",
+  "date": "2026-08-31",
+  "input_commit": "58a925f372db1a095c9e90b969ad74d101c4e96a",
+  "parent_commit": "f91a0500beb87d5013644442e135e6d3afb4507c",
+  "graphiti_version": "0.29.3",
+  "workplan_hashes": {
+    "stage_a_input_workplan_sha256": "049d27250ce83343037cf25bbb8d5556742c554ca4ea5ab2d6f33e3f192891e0",
+    "stage_a_frozen_workplan_sha256": "7bc6a1b5e72f63deb4f266c447212991946255624f302febc5c0a1ea5a51603a",
+    "post_b4_append_workplan_sha256": "c322ed6ff2908296578e7146166d622197ce13f688376f8c1ef1803306e128e2",
+    "correction_workplan_sha256": "c322ed6ff2908296578e7146166d622197ce13f688376f8c1ef1803306e128e2",
+    "old_report_hash_status": "OLD_FROZEN_WORKPLAN_HASH_UNREPRODUCIBLE"
+  },
+  "integrity_correction": {
+    "prior_commit_diff_check": "FAIL",
+    "prior_commit_diff_check_reason": "trailing_whitespace_in_DMSV_PHASE2B_REPORT_20260831_lines_3_4",
+    "actual_commit_scope": {"files_changed": 32, "insertions": 3075, "deletions": 62},
+    "scope_audit_artifact": "DMSV_COMMIT_SCOPE_AUDIT.json"
+  },
+  "r3": {
+    "preregistration_sha256": "5044d7c6dd0651fdc9043692060536f93bd28facc1fff1d95102a956922499b3",
+    "preregistration_written_before_tests": true,
+    "provider_calls": 0,
+    "database_writes": 0,
+    "held_out_histories_accessed": false,
+    "real_pair_witness_artifact": "DMSV_DOMINANT_REQUEST_CAUSAL_WITNESSES.jsonl",
+    "real_pair_status": "REAL_PAIR_WITNESS_MISSING_FIELD",
+    "sensitivity_status": "PROVIDER_FREE_SYNTHETIC_ONLY",
+    "final_state": "BLOCKED_DOMINANT_REQUEST_INEVITABILITY_UNPROVEN"
+  },
+  "r5_clean_paired_attribution": {
+    "method": "git archive parent/current into independent temporary checkouts; copy only pinned Graphiti source files inside each checkout; run targeted source-binding test set",
+    "parent": {"commit":"f91a0500beb87d5013644442e135e6d3afb4507c","targeted_tests":"25","passed":18,"failed":7,"failure_signature":"development source hash differs from freeze"},
+    "current": {"commit":"58a925f372db1a095c9e90b969ad74d101c4e96a","targeted_tests":"25","passed":18,"failed":7,"failure_signature":"development source hash differs from freeze"},
+    "binding_probe": {
+      "expected_graphiti_observer_sha256":"3214ba84efd2bd949aa1bd870bbd61390187525d384fa8c2d555c4149e8ef656",
+      "parent_actual_sha256":"56793070f0b9a916bbd5393a5e243b3ed28c45f6baead08b89942dbf30332540",
+      "current_actual_sha256":"d037b00e40929f8de9d7514baf1577847f3535a7e5d5ef672d30f41ba29936c7",
+      "classification":"PREEXISTING_FAILURE plus COMMIT_INDUCED_SOURCE_HASH_DRIFT"
+    },
+    "full_clean_archive_note": "A full archived-repository run cannot reproduce the historical 718/7 headline because ignored virtualenv and external fixture paths are not part of git; with pinned dependencies copied in, both parent/current full runs expose 13 environment/provenance failures. The seven source-binding failures are reproducible in the paired targeted set and are the only failures attributed to this correction.",
+    "historical_worktree_reference": "718 passed, 7 failed before correction artifacts; current worktree after adding five R3 tests is 723 passed, 7 failed"
+  },
+  "terminal_constraints": {
+    "MAIN_TRACK_CANDIDATE": false,
+    "B2_AUTHORIZED": false,
+    "B3_AUTHORIZED": false,
+    "PHASE3A_AUTHORIZED": false,
+    "LIVE_AUTHORIZED": false
+  },
+  "final_state": "BLOCKED_DOMINANT_REQUEST_INEVITABILITY_UNPROVEN"
+}
