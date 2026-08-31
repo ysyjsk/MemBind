@@ -1,0 +1,26 @@
+{
+  "schema_version": "membind.v7.two-source-probe-result.v1",
+  "run_id": "v6fix-v7probe-07741c45-2s-20260831-r1",
+  "history_id": "07741c45",
+  "source_count": 2,
+  "status": "PROBE_INVALID",
+  "observer_mode": "semantic observer only; no reuse",
+  "held_out_accessed": false,
+  "prepared_artifact_reused": false,
+  "authoritative_publication": "source 0 entered the isolated observer namespace before source 1 capture failed",
+  "speculative_publication": false,
+  "provider_live_calls": true,
+  "failure": {
+    "type": "json.decoder.JSONDecodeError",
+    "message_class": "provider response was truncated and could not be decoded as JSON",
+    "error_digest": "30d8d01042f01b503adff5abe4963c870d5415e276704d7b35fe18168950917b",
+    "phase": "source 1 OLD semantic-root capture",
+    "callsite": "extract_edges.edge",
+    "recovery": "no retry or second observer was started; no pair was admitted as evidence"
+  },
+  "pair_count": 0,
+  "opportunity_conclusion": "none; invalid probe cannot support positive, zero-signal, or NULL claims",
+  "six_source_authorized": false,
+  "output_root": "/data/predator/ly/Mem/experiments/local-qwen3-8b-awq-dualreplica-v1/v7_dvsr_phase3/v6fix-v7probe-07741c45-2s-20260831-r1",
+  "sealed_at": "2026-08-31"
+}

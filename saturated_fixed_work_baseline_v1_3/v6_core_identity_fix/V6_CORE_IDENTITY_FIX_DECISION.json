@@ -1,0 +1,116 @@
+{
+  "schema_version": "membind.v6.core-identity-fix-decision.v1",
+  "input_commit": "74e8b3675476f9058718dee23e49fbe04e82e595",
+  "preregistration_sha256": "62a110b12b1849b824f7859b82a3df03c1712939cb20817433e492e747ebe83f",
+  "workplan_sha256_after_append": "a8e10cadcab624dca7d3b860cee826db993735139419e3ba74e3bbdf5c3d933e",
+  "scan": {
+    "formal_definition": {
+      "method": "MEMBIND_CORE",
+      "core_version": "v6-membind-core-v1",
+      "construction": "CONSTRUCTION_SEALED",
+      "completion": "expected=submitted=completed",
+      "headline_entry": "Frozen MemBind-Core only"
+    },
+    "strict_eligible_block_count": 0,
+    "sealed_v6_blocks_excluded_identity_mismatch": 7,
+    "sealed_v6_1_blocks_excluded_identity_mismatch": 74,
+    "candidate_context_selection_files_with_certified_events": 50,
+    "candidate_context_selection_files_with_nonempty_removal": 50,
+    "formal_blocks": [],
+    "excluded_evidence": [
+      {
+        "class": "historical_V6",
+        "path": "saturated_fixed_work_baseline_v1_3/artifacts/mab-v1-3-live-firstpass-c0-recovery-methods-20260825-011/context-0/V6/e78d9a9be2e5/construction_seal.json",
+        "construction_seal_sha256": "85f61823945e35d4855e3c985be6588ffdfba15184f43387394bd20f63fc9fea",
+        "reason": "identity.method=V6; no core version or certified context-selection fields"
+      },
+      {
+        "class": "historical_V6_1_candidate_with_nonempty_removal",
+        "path": "external:Mem/experiments/local-qwen3-8b-awq-dualreplica-v1/v6_1_mab/phasec-p8-v44-edge-call-affinity-20260828-r58b/context-0/V6_1/3a57091fc357/block",
+        "construction_seal_sha256": "8f24c0c84f317c6930bc5abd529d16c33ce0d955e163301b88f0a2d750d765a5",
+        "context_selection_sha256": "cb37fdbd5993c1774e87c892f504ae84a6aa5d4dd5aea1ddc248fb0e6a446eab",
+        "certified_event_count": 32,
+        "total_previous_context_chars_removed": 1662480,
+        "max_previous_context_chars_removed": 96339,
+        "reason": "identity.method=V6_1 and no v6-membind-core-v1 identity; retained only as diagnostic evidence"
+      },
+      {
+        "class": "core_correction_attempt",
+        "path": "external:Mem/experiments/local-qwen3-8b-awq-dualreplica-v1/baseline-correction-core-prefix30/context-0/V6_1/a2631b77f1e2",
+        "campaign_manifest_sha256": "d0454e1a68e0d4bcba441861f046115785f0a392ad6d030a6758bde651b1678a",
+        "run_contract_sha256": "e550407ff7f4754ee9827b4c9f5d4d6202a838aa2be9b5f4fbeb1483f09d1567",
+        "reason": "campaign boundary MEMBIND_CORE but block has failure.json and no construction seal"
+      }
+    ],
+    "classification": "MISSING",
+    "missing_fields": [
+      "formal MEMBIND_CORE construction seal",
+      "core version v6-membind-core-v1 in sealed identity",
+      "CERTIFIED_CONTEXT_SELECTION on an eligible headline block",
+      "expected/submitted/completed binding on an eligible headline block"
+    ]
+  },
+  "previous_window_equivalence": {
+    "extract_nodes.extract_message": "UNKNOWN_MISSING_BINDING",
+    "extract_nodes.extract_text": "UNKNOWN_MISSING_BINDING",
+    "extract_nodes.extract_json": "UNKNOWN_MISSING_BINDING",
+    "extract_edges.edge": "UNKNOWN_MISSING_BINDING",
+    "fields_checked": [
+      "membership",
+      "order",
+      "content_projection",
+      "valid_at/reference_time",
+      "group_id/source_filter",
+      "last_n",
+      "tie_behavior",
+      "prompt_serialization"
+    ],
+    "provider_called": false,
+    "neo4j_written": false,
+    "reason": "sealed V6 blocks do not preserve the complete previous-window binding and the only MEMBIND_CORE correction attempt is unsealed"
+  },
+  "fix_branch": "BRANCH_MISSING_OLD_EFFECT",
+  "old_v6_dynamic_effect": "MISSING",
+  "old_v6_headline_status": "UNKNOWN_NOT_REUSABLE",
+  "implementation": {
+    "core_transform": null,
+    "historical_transform_preserved": true,
+    "core_certified_callsites": [
+      "extract_nodes.extract_message",
+      "extract_nodes.extract_text",
+      "extract_nodes.extract_json",
+      "extract_edges.edge"
+    ],
+    "core_binding_strict": false,
+    "fresh_fallback_on_mismatch_or_missing": true,
+    "context_removal_allowed": false,
+    "work_reduction_extensions_enabled": false,
+    "implementation_revision": "context-integrity-fix-v1",
+    "old_sealed_artifacts_modified": false
+  },
+  "qualification": {
+    "status": "V6_IDENTITY_QUALIFIED",
+    "mode": "provider-free targeted TDD",
+    "tests": [
+      "test_core_identity_is_explicit_and_work_reduction_is_disabled",
+      "test_non_strict_core_binding_mismatch_falls_back_fresh_without_consuming",
+      "test_core_runner_wires_no_transform_and_non_strict_binding",
+      "test_v61_mab_provider_free_composition_uses_one_arbiter_and_seals"
+    ],
+    "result": {
+      "passed": 9,
+      "failed": 0,
+      "context_removed_chars": 0,
+      "provider_live_calls": false,
+      "pre_publication_db_write": false,
+      "ordered_publication": "covered by existing composition qualification"
+    }
+  },
+  "two_source_probe_authorization": {
+    "authorized": true,
+    "history": "07741c45",
+    "source_count": 2,
+    "held_out_accessed": false,
+    "mode": "observer-only; no reuse"
+  }
+}

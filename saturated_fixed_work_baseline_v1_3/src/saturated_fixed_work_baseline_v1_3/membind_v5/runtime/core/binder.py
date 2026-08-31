@@ -81,6 +81,11 @@ class NativeBindingScope(AbstractContextManager["NativeBindingScope"]):
             except BindingMismatch:
                 if self.strict:
                     raise
+                # Core preserves the full Native request.  If the request is
+                # different (or no transcript is bound), discard only the
+                # unconsumed candidate for this callsite/ordinal and execute
+                # the authoritative delegate exactly once.
+                self.store.discard_for(identity)
         return await delegate()
 
 

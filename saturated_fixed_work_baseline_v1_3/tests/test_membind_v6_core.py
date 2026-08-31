@@ -6,7 +6,9 @@ import pytest
 
 from saturated_fixed_work_baseline_v1_3.membind_v6_1.core import (
     MEMBIND_CORE_BOUNDARY,
+    MEMBIND_CORE_CERTIFIED_CALLSITES,
     MEMBIND_CORE_EXECUTION_STRATEGY,
+    MEMBIND_CORE_IMPLEMENTATION_REVISION,
     MEMBIND_CORE_ROUTE_POLICY,
     MEMBIND_CORE_STATE_CONTRACT,
     MEMBIND_CORE_VERSION,
@@ -22,8 +24,10 @@ from saturated_fixed_work_baseline_v1_3.membind_v6_1.policy import V61Policy
 
 def test_core_identity_is_explicit_and_work_reduction_is_disabled() -> None:
     identity = core_identity()
+    assert MEMBIND_CORE_CERTIFIED_CALLSITES
     assert identity == {
         "version": MEMBIND_CORE_VERSION,
+        "implementation_revision": MEMBIND_CORE_IMPLEMENTATION_REVISION,
         "boundary": MEMBIND_CORE_BOUNDARY,
         "execution_strategy": MEMBIND_CORE_EXECUTION_STRATEGY,
         "state_contract": MEMBIND_CORE_STATE_CONTRACT,
@@ -36,6 +40,10 @@ def test_core_identity_is_explicit_and_work_reduction_is_disabled() -> None:
             "ordered_authoritative_publication",
         ],
         "work_reduction_extensions_enabled": False,
+        "context_removal_allowed": False,
+        "certified_message_transform": None,
+        "same_logical_request_required": True,
+        "fresh_fallback_on_binding_mismatch": True,
         "adaptive_scheduler_enabled": False,
         "bootstrap_future_borrow_enabled": False,
     }

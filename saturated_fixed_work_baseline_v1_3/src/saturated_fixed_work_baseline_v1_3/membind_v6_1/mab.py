@@ -38,6 +38,7 @@ from ..membind_v5.runtime.core.provider_admission import (
     provider_scope,
 )
 from ..membind_v5.runtime.core.transcript import TranscriptStore
+from ..membind_v5.runtime.adapters.client_proxy import CERTIFIED_CALLSITES
 from ..membind_v6.proof import (
     validate_replay_accounting,
     validate_request_comparisons,
@@ -66,6 +67,26 @@ from .runtime import close_local_u0_runtime, local_prompt_token_count
 
 class V61MABError(MABLiveRunnerError):
     pass
+
+
+_DEFAULT_CERTIFIED_MESSAGE_TRANSFORM = object()
+
+
+def _assert_core_context_integrity(
+    artifact_method: str, inventory: Mapping[str, Any]
+) -> None:
+    """Fail a Core construction that reports any previous-context removal."""
+
+    if artifact_method != "MEMBIND_CORE":
+        return
+    removed = int(inventory.get("certified_previous_context_chars_removed", 0) or 0)
+    removed += int(
+        inventory.get("incremental_summary_previous_context_chars_removed", 0) or 0
+    )
+    if removed > 0:
+        raise V61MABError(
+            "MemBind-Core context integrity violation: non-empty previous context removal"
+        )
 
 
 _SHADOW_SOURCE: contextvars.ContextVar[int | None] = contextvars.ContextVar(
@@ -320,6 +341,10 @@ async def run_mab_v61_construction_async(
     execution_strategy: str = STAGED_EXECUTION_STRATEGY,
     method_boundary: str = "MEMBIND_CORE",
     artifact_method: str = "V6_1",
+    certified_callsites: frozenset[str] = CERTIFIED_CALLSITES,
+    certified_message_transform: Callable[..., Any] | None | object = _DEFAULT_CERTIFIED_MESSAGE_TRANSFORM,
+    binding_strict: bool = True,
+    implementation_revision: str | None = None,
 ) -> dict[str, Any]:
     selected = tuple(episode_from_input(item) for item in episodes)
     if not selected or [item.source_sequence for item in selected] != list(range(len(selected))):
@@ -334,6 +359,13 @@ async def run_mab_v61_construction_async(
         raise V61MABError(f"unknown V6.1 method boundary: {method_boundary}")
     if artifact_method not in {"V6_1", "MEMBIND_CORE"}:
         raise V61MABError(f"unknown V6.1 artifact method: {artifact_method}")
+    if not isinstance(certified_callsites, frozenset):
+        certified_callsites = frozenset(certified_callsites)
+    transform = (
+        strip_certified_previous_context
+        if certified_message_transform is _DEFAULT_CERTIFIED_MESSAGE_TRANSFORM
+        else certified_message_transform
+    )
     root = Path(output_root).resolve()
     if root.exists() and any(root.iterdir()):
         raise V61MABError("V6.1 block root is not fresh")
@@ -473,7 +505,8 @@ async def run_mab_v61_construction_async(
             durable_frontier=lambda: preparation_admission_frontier_ref["value"],
             client_identity=client_identity,
             token_counter=local_prompt_token_count,
-            certified_message_transform=strip_certified_previous_context,
+            certified_callsites=certified_callsites,
+            certified_message_transform=transform,
             native_message_transform=None,
             event_sink=provider_sink,
         )
@@ -485,7 +518,8 @@ async def run_mab_v61_construction_async(
             durable_frontier=lambda: preparation_admission_frontier_ref["value"],
             client_identity=client_identity,
             token_counter=local_prompt_token_count,
-            certified_message_transform=strip_certified_previous_context,
+            certified_callsites=certified_callsites,
+            certified_message_transform=transform,
             # Core must preserve Native's non-certified provider context and
             # work.  Incremental summary context is a work-changing extension.
             native_message_transform=(
@@ -592,7 +626,9 @@ async def run_mab_v61_construction_async(
             emit("NATIVE_ENTER", sequence)
             with recorder.episode_scope(run_id, episode.name, sequence):
                 with provider_scope(region="NATIVE", source_sequence=sequence):
-                    with NativeBindingScope(store, source_sequence=sequence):
+                    with NativeBindingScope(
+                        store, source_sequence=sequence, strict=bool(binding_strict)
+                    ):
                         result = await graphiti.add_episode(
                             **_mab_graphiti_kwargs(episode, namespace=namespace)
                         )
@@ -833,6 +869,7 @@ async def run_mab_v61_construction_async(
             "compatibility_expansion_attempts": transport_expansion_attempts,
             "expected_transport_attempts_from_provider": expected_transport_attempts,
         }
+        _assert_core_context_integrity(artifact_method, inventory)
         inventory["transport_attempts"] = observed_transport_attempts
         if observed_transport_attempts != expected_transport_attempts:
             raise V61MABError(
@@ -941,13 +978,18 @@ async def run_mab_v61_construction_async(
             environment=environment,
             preflight=preflight,
             identity={
-                "method": "V6_1",
+                "method": artifact_method,
                 "context_id": context_id,
                 "namespace": namespace,
                 "run_id": run_id,
                 "policy": policy.to_dict(),
                 "execution_strategy": execution.execution_strategy,
                 "method_boundary": method_boundary,
+                **(
+                    {"implementation_revision": implementation_revision}
+                    if implementation_revision is not None
+                    else {}
+                ),
             },
             result=result,
         )

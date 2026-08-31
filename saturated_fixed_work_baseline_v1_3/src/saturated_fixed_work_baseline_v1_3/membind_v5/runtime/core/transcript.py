@@ -146,6 +146,27 @@ class TranscriptStore:
         self._consumed += 1
         return item.copy_response()
 
+    def discard_for(self, identity: RequestIdentity) -> int:
+        """Drop an unconsumed candidate after fail-closed fresh fallback.
+
+        A non-strict Core binding must not consume a mismatched transcript, but
+        leaving it pending would make scope finalization report a false protocol
+        failure.  Discarding is explicitly accounted for and never removes a
+        consumed item.
+        """
+
+        keys = [
+            key
+            for key, item in self._items.items()
+            if not item.consumed
+            and item.identity.source_sequence == identity.source_sequence
+            and item.identity.callsite == identity.callsite
+            and item.identity.ordinal == identity.ordinal
+        ]
+        for key in keys:
+            del self._items[key]
+        return len(keys)
+
     def unconsumed(self) -> tuple[RequestIdentity, ...]:
         return tuple(item.identity for item in self._items.values() if not item.consumed)
 

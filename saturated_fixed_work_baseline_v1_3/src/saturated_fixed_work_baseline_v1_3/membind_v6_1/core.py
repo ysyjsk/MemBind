@@ -13,6 +13,7 @@ from __future__ import annotations
 from dataclasses import asdict
 from typing import Any, Callable, Mapping
 
+from ..membind_v5.runtime.adapters.client_proxy import CERTIFIED_CALLSITES
 from .executor import DUAL_STREAMING_EXECUTION_STRATEGY
 from .mab import run_mab_v61_construction_async
 from .policy import V61Policy
@@ -30,6 +31,10 @@ MEMBIND_CORE_STATE_CONTRACT = "B0_SERIAL_STATEFUL_ORDERED_PUBLICATION"
 MEMBIND_CORE_ROUTE_POLICY = "semantic_phase_elastic_affinity"
 MEMBIND_CORE_CANDIDATE = "r63b-work-conserving-edge-admission"
 MEMBIND_CORE_POLICY = V61Policy(lookahead=2, future_cap=1, native_future_quota=0)
+# Core preserves the complete Native request. Exact identity validation decides
+# reuse; a mismatch is delegated to a fresh Native call by the Core binding.
+MEMBIND_CORE_CERTIFIED_CALLSITES = CERTIFIED_CALLSITES
+MEMBIND_CORE_IMPLEMENTATION_REVISION = "context-integrity-fix-v1"
 
 
 class MemBindCoreConfigurationError(ValueError):
@@ -57,6 +62,7 @@ def core_identity() -> dict[str, Any]:
 
     return {
         "version": MEMBIND_CORE_VERSION,
+        "implementation_revision": MEMBIND_CORE_IMPLEMENTATION_REVISION,
         "boundary": MEMBIND_CORE_BOUNDARY,
         "execution_strategy": MEMBIND_CORE_EXECUTION_STRATEGY,
         "state_contract": MEMBIND_CORE_STATE_CONTRACT,
@@ -69,6 +75,10 @@ def core_identity() -> dict[str, Any]:
             "ordered_authoritative_publication",
         ],
         "work_reduction_extensions_enabled": False,
+        "context_removal_allowed": False,
+        "certified_message_transform": None,
+        "same_logical_request_required": True,
+        "fresh_fallback_on_binding_mismatch": True,
         "adaptive_scheduler_enabled": False,
         "bootstrap_future_borrow_enabled": False,
     }
@@ -178,6 +188,10 @@ async def run_membind_core_construction_async(
         execution_strategy=MEMBIND_CORE_EXECUTION_STRATEGY,
         method_boundary=MEMBIND_CORE_BOUNDARY,
         artifact_method="MEMBIND_CORE",
+        certified_callsites=MEMBIND_CORE_CERTIFIED_CALLSITES,
+        certified_message_transform=None,
+        binding_strict=False,
+        implementation_revision=MEMBIND_CORE_IMPLEMENTATION_REVISION,
         **kwargs,
     )
     result["method"] = "MEMBIND_CORE"
@@ -188,8 +202,10 @@ async def run_membind_core_construction_async(
 
 __all__ = [
     "MEMBIND_CORE_BOUNDARY",
+    "MEMBIND_CORE_CERTIFIED_CALLSITES",
     "MEMBIND_CORE_CANDIDATE",
     "MEMBIND_CORE_EXECUTION_STRATEGY",
+    "MEMBIND_CORE_IMPLEMENTATION_REVISION",
     "MEMBIND_CORE_POLICY",
     "MEMBIND_CORE_ROUTE_POLICY",
     "MEMBIND_CORE_STATE_CONTRACT",
