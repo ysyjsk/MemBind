@@ -3480,3 +3480,93 @@ checkout 中复现完整测试历史并逐项归类
 只有 complete real-pair witness、Graphiti actual chain、native boundary
 localization 证据与 identity/environment closure 全部通过，才可在未来新
 identity 下重新评估；本轮在 correction B4 后停止，不启动 provider/live。
+
+## 50. DMSV B1R2 Structural Closure — 2026-08-31 (current authoritative entry)
+
+This append-only section is the authoritative plan for the `DMSV B1R2 Structural
+Closure` run. It does not modify Sections 48 or 49, the Frozen V6 substrate, or
+any sealed Phase 2B evidence. The run answers only whether a completely bound
+real adjacent authoritative transition makes the native Graphiti
+`dedupe_nodes.nodes` request structurally dirty, and whether the unchanged
+native batch boundary offers a legal localization seam.
+
+### 50.1 Fixed identity and authorization
+
+- `input_commit=37871aae8193d994a1642605e3a705712dd786e1`,
+  `parent=58a925f372db1a095c9e90b969ad74d101c4e96a`;
+  `branch=dmsv-b1r2-structural-closure`; Graphiti=`0.29.3`;
+  profile=`local-qwen3-8b-awq-dualreplica-v1`.
+- The prior BaseView status remains `BV-NATIVE=FAIL`,
+  `BV-VERSIONED=UNKNOWN`, `BV-PERSISTENT=UNKNOWN`,
+  `base_view_verdict=BLOCKED`.
+- Fixed authorization flags are all false:
+  `MAIN_TRACK_CANDIDATE`, `B2_AUTHORIZED`, `B3_AUTHORIZED`,
+  `PHASE3A_AUTHORIZED`, `PHASE3B_AUTHORIZED`, `LIVE_AUTHORIZED`,
+  `HELD_OUT_AUTHORIZED`, `TOPK_MAINTAINER_AUTHORIZED`,
+  `SCHEDULER_SEARCH_AUTHORIZED`.
+
+### 50.2 Frozen claim lattice and state vector
+
+The five claim levels are immutable for this run:
+
+`L1 SENSITIVITY` -> controlled mutation changes canonical request;
+`L2 DIRTY_WITNESS_EXISTS` -> at least one fully bound eligible adjacent pair
+changes request;
+`L3 DIRTY_RATE_ESTIMATED` -> dirty fraction over preregistered development
+population;
+`L4 STRUCTURALLY_ALWAYS_DIRTY` -> theorem/exhaustive proof covers every eligible
+transition;
+`L5 NATIVE_CALL_UNAVOIDABLE` -> L4 plus no legal localization at the frozen
+native batch boundary.
+
+One pair cannot imply L4; request change cannot imply L5; Top-K or UUID equality
+cannot imply canonical request equality. The state vector is reported
+independently as:
+
+`PHASE2B_STATE=BLOCKED`;
+`BASE_VIEW_STATUS=BLOCKED_NO_PROVEN_PATH`;
+`NODE_REQUEST_STATUS=DIRTY_WITNESS_INCOMPLETE`;
+`NATIVE_LOCALIZATION_STATUS=UNPROVEN`;
+`ARTIFACT_PORTABILITY_STATUS=NON_SELF_CONTAINED`;
+`SEMANTIC_ROOT_STATUS=REQUIRES_SCOPE_AUDIT`.
+
+### 50.3 Eligible transition domain
+
+For predecessor `p=i` and future source `f=i+1`, a pair enters the structural
+domain only if E1--E13 all pass: same frozen history/order; identical prepared
+future extraction; `p` durably published in `S_(i+1)` but absent in `S_i`; `p`
+visible to retrieval; reference-time predicate passes; group/source selector
+passes; known `last_n>0`; no later-authoritative visibility; `dedupe_nodes.nodes`
+invoked in both executions; all model/config/schema/index/template/
+serialization/decoding epochs match; previous projection reconstructable;
+request binding complete; no unresolved valid_at tie or nondeterministic order.
+Each condition is `PASS`, `FAIL`, or `UNKNOWN`; any key `UNKNOWN` excludes the
+pair from L3/L4/L5.
+
+### 50.4 Semantic-root and structural audit
+
+The audit compares B0 Native, Frozen V6 no-reuse, and observed paths. It must
+determine whether `strip_certified_previous_context` changes only preparation
+inputs or also the `resolve_extracted_nodes` / `dedupe_nodes.nodes`
+`previous_episodes` closure. The request layers remain
+`V_rank -> V_prompt -> V_request -> ResponseArtifact -> Continuation`; UUID
+changes alone are not prompt changes. The theorem covers both non-full and full
+windows, selector/reference-time misses, ties, identical projections, omitted
+calls, epoch changes, and any V6 context removal. Unresolved cases stay
+`STATIC_THEOREM_UNKNOWN`.
+
+### 50.5 Self-contained evidence and stop rule
+
+All decision inputs must be content-addressed and repository-local, with no raw
+episode content, raw UUID, prompt, model output, API key, database credential,
+absolute machine path, or implicit external fixture. Convenience-mode missing
+artifacts may skip, but evidence-required mode must fail. The only permitted
+helpers are parsing, eligibility evaluation, canonical request comparison,
+truth-table evaluation, and privacy/provenance validation. No Top-K maintainer,
+batch split, prompt/schema rewrite, scheduler, provider call, DB write, or live
+reuse is allowed.
+
+The preregistration commit must precede every result artifact. A second local
+result commit seals the final vector state and report. The run stops at B1R2/B5
+regardless of outcome; no B2/B3 or live authorization can be inferred from a
+dirty witness.

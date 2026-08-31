@@ -1,0 +1,132 @@
+{
+  "schema_version": "membind.dmsv.b1r2.preregistration.v1",
+  "status": "FROZEN_BEFORE_EVIDENCE_EXTRACTION",
+  "date": "2026-08-31",
+  "input_commit": "37871aae8193d994a1642605e3a705712dd786e1",
+  "expected_parent": "58a925f372db1a095c9e90b969ad74d101c4e96a",
+  "branch": "dmsv-b1r2-structural-closure",
+  "graphiti": {"version": "0.29.3", "source_pin": "STATIC_CODE_FACT"},
+  "profile": "local-qwen3-8b-awq-dualreplica-v1",
+  "frozen_v6_identity": {
+    "version": "v6-membind-core-v1",
+    "boundary": "MEMBIND_CORE",
+    "state_contract": "B0_SERIAL_STATEFUL_ORDERED_PUBLICATION",
+    "lookahead": 2,
+    "future_cap": 1,
+    "native_future_quota": 0,
+    "source": "DERIVED_FROM_FROZEN_INPUT"
+  },
+  "workplan": {
+    "pre_append_sha256": "c322ed6ff2908296578e7146166d622197ce13f688376f8c1ef1803306e128e2",
+    "frozen_sha256": "0f354f8e1619f327ab364f2496ac532b25d67582c5674d3f1cabfd7c41b0f852",
+    "source": "DERIVED_FROM_FROZEN_INPUT"
+  },
+  "research_question": "Under Frozen V6 and the Graphiti 0.29.3 native dedupe_nodes.nodes batch boundary, do fully bound eligible adjacent authoritative transitions structurally dirty the dominant Node request, and is native-call-preserving localization possible?",
+  "claim_taxonomy": {
+    "L1_SENSITIVITY": "Controlled mutation changes canonical request.",
+    "L2_DIRTY_WITNESS_EXISTS": "At least one fully bound eligible adjacent pair changes request.",
+    "L3_DIRTY_RATE_ESTIMATED": "Dirty fraction over preregistered development population.",
+    "L4_STRUCTURALLY_ALWAYS_DIRTY": "Theorem or exhaustive proof covers every eligible transition.",
+    "L5_NATIVE_CALL_UNAVOIDABLE": "L4 plus no legal localization under frozen native batch boundary.",
+    "source": "STATIC_CODE_FACT"
+  },
+  "eligible_transition_domain": {
+    "predecessor": "p=i",
+    "future": "f=i+1",
+    "conditions": {
+      "E1": "same frozen history and source ordering",
+      "E2": "prepared future extraction identical across compared states",
+      "E3": "p durably published in S_(i+1) and absent in S_i",
+      "E4": "p visible to retrieve_episodes(f)",
+      "E5": "p satisfies reference_time predicate",
+      "E6": "p satisfies group_id/source selector",
+      "E7": "last_n known and greater than zero",
+      "E8": "no later-authoritative episode illegally visible",
+      "E9": "dedupe_nodes.nodes invoked in both executions",
+      "E10": "model/config/schema/index/template/serialization/decoding epochs match",
+      "E11": "previous-episode prompt projection reconstructable",
+      "E12": "request binding complete",
+      "E13": "no unresolved valid_at tie or nondeterministic ordering"
+    },
+    "value_domain": ["PASS", "FAIL", "UNKNOWN"],
+    "unknown_policy": "Any key UNKNOWN excludes the pair from L3/L4/L5.",
+    "source": "STATIC_CODE_FACT"
+  },
+  "semantic_layers": [
+    "V_rank",
+    "V_prompt",
+    "V_request",
+    "ResponseArtifact",
+    "Continuation"
+  ],
+  "field_provenance_rules": {
+    "allowed": ["OBSERVED", "DERIVED_FROM_FROZEN_INPUT", "STATIC_CODE_FACT"],
+    "non_passing": ["ASSUMED", "MISSING"],
+    "uuid_policy": "Replace external episode UUIDs with stable opaque digests in decision artifacts.",
+    "path_policy": "No absolute machine paths in self-contained evidence; external source references use basename, content SHA-256 and schema/version.",
+    "raw_data_policy": "No raw episode content, raw prompts, raw model outputs, API keys or database credentials."
+  },
+  "decision_truth_table": {
+    "identity_failure": "BLOCKED_EVIDENCE_IDENTITY",
+    "prereg_not_independently_sealed": "BLOCKED_PREREG_NOT_INDEPENDENTLY_SEALED",
+    "artifact_not_self_contained": "BLOCKED_ARTIFACT_NOT_SELF_CONTAINED",
+    "structural_fields_incomplete": "BLOCKED_STRUCTURAL_CLOSURE_INCOMPLETE",
+    "complete_stable_eligible_pair": "DMSV_NATIVE_NODE_ALWAYS_DIRTY_FALSIFIED",
+    "all_eligible_dirty_and_native_localizable": "DMSV_NATIVE_NODE_DIRTY_BUT_LOCALIZABLE",
+    "all_eligible_dirty_and_not_native_localizable": "DMSV_NATIVE_NODE_NULL_DOMINANT_CALL_STRUCTURALLY_DIRTY"
+  },
+  "fixed_state_vector": {
+    "PHASE2B_STATE": "BLOCKED",
+    "BASE_VIEW_STATUS": "BLOCKED_NO_PROVEN_PATH",
+    "NODE_REQUEST_STATUS": "DIRTY_WITNESS_INCOMPLETE",
+    "NATIVE_LOCALIZATION_STATUS": "UNPROVEN",
+    "ARTIFACT_PORTABILITY_STATUS": "NON_SELF_CONTAINED",
+    "SEMANTIC_ROOT_STATUS": "REQUIRES_SCOPE_AUDIT"
+  },
+  "forbidden_actions": [
+    "provider call",
+    "authoritative database write",
+    "held-out history access",
+    "Top-K maintainer",
+    "batch splitting or per-node call replacement",
+    "prompt/schema/serialization rewrite",
+    "scheduler, lane, quota, lookahead or future-cap search",
+    "modifying Frozen V6, B0, B1 or historical sealed artifacts"
+  ],
+  "terminal_authorizations": {
+    "MAIN_TRACK_CANDIDATE": false,
+    "B2_AUTHORIZED": false,
+    "B3_AUTHORIZED": false,
+    "PHASE3A_AUTHORIZED": false,
+    "PHASE3B_AUTHORIZED": false,
+    "LIVE_AUTHORIZED": false,
+    "HELD_OUT_AUTHORIZED": false,
+    "TOPK_MAINTAINER_AUTHORIZED": false,
+    "SCHEDULER_SEARCH_AUTHORIZED": false
+  },
+  "planned_artifact_schemas": {
+    "existing_evidence": "membind.dmsv.b1r2.existing-evidence.v1",
+    "semantic_root": "membind.dmsv.b1r2.semantic-root-audit.v1",
+    "eligible_domain": "membind.dmsv.b1r2.eligible-domain.v1",
+    "pair_matrix": "membind.dmsv.b1r2.pair.v1",
+    "self_contained_witness": "membind.dmsv.b1r2.self-contained-witness.v1",
+    "localization": "membind.dmsv.b1r2.localization.v1",
+    "decision": "membind.dmsv.b1r2.decision.v1",
+    "report": "membind.dmsv.b1r2.report.v1",
+    "ledger": "membind.dmsv.b1r2.ledger.v1"
+  },
+  "planned_tests": [
+    "claim lattice monotonicity and one-pair non-upgrade",
+    "E1-E13 UNKNOWN fail-closed",
+    "stable eligible pair falsifies L4",
+    "request digest versus unavoidability separation",
+    "native versus new-algorithm localization separation",
+    "self-contained privacy/path/UUID checks",
+    "preregistration commit precedes result commit",
+    "truth-table and clean-checkout reproduction"
+  ],
+  "pre_result_commit": "RECORDED_OUTSIDE_FILE_AFTER_COMMIT",
+  "provider_calls": 0,
+  "database_writes": 0,
+  "held_out_accessed": false
+}
