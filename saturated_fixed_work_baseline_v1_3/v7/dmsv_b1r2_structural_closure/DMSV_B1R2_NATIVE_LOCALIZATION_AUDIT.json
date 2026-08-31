@@ -1,0 +1,31 @@
+{
+  "schema_version": "membind.dmsv.b1r2.localization.v1",
+  "status": "STATIC_NATIVE_BATCH_AUDIT",
+  "input_commit": "37871aae8193d994a1642605e3a705712dd786e1",
+  "graphiti_version": "0.29.3",
+  "operator": "dedupe_nodes.nodes",
+  "native_call_boundary": {
+    "candidate_collection": "per extracted node then merged into one candidate union",
+    "prompt_context": ["previous_episodes", "episode_content", "extracted_nodes", "existing_nodes"],
+    "response_schema": "NodeResolutions.entity_resolutions",
+    "call_multiplicity": "one logical batch call for all unresolved indices",
+    "source": "STATIC_CODE_FACT"
+  },
+  "localization_classes": {
+    "REQUEST_DIRTY": "A changed prompt-visible closure requires a fresh canonical request.",
+    "NATIVE_BATCH_LOCALIZABLE": "NOT_PROVEN; no native per-node response binding or partial batch seam is exposed.",
+    "NEW_ALGORITHM_LOCALIZABLE": "A split/per-node call or prompt/schema change would require a new algorithm identity."
+  },
+  "forbidden_equivalences": [
+    "Top-K equality is not request equality",
+    "prompt-cache hit across different canonical requests is not exact reuse",
+    "reconverged output is not saved LLM work",
+    "per-node splitting is not native localization",
+    "removing previous context is not native localization"
+  ],
+  "native_localization_status": "UNPROVEN",
+  "new_algorithm_identity_required_for_batch_split": true,
+  "terminal_implication": "Because L4 STRUCTURALLY_ALWAYS_DIRTY is not established, this audit cannot produce the structural NULL terminal state.",
+  "provider_calls": 0,
+  "database_writes": 0
+}

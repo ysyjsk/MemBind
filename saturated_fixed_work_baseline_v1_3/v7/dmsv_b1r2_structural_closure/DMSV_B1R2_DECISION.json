@@ -1,0 +1,59 @@
+{
+  "schema_version": "membind.dmsv.b1r2.decision.v1",
+  "status": "SEALED_PROVIDER_FREE",
+  "input_commit": "37871aae8193d994a1642605e3a705712dd786e1",
+  "prereg_commit": "5031f10dcd37df1f6f199ee1125e1fae1760d580",
+  "preregistration_sha256": "109be8244da388106a47574c14e4002b3f0a53ad1a07530e9faf31aea3e72fb4",
+  "state_vector": {
+    "PHASE2B_STATE": "BLOCKED",
+    "BASE_VIEW_STATUS": "BLOCKED_NO_PROVEN_PATH",
+    "NODE_REQUEST_STATUS": "DIRTY_WITNESS_INCOMPLETE",
+    "NATIVE_LOCALIZATION_STATUS": "UNPROVEN",
+    "ARTIFACT_PORTABILITY_STATUS": "SELF_CONTAINED_SANITIZED",
+    "SEMANTIC_ROOT_STATUS": "SEMANTIC_ROOT_V6_SPECIFIC"
+  },
+  "claim_levels": {
+    "L1_SENSITIVITY": "ALREADY_PROVEN_FROM_PRIOR_MATRIX",
+    "L2_DIRTY_WITNESS_EXISTS": "NOT_ESTABLISHED; observed pair lacks complete E1-E13 binding",
+    "L3_DIRTY_RATE_ESTIMATED": "NOT_COMPUTED; no complete eligible development population",
+    "L4_STRUCTURALLY_ALWAYS_DIRTY": "NOT_ESTABLISHED",
+    "L5_NATIVE_CALL_UNAVOIDABLE": "NOT_ESTABLISHED"
+  },
+  "population_counts": {
+    "candidate_pairs_examined": 1,
+    "complete_eligible_pairs": 0,
+    "complete_dirty_pairs": 0,
+    "complete_stable_pairs": 0,
+    "unknown_or_ineligible_pairs": 1,
+    "development_dirty_signals": 1
+  },
+  "semantic_root": {
+    "classification": "SEMANTIC_ROOT_V6_SPECIFIC",
+    "audit": "DMSV_B1R2_SEMANTIC_ROOT_AUDIT.md"
+  },
+  "structural_theorem": {
+    "status": "STATIC_THEOREM_CONDITIONAL",
+    "artifact": "DMSV_B1R2_STRUCTURAL_THEOREM.md",
+    "counterexamples": ["selector miss", "reference-time miss", "last_n=0", "tie", "same prompt projection", "omitted Node call", "epoch change"]
+  },
+  "native_localization": {
+    "status": "UNPROVEN",
+    "artifact": "DMSV_B1R2_NATIVE_LOCALIZATION_AUDIT.json",
+    "new_algorithm_identity_required_for_batch_split": true
+  },
+  "final_state": "BLOCKED_STRUCTURAL_CLOSURE_INCOMPLETE",
+  "authorizations": {
+    "MAIN_TRACK_CANDIDATE": false,
+    "B2_AUTHORIZED": false,
+    "B3_AUTHORIZED": false,
+    "PHASE3A_AUTHORIZED": false,
+    "PHASE3B_AUTHORIZED": false,
+    "LIVE_AUTHORIZED": false,
+    "HELD_OUT_AUTHORIZED": false,
+    "TOPK_MAINTAINER_AUTHORIZED": false,
+    "SCHEDULER_SEARCH_AUTHORIZED": false
+  },
+  "provider_calls": 0,
+  "database_writes": 0,
+  "held_out_accessed": false
+}

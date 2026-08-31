@@ -1,0 +1,33 @@
+{
+  "schema_version": "membind.dmsv.b1r2.eligible-domain.v1",
+  "status": "FROZEN",
+  "input_commit": "37871aae8193d994a1642605e3a705712dd786e1",
+  "predecessor_relation": "p=i; future=f=i+1",
+  "conditions": [
+    {"id":"E1","definition":"same frozen history and source ordering"},
+    {"id":"E2","definition":"prepared future extraction identical across compared states"},
+    {"id":"E3","definition":"p durably published in S_(i+1) and absent in S_i"},
+    {"id":"E4","definition":"p visible to retrieve_episodes(f)"},
+    {"id":"E5","definition":"p satisfies retrieval reference_time predicate"},
+    {"id":"E6","definition":"p satisfies group_id/source selector"},
+    {"id":"E7","definition":"last_n is known and greater than zero"},
+    {"id":"E8","definition":"no later-authoritative episode is illegally visible"},
+    {"id":"E9","definition":"dedupe_nodes.nodes is invoked in both executions"},
+    {"id":"E10","definition":"model/config/schema/index/template/serialization/decoding epochs match"},
+    {"id":"E11","definition":"previous-episode prompt projection is reconstructable"},
+    {"id":"E12","definition":"request binding is complete"},
+    {"id":"E13","definition":"no unresolved valid_at tie or nondeterministic ordering"}
+  ],
+  "condition_values": ["PASS", "FAIL", "UNKNOWN"],
+  "unknown_policy": "Any key UNKNOWN excludes the pair from L3, L4 and L5.",
+  "pair_identity_fields": ["history_digest", "source_sequence", "state_before_version", "state_after_version"],
+  "privacy": {
+    "raw_episode_content": false,
+    "raw_prompt": false,
+    "raw_model_output": false,
+    "raw_episode_uuid": false,
+    "absolute_path": false,
+    "credentials": false
+  },
+  "provenance": "STATIC_CODE_FACT plus DERIVED_FROM_FROZEN_INPUT"
+}
