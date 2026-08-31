@@ -1,1 +1,983 @@
-请基于当前MemBind仓库最新提交，执行一次严格限定范围的：  DMSV B1R2 Structural Closure  本轮目标不是实现DMSV，不是继续Phase 2B性能开发，而是回答一个决定Native-Node DMSV生死的结构性问题：  在Frozen V6执行基座与Graphiti 0.29.3原生dedupe_nodes.nodes调用边界下，真实相邻authoritative state是否结构性地导致dominant Node LLM request持续变化；如果变化，是否存在保持原生语义的合法localization seam？  必须先更新并冻结workplan_v7.md，再执行provider-free证据闭环。不得边观察结果边修改claim taxonomy、定义域、Gate或终态条件。  0. 最高优先级约束  本轮无论得到正结果、负结果还是UNKNOWN，以下授权始终固定为：  MAIN_TRACK_CANDIDATE=false B2_AUTHORIZED=false B3_AUTHORIZED=false PHASE3A_AUTHORIZED=false PHASE3B_AUTHORIZED=false LIVE_AUTHORIZED=false HELD_OUT_AUTHORIZED=false TOPK_MAINTAINER_AUTHORIZED=false SCHEDULER_SEARCH_AUTHORIZED=false  原因是当前仍有独立的：  BV-NATIVE=FAIL BV-VERSIONED=UNKNOWN BV-PERSISTENT=UNKNOWN base_view_verdict=BLOCKED  即使本轮证明某些Node request可以跨state保持exact，也不能直接进入B2；还必须在未来新阶段单独解除BaseView Gate。  若本轮证明：  所有eligible native transitions → dominant dedupe_nodes.nodes request结构性变化 → 且保持原生batch boundary时无合法localization seam  则立即将当前Native-Node DMSV身份封存为：  DMSV_NATIVE_NODE_NULL_DOMINANT_CALL_STRUCTURALLY_DIRTY  不得为了继续项目而实现Top-K maintainer、拆分batch、删除previous_episodes、修改prompt或调scheduler。  若拆batch、移除previous context、改写prompt、改为per-node call或改变response schema才可能继续，必须明确记录：  NEW_ALGORITHM_IDENTITY_REQUIRED  它不能被包装成当前Frozen-V6-native DMSV的实现细节。  1. 输入身份与冻结事实  首先进行只读身份核验：  expected_input_commit = 37871aae8193d994a1642605e3a705712dd786e1  expected_parent = 58a925f372db1a095c9e90b969ad74d101c4e96a  Graphiti = 0.29.3  profile = local-qwen3-8b-awq-dualreplica-v1  核验：  git rev-parse HEAD git status --short git remote -v git show --stat --oneline --no-renames HEAD git show --check --oneline HEAD  若HEAD不是预期commit：  不得静默继续； 先审计额外commit； 若无法证明其只是本轮授权修改，则输出： FINAL_STATE=BLOCKED_EVIDENCE_IDENTITY  并停止。  若worktree存在用户未提交修改，不得reset、checkout覆盖、stash或删除；应创建独立worktree或本地分支完成本轮工作。  允许创建本地分支与本地commit，但禁止push。建议：  branch=dmsv-b1r2-structural-closure 2. 必须复用、不得重跑的Existing Evidence  先建立DMSV_B1R2_EXISTING_EVIDENCE_CLOSURE.json，逐项标记：  ALREADY_PROVEN PARTIALLY_SUPPORTED MISSING_FIELD REQUIRES_PROVIDER_FREE_CLOSURE OUT_OF_SCOPE  至少复用以下artifact：  workplan_v7.md  DMSV_B1_CLOSURE.json DMSV_DOMINANT_REQUEST_DELTA_MATRIX.json DMSV_DOMINANT_REQUEST_CAUSAL_WITNESSES.jsonl DMSV_ADJACENT_STATE_REQUEST_CAUSAL_PROOF.md DMSV_COMMIT_SCOPE_AUDIT.json DMSV_PHASE2B_CORRECTION.json DMSV_PHASE2B_CORRECTION_20260831.md DMSV_B1_CLOSURE_REPAIR_LEDGER.jsonl  已有结论不得重复实验：  BV-NATIVE在29个sealed pair中只有1/29及时； BV-VERSIONED与BV-PERSISTENT仍为UNKNOWN； synthetic mutation只证明request sensitivity； development pair b6019101/source=4显示previous-window和request digest变化，但绑定字段不完整； f91a050..58a925f真实scope为32 files、+3075/-62； 旧source-binding失败在parent/current均存在； 最新37871aa为append-only correction，9 files、+531/-0； Frozen V6、B0、B1、旧NULL与失败证据均不得修改。  禁止为了“流程完整”重跑：  29-pair timing recovery； synthetic sensitivity matrix； 718-test历史headline； parent/current 18 passed/7 failed归因； B0/B1/V6 live； provider treatment； extraction实验。  每个新动作必须回答：  为什么已有sealed evidence不能回答这个问题？  回答不出来则不得执行。  3. Stage A：先修正并冻结workplan  在任何新的pair枚举、字段恢复或structural result生成前，先在workplan_v7.md追加append-only章节：  DMSV B1R2 Structural Closure  不得修改或删除旧§48、§49；但必须明确声明新章节是当前authoritative status入口。  3.1 修正claim taxonomy  不得再把“一条真实pair发生变化”称为Inevitability。  冻结以下五层：  L1 SENSITIVITY controlled mutation changes canonical request  L2 DIRTY_WITNESS_EXISTS at least one fully bound eligible adjacent pair changes request  L3 DIRTY_RATE_ESTIMATED dirty fraction over a preregistered development population  L4 STRUCTURALLY_ALWAYS_DIRTY a theorem or exhaustive proof shows every transition in the frozen eligible domain changes request  L5 NATIVE_CALL_UNAVOIDABLE L4 holds and no legal localization exists under the frozen native call boundary  严格限制：  one complete pair ≠ STRUCTURALLY_ALWAYS_DIRTY  many dirty pairs ≠ STRUCTURALLY_ALWAYS_DIRTY  request changed ≠ no localization seam  same Top-K IDs ≠ same canonical request 3.2 状态改为向量，而不是单一BLOCKED字符串  冻结：  PHASE2B_STATE BASE_VIEW_STATUS NODE_REQUEST_STATUS NATIVE_LOCALIZATION_STATUS ARTIFACT_PORTABILITY_STATUS SEMANTIC_ROOT_STATUS  当前输入状态应至少为：  PHASE2B_STATE=BLOCKED BASE_VIEW_STATUS=BLOCKED_NO_PROVEN_PATH NODE_REQUEST_STATUS=DIRTY_WITNESS_INCOMPLETE NATIVE_LOCALIZATION_STATUS=UNPROVEN ARTIFACT_PORTABILITY_STATUS=NON_SELF_CONTAINED SEMANTIC_ROOT_STATUS=REQUIRES_SCOPE_AUDIT  不得用一个BLOCKED_DOMINANT_REQUEST...覆盖BaseView和portability blocker。  3.3 冻结eligible transition定义域  对future sourcef=i+1与predecessorp=i，只有同时满足以下条件，pair才进入结构性结论定义域：  E1 same frozen history and source ordering E2 prepared future extraction is identical across compared states E3 p is durably published in S_{i+1} but absent from S_i E4 p is visible to retrieve_episodes(f) E5 p satisfies reference_time predicate E6 p satisfies group_id/source selector E7 last_n is known and greater than zero E8 no later-authoritative episode is illegally visible E9 dedupe_nodes.nodes is invoked in both executions E10 model/config/schema/index/template/serialization/decoding epochs match E11 previous-episode prompt projection is reconstructable E12 request binding is complete E13 no unresolved valid_at tie or nondeterministic ordering  每个条件必须是：  PASS FAIL UNKNOWN  任一关键条件为UNKNOWN时，该pair不能进入L3/L4/L5结论。  3.4 冻结semantic request分层  继续保留：  V_rank → V_prompt → V_request → ResponseArtifact → Continuation  必须分别比较：  ordered previous-episode membership prompt-visible previous projection candidate membership/order candidate prompt-visible payload unresolved membership batch shape canonical request bytes request identity digest response binding continuation result  注意：previous-episode UUID变化本身不一定导致prompt变化，因为UUID可能不进入prompt。  只有：  prompt-visible projection changes → actual canonical serialization changes  才能证明request变化。  3.5 冻结本轮决策表  允许的最终状态只能是：  BLOCKED_EVIDENCE_IDENTITY  BLOCKED_PREREG_NOT_INDEPENDENTLY_SEALED  BLOCKED_ARTIFACT_NOT_SELF_CONTAINED  BLOCKED_STRUCTURAL_CLOSURE_INCOMPLETE  DMSV_NATIVE_NODE_NULL_DOMINANT_CALL_STRUCTURALLY_DIRTY  DMSV_NATIVE_NODE_DIRTY_BUT_LOCALIZABLE  DMSV_NATIVE_NODE_ALWAYS_DIRTY_FALSIFIED  这些状态本轮均不得授权B2或live。  4. 独立封存Preregistration  Stage A完成后，创建：  saturated_fixed_work_baseline_v1_3/v7/ dmsv_b1r2_structural_closure/ DMSV_B1R2_PREREGISTRATION.json  至少包含：  input commit Graphiti version/hash Frozen V6 identity workplan pre-append hash workplan frozen hash claim taxonomy eligible-domain definition field provenance rules decision truth table forbidden actions terminal authorization flags planned artifact schemas planned tests  字段来源必须分类：  OBSERVED DERIVED_FROM_FROZEN_INPUT STATIC_CODE_FACT ASSUMED MISSING  ASSUMED不能用于PASS或结构性证明。  必须在任何Stage B evidence extraction之前：  计算preregistration SHA-256； 计算冻结workplan SHA-256； 创建一个只包含Stage A workplan、preregistration、schema/test skeleton的本地commit； 记录： PREREG_COMMIT=<sha> PREREG_SHA256=<sha256>  建议commit message：  preregister DMSV B1R2 structural closure  禁止push。  如果无法建立独立pre-result commit，则停止：  FINAL_STATE=BLOCKED_PREREG_NOT_INDEPENDENTLY_SEALED  不得在同一个commit里自述“prereg written before tests”后继续。  5. Stage B1：Semantic Root Scope Audit  先证明DMSV分析的dominant request究竟建立在哪个语义根上。  必须审计：  B0 Native Frozen V6 no-reuse path DMSV observed path  重点检查：  strip_certified_previous_context  它究竟只作用于：  extract_nodes / extract_edges  还是也可能改变：  resolve_extracted_nodes dedupe_nodes.nodes previous_episodes  需要使用真实调用链、provider-free request assembly和已有capture证明：  Frozen V6 dominant Node request 是否与B0 Native逻辑输入一致  输出：  SEMANTIC_ROOT_NATIVE_EQUIVALENT SEMANTIC_ROOT_V6_SPECIFIC SEMANTIC_ROOT_UNKNOWN  若为V6_SPECIFIC：  不得声称结论适用于Native Graphiti； 后续定理必须以Frozen V6 request为语义根； B0仍是headline performance baseline； 论文claim必须明确V6已经包含的context-selection变化。  若为UNKNOWN，本轮最多输出：  BLOCKED_STRUCTURAL_CLOSURE_INCOMPLETE 6. Stage B2：Graphiti Structural Theorem Audit  只读审计Graphiti 0.29.3真实代码：  Graphiti.add_episode → retrieve_episodes → resolve_extracted_nodes → _resolve_with_llm → prompt_library.dedupe_nodes.nodes  冻结以下代码事实：  reference_time predicate group_id/source filter ORDER BY valid_at LIMIT last_n returned chronological order previous_episodes prompt projection batch construction response schema call multiplicity  不得只检查函数签名；必须追到实际参数绑定和canonical serialization。  6.1 Previous-window change theorem  尝试证明或证伪：  设：  W_t(f)=PromptVisiblePreviousEpisodes(f,S_t)  若：  predecessorp在S_{t+1}中新发布； p满足future source的reference-time与selector； ordered publication保证没有later source提前可见； last_n>0； 没有valid_at boundary tie； p进入retrieval window； 新旧prompt-visible projection序列不同；  则：  W_{t+1}(f)\ne W_t(f)  进一步只有在实际serializer对该projection变化产生不同canonical bytes时，才能推出：  Request_{t+1}(f)\ne Request_t(f)  必须覆盖两种情况：  window未满： 新episode使列表长度增加  window已满： 新episode进入窗口并逐出旧episode  必须处理反例：  predecessor不满足selector； predecessor的valid_at > reference_time； last_n=0； dedupe_nodes.nodes未被调用； valid_at相同且无稳定二级排序； 新旧episode具有相同prompt-visible content/timestamp； template或serialization epoch变化； Frozen V6实际上移除了该context； request存在其他无法绑定的变化。  任何未解决反例必须进入UNKNOWN，不得为了得到NULL而忽略。  6.2 结论强度  允许：  STATIC_THEOREM_PROVEN STATIC_THEOREM_FALSIFIED STATIC_THEOREM_CONDITIONAL STATIC_THEOREM_UNKNOWN  STATIC_THEOREM_CONDITIONAL必须列出所有前置条件，并在Stage B3逐pair验证。  7. Stage B3：Development Population Closure  只允许使用已存在的non-held-out development histories、冻结workload和已有observer。  禁止访问held-out。  建立：  DMSV_B1R2_DEVELOPMENT_PAIR_MATRIX.jsonl  对每个eligible candidate pair记录：  history digest source sequence state version before/after eligibility conditions E1-E13 reference_time provenance group/source selector provenance last_n provenance ordered previous-window digest prompt-visible projection digest canonical request byte_equal request digest before/after request binding digest model/config/schema/index/template/decoding epochs dedupe_nodes.nodes invocation status dirty cause classification missing fields final pair status  不得保存：  episode原始内容； -原始prompt； -原始模型输出； -原始episode UUID； -机器绝对路径； -API key、数据库凭据或隐私数据。  原始UUID必须替换为：  stable opaque digest  所有外部source artifact必须记录：  basename content SHA-256 schema version generation command  不得只记录：  /data/predator/... 7.1 不允许伪造缺失字段  若旧observer缺字段，只能：  从冻结workload确定性恢复，并标记DERIVED_FROM_FROZEN_INPUT； 从Graphiti静态配置恢复，并标记STATIC_CODE_FACT； 或标记MISSING。  不得手工填充字段使pair变成complete。  7.2 一条pair与总体结论  一条complete dirty pair只能得到：  DIRTY_WITNESS_EXISTS  如果存在一个complete eligible stable pair：  canonical request byte_equal=true  则立即证伪：  STRUCTURALLY_ALWAYS_DIRTY  输出：  DMSV_NATIVE_NODE_ALWAYS_DIRTY_FALSIFIED  但仍不得授权B2，因为BaseView保持BLOCKED。  若所有已知pair都dirty但存在UNKNOWN，不得声称ALWAYS_DIRTY。  L3 dirty rate只允许作为development characterization：  dirty_complete_pairs / complete_eligible_pairs  不计算headline 95%CI，不触碰held-out，也不把development比例写成正式泛化结论。  8. Stage B4：Self-contained Evidence Repair  当前测试依赖仓库外绝对路径，缺失时pytest.skip()。本轮必须修正这一点。  建立一个最小、去内容化、content-addressed witness bundle：  DMSV_B1R2_SELF_CONTAINED_WITNESSES.jsonl  要求：  所有用于决策的输入均在仓库内，或可由仓库内冻结输入确定性重建； 不含原始episode内容或UUID； 不依赖/data/predator/...绝对路径； 保存源artifact SHA-256和provenance； clean checkout可以复现decision。  测试必须区分：  developer convenience mode: missing optional development artifact → SKIP  evidence-required mode: missing decision-critical artifact → FAIL  正式B1R2测试必须使用：  evidence-required mode  若无法生成自包含证据而不伪造缺失字段，输出：  FINAL_STATE=BLOCKED_ARTIFACT_NOT_SELF_CONTAINED  并停止。  9. Stage B5：Native Localization Audit  单独回答：  即使previous-window导致整个canonical request变化，是否仍存在保持Graphiti原生语义和call boundary的合法局部化？  必须检查：  dedupe_nodes.nodes是否一次处理全部unresolved nodes candidate集合是否共同进入一个prompt previous_episodes是否作为全局batch context response schema是否联合返回所有node resolution 是否存在原生per-node response binding 是否存在不重跑LLM即可证明输出exact的机制  严格区分：  REQUEST_DIRTY NATIVE_BATCH_LOCALIZABLE NEW_ALGORITHM_LOCALIZABLE  以下不属于Native localization：  将batch拆成per-node calls； 删除或摘要化previous_episodes； 改prompt template； 改response schema； 假设不同request会得到相同response； 用observed reconvergence代替省掉LLM call； 只维护Top-K而忽略全局previous context； 用prompt cache命中不同canonical request。  若request变化后必须fresh执行dominant LLM call，则即使输出最后reconverge，也不能把该LLM成本记为saved work。  输出：  DMSV_B1R2_NATIVE_LOCALIZATION_AUDIT.json DMSV_B1R2_NATIVE_LOCALIZATION_AUDIT.md  只有同时满足：  STRUCTURALLY_ALWAYS_DIRTY AND NATIVE_BATCH_LOCALIZABLE=false  才能得到：  DMSV_NATIVE_NODE_NULL_DOMINANT_CALL_STRUCTURALLY_DIRTY 10. Provider-free TDD  新增：  test_dmsv_b1r2_structural_closure.py  至少覆盖：  claim lattice不允许one-pair直接升级到ALWAYS_DIRTY； eligibility E1-E13任一关键UNKNOWN会fail-closed； stable eligible pair可证伪ALWAYS_DIRTY； request digest不同不能单独证明unavoidability； native localization与new-algorithm localization分离； witness bundle禁止原始UUID； witness bundle禁止绝对机器路径； evidence-required模式缺artifact必须FAIL； preregistration commit早于result commit； result decision满足冻结truth table； 11.所有授权标志保持false； strip_certified_previous_context作用域结论有代码/请求证据； previous-window theorem覆盖window未满、已满、selector miss、reference-time miss、tie与相同projection反例； canonical request比较使用实际byte equality，不只比较Top-K或UUID； old sealed artifact hash未变化。  若需要新增provider-free helper，只允许实现：  artifact parsing eligibility evaluation canonical request comparison truth-table evaluation privacy/provenance validation  不得实现：  Top-K maintainer runtime speculation live reuse batch splitting scheduler admission DB write provider call  任何新增模块必须在报告中回答：  它解决了哪一个B1R2证据可复现问题？  11. 验证要求  至少执行：  targeted B1R2 tests existing DMSV Phase 2B/B1 repair regression slice python compile JSON/JSONL parse validation git diff --check git show --check privacy scan absolute-path scan raw-UUID scan old sealed artifact byte-hash comparison clean-checkout evidence-required reproduction  不要求重跑完整repository suite，除非本轮修改了runtime production code。  若没有修改runtime production code，不得为了报告数字重新跑历史718-test suite。  clean checkout必须能够：  读取preregistration 重建或读取self-contained witness 执行structural decision 得到相同FINAL_STATE 12. 最终决策逻辑  按以下优先级决定：  A. 身份失败 FINAL_STATE=BLOCKED_EVIDENCE_IDENTITY B. Preregistration未独立封存 FINAL_STATE=BLOCKED_PREREG_NOT_INDEPENDENTLY_SEALED C. 决策证据不自包含 FINAL_STATE=BLOCKED_ARTIFACT_NOT_SELF_CONTAINED D. 结构证明或绑定字段仍不完整 FINAL_STATE=BLOCKED_STRUCTURAL_CLOSURE_INCOMPLETE E. 存在至少一个complete eligible stable pair FINAL_STATE=DMSV_NATIVE_NODE_ALWAYS_DIRTY_FALSIFIED  注意：这只否定ALWAYS_DIRTY，不授权DMSV，因为BaseView仍BLOCKED。  F. 所有eligible transition结构性dirty，但存在原生合法localization FINAL_STATE=DMSV_NATIVE_NODE_DIRTY_BUT_LOCALIZABLE  仍不授权B2，下一步必须重新审计BaseView与localization economics。  G. 所有eligible transition结构性dirty，且无原生合法localization FINAL_STATE= DMSV_NATIVE_NODE_NULL_DOMINANT_CALL_STRUCTURALLY_DIRTY  此时：  Node Top-K delta maintenance → 只能标记KERNEL_ONLY或SCALABILITY_TRACK → 不得作为当前主论文方法继续  如果继续研究batch splitting或context refactoring，必须新建algorithm identity和新workplan，不能继承Native exactness claim。  13. 交付物  建议放入：  saturated_fixed_work_baseline_v1_3/v7/ dmsv_b1r2_structural_closure/  必须交付：  DMSV_B1R2_PREREGISTRATION.json DMSV_B1R2_EXISTING_EVIDENCE_CLOSURE.json DMSV_B1R2_SEMANTIC_ROOT_AUDIT.md DMSV_B1R2_ELIGIBLE_TRANSITION_DOMAIN.json DMSV_B1R2_STRUCTURAL_THEOREM.md DMSV_B1R2_DEVELOPMENT_PAIR_MATRIX.jsonl DMSV_B1R2_SELF_CONTAINED_WITNESSES.jsonl DMSV_B1R2_NATIVE_LOCALIZATION_AUDIT.json DMSV_B1R2_NATIVE_LOCALIZATION_AUDIT.md DMSV_B1R2_DECISION.json DMSV_B1R2_REPORT_20260831.md DMSV_B1R2_LEDGER.jsonl test_dmsv_b1r2_structural_closure.py  如果某个artifact没有实际信息，不要为了凑目录创建空文件；在report中说明合并到哪个artifact。  结果完成后创建第二个本地commit：  seal DMSV B1R2 structural closure  禁止push。  14. 最终汇报格式  最终回复必须首先给出：  INPUT_COMMIT= PREREG_COMMIT= RESULT_COMMIT= PREREG_SHA256= FINAL_STATE=  PHASE2B_STATE= BASE_VIEW_STATUS= SEMANTIC_ROOT_STATUS= NODE_REQUEST_STATUS= NATIVE_LOCALIZATION_STATUS= ARTIFACT_PORTABILITY_STATUS=  MAIN_TRACK_CANDIDATE=false B2_AUTHORIZED=false B3_AUTHORIZED=false PHASE3A_AUTHORIZED=false PHASE3B_AUTHORIZED=false LIVE_AUTHORIZED=false TOPK_MAINTAINER_AUTHORIZED=false  然后依次说明：  workplan修改了什么； 哪些已有证据被直接复用； semantic root是否真的是Frozen V6上的Native-equivalent request； eligible transition定义域； structural theorem是否成立； development population中complete/dirty/stable/unknown pair数量； 是否存在Native localization seam； self-contained clean-checkout是否复现； 测试结果； 为什么停止； 下一步唯一合法方向。  不得以“代码已经规划好”“Top-K理论复杂度更优”或“可能有scale价值”为理由越过本轮Gate。  本轮完成条件不是实现更多代码，而是得到一个可审计的、作用域精确的终态：  Native-Node DMSV结构性NULL 或 ALWAYS_DIRTY被证伪但BaseView仍BLOCKED 或 证据不足，继续BLOCKED  到此必须停止，不得自动进入任何下一阶段。
+请基于MemBind当前本地分支，执行一次严格限时、限范围的：
+
+# Frozen V6 Identity Fix → Immediate V7 2-Source Probe
+
+本轮不是新的V6研究阶段，也不是继续扩展DMSV methodology。
+
+唯一目标是：
+
+```text
+确认旧headline V6是否实际删除过非空previous context
+→ 恢复Frozen V6的same-logical-work实现身份
+→ 做最小qualification
+→ 同一轮立即启动并尽量完成2-source V7 semantic observer
+```
+
+不得在完成V6 identity fix后继续增加新Gate、theorem、closure或审计阶段。
+
+---
+
+# 0. 最高优先级执行规则
+
+本轮必须遵循：
+
+```text
+一次最小V6 baseline identity修复
+→ 立即恢复V7实验
+```
+
+禁止将本轮扩展成：
+
+```text
+V6 semantic audit
+→ output audit
+→ graph audit
+→ quality campaign
+→ B1R3
+→ B1R4
+→ 新theorem
+→ 新Gate体系
+```
+
+本轮最多完成：
+
+```text
+1. Existing V6 artifact dynamic-effect scan
+2. Provider-free previous-window equivalence
+3. Frozen V6 identity fix
+4. Minimal corrected-V6 qualification
+5. One 2-source V7 observer
+6. Seal and stop
+```
+
+总wall-clock上限：
+
+```text
+5 hours
+```
+
+到4小时30分钟时禁止启动任何新实验，剩余30分钟只允许封存artifact、写报告和停止本轮任务。
+
+---
+
+# 1. 输入身份
+
+预期本地历史：
+
+```text
+PUBLIC_BASE_COMMIT=
+37871aae8193d994a1642605e3a705712dd786e1
+
+B1R2_PREREG_COMMIT=
+5031f10dcd37df1f6f199ee1125e1fae1760d580
+
+B1R2_RESULT_COMMIT=
+a1aee32cc76e6c60a39c3aa28451a3241a6f9e63
+
+expected_branch=
+dmsv-b1r2-structural-closure
+```
+
+首先检查：
+
+```bash
+git rev-parse HEAD
+git status --short
+git log --oneline --decorate -5
+git merge-base --is-ancestor 37871aae8193d994a1642605e3a705712dd786e1 HEAD
+```
+
+必须保留用户未跟踪的：
+
+```text
+prompt.md
+```
+
+不得修改、删除、覆盖、提交或stash该文件。
+
+不得：
+
+```text
+git reset --hard
+git checkout -- user files
+git clean
+push
+```
+
+若HEAD不是`a1aee32...`且存在无法归属的新提交，停止并输出：
+
+```text
+FINAL_STATE=BLOCKED_INPUT_IDENTITY
+```
+
+---
+
+# 2. 冻结科学身份
+
+Frozen V6方法身份继续是：
+
+```text
+method_identity=v6-membind-core-v1
+```
+
+允许的变化只有：
+
+```text
+dependency-aware PREPARE/NATIVE overlap
+dependency-aware admission
+exact certified replay of the same logical extraction request
+bounded speculative frontier
+source-order authoritative publication
+```
+
+明确禁止：
+
+```text
+删除Native previous context
+修改prompt语义
+减少Native logical work
+用不同request的相同output冒充exact replay
+把work reduction算成concurrency收益
+```
+
+当前公开实现事实已经确定：
+
+```text
+strip_certified_previous_context=ON_CORE_PATH
+```
+
+历史关系已经确定：
+
+```text
+984ea2d:
+early V6.1引入strip
+
+8fba929:
+冻结v6-membind-core-v1时错误继承该transform
+```
+
+本轮不再重复证明静态调用链，不再生成新的call-path theorem。
+
+本轮只回答动态问题：
+
+```text
+过去headline V6正式artifact中，
+previous_context_chars_removed是否大于0？
+```
+
+方法身份不重新定义。
+
+如果修改实现，只增加：
+
+```text
+implementation_revision=context-integrity-fix-v1
+```
+
+不得静默把旧commit与新实现称为字节相同版本。
+
+---
+
+# 3. 最小Stage A：冻结三分支决策
+
+在读取旧artifact统计结果前，创建一个紧凑preregistration：
+
+```text
+saturated_fixed_work_baseline_v1_3/v6_core_identity_fix/
+V6_CORE_IDENTITY_FIX_PREREGISTRATION.json
+```
+
+只冻结以下内容：
+
+```text
+input commit
+eligible headline artifact definition
+NOOP/NONEMPTY_REMOVAL/MISSING分类
+previous-window equality字段
+A/B/C修复分支
+qualification条件
+2-source probe字段
+forbidden actions
+5-hour deadline
+```
+
+不得新增claim taxonomy、E1–E13扩展、理论Gate或论文related-work章节。
+
+允许的artifact分类：
+
+```text
+NOOP
+NONEMPTY_REMOVAL
+MISSING
+```
+
+允许的修复分支：
+
+```text
+BRANCH_A_NOOP
+BRANCH_B_RECONSTRUCTABLE
+BRANCH_C_NOT_RECONSTRUCTABLE
+BRANCH_MISSING_OLD_EFFECT
+```
+
+preregistration写入并计算SHA-256后，再扫描旧artifact。
+
+可以创建一个本地prereg commit，但禁止push。若创建，commit message固定为：
+
+```text
+preregister frozen V6 context identity fix
+```
+
+---
+
+# 4. Step 1：扫描已有headline V6 artifact
+
+只扫描满足以下身份的正式V6 blocks：
+
+```text
+method=MEMBIND_CORE
+core version=v6-membind-core-v1
+construction sealed
+expected=submitted=completed
+使用headline Frozen V6入口
+```
+
+不得把V6.1 autoresearch候选、ablation、V7 observer、失败run混入headline统计。
+
+读取已有：
+
+```text
+CERTIFIED_CONTEXT_SELECTION
+previous_context_chars_removed
+previous_context_block_count
+retained_previous_episode_count
+prompt_name
+region
+source_sequence
+```
+
+对每个正式block输出：
+
+```text
+run_id
+history/context
+certified_call_count
+context_event_count
+calls_with_nonempty_removal
+total_removed_chars
+max_removed_chars
+missing_event_count
+classification
+artifact hash
+```
+
+分类规则：
+
+## NOOP
+
+只有同时满足：
+
+```text
+所有预期certified extraction call都有context event
+AND
+所有previous_context_chars_removed=0
+AND
+所有previous_context_block_count对应空body或零删除
+```
+
+才能分类为：
+
+```text
+NOOP
+```
+
+事件缺失不能算NOOP。
+
+## NONEMPTY_REMOVAL
+
+只要存在：
+
+```text
+previous_context_chars_removed > 0
+```
+
+就分类为：
+
+```text
+NONEMPTY_REMOVAL
+```
+
+## MISSING
+
+如果正式block缺少决定性字段，分类为：
+
+```text
+MISSING
+```
+
+禁止为了确认旧run而重跑旧headline实验。
+
+artifact扫描最多允许30分钟。超过30分钟仍找不到完整证据，直接进入：
+
+```text
+BRANCH_MISSING_OLD_EFFECT
+```
+
+不得继续全盘搜索半天。
+
+输出合并到：
+
+```text
+V6_CORE_IDENTITY_FIX_DECISION.json
+```
+
+不要为每个小结论创建一个新文件。
+
+---
+
+# 5. Step 2：Provider-free previous-window equivalence
+
+此步骤不调用LLM provider，不执行Neo4j写入，不重新跑B0/V6 live。
+
+唯一问题：
+
+```text
+PREPARE阶段的_native_previous_window(...)
+能否构造与Native retrieve_episodes(...)相同的
+prompt-visible previous window？
+```
+
+至少比较：
+
+```text
+membership
+order
+content projection
+valid_at/reference_time
+group_id/source filter
+last_n
+tie behavior
+prompt serialization
+```
+
+必须比较实际Graphiti 0.29.3调用约定，不得只比较Python对象数量。
+
+按certified callsite分别判断：
+
+```text
+extract_nodes.extract_message
+extract_nodes.extract_text
+extract_nodes.extract_json
+extract_edges.edge
+```
+
+输出状态：
+
+```text
+SAME_LOGICAL_REQUEST_PROVEN
+NOT_EQUIVALENT
+UNKNOWN_MISSING_BINDING
+NOT_INVOKED_IN_WORKLOAD
+```
+
+注意：
+
+```text
+相同response
+≠ 相同request
+
+相同episode IDs
+≠ 相同prompt bytes
+
+两次独立LLM输出不同
+≠ request不等价
+```
+
+request identity比较必须在provider调用前完成。
+
+如果现有冻结workload和artifact足以重建，不得启动新provider实验。
+
+---
+
+# 6. Step 3：立即选择并实施A/B/C分支
+
+## Branch A：旧正式V6全部NOOP
+
+条件：
+
+```text
+所有eligible headline blocks=NOOP
+```
+
+操作：
+
+1. 旧V6正式结果继续有效；
+2. 从Frozen Core路径移除`strip_certified_previous_context`；
+3. historical V6.1/ablation路径可保留helper，但必须与Core隔离；
+4. Core增加硬合同：
+
+```text
+certified_message_transform=None
+same_logical_request_required=true
+context_removal_allowed=false
+```
+
+5. 增加：
+
+```text
+implementation_revision=context-integrity-fix-v1
+```
+
+6. 不重跑完整V6 campaign；
+7. 只做最小request-identity qualification。
+
+旧artifact状态：
+
+```text
+OLD_V6_HEADLINE_STATUS=REUSABLE_NOOP
+```
+
+## Branch B：存在NONEMPTY_REMOVAL，但previous window可重建
+
+条件：
+
+```text
+存在NONEMPTY_REMOVAL
+AND
+SAME_LOGICAL_REQUEST_PROVEN
+```
+
+操作：
+
+1. 从Core路径移除strip；
+2. PREPARE使用Native-equivalent previous window；
+3. capture与NATIVE replay比较原始logical request；
+4. request exact才允许consume prepared response；
+5. mismatch必须fresh执行Native call；
+6. 保留提前extraction能力；
+7. 旧受影响artifact降级为：
+
+```text
+V6_CONTEXT_ELIDED_DIAGNOSTIC
+```
+
+8. 只重跑受影响的最小正式V6 baseline block/qualification，不重跑B0。
+
+旧artifact状态：
+
+```text
+OLD_V6_HEADLINE_STATUS=INVALID_FOR_TIMING_ONLY_HEADLINE
+```
+
+## Branch C：存在NONEMPTY_REMOVAL且previous window不可重建
+
+条件：
+
+```text
+存在NONEMPTY_REMOVAL
+AND
+previous-window equivalence=NOT_EQUIVALENT或UNKNOWN
+```
+
+操作：
+
+1. 从Frozen Core路径移除strip；
+2. 将无法证明same-logical-request的callsite移出Core-specific certified set；
+3. 对应call在NATIVE阶段fresh执行；
+4. 不修改全局历史`CERTIFIED_CALLSITES`来破坏旧replay；
+5. 新建Core-specific集合，例如：
+
+```text
+MEMBIND_CORE_CERTIFIED_CALLSITES
+```
+
+6. 只包含被证明dependency-free的callsite；
+7. mismatch或unknown统一fresh；
+8. 重跑一个最小corrected-V6 baseline/qualification；
+9. 不重跑B0。
+
+旧artifact状态：
+
+```text
+OLD_V6_HEADLINE_STATUS=INVALID_FOR_TIMING_ONLY_HEADLINE
+```
+
+## Branch MISSING：旧artifact缺少动态字段
+
+条件：
+
+```text
+旧headline effect=MISSING
+```
+
+操作：
+
+1. 旧V6结果不能继续作为timing-only正式baseline；
+2. 不再追查旧run；
+3. 根据provider-free previous-window结果选择Branch B式修复或Branch C式降级；
+4. 修复后跑一个最小corrected-V6 baseline/qualification。
+
+状态：
+
+```text
+OLD_V6_HEADLINE_STATUS=UNKNOWN_NOT_REUSABLE
+```
+
+禁止出现：
+
+```text
+既然代码strip了，就把V6论文重定义成context-elided算法
+```
+
+---
+
+# 7. 实现约束
+
+不得删除旧helper或旧测试，以免破坏历史复现。
+
+正确结构应是：
+
+```text
+historical V6.1/extension path
+→ 可以显式启用旧strip policy
+→ artifact identity必须标记context-elided
+
+Frozen MemBind-Core path
+→ transform=None
+→ same logical request required
+→ mismatch/unknown fresh
+```
+
+`work_reduction_extensions_enabled=False`必须由运行时断言支持，不能只存在metadata中。
+
+至少增加以下测试：
+
+1. headline Core入口不能安装strip；
+2. Core出现`previous_context_chars_removed>0`立即失败；
+3. historical V6.1 path仍可复现旧行为；
+4. PREPARE/NATIVE request exact时只进行一次物理provider调用；
+5. request mismatch时不consume transcript，转fresh；
+6. unknown previous-window binding时转fresh；
+7. ordered authoritative publication保持；
+8. replay不进行pre-publication DB write；
+9. Core identity包含implementation revision；
+   10.旧sealed artifact字节不变。
+
+不要求完整repository suite，除非修改范围导致相关回归无法局部覆盖。
+
+---
+
+# 8. Step 4：最小Corrected-V6 Qualification
+
+qualification只验证修复后的Core是否恢复Frozen合同，不扩成新campaign。
+
+必须验证：
+
+```text
+CORE_CONTEXT_TRANSFORM=NONE
+same-logical-request comparison before replay
+exact request → single consume
+mismatch/unknown → fresh
+no pre-publication DB write
+source-order durable publication
+work-reduction extension disabled
+```
+
+若进行2-source或最小prefix live qualification，还需记录：
+
+```text
+logical request count
+exact replay count
+fresh fallback count
+provider physical call count
+context removed chars=0
+durable publication count
+makespan（diagnostic only）
+```
+
+不要求两次独立LLM推理输出完全相同。
+
+正确性oracle是：
+
+```text
+相同canonical logical request
+→ single captured response可以exact replay
+```
+
+不是：
+
+```text
+对同一request独立调用两次LLM
+→ response必须相同
+```
+
+qualification允许状态：
+
+```text
+V6_IDENTITY_QUALIFIED
+V6_IDENTITY_FIX_FAILED
+V6_IDENTITY_FIX_BLOCKED_ENVIRONMENT
+```
+
+只有：
+
+```text
+V6_IDENTITY_QUALIFIED
+```
+
+才允许进入下一步2-source V7 probe。
+
+如果失败，停止代码扩张，报告具体失败点；不得继续V7。
+
+---
+
+# 9. Step 5：同一轮立即执行2-source V7 semantic observer
+
+只要：
+
+```text
+V6_IDENTITY_QUALIFIED
+```
+
+就必须继续执行2-source observer。不得因为“报告已经很多”而在V6 qualification后停止。
+
+这不是V7 treatment，不做reuse，不修改authoritative state语义。
+
+选择一个non-held-out development history，冻结：
+
+```text
+source 0
+source 1
+```
+
+运行关系：
+
+```text
+corrected Frozen V6 prepares source 1
+        ↓
+在合法旧state上记录stateful semantic view/request
+        ↓
+authoritatively publish source 0
+        ↓
+在新state上对同一个prepared source 1 fresh resolve
+        ↓
+比较old/new semantic view和canonical request
+        ↓
+只记录机会，不执行reuse
+```
+
+必须保持：
+
+```text
+same PreparedArtifact
+same source
+same model/config/template/schema/index epoch
+ordered publication
+no speculative publication
+no held-out
+```
+
+2-source observer至少记录：
+
+```text
+base_view_ready_before_authoritative_need
+old/new state version
+previous_episodes membership/order exact
+previous prompt projection exact
+Node candidate membership exact
+Node candidate order exact
+candidate payload exact
+unresolved batch shape exact
+canonical dedupe_nodes.nodes request exact
+request changed fields
+dominant Node LLM service time
+validation time
+fresh recomputation time
+potentially preservable critical-path time
+visible repair time
+output reconvergence（diagnostic only）
+ordered continuation status
+```
+
+必须使用实际critical-path accounting：
+
+```text
+ReusableHiddenCP
++
+ReconvergenceSavedDescendantCP
+-
+VisibleRepairCP
+-
+ValidationCost
+```
+
+不得把：
+
+```text
+request变化后重新执行了Node LLM
+但输出最后相同
+```
+
+记成Node LLM saved work。
+
+---
+
+# 10. 2-source结果解释
+
+2-source只承担两个任务：
+
+```text
+验证observer instrumentation
+发现机制是否存在非零信号
+```
+
+它不能承担正式机会率或最终NULL结论。
+
+允许状态：
+
+## PROBE_INVALID
+
+```text
+binding不完整
+mixed snapshot
+epoch不一致
+same PreparedArtifact未满足
+ordered publication失败
+```
+
+输出：
+
+```text
+V7_TWO_SOURCE_PROBE=INVALID
+V7_6_SOURCE_AUTHORIZED=false
+```
+
+只修instrumentation bug，不增加methodology Gate。
+
+## PROBE_VALID_POSITIVE_SIGNAL
+
+满足：
+
+```text
+observer绑定完整
+AND
+存在request exact、局部affectedness或正的potentially preservable CP
+```
+
+输出：
+
+```text
+V7_TWO_SOURCE_PROBE=VALID_POSITIVE_SIGNAL
+V7_6_SOURCE_AUTHORIZED=true
+```
+
+下一轮直接进入6-source characterization。
+
+## PROBE_VALID_ZERO_SIGNAL
+
+```text
+observer有效
+但该单pair没有保留dominant CP
+```
+
+输出：
+
+```text
+V7_TWO_SOURCE_PROBE=VALID_ZERO_SIGNAL_SINGLE_PAIR
+```
+
+不得根据一个pair输出DMSV NULL。
+
+若没有代码级结构证明机会恒为零，则：
+
+```text
+V7_6_SOURCE_AUTHORIZED=true
+```
+
+由6-source决定分布性机会。
+
+只有本轮同时得到严格结构反证，例如：
+
+```text
+所有合法transition下dominant request必然变化
+AND
+无Native localization
+AND
+base view不可能及时存在
+```
+
+才允许：
+
+```text
+V7_6_SOURCE_AUTHORIZED=false
+```
+
+不得用单个2-source实验替代这种证明。
+
+本轮不得自动运行6-source。
+
+---
+
+# 11. 停止审计规则
+
+本轮最多新增：
+
+```text
+1个workplan append-only section
+1个preregistration JSON
+1个V6 closure/fix decision JSON
+1个2-source observer JSONL/JSON
+1个合并report
+1个ledger
+必要测试
+```
+
+不要把每个中间判断拆成独立报告。
+
+禁止新增：
+
+```text
+B1R3/B1R4 taxonomy
+E1-E13扩展
+新operator selection Gate
+新经济公式
+新theorem document
+Top-K maintainer
+batch splitting
+summary/edge treatment
+scheduler/admission search
+6-source/full development campaign
+held-out evaluation
+论文related-work扩写
+```
+
+一旦完成：
+
+```text
+V6 dynamic effect
+V6 fix branch
+V6 qualification
+2-source probe
+```
+
+就必须停止。
+
+---
+
+# 12. Workplan更新方式
+
+只在`workplan_v7.md`追加一个简短section：
+
+```text
+Frozen V6 Identity Fix and Experiment Resumption
+```
+
+说明：
+
+1. intended method identity仍为timing-only；
+2. public implementation继承了早期strip；
+3. 本轮按A/B/C修复；
+4. pre-fix DMSV semantic root保持历史记录；
+5. post-fix DMSV observer使用corrected Frozen V6；
+6. 完成identity qualification后立即恢复V7实验；
+7. 不再新增methodology closure。
+
+不得删除或重写：
+
+```text
+旧V6证据
+旧V7 NULL
+B1R2 BLOCKED
+失败attempt
+historical context-elided artifacts
+```
+
+---
+
+# 13. Git与artifact纪律
+
+建议在当前本地分支继续工作，或创建：
+
+```text
+v6-core-context-integrity-fix
+```
+
+允许本地commit，禁止push。
+
+至少形成：
+
+```text
+PREREG_COMMIT
+RESULT_COMMIT
+```
+
+旧artifact必须字节级不变。
+
+如果启动live probe，使用独立output目录和run ID；不得覆盖旧run。
+
+本轮只停止本轮启动的进程，不停止共享LLM、Embedding或Neo4j服务。
+
+若live probe在5小时上限前无法完成：
+
+1. 不启动新的实验；
+2. 封存当前run ID、PID/session、output root和进度；
+3. 输出：
+
+```text
+V7_TWO_SOURCE_PROBE=STARTED_NOT_COMPLETED
+```
+
+4. 不将不完整结果纳入机会结论。
+
+---
+
+# 14. 最终输出格式
+
+最终回复必须先输出：
+
+```text
+INPUT_COMMIT=
+PREREG_COMMIT=
+RESULT_COMMIT=
+FINAL_STATE=
+
+V6_METHOD_IDENTITY=v6-membind-core-v1
+V6_IMPLEMENTATION_REVISION=
+OLD_V6_DYNAMIC_EFFECT=NOOP|NONEMPTY_REMOVAL|MISSING
+OLD_V6_HEADLINE_STATUS=
+PREVIOUS_WINDOW_EQUIVALENCE=
+FIX_BRANCH=
+V6_IDENTITY_QUALIFICATION=
+
+V7_TWO_SOURCE_PROBE=
+V7_PROBE_RUN_ID=
+V7_6_SOURCE_AUTHORIZED=
+
+B0_RERUN=false
+B1_ROLE=RELAXED_ORDER_UPPER_BOUND
+HELD_OUT_ACCESSED=false
+TOPK_MAINTAINER_IMPLEMENTED=false
+V7_TREATMENT_EXECUTED=false
+```
+
+随后简明报告：
+
+1. 扫描了哪些正式V6 artifacts；
+2. 是否实际删除过非空context；
+3. previous window能否Native-equivalent重建；
+4. 选择A/B/C哪条修复；
+5. 修改了哪些production files；
+6. 哪些旧V6结果仍可使用；
+7. corrected V6 qualification结果；
+8. 2-source observer是否启动/完成；
+9. previous window、Node request和dominant CP的实际观测；
+10. 下一步是否直接进入6-source。
+
+最终必须明确：
+
+```text
+本轮没有重新定义V6，
+只修复了实现与Frozen方法合同的偏离。
+
+本轮没有继续增加methodology Gate，
+V6 identity闭环后已经恢复V7 empirical execution。
+```
