@@ -40,10 +40,7 @@ def certify_dvsr_exact_topk(witness: Witness, delta: StateDelta) -> CertificateR
     changed = _changed_relevant(witness, delta)
     if not changed:
         return CertificateResult(CertificateStatus.STABLE, "no domain observable changed")
-    invalid = tuple(change.key for change in changed if change.key in witness.result)
-    if invalid:
-        return CertificateResult(CertificateStatus.INVALID, "result member changed", invalid)
-    semantic_fields = frozenset(
+    global_semantic_fields = frozenset(
         {
             "query",
             "query_embedding",
@@ -58,13 +55,6 @@ def certify_dvsr_exact_topk(witness: Witness, delta: StateDelta) -> CertificateR
             "model",
             "embedder",
             "index",
-            "score",
-            "name",
-            "labels",
-            "summary",
-            "attributes",
-            "payload",
-            "projection",
             "batch_membership",
             "batch_order",
             "deterministic_branch",
@@ -75,12 +65,19 @@ def certify_dvsr_exact_topk(witness: Witness, delta: StateDelta) -> CertificateR
     for change in changed:
         operation = _operation(change)
         fields = frozenset(str(field) for field in getattr(change, "changed_fields", ()))
-        if fields & semantic_fields:
-            return CertificateResult(CertificateStatus.UNKNOWN, "semantic input or payload changed")
+        if fields & global_semantic_fields:
+            return CertificateResult(CertificateStatus.UNKNOWN, "global query or consumer contract changed")
         if operation == "update" and any(
             field not in change.before or field not in change.after for field in fields
         ):
             return CertificateResult(CertificateStatus.UNKNOWN, "delta image is incomplete")
+        if operation in {"insert", "create", "add"} and any(
+            field not in change.after for field in fields
+        ):
+            return CertificateResult(CertificateStatus.UNKNOWN, "delta image is incomplete")
+    invalid = tuple(change.key for change in changed if change.key in witness.result)
+    if invalid:
+        return CertificateResult(CertificateStatus.INVALID, "result member changed", invalid)
     if witness.ties:
         return CertificateResult(CertificateStatus.UNKNOWN, "consumer-visible tie order has no contract")
     if len(witness.result) < witness.k or witness.cutoff is None:
@@ -99,7 +96,7 @@ def certify_dvsr_exact_topk(witness: Witness, delta: StateDelta) -> CertificateR
                 excluded = all(
                     change.key in scores
                     and math.isfinite(float(scores[change.key]))
-                    and float(scores[change.key]) <= float(min_score)
+                    and float(scores[change.key]) < float(min_score)
                     for change in changed
                 )
             except (TypeError, ValueError):
@@ -134,7 +131,10 @@ def certify_dvsr_exact_topk(witness: Witness, delta: StateDelta) -> CertificateR
             if post_order is None or tuple(post_order) != tuple(witness.result):
                 return CertificateResult(CertificateStatus.UNKNOWN, "post-delta boundary order is unavailable")
     if witness.proof_data.get("tie_contract"):
-        return CertificateResult(CertificateStatus.STABLE, "post-delta score bounds remain below cutoff")
+        return CertificateResult(
+            CertificateStatus.STABLE,
+            "post-delta score bounds prove changed nonmembers cannot affect the result",
+        )
     return CertificateResult(CertificateStatus.UNKNOWN, "non-member score bound is unavailable")
 
 

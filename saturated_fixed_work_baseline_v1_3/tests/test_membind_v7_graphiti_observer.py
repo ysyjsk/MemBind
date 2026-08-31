@@ -902,6 +902,13 @@ async def test_node_similarity_observer_captures_complete_domain_and_preserves_n
     assert rows[0]["actual_result"] == ["a", "b"]
     assert [row["uuid"] for row in rows[0]["complete_domain"]] == ["a", "b", "c"]
     assert rows[0]["completeness_status"] == "COMPLETE"
+    assert rows[0]["completeness_reason"] == "EXACT"
+    assert rows[0]["domain_count"] == 3
+    assert rows[0]["actual_count"] == 2
+    assert rows[0]["reference_count"] == 2
+    assert rows[0]["actual_not_in_reference_count"] == 0
+    assert rows[0]["reference_not_in_actual_count"] == 0
+    assert rows[0]["order_mismatch_count"] == 0
     assert rows[0]["witness"]["query_epoch"] == "embedder-1"
 
 
@@ -935,6 +942,11 @@ async def test_node_similarity_observer_never_repairs_native_order_mismatch() ->
     assert rows[0]["reference_result"] == ["a", "b"]
     assert rows[0]["actual_result"] == ["b", "a"]
     assert rows[0]["completeness_status"] == "INCOMPLETE"
+    assert rows[0]["completeness_reason"] == "RESULT_MISMATCH"
+    assert rows[0]["domain_count"] == 2
+    assert rows[0]["actual_not_in_reference_count"] == 0
+    assert rows[0]["reference_not_in_actual_count"] == 0
+    assert rows[0]["order_mismatch_count"] == 2
 
 
 @dataclass

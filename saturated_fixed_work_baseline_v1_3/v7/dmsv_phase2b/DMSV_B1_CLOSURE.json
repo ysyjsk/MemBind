@@ -1,0 +1,78 @@
+{
+  "schema_version": "membind.dmsv.phase2b-b1-closure.v1",
+  "status": "SEALED_PROVIDER_FREE",
+  "audited_commit": "f91a0500beb87d5013644442e135e6d3afb4507c",
+  "graphiti_version": "0.29.3",
+  "evidence": {
+    "sealed_window_recovery": "/data/predator/ly/MemBind/saturated_fixed_work_baseline_v1_3/v7/dvsr_v7_831_phase0/DVSR_WINDOW_FIELD_RECOVERY.json",
+    "sealed_v7_audit": "/data/predator/ly/MemBind/MemBind_V7_SEALED_EVIDENCE_AUDIT_20260829.md",
+    "frozen_b0": "/data/predator/ly/Mem/experiments/local-qwen3-8b-awq-dualreplica-v1/baseline-correction-b0-prefix30/context-0/NATIVE_SERIAL/d6e9e240c3ce",
+    "source_window_pairs": 29,
+    "timely_predecessor_pairs": 1,
+    "prepared_artifact_is_base_view": false,
+    "dmsv_base_view_implementation_artifact": false
+  },
+  "base_view_paths": [
+    {
+      "path": "BV-NATIVE",
+      "status": "FAIL",
+      "reason": "base_view_not_ready_before_authoritative_need_for_general_case",
+      "timing": {
+        "complete_pairs": 29,
+        "eligible_pairs": 1,
+        "eligible_fraction": 0.034482758620689655,
+        "authoritative_publication_must_not_be_delayed": true
+      },
+      "missing_proof": []
+    },
+    {
+      "path": "BV-VERSIONED",
+      "status": "UNKNOWN",
+      "reason": "no_provider_free_or_live artifact proving snapshot lifecycle and timely base readiness",
+      "missing_proof": [
+        "base_ready_before_authoritative_need",
+        "snapshot_and_epoch_identity",
+        "failure_lifecycle_and_gc",
+        "initial_and_per_delta_cost"
+      ]
+    },
+    {
+      "path": "BV-PERSISTENT",
+      "status": "UNKNOWN",
+      "reason": "no artifact proving cross-source query coverage, maintenance and storage lifecycle",
+      "missing_proof": [
+        "base_ready_before_authoritative_need",
+        "snapshot_and_epoch_identity",
+        "failure_lifecycle_and_gc",
+        "initial_and_per_delta_cost"
+      ]
+    }
+  ],
+  "base_view_verdict": "BLOCKED",
+  "dominant_request_closure": {
+    "operator": "dedupe_nodes.nodes",
+    "assembly": "graphiti_core.prompts.prompt_library.dedupe_nodes.nodes",
+    "canonical_closure": [
+      "extracted_nodes",
+      "candidate_ids_and_order",
+      "candidate_payload",
+      "current_episode_content",
+      "previous_episodes",
+      "unresolved_membership",
+      "batch_shape",
+      "model_epoch",
+      "config_epoch",
+      "schema_epoch",
+      "index_epoch"
+    ],
+    "matrix_artifact": "DMSV_DOMINANT_REQUEST_DELTA_MATRIX.json",
+    "all_structural_variants_changed_request": true,
+    "native_batch_localization_proven": false,
+    "verdict": "DMSV_DOMINANT_CALL_UNAVOIDABLE"
+  },
+  "overall_b1_verdict": "BLOCKED",
+  "main_track_candidate": false,
+  "b2_authorized": false,
+  "b3_authorized": false,
+  "phase_3a_authorized": false
+}

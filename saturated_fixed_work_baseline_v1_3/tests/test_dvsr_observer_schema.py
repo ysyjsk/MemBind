@@ -63,10 +63,22 @@ def test_valid_requires_complete_read_set() -> None:
 
 
 def test_mixed_snapshot_or_epoch_is_unknown_not_valid() -> None:
-    record = _record(status="UNKNOWN", read_epoch="mixed:s0|s1", unknown_reasons=["mixed_snapshot"])
+    record = _record(status="UNKNOWN_INCOMPLETE_EVIDENCE", read_epoch="mixed:s0|s1", unknown_reasons=["mixed_snapshot"])
     validate_dvsr_observation(record)
     with pytest.raises(DvsrObservationError, match="complete read_set"):
         validate_dvsr_observation(_record(read_epoch="mixed:s0|s1", unknown_reasons=["mixed_snapshot"], read_set={"completeness": "UNKNOWN", "keys": []}))
+
+
+def test_complete_changed_evidence_is_invalid_not_unknown() -> None:
+    validate_dvsr_observation(
+        _record(status="INVALID_CHANGED", unknown_reasons=[], result_digest="e" * 64)
+    )
+
+
+def test_legacy_ambiguous_status_names_are_rejected() -> None:
+    for status in ("UNKNOWN", "INVALID"):
+        with pytest.raises(DvsrObservationError, match="invalid DVSR observation status"):
+            validate_dvsr_observation(_record(status=status))
 
 
 def test_speculative_write_or_publication_breaks_proof() -> None:
@@ -93,4 +105,3 @@ def test_c1_valid_set_cannot_exceed_c0_fresh_oracle() -> None:
 
 def test_required_fields_cover_workplan_observability_contract() -> None:
     assert {"read_epoch", "read_set", "canonical_request", "actual_touched_write_delta", "no_write_proof", "semantic_critical_path"} <= REQUIRED_DVSR_FIELDS
-

@@ -68,7 +68,11 @@ def validate_dvsr_observation(record: Mapping[str, Any]) -> None:
     missing = sorted(REQUIRED_DVSR_FIELDS - set(record))
     if missing:
         raise DvsrObservationError(f"required DVSR field missing: {missing[0]}")
-    if record.get("status") not in {"VALID", "UNKNOWN", "INVALID"}:
+    if record.get("status") not in {
+        "VALID",
+        "INVALID_CHANGED",
+        "UNKNOWN_INCOMPLETE_EVIDENCE",
+    }:
         raise DvsrObservationError("invalid DVSR observation status")
     if not isinstance(record.get("read_epoch"), str) or not record["read_epoch"]:
         raise DvsrObservationError("read_epoch must be non-empty")
@@ -85,7 +89,7 @@ def validate_dvsr_observation(record: Mapping[str, Any]) -> None:
     read_set = _require_mapping(record, "read_set")
     if read_set.get("completeness") not in {"COMPLETE", "INCOMPLETE", "UNKNOWN"}:
         raise DvsrObservationError("invalid read_set completeness")
-    if record.get("status") == "VALID" and read_set.get("completeness") != "COMPLETE":
+    if record.get("status") in {"VALID", "INVALID_CHANGED"} and read_set.get("completeness") != "COMPLETE":
         raise DvsrObservationError("VALID observation requires complete read_set")
     no_write = _require_mapping(record, "no_write_proof")
     if no_write.get("speculative_db_writes") != 0 or no_write.get("speculative_publications") != 0:

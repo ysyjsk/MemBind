@@ -1857,3 +1857,13 @@ Scientific-contract repair
 - P0.3审计发现旧observer把Prepared extraction和stateful suffix放在同一PREPARE调用段，未复现Frozen V6的certified capture/replay边界；修复必须在observer-side拆开这两个阶段，不得修改Frozen V6 Core。
 
 只有生成并seal `DVSR_PHASE3_READINESS_AUDIT.json/.md`，且所有必需项为PASS时，状态才可变为`AUTHORIZED_FOR_DEVELOPMENT_G3`。
+
+## 执行修订 7：P0.2/P0.3证据状态与旧经济结果撤回（2026-08-31）
+
+本节append-only更新执行状态，不恢复任何扩量授权。
+
+- P0.3已完成真实Frozen V6与DVSR Prepared/no-reuse动态differential。最终sealed结果为`EXPLAINED_NON_SEMANTIC_DIFFERENCE`，semantic mismatch为0；stateful request、DB read、Continuation K、canonical graph projection与publication order均exact，且无prepublication write。G1 semantic identity因此为`ELIGIBLE_PENDING_REMAINING_G1_ECONOMIC_EVIDENCE`，不再是`BLOCKED_PENDING_DIFFERENTIAL`。
+- P0.2已完成existing sealed V6 timing field recovery与window-bounded accounting TDD。29/29 source pair可恢复`PREPARE_READY`、old-snapshot ready/close与authoritative node-resolution need，但只有1/29在前序publication开始前ready，故只有该pair具备不改变B0 publication顺序的cross-snapshot launch资格。
+- `MaximumHideableCP=min(real ready/need window, removable operator CP)`是所有reuse/reconvergence credit共享的硬上限。缺失window evidence必须输出`UNKNOWN/window_accounting_missing`，不得使用serial observer duration、whole operator CP或推断值替代。
+- 此前所有Phase-3 prefix中的OfflineBenefit均因缺少真实window约束而正式标记为`RETRACTED_DIAGNOSTIC_ONLY`，不可进入G3/G4；其semantic stability、provider failure和engineering evidence仍append-only保留。
+- 当前P0.2的字段恢复为`COMPLETE`，但新runner的per-pair window、C1/C0、tri-state、reconvergence、三层no-write、lambda seal与regression尚未全部闭合，因此Phase-3 scaling继续为`BLOCKED_BY_CORRECTIVE_AUDIT`。

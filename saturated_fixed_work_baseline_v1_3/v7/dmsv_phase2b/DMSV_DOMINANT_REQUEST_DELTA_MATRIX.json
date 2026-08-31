@@ -1,0 +1,23 @@
+{
+  "schema_version": "membind.dmsv.dominant-request-delta-matrix.v1",
+  "status": "PASS_PROVIDER_FREE",
+  "operator": "dedupe_nodes.nodes",
+  "source": "graphiti_core 0.29.3 prompt_library.dedupe_nodes.nodes",
+  "request_equal_to_base": {
+    "candidate_payload": false,
+    "topk_order": false,
+    "topk_membership": false,
+    "previous_episodes": false,
+    "unresolved_membership_and_batch_shape": false,
+    "current_episode_content": false,
+    "model_epoch": false,
+    "config_epoch": false,
+    "schema_epoch": false,
+    "index_epoch": false
+  },
+  "matrix_digest": "68d117f7eb75193d517eef5d6500709cc57a40ce1f1e9c8267fa4f9ad1fc47f2",
+  "interpretation": "Top-K identity equality is insufficient; full prompt-visible request closure changes under each tested adjacent-state mutation.",
+  "native_call_boundary_localization": "NOT_PROVEN",
+  "provider_calls": 0,
+  "database_writes": 0
+}

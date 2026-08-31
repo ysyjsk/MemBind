@@ -6,6 +6,7 @@ import pytest
 
 from saturated_fixed_work_baseline_v1_3.membind_v7.dvsr_window import (
     bound_hidden_cp_components,
+    compute_pair_window_from_observer_evidence,
     compute_speculation_window,
     recover_frozen_v6_window_fields,
 )
@@ -105,6 +106,62 @@ def test_negative_or_non_integral_timing_is_rejected() -> None:
             authoritative_need_ns=2,
             removable_operator_cp_ns=1,
         )
+
+
+def test_pair_window_uses_old_capture_ready_and_fresh_node_need() -> None:
+    result = compute_pair_window_from_observer_evidence(
+        source_sequence=1,
+        old_capture={"end_ns": 140},
+        fresh_capture={
+            "trace": [
+                {"phase": "node-resolution", "status": "ok", "start_ns": 250, "end_ns": 320},
+            ]
+        },
+        formal_start_ns=100,
+        previous_durable_ns=None,
+        predecessor_publication_start_ns=200,
+        removable_operator_cp_ns=90,
+    )
+
+    assert result["status"] == "COMPLETE"
+    assert result["effective_ready_ns"] == 140
+    assert result["speculation_window_ns"] == 110
+    assert result["maximum_hideable_cp_ns"] == 90
+    assert result["ready_event"] == "OLD.capture.end_ns"
+
+
+def test_pair_window_missing_need_is_fail_closed() -> None:
+    result = compute_pair_window_from_observer_evidence(
+        source_sequence=2,
+        old_capture={"end_ns": 140},
+        fresh_capture={"trace": []},
+        formal_start_ns=None,
+        previous_durable_ns=100,
+        predecessor_publication_start_ns=200,
+        removable_operator_cp_ns=90,
+    )
+
+    assert result["status"] == "MISSING_FIELD"
+    assert "authoritative_need_ns" in result["missing_fields"]
+
+
+def test_pair_window_rejects_duplicate_need_span() -> None:
+    result = compute_pair_window_from_observer_evidence(
+        source_sequence=1,
+        old_capture={"end_ns": 140},
+        fresh_capture={
+            "trace": [
+                {"phase": "node-resolution", "status": "ok", "start_ns": 250, "end_ns": 320},
+                {"phase": "node-resolution", "status": "ok", "start_ns": 260, "end_ns": 330},
+            ]
+        },
+        formal_start_ns=100,
+        previous_durable_ns=None,
+        predecessor_publication_start_ns=200,
+        removable_operator_cp_ns=90,
+    )
+
+    assert result["status"] == "MISSING_FIELD"
 
 
 def test_recover_existing_frozen_v6_fields_uses_node_resolution_need() -> None:

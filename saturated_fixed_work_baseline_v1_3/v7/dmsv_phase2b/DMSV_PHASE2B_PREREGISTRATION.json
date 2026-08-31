@@ -1,0 +1,83 @@
+{
+  "schema_version": "membind.dmsv.phase2b-preregistration.v1",
+  "status": "FROZEN_PROVIDER_FREE",
+  "audited_commit": "f91a0500beb87d5013644442e135e6d3afb4507c",
+  "profile_id": "local-qwen3-8b-awq-dualreplica-v1",
+  "graphiti_version": "0.29.3",
+  "baseline": {
+    "id": "B0_NATIVE_SERIAL",
+    "role": "Native headline baseline",
+    "artifact": "/data/predator/ly/Mem/experiments/local-qwen3-8b-awq-dualreplica-v1/baseline-correction-b0-prefix30/context-0/NATIVE_SERIAL/d6e9e240c3ce",
+    "rerun": false
+  },
+  "upper_bound": {
+    "id": "B1_RELAXED_ORDER_UPPER_BOUND",
+    "headline_eligible": false
+  },
+  "semantic_views": [
+    "V_rank",
+    "V_prompt",
+    "V_request",
+    "ResponseArtifact",
+    "Continuation"
+  ],
+  "delta_types": [
+    "insert",
+    "delete",
+    "update",
+    "order",
+    "batch_shape",
+    "previous_episode",
+    "filter",
+    "group",
+    "limit",
+    "threshold",
+    "model_epoch",
+    "config_epoch",
+    "schema_epoch",
+    "index_epoch"
+  ],
+  "oracle": {
+    "ranking": "Graphiti-0.29.3 exact full-domain cosine / native canonical request",
+    "request": "actual prompt_library.dedupe_nodes.nodes canonical serialization",
+    "unknown_policy": "FAIL_CLOSED_TO_FRESH",
+    "tie_policy": "UNKNOWN_TO_FRESH",
+    "first_query_cost": "materialization plus maintenance, never O(delta) only"
+  },
+  "base_view_contract": {
+    "paths": ["BV-NATIVE", "BV-VERSIONED", "BV-PERSISTENT"],
+    "required": [
+      "base_ready_before_authoritative_need",
+      "no_authoritative_publication_delay",
+      "snapshot_and_epoch_identity",
+      "failure_lifecycle_and_gc",
+      "initial_and_per_delta_cost"
+    ],
+    "missing_is": "UNKNOWN",
+    "no_inferred_timestamps": true
+  },
+  "accounting": {
+    "offline_value": "StableHiddenCP - ValidationCost - VisibleRepairCP - FailedSpeculationCost - SeamTax",
+    "online_foreground_interference": "REQUIRES_NEW_LIVE",
+    "makespan": "longest_path_with_ordered_publication_and_unknown_as_fresh",
+    "invalid_estimator": "saved_work_sum_subtracted_from_wall_clock"
+  },
+  "forbidden_actions": [
+    "provider_calls",
+    "live_graphiti_treatment",
+    "authoritative_graph_write",
+    "phase_3a_or_phase_3b",
+    "held_out_access",
+    "scheduler_or_future_cap_search",
+    "top_k_maintainer_without_main_track_candidate"
+  ],
+  "decision_table": {
+    "base_view_no_legal_path": "DMSV_BASE_VIEW_UNAVAILABLE",
+    "base_view_unproven": "BLOCKED",
+    "dominant_request_unavoidable": "DMSV_DOMINANT_CALL_UNAVOIDABLE",
+    "retrieval_only": "KERNEL_ONLY",
+    "scale_only": "SCALABILITY_TRACK",
+    "all_exact_and_critical_path_conditions": "MAIN_TRACK_CANDIDATE"
+  },
+  "phase_3_authorization": false
+}

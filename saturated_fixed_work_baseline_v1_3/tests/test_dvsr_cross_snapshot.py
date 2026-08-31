@@ -9,6 +9,7 @@ from saturated_fixed_work_baseline_v1_3.membind_v7.dvsr_cross_snapshot import (
     build_operator_dag,
     build_offline_benefit,
     derive_offline_benefit_components,
+    derive_window_bounded_offline_benefit,
     compare_cross_snapshot,
     resolve_prepared_to_seam_async,
     sanitize_observer_capture,
@@ -46,6 +47,7 @@ def _capture(*, phase: str = "OLD", changed: bool = False, writes: int = 0) -> d
         "ordinal": 0,
         "request_identity": "request-a" if not changed else "request-b",
         "field_digests": {"messages": "m" if not changed else "m2"},
+        "status": "PASS",
     }
     continuation = {"nodes": ["n1"], "cut": "CUT-N"}
     if changed:
@@ -85,9 +87,9 @@ def test_changed_result_or_pre_seam_write_never_becomes_valid() -> None:
         prepared_artifact_digest="b" * 64,
     )
 
-    assert result["status"] == "UNKNOWN"
-    assert "read_changed:node_cosine:0" in result["unknown_reasons"]
-    assert "pre_seam_publication_detected" in result["unknown_reasons"]
+    assert result["status"] == "INVALID_CHANGED"
+    assert "read_changed:node_cosine:0" in result["invalid_reasons"]
+    assert "pre_seam_publication_detected" in result["invalid_reasons"]
 
 
 def test_read_environment_epoch_change_is_fail_closed() -> None:
@@ -99,8 +101,54 @@ def test_read_environment_epoch_change_is_fail_closed() -> None:
         operator_cut="CUT-N",
         prepared_artifact_digest="b" * 64,
     )
-    assert result["status"] == "UNKNOWN"
-    assert "read_changed:node_cosine:0" in result["unknown_reasons"]
+    assert result["status"] == "UNKNOWN_INCOMPLETE_EVIDENCE"
+    assert "read_epoch_or_config_changed:node_cosine:0" in result["unknown_reasons"]
+
+
+def test_incomplete_read_is_unknown_not_invalid_changed() -> None:
+    old = _capture()
+    old["reads"][0]["completeness_status"] = "INCOMPLETE"
+    result = compare_cross_snapshot(
+        old,
+        _capture(phase="FRESH_NATIVE"),
+        operator_cut="CUT-N",
+        prepared_artifact_digest="b" * 64,
+    )
+
+    assert result["status"] == "UNKNOWN_INCOMPLETE_EVIDENCE"
+    assert result["invalid_reasons"] == []
+    assert "read_incomplete:node_cosine:0" in result["unknown_reasons"]
+
+
+def test_complete_request_and_continuation_changes_are_invalid_not_unknown() -> None:
+    fresh = _capture(phase="FRESH_NATIVE")
+    fresh["requests"][0]["request_identity"] = "changed-request"
+    fresh["continuation_k"] = {"nodes": ["n2"], "cut": "CUT-N"}
+    result = compare_cross_snapshot(
+        _capture(),
+        fresh,
+        operator_cut="CUT-N",
+        prepared_artifact_digest="b" * 64,
+    )
+
+    assert result["status"] == "INVALID_CHANGED"
+    assert result["unknown_reasons"] == []
+    assert "request_changed:dedupe_nodes.nodes:0" in result["invalid_reasons"]
+    assert "continuation_changed" in result["invalid_reasons"]
+
+
+def test_missing_capture_fields_are_unknown_incomplete_evidence() -> None:
+    old = _capture()
+    old.pop("reads")
+    result = compare_cross_snapshot(
+        old,
+        _capture(phase="FRESH_NATIVE"),
+        operator_cut="CUT-N",
+        prepared_artifact_digest="b" * 64,
+    )
+
+    assert result["status"] == "UNKNOWN_INCOMPLETE_EVIDENCE"
+    assert "capture_fields_missing" in result["unknown_reasons"]
 
 
 def test_stable_read_and_continuation_make_valid_operator_evidence() -> None:
@@ -172,6 +220,7 @@ def test_offline_mismatch_does_not_charge_baseline_fresh_work_as_visible_repair(
         validation_cost_ns=5,
         seam_tax_ns=3,
         failed_work_lambda=0.5,
+        maximum_hideable_cp_ns=1_000,
     )
 
     assert result["failed_speculation_work_ns"] == 70
@@ -468,6 +517,7 @@ def test_partial_exact_request_reuse_is_credited_without_double_charging_failed_
         validation_cost_ns=10,
         seam_tax_ns=0,
         failed_work_lambda=0.5,
+        maximum_hideable_cp_ns=1_000,
     )
     assert result["reuse_hidden_cp_ns"] == 50
     assert result["failed_speculation_work_ns"] == 60
@@ -484,10 +534,90 @@ def test_whole_cut_validity_credits_full_cp_but_still_charges_c0_validation() ->
         validation_cost_ns=20,
         seam_tax_ns=0,
         failed_work_lambda=0.5,
+        maximum_hideable_cp_ns=1_000,
     )
     assert result["reuse_hidden_cp_ns"] == 120
     assert result["failed_speculation_work_ns"] == 0
     assert result["offline_benefit_ns"] == pytest.approx(100.0)
+
+
+def test_whole_cut_credit_is_bounded_by_real_speculation_window() -> None:
+    result = derive_offline_benefit_components(
+        comparison_status="VALID",
+        old_dag={"status": "COMPLETE", "baseline_cp_ns": 100, "nodes": []},
+        fresh_dag={"status": "COMPLETE", "baseline_cp_ns": 120, "nodes": []},
+        validation_cost_ns=20,
+        seam_tax_ns=0,
+        failed_work_lambda=0.5,
+        maximum_hideable_cp_ns=30,
+    )
+
+    assert result["unbounded_reuse_hidden_cp_ns"] == 120
+    assert result["reuse_hidden_cp_ns"] == 30
+    assert result["maximum_hideable_cp_ns"] == 30
+    assert result["uncredited_due_to_window_ns"] == 90
+    assert result["offline_benefit_ns"] == pytest.approx(10.0)
+
+
+def test_missing_window_cannot_silently_credit_full_operator_cp() -> None:
+    result = derive_window_bounded_offline_benefit(
+        window_accounting=None,
+        comparison_status="VALID",
+        old_dag={"status": "COMPLETE", "baseline_cp_ns": 100, "nodes": []},
+        fresh_dag={"status": "COMPLETE", "baseline_cp_ns": 120, "nodes": []},
+        validation_cost_ns=20,
+        seam_tax_ns=0,
+        failed_work_lambda=0.5,
+    )
+
+    assert result == {
+        "schema_version": "membind.dvsr.offline-benefit.v1",
+        "status": "UNKNOWN",
+        "reason": "window_accounting_missing",
+    }
+
+
+def test_complete_window_is_the_only_source_of_hidden_cp_cap() -> None:
+    result = derive_window_bounded_offline_benefit(
+        window_accounting={"status": "COMPLETE", "maximum_hideable_cp_ns": 30},
+        comparison_status="VALID",
+        old_dag={"status": "COMPLETE", "baseline_cp_ns": 100, "nodes": []},
+        fresh_dag={"status": "COMPLETE", "baseline_cp_ns": 120, "nodes": []},
+        validation_cost_ns=20,
+        seam_tax_ns=0,
+        failed_work_lambda=0.5,
+    )
+
+    assert result["reuse_hidden_cp_ns"] == 30
+    assert result["maximum_hideable_cp_ns"] == 30
+    assert result["window_accounting_status"] == "COMPLETE"
+
+
+def test_reconverged_descendant_is_not_double_counted_as_ordinary_reuse() -> None:
+    dag = {
+        "status": "COMPLETE",
+        "baseline_cp_ns": 100,
+        "nodes": [
+            {"node_id": "parent", "cost_ns": 40, "reusable": False},
+            {"node_id": "descendant", "cost_ns": 60, "reusable": True},
+        ],
+    }
+    result = derive_offline_benefit_components(
+        comparison_status="INVALID_CHANGED",
+        old_dag=dag,
+        fresh_dag=dag,
+        validation_cost_ns=0,
+        seam_tax_ns=0,
+        failed_work_lambda=0.5,
+        maximum_hideable_cp_ns=1_000,
+        reconvergence_saved_descendant_node_ids=("descendant",),
+    )
+
+    assert result["unbounded_reuse_hidden_cp_ns"] == 0
+    assert result["unbounded_reconvergence_saved_descendant_cp_ns"] == 60
+    assert result["reuse_hidden_cp_ns"] == 0
+    assert result["reconvergence_saved_descendant_cp_ns"] == 60
+    assert result["window_bounded_hidden_cp_ns"] == 60
 
 
 def test_capture_sanitizer_rejects_missing_continuation() -> None:

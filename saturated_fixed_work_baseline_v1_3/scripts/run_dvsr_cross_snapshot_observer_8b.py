@@ -49,7 +49,7 @@ from saturated_fixed_work_baseline_v1_3.membind_v5.runtime.core.provider_admissi
 )
 from saturated_fixed_work_baseline_v1_3.membind_v7.dvsr_cross_snapshot import (  # noqa: E402
     build_operator_dag,
-    derive_offline_benefit_components,
+    derive_window_bounded_offline_benefit,
     compare_cross_snapshot,
     resolve_prepared_to_seam_async,
     sanitize_observer_capture,
@@ -57,6 +57,21 @@ from saturated_fixed_work_baseline_v1_3.membind_v7.dvsr_cross_snapshot import ( 
 from saturated_fixed_work_baseline_v1_3.membind_v7.dvsr_workload import (  # noqa: E402
     DEV_HISTORIES,
     load_development_history_episodes,
+)
+from saturated_fixed_work_baseline_v1_3.membind_v7.dvsr_read_accounting import (  # noqa: E402
+    evaluate_c0_c1_read_accounting,
+)
+from saturated_fixed_work_baseline_v1_3.membind_v7.dvsr_reconvergence import (  # noqa: E402
+    attribute_descendant_reconvergence,
+)
+from saturated_fixed_work_baseline_v1_3.membind_v7.dvsr_no_write import (  # noqa: E402
+    build_no_write_proof,
+)
+from saturated_fixed_work_baseline_v1_3.membind_v7.dvsr_accounting import (  # noqa: E402
+    FAILED_WORK_LAMBDA,
+)
+from saturated_fixed_work_baseline_v1_3.membind_v7.dvsr_window import (  # noqa: E402
+    compute_pair_window_from_observer_evidence,
 )
 from saturated_fixed_work_baseline_v1_3.membind_v7.graphiti_observer import (  # noqa: E402
     GraphitiCaptureInstallation,
@@ -148,6 +163,13 @@ def _guarded_observation():
 
 def _filtered_cut_capture(capture: Mapping[str, Any], *, cut: str, continuation: Mapping[str, Any]) -> dict[str, Any]:
     raw_trace = list(capture.get("trace", ()))
+    raw_reads = {
+        (str(row.get("operator")), int(row.get("occurrence", -1))): row
+        for row in capture.get("reads", ())
+        if isinstance(row, Mapping)
+        and isinstance(row.get("occurrence"), int)
+        and not isinstance(row.get("occurrence"), bool)
+    }
     capture = sanitize_observer_capture(capture, continuation=continuation)
     # Extraction is the dependency-free prepared prefix and is intentionally
     # excluded from both stateful cuts.  Requests are re-keyed by occurrence
@@ -170,6 +192,20 @@ def _filtered_cut_capture(capture: Mapping[str, Any], *, cut: str, continuation:
         counts[prompt] = occurrence + 1
         normalized_requests.append({**dict(row), "cut_occurrence": occurrence})
     reads = [row for row in capture.get("reads", ()) if isinstance(row, Mapping) and row.get("operator") == "node_cosine"]
+    # C1 needs the query vector and exact domain only while reducing this pair.
+    # The second sanitizer in _pair_record removes both before persistence.
+    reads = [
+        {
+            **dict(row),
+            **{
+                field: raw_reads[(str(row.get("operator")), int(row.get("occurrence", -1)))][field]
+                for field in ("query", "complete_domain")
+                if (str(row.get("operator")), int(row.get("occurrence", -1))) in raw_reads
+                and field in raw_reads[(str(row.get("operator")), int(row.get("occurrence", -1)))]
+            },
+        }
+        for row in reads
+    ]
     if cut == "CUT-N":
         reads = [row for row in reads]
         normalized_requests = [
@@ -206,6 +242,14 @@ def _pair_record(
     old_capture: Mapping[str, Any],
     fresh_capture: Mapping[str, Any],
     delta: Mapping[str, Any],
+    state_delta: Any,
+    old_nodes: Mapping[str, Mapping[str, Any]],
+    fresh_nodes: Mapping[str, Mapping[str, Any]],
+    node_repair_evidence: Mapping[str, Any] | None,
+    no_write_proof: Mapping[str, Any],
+    formal_start_ns: int,
+    previous_durable_ns: int | None,
+    predecessor_publication_start_ns: int | None,
     comparison: Mapping[str, Any],
     old_stage: Any,
     fresh_stage: Any,
@@ -226,11 +270,17 @@ def _pair_record(
         if old_requests[key].get("request_identity") == fresh_requests[key].get("request_identity")
         and old_requests[key].get("field_digests") == fresh_requests[key].get("field_digests")
     )
-    # Phase 3 currently selects the correctness-floor C0 fresh requery.  A
-    # C0-stable read is evidence, but its native read was performed as visible
-    # validation and therefore cannot be marked as avoided work.  C1 keys may
-    # only enter this list after the delta certificate is wired and sealed.
-    reusable_reads: list[tuple[str, int]] = []
+    read_accounting = evaluate_c0_c1_read_accounting(
+        old_capture=old_capture,
+        fresh_capture=fresh_capture,
+        delta=state_delta,
+        old_nodes=old_nodes,
+        fresh_nodes=fresh_nodes,
+    )
+    reusable_reads = [
+        (str(key[0]), int(key[1]))
+        for key in read_accounting["reusable_read_keys"]
+    ]
     # The comparison is the authority for exact cross-snapshot identity.  A
     # request/read can only be marked reusable after the pair checker has
     # compared both captures; the local maps above are retained as a
@@ -253,14 +303,50 @@ def _pair_record(
         reusable_read_keys=reusable_reads,
     )
     dag_complete = old_dag.get("status") == "COMPLETE" and fresh_dag.get("status") == "COMPLETE"
+    window_accounting = compute_pair_window_from_observer_evidence(
+        source_sequence=source_sequence,
+        old_capture=old_capture,
+        fresh_capture=fresh_capture,
+        formal_start_ns=formal_start_ns,
+        previous_durable_ns=previous_durable_ns,
+        predecessor_publication_start_ns=predecessor_publication_start_ns,
+        removable_operator_cp_ns=(
+            int(fresh_dag.get("baseline_cp_ns", 0))
+            if fresh_dag.get("status") == "COMPLETE"
+            else 0
+        ),
+    )
+    if str(comparison["operator_cut"]) == "CUT-D" and isinstance(node_repair_evidence, Mapping):
+        reconvergence = attribute_descendant_reconvergence(
+            parent_operator="node-resolution",
+            repair_attempted=bool(node_repair_evidence.get("repair_attempted")),
+            old_parent_output_digest=node_repair_evidence.get("old_parent_output_digest"),
+            repaired_parent_output_digest=node_repair_evidence.get("repaired_parent_output_digest"),
+            operator_dag=fresh_dag,
+            descendant_certificate_valid_node_ids=tuple(fresh_dag.get("removable_node_ids", ())),
+        )
+    else:
+        reconvergence = {
+            "schema_version": "membind.dvsr.descendant-reconvergence.v1",
+            "status": "NOT_APPLICABLE",
+            "repair_result": "NOT_REPAIRED",
+            "saved_descendant_operator_ids": [],
+            "reconvergence_saved_descendant_cp_ns": 0,
+            "parent_repair_cp_credited_ns": 0,
+            "operator_states": {},
+        }
     benefit = (
-        derive_offline_benefit_components(
+        derive_window_bounded_offline_benefit(
+            window_accounting=window_accounting,
             comparison_status=str(comparison.get("status", "UNKNOWN")),
             old_dag=old_dag,
             fresh_dag=fresh_dag,
-            validation_cost_ns=int(fresh_dag.get("certificate_cost_ub_ns", 0)),
+            validation_cost_ns=int(read_accounting["selected_validation_cost_ns"]),
             seam_tax_ns=max(0, int(comparison_cost_ns)),
-            failed_work_lambda=0.5,
+            failed_work_lambda=FAILED_WORK_LAMBDA,
+            reconvergence_saved_descendant_node_ids=tuple(
+                reconvergence.get("saved_descendant_operator_ids", ())
+            ),
         )
         if dag_complete else {
             "schema_version": "membind.dvsr.offline-benefit.v1",
@@ -292,8 +378,15 @@ def _pair_record(
         "prepared_output_digest": canonical_digest(old_stage.continuation_k),
         "fresh_output_digest": canonical_digest(fresh_stage.continuation_k),
         "operator_dag": {"old": old_dag, "fresh": fresh_dag},
+        "read_accounting": read_accounting,
+        "reconvergence": reconvergence,
+        "window_accounting": window_accounting,
         "offline_benefit": benefit,
-        "no_speculative_write": old_capture.get("publication_calls", 0) == 0 and fresh_capture.get("publication_calls", 0) == 0,
+        "no_write_proof": dict(no_write_proof),
+        "no_speculative_write": all(
+            isinstance(branch, Mapping) and branch.get("status") == "PASS"
+            for branch in no_write_proof.values()
+        ),
     }
 
 
@@ -325,12 +418,16 @@ async def _run_history(*, history_id: str, episodes: Sequence[Any], run_id: str,
     native_instrumentation = install_native_characterization_instrumentation(graphiti, recorder)
     rows: list[dict[str, Any]] = []
     published = 0
+    formal_start_ns = time.monotonic_ns()
+    publication_starts: dict[int, int] = {}
+    publication_durables: dict[int, int] = {}
 
     async def publish_native(episode: Any, kwargs: Mapping[str, Any]) -> None:
         """Run the authoritative Frozen-V6 publication with instrumentation."""
 
         sequence = int(kwargs["source_sequence"])
         trace_run_id = f"{run_id}:NATIVE:{sequence}"
+        publication_starts[sequence] = time.monotonic_ns()
         with capture.scope(
             phase="FRESH_NATIVE",
             source_sequence=sequence,
@@ -345,6 +442,7 @@ async def _run_history(*, history_id: str, episodes: Sequence[Any], run_id: str,
                         (),
                     )
                     await graphiti.add_episode(**{k: v for k, v in kwargs.items() if k != "source_sequence"})
+        publication_durables[sequence] = time.monotonic_ns()
 
     try:
         for sequence, episode in enumerate(episodes):
@@ -361,7 +459,18 @@ async def _run_history(*, history_id: str, episodes: Sequence[Any], run_id: str,
                     backend_epoch="neo4j-local-v1",
                 )
                 target_sequence = int(target.source_sequence)
+                previous_durable_ns = (
+                    formal_start_ns
+                    if target_sequence == 1
+                    else publication_durables.get(target_sequence - 2)
+                )
+                # The predecessor publication start is not available until
+                # the predecessor has actually entered publication.  Keep it
+                # unset here and read the measured clock after publish_native
+                # returns; never substitute observer wall time.
+                predecessor_publication_start_ns = None
                 trace_run_id = f"{run_id}:OLD:{target_sequence}"
+                old_mutation_start = len(mutation_rows)
                 with capture.scope(phase="OLD", source_sequence=target_sequence, state_version=published, episode_kwargs=target_kwargs) as observed:
                     with recorder.episode_scope(trace_run_id, str(target_kwargs["name"]), target_sequence):
                         with provider_scope(region="PREPARE", source_sequence=target_sequence):
@@ -380,11 +489,24 @@ async def _run_history(*, history_id: str, episodes: Sequence[Any], run_id: str,
                     for record in recorder.records
                     if record.run_id == trace_run_id
                 ]
+                after_old_speculation = await load_backend_projection_async(
+                    graphiti.driver,
+                    namespace=namespace,
+                    version=published,
+                    backend_epoch="neo4j-local-v1",
+                )
+                old_no_write = build_no_write_proof(
+                    api_write_count=len(mutation_rows) - old_mutation_start,
+                    shadow_publication_count=int(old_capture.get("publication_calls", 0)),
+                    graph_projection_before_digest=before.digest,
+                    graph_projection_after_digest=after_old_speculation.digest,
+                )
                 prepared_digest = _prepared_digest(stage, source_sequence=int(target.source_sequence), v6_identity=core_identity()["version"])
 
                 with provider_scope(region="NATIVE", source_sequence=int(episode.source_sequence)):
                     await publish_native(episode, kwargs)
                 published += 1
+                predecessor_publication_start_ns = publication_starts.get(target_sequence - 1)
                 after = await load_backend_projection_async(
                     graphiti.driver,
                     namespace=namespace,
@@ -405,6 +527,7 @@ async def _run_history(*, history_id: str, episodes: Sequence[Any], run_id: str,
                     "environment_changes": sorted(delta.environment_changes),
                 }
                 fresh_trace_run_id = f"{run_id}:FRESH:{target_sequence}"
+                fresh_mutation_start = len(mutation_rows)
                 with capture.scope(phase="FRESH_NATIVE", source_sequence=target_sequence, state_version=published, episode_kwargs=target_kwargs) as fresh_observed:
                     with recorder.episode_scope(fresh_trace_run_id, str(target_kwargs["name"]), target_sequence):
                         with provider_scope(region="NATIVE", source_sequence=target_sequence):
@@ -426,6 +549,19 @@ async def _run_history(*, history_id: str, episodes: Sequence[Any], run_id: str,
                     for record in recorder.records
                     if record.run_id == fresh_trace_run_id
                 ]
+                after_fresh_speculation = await load_backend_projection_async(
+                    graphiti.driver,
+                    namespace=namespace,
+                    version=published,
+                    backend_epoch="neo4j-local-v1",
+                )
+                fresh_no_write = build_no_write_proof(
+                    api_write_count=len(mutation_rows) - fresh_mutation_start,
+                    shadow_publication_count=int(fresh_capture.get("publication_calls", 0)),
+                    graph_projection_before_digest=after.digest,
+                    graph_projection_after_digest=after_fresh_speculation.digest,
+                )
+                node_repair_evidence: dict[str, Any] | None = None
                 for cut in ("CUT-N", "CUT-D"):
                     old_cut = _filtered_cut_capture(old_capture, cut=cut, continuation=(
                         {"cut": "CUT-N", "nodes": getattr(stage, "resolved_nodes", ()) or stage.nodes}
@@ -445,6 +581,17 @@ async def _run_history(*, history_id: str, episodes: Sequence[Any], run_id: str,
                         prepared_artifact_digest=prepared_digest,
                     )
                     comparison_cost_ns = time.monotonic_ns() - comparison_started
+                    if cut == "CUT-N":
+                        complete = comparison.get("status") != "UNKNOWN_INCOMPLETE_EVIDENCE"
+                        node_repair_evidence = {
+                            "repair_attempted": comparison.get("status") == "INVALID_CHANGED",
+                            "old_parent_output_digest": (
+                                old_cut.get("continuation_k", {}).get("payload_digest") if complete else None
+                            ),
+                            "repaired_parent_output_digest": (
+                                fresh_cut.get("continuation_k", {}).get("payload_digest") if complete else None
+                            ),
+                        }
                     rows.append(
                         _pair_record(
                             history_id=history_id,
@@ -453,6 +600,14 @@ async def _run_history(*, history_id: str, episodes: Sequence[Any], run_id: str,
                             old_capture=old_cut,
                             fresh_capture=fresh_cut,
                             delta=delta_record,
+                            state_delta=delta,
+                            old_nodes=before.nodes,
+                            fresh_nodes=after.nodes,
+                            node_repair_evidence=node_repair_evidence,
+                            no_write_proof={"old_speculative": old_no_write, "fresh_oracle": fresh_no_write},
+                            formal_start_ns=formal_start_ns,
+                            previous_durable_ns=previous_durable_ns,
+                            predecessor_publication_start_ns=predecessor_publication_start_ns,
                             comparison=comparison,
                             old_stage=stage,
                             fresh_stage=fresh,

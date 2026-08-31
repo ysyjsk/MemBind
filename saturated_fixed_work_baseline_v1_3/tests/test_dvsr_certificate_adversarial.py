@@ -70,12 +70,117 @@ def test_filter_k_threshold_and_group_changes_are_not_set_only_proofs() -> None:
         assert result.status is CertificateStatus.UNKNOWN, field
 
 
-def test_nonmember_prompt_payload_change_is_unknown_even_below_cutoff() -> None:
+def test_nonmember_prompt_payload_change_is_stable_when_strictly_below_cutoff() -> None:
     result = certify_dvsr_exact_topk(
         _witness(post_scores={"n3": 0.1}),
         _delta(_nonmember_change("summary", after={"summary": "changed"})),
     )
-    assert result.status is CertificateStatus.UNKNOWN
+    assert result.status is CertificateStatus.STABLE
+
+
+def test_new_low_score_node_with_payload_is_stable() -> None:
+    result = certify_dvsr_exact_topk(
+        _witness(post_scores={"n5": 0.2}),
+        _delta(
+            DeltaChange(
+                kind="node",
+                key="n5",
+                changed_fields=frozenset({"name", "summary", "labels", "attributes", "name_embedding"}),
+                after={
+                    "name": "new",
+                    "summary": "new summary",
+                    "labels": ["Entity"],
+                    "attributes": {"kind": "new"},
+                    "name_embedding": [0.1, 0.2],
+                },
+                operation="insert",
+            )
+        ),
+    )
+    assert result.status is CertificateStatus.STABLE
+
+
+def test_new_high_score_node_is_invalid() -> None:
+    result = certify_dvsr_exact_topk(
+        _witness(post_scores={"n5": 0.9}),
+        _delta(
+            DeltaChange(
+                kind="node",
+                key="n5",
+                changed_fields=frozenset({"summary", "name_embedding"}),
+                after={"summary": "new", "name_embedding": [0.1, 0.2]},
+                operation="insert",
+            )
+        ),
+    )
+    assert result.status is CertificateStatus.INVALID
+
+
+def test_existing_member_payload_change_is_invalid() -> None:
+    result = certify_dvsr_exact_topk(
+        _witness(post_scores={"n1": 0.95}),
+        _delta(
+            DeltaChange(
+                kind="node",
+                key="n1",
+                changed_fields=frozenset({"summary"}),
+                before={"summary": "old"},
+                after={"summary": "new"},
+                operation="update",
+            )
+        ),
+    )
+    assert result.status is CertificateStatus.INVALID
+
+
+def test_nonmember_embedding_update_is_stable_with_post_score_bound() -> None:
+    result = certify_dvsr_exact_topk(
+        _witness(post_scores={"n3": 0.79}),
+        _delta(
+            _nonmember_change(
+                "name_embedding",
+                after={"name_embedding": [0.3, 0.7]},
+            )
+        ),
+    )
+    assert result.status is CertificateStatus.STABLE
+
+
+def test_nonmember_crossing_cutoff_is_invalid() -> None:
+    result = certify_dvsr_exact_topk(
+        _witness(post_scores={"n3": 0.81}),
+        _delta(_nonmember_change("name_embedding", after={"name_embedding": [0.8, 0.2]})),
+    )
+    assert result.status is CertificateStatus.INVALID
+
+
+def test_nonmember_deletion_is_stable_but_member_deletion_is_invalid() -> None:
+    nonmember = certify_dvsr_exact_topk(
+        _witness(post_scores={}),
+        _delta(
+            DeltaChange(
+                kind="node",
+                key="n3",
+                changed_fields=frozenset(),
+                before={"name": "old"},
+                operation="delete",
+            )
+        ),
+    )
+    member = certify_dvsr_exact_topk(
+        _witness(post_scores={}),
+        _delta(
+            DeltaChange(
+                kind="node",
+                key="n2",
+                changed_fields=frozenset(),
+                before={"name": "old"},
+                operation="delete",
+            )
+        ),
+    )
+    assert nonmember.status is CertificateStatus.STABLE
+    assert member.status is CertificateStatus.INVALID
 
 
 def test_batch_membership_or_order_change_is_unknown() -> None:

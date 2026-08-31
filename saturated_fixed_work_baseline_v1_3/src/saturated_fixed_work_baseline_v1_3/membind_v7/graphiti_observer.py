@@ -1133,6 +1133,14 @@ async def observe_node_similarity_async(
     if any(value in {"", "None"} for value in actual):
         raise GraphitiObserverError("node cosine native result UUID is invalid")
     complete = actual == reference["result"] and not reference["boundary_ties"]
+    if reference["boundary_ties"]:
+        completeness_reason = "BOUNDARY_TIE"
+    elif actual != reference["result"]:
+        actual_set = set(actual)
+        reference_set = set(reference["result"])
+        completeness_reason = "RESULT_MISMATCH"
+    else:
+        completeness_reason = "EXACT"
     row = {
         "schema_version": "membind.v7.node-cosine-observation.v1",
         "phase": scope.phase,
@@ -1158,6 +1166,19 @@ async def observe_node_similarity_async(
         "index_epoch": index_epoch,
         "config_epoch": config_epoch,
         "completeness_status": "COMPLETE" if complete else "INCOMPLETE",
+        # Digest-only/count-only diagnostics make provider/index drift
+        # auditable without persisting query vectors or node payloads.
+        "completeness_reason": completeness_reason,
+        "domain_count": len(reference["domain"]),
+        "actual_count": len(actual),
+        "reference_count": len(reference["result"]),
+        "actual_result_digest": canonical_digest(actual),
+        "reference_result_digest": canonical_digest(reference["result"]),
+        "actual_not_in_reference_count": len(set(actual) - set(reference["result"])),
+        "reference_not_in_actual_count": len(set(reference["result"]) - set(actual)),
+        "order_mismatch_count": sum(
+            left != right for left, right in zip(actual, reference["result"])
+        ) + abs(len(actual) - len(reference["result"])),
         "observer_start_ns": observer_start,
         "native_start_ns": native_start,
         "native_end_ns": native_end,

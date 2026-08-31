@@ -3290,3 +3290,124 @@ economics），treatment 不授权。任何改变 semantic boundary 的后续研
 必须新建 algorithm identity，并重新完成 source audit、quality、observer
 和 D0/D1 gates；当前身份不再启动 V7-INCREMENTAL、M2、d>1 或 scheduler
 autoresearch。
+
+## 47. DMSV Phase 2B methodology freeze — 2026-08-31
+
+本节是根据 `workplan_v7优化prompt.md` 新增的 append-only 冻结执行契约，
+不删除前述 V7-B/DVSR 记录，也不把已有 provider/live diagnostic 升级为
+本轮证据。本轮唯一目标是审计并冻结 DMSV provider-free Phase 2B，执行
+顺序固定为：
+
+`Stage A: identity/evidence audit -> workplan freeze -> Stage B: B0 preregistration -> B1 closure -> (only if MAIN_TRACK_CANDIDATE) B2/B3 -> B4 seal and stop`。
+
+### 47.1 审计身份与边界
+
+- `audited_commit=f91a0500beb87d5013644442e135e6d3afb4507c`；branch=`main`；
+  `origin/HEAD` 与 `origin/main` 均指向同一 commit；remote identity 已核验。
+- `workplan_v7.md` 输入 SHA-256=`049d27250ce83343037cf25bbb8d5556742c554ca4ea5ab2d6f33e3f192891e0`；
+  本 prompt 输入 SHA-256=`38cd4e5208ef3717f5a4640cc7b2949c00a5f14e1efe552c12ccd92729ebefb3`。
+- 实际 Graphiti pin=`0.29.3`；平台身份仍为
+  `local-qwen3-8b-awq-dualreplica-v1`，B0 anchor 继续指向既有 sealed
+  `NATIVE_SERIAL/d6e9e240c3ce`，B1 只作 relaxed-order upper bound。
+- 当前 worktree 有此前实验/修复改动；这些 modified/untracked 文件均保留，
+  本节不执行恢复、清理、commit 或 push。
+- 本轮禁止真实 provider、live Graphiti treatment、authoritative write、
+  Phase 3A/3B、held-out 访问、scheduler/lane/future-cap 参数搜索；即使
+  B1 得到候选，本轮也必须在 B4 停止。
+
+### 47.2 研究中心与 method boundary
+
+论文中心暂定为 `DMSV — Delta-Maintained Semantic Views for Stateful Agent
+Memory Construction`。方法必须分层记录：
+
+`V_rank -> V_prompt -> V_request -> ResponseArtifact -> Continuation`。
+
+只有 source-local semantic IR 的提前物化可以不读 mutable memory；
+`ResponseArtifact/Continuation` 的复用、fresh recompute 与 descendant
+reconvergence 分开记账。DMSV 不得把“Top-K kernel 能增量更新”直接包装成
+主方法，除非它覆盖当前 dominant critical path 且保持 Graphiti 原生 call
+boundary 和 B0 state/publication semantics。
+
+### 47.3 BaseViewAvailability 最高优先级 Gate
+
+逐路径记录 `BV-NATIVE`、`BV-VERSIONED`、`BV-PERSISTENT` 的
+`BaseMaterializationCost`、`DeltaMaintenanceCost`、snapshot/epoch、
+lifecycle/GC、unused/failed work、seam tax 和 `t_base_ready <=
+t_authoritative_need`。缺证明统一为 `UNKNOWN`，不得推断为 pass。
+
+现有 sealed timing recovery 只证明 `V6 PreparedArtifact` 与 stateful
+BaseView 不同：29 个 source pair 中只有 1 个在 predecessor publication
+开始前具备 cross-snapshot launch 条件；它不能证明可持续的 versioned 或
+persistent BaseView。没有已实现的 DMSV BaseView lifecycle/maintenance
+artifact 时，B1 只能输出 `BLOCKED` 或 `DMSV_BASE_VIEW_UNAVAILABLE`，不能
+进入 B2。
+
+### 47.4 Dominant request closure
+
+使用 Graphiti 0.29.3 的真实 `prompt_library.dedupe_nodes.nodes` 与完整
+canonical serialization，必须把 extracted nodes、candidate ID/order 与
+payload、current episode、`previous_episodes`、entity schema、unresolved
+membership、batch shape、template/serialization 以及 model/config/schema/
+index epoch 纳入 `V_request`。Top-K ID 相同不等于 request exact；若只拆分
+原生 batch call 才能局部化，必须标记为新的 algorithm identity。
+
+### 47.5 Phase 2B preregistration and decision table
+
+`B0` 冻结 exact state/query/filter/config identities、full-scan/fresh-request
+oracle、delta types、unknown-to-fresh fallback、no-write proof 与 work/
+latency accounting。B1 先做 BaseViewAvailability 与 dominant-request
+closure；按以下优先级 fail closed：
+
+1. 无任何已证明合法 BaseView 路径 -> `DMSV_BASE_VIEW_UNAVAILABLE`；
+2. BaseView 可用但 dominant request 在相邻 state 必然变化且无原生合法局部化
+   -> `DMSV_DOMINANT_CALL_UNAVOIDABLE`；
+3. 只覆盖 retrieval kernel -> `KERNEL_ONLY`；仅 scale crossover 有收益 ->
+   `SCALABILITY_TRACK`；
+4. 只有完整 exactness、合法性和 critical-path value 均成立，才是
+   `MAIN_TRACK_CANDIDATE`。
+
+只有 `MAIN_TRACK_CANDIDATE` 才能执行 B2 Exact Top-K Delta Maintainer TDD
+和 B3 layered affectedness/economics TDD；否则直接写 B4 report/ledger 并
+停止。B2/B3 的任何 patch/refill、buffer、materialization/maintenance、
+affectedness、reconvergence 和 longest-path accounting 都必须与 full-scan
+oracle exact 对齐，不能用 saved-work 求和替代 makespan。
+
+### 47.6 冻结标记
+
+本节在 Stage A identity/evidence/terminology/forbidden-action/self-audit、
+targeted TDD、`git diff --check` 和 SHA-256 记录完成后标记：
+
+`WORKPLAN_FROZEN_FOR_PHASE2B`。
+
+Stage B 交付物为 DMSV evidence closure、B0 preregistration、B1 closure
+matrix、Phase 2B report/ledger 和测试结果。无论最终是正、负或 BLOCKED，
+都必须在 B4 停止；不得在本轮自动启动 Phase 3A/3B、live treatment 或
+full evaluation。
+
+## 48. DMSV Phase 2B execution seal — 2026-08-31
+
+`WORKPLAN_FROZEN_FOR_PHASE2B` 已写入并执行。B0 preregistration 与 B1
+provider-free closure 已封存于 `v7/dmsv_phase2b/`：
+
+- `DMSV_PHASE2B_PREREGISTRATION.json`：冻结 B0、oracle、delta、unknown/
+  fallback、BaseView、accounting 和 forbidden-action contract。
+- `DMSV_B1_CLOSURE.json`：`BV-NATIVE=FAIL`（29 个已恢复 pair 中只有 1 个
+  满足及时 launch 条件），`BV-VERSIONED=UNKNOWN`，`BV-PERSISTENT=UNKNOWN`；
+  aggregate `base_view_verdict=BLOCKED`。
+- `DMSV_DOMINANT_REQUEST_DELTA_MATRIX.json`：在 Graphiti 0.29.3 实际
+  `prompt_library.dedupe_nodes.nodes` 上，candidate payload/order/membership、
+  `previous_episodes`、batch shape、episode content 与 model/config/schema/
+  index epoch 均改变完整 canonical request；因此当前 native batch boundary
+  的 verdict 为 `DMSV_DOMINANT_CALL_UNAVOIDABLE`。
+- `DMSV_PHASE2B_REPORT_20260831.md`：B0=`PASS`，B1=`BLOCKED`，B2/B3=`NOT_EXECUTED`
+  （缺少 `MAIN_TRACK_CANDIDATE` 授权），B4=`COMPLETE`。
+
+Provider-free DMSV TDD 为 `3 passed`，纳入 DMSV 与全部 corrective contracts
+的相关 regression slice 为 `160 passed`。完整 repository suite 为 `718 passed, 7 failed`；失败均为
+历史 source-hash freeze binding 漂移，已在 B4 report/ledger 明确保留，未改写
+历史协议 hash。`py_compile` 与 `git diff --check` 通过。
+
+最终状态：`BLOCKED`。本轮已在 B4 停止，未执行 provider/live treatment、
+Phase 3A/3B、Top-K maintainer、scheduler search、held-out access 或 full
+evaluation。任何未来重开必须新建 algorithm identity，并先证明一个合法的
+timely BaseView 路径及完整 dominant request 的 exact preservation/localization。

@@ -27,6 +27,7 @@ from .graphiti_observer import (
     _maybe_await,
     canonical_digest,
 )
+from .dvsr_window import bound_hidden_cp_components
 
 
 DVSR_CROSS_SNAPSHOT_SCHEMA = "membind.dvsr.cross-snapshot-observer.v1"
@@ -447,32 +448,33 @@ def compare_cross_snapshot(
 
     if operator_cut not in DVSR_CUTS:
         raise DvsrCrossSnapshotError("operator cut is invalid")
-    reasons: list[str] = []
+    unknown_reasons: list[str] = []
+    invalid_reasons: list[str] = []
     if old_capture.get("phase") != "OLD" or fresh_capture.get("phase") != "FRESH_NATIVE":
-        reasons.append("phase_pair_mismatch")
+        unknown_reasons.append("phase_pair_mismatch")
     if old_capture.get("source_sequence") != fresh_capture.get("source_sequence"):
-        reasons.append("source_sequence_mismatch")
+        unknown_reasons.append("source_sequence_mismatch")
     old_reads = old_capture.get("reads")
     fresh_reads = fresh_capture.get("reads")
     old_requests = old_capture.get("requests")
     fresh_requests = fresh_capture.get("requests")
     if not all(isinstance(value, Sequence) and not isinstance(value, (str, bytes, bytearray)) for value in (old_reads, fresh_reads, old_requests, fresh_requests)):
-        reasons.append("capture_fields_missing")
+        unknown_reasons.append("capture_fields_missing")
         old_reads = fresh_reads = old_requests = fresh_requests = ()
 
     def keyed(rows: Sequence[Mapping[str, Any]], *, kind: str) -> dict[tuple[str, int], Mapping[str, Any]]:
         result: dict[tuple[str, int], Mapping[str, Any]] = {}
         for raw in rows:
             if not isinstance(raw, Mapping):
-                reasons.append(f"{kind}_row_invalid")
+                unknown_reasons.append(f"{kind}_row_invalid")
                 continue
             try:
                 key = _read_key(raw) if kind == "read" else _request_key(raw)
             except DvsrCrossSnapshotError:
-                reasons.append(f"{kind}_identity_invalid")
+                unknown_reasons.append(f"{kind}_identity_invalid")
                 continue
             if key in result:
-                reasons.append(f"{kind}_duplicate_identity")
+                unknown_reasons.append(f"{kind}_duplicate_identity")
             result[key] = raw
         return result
 
@@ -481,53 +483,84 @@ def compare_cross_snapshot(
     old_req_map = keyed(old_requests, kind="request")
     fresh_req_map = keyed(fresh_requests, kind="request")
     if set(old_read_map) != set(fresh_read_map):
-        reasons.append("read_identity_changed")
+        invalid_reasons.append("read_identity_changed")
     read_matches = 0
     for key in sorted(set(old_read_map) & set(fresh_read_map)):
-        if canonical_digest(_read_projection(old_read_map[key])) == canonical_digest(_read_projection(fresh_read_map[key])):
+        left_read = old_read_map[key]
+        right_read = fresh_read_map[key]
+        if left_read.get("completeness_status") != "COMPLETE" or right_read.get("completeness_status") != "COMPLETE":
+            unknown_reasons.append(f"read_incomplete:{key[0]}:{key[1]}")
+        elif any(
+            canonical_digest(left_read.get(field)) != canonical_digest(right_read.get(field))
+            for field in ("query_epoch", "index_epoch", "config_epoch")
+        ):
+            unknown_reasons.append(f"read_epoch_or_config_changed:{key[0]}:{key[1]}")
+        elif canonical_digest(_read_projection(left_read)) == canonical_digest(_read_projection(right_read)):
             read_matches += 1
         else:
-            reasons.append(f"read_changed:{key[0]}:{key[1]}")
+            invalid_reasons.append(f"read_changed:{key[0]}:{key[1]}")
     if set(old_req_map) != set(fresh_req_map):
-        reasons.append("request_identity_changed")
+        invalid_reasons.append("request_identity_changed")
     request_matches = 0
     for key in sorted(set(old_req_map) & set(fresh_req_map)):
         left = old_req_map[key]
         right = fresh_req_map[key]
-        if left.get("request_identity") == right.get("request_identity") and left.get("field_digests") == right.get("field_digests"):
+        if left.get("status") != "PASS" or right.get("status") != "PASS":
+            unknown_reasons.append(f"request_incomplete:{key[0]}:{key[1]}")
+        elif left.get("model_epoch") != right.get("model_epoch"):
+            unknown_reasons.append(f"request_epoch_changed:{key[0]}:{key[1]}")
+        elif left.get("request_identity") == right.get("request_identity") and left.get("field_digests") == right.get("field_digests"):
             request_matches += 1
         else:
-            reasons.append(f"request_changed:{key[0]}:{key[1]}")
+            invalid_reasons.append(f"request_changed:{key[0]}:{key[1]}")
 
     reusable_read_keys = [
         [key[0], key[1]]
         for key in sorted(set(old_read_map) & set(fresh_read_map))
-        if canonical_digest(_read_projection(old_read_map[key]))
+        if old_read_map[key].get("completeness_status") == "COMPLETE"
+        and fresh_read_map[key].get("completeness_status") == "COMPLETE"
+        and all(
+            canonical_digest(old_read_map[key].get(field))
+            == canonical_digest(fresh_read_map[key].get(field))
+            for field in ("query_epoch", "index_epoch", "config_epoch")
+        )
+        and canonical_digest(_read_projection(old_read_map[key]))
         == canonical_digest(_read_projection(fresh_read_map[key]))
     ]
     reusable_request_keys = [
         [key[0], key[1]]
         for key in sorted(set(old_req_map) & set(fresh_req_map))
-        if old_req_map[key].get("request_identity") == fresh_req_map[key].get("request_identity")
+        if old_req_map[key].get("status") == "PASS"
+        and fresh_req_map[key].get("status") == "PASS"
+        and old_req_map[key].get("model_epoch") == fresh_req_map[key].get("model_epoch")
+        and old_req_map[key].get("request_identity") == fresh_req_map[key].get("request_identity")
         and old_req_map[key].get("field_digests") == fresh_req_map[key].get("field_digests")
     ]
 
     old_cont = old_capture.get("continuation_k")
     fresh_cont = fresh_capture.get("continuation_k")
-    continuation_exact = (
-        isinstance(old_cont, Mapping)
-        and isinstance(fresh_cont, Mapping)
+    continuation_complete = isinstance(old_cont, Mapping) and isinstance(fresh_cont, Mapping)
+    continuation_exact = bool(
+        continuation_complete
         and canonical_digest(_continuation_projection(old_cont))
         == canonical_digest(_continuation_projection(fresh_cont))
     )
-    if not continuation_exact:
-        reasons.append("continuation_changed")
+    if not continuation_complete:
+        unknown_reasons.append("continuation_incomplete")
+    elif not continuation_exact:
+        invalid_reasons.append("continuation_changed")
     old_writes = old_capture.get("publication_calls", 0)
     fresh_writes = fresh_capture.get("publication_calls", 0)
     if old_writes != 0 or fresh_writes != 0:
-        reasons.append("pre_seam_publication_detected")
+        invalid_reasons.append("pre_seam_publication_detected")
 
-    status = "VALID" if not reasons else "UNKNOWN"
+    status = (
+        "UNKNOWN_INCOMPLETE_EVIDENCE"
+        if unknown_reasons
+        else "INVALID_CHANGED"
+        if invalid_reasons
+        else "VALID"
+    )
     return {
         "schema_version": DVSR_CROSS_SNAPSHOT_SCHEMA,
         "status": status,
@@ -542,7 +575,8 @@ def compare_cross_snapshot(
         "fresh_request_count": len(fresh_req_map),
         "continuation_exact": continuation_exact,
         "no_write": old_writes == 0 and fresh_writes == 0,
-        "unknown_reasons": sorted(set(reasons)),
+        "invalid_reasons": sorted(set(invalid_reasons)),
+        "unknown_reasons": sorted(set(unknown_reasons)),
         "reusable_read_keys": reusable_read_keys,
         "reusable_request_keys": reusable_request_keys,
     }
@@ -602,6 +636,8 @@ def derive_offline_benefit_components(
     validation_cost_ns: int | float,
     seam_tax_ns: int | float,
     failed_work_lambda: float,
+    maximum_hideable_cp_ns: int | float,
+    reconvergence_saved_descendant_node_ids: Sequence[str] = (),
     extra_visible_repair_cp_ns: int | float = 0,
 ) -> dict[str, Any]:
     """Derive marginal offline costs against the no-reuse baseline.
@@ -632,6 +668,9 @@ def derive_offline_benefit_components(
         return value
 
     extra_repair = _nonnegative_number(extra_visible_repair_cp_ns, "extra_visible_repair_cp_ns")
+    maximum_hideable = _nonnegative_number(maximum_hideable_cp_ns, "maximum_hideable_cp_ns")
+    if not float(maximum_hideable).is_integer():
+        raise DvsrCrossSnapshotError("offline benefit field is invalid: maximum_hideable_cp_ns")
     old_baseline = int(_nonnegative_number(old_dag.get("baseline_cp_ns", 0), "old_baseline_cp_ns"))
     fresh_baseline = int(_nonnegative_number(fresh_dag.get("baseline_cp_ns", 0), "fresh_baseline_cp_ns"))
     if comparison_status == "VALID":
@@ -655,9 +694,31 @@ def derive_offline_benefit_components(
         )
         failed_speculation = max(0, old_baseline - retained_old_cp)
 
-    benefit = build_offline_benefit(
+    fresh_nodes_by_id = {
+        str(node.get("node_id")): node
+        for node in fresh_dag.get("nodes", ())
+        if isinstance(node, Mapping) and isinstance(node.get("node_id"), str)
+    }
+    reconvergence_ids = tuple(sorted(set(str(node_id) for node_id in reconvergence_saved_descendant_node_ids)))
+    if any(
+        node_id not in fresh_nodes_by_id
+        or fresh_nodes_by_id[node_id].get("reusable") is not True
+        for node_id in reconvergence_ids
+    ):
+        raise DvsrCrossSnapshotError("reconvergence descendant is not a certified reusable DAG node")
+    reconvergence_cp = sum(int(fresh_nodes_by_id[node_id]["cost_ns"]) for node_id in reconvergence_ids)
+    if reconvergence_cp > reusable_cp:
+        raise DvsrCrossSnapshotError("reconvergence descendant CP exceeds reusable CP")
+    reusable_cp -= reconvergence_cp
+
+    bounded = bound_hidden_cp_components(
         reuse_hidden_cp_ns=reusable_cp,
-        reconvergence_saved_descendant_cp_ns=0,
+        reconvergence_saved_descendant_cp_ns=reconvergence_cp,
+        maximum_hideable_cp_ns=int(maximum_hideable),
+    )
+    benefit = build_offline_benefit(
+        reuse_hidden_cp_ns=bounded["reuse_hidden_cp_ns"],
+        reconvergence_saved_descendant_cp_ns=bounded["reconvergence_saved_descendant_cp_ns"],
         validation_cost_ns=_nonnegative_number(validation_cost_ns, "validation_cost_ns"),
         visible_repair_cp_ns=extra_repair,
         failed_speculation_work_ns=failed_speculation,
@@ -666,8 +727,62 @@ def derive_offline_benefit_components(
     )
     benefit["comparison_status"] = comparison_status
     benefit["baseline_fresh_cp_ns"] = fresh_baseline
+    benefit["unbounded_reuse_hidden_cp_ns"] = reusable_cp
+    benefit["unbounded_reconvergence_saved_descendant_cp_ns"] = reconvergence_cp
+    benefit["reconvergence_saved_descendant_node_ids"] = list(reconvergence_ids)
+    benefit["maximum_hideable_cp_ns"] = int(maximum_hideable)
+    benefit["window_bounded_hidden_cp_ns"] = bounded["window_bounded_hidden_cp_ns"]
+    benefit["uncredited_due_to_window_ns"] = bounded["uncredited_due_to_window_ns"]
     benefit["visible_repair_definition"] = "treatment_only_extra_over_no_reuse_baseline"
     return benefit
+
+
+def derive_window_bounded_offline_benefit(
+    *,
+    window_accounting: Mapping[str, Any] | None,
+    comparison_status: str,
+    old_dag: Mapping[str, Any],
+    fresh_dag: Mapping[str, Any],
+    validation_cost_ns: int | float,
+    seam_tax_ns: int | float,
+    failed_work_lambda: float,
+    reconvergence_saved_descendant_node_ids: Sequence[str] = (),
+    extra_visible_repair_cp_ns: int | float = 0,
+) -> dict[str, Any]:
+    """Fail closed unless a measured speculation-window cap is available."""
+
+    if not isinstance(window_accounting, Mapping):
+        return {
+            "schema_version": "membind.dvsr.offline-benefit.v1",
+            "status": "UNKNOWN",
+            "reason": "window_accounting_missing",
+        }
+    window_status = window_accounting.get("status")
+    maximum_hideable = window_accounting.get("maximum_hideable_cp_ns")
+    if window_status not in {"COMPLETE", "INELIGIBLE_CROSS_SNAPSHOT_LAUNCH"} or (
+        isinstance(maximum_hideable, bool)
+        or not isinstance(maximum_hideable, int)
+        or maximum_hideable < 0
+    ):
+        return {
+            "schema_version": "membind.dvsr.offline-benefit.v1",
+            "status": "UNKNOWN",
+            "reason": "window_accounting_missing",
+            "window_accounting_status": window_status,
+        }
+    result = derive_offline_benefit_components(
+        comparison_status=comparison_status,
+        old_dag=old_dag,
+        fresh_dag=fresh_dag,
+        validation_cost_ns=validation_cost_ns,
+        seam_tax_ns=seam_tax_ns,
+        failed_work_lambda=failed_work_lambda,
+        maximum_hideable_cp_ns=maximum_hideable,
+        reconvergence_saved_descendant_node_ids=reconvergence_saved_descendant_node_ids,
+        extra_visible_repair_cp_ns=extra_visible_repair_cp_ns,
+    )
+    result["window_accounting_status"] = window_status
+    return result
 
 
 def _identity_list(values: Any) -> list[str]:
@@ -788,6 +903,10 @@ def _sanitize_read(value: Any) -> dict[str, Any]:
         "actual_result", "reference_result", "cutoff", "boundary_ties",
         "tie_contract", "query_digest", "filter_fingerprint",
         "completeness_status", "query_epoch", "index_epoch", "config_epoch",
+        "completeness_reason", "domain_count", "actual_count", "reference_count",
+        "actual_result_digest", "reference_result_digest",
+        "actual_not_in_reference_count", "reference_not_in_actual_count",
+        "order_mismatch_count",
         "start_ns", "end_ns", "duration_ns", "observer_start_ns",
         "native_start_ns", "native_end_ns", "observer_end_ns",
     )
@@ -923,6 +1042,7 @@ __all__ = [
     "PreparedResolutionResult",
     "build_offline_benefit",
     "derive_offline_benefit_components",
+    "derive_window_bounded_offline_benefit",
     "compare_cross_snapshot",
     "resolve_prepared_to_seam_async",
     "sanitize_observer_capture",

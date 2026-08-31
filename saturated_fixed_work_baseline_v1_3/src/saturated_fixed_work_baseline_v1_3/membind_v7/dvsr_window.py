@@ -101,6 +101,77 @@ def bound_hidden_cp_components(
     }
 
 
+def _single_trace_timestamp(
+    capture: Mapping[str, Any] | None,
+    *,
+    phase: str,
+    field: str,
+) -> int | None:
+    if not isinstance(capture, Mapping):
+        return None
+    trace = capture.get("trace")
+    if not isinstance(trace, Sequence) or isinstance(trace, (str, bytes, bytearray)):
+        return None
+    values: list[int] = []
+    for row in trace:
+        if not isinstance(row, Mapping) or row.get("phase") != phase or row.get("status") != "ok":
+            continue
+        value = row.get(field)
+        if isinstance(value, bool) or not isinstance(value, int) or value < 0:
+            continue
+        values.append(value)
+    return values[0] if len(values) == 1 else None
+
+
+def compute_pair_window_from_observer_evidence(
+    *,
+    source_sequence: int,
+    old_capture: Mapping[str, Any],
+    fresh_capture: Mapping[str, Any],
+    formal_start_ns: int | None,
+    previous_durable_ns: int | None,
+    predecessor_publication_start_ns: int | None,
+    removable_operator_cp_ns: int,
+) -> dict[str, Any]:
+    """Reduce a paired observer record to measured ready/need window clocks.
+
+    The prepared artifact is ready only after the OLD build-to-seam capture
+    closes.  ``node-resolution.start_ns`` in the fresh trace is the
+    authoritative need boundary.  The predecessor publication start is a
+    hard launch cutoff, so this helper never turns a late observer into a
+    fabricated overlap opportunity.
+    """
+
+    if isinstance(source_sequence, bool) or not isinstance(source_sequence, int) or source_sequence < 1:
+        raise ValueError("source_sequence must be a positive integer")
+    artifact_ready = old_capture.get("end_ns") if isinstance(old_capture, Mapping) else None
+    if isinstance(artifact_ready, bool) or not isinstance(artifact_ready, int) or artifact_ready < 0:
+        artifact_ready = None
+    old_snapshot_ready = formal_start_ns if source_sequence == 1 else previous_durable_ns
+    authoritative_need = _single_trace_timestamp(
+        fresh_capture,
+        phase="node-resolution",
+        field="start_ns",
+    )
+    values = {
+        "artifact_ready_ns": artifact_ready,
+        "old_snapshot_ready_ns": old_snapshot_ready,
+        "old_snapshot_close_ns": predecessor_publication_start_ns,
+        "authoritative_need_ns": authoritative_need,
+        "removable_operator_cp_ns": removable_operator_cp_ns,
+    }
+    result = compute_speculation_window(**values)
+    result.update(
+        {
+            "source_sequence": source_sequence,
+            "ready_event": "OLD.capture.end_ns",
+            "need_event": "FRESH_NATIVE.node-resolution.start_ns",
+            "close_event": "predecessor.publication.start_ns",
+        }
+    )
+    return result
+
+
 def _event_values(
     rows: Sequence[Mapping[str, Any]],
     *,
@@ -252,6 +323,7 @@ __all__ = [
     "WINDOW_RECOVERY_SCHEMA",
     "WINDOW_SCHEMA",
     "bound_hidden_cp_components",
+    "compute_pair_window_from_observer_evidence",
     "compute_speculation_window",
     "recover_frozen_v6_window_fields",
 ]
