@@ -688,6 +688,78 @@ def _identity_list(values: Any) -> list[str]:
     return result
 
 
+_NODE_SEMANTIC_FIELDS = (
+    "name",
+    "group_id",
+    "labels",
+    "created_at",
+    "summary",
+    "attributes",
+    "name_embedding",
+)
+_EDGE_SEMANTIC_FIELDS = (
+    "group_id",
+    "source_node_uuid",
+    "target_node_uuid",
+    "created_at",
+    "name",
+    "fact",
+    "fact_embedding",
+    "episodes",
+    "expired_at",
+    "valid_at",
+    "invalid_at",
+    "reference_time",
+    "attributes",
+)
+_EPISODE_SEMANTIC_FIELDS = (
+    "name",
+    "group_id",
+    "labels",
+    "created_at",
+    "source",
+    "source_description",
+    "content",
+    "valid_at",
+    "entity_edges",
+    "episode_metadata",
+)
+_CONTINUATION_CONTROL_FIELDS = (
+    "node_episode_index_map",
+    "uuid_map",
+    "now",
+    "store_raw_episode_content",
+    "driver_provider",
+    "driver_database",
+    "saga",
+    "saga_previous_episode_uuid",
+    "update_communities",
+)
+
+
+def _semantic_object_projection(value: Any, *, fields: Sequence[str]) -> dict[str, Any]:
+    """Digest prompt/publication-visible object fields without retaining payloads."""
+
+    identity = (
+        value.get("uuid") if isinstance(value, Mapping) else getattr(value, "uuid", None)
+    )
+    projection: dict[str, Any] = {"identity": None if identity is None else str(identity)}
+    present: list[str] = []
+    for field in fields:
+        if isinstance(value, Mapping):
+            if field not in value:
+                continue
+            child = value[field]
+        else:
+            if not hasattr(value, field):
+                continue
+            child = getattr(value, field)
+        present.append(field)
+        projection[f"{field}_digest"] = canonical_digest(child)
+    projection["semantic_fields_present"] = present
+    return projection
+
+
 def _sanitize_previous_episode(value: Any) -> dict[str, Any]:
     if not isinstance(value, Mapping):
         return {"status": "MISSING"}
@@ -752,6 +824,29 @@ def _sanitize_continuation(value: Any) -> dict[str, Any]:
         "node_ids": _identity_list(nodes),
         "edge_ids": _identity_list(edges),
         "episode_ids": _identity_list(episodes),
+        "node_semantic_projection": [
+            _semantic_object_projection(node, fields=_NODE_SEMANTIC_FIELDS)
+            for node in nodes
+        ]
+        if isinstance(nodes, Sequence) and not isinstance(nodes, (str, bytes, bytearray))
+        else [],
+        "edge_semantic_projection": [
+            _semantic_object_projection(edge, fields=_EDGE_SEMANTIC_FIELDS)
+            for edge in edges
+        ]
+        if isinstance(edges, Sequence) and not isinstance(edges, (str, bytes, bytearray))
+        else [],
+        "episode_semantic_projection": [
+            _semantic_object_projection(episode, fields=_EPISODE_SEMANTIC_FIELDS)
+            for episode in episodes
+        ]
+        if isinstance(episodes, Sequence) and not isinstance(episodes, (str, bytes, bytearray))
+        else [],
+        "control_field_digests": {
+            field: canonical_digest(value.get(field))
+            for field in _CONTINUATION_CONTROL_FIELDS
+            if field in value
+        },
         "node_count": len(nodes)
         if isinstance(nodes, Sequence) and not isinstance(nodes, (str, bytes, bytearray))
         else 0,
@@ -759,11 +854,10 @@ def _sanitize_continuation(value: Any) -> dict[str, Any]:
         if isinstance(edges, Sequence) and not isinstance(edges, (str, bytes, bytearray))
         else 0,
     }
-    # The observer intentionally drops mutable Graphiti object payloads.  A
-    # digest of ``value`` would nevertheless bind hidden runtime fields (for
-    # example model internals or object ordering) and create false misses for
-    # CUT-N.  Digest only the redacted semantic continuation that is actually
-    # retained above; ID/order/count changes still change the digest.
+    # The observer intentionally drops raw Graphiti payloads and unknown
+    # runtime fields.  Exactness is nevertheless bound to every ordered
+    # prompt/publication-visible Node, Edge, Episode and continuation-control
+    # field through the digest-only projections above.
     sanitized["payload_digest"] = canonical_digest(sanitized)
     return sanitized
 

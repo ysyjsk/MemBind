@@ -224,6 +224,145 @@ def test_continuation_digest_binds_redacted_semantics_not_hidden_object_payload(
     assert left["continuation_k"]["payload_digest"] != changed["continuation_k"]["payload_digest"]
 
 
+def _semantic_continuation(*, nodes: list[dict] | None = None, edges: list[dict] | None = None) -> dict:
+    return {
+        "schema_version": "membind.dvsr.test-continuation.v1",
+        "seam": "before-publication",
+        "cut": "CUT-D",
+        "source_sequence": 1,
+        "group_id": "private-group",
+        "backend_epoch": "backend-1",
+        "publication_frontier": 1,
+        "episodes": [{"uuid": "episode-1", "runtime_nonce": "episode-noise"}],
+        "nodes": nodes
+        if nodes is not None
+        else [
+            {
+                "uuid": "node-1",
+                "name": "Alice",
+                "labels": ["Person"],
+                "summary": "Alice likes databases.",
+                "attributes": {"role": "engineer"},
+                "name_embedding": [0.1, 0.2],
+                "runtime_nonce": "node-noise",
+            }
+        ],
+        "entity_edges": edges
+        if edges is not None
+        else [
+            {
+                "uuid": "edge-1",
+                "source_node_uuid": "node-1",
+                "target_node_uuid": "node-2",
+                "name": "LIKES",
+                "fact": "Alice likes databases.",
+                "valid_at": "2026-01-01T00:00:00Z",
+                "invalid_at": None,
+                "expired_at": None,
+                "reference_time": "2026-01-01T00:00:00Z",
+                "attributes": {"confidence": "high"},
+                "fact_embedding": [0.3, 0.4],
+                "runtime_nonce": "edge-noise",
+            }
+        ],
+    }
+
+
+def _continuation_digest(value: dict) -> str:
+    sanitized = sanitize_observer_capture(
+        {"phase": "OLD", "reads": [], "requests": []},
+        continuation=value,
+    )
+    encoded = __import__("json").dumps(sanitized["continuation_k"], sort_keys=True)
+    assert "Alice likes databases" not in encoded
+    assert "private-group" not in encoded
+    return sanitized["continuation_k"]["payload_digest"]
+
+
+def test_continuation_same_node_uuid_but_summary_change_is_not_exact() -> None:
+    left = _semantic_continuation()
+    right = _semantic_continuation()
+    right["nodes"][0]["summary"] = "Alice now studies compilers."
+    assert _continuation_digest(left) != _continuation_digest(right)
+
+
+def test_continuation_same_node_uuid_but_labels_change_is_not_exact() -> None:
+    left = _semantic_continuation()
+    right = _semantic_continuation()
+    right["nodes"][0]["labels"] = ["Person", "Researcher"]
+    assert _continuation_digest(left) != _continuation_digest(right)
+
+
+def test_continuation_same_edge_uuid_but_temporal_change_is_not_exact() -> None:
+    left = _semantic_continuation()
+    right = _semantic_continuation()
+    right["entity_edges"][0]["invalid_at"] = "2026-02-01T00:00:00Z"
+    assert _continuation_digest(left) != _continuation_digest(right)
+
+
+def test_continuation_nonsemantic_runtime_fields_do_not_create_false_mismatch() -> None:
+    left = _semantic_continuation()
+    right = _semantic_continuation()
+    right["nodes"][0]["runtime_nonce"] = "different-node-noise"
+    right["entity_edges"][0]["runtime_nonce"] = "different-edge-noise"
+    right["episodes"][0]["runtime_nonce"] = "different-episode-noise"
+    assert _continuation_digest(left) == _continuation_digest(right)
+
+
+def test_continuation_semantic_order_change_is_not_exact() -> None:
+    first = _semantic_continuation()["nodes"][0]
+    second = {**first, "uuid": "node-2", "name": "Bob"}
+    left = _semantic_continuation(nodes=[first, second])
+    right = _semantic_continuation(nodes=[second, first])
+    assert _continuation_digest(left) != _continuation_digest(right)
+
+
+def test_continuation_identical_semantic_projection_is_exact() -> None:
+    left = _semantic_continuation()
+    right = _semantic_continuation()
+    assert _continuation_digest(left) == _continuation_digest(right)
+
+
+@pytest.mark.parametrize(
+    ("field", "changed"),
+    [
+        ("name", "Alice Cooper"),
+        ("attributes", {"role": "researcher"}),
+        ("name_embedding", [0.1, 0.25]),
+    ],
+)
+def test_continuation_node_downstream_semantics_are_digest_bound(field: str, changed: object) -> None:
+    left = _semantic_continuation()
+    right = _semantic_continuation()
+    right["nodes"][0][field] = changed
+    assert _continuation_digest(left) != _continuation_digest(right)
+
+
+@pytest.mark.parametrize(
+    ("field", "changed"),
+    [
+        ("source_node_uuid", "node-3"),
+        ("target_node_uuid", "node-4"),
+        ("fact", "Alice studies databases."),
+        ("attributes", {"confidence": "low"}),
+        ("fact_embedding", [0.3, 0.45]),
+    ],
+)
+def test_continuation_edge_downstream_semantics_are_digest_bound(field: str, changed: object) -> None:
+    left = _semantic_continuation()
+    right = _semantic_continuation()
+    right["entity_edges"][0][field] = changed
+    assert _continuation_digest(left) != _continuation_digest(right)
+
+
+def test_continuation_publication_input_mapping_is_digest_bound() -> None:
+    left = _semantic_continuation()
+    right = _semantic_continuation()
+    left["node_episode_index_map"] = {"node-1": [0]}
+    right["node_episode_index_map"] = {"node-1": [1]}
+    assert _continuation_digest(left) != _continuation_digest(right)
+
+
 def test_capture_sanitizer_preserves_read_timing_for_semantic_dag() -> None:
     capture = _capture()
     capture["reads"][0].update(

@@ -1811,3 +1811,49 @@ C0经济口径同步冻结：
 > MemBind DVSR在冻结V6 prepared extraction之上，对mutable Agent Memory construction的stateful semantic reads进行跨state验证；系统仅在canonical LLM request保持相同或delta-local repair exact reconverge时复用投机结果，并以ordered publication保持authoritative memory evolution。是否执行投机由critical-path和foreground interference共同决定。
 
 在G4前，这仍是一个待证方法假设，不是已成立的系统结论。
+
+## 执行修订 6：v7-run-831 scientific-contract corrective audit（2026-08-31）
+
+本节覆盖前文所有“继续2/6/12-source”或“authorize full development histories”的执行授权，但不删除旧记录，也不改变DVSR研究主线、Frozen V6 semantic root、development/held-out split或G4/G6边界。
+
+### 当前强制顺序
+
+```text
+Scientific-contract repair
+-> targeted TDD
+-> 2-source
+-> 6-source
+-> 12-source
+-> G3 completeness audit
+-> 4 development histories
+-> G4
+```
+
+在以下 corrective contract 全部 GREEN 前，禁止新2/6/12-source及full-history workload：
+
+1. Continuation K semantic projection；
+2. Frozen V6与DVSR Prepared/no-reuse真实动态differential；
+3. `t_ready/t_need`和window-bounded critical-path accounting；
+4. Node C1 delta certificate及C0 fallback；
+5. `VALID/INVALID_CHANGED/UNKNOWN_INCOMPLETE_EVIDENCE` tri-state；
+6. descendant-only reconvergence attribution；
+7. API/publication/state-projection三层no-write proof；
+8. primary lambda及accounting identity seal；
+9. targeted与full repository regression；
+10. Frozen V6 file hash复核。
+
+### Gate与artifact状态纠正
+
+- G1当前为`BLOCKED_PENDING_DIFFERENTIAL`；旧provider-free seam的`5_PASS`只证明抽象接口，不证明Frozen V6真实Prepared semantic root；
+- G2/G3 readiness在上述合同闭合前均为`BLOCKED_BY_CORRECTIVE_AUDIT`；
+- 既有Phase-3 2/6-source prefix全部为`DIAGNOSTIC_ONLY`，不得进入G3/G4；
+- 两次12-source malformed structured JSON attempt均为`INFRASTRUCTURE_PROVIDER_STRUCTURED_OUTPUT_INVALID`和`INVALID_FOR_G3_G4`；重复的相同error digest否定“单次瞬态故障”假设，但不构成方法NULL；
+- 当前未授权4-history development observer、live reuse、online admission或held-out访问。
+
+### P0.1与P0.3当前执行状态
+
+- P0.1 Continuation K已完成provider-free RED/GREEN：同UUID下summary/labels/temporal变化均不可exact；runtime-only字段不制造false mismatch；ordered semantic projection相同才exact；
+- P0.3已建立digest-only machine-readable reducer，状态仅允许`EXACT`、`EXPLAINED_NON_SEMANTIC_DIFFERENCE`、`SEMANTIC_MISMATCH`；缺失必需字段直接block G1；
+- P0.3审计发现旧observer把Prepared extraction和stateful suffix放在同一PREPARE调用段，未复现Frozen V6的certified capture/replay边界；修复必须在observer-side拆开这两个阶段，不得修改Frozen V6 Core。
+
+只有生成并seal `DVSR_PHASE3_READINESS_AUDIT.json/.md`，且所有必需项为PASS时，状态才可变为`AUTHORIZED_FOR_DEVELOPMENT_G3`。
