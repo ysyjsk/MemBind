@@ -3,9 +3,12 @@
 
 from __future__ import annotations
 
+import argparse
 import asyncio
 import hashlib
 import json
+import os
+import re
 import subprocess
 import sys
 from pathlib import Path
@@ -42,6 +45,69 @@ def _git_head() -> str:
     ).stdout.strip()
 
 
+def _commit_exists(commit: str) -> bool:
+    if not re.fullmatch(r"[0-9a-f]{40}", commit):
+        return False
+    return subprocess.run(
+        ["git", "cat-file", "-e", f"{commit}^{{commit}}"],
+        cwd=ROOT,
+        capture_output=True,
+    ).returncode == 0
+
+
+def _evaluation_base_commit(override: str | None = None) -> tuple[str, str]:
+    """Select the commit whose source was evaluated, not the artifact commit.
+
+    Evidence is commonly materialized and committed after the code it tests.
+    Re-reading ``HEAD`` on a later finalizer run would silently rebind the
+    evidence to that materialization commit and create a provenance cycle.
+    An explicit override is required to start a new evaluation epoch.
+    """
+
+    if override:
+        if not _commit_exists(override):
+            raise ValueError(f"invalid --base-code-commit: {override!r}")
+        return override, "cli"
+    configured = os.environ.get("MEMBIND_EVALUATION_BASE_COMMIT")
+    if configured:
+        if not _commit_exists(configured):
+            raise ValueError("invalid MEMBIND_EVALUATION_BASE_COMMIT")
+        return configured, "environment"
+    candidates: list[tuple[str, str]] = []
+    try:
+        existing = _read(EVIDENCE / "CURRENT_STATE.json").get("base_code_commit")
+    except (OSError, json.JSONDecodeError, ValueError):
+        existing = None
+    if isinstance(existing, str):
+        candidates.append((existing, "existing_evidence"))
+    candidates.append((_git_head(), "head_bootstrap"))
+    for commit, source in candidates:
+        if _commit_exists(commit):
+            return commit, source
+    raise RuntimeError("no valid evaluation base commit; pass --base-code-commit")
+
+
+def _require_evidence_base_commit(base_code_commit: str, inputs: list[dict]) -> None:
+    """Reject a state that combines evidence from different source epochs."""
+
+    missing = sum(
+        1 for value in inputs if not isinstance(value.get("base_code_commit"), str)
+    )
+    declared = {
+        value.get("base_code_commit")
+        for value in inputs
+        if isinstance(value.get("base_code_commit"), str)
+    }
+    if missing or declared != {base_code_commit}:
+        rendered = ", ".join(sorted(str(item) for item in declared)) or "missing"
+        if missing:
+            rendered = f"{rendered}; missing_fields={missing}"
+        raise RuntimeError(
+            "evidence base_code_commit mismatch: "
+            f"selected={base_code_commit}, declared={rendered}"
+        )
+
+
 def _uuid_semantics_probe() -> dict:
     from graphiti_core.errors import NodeNotFoundError
     from graphiti_core.nodes import EpisodicNode
@@ -67,13 +133,20 @@ def _uuid_semantics_probe() -> dict:
     return {"status": status, "fresh_uuid_lookup": observed, "fresh_write_uuid_omitted": "uuid" not in kwargs, "stable_key_repeatable": key_a == key_b, "publication_guarantee": "AT_LEAST_ONCE_WITH_STABLE_IDEMPOTENCY_KEY"}
 
 
-def main() -> int:
+def main(argv: list[str] | None = None) -> int:
+    parser = argparse.ArgumentParser(description=__doc__)
+    parser.add_argument(
+        "--base-code-commit",
+        help="40-hex commit whose source was evaluated; required for a new epoch",
+    )
+    args = parser.parse_args(argv)
     identity = _read(EVIDENCE / "NATIVE_BASELINE_IDENTITY.json")
     native = _read(EVIDENCE / "NATIVE_IMMUTABILITY_REPORT.json")
     structured = _read(EVIDENCE / "STRUCTURED_OUTPUT_QUALIFICATION_RESULT.json")
     parity = _read(DATA_EVIDENCE)
     uuid_probe = _uuid_semantics_probe()
-    base_code_commit = _git_head()
+    base_code_commit, base_commit_source = _evaluation_base_commit(args.base_code_commit)
+    _require_evidence_base_commit(base_code_commit, [identity, native, structured, parity])
     generator_source_sha256 = _sha256_file(Path(__file__))
     evaluated_source_bundle = {
         "native_identity_sha256": _sha256_file(EVIDENCE / "NATIVE_BASELINE_IDENTITY.json"),
@@ -115,9 +188,10 @@ def main() -> int:
         "evaluated_source_bundle_sha256": evaluated_source_bundle_sha256,
         "generator_source_sha256": generator_source_sha256,
         "base_code_commit": base_code_commit,
+        "base_code_commit_source": base_commit_source,
     }
     body["status_reason"] = "State is computed from native, UUID, actual-callsite, and official-dataset evidence; no prior state is reused."
-    decision = {"schema_version": "membind.preexperiment.final-decision.v2", "decision": state, "status": state, "canary_authorized": state == "CODE_READY_FOR_THREE_ARM_ENGINEERING_CANARY", "formal_three_arm_authorized": False, "provider_calls": 0, "inputs": body["evidence_inputs"], "reason": body["status_reason"], "evaluated_source_bundle": evaluated_source_bundle, "evaluated_source_bundle_sha256": evaluated_source_bundle_sha256, "generator_source_sha256": generator_source_sha256, "base_code_commit": base_code_commit}
+    decision = {"schema_version": "membind.preexperiment.final-decision.v2", "decision": state, "status": state, "canary_authorized": state == "CODE_READY_FOR_THREE_ARM_ENGINEERING_CANARY", "formal_three_arm_authorized": False, "provider_calls": 0, "inputs": body["evidence_inputs"], "reason": body["status_reason"], "evaluated_source_bundle": evaluated_source_bundle, "evaluated_source_bundle_sha256": evaluated_source_bundle_sha256, "generator_source_sha256": generator_source_sha256, "base_code_commit": base_code_commit, "base_code_commit_source": base_commit_source}
     (EVIDENCE / "CURRENT_STATE.json").write_text(json.dumps(body, ensure_ascii=True, sort_keys=True, indent=2) + "\n", encoding="utf-8")
     (EVIDENCE / "FINAL_DECISION.json").write_text(json.dumps(decision, ensure_ascii=True, sort_keys=True, indent=2) + "\n", encoding="utf-8")
     print(json.dumps({"state": state, "native": native_pass, "uuid": uuid_probe["status"], "r1": r1_pass, "dataset": dataset_pass}, sort_keys=True))

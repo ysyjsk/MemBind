@@ -34,22 +34,24 @@ The following parts of `workplan_v7.md` remain unchanged in substance:
 
 1. **LLM partition equivalence boundary.**  Partitioned summary/node/candidate
    requests no longer claim an unprovable equality with an impossible or
-   truncated hypothetical unpartitioned LLM call.  Correctness is split into
-   exact input/work coverage and frozen algorithm identity, followed by the
-   quality Gate against B0.
-2. **V6 work preservation.**  The remaining V6 audit is per-call: callsite,
+   truncated hypothetical unpartitioned LLM call.
+2. **Adapter contract.**  Partition adapters are certified by strict input/work
+   coverage, deterministic partition/merge behavior and the frozen algorithm
+   identity, followed by the quality Gate against B0; they do not claim exact
+   equality to a hypothetical unpartitioned LLM output.
+3. **V6 work preservation.**  The remaining V6 audit is per-call: callsite,
    operator, canonical semantic input, source, model/schema/config, candidate
    domain and output schema must align.  Timing, endpoint choice, queueing and
    capture/replay transport may differ; logical semantic work may not silently
    differ.
-3. **D0 economics.**  The optimistic opportunity test is a longest-path
+4. **D0 economics.**  The optimistic opportunity test is a longest-path
    counterfactual execution DAG with ordered publication and UNKNOWN work
    retained.  It is not `fresh makespan minus sum(saved work)`.
-4. **Architecture Rescue scope.**  If needed, V7 permits at most one rescue
+5. **Architecture Rescue scope.**  If needed, V7 permits at most one rescue
    round and exactly one evidence-selected architectural hypothesis.  A rescue
    that changes FRESH semantics receives a new FRESH identity and must repeat
    qualification.
-5. **Statistical protocol.**  Publication runs use paired same-history arms,
+6. **Statistical protocol.**  Publication runs use paired same-history arms,
    fresh namespaces, explicit failure exclusion rules and paired uncertainty
    summaries.  Qualification runs are not silently promoted to headline
    statistics.
@@ -76,3 +78,14 @@ sealed as an invalid, non-statistical attempt.  Its journal and failure record
 remain append-only.  A replacement must use a new run id and fresh namespaces.
 The next valid action is a replacement 8B observer-only 2+6+6 campaign, then
 the frozen audit sequence in the revised workplan.
+
+## Post-closure provenance correction — 2026-09-01
+
+The pre-experiment finalizer now keeps the evaluated source commit distinct
+from the later evidence-materialization commit.  It reuses the existing
+evidence `base_code_commit` by default and accepts an explicit
+`--base-code-commit` (or `MEMBIND_EVALUATION_BASE_COMMIT`) only when starting a
+new evaluation epoch.  This makes repeated finalization idempotent and avoids
+rebinding evidence to a commit that only contains the evidence files
+themselves.  The selector provenance is recorded outside the content-addressed
+source bundle, so the bundle hash remains a hash of the evaluated inputs.
