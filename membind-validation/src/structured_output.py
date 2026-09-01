@@ -11,6 +11,11 @@ _JSON_OBJECT_SCHEMA_PREAMBLE = (
     "\n\nRespond with a JSON object in the following format:\n\n"
 )
 
+_DEFAULT_STRING_MAX_LENGTH = 8_192
+_DEFAULT_ARRAY_MAX_ITEMS = 64
+_DEFAULT_INTEGER_MINIMUM = -(2**31)
+_DEFAULT_INTEGER_MAXIMUM = 2**31 - 1
+
 
 def constrain_single_episode_indices(schema: dict[str, Any]) -> dict[str, Any]:
     """Return a copy where every episode_indices array is exactly ``[0]``.
@@ -24,12 +29,39 @@ def constrain_single_episode_indices(schema: dict[str, Any]) -> dict[str, Any]:
 
     def visit(value: Any) -> None:
         if isinstance(value, dict):
+            if value.get("type") == "object" and "additionalProperties" not in value:
+                value["additionalProperties"] = False
             for key, child in value.items():
                 if key == "episode_indices" and isinstance(child, dict):
                     child["type"] = "array"
                     child["minItems"] = 1
                     child["maxItems"] = 1
                     child["items"] = {"type": "integer", "const": 0}
+                elif isinstance(child, dict):
+                    child_type = child.get("type")
+                    if child_type == "string" and "maxLength" not in child and not (
+                        "enum" in child or "const" in child
+                    ):
+                        child["maxLength"] = (
+                            40
+                            if key.casefold() in {"valid_at", "invalid_at"}
+                            else _DEFAULT_STRING_MAX_LENGTH
+                        )
+                    elif child_type == "array" and "maxItems" not in child:
+                        child["maxItems"] = _DEFAULT_ARRAY_MAX_ITEMS
+                    elif child_type in {"integer", "number"} and not (
+                        "minimum" in child
+                        or "maximum" in child
+                        or "exclusiveMinimum" in child
+                        or "exclusiveMaximum" in child
+                        or "enum" in child
+                        or "const" in child
+                    ):
+                        if child_type == "integer":
+                            child["minimum"] = _DEFAULT_INTEGER_MINIMUM
+                            child["maximum"] = _DEFAULT_INTEGER_MAXIMUM
+                    elif child_type == "object" and "additionalProperties" not in child:
+                        child["additionalProperties"] = False
                 visit(child)
         elif isinstance(value, list):
             for child in value:

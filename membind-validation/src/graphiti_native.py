@@ -17,6 +17,16 @@ from current_state_gate import LiveAction, require_live_action
 from dataset import Episode
 from instrumentation import apply_episode_metrics, current_episode_key, episode_scope
 from structured_output import constrain_single_episode_indices
+from saturated_fixed_work_baseline_v1_3.membind_v6_1.structured_output_recovery import (
+    SchemaBoundednessError,
+    StructuredOutputLengthTruncation,
+    StructuredOutputMalformed,
+    StructuredOutputBudgetError,
+    build_schema_bound_certificate,
+    classify_structured_failure,
+    parse_structured_content,
+    validate_schema_boundedness,
+)
 from tracing import EpisodeTrace, JsonlTraceWriter, now_ns
 
 
@@ -503,7 +513,14 @@ class _QwenCompletionsTransport:
         for key in self._owner.usage_totals:
             self._owner.usage_totals[key] += int(usage.get(key, 0))
         self._owner._last_call_record.set(
-            {"raw_response": result, "token_usage": usage, "max_tokens": budget}
+            {
+                "raw_response": result,
+                "token_usage": usage,
+                "max_tokens": budget,
+                "finish_reason": finish_reason,
+                "response_characters": len(result),
+                "response_sha256": hashlib.sha256(result.encode("utf-8")).hexdigest(),
+            }
         )
         return response
 
@@ -541,11 +558,37 @@ class QwenVLLMClient:
         from graphiti_core.llm_client.openai_generic_client import OpenAIGenericClient
 
         vllm_options_enabled = bool(kwargs.pop("vllm_options_enabled", True))
+        structured_output_recovery_enabled = bool(
+            kwargs.pop("structured_output_recovery_enabled", False)
+        )
+        structured_output_token_counter = kwargs.pop(
+            "structured_output_token_counter", None
+        )
+        structured_output_output_token_counter = kwargs.pop(
+            "structured_output_output_token_counter", None
+        )
+        structured_output_context_limit = int(
+            kwargs.pop("structured_output_context_limit", 0) or 0
+        )
+        structured_output_safety_margin = int(
+            kwargs.pop("structured_output_safety_margin", 0) or 0
+        )
+        structured_output_certificate_sink = kwargs.pop(
+            "structured_output_certificate_sink", None
+        )
 
         class Client(OpenAIGenericClient):  # type: ignore[misc]
             def __init__(self, *client_args: Any, **client_kwargs: Any) -> None:
                 super().__init__(*client_args, **client_kwargs)
                 self.vllm_options_enabled = vllm_options_enabled
+                self.structured_output_recovery_enabled = structured_output_recovery_enabled
+                self.structured_output_token_counter = structured_output_token_counter
+                self.structured_output_output_token_counter = (
+                    structured_output_output_token_counter
+                )
+                self.structured_output_context_limit = structured_output_context_limit
+                self.structured_output_safety_margin = structured_output_safety_margin
+                self.structured_output_certificate_sink = structured_output_certificate_sink
                 self.call_count = 0
                 self.parse_failure_count = 0
                 self.structured_request_count = 0
@@ -569,11 +612,122 @@ class QwenVLLMClient:
 
             def _build_response_format(self, response_model: Any) -> dict[str, Any]:
                 upstream = super()._build_response_format(response_model)
-                return constrain_single_episode_indices(upstream)
+                constrained = constrain_single_episode_indices(upstream)
+                if response_model is not None and constrained.get("type") == "json_schema":
+                    schema = constrained.get("json_schema", {}).get("schema", {})
+                    try:
+                        validate_schema_boundedness(schema)
+                    except SchemaBoundednessError:
+                        self.structured_response_failure_count += 1
+                        raise
+                return constrained
+
+            async def _generate_response(
+                self,
+                messages: list[Any],
+                response_model: Any = None,
+                max_tokens: int = 2048,
+                model_size: Any = None,
+            ) -> dict[str, Any]:
+                """Read transport termination metadata before decoding JSON."""
+
+                openai_messages = []
+                for message in messages:
+                    content = self._clean_input(message.content)
+                    if message.role in {"user", "system"}:
+                        openai_messages.append({"role": message.role, "content": content})
+                response_format = self._build_response_format(response_model)
+                if self.structured_output_recovery_enabled and response_model is not None:
+                    if not callable(self.structured_output_token_counter):
+                        raise StructuredOutputBudgetError(
+                            "structured-output exact prompt tokenizer is unavailable"
+                        )
+                    schema = response_format.get("json_schema", {}).get("schema", {})
+                    certificate = build_schema_bound_certificate(
+                        messages=openai_messages,
+                        schema=schema,
+                        token_counter=self.structured_output_token_counter,
+                        context_limit=self.structured_output_context_limit,
+                        effective_max_tokens=max_tokens,
+                        safety_margin_tokens=self.structured_output_safety_margin,
+                        output_token_counter=(
+                            self.structured_output_output_token_counter
+                            if callable(self.structured_output_output_token_counter)
+                            else None
+                        ),
+                    )
+                    if callable(self.structured_output_certificate_sink):
+                        self.structured_output_certificate_sink(certificate.to_dict())
+                    if certificate.status != "PASS":
+                        raise StructuredOutputBudgetError(
+                            "structured-output request failed finite budget preflight: "
+                            + ",".join(certificate.failure_reasons)
+                        )
+                response = await self.client.chat.completions.create(
+                    model=self.model,
+                    messages=openai_messages,
+                    temperature=self.temperature,
+                    max_tokens=max_tokens,
+                    response_format=response_format,
+                )
+                # Keep the last-call evidence available to the outer recorder when
+                # parsing fails; only consume it after a certified successful parse.
+                record = self._last_call_record.get() or {}
+                finish_reason = record.get("finish_reason")
+                content = record.get("raw_response")
+                try:
+                    parsed = parse_structured_content(
+                        content,
+                        finish_reason=finish_reason,
+                        max_tokens=max_tokens,
+                    )
+                    self._last_call_record.set(None)
+                    return parsed
+                except StructuredOutputLengthTruncation as exc:
+                    if self.structured_output_recovery_enabled:
+                        self.structured_response_failure_count += 1
+                        self.failure_events.append(
+                            {
+                                "failure_class": classify_structured_failure(
+                                    finish_reason=finish_reason,
+                                    response_present=True,
+                                ),
+                                "finish_reason": finish_reason,
+                                "max_tokens": max_tokens,
+                                "response_characters": len(content or ""),
+                                "response_sha256": hashlib.sha256(
+                                    str(content or "").encode("utf-8")
+                                ).hexdigest(),
+                            }
+                        )
+                    raise exc
+                except StructuredOutputMalformed as exc:
+                    if self.structured_output_recovery_enabled:
+                        self.parse_failure_count += 1
+                        self.structured_response_failure_count += 1
+                        self.failure_events.append(
+                            {
+                                "failure_class": classify_structured_failure(
+                                    finish_reason=finish_reason,
+                                    error=exc,
+                                    response_present=True,
+                                ),
+                                "finish_reason": finish_reason,
+                                "max_tokens": max_tokens,
+                                "error_position": exc.position,
+                            }
+                        )
+                    raise
 
             def consume_last_call_record(self) -> dict[str, Any] | None:
                 record = self._last_call_record.get()
                 self._last_call_record.set(None)
                 return record
 
-        return Client(*args, **kwargs)
+        instance = Client(*args, **kwargs)
+        # Keep the compatibility surface inherited from pinned Graphiti while
+        # installing the reliability-aware implementation only on this client.
+        reliable_generate = instance._generate_response
+        delattr(Client, "_generate_response")
+        instance._generate_response = reliable_generate
+        return instance

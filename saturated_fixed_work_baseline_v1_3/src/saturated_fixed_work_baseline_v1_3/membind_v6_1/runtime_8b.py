@@ -30,6 +30,8 @@ from .runtime import (
     install_local_context_budget_adapter,
     install_local_extraction_chunking_policy,
     install_local_single_attempt_policy,
+    _local_chat_tokenizer,
+    local_prompt_token_count,
 )
 
 
@@ -460,11 +462,20 @@ def build_8b_u0_runtime(
         temperature=0.0,
         max_tokens=config.requested_max_tokens,
     )
+    structured_certificates: list[dict[str, Any]] = []
     llm_client = QwenVLLMClient(
         config=llm_config,
         client=router,
         max_tokens=config.requested_max_tokens,
         structured_output_mode=config.structured_output_mode,
+        structured_output_recovery_enabled=True,
+        structured_output_token_counter=local_prompt_token_count,
+        structured_output_output_token_counter=lambda value: len(
+            _local_chat_tokenizer().encode(value, add_special_tokens=False)
+        ),
+        structured_output_context_limit=LOCAL_CONTEXT_LIMIT,
+        structured_output_safety_margin=config.safety_margin_tokens,
+        structured_output_certificate_sink=structured_certificates.append,
     )
     install_local_single_attempt_policy(llm_client)
     context_budget_restore = install_local_context_budget_adapter(llm_client)
@@ -486,6 +497,7 @@ def build_8b_u0_runtime(
         edge_endpoint_schema_grounding=enable_endpoint_schema_grounding,
         edge_adaptive_admission=enable_adaptive_edge_admission,
     )
+    llm_client._membind_structured_output_certificates = structured_certificates
     summary_restore: Callable[[], None] | None = None
     summary_evidence: list[dict[str, Any]] = []
     if enable_grounded_summary_materialization:

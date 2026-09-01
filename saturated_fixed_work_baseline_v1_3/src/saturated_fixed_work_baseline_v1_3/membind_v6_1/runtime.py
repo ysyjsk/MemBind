@@ -19,6 +19,12 @@ from typing import Any, Callable, Literal, Mapping
 from urllib.parse import urlsplit, urlunsplit
 
 from native_characterization_runtime import U0Config, U0Runtime
+from .structured_output_recovery import (
+    SchemaBoundednessError,
+    build_schema_bound_certificate,
+    choose_edge_page_capacity,
+    validate_schema_boundedness,
+)
 
 
 LOCAL_PROFILE_ID = "local-qwen3-14b-awq-v1"
@@ -42,6 +48,13 @@ LOCAL_EDGE_PHYSICAL_CONCURRENCY = 2
 LOCAL_NODE_PARTITION_CONCURRENCY = 1
 LOCAL_NODE_MAX_ENTITIES_PER_CHUNK = 64
 LOCAL_NODE_MAX_NAME_CHARS = 256
+LOCAL_EDGE_RELATION_MAX_CHARS = 128
+# The extraction chunker caps CURRENT_MESSAGE at 3,000 characters.  This is
+# the semantic source-derived upper bound for one factual edge; page capacity
+# selection (2 -> 1) handles the aggregate JSON envelope.
+LOCAL_EDGE_FACT_MAX_CHARS = LOCAL_EXTRACTION_CHUNK_CURRENT_CHARS
+LOCAL_EDGE_DATETIME_MAX_CHARS = 40
+LOCAL_ENTITY_TYPE_ID_MAX = 1_023
 _CONTEXT_ERROR_RE = re.compile(
     r"maximum context length is\s+(?P<context>\d+)\s+tokens.*?"
     r"prompt contains at least\s+(?P<input>\d+)\s+input tokens",
@@ -411,6 +424,37 @@ def _local_prompt_tokens(messages: Sequence[Any]) -> int:
         return_dict=False,
     )
     return len(token_ids)
+
+
+def _local_output_token_counter_if_available(
+    llm_client: Any,
+) -> Callable[[str], int] | None:
+    """Return the exact local tokenizer only for an activated live client.
+
+    Provider-free scheduler fixtures deliberately do not carry a model
+    directory.  They still exercise the finite character-bound certificate,
+    while the live Qwen client must fail closed if its exact tokenizer cannot
+    be loaded.  The explicit recovery flag is the live-client contract; a
+    fake client without it receives the conservative character fallback.
+    """
+
+    recovery_enabled = bool(
+        getattr(llm_client, "structured_output_recovery_enabled", False)
+    )
+    model_dir = os.environ.get("MEMBIND_LLM_MODEL_DIR")
+    if not model_dir:
+        if recovery_enabled:
+            raise LocalRuntimeConfigurationError(
+                "MEMBIND_LLM_MODEL_DIR is required for exact structured-output bounds"
+            )
+        return None
+    try:
+        tokenizer = _local_chat_tokenizer()
+    except Exception:
+        if recovery_enabled:
+            raise
+        return None
+    return lambda value: len(tokenizer.encode(value, add_special_tokens=False))
 
 
 def local_prompt_token_count(messages: Sequence[Any]) -> int:
@@ -1217,30 +1261,102 @@ def _edge_identity(value: Mapping[str, Any]) -> str:
     )
 
 
-@lru_cache(maxsize=4)
-def _bounded_edge_page_model(page_capacity: int = LOCAL_EDGE_PAGE_CAPACITY) -> Any:
-    """Return a bounded delta page that remains valid under ExtractedEdges."""
+@lru_cache(maxsize=32)
+def _finite_edge_page_model(
+    page_capacity: int = LOCAL_EDGE_PAGE_CAPACITY,
+    endpoint_names: tuple[str, ...] = (),
+    fact_max_length: int = LOCAL_EDGE_FACT_MAX_CHARS,
+) -> Any:
+    """Build the finite edge contract sent to xgrammar for one request variant."""
 
-    from pydantic import Field, create_model
-    from graphiti_core.prompts.extract_edges import Edge
+    from pydantic import ConfigDict, Field, create_model
 
     if page_capacity < 1:
         raise ValueError("edge page capacity must be positive")
-    model_name = (
-        "MemBindSingleEdgePage"
+    if fact_max_length < 1:
+        raise ValueError("edge fact bound must be positive")
+    names = tuple(dict.fromkeys(str(name) for name in endpoint_names if str(name)))
+    endpoint_type: Any = Literal.__getitem__(names) if names else str
+    edge_name = (
+        "MemBindSingleEdge"
         if page_capacity == 1
-        else f"MemBindBoundedEdgePage{page_capacity}"
+        else f"MemBindBoundedEdge{page_capacity}"
+    )
+    edge_model = create_model(
+        edge_name,
+        source_entity_name=(
+            endpoint_type,
+            Field(
+                ...,
+                max_length=LOCAL_NODE_MAX_NAME_CHARS,
+                description="The name of the source entity from the ENTITIES list",
+            ),
+        ),
+        target_entity_name=(
+            endpoint_type,
+            Field(
+                ...,
+                max_length=LOCAL_NODE_MAX_NAME_CHARS,
+                description="The name of the target entity from the ENTITIES list",
+            ),
+        ),
+        relation_type=(
+            str,
+            Field(
+                ...,
+                min_length=1,
+                max_length=LOCAL_EDGE_RELATION_MAX_CHARS,
+                description="The relationship type in SCREAMING_SNAKE_CASE",
+            ),
+        ),
+        fact=(
+            str,
+            Field(
+                ...,
+                min_length=1,
+                max_length=fact_max_length,
+                description="A factual relationship paraphrased from the source",
+            ),
+        ),
+        valid_at=(
+            str | None,
+            Field(default=None, max_length=LOCAL_EDGE_DATETIME_MAX_CHARS),
+        ),
+        invalid_at=(
+            str | None,
+            Field(default=None, max_length=LOCAL_EDGE_DATETIME_MAX_CHARS),
+        ),
+        episode_indices=(
+            list[Literal[0]],
+            Field(default_factory=lambda: [0], min_length=1, max_length=1),
+        ),
+        __config__=ConfigDict(extra="forbid"),
     )
     return create_model(
-        model_name,
-        edges=(list[Edge], Field(default_factory=list, max_length=page_capacity)),
+        (
+            "MemBindSingleEdgePage"
+            if page_capacity == 1
+            else f"MemBindBoundedEdgePage{page_capacity}"
+        ),
+        edges=(
+            list[edge_model],
+            Field(default_factory=list, max_length=page_capacity),
+        ),
+        __config__=ConfigDict(extra="forbid"),
     )
+
+
+def _bounded_edge_page_model(page_capacity: int = LOCAL_EDGE_PAGE_CAPACITY) -> Any:
+    """Backward-compatible finite edge page model used by provider-free tests."""
+
+    return _finite_edge_page_model(page_capacity)
 
 
 @lru_cache(maxsize=64)
 def _endpoint_grounded_edge_page_model(
     page_capacity: int,
     endpoint_names: tuple[str, ...],
+    fact_max_length: int = LOCAL_EDGE_FACT_MAX_CHARS,
 ) -> Any:
     """Constrain edge endpoints to the entities in the current evidence block.
 
@@ -1257,21 +1373,15 @@ def _endpoint_grounded_edge_page_model(
         raise ValueError("edge page capacity must be positive")
     if not names:
         return _bounded_edge_page_model(page_capacity)
+    model = _finite_edge_page_model(page_capacity, names, fact_max_length)
+    # Preserve the historical model names in schema evidence while using the
+    # finite field definitions above.
     from pydantic import Field, create_model
-    from graphiti_core.prompts.extract_edges import Edge
 
-    endpoint_type = Literal.__getitem__(names)
+    edge_ref = model.model_fields["edges"].annotation.__args__[0]
     edge_model = create_model(
         f"MemBindEndpointGroundedEdge{page_capacity}_{len(names)}",
-        __base__=Edge,
-        source_entity_name=(
-            endpoint_type,
-            Field(..., description="The name of the source entity from the ENTITIES list"),
-        ),
-        target_entity_name=(
-            endpoint_type,
-            Field(..., description="The name of the target entity from the ENTITIES list"),
-        ),
+        __base__=edge_ref,
     )
     return create_model(
         f"MemBindEndpointGroundedEdgePage{page_capacity}_{len(names)}",
@@ -1408,7 +1518,15 @@ def _bounded_summary_response_model(max_items: int) -> Any:
         raise ValueError("summary response capacity must be positive")
     item_model = create_model(
         "MemBindBoundedSummarizedEntity",
-        name=(str, Field(..., description="Name of the entity being summarized")),
+        name=(
+            str,
+            Field(
+                ...,
+                min_length=1,
+                max_length=LOCAL_NODE_MAX_NAME_CHARS,
+                description="Name of the entity being summarized",
+            ),
+        ),
         summary=(
             str,
             Field(
@@ -1456,6 +1574,8 @@ def _bounded_node_response_model(max_items: int) -> Any:
             int,
             Field(
                 ...,
+                ge=0,
+                le=LOCAL_ENTITY_TYPE_ID_MAX,
                 description=(
                     "ID of the classified entity type. Must be one of the provided "
                     "entity_type_id integers."
@@ -1463,9 +1583,10 @@ def _bounded_node_response_model(max_items: int) -> Any:
             ),
         ),
         episode_indices=(
-            list[int],
+            list[Literal[0]],
             Field(
                 default_factory=lambda: [0],
+                min_length=1,
                 max_length=1,
                 description="The single episode index for this extraction request",
             ),
@@ -1754,12 +1875,15 @@ def install_local_extraction_chunking_policy(
             queue_wait_ns: int | None = None,
             physical_active_at_start: int | None = None,
         ) -> Any:
+            selection = None
+            preflight_unverified_reason: str | None = None
             entity_info = _entity_block(request_messages)
             entity_count = None
             if entity_info is not None:
                 entity_count = len(_distinct_entity_values(entity_info[2]))
             effective_response_model = request_response_model
             node_schema_max_items: int | None = None
+            selected_edge_page_capacity: int | None = None
             if prompt_name in {
                 "extract_nodes.extract_message",
                 "extract_nodes.extract_text",
@@ -1772,6 +1896,62 @@ def install_local_extraction_chunking_policy(
                 "extract_nodes.extract_entity_summaries_from_episodes",
             } and entity_count:
                 effective_response_model = _bounded_summary_response_model(entity_count)
+            if prompt_name == "extract_edges.edge" and request_response_model is not None:
+                endpoint_names: tuple[str, ...] = ()
+                if entity_info is not None:
+                    endpoint_names = tuple(
+                        dict.fromkeys(
+                            str(value.get("name", "")).strip()
+                            for value in entity_info[2]
+                            if isinstance(value, Mapping)
+                            and str(value.get("name", "")).strip()
+                        )
+                    )
+                requested_capacity = int(edge_page_capacity)
+                schemas = {
+                    capacity: (
+                        _endpoint_grounded_edge_page_model(capacity, endpoint_names)
+                        if edge_endpoint_schema_grounding and endpoint_names
+                        else _bounded_edge_page_model(capacity)
+                    ).model_json_schema()
+                    for capacity in range(requested_capacity, 0, -1)
+                }
+                output_token_counter = _local_output_token_counter_if_available(
+                    llm_client
+                )
+                try:
+                    selection = choose_edge_page_capacity(
+                        messages=request_messages,
+                        schemas_by_capacity=schemas,
+                        requested_capacity=requested_capacity,
+                        token_counter=count_tokens,
+                        context_limit=LOCAL_CONTEXT_LIMIT,
+                        effective_max_tokens=int(request_max_tokens or requested or 0),
+                        safety_margin_tokens=safety_margin,
+                        output_token_counter=output_token_counter,
+                    )
+                except Exception as exc:
+                    # Fake/provider-free clients have no model tokenizer and
+                    # therefore cannot satisfy the live exact-token contract.
+                    # Preserve their historical scheduler behavior while
+                    # making the missing proof explicit in diagnostics.  A
+                    # real recovery-enabled client remains fail-closed.
+                    if not getattr(llm_client, "structured_output_recovery_enabled", False):
+                        preflight_unverified_reason = type(exc).__name__
+                        selected_edge_page_capacity = requested_capacity
+                    else:
+                        raise LocalRuntimeConfigurationError(
+                            f"edge structured-output preflight failed: {exc}"
+                        ) from exc
+                if selection is not None:
+                    selected_edge_page_capacity = selection.capacity
+                effective_response_model = (
+                    _endpoint_grounded_edge_page_model(
+                        int(selected_edge_page_capacity), endpoint_names
+                    )
+                    if edge_endpoint_schema_grounding and endpoint_names
+                    else _bounded_edge_page_model(int(selected_edge_page_capacity))
+                )
             call_kwargs: dict[str, Any] = {
                 "response_model": effective_response_model,
                 "max_tokens": request_max_tokens,
@@ -1801,6 +1981,16 @@ def install_local_extraction_chunking_policy(
             if node_schema_max_items is not None:
                 row["node_schema_max_items"] = node_schema_max_items
                 row["node_schema_name_max_chars"] = LOCAL_NODE_MAX_NAME_CHARS
+            if selected_edge_page_capacity is not None:
+                row["requested_edge_page_capacity"] = int(edge_page_capacity)
+                row["certified_edge_page_capacity"] = int(selected_edge_page_capacity)
+                if "selection" in locals():
+                    if selection is not None:
+                        certificate = selection.certificate
+                        row["structured_output_certificate"] = certificate.to_dict()
+                if preflight_unverified_reason is not None:
+                    row["structured_output_preflight"] = "UNVERIFIED_PROVIDER_FREE"
+                    row["structured_output_preflight_reason"] = preflight_unverified_reason
             if queue_wait_ns is not None:
                 row["queue_wait_ns"] = queue_wait_ns
             if physical_active_at_start is not None:
@@ -2698,6 +2888,13 @@ def build_local_u0_runtime() -> U0Runtime:
         client=construction_transport,
         max_tokens=config.requested_max_tokens,
         structured_output_mode=config.structured_output_mode,
+        structured_output_recovery_enabled=True,
+        structured_output_token_counter=local_prompt_token_count,
+        structured_output_output_token_counter=lambda value: len(
+            _local_chat_tokenizer().encode(value, add_special_tokens=False)
+        ),
+        structured_output_context_limit=LOCAL_CONTEXT_LIMIT,
+        structured_output_safety_margin=config.safety_margin_tokens,
     )
     install_local_single_attempt_policy(llm_client)
     install_local_extraction_chunking_policy(llm_client)
