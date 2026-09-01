@@ -1,0 +1,70 @@
+{
+  "canary_authorized": false,
+  "formal_three_arm_authorized": false,
+  "gates": {
+    "G1_NATIVE_IDENTITY_AND_FAIRNESS": {
+      "checks": {
+        "evidence_base_code_commit": "58af2320c5a606195968dbfd5704eaf2a805c8fd",
+        "implementation_identity_current": true,
+        "native_differential_status": "PASS",
+        "prohibited_difference_count": 0,
+        "unknown_comparison_count": 0
+      },
+      "provider_calls": 0,
+      "status": "PASS"
+    },
+    "G2_V61_CORRECTNESS": {
+      "checks": {
+        "evidence_base_code_commit": "58af2320c5a606195968dbfd5704eaf2a805c8fd",
+        "formal_recovery_policy": "NO_RESUME_FORMAL_ATTEMPT",
+        "fresh_write_uuid_omitted": true,
+        "implementation_identity_current": true,
+        "publication_guarantee": "AT_LEAST_ONCE_WITH_STABLE_IDEMPOTENCY_KEY",
+        "stable_local_idempotency_key": true
+      },
+      "provider_calls": 0,
+      "status": "PASS"
+    },
+    "G3_RUNTIME_ROBUSTNESS_AND_OBSERVABILITY": {
+      "checks": {
+        "actual_callsite_inventory": "PASS_ACTUAL_RUNTIME_CALLSITE",
+        "classified_recovery": "PASS_PROVIDER_FREE_CLASSIFIED_RECOVERY",
+        "evidence_base_code_commit": "58af2320c5a606195968dbfd5704eaf2a805c8fd",
+        "provider_calls": 0,
+        "uncovered_callsite_count": 0,
+        "unexercised_callsite_policy": "NON_BLOCKING_UNEXERCISED_CALLSITE"
+      },
+      "provider_calls": 0,
+      "status": "PASS"
+    },
+    "G4_DATASET_AND_EVALUATOR_IDENTITY": {
+      "checks": {
+        "differences": 0,
+        "evidence_base_code_commit": "58af2320c5a606195968dbfd5704eaf2a805c8fd",
+        "five_records_each_sixty_qa": true,
+        "qa_counts": [
+          60,
+          60,
+          60,
+          60,
+          60
+        ],
+        "question_38_disclosure_count": 1,
+        "record_count": 5,
+        "selection": "OFFICIAL_AS_PUBLISHED_5_RECORDS"
+      },
+      "provider_calls": 0,
+      "status": "PASS"
+    }
+  },
+  "generated_at": "2026-09-01T17:01:13.741682+00:00",
+  "head_commit": "58af2320c5a606195968dbfd5704eaf2a805c8fd",
+  "identity_head_commit": "58af2320c5a606195968dbfd5704eaf2a805c8fd",
+  "implementation_identity_current": true,
+  "implementation_identity_sha256": "4ec1e4255d7282d1be144d8ff212ae582ac82e043634f2bcda8db99c07de38d9",
+  "provider_calls": 0,
+  "reason": "G1-G4 are evaluated against the current identity; H5, method seal, and engineering canary remain required before authorization.",
+  "schema_version": "membind.four-gate-result.v1",
+  "status": "PASS_G1_G4_CURRENT_HEAD",
+  "tracked_diff_sha256": "971441debdb0078331096cd681b7fb1b0a41607ed257724e547baead1549571d"
+}

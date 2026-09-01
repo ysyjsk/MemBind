@@ -1,0 +1,40 @@
+{
+  "adaptive_candidate_conditions_not_met": [
+    "provider queue is non-preemptible",
+    "no reliable future P0 arrival predictor is permitted",
+    "P1 direct-consumer identity is not certified",
+    "historical service-EWMA/finish-time family is negative",
+    "current stress evidence validates conservation and bounds, not an adaptive benefit"
+  ],
+  "decision": "VALID_NEGATIVE_ADAPTIVE_RESULT_FIXED_CONTINUES",
+  "head_commit": "58af2320c5a606195968dbfd5704eaf2a805c8fd",
+  "heuristics": [
+    {
+      "name": "lookahead",
+      "not_claimed_optimal": true,
+      "role": "logical/window compatibility safeguard",
+      "value": 2
+    },
+    {
+      "name": "future_cap",
+      "not_claimed_optimal": true,
+      "role": "physical/source exposure bound",
+      "value": 1
+    },
+    {
+      "name": "native_future_quota",
+      "not_claimed_optimal": true,
+      "role": "native interval interference guard",
+      "value": 0
+    },
+    {
+      "name": "decode_reserve",
+      "not_benchmark_tuned": true,
+      "role": "deployment-derived structured-output reserve",
+      "value": 4096
+    }
+  ],
+  "provider_calls": 0,
+  "schema_version": "membind.h5.heuristic-necessity-audit.v1",
+  "status": "FIXED_GUARDS_JUSTIFIED_AS_BOUNDED_ADMISSION_SAFEGUARD"
+}

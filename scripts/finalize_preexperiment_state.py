@@ -55,6 +55,17 @@ def _commit_exists(commit: str) -> bool:
     ).returncode == 0
 
 
+def _tracked_diff_sha256() -> str | None:
+    """Hash all tracked changes relative to HEAD for identity binding."""
+    value = subprocess.run(
+        ["git", "diff", "HEAD", "--no-ext-diff", "--binary"],
+        cwd=ROOT,
+        check=True,
+        capture_output=True,
+    ).stdout
+    return hashlib.sha256(value).hexdigest() if value else None
+
+
 def _evaluation_base_commit(override: str | None = None) -> tuple[str, str]:
     """Select the commit whose source was evaluated, not the artifact commit.
 
@@ -144,9 +155,27 @@ def main(argv: list[str] | None = None) -> int:
     native = _read(EVIDENCE / "NATIVE_IMMUTABILITY_REPORT.json")
     structured = _read(EVIDENCE / "STRUCTURED_OUTPUT_QUALIFICATION_RESULT.json")
     parity = _read(DATA_EVIDENCE)
+    try:
+        current_identity = _read(EVIDENCE / "EVALUATED_IMPLEMENTATION_IDENTITY.json")
+    except (OSError, json.JSONDecodeError, ValueError):
+        current_identity = None
     uuid_probe = _uuid_semantics_probe()
     base_code_commit, base_commit_source = _evaluation_base_commit(args.base_code_commit)
-    _require_evidence_base_commit(base_code_commit, [identity, native, structured, parity])
+    evidence_epoch_error = None
+    try:
+        _require_evidence_base_commit(base_code_commit, [identity, native, structured, parity])
+    except RuntimeError as exc:
+        # A stale/mixed evidence epoch is a reportable gate failure, not a
+        # reason to leave the previous state artifact looking authorized.
+        evidence_epoch_error = str(exc)
+    current_head = _git_head()
+    current_diff_sha256 = _tracked_diff_sha256()
+    identity_match = bool(
+        isinstance(current_identity, dict)
+        and current_identity.get("head_commit") == current_head
+        and current_identity.get("tracked_diff_sha256") == current_diff_sha256
+    )
+    evaluated_commit_is_current = base_code_commit == current_head
     generator_source_sha256 = _sha256_file(Path(__file__))
     evaluated_source_bundle = {
         "native_identity_sha256": _sha256_file(EVIDENCE / "NATIVE_BASELINE_IDENTITY.json"),
@@ -162,7 +191,13 @@ def main(argv: list[str] | None = None) -> int:
     native_pass = identity.get("status") == "PASS" and native.get("prohibited_difference_count") == 0 and native.get("unknown_comparison_count") == 0
     r1_pass = structured.get("r1_actual_callsite_inventory") == "PASS_ACTUAL_RUNTIME_CALLSITE"
     dataset_pass = parity.get("status") == "PASS" and parity.get("selection") == "OFFICIAL_AS_PUBLISHED_5_RECORDS"
-    if not native_pass:
+    if not identity_match:
+        state = "BLOCKED_CURRENT_HEAD_IDENTITY"
+    elif not evaluated_commit_is_current:
+        state = "BLOCKED_STALE_OR_MIXED_EVIDENCE"
+    elif evidence_epoch_error is not None:
+        state = "BLOCKED_STALE_OR_MIXED_EVIDENCE"
+    elif not native_pass:
         state = "BLOCKED_NATIVE_IMMUTABILITY"
     elif uuid_probe["status"] != "PASS":
         state = "BLOCKED_V61_UUID_SEMANTICS"
@@ -179,6 +214,16 @@ def main(argv: list[str] | None = None) -> int:
         "v61_uuid_semantics": uuid_probe,
         "structured_output": {"status": structured.get("status"), "r1_schema_boundedness": structured.get("r1_schema_boundedness"), "r1_actual_callsite_inventory": structured.get("r1_actual_callsite_inventory"), "r2_classified_recovery": structured.get("r2_classified_recovery"), "r3_publication": structured.get("r3_publication"), "r4_finalizer": structured.get("r4_finalizer")},
         "official_dataset": {"status": parity.get("status"), "selection": parity.get("selection"), "differences": len(parity.get("differences", [])), "anomaly_disclosure": parity.get("anomaly_disclosure", [])},
+        "current_implementation_identity": {
+            "status": "PASS" if identity_match else "FAIL",
+            "artifact_present": isinstance(current_identity, dict),
+            "head_commit": current_head,
+            "identity_head_commit": current_identity.get("head_commit") if isinstance(current_identity, dict) else None,
+            "tracked_diff_sha256": current_diff_sha256,
+            "identity_tracked_diff_sha256": current_identity.get("tracked_diff_sha256") if isinstance(current_identity, dict) else None,
+        },
+        "evidence_epoch": {"status": "PASS" if evidence_epoch_error is None else "FAIL", "error": evidence_epoch_error},
+        "evaluated_commit_is_current": evaluated_commit_is_current,
         "provider_calls": 0,
         "formal_history_executed": False,
         "engineering_canary_executed": False,
@@ -190,11 +235,12 @@ def main(argv: list[str] | None = None) -> int:
         "base_code_commit": base_code_commit,
         "base_code_commit_source": base_commit_source,
     }
-    body["status_reason"] = "State is computed from native, UUID, actual-callsite, and official-dataset evidence; no prior state is reused."
-    decision = {"schema_version": "membind.preexperiment.final-decision.v2", "decision": state, "status": state, "canary_authorized": state == "CODE_READY_FOR_THREE_ARM_ENGINEERING_CANARY", "formal_three_arm_authorized": False, "provider_calls": 0, "inputs": body["evidence_inputs"], "reason": body["status_reason"], "evaluated_source_bundle": evaluated_source_bundle, "evaluated_source_bundle_sha256": evaluated_source_bundle_sha256, "generator_source_sha256": generator_source_sha256, "base_code_commit": base_code_commit, "base_code_commit_source": base_commit_source}
+    body["status_reason"] = "State is computed from current implementation identity, evidence epoch, native, UUID, actual-callsite, and official-dataset evidence; no prior state is reused."
+    canary_authorized = state == "CODE_READY_FOR_THREE_ARM_ENGINEERING_CANARY" and identity_match and evaluated_commit_is_current and evidence_epoch_error is None
+    decision = {"schema_version": "membind.preexperiment.final-decision.v3", "decision": state, "status": state, "canary_authorized": canary_authorized, "formal_three_arm_authorized": False, "provider_calls": 0, "inputs": body["evidence_inputs"], "reason": body["status_reason"], "evaluated_source_bundle": evaluated_source_bundle, "evaluated_source_bundle_sha256": evaluated_source_bundle_sha256, "generator_source_sha256": generator_source_sha256, "base_code_commit": base_code_commit, "base_code_commit_source": base_commit_source, "current_identity_match": identity_match, "evidence_epoch_status": "PASS" if evidence_epoch_error is None else "FAIL"}
     (EVIDENCE / "CURRENT_STATE.json").write_text(json.dumps(body, ensure_ascii=True, sort_keys=True, indent=2) + "\n", encoding="utf-8")
     (EVIDENCE / "FINAL_DECISION.json").write_text(json.dumps(decision, ensure_ascii=True, sort_keys=True, indent=2) + "\n", encoding="utf-8")
-    print(json.dumps({"state": state, "native": native_pass, "uuid": uuid_probe["status"], "r1": r1_pass, "dataset": dataset_pass}, sort_keys=True))
+    print(json.dumps({"state": state, "native": native_pass, "uuid": uuid_probe["status"], "r1": r1_pass, "dataset": dataset_pass, "identity": identity_match, "evidence_epoch": evidence_epoch_error is None}, sort_keys=True))
     return 0
 
 

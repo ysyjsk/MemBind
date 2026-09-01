@@ -1,0 +1,17 @@
+{
+  "TTFDP": "construction start to first durable publication",
+  "T_build": "FORMAL_CONSTRUCTION_START to last expected source PUBLICATION_DURABLE",
+  "mechanism_metrics": [
+    "critical_queue_wait",
+    "future_queue_occupancy",
+    "new_p2_admitted_while_p0_waiting",
+    "unavoidable_future_blocking_ns",
+    "future_result_consumption_lag",
+    "completed_but_not_consumable_future_work",
+    "speculation_debt_count_work_tokens_bytes_age",
+    "scheduler_idle_opportunity"
+  ],
+  "primary_estimand": "same-history same-replicate paired A_vs_C T_build ratio; B is ceiling",
+  "quality": "PAIRED_QUALITY_DELTA_ONLY",
+  "schema_version": "membind.frozen-metric-definitions.v1"
+}

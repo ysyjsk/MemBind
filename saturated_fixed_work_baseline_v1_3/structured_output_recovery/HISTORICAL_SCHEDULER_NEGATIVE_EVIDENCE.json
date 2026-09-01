@@ -1,0 +1,23 @@
+{
+  "current_candidate_difference": "Current decision does not introduce a new adaptive candidate; it retains explicit physical/token/native guards and disables unproven P1.",
+  "head_commit": "58af2320c5a606195968dbfd5704eaf2a805c8fd",
+  "provider_calls": 0,
+  "rows": [
+    {
+      "candidate_id": "r66a",
+      "decision": "DO_NOT_REPEAT",
+      "evidence_source": "MemBind_V6_1_8B_Autoresearch_Workplan.md#14.6",
+      "mechanism": "adaptive controller",
+      "pathology": "queue/service feedback confusion and no stable improvement"
+    },
+    {
+      "candidate_id": "r67-r69",
+      "decision": "DO_NOT_REPEAT",
+      "evidence_source": "MemBind_V6_1_8B_Autoresearch_Workplan.md#14.7-14.8",
+      "mechanism": "finish-time/service-EWMA critical scheduler",
+      "pathology": "phase spillover, batch/service dilation, resource-matched effect within noise"
+    }
+  ],
+  "schema_version": "membind.h5.historical-scheduler-negative-evidence.v1",
+  "status": "APPEND_ONLY_NEGATIVE_EVIDENCE_RETAINED"
+}

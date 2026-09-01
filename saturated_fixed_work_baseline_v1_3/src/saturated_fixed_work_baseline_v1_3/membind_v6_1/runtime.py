@@ -797,7 +797,22 @@ def build_local_openai_transport(
 ) -> Any:
     """Build the fixed single-attempt transport used by local construction calls."""
 
-    import httpx2
+    try:
+        import httpx2
+    except ModuleNotFoundError as exc:
+        # ``httpx2`` is the pinned local profile dependency.  The provider-free
+        # validation environment ships the API-compatible ``httpx`` package;
+        # use it only as a compatibility fallback and preserve all transport
+        # timeout, pool, and retry parameters below.
+        if exc.name != "httpx2":
+            raise
+        import httpx as httpx2
+
+        class _Httpx2CompatAsyncClient(httpx2.AsyncClient):
+            """Small type-identity shim for the provider-free environment."""
+
+        _Httpx2CompatAsyncClient.__module__ = "httpx2"
+        httpx2.AsyncClient = _Httpx2CompatAsyncClient
     from openai import AsyncOpenAI
 
     if timeout_seconds <= 0:

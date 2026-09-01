@@ -1,0 +1,111 @@
+{
+  "ARTIFICIAL_SERIALIZATION": [
+    "staged execution has an explicit preparation-stage barrier before native publication",
+    "JIT executor uses an effective two-source window even when policy lookahead is larger",
+    "native guard drains active future calls because submitted provider work is not preemptible"
+  ],
+  "CONSUMPTION_HORIZON": {
+    "authoritative": "durable_frontier + 1",
+    "future": "logical-ready sources admitted under source lease and physical permit",
+    "p1": "not certified; no direct-consumer edge proof in current source"
+  },
+  "CURRENT_FIXED_GUARDS": {
+    "native_guard": "close new future admission and drain active future calls before P0 publication",
+    "physical": "provider_slots plus request_tokens = prompt tokens + bounded decode reserve",
+    "policy": {
+      "future_cap": 1,
+      "lookahead": 2,
+      "native_future_quota": 0
+    },
+    "source_lease": "logical future-source bound kept separate from physical permits",
+    "token_budget": "min(authority * 8192, 61440) from current policy deployment facts"
+  },
+  "HISTORICAL_REJECTED_SCHEDULERS": [
+    {
+      "candidate_id": "r66a",
+      "decision": "DO_NOT_REPEAT",
+      "evidence_source": "MemBind_V6_1_8B_Autoresearch_Workplan.md#14.6",
+      "mechanism": "adaptive controller",
+      "pathology": "queue/service feedback confusion and no stable improvement"
+    },
+    {
+      "candidate_id": "r67-r69",
+      "decision": "DO_NOT_REPEAT",
+      "evidence_source": "MemBind_V6_1_8B_Autoresearch_Workplan.md#14.7-14.8",
+      "mechanism": "finish-time/service-EWMA critical scheduler",
+      "pathology": "phase spillover, batch/service dilation, resource-matched effect within noise"
+    }
+  ],
+  "INTERFERENCE_RISKS": [
+    "future prefill can delay a later authoritative request in a non-preemptible queue",
+    "batch/service dilation and KV/token residency pressure can increase critical wait",
+    "route spillover can put native and prepare traffic on the same endpoint",
+    "completed future work may be non-consumable until frontier publication"
+  ],
+  "NON_PREEMPTIBLE_BOUNDARIES": [
+    "ForegroundAdmissionArbiter admission boundary before provider transport",
+    "per-resource request slot and weighted request_tokens/token_budget accounting",
+    "vLLM/FCFS provider queue after transport submission; no cancellation-based preemption is assumed",
+    "Graphiti/Neo4j durable publication transaction is outside the in-memory arbiter"
+  ],
+  "OPEN_METHOD_QUESTION": "Whether a distinct logical-ready classification can be widened while preserving the existing physical, token, and native-guard boundary; no current trace proves this without reintroducing the rejected service-prediction family.",
+  "TASK_CLASSES": [
+    {
+      "callsites": [
+        "membind_v6_1.provider._class",
+        "membind_v6_1.mab publish/native provider scope"
+      ],
+      "class": "P0",
+      "consumption": "current durable frontier",
+      "dependency": "authoritative frontier publication and dependency-unblocking request",
+      "implementation": "NATIVE_FRONTIER",
+      "priority": 0
+    },
+    {
+      "callsites": [],
+      "class": "P1",
+      "consumption": "not used because source_sequence == frontier + 1 is not itself a proof",
+      "dependency": "would require a certified direct-consumer edge",
+      "implementation": "DISABLED_UNPROVEN",
+      "priority": 1
+    },
+    {
+      "callsites": [
+        "membind_v6_1.provider._class",
+        "membind_v6_1.admission"
+      ],
+      "class": "P2",
+      "consumption": "future source lease / prepare result",
+      "dependency": "logical source is dependency-ready but not authoritative next consumer",
+      "implementation": "FUTURE_PREPARE",
+      "priority": 2
+    }
+  ],
+  "TRUE_DEPENDENCIES": [
+    "executor awaits prepare(sequence) before publish(sequence)",
+    "durable publication is contiguous and advances frontier one source at a time",
+    "provider classification uses NATIVE for publication and FRONTIER/FUTURE for prepare",
+    "future results cannot mutate authoritative state before ordered publication"
+  ],
+  "WHY_EACH_GUARD_EXISTS": {
+    "future_cap": "limits non-preemptible future exposure and source/debt accumulation",
+    "lookahead": "retained compatibility/window safeguard; current executor caps effective JIT materialization to two successors",
+    "native_future_quota": "zero prevents future calls from co-residing with an authoritative native interval",
+    "native_guard": "only enforceable way to protect P0 after a provider request has been submitted",
+    "token_budget": "maps admission to weighted KV/token residency rather than request count alone"
+  },
+  "generated_at": "2026-09-01T16:53:19.519926+00:00",
+  "head_commit": "58af2320c5a606195968dbfd5704eaf2a805c8fd",
+  "provider_calls": 0,
+  "schema_version": "membind.h5.scheduler-problem-audit.v1",
+  "source_hashes": {
+    "admission": "0adfd29dc70e0371a90dda4e1b412c1668ad7fd057a68607d36c0506ba7d10b2",
+    "core": "a0463aa2a68d0f264a0ba23a2c54218ba97689af01110067e7785dae96f6e78e",
+    "executor": "0bcdca27b7d257c883bb178a8a244aeb9f46f13a39986a76c48f2fcc981f5b49",
+    "policy": "37607aa8287f1d4a741576ec0e9c4f1163d06a8f7ad66b2f26579fce6c5682cb",
+    "provider": "84b8568ff6ae916fca49c276329c21c85bfc1ce0261288b1b2d1fb13902f1f27",
+    "routing": "162e85ca74969cb19620bd7d4ac96add24c057e9da563ad6e0f63ed10bcf1be8",
+    "stress": "dfdc3e41a9783ed6787d564aad0e40efa997963548619d65f0eaeaebd3e2c0a9"
+  },
+  "status": "AUDITED_FIXED_GUARD_RETAINED"
+}

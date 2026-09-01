@@ -2,8 +2,10 @@ from __future__ import annotations
 
 import asyncio
 import hashlib
+import importlib.util
 import json
 import sys
+from pathlib import Path
 from types import SimpleNamespace
 
 import pytest
@@ -65,6 +67,26 @@ from saturated_fixed_work_baseline_v1_3.membind_v6_1.routing import (
     RoutedOpenAIClient,
     SEMANTIC_PHASE_AFFINITY,
 )
+
+
+def test_provider_free_stress_oracle_covers_required_state_transitions() -> None:
+    script = Path(__file__).resolve().parents[1] / "scripts" / "run_v61_scheduler_stress.py"
+    spec = importlib.util.spec_from_file_location("membind_v61_scheduler_stress", script)
+    assert spec is not None and spec.loader is not None
+    module = importlib.util.module_from_spec(spec)
+    spec.loader.exec_module(module)
+    result = module.run_stress_suite()
+    assert result["status"] == "PASS_PROVIDER_FREE_EVENT_ORACLE"
+    assert result["provider_calls"] == 0
+    assert set(result["scenarios"]) == {
+        "critical_only",
+        "critical_busy_future_ready",
+        "bounded_opportunity_and_priority_inversion",
+        "many_ready_futures_and_token_bound",
+        "variable_lengths_failure_and_fallback",
+        "ordered_publication",
+    }
+    assert all(row["oracle"].get("conservation", True) for row in result["scenarios"].values())
 
 
 def test_critical_scheduler_prefers_frontier_then_earliest_resource_finish() -> None:

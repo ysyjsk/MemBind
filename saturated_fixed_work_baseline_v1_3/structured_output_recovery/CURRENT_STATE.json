@@ -1,16 +1,29 @@
 {
   "base_code_commit": "c62b548d18bbf0da161069be7be86750e977581c",
   "base_code_commit_source": "existing_evidence",
+  "current_implementation_identity": {
+    "artifact_present": true,
+    "head_commit": "58af2320c5a606195968dbfd5704eaf2a805c8fd",
+    "identity_head_commit": "58af2320c5a606195968dbfd5704eaf2a805c8fd",
+    "identity_tracked_diff_sha256": "58cb871efd04c3567adbcb2e2690df9472fe15c135fb50eff8d199bc32567d81",
+    "status": "PASS",
+    "tracked_diff_sha256": "58cb871efd04c3567adbcb2e2690df9472fe15c135fb50eff8d199bc32567d81"
+  },
   "engineering_canary_executed": false,
+  "evaluated_commit_is_current": false,
   "evaluated_source_bundle": {
     "base_code_commit": "c62b548d18bbf0da161069be7be86750e977581c",
-    "generator_source_sha256": "f7b3fee016345578a28ccbb9c954b40d652ad4d9bcf104a87264639a5c56b9c9",
-    "native_identity_sha256": "7bf4c44e29900c1d1ae4d543cc9297e13fba511309a9465643b8cf9591d5a5b2",
-    "native_report_sha256": "9d7e074647a176ef02adfd110c8e3f393a20f065c0448d52a7224848997ba163",
-    "official_dataset_parity_sha256": "1b890be003f3b2ac1bafc3d06d4433f179d8132ae314e807d8a3e3ad5728a007",
-    "structured_qualification_sha256": "c31c3053c968696caa00386993b0bb6368df4bbcd59e0b1f8b5d947eeca1cfa0"
+    "generator_source_sha256": "df1317d83789d2bc84a08e09ac0904c99c4b566b6d6b3a75510fc0568d66995e",
+    "native_identity_sha256": "38d668c3e51e8357295c90856bb2120f0ca8874927610313979d8d8929d24b81",
+    "native_report_sha256": "7cf514a1aef99ec18b825c46a98c724a96da940e2c38e09182991032dfa0c91e",
+    "official_dataset_parity_sha256": "74e507b41e84b45904e6bc2e0ad12eff777aba24f74df28a28f7b5ff3903b3a9",
+    "structured_qualification_sha256": "9211c0b1c12ab5b06f419631eb2081588cb54557650529677e814d385ae512a3"
   },
-  "evaluated_source_bundle_sha256": "4a883140b05c0973582c30d51dd0f6384c16758818d55a0ef54a408596e46176",
+  "evaluated_source_bundle_sha256": "1dfe418690ad111ce9ec33af8d12a01f6c590d296d6f6dfafe44a141c56297d9",
+  "evidence_epoch": {
+    "error": "evidence base_code_commit mismatch: selected=c62b548d18bbf0da161069be7be86750e977581c, declared=58af2320c5a606195968dbfd5704eaf2a805c8fd",
+    "status": "FAIL"
+  },
   "evidence_inputs": {
     "native_identity": "/data/predator/ly/MemBind/saturated_fixed_work_baseline_v1_3/structured_output_recovery/NATIVE_BASELINE_IDENTITY.json",
     "native_report": "/data/predator/ly/MemBind/saturated_fixed_work_baseline_v1_3/structured_output_recovery/NATIVE_IMMUTABILITY_REPORT.json",
@@ -18,7 +31,7 @@
     "structured_qualification": "/data/predator/ly/MemBind/saturated_fixed_work_baseline_v1_3/structured_output_recovery/STRUCTURED_OUTPUT_QUALIFICATION_RESULT.json"
   },
   "formal_history_executed": false,
-  "generator_source_sha256": "f7b3fee016345578a28ccbb9c954b40d652ad4d9bcf104a87264639a5c56b9c9",
+  "generator_source_sha256": "df1317d83789d2bc84a08e09ac0904c99c4b566b6d6b3a75510fc0568d66995e",
   "native_immutability": {
     "identity_status": "PASS",
     "prohibited_difference_count": 0,
@@ -39,8 +52,8 @@
   },
   "provider_calls": 0,
   "schema_version": "membind.preexperiment.current-state.v2",
-  "state": "CODE_READY_FOR_THREE_ARM_ENGINEERING_CANARY",
-  "status_reason": "State is computed from native, UUID, actual-callsite, and official-dataset evidence; no prior state is reused.",
+  "state": "BLOCKED_STALE_OR_MIXED_EVIDENCE",
+  "status_reason": "State is computed from current implementation identity, evidence epoch, native, UUID, actual-callsite, and official-dataset evidence; no prior state is reused.",
   "structured_output": {
     "r1_actual_callsite_inventory": "PASS_ACTUAL_RUNTIME_CALLSITE",
     "r1_schema_boundedness": "PASS_PROVIDER_FREE_SYNTHETIC_CALLSITE_SUITE",

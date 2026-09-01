@@ -1,0 +1,50 @@
+{
+  "credits": [
+    {
+      "acquire_release_cancel": "acquire_source_lease/release_source_lease; cancellation removes waiter",
+      "authority": "CapacityAuthority.value and V61Policy.future_cap",
+      "boundary": "future source logical admission",
+      "name": "logical_source_lease",
+      "provider_queue_included": false,
+      "shared_by_arms": "C only; A/B keep arm-agnostic shared envelope",
+      "unit": "source"
+    },
+    {
+      "acquire_release_cancel": "acquire_physical/release_physical in finally",
+      "authority": "CapacityAuthority.value",
+      "boundary": "entry to routed provider transport",
+      "name": "physical_request_permit",
+      "provider_queue_included": "admission boundary only; post-submit queue is non-preemptible",
+      "shared_by_arms": "A/B/C same deployment envelope",
+      "unit": "request slot"
+    },
+    {
+      "acquire_release_cancel": "increment/decrement with permit lifecycle; underflow raises",
+      "authority": "V61Policy.token_budget and request_tokens",
+      "boundary": "active prompt plus decode residency envelope",
+      "name": "weighted_token_credit",
+      "provider_queue_included": false,
+      "shared_by_arms": "A/B/C deployment capacity, C accounting",
+      "unit": "tokens"
+    },
+    {
+      "acquire_release_cancel": "dispatch/release paths validate exact request_tokens",
+      "authority": "RoutedOpenAIClient active token debt",
+      "boundary": "routed endpoint dispatch accounting",
+      "name": "endpoint_route_debt",
+      "provider_queue_included": false,
+      "shared_by_arms": "arm-agnostic router",
+      "unit": "request tokens per endpoint"
+    }
+  ],
+  "head_commit": "58af2320c5a606195968dbfd5704eaf2a805c8fd",
+  "non_claims": [
+    "provider internal batching/kernel capacity",
+    "GPU idle from absence of active HTTP request",
+    "future P0 arrival prediction",
+    "service-time prediction as correctness condition"
+  ],
+  "provider_calls": 0,
+  "schema_version": "membind.h5.scheduler-resource-credit-map.v1",
+  "status": "PASS_SOURCE_MAPPED_FIXED_CREDITS"
+}

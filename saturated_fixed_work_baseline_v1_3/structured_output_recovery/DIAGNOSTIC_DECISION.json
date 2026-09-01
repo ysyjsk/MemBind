@@ -1,0 +1,34 @@
+{
+  "schema_version": "membind.autoresearch.diagnostic-decision.v1",
+  "candidate": "V6_FIXED_POLICY",
+  "epoch": "h5-fixed-2026-09-02",
+  "validity": "VALID_PROVIDER_FREE_STRUCTURAL_RESULT",
+  "expected_mechanism": "bounded physical admission protects authoritative P0 work while preserving ordered publication",
+  "falsifiable_predictions": [
+    "new P2 admission is zero while P0 is waiting",
+    "future outstanding and weighted token credits remain bounded",
+    "release/cancel paths conserve all credits",
+    "out-of-order prepare completion cannot reorder durable publication"
+  ],
+  "observed": {
+    "scheduler_stress_status": "PASS_PROVIDER_FREE_EVENT_ORACLE",
+    "provider_calls": 0,
+    "official_performance_used_for_selection": false,
+    "correctness_oracle": "PASS",
+    "credit_conservation": "PASS",
+    "priority_inversion_oracle": "PASS",
+    "ordered_publication_oracle": "PASS"
+  },
+  "competing_hypotheses": [
+    "H1: widening logical ready horizon could expose overlap without increasing physical queue exposure",
+    "H2: wider admission would recreate non-preemptible provider interference and service dilation seen in r66a/r67-r69"
+  ],
+  "evidence_supports": ["H2 remains the conservative risk under the current provider boundary", "fixed safeguards are structurally valid"],
+  "evidence_does_not_support": ["adaptive speedup", "theoretical optimality of lookahead/future_cap", "GPU utilization as a mechanism proxy"],
+  "next_variable": null,
+  "decision": "VALID_NEGATIVE_ADAPTIVE_RESULT_FIXED_CONTINUES",
+  "reason": "No distinct evidence-selected adaptive hypothesis met the no-predictor, bounded-physical-admission and historical-negative-evidence requirements. Further grid search is prohibited.",
+  "next_action": "complete authenticated engineering canary preflight, then canary if environment recovers; do not create formal cells",
+  "generated_at": "2026-09-02T00:00:00+08:00",
+  "provider_calls": 0
+}

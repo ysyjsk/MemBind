@@ -1,0 +1,25 @@
+{
+  "schema_version": "membind.engineering-canary-preflight.v1",
+  "status": "BLOCKED_EXTERNAL_PREFLIGHT_TIMEOUT",
+  "ok": false,
+  "mode": "live",
+  "provider_calls": "UNKNOWN_EXTERNAL_BLOCKED",
+  "checks": {
+    "static_preflight": "PASS",
+    "authenticated_model_identity": {
+      "native_18200": "PASS:qwen3-8b-awq",
+      "prepare_18201": "PASS:qwen3-8b-awq",
+      "embedding_18202": "PASS:qwen3-embedding-0.6b"
+    },
+    "local_endpoint_tcp": "PASS",
+    "neo4j_live_probe": "TCP_REACHABLE_ONLY; driver query not completed",
+    "native_structured_probe": "PASS:json_object_finish_stop",
+    "prepare_structured_probe": "BLOCKED_TIMEOUT",
+    "embedding_batch_probe": "BLOCKED_TIMEOUT",
+    "model_and_route_identity": "PASS_STATIC",
+    "timeout_evidence": "preflight process exceeded bounded 80 second observation window and remained in an external uninterruptible syscall"
+  },
+  "canary_authorized": false,
+  "formal_three_arm_authorized": false,
+  "reason": "Engineering canary requires a completed authenticated live preflight; no provider result or formal cell was created."
+}
