@@ -19,6 +19,11 @@ from typing import Any
 ROOT = Path(__file__).resolve().parents[1]
 OUT = ROOT / "saturated_fixed_work_baseline_v1_3" / "structured_output_recovery"
 OLD_EVIDENCE_BASE = "c62b548d18bbf0da161069be7be86750e977581c"
+_MATERIALIZED_EVIDENCE_PREFIXES = (
+    "saturated_fixed_work_baseline_v1_3/structured_output_recovery/",
+    "mab_quality_v2_final_qa/evidence/OFFICIAL_DATASET_PARITY_REPORT.json",
+    "mab_quality_v2_final_qa/evidence/OFFICIAL_DATASET_PARITY_REPORT.md",
+)
 
 
 def _run(*args: str) -> str:
@@ -35,6 +40,24 @@ def _sha256_file(path: Path) -> str | None:
     if not path.is_file():
         return None
     return _sha256_bytes(path.read_bytes())
+
+
+def _is_materialized_evidence_path(path: str) -> bool:
+    return path.startswith(_MATERIALIZED_EVIDENCE_PREFIXES)
+
+
+def _implementation_diff() -> tuple[str | None, list[str]]:
+    names = _run("diff", "HEAD", "--name-only", "--no-ext-diff").splitlines()
+    paths = [path for path in names if path and not _is_materialized_evidence_path(path)]
+    if not paths:
+        return None, []
+    raw = subprocess.run(
+        ["git", "diff", "HEAD", "--no-ext-diff", "--binary", "--", *paths],
+        cwd=ROOT,
+        check=True,
+        capture_output=True,
+    ).stdout
+    return (_sha256_bytes(raw) if raw else None), paths
 
 
 def _aggregate(paths: list[Path]) -> tuple[str, list[dict[str, Any]]]:
@@ -82,7 +105,6 @@ def _source_sets() -> dict[str, list[Path]]:
         "method_spec": [
             sfwb / "structured_output_recovery/THREE_ARM_METHOD_BOUNDARIES.json",
             sfwb / "structured_output_recovery/STRUCTURED_OUTPUT_RECOVERY_POLICY.json",
-            sfwb / "structured_output_recovery/FINAL_METHOD_SPEC.json",
         ],
         "dataset": [
             ROOT / "mab_quality_v2_final_qa/data/official_5_contexts.json",
@@ -100,17 +122,24 @@ def _source_sets() -> dict[str, list[Path]]:
 
 def _current_tree() -> dict[str, Any]:
     status = _run("status", "--porcelain=v1")
-    tracked_diff = _run("diff", "HEAD", "--no-ext-diff", "--binary")
+    implementation_diff_sha256, implementation_paths = _implementation_diff()
+    status_lines = status.splitlines()
+    implementation_status = [
+        line for line in status_lines
+        if len(line) >= 4 and not _is_materialized_evidence_path(line[3:])
+    ]
     return {
         "head_commit": _run("rev-parse", "HEAD").strip(),
         "branch": _run("branch", "--show-current").strip(),
         "origin_main": _run("rev-parse", "origin/main").strip(),
-        "working_tree_clean": not bool(status.strip()),
-        "status_porcelain_sha256": _sha256_bytes(status.encode("utf-8")),
-        "tracked_diff_sha256": _sha256_bytes(tracked_diff.encode("utf-8"))
-        if tracked_diff
-        else None,
-        "tracked_status": status.splitlines(),
+        "working_tree_clean": not bool(implementation_status),
+        "status_porcelain_sha256": _sha256_bytes("\n".join(implementation_status).encode("utf-8")),
+        "tracked_diff_sha256": implementation_diff_sha256,
+        "tracked_status": implementation_status,
+        "materialized_evidence_status": [
+            line for line in status_lines
+            if len(line) >= 4 and _is_materialized_evidence_path(line[3:])
+        ],
     }
 
 
