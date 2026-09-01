@@ -64,7 +64,14 @@ def materialize_construction_block(
         raise ArtifactMaterializationError("block root must be fresh")
     block_root.mkdir(parents=True, exist_ok=True)
     method = str(identity.get("method", result.get("method", "")))
-    if method not in {"B0", "B1", "V6"}:
+    if method not in {
+        "B0",
+        "B1",
+        "V6",
+        "GRAPHITI_UPSTREAM_SERIAL",
+        "RELAXED_ORDER_PARALLEL",
+        "MEMBIND_V6_1",
+    }:
         raise ArtifactMaterializationError("method is not frozen")
     if not isinstance(result, Mapping) or result.get("expected_episode_count") != result.get("submitted_count") or result.get("expected_episode_count") != result.get("completed_count"):
         raise ArtifactMaterializationError("fixed-work result is incomplete")
@@ -90,7 +97,7 @@ def materialize_construction_block(
     _write_jsonl(block_root / "native_trace.jsonl", result.get("native_trace", events))
     _write_jsonl(block_root / "transport_trace.jsonl", result.get("transport_trace", []))
     _write_jsonl(block_root / "request_identity.jsonl", result.get("request_identity", []))
-    if method == "V6":
+    if method in {"V6", "MEMBIND_V6_1"}:
         _write_jsonl(block_root / "replay_binding.jsonl", result.get("bindings", []))
     else:
         _write_jsonl(block_root / "replay_binding.jsonl", [{"status": "N/A", "reason": "replay refinement is not applicable to this method"}])
@@ -135,7 +142,7 @@ def materialize_construction_block(
     })
     _write_json(block_root / "lifecycle_validation.json", result.get("lifecycle_validation", {"contract_status": "INVALID"}))
     _write_json(block_root / "order_validation.json", result.get("order_validation", {"order_contract_status": "INVALID_TRACE"}))
-    _write_json(block_root / "refinement_validation.json", result.get("refinement_validation", {"refinement_status": "N/A" if method != "V6" else "INVALID"}))
+    _write_json(block_root / "refinement_validation.json", result.get("refinement_validation", {"refinement_status": "N/A" if method not in {"V6", "MEMBIND_V6_1"} else "INVALID"}))
     _write_json(block_root / "graph_diagnostics.json", result.get("graph_diagnostics", {"status": "NOT_CAPTURED"}))
     _write_json(block_root / "metrics.json", {
         "t_build_ns": result.get("t_build_ns"),

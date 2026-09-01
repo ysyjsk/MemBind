@@ -92,6 +92,46 @@ def _messages() -> list[Message]:
 
 
 class QwenUpstreamTransportShimTests(IsolatedAsyncioTestCase):
+    async def test_recovery_disabled_preserves_upstream_schema_and_parser_surface(self) -> None:
+        completions = _Completions(content='{"edges":[]}')
+        client = _client(completions)
+        client = QwenVLLMClient(
+            config=LLMConfig(
+                api_key="test", model="qwen3-32b-fp8", small_model="qwen3-32b-fp8",
+                base_url="http://127.0.0.1:1/v1", temperature=0.0, max_tokens=16_384,
+            ),
+            client=SimpleNamespace(chat=SimpleNamespace(completions=completions)),
+            max_tokens=16_384,
+            structured_output_mode="json_schema",
+            native_identity=True,
+            vllm_options_enabled=False,
+        )
+        reference = OpenAIGenericClient(
+            config=LLMConfig(
+                api_key="test",
+                model="qwen3-32b-fp8",
+                small_model="qwen3-32b-fp8",
+                base_url="http://127.0.0.1:1/v1",
+                temperature=0.0,
+                max_tokens=16_384,
+            ),
+            client=SimpleNamespace(chat=SimpleNamespace(completions=_Completions(content='{"edges":[]}'))),
+            max_tokens=16_384,
+            structured_output_mode="json_schema",
+        )
+        upstream_format = reference._build_response_format(_Response)
+        self.assertEqual(client._build_response_format(_Response), upstream_format)
+        self.assertFalse(client.structured_output_recovery_enabled)
+        self.assertIs(type(client)._generate_response, OpenAIGenericClient._generate_response)
+        self.assertIs(type(client).generate_response, OpenAIGenericClient.generate_response)
+        result = await client.generate_response(_messages(), response_model=_Response)
+        self.assertEqual(result, {"edges": []})
+        request = completions.calls[0]
+        self.assertEqual(request["response_format"], upstream_format)
+        self.assertNotIn("seed", request)
+        self.assertNotIn("extra_body", request)
+        self.assertNotIn("structured_outputs", request)
+
     async def test_provider_generation_is_inherited_from_pinned_graphiti(self) -> None:
         client = _client(_Completions(content='{"edges":[]}'))
 

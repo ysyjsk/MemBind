@@ -54,6 +54,7 @@ from saturated_fixed_work_baseline_v1_3.membind_v6_1.runtime import (  # noqa: E
 from saturated_fixed_work_baseline_v1_3.membind_v6_1.runtime_8b import (  # noqa: E402
     PROFILE_ID_8B,
     assert_8b_namespace_identity,
+    build_8b_strict_native_runtime,
     build_8b_u0_runtime,
     close_8b_u0_runtime,
     frozen_8b_config,
@@ -64,22 +65,17 @@ from saturated_fixed_work_baseline_v1_3.membind_v6_1.runtime_8b import (  # noqa
 
 
 METHODS = {
-    "NATIVE_SERIAL": {
+    "GRAPHITI_UPSTREAM_SERIAL": {
         "legacy_method": "B0",
         "route_env": "MEMBIND_NATIVE_ROUTING_CONFIG",
         "contract_arm": "native-serial-dual",
     },
-    "NATIVE_PARALLEL": {
+    "RELAXED_ORDER_PARALLEL": {
         "legacy_method": "B1",
         "route_env": "MEMBIND_NATIVE_ROUTING_CONFIG",
         "contract_arm": "native-parallel-dual",
     },
-    "STATIC_ROLE": {
-        "legacy_method": "B0",
-        "route_env": "MEMBIND_STATIC_ROLE_ROUTING_CONFIG",
-        "contract_arm": "native-static-role-dual",
-    },
-    "V6_1": {
+    "MEMBIND_V6_1": {
         "legacy_method": "V6_1",
         "route_env": "MEMBIND_V61_ROUTING_CONFIG",
         "contract_arm": "v61-dual",
@@ -184,11 +180,24 @@ def _install_instrumentation(graphiti: Any, recorder: Any) -> Any:
     )
 
     instrumentation = install_native_characterization_instrumentation(graphiti, recorder)
-    try:
-        restore_budget = install_local_context_budget_adapter(graphiti.llm_client)
-    except BaseException:
-        instrumentation.restore()
-        raise
+    restored = False
+
+    class CombinedInstrumentation:
+        def restore(self) -> None:
+            nonlocal restored
+            if restored:
+                return
+            restored = True
+            instrumentation.restore()
+
+    return CombinedInstrumentation()
+
+
+def _install_v61_instrumentation(graphiti: Any, recorder: Any) -> Any:
+    """Install the V6.1 context adapter in the V6.1 arm only."""
+
+    instrumentation = _install_instrumentation(graphiti, recorder)
+    restore_budget = install_local_context_budget_adapter(graphiti.llm_client)
     restored = False
 
     class CombinedInstrumentation:
@@ -259,7 +268,7 @@ def _reusable_reference(
 ) -> dict[str, Any] | None:
     """Resolve one fully sealed non-V6.1 reference for an identical contract."""
 
-    if method == "V6_1":
+    if method == "MEMBIND_V6_1":
         return None
     runner_hash = _sha256(Path(__file__).resolve())
     implementation_hash = implementation_bundle(Path(__file__).resolve())["payload_sha256"]
@@ -294,7 +303,7 @@ def _reusable_reference(
             # rerun; platform/workload/arm/seal identity below is the reuse
             # contract.  V6.1 candidates remain implementation-hash bound.
             implementation_matches = (
-                method != "V6_1"
+                method != "MEMBIND_V6_1"
                 or (
                     contract.get("runner_implementation", {}).get("file_sha256")
                     == runner_hash
@@ -312,16 +321,15 @@ def _reusable_reference(
                 and implementation_matches
                 and (
                     (
-                        method == "NATIVE_SERIAL"
+                        method == "GRAPHITI_UPSTREAM_SERIAL"
                         and contract.get("comparison_class") == "HEADLINE_B0_DUAL_RESOURCE_MATCHED"
                         and contract.get("method_boundary", {}).get("id") == "NATIVE_REFERENCE"
                     )
                     or (
-                        method == "NATIVE_PARALLEL"
+                        method == "RELAXED_ORDER_PARALLEL"
                         and contract.get("comparison_class") == "RELAXED_ORDER_B1_UPPER_BOUND"
                         and contract.get("method_boundary", {}).get("id") == "B1_RELAXED_ORDER_REFERENCE"
                     )
-                    or method == "STATIC_ROLE"
                 )
                 and complete.get("status") == "PASS"
                 and route_proof.get("status") == "PASS"
@@ -444,20 +452,20 @@ async def _main(args: argparse.Namespace) -> int:
         "contexts": list(args.contexts),
         "session_limit": args.session_limit,
         "methods": list(args.methods),
-        "v61_method_boundary": args.v61_boundary if "V6_1" in args.methods else None,
-        "v61_extension_id": args.v61_extension_id if "V6_1" in args.methods else None,
+        "v61_method_boundary": args.v61_boundary if "MEMBIND_V6_1" in args.methods else None,
+        "v61_extension_id": args.v61_extension_id if "MEMBIND_V6_1" in args.methods else None,
         "method_contracts": {
             method: {
                 **METHODS[method],
                 "routing": routes[method],
                 "execution_strategy": (
-                    MEMBIND_CORE_EXECUTION_STRATEGY if method == "V6_1" else None
+                    MEMBIND_CORE_EXECUTION_STRATEGY if method == "MEMBIND_V6_1" else None
                 ),
-                "core_version": MEMBIND_CORE_VERSION if method == "V6_1" else None,
+                "core_version": MEMBIND_CORE_VERSION if method == "MEMBIND_V6_1" else None,
             }
             for method in args.methods
         },
-        "v6_1_policy": policy.to_dict() if "V6_1" in args.methods else None,
+        "v6_1_policy": policy.to_dict() if "MEMBIND_V6_1" in args.methods else None,
         "git": _git_identity(),
         "dataset": str((MAB / "data/official_5_contexts.json").resolve()),
         "created_at_unix": time.time(),
@@ -527,8 +535,8 @@ async def _main(args: argparse.Namespace) -> int:
                 platform_manifest=platform_path,
                 workload_manifest=workload_path,
                 output=contract_path,
-                method_boundary=(args.v61_boundary if method == "V6_1" else None),
-                extension_id=(args.v61_extension_id if method == "V6_1" else None),
+                method_boundary=(args.v61_boundary if method == "MEMBIND_V6_1" else None),
+                extension_id=(args.v61_extension_id if method == "MEMBIND_V6_1" else None),
             )
             attempt_preparation_path = attempt_root / "attempt_preparation.json"
             start = {
@@ -544,9 +552,9 @@ async def _main(args: argparse.Namespace) -> int:
                 "episode_count": len(inputs),
                 "routing_policy": routes[method]["router"]["policy"],
                 "execution_strategy": (
-                    MEMBIND_CORE_EXECUTION_STRATEGY if method == "V6_1" else None
+                    MEMBIND_CORE_EXECUTION_STRATEGY if method == "MEMBIND_V6_1" else None
                 ),
-                "core_version": MEMBIND_CORE_VERSION if method == "V6_1" else None,
+                "core_version": MEMBIND_CORE_VERSION if method == "MEMBIND_V6_1" else None,
                 "attempt_phase": "ATTEMPT_PREPARATION",
                 "run_contract_sha256": contract["payload_sha256"],
                 "started_at_unix": time.time(),
@@ -561,8 +569,13 @@ async def _main(args: argparse.Namespace) -> int:
             def runtime_builder() -> Any:
                 if runtime_holder:
                     raise RuntimeError("attempt runtime builder was called more than once")
-                if method == "V6_1" and args.v61_boundary == "MEMBIND_CORE":
+                if method == "MEMBIND_V6_1" and args.v61_boundary == "MEMBIND_CORE":
                     runtime = build_membind_core_runtime_8b(
+                        routing_contract=routes[method],
+                        route_event_sink=route_events.append,
+                    )
+                elif method in {"GRAPHITI_UPSTREAM_SERIAL", "RELAXED_ORDER_PARALLEL"}:
+                    runtime = build_8b_strict_native_runtime(
                         routing_contract=routes[method],
                         route_event_sink=route_events.append,
                     )
@@ -571,12 +584,12 @@ async def _main(args: argparse.Namespace) -> int:
                         routing_contract=routes[method],
                         route_event_sink=route_events.append,
                         enable_grounded_summary_materialization=(
-                            method == "V6_1" and args.v61_boundary == "WORK_REDUCTION_EXTENSION"
+                            method == "MEMBIND_V6_1" and args.v61_boundary == "WORK_REDUCTION_EXTENSION"
                         ),
                         enable_endpoint_schema_grounding=(
-                            method == "V6_1" and args.v61_boundary == "WORK_REDUCTION_EXTENSION"
+                            method == "MEMBIND_V6_1" and args.v61_boundary == "WORK_REDUCTION_EXTENSION"
                         ),
-                        enable_work_conserving_edge_admission=(method == "V6_1"),
+                        enable_work_conserving_edge_admission=(method == "MEMBIND_V6_1"),
                         # The adaptive controller was rejected at r66a. Keep it
                         # opt-in for an explicitly named ablation so the default
                         # V6.1 substrate remains the retained fixed admission path.
@@ -614,7 +627,7 @@ async def _main(args: argparse.Namespace) -> int:
                 ):
                     raise RuntimeError("attempt preparation evidence is invalid")
                 failure_phase = "MEASURED_CONSTRUCTION"
-                if method == "V6_1" and args.v61_boundary == "MEMBIND_CORE":
+                if method == "MEMBIND_V6_1" and args.v61_boundary == "MEMBIND_CORE":
                     environment = public_membind_core_environment_8b(
                         routes[method], repo_root=ROOT
                     )
@@ -623,24 +636,26 @@ async def _main(args: argparse.Namespace) -> int:
                     environment = public_8b_environment(
                         routes[method],
                         repo_root=ROOT,
+                        strict_native=method in {"GRAPHITI_UPSTREAM_SERIAL", "RELAXED_ORDER_PARALLEL"},
                         enable_grounded_summary_materialization=(
-                            method == "V6_1" and args.v61_boundary == "WORK_REDUCTION_EXTENSION"
+                            method == "MEMBIND_V6_1" and args.v61_boundary == "WORK_REDUCTION_EXTENSION"
                         ),
                         enable_endpoint_schema_grounding=(
-                            method == "V6_1" and args.v61_boundary == "WORK_REDUCTION_EXTENSION"
+                            method == "MEMBIND_V6_1" and args.v61_boundary == "WORK_REDUCTION_EXTENSION"
                         ),
-                        enable_work_conserving_edge_admission=(method == "V6_1"),
+                        enable_work_conserving_edge_admission=(method == "MEMBIND_V6_1"),
                         enable_adaptive_edge_admission=False,
                     )
                     frozen_config = frozen_8b_config(
                         routes[method],
+                        strict_native=method in {"GRAPHITI_UPSTREAM_SERIAL", "RELAXED_ORDER_PARALLEL"},
                         enable_grounded_summary_materialization=(
-                            method == "V6_1" and args.v61_boundary == "WORK_REDUCTION_EXTENSION"
+                            method == "MEMBIND_V6_1" and args.v61_boundary == "WORK_REDUCTION_EXTENSION"
                         ),
                         enable_endpoint_schema_grounding=(
-                            method == "V6_1" and args.v61_boundary == "WORK_REDUCTION_EXTENSION"
+                            method == "MEMBIND_V6_1" and args.v61_boundary == "WORK_REDUCTION_EXTENSION"
                         ),
-                        enable_work_conserving_edge_admission=(method == "V6_1"),
+                        enable_work_conserving_edge_admission=(method == "MEMBIND_V6_1"),
                         enable_adaptive_edge_admission=False,
                     )
                 common = {
@@ -649,7 +664,11 @@ async def _main(args: argparse.Namespace) -> int:
                     "namespace": namespace,
                     "episodes": inputs,
                     "runtime_builder": runtime_builder,
-                    "instrumentation_installer": _install_instrumentation,
+                    "instrumentation_installer": (
+                        _install_v61_instrumentation
+                        if method == "MEMBIND_V6_1"
+                        else _install_instrumentation
+                    ),
                     "recorder_factory": TraceRecorder,
                     "graph_exporter": export_canonical_graph,
                     "output_root": block_root,
@@ -665,7 +684,7 @@ async def _main(args: argparse.Namespace) -> int:
                         "namespace_initial_counts": counts,
                     },
                 }
-                if method == "V6_1":
+                if method == "MEMBIND_V6_1":
                     if args.v61_boundary == "MEMBIND_CORE":
                         result = await run_membind_core_construction_async(
                             policy=policy,
@@ -680,7 +699,12 @@ async def _main(args: argparse.Namespace) -> int:
                         )
                 else:
                     result = await run_mab_construction_async(
-                        method=str(METHODS[method]["legacy_method"]), **common
+                        method=(
+                            method
+                            if method in {"GRAPHITI_UPSTREAM_SERIAL", "RELAXED_ORDER_PARALLEL"}
+                            else str(METHODS[method]["legacy_method"])
+                        ),
+                        **common,
                     )
                 runtime = runtime_holder.get("runtime")
                 if runtime is None:

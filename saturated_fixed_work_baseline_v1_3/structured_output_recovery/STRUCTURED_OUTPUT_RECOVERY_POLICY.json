@@ -1,0 +1,43 @@
+{
+  "schema_version": "membind.structured-output-recovery.policy.v1",
+  "status": "PASS_PROVIDER_FREE",
+  "runtime_reliability_profile": "shared-structured-output-recovery-v1",
+  "schema_revision": "finite-edge-schema-v1",
+  "recovery_policy_revision": "classified-request-recovery-v1",
+  "recovery_policy_sha256": "40492aace3206f9355aae403fee578c00e0a9af0ccb5ae59f12de024da617201",
+  "policy_scope": "MEMBIND_V6_1_ONLY",
+  "transient_extra_physical_attempts": 2,
+  "truncation_smaller_variants": 0,
+  "context_budget_corrections": 0,
+  "malformed_structured_retry": "none",
+  "semantic_validation_retry": "none",
+  "unknown_failure": "fail_closed",
+  "transcript_capture": "final_valid_response_only",
+  "certified_failure_behavior": {
+    "OUTPUT_LENGTH_TRUNCATION": "fail_closed_without_resend",
+    "CONTEXT_BUDGET_EXHAUSTED": "fail_closed_without_resend",
+    "MALFORMED_STRUCTURED_OUTPUT": "fail_closed_without_resend",
+    "SEMANTIC_VALIDATION_FAILURE": "fail_closed_without_resend"
+  },
+  "schema_bounds": {
+    "context_limit_tokens": 65536,
+    "context_safety_margin_tokens": 32,
+    "default_completion_budget_tokens": 32768,
+    "extract_edges_completion_budget_tokens": 16384,
+    "extract_edges_schema_worst_case_tokens": 15862,
+    "edge_fact_max_characters": 1900,
+    "edge_page_max_items": 1,
+    "node_extraction_max_items": 16,
+    "timestamp_batch_max_items": 63,
+    "timestamp_batch_schema_worst_case_tokens": 32272
+  },
+  "identity_contract": {
+    "semantic_operation_id": "stable_for_one_logical_operation",
+    "request_variant_id": "stable_digest_across_transient_physical_retries",
+    "physical_attempt_id": "unique_for_every_transport_attempt",
+    "proxy_ordinal": "stable_across_transient_physical_retries_and_incremented_for_next_independent_logical_call"
+  },
+  "native_arms_recovery_enabled": false,
+  "v61_arm_recovery_enabled": true,
+  "provider_calls_used": 0
+}

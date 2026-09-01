@@ -1,6 +1,8 @@
 from __future__ import annotations
 
+import asyncio
 import hashlib
+import importlib
 import json
 from pathlib import Path
 
@@ -12,7 +14,11 @@ from saturated_fixed_work_baseline_v1_3.membind_v6_1.runtime import (
 from saturated_fixed_work_baseline_v1_3.membind_v6_1.runtime_8b import (
     PROFILE_ID_8B,
     assert_8b_namespace_identity,
+    build_8b_strict_native_runtime,
+    build_8b_u0_runtime,
+    close_8b_u0_runtime,
     install_empty_edge_shortcut,
+    native_patch_inventory,
     runtime_8b_manifest,
 )
 from saturated_fixed_work_baseline_v1_3.membind_v6_1.graphiti_compat import (
@@ -65,7 +71,13 @@ def install_environment(monkeypatch: pytest.MonkeyPatch, profile_root: Path) -> 
         "CONSTRUCTION_MAX_TOKENS": "32768",
         "CONSTRUCTION_OVERFLOW_MAX_TOKENS": "32768",
         "CONSTRUCTION_MODEL_REVISION": "fixture-revision",
+        "CONSTRUCTION_LLM_API_KEY": "fixture",
+        "CONSTRUCTION_CONTEXT_SAFETY_TOKENS": "32",
+        "MEMBIND_LLM_MODEL_DIR": "/data/predator/ly/Mem/models/Qwen3-8B-AWQ",
+        "EMBEDDING_API_KEY": "fixture",
         "NEO4J_URI": "bolt://127.0.0.1:7687",
+        "NEO4J_USER": "neo4j",
+        "NEO4J_PASSWORD": "fixture",
     }
     for name, value in values.items():
         monkeypatch.setenv(name, value)
@@ -157,6 +169,61 @@ def test_8b_manifest_rejects_route_endpoint_drift(
     contract["endpoint_set"] = [dict(ENDPOINTS[0]), {**ENDPOINTS[1], "base_url": "http://127.0.0.1:19999/v1"}]
     with pytest.raises(LocalRuntimeConfigurationError, match="differs from the platform"):
         runtime_8b_manifest(contract)
+
+
+def test_v61_build_close_then_strict_native_has_no_patch_leakage(
+    tmp_path: Path, monkeypatch: pytest.MonkeyPatch
+) -> None:
+    from graphiti_core.llm_client.openai_generic_client import OpenAIGenericClient
+    import graphiti_core.graphiti as graphiti_module
+    from graphiti_core.utils import bulk_utils
+    from graphiti_core.utils.maintenance import node_operations
+
+    profile_root = tmp_path / "profile"
+    install_environment(monkeypatch, profile_root)
+    write_platform(profile_root)
+    before = {
+        "node_operations": node_operations.resolve_extracted_nodes,
+        "graphiti": graphiti_module.resolve_extracted_nodes,
+        "bulk": bulk_utils.resolve_extracted_nodes,
+    }
+
+    # Importing/reloading the V6.1 module does not install its runtime patches.
+    module = importlib.import_module(
+        "saturated_fixed_work_baseline_v1_3.membind_v6_1.runtime_8b"
+    )
+    importlib.reload(module)
+    assert node_operations.resolve_extracted_nodes is before["node_operations"]
+    assert graphiti_module.resolve_extracted_nodes is before["graphiti"]
+    assert bulk_utils.resolve_extracted_nodes is before["bulk"]
+
+    v61 = build_8b_u0_runtime(routing_contract=route_contract())
+    assert node_operations.resolve_extracted_nodes is not before["node_operations"]
+    asyncio.run(close_8b_u0_runtime(v61))
+    assert node_operations.resolve_extracted_nodes is before["node_operations"]
+    assert graphiti_module.resolve_extracted_nodes is before["graphiti"]
+    assert bulk_utils.resolve_extracted_nodes is before["bulk"]
+
+    native = build_8b_strict_native_runtime(routing_contract=route_contract())
+    try:
+        assert type(native.llm_client) is OpenAIGenericClient
+        inventory = native_patch_inventory(native)
+        assert inventory["status"] == "PASS"
+        assert inventory["strict_native"] is True
+        assert inventory["prohibited_algorithm_patches"] == []
+        for name in (
+            "_membind_context_budget_restore",
+            "_membind_grounded_summary_restore",
+            "_membind_route_prompt_restore",
+            "_membind_semantic_shortcut_restore",
+            "_membind_candidate_provenance_restore",
+        ):
+            assert getattr(native, name, None) is None
+        assert node_operations.resolve_extracted_nodes is before["node_operations"]
+        assert graphiti_module.resolve_extracted_nodes is before["graphiti"]
+        assert bulk_utils.resolve_extracted_nodes is before["bulk"]
+    finally:
+        asyncio.run(close_8b_u0_runtime(native))
 
 
 def test_8b_namespace_cannot_mix_frozen_profiles() -> None:

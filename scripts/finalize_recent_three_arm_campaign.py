@@ -24,6 +24,26 @@ IDENTITIES = {
     "NATIVE_PARALLEL": "B1_NAIVE_WHOLE_UPDATE_ASYNC",
     "V6_1": "MEMBIND_CORE",
 }
+CANONICAL_METHODS = (
+    "GRAPHITI_UPSTREAM_SERIAL",
+    "RELAXED_ORDER_PARALLEL",
+    "MEMBIND_V6_1",
+)
+IDENTITIES.update(
+    {
+        "GRAPHITI_UPSTREAM_SERIAL": "GRAPHITI_UPSTREAM_SERIAL",
+        "RELAXED_ORDER_PARALLEL": "RELAXED_ORDER",
+        "MEMBIND_V6_1": "MEMBIND_V6_1",
+    }
+)
+
+
+def _methods_for_root(root: Path) -> tuple[str, ...]:
+    """Select canonical names only when the campaign actually uses them."""
+
+    if any((root / f"context-{index}" / CANONICAL_METHODS[0]).is_dir() for index in range(5)):
+        return CANONICAL_METHODS
+    return METHODS
 INFRA_MARKERS = (
     "timeout",
     "connectionreset",
@@ -46,6 +66,7 @@ STRUCTURED_SCIENTIFIC_CLASSES = frozenset(
 STRUCTURED_INFRA_CLASSES = frozenset(
     {"TRANSPORT_INCOMPLETE", "SERVER_TRANSIENT", "CONTEXT_BUDGET_EXHAUSTED"}
 )
+FORMAL_DATASET_DECISIONS = frozenset({"PASS_OFFICIAL_DATASET_MAPPING"})
 
 
 def read_json(path: Path) -> dict[str, Any]:
@@ -170,7 +191,7 @@ def _terminal_attempt(root: Path, context_index: int, method: str) -> tuple[Path
             and seal.get("status") == "CONSTRUCTION_SEALED"
             and lifecycle.get("contract_status") == "PASS"
             and order.get("order_contract_status") in {"PASS", "NOT_REQUIRED"}
-            and (method != "V6_1" or refinement.get("refinement_status") == "PASS")
+            and (method not in {"V6_1", "MEMBIND_V6_1"} or refinement.get("refinement_status") == "PASS")
         )
         return path, "PASS_VALID" if valid else "SCIENTIFIC_FAILURE", row
     return path, _failure_validity(row), row
@@ -303,43 +324,133 @@ def _summary_stats(rows: list[dict[str, Any]], key: str) -> dict[str, Any]:
     return {"count": len(values), "median": median, "mean": mean, "standard_deviation": sd, "ci95": [mean - margin, mean + margin] if isinstance(margin, float) else margin}
 
 
-def _core_speedups(rows: list[dict[str, Any]]) -> list[dict[str, Any]]:
+def _core_speedups(rows: list[dict[str, Any]], methods: tuple[str, ...] = METHODS) -> list[dict[str, Any]]:
     result = []
     histories = sorted({int(row["history"]) for row in rows if isinstance(row.get("history"), int)})
     for history in histories:
-        serial = next((row.get("makespan") for row in rows if row.get("history") == history and row.get("method") == "NATIVE_SERIAL" and row.get("validity") == "PASS_VALID" and isinstance(row.get("makespan"), (int, float))), None)
-        core = next((row.get("makespan") for row in rows if row.get("history") == history and row.get("method") == "V6_1" and row.get("validity") == "PASS_VALID" and isinstance(row.get("makespan"), (int, float))), None)
+        serial_method = "GRAPHITI_UPSTREAM_SERIAL" if "GRAPHITI_UPSTREAM_SERIAL" in methods else "NATIVE_SERIAL"
+        core_method = "MEMBIND_V6_1" if "MEMBIND_V6_1" in methods else "V6_1"
+        serial = next((row.get("makespan") for row in rows if row.get("history") == history and row.get("method") == serial_method and row.get("validity") == "PASS_VALID" and isinstance(row.get("makespan"), (int, float))), None)
+        core = next((row.get("makespan") for row in rows if row.get("history") == history and row.get("method") == core_method and row.get("validity") == "PASS_VALID" and isinstance(row.get("makespan"), (int, float))), None)
         result.append({"history": history, "speedup": serial / core if isinstance(serial, (int, float)) and isinstance(core, (int, float)) and core else "MISSING"})
     return result
 
 
+def _dataset_qualification(
+    root: Path, prereg: Mapping[str, Any]
+) -> dict[str, Any]:
+    """Validate the campaign-local dataset gate without searching elsewhere."""
+
+    contract = prereg.get("dataset_qualification")
+    if not isinstance(contract, Mapping):
+        return {
+            "status": "FAIL",
+            "decision": "MISSING_DATASET_QUALIFICATION_CONTRACT",
+        }
+    raw_path = contract.get("path")
+    if not isinstance(raw_path, str) or not raw_path:
+        return {"status": "FAIL", "decision": "MISSING_DATASET_QUALIFICATION_PATH"}
+    root_resolved = root.resolve()
+    path = (root_resolved / raw_path).resolve()
+    try:
+        relative = path.relative_to(root_resolved)
+    except ValueError:
+        return {"status": "FAIL", "decision": "QUALIFICATION_OUTSIDE_CAMPAIGN_ROOT"}
+    if not path.is_file():
+        return {
+            "status": "FAIL",
+            "decision": "DATASET_QUALIFICATION_ARTIFACT_MISSING",
+            "path": str(relative),
+        }
+    value = read_json(path)
+    decision = str(value.get("decision") or "MISSING")
+    required = str(contract.get("required_decision") or "PASS_OFFICIAL_DATASET_MAPPING")
+    expected_sha = contract.get("sha256")
+    actual_sha = sha256(path)
+    sha_ok = expected_sha is None or expected_sha == actual_sha
+    counts_ok = (
+        value.get("selected_record_count") == value.get("accepted_context_count")
+        and value.get("rejected_context_count") == 0
+    )
+    passed = (
+        decision == required
+        and decision in FORMAL_DATASET_DECISIONS
+        and value.get("live_authorized") is True
+        and counts_ok
+        and sha_ok
+    )
+    return {
+        "status": "PASS" if passed else "FAIL",
+        "decision": decision,
+        "required_decision": required,
+        "path": str(relative),
+        "sha256": actual_sha,
+        "sha256_matches_preregistration": sha_ok,
+        "selected_record_count": value.get("selected_record_count"),
+        "accepted_context_count": value.get("accepted_context_count"),
+        "rejected_context_count": value.get("rejected_context_count"),
+        "live_authorized": value.get("live_authorized"),
+    }
+
+
+def _missing_speedups(
+    rows: list[dict[str, Any]], methods: tuple[str, ...]
+) -> list[dict[str, Any]]:
+    return [
+        {"history": item["history"], "speedup": "MISSING"}
+        for item in _core_speedups(rows, methods)
+    ]
+
+
 def finalize(root: Path, *, requested_history: int | None = None) -> dict[str, Any]:
     prereg = read_json(root / "RECENT_THREE_ARM_CAMPAIGN_PREREGISTRATION.json")
+    methods = _methods_for_root(root)
+    campaign_scope = str(prereg.get("campaign_scope") or "UNQUALIFIED").upper()
+    qualification = _dataset_qualification(root, prereg)
+    formal_dataset_pass = (
+        campaign_scope == "FORMAL" and qualification.get("status") == "PASS"
+    )
+    main_table_eligible = formal_dataset_pass
     histories = prereg.get("histories", [])
     selected = [item for item in histories if requested_history is None or item.get("history") == requested_history]
     all_rows: list[dict[str, Any]] = []
     for item in selected:
         history = int(item["history"])
-        rows = [_attempt_record(root, history, method) for method in METHODS]
+        rows = [_attempt_record(root, history, method) for method in methods]
         all_rows.extend(rows)
         history_root = root / f"history-{history}"
-        history_valid = len(rows) == len(METHODS) and all(
+        history_valid = main_table_eligible and len(rows) == len(methods) and all(
             row["validity"] == "PASS_VALID" for row in rows
         )
         write_json(history_root / "HISTORY_BLOCK_RESULT.json", {"schema_version": "membind.history-block-result.v1", "history": history, "context_index": history, "status": "HISTORY_BLOCK_SEALED" if history_valid else "HISTORY_BLOCK_INCOMPLETE", "methods": rows, "fairness_checked": history_valid})
         write_text(history_root / "HISTORY_BLOCK_REPORT.md", _history_report(history, rows))
 
     complete_histories = (
-        len(selected) == len(histories)
-        and len(all_rows) == len(histories) * len(METHODS)
+        main_table_eligible
+        and campaign_scope == "FORMAL"
+        and len(selected) == len(histories)
+        and len(all_rows) == len(histories) * len(methods)
         and all(row["validity"] == "PASS_VALID" for row in all_rows)
     )
     if not complete_histories:
-        return {
-            "status": "PARTIAL",
+        if campaign_scope == "ENGINEERING_CANARY":
+            partial_status = "ENGINEERING_CANARY_AUDIT_ONLY"
+        elif not formal_dataset_pass:
+            partial_status = "BLOCKED_DATASET_QUALIFICATION"
+        else:
+            partial_status = "PARTIAL"
+        partial = {
+            "status": partial_status,
+            "campaign_scope": campaign_scope,
+            "main_table_eligible": False,
+            "dataset_qualification": qualification,
             "histories_materialized": [int(item["history"]) for item in selected],
             "rows": all_rows,
-            "speedup_core": _core_speedups(all_rows),
+            "speedup_core": (
+                _core_speedups(all_rows, methods)
+                if formal_dataset_pass
+                else _missing_speedups(all_rows, methods)
+            ),
             "statistics": {
                 method: _summary_stats(
                     [
@@ -349,12 +460,38 @@ def finalize(root: Path, *, requested_history: int | None = None) -> dict[str, A
                     ],
                     "makespan",
                 )
-                for method in METHODS
+                for method in methods
             },
             "invalid_and_replacements": [
                 row for row in all_rows if row["validity"] != "PASS_VALID"
             ],
         }
+        # Partial campaigns are still sealed as audit artifacts.  They must
+        # never be mistaken for a complete main table, but returning before
+        # writing these files made repair/qualification state non-reproducible.
+        write_json(root / "RECENT_THREE_ARM_CAMPAIGN_RESULT.json", partial)
+        write_text(
+            root / "RECENT_THREE_ARM_CAMPAIGN_REPORT.md",
+            "# Recent Three-Arm Campaign Report\n\n"
+            f"Campaign: {prereg.get('campaign_id')}; status: {partial_status}.\n\n"
+            "No aggregate main table or speedup claim is valid until every history "
+            "has one PASS_VALID attempt per arm and the formal dataset qualification "
+            "gate passes. Engineering canaries remain audit-only.\n",
+        )
+        members = []
+        for path in sorted(root.rglob("*")):
+            if path.is_file() and path.name != "RECENT_THREE_ARM_ARTIFACT_MANIFEST.json":
+                members.append({"path": str(path.relative_to(root)), "sha256": sha256(path), "bytes": path.stat().st_size})
+        write_json(
+            root / "RECENT_THREE_ARM_ARTIFACT_MANIFEST.json",
+            {
+                "schema_version": "membind.recent-three-arm-artifact-manifest.v1",
+                "campaign_id": prereg.get("campaign_id"),
+                "status": f"{partial_status}_AUDIT_ONLY",
+                "members": members,
+            },
+        )
+        return partial
 
     table_rows = []
     for row in all_rows:
@@ -371,9 +508,9 @@ def finalize(root: Path, *, requested_history: int | None = None) -> dict[str, A
         "status": "PASS" if all(row["validity"] == "PASS_VALID" for row in all_rows) else "PARTIAL",
         "campaign_id": prereg.get("campaign_id"), "preregistration": str((root / "RECENT_THREE_ARM_CAMPAIGN_PREREGISTRATION.json").resolve()),
         "rows": all_rows, "main_table": table_rows,
-        "statistics": {method: _summary_stats([row for row in all_rows if row["method"] == method and row["validity"] == "PASS_VALID"], "makespan") for method in METHODS},
+        "statistics": {method: _summary_stats([row for row in all_rows if row["method"] == method and row["validity"] == "PASS_VALID"], "makespan") for method in methods},
         "invalid_and_replacements": [row for row in all_rows if row["validity"] != "PASS_VALID"],
-        "speedup_core": _core_speedups(all_rows),
+        "speedup_core": _core_speedups(all_rows, methods),
     }
     write_json(root / "RECENT_THREE_ARM_CAMPAIGN_RESULT.json", result)
     report = [
@@ -381,14 +518,14 @@ def finalize(root: Path, *, requested_history: int | None = None) -> dict[str, A
         "",
         f"Campaign: {prereg.get('campaign_id')}; status: {result['status']}.",
         "",
-        "The paired Core comparison is T_NATIVE_SERIAL / T_MEMBIND_CORE. NATIVE_PARALLEL is a relaxed-order ceiling and is not a semantic headline baseline.",
+        "The paired comparison is GRAPHITI_UPSTREAM_SERIAL / MEMBIND_V6_1. RELAXED_ORDER_PARALLEL is an auxiliary relaxed-order ceiling and is not the semantic headline baseline.",
         "",
         "## Aggregate Makespan",
         "",
         "| Method | Count | Median (s) | Mean (s) | SD (s) | 95% CI |",
         "|---|---:|---:|---:|---:|---|",
     ]
-    for method in METHODS:
+    for method in methods:
         stat = result["statistics"][method]
         report.append(f"| {method} | {stat['count']} | {stat['median']} | {stat['mean']} | {stat['standard_deviation']} | {stat['ci95']} |")
     report += ["", "## Paired Core Speedup", "", "| History | Speedup |", "|---:|---:|"]

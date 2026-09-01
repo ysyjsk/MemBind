@@ -3,6 +3,7 @@
 from __future__ import annotations
 
 import asyncio
+import ast
 import heapq
 import hashlib
 import inspect
@@ -47,22 +48,29 @@ LOCAL_EDGE_MAX_PAGES = 64
 LOCAL_EDGE_PARTITION_CONCURRENCY = 1
 LOCAL_EDGE_PHYSICAL_CONCURRENCY = 2
 LOCAL_NODE_PARTITION_CONCURRENCY = 1
-LOCAL_NODE_MAX_ENTITIES_PER_CHUNK = 64
+# With the 256-character name and bounded type/index fields, 16 entities are
+# the largest node response whose worst-case JSON remains below the frozen
+# 32,768-token completion budget.  Larger evidence flights are partitioned
+# before provider invocation and fail closed if this invariant is violated.
+LOCAL_NODE_MAX_ENTITIES_PER_CHUNK = 16
 LOCAL_NODE_MAX_NAME_CHARS = 256
 LOCAL_EDGE_RELATION_MAX_CHARS = 128
-# The extraction chunker caps CURRENT_MESSAGE at 3,000 characters.  This is
-# the semantic source-derived upper bound for one factual edge; page capacity
-# selection (2 -> 1) handles the aggregate JSON envelope.
-LOCAL_EDGE_FACT_MAX_CHARS = LOCAL_EXTRACTION_CHUNK_CURRENT_CHARS
+# Pinned Graphiti fixes extract_edges.edge at 16,384 completion tokens.  The
+# compact ensure-ASCII character proof admits at most 1,987 fact characters
+# (16,384 total) for a one-edge page.  Keep 522 proof tokens of headroom by
+# capping facts at 1,900; this is still far above Graphiti's ordinary factual
+# edge size, and the method identity records the resulting wire constraint.
+LOCAL_EDGE_FACT_MAX_CHARS = 1_900
 LOCAL_EDGE_DATETIME_MAX_CHARS = 40
+LOCAL_TIMESTAMP_BATCH_MAX_ITEMS = 63
 LOCAL_ENTITY_TYPE_ID_MAX = 1_023
-_CONTEXT_ERROR_RE = re.compile(
-    r"maximum context length is\s+(?P<context>\d+)\s+tokens.*?"
-    r"prompt contains at least\s+(?P<input>\d+)\s+input tokens",
-    re.IGNORECASE | re.DOTALL,
-)
-
-
+# Caller-supplied attribute models are part of the V6.1 structured-output
+# surface.  Their Pydantic annotations are not under our control, so the
+# recovery path derives a finite wire schema before invoking the provider.
+# These values match Graphiti's attribute value cap and its documented
+# eight-item list aggregate multiplier.
+LOCAL_ATTRIBUTE_MAX_LENGTH = 250
+LOCAL_ATTRIBUTE_MAX_ITEMS = 8
 class LocalRuntimeConfigurationError(RuntimeError):
     """The activated process does not match the local experiment profile."""
 
@@ -377,20 +385,6 @@ class _AdaptiveEdgePagePriorityGate:
         }
 
 
-def _context_retry_max_tokens(
-    error: BaseException,
-    requested: int,
-    *,
-    safety_margin: int,
-) -> int | None:
-    match = _CONTEXT_ERROR_RE.search(str(error))
-    if match is None:
-        return None
-    remaining = int(match["context"]) - int(match["input"]) - int(safety_margin)
-    effective = min(int(requested) - 1, remaining)
-    return effective if effective > 0 else None
-
-
 def _chat_message_dict(value: Any) -> dict[str, Any]:
     if isinstance(value, Mapping):
         row = dict(value)
@@ -480,6 +474,223 @@ def _structured_model_schema(response_model: Any) -> Mapping[str, Any] | None:
     return None
 
 
+class _BoundedResponseSchema:
+    """Pydantic-compatible schema facade for a bounded V6.1 wire request.
+
+    Graphiti validates the returned mapping against the caller's original
+    model after the provider call.  The facade only changes the JSON schema
+    sent to constrained decoding; it does not replace that validation model.
+    """
+
+    def __init__(self, original: Any, schema: Mapping[str, Any]) -> None:
+        self.original = original
+        self._schema = deepcopy(dict(schema))
+        self.__name__ = f"MemBindBounded_{getattr(original, '__name__', 'Response')}"
+
+    def model_json_schema(self) -> dict[str, Any]:
+        return deepcopy(self._schema)
+
+
+def _bounded_attribute_response_model(response_model: Any) -> Any:
+    """Derive a finite schema for a caller-supplied attribute model.
+
+    Graphiti intentionally accepts arbitrary Pydantic models for node/edge
+    attributes.  Raw models commonly omit string/list bounds, which makes the
+    completion budget unprovable.  V6.1 therefore constrains the wire schema
+    using the same caps as ``attribute_utils``.  Unsupported pattern/dynamic
+    properties fail closed before a provider invocation.
+    """
+
+    schema = _structured_model_schema(response_model)
+    if schema is None:
+        raise LocalRuntimeConfigurationError(
+            "caller-supplied attribute model has no inspectable JSON schema"
+        )
+    bounded = deepcopy(dict(schema))
+
+    def visit(node: Any, path: str) -> None:
+        if not isinstance(node, Mapping):
+            raise LocalRuntimeConfigurationError(
+                f"attribute schema node at {path} is not an object"
+            )
+        # Resolve local definitions in-place so the recursive certificate sees
+        # the same finite constraints regardless of Pydantic's $ref layout.
+        has_composition = False
+        for key in ("anyOf", "oneOf", "allOf"):
+            branches = node.get(key)
+            if isinstance(branches, list):
+                has_composition = bool(branches) or has_composition
+                for index, branch in enumerate(branches):
+                    visit(branch, f"{path}.{key}[{index}]")
+        reference = node.get("$ref")
+        if isinstance(reference, str):
+            return
+        schema_type = node.get("type")
+        if isinstance(schema_type, list):
+            for index, member in enumerate(schema_type):
+                branch = dict(node)
+                branch["type"] = member
+                visit(branch, f"{path}.type[{index}]")
+            return
+        if schema_type == "string":
+            node.setdefault("maxLength", LOCAL_ATTRIBUTE_MAX_LENGTH)
+        elif schema_type == "array":
+            node.setdefault("maxItems", LOCAL_ATTRIBUTE_MAX_ITEMS)
+            items = node.get("items")
+            if not isinstance(items, Mapping):
+                raise LocalRuntimeConfigurationError(
+                    f"attribute array at {path} has no item schema"
+                )
+            visit(items, f"{path}.items")
+        elif schema_type == "object" or (
+            schema_type is None and isinstance(node.get("properties"), Mapping)
+        ):
+            if schema_type is None:
+                node["type"] = "object"
+            if node.get("patternProperties"):
+                raise LocalRuntimeConfigurationError(
+                    f"attribute schema at {path} uses patternProperties"
+                )
+            # Dynamic attribute keys would make the JSON envelope unbounded.
+            # Known Pydantic fields remain available; unknown keys are rejected
+            # by constrained decoding and ignored by Graphiti's original model.
+            node["additionalProperties"] = False
+            properties = node.get("properties", {})
+            if not isinstance(properties, Mapping):
+                raise LocalRuntimeConfigurationError(
+                    f"attribute schema at {path} has invalid properties"
+                )
+            for name, child in properties.items():
+                visit(child, f"{path}.properties.{name}")
+        elif schema_type in {"integer", "number"}:
+            # Unconstrained numeric fields are finite on the wire by bounding
+            # their decimal representation.  Explicit caller limits win.
+            if "minimum" not in node and "exclusiveMinimum" not in node:
+                node["minimum"] = -9_223_372_036_854_775_808
+            if "maximum" not in node and "exclusiveMaximum" not in node:
+                node["maximum"] = 9_223_372_036_854_775_807
+        elif schema_type is None:
+            if "const" in node or (
+                isinstance(node.get("enum"), list) and bool(node.get("enum"))
+            ) or has_composition:
+                return
+            raise LocalRuntimeConfigurationError(
+                f"attribute schema at {path} is untyped (schema_type_missing)"
+            )
+        elif schema_type in {"null", "boolean"}:
+            return
+        else:
+            raise LocalRuntimeConfigurationError(
+                f"attribute schema type {schema_type!r} at {path} is unsupported"
+            )
+
+    for definition in (bounded.get("$defs") or {}).values():
+        visit(definition, "$.$defs")
+    visit(bounded, "$")
+    validate_schema_boundedness(bounded)
+    return _BoundedResponseSchema(response_model, bounded)
+
+
+@lru_cache(maxsize=64)
+def _bounded_single_text_response_model(field_name: str) -> Any:
+    """Bound Graphiti's scalar summary/description response models."""
+
+    from pydantic import ConfigDict, Field, create_model
+    from graphiti_core.utils.text_utils import MAX_SUMMARY_CHARS
+
+    if not field_name or not re.fullmatch(r"[A-Za-z_][A-Za-z0-9_]*", field_name):
+        raise ValueError("summary response field name is invalid")
+    return create_model(
+        f"MemBindBounded{field_name.title()}Response",
+        **{
+            field_name: (
+                str,
+                Field(..., max_length=MAX_SUMMARY_CHARS),
+            )
+        },
+        __config__=ConfigDict(extra="forbid"),
+    )
+
+
+@lru_cache(maxsize=64)
+def _bounded_combined_response_model(entity_capacity: int, edge_capacity: int = 1) -> Any:
+    """Finite facade for Graphiti's optional combined extraction callsite."""
+
+    from pydantic import ConfigDict, Field, create_model
+
+    if entity_capacity < 1 or entity_capacity > LOCAL_NODE_MAX_ENTITIES_PER_CHUNK:
+        raise ValueError("combined entity capacity is outside the local contract")
+    if edge_capacity < 1 or edge_capacity > LOCAL_EDGE_MAX_PAGES:
+        raise ValueError("combined edge capacity is outside the local contract")
+    entity_model = create_model(
+        "MemBindBoundedCombinedEntity",
+        name=(str, Field(..., min_length=1, max_length=LOCAL_NODE_MAX_NAME_CHARS)),
+        entity_type_id=(
+            int,
+            Field(..., ge=0, le=LOCAL_ENTITY_TYPE_ID_MAX),
+        ),
+        __config__=ConfigDict(extra="forbid"),
+    )
+    edge_model = _finite_edge_page_model(edge_capacity).model_fields["edges"].annotation
+    return create_model(
+        f"MemBindBoundedCombinedExtraction{entity_capacity}_{edge_capacity}",
+        extracted_entities=(
+            list[entity_model],
+            Field(..., max_length=entity_capacity),
+        ),
+        edges=(list[edge_model.__args__[0]], Field(..., max_length=edge_capacity)),
+        __config__=ConfigDict(extra="forbid"),
+    )
+
+
+def _tagged_literal_list(messages: Sequence[Any], tag: str) -> list[Any] | None:
+    """Parse one Graphiti prompt list without treating model text as code."""
+
+    marker = re.compile(
+        rf"<{re.escape(tag)}>\s*(.*?)\s*</{re.escape(tag)}>",
+        re.IGNORECASE | re.DOTALL,
+    )
+    for message in messages:
+        content = _message_content(message)
+        if not isinstance(content, str):
+            continue
+        match = marker.search(content)
+        if match is None:
+            continue
+        raw = match.group(1).strip()
+        try:
+            value = ast.literal_eval(raw)
+        except (SyntaxError, ValueError):
+            try:
+                value = json.loads(raw)
+            except (TypeError, ValueError, json.JSONDecodeError):
+                return None
+        return value if isinstance(value, list) else None
+    return None
+
+
+def _edge_candidate_capacities(messages: Sequence[Any]) -> tuple[int, int]:
+    existing = _tagged_literal_list(messages, "EXISTING FACTS") or []
+    invalidation = _tagged_literal_list(messages, "FACT INVALIDATION CANDIDATES") or []
+    return max(1, len(existing)), max(1, min(64, len(existing) + len(invalidation)))
+
+
+def _timestamp_batch_capacity(messages: Sequence[Any]) -> int:
+    facts = _tagged_literal_list(messages, "FACTS")
+    if facts is None:
+        raise LocalRuntimeConfigurationError(
+            "timestamp batch FACTS payload is missing or not a finite list"
+        )
+    if not facts:
+        raise LocalRuntimeConfigurationError("timestamp batch cannot be empty")
+    if len(facts) > LOCAL_TIMESTAMP_BATCH_MAX_ITEMS:
+        raise LocalRuntimeConfigurationError(
+            "timestamp batch exceeds the certified "
+            f"{LOCAL_TIMESTAMP_BATCH_MAX_ITEMS}-fact limit"
+        )
+    return len(facts)
+
+
 def local_prompt_token_count(messages: Sequence[Any]) -> int:
     """Public exact prompt counter used by the V6.1 weighted admission path."""
 
@@ -520,27 +731,11 @@ def install_local_context_budget_adapter(
             raise LocalRuntimeConfigurationError("local chat prompt leaves no completion budget")
         requested = min(requested, available)
         request_kwargs["max_tokens"] = requested
-        context_corrections = 0
-        try:
-            return await original_create(*args, **request_kwargs)
-        except Exception as exc:
-            effective = _context_retry_max_tokens(
-                exc,
-                requested,
-                safety_margin=safety_margin,
-            )
-            if effective is None or effective >= requested or context_corrections >= 1:
-                raise
-            context_corrections += 1
-            requested = effective
-            request_kwargs["max_tokens"] = effective
-            # This is one explicitly audited wire-budget correction for
-            # tokenizer drift, not an opaque retry loop.  Certified structured
-            # requests are preflighted before reaching this seam.
-            from .provider import _record_managed_transport_retry
-
-            _record_managed_transport_retry()
-            return await original_create(*args, **request_kwargs)
+        # R1 preflight uses this same tokenizer and reserves the safety margin.
+        # A server-side context rejection therefore signals tokenizer/model
+        # drift and must fail closed.  Retrying here would create a hidden
+        # physical attempt outside StructuredRecoveryController's accounting.
+        return await original_create(*args, **request_kwargs)
 
     setattr(completions, "create", create_with_effective_budget)
 
@@ -652,6 +847,8 @@ def install_local_single_attempt_policy(llm_client: Any) -> None:
 _CURRENT_MESSAGE_PATTERNS = (
     re.compile(r"(<CURRENT MESSAGE>)(.*?)(</CURRENT MESSAGE>)", re.IGNORECASE | re.DOTALL),
     re.compile(r"(<CURRENT_MESSAGE>)(.*?)(</CURRENT_MESSAGE>)", re.IGNORECASE | re.DOTALL),
+    re.compile(r"(<TEXT>)(.*?)(</TEXT>)", re.IGNORECASE | re.DOTALL),
+    re.compile(r"(<JSON>)(.*?)(</JSON>)", re.IGNORECASE | re.DOTALL),
 )
 _TURN_MARKER_RE = re.compile(r"(?m)^\[(?:USER|ASSISTANT)\]\s*$")
 _ENTITIES_BLOCK_PATTERN = re.compile(
@@ -1671,7 +1868,7 @@ def _bounded_edge_timestamps_model(max_items: int = 1, *, exact: bool = True) ->
 
     from pydantic import ConfigDict, Field, create_model
 
-    if max_items < 1 or max_items > 64:
+    if max_items < 1 or max_items > LOCAL_TIMESTAMP_BATCH_MAX_ITEMS:
         raise ValueError("timestamp response capacity is outside the local contract")
     item_model = create_model(
         "MemBindBoundedEdgeTimestamp",
@@ -1695,23 +1892,37 @@ def _bounded_edge_timestamps_model(max_items: int = 1, *, exact: bool = True) ->
     )
 
 
-@lru_cache(maxsize=8)
-def _bounded_edge_duplicate_model(max_items: int = 64) -> Any:
-    """Bound edge-resolution index lists to the finite candidate flight."""
+@lru_cache(maxsize=32)
+def _bounded_edge_duplicate_model(
+    max_items: int = 64,
+    contradiction_capacity: int | None = None,
+) -> Any:
+    """Bound edge-resolution index lists to the actual candidate flight.
 
-    from pydantic import ConfigDict, Field, create_model
+    ``duplicate_facts`` indexes only EXISTING FACTS, while
+    ``contradicted_facts`` indexes the concatenation of existing and
+    invalidation candidates.  Older callers may pass one ``max_items`` value;
+    the optional second capacity lets the V6.1 runtime bind both axes exactly.
+    """
+
+    from pydantic import ConfigDict, Field, conint, create_model
 
     if max_items < 1 or max_items > 64:
         raise ValueError("edge duplicate capacity is outside the local contract")
+    contradiction_capacity = (
+        max_items if contradiction_capacity is None else int(contradiction_capacity)
+    )
+    if contradiction_capacity < 1 or contradiction_capacity > 64:
+        raise ValueError("edge contradiction capacity is outside the local contract")
     return create_model(
-        f"MemBindBoundedEdgeDuplicate{max_items}",
+        f"MemBindBoundedEdgeDuplicate{max_items}_{contradiction_capacity}",
         duplicate_facts=(
-            list[int],
+            list[conint(ge=0, le=max_items - 1)],
             Field(default_factory=list, min_length=0, max_length=max_items),
         ),
         contradicted_facts=(
-            list[int],
-            Field(default_factory=list, min_length=0, max_length=max_items),
+            list[conint(ge=0, le=contradiction_capacity - 1)],
+            Field(default_factory=list, min_length=0, max_length=contradiction_capacity),
         ),
         __config__=ConfigDict(extra="forbid"),
     )
@@ -1986,7 +2197,6 @@ def install_local_extraction_chunking_policy(
             page_index: int | None = None,
             queue_wait_ns: int | None = None,
             physical_active_at_start: int | None = None,
-            edge_capacity_override: int | None = None,
         ) -> Any:
             selection = None
             preflight_unverified_reason: str | None = None
@@ -2007,9 +2217,9 @@ def install_local_extraction_chunking_policy(
             if prompt_name in {
                 "extract_nodes.extract_summaries_batch",
                 "extract_nodes.extract_entity_summaries_from_episodes",
-            } and entity_count:
-                effective_response_model = _bounded_summary_response_model(entity_count)
-            if prompt_name == "dedupe_nodes.nodes" and request_response_model is not None:
+            }:
+                effective_response_model = _bounded_summary_response_model(max(1, int(entity_count or 1)))
+            if prompt_name == "dedupe_nodes.nodes":
                 existing_info = _existing_entity_block(request_messages)
                 candidate_capacity = (
                     len(existing_info[2]) if existing_info is not None else 1
@@ -2017,13 +2227,44 @@ def install_local_extraction_chunking_policy(
                 effective_response_model = _bounded_dedupe_response_model(
                     max(1, int(entity_count or 1)), max(1, candidate_capacity)
                 )
+            if prompt_name == "extract_nodes.extract_attributes" and attribute_extraction:
+                # Caller-supplied entity type models are unbounded in the
+                # upstream Graphiti contract.  V6.1 sends a finite facade while
+                # retaining the original model for post-response validation.
+                effective_response_model = _bounded_attribute_response_model(
+                    request_response_model
+                )
             if prompt_name == "extract_edges.extract_timestamps":
                 effective_response_model = _bounded_edge_timestamps_model(1)
             if prompt_name == "extract_edges.extract_timestamps_batch":
-                effective_response_model = _bounded_edge_timestamps_model(64, exact=False)
+                effective_response_model = _bounded_edge_timestamps_model(
+                    _timestamp_batch_capacity(request_messages), exact=True
+                )
             if prompt_name == "dedupe_edges.resolve_edge":
-                effective_response_model = _bounded_edge_duplicate_model(64)
-            if prompt_name == "extract_edges.edge" and request_response_model is not None:
+                duplicate_capacity, contradiction_capacity = _edge_candidate_capacities(
+                    request_messages
+                )
+                effective_response_model = _bounded_edge_duplicate_model(
+                    duplicate_capacity,
+                    contradiction_capacity,
+                )
+            if prompt_name == "extract_edges.extract_attributes" and attribute_extraction:
+                effective_response_model = _bounded_attribute_response_model(
+                    request_response_model
+                )
+            if prompt_name == "extract_nodes_and_edges.extract_message":
+                effective_response_model = _bounded_combined_response_model(
+                    _node_schema_capacity(request_messages), 1
+                )
+            if prompt_name == "extract_nodes.extract_summary":
+                effective_response_model = _bounded_single_text_response_model("summary")
+            if prompt_name == "summarize_nodes.summarize_pair":
+                effective_response_model = _bounded_single_text_response_model("summary")
+            if prompt_name == "summarize_nodes.summary_description":
+                effective_response_model = _bounded_single_text_response_model("description")
+            if prompt_name == "summarize_sagas.summarize_saga":
+                effective_response_model = _bounded_single_text_response_model("summary")
+            if prompt_name == "extract_edges.edge":
                 endpoint_names: tuple[str, ...] = ()
                 if entity_info is not None:
                     endpoint_names = tuple(
@@ -2034,11 +2275,7 @@ def install_local_extraction_chunking_policy(
                             and str(value.get("name", "")).strip()
                         )
                     )
-                requested_capacity = int(
-                    edge_page_capacity
-                    if edge_capacity_override is None
-                    else edge_capacity_override
-                )
+                requested_capacity = int(edge_page_capacity)
                 schemas = {
                     capacity: (
                         _endpoint_grounded_edge_page_model(capacity, endpoint_names)
@@ -2084,7 +2321,7 @@ def install_local_extraction_chunking_policy(
                     else _bounded_edge_page_model(int(selected_edge_page_capacity))
                 )
             structured_certificate = None
-            if request_response_model is not None and selection is None:
+            if effective_response_model is not None and selection is None:
                 schema = _structured_model_schema(effective_response_model)
                 if schema is None:
                     if getattr(llm_client, "structured_output_recovery_enabled", False):
@@ -2182,26 +2419,6 @@ def install_local_extraction_chunking_policy(
                     }
                 )
                 diagnostics.append(row)
-                if (
-                    prompt_name == "extract_edges.edge"
-                    and int(selected_edge_page_capacity or 1) > 1
-                    and edge_capacity_override is None
-                ):
-                    # A certified larger page gets exactly one deterministic
-                    # smaller variant.  The recursive invocation performs a
-                    # fresh capacity-1 certificate and cannot retry again.
-                    return await invoke(
-                        request_messages,
-                        request_max_tokens,
-                        request_response_model,
-                        partition_id=partition_id,
-                        partition_count=partition_count,
-                        partition_kind=partition_kind,
-                        page_index=page_index,
-                        queue_wait_ns=queue_wait_ns,
-                        physical_active_at_start=physical_active_at_start,
-                        edge_capacity_override=1,
-                    )
                 raise
             except BaseException as exc:
                 row.update(
@@ -3001,8 +3218,8 @@ def local_runtime_manifest() -> dict[str, Any]:
             "context_limit": LOCAL_CONTEXT_LIMIT,
             "requested_max_tokens": requested_max_tokens,
             "overflow_max_tokens": overflow_max_tokens,
-            "context_overflow_strategy": "local_chat_token_count_with_bounded_wire_retry_v1",
-            "context_retry_limit": 6,
+            "context_overflow_strategy": "local_chat_token_count_fail_closed_v3",
+            "context_retry_limit": 0,
             "context_safety_tokens": int(
                 os.environ.get("CONSTRUCTION_CONTEXT_SAFETY_TOKENS", "32")
             ),
@@ -3099,6 +3316,7 @@ def build_local_u0_runtime() -> U0Runtime:
         ),
         structured_output_context_limit=LOCAL_CONTEXT_LIMIT,
         structured_output_safety_margin=config.safety_margin_tokens,
+        managed_recovery_enabled=True,
     )
     install_local_single_attempt_policy(llm_client)
     install_local_extraction_chunking_policy(llm_client)

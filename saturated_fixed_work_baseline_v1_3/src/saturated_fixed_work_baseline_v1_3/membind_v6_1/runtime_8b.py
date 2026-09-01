@@ -167,6 +167,7 @@ def _normalized_endpoint_set(values: list[Mapping[str, Any]]) -> list[dict[str, 
 def runtime_8b_manifest(
     routing_contract: Mapping[str, Any],
     *,
+    strict_native: bool = False,
     enable_grounded_summary_materialization: bool = False,
     enable_endpoint_schema_grounding: bool = False,
     enable_work_conserving_edge_admission: bool = False,
@@ -239,25 +240,49 @@ def runtime_8b_manifest(
             "thinking": False,
             "sdk_max_retries": 0,
             "http_timeout_seconds": LOCAL_HTTP_TIMEOUT_SECONDS,
-            "extraction_chunking_policy": "source_grounded_bounded_nodes_v5",
+            "extraction_chunking_policy": (
+                "upstream_graphiti_unmodified"
+                if strict_native
+                else "source_grounded_bounded_nodes_v5"
+            ),
             "node_partition_execution_policy": (
-                "deterministic_shared_cap_partition_pipeline_v1"
+                "upstream_graphiti_unmodified"
+                if strict_native
+                else "deterministic_shared_cap_partition_pipeline_v1"
             ),
             "node_partition_workers": NODE_PARTITION_WORKERS_8B,
             "node_physical_partition_lanes": NODE_PARTITION_WORKERS_8B,
             "certified_previous_context_policy": (
-                "current_evidence_only_certified_extraction_v1"
+                "upstream_graphiti_unmodified"
+                if strict_native
+                else "current_evidence_only_certified_extraction_v1"
             ),
-            "edge_partition_policy": "grounded_base_domain_adjacent_user_cover_v6_selected",
-            "edge_pagination_policy": "marginal_work_pruned_actor_domain_cap2_v19_selected",
+            "edge_partition_policy": (
+                "upstream_graphiti_unmodified"
+                if strict_native
+                else "grounded_base_domain_adjacent_user_cover_v6_selected"
+            ),
+            "edge_pagination_policy": (
+                "upstream_graphiti_unmodified"
+                if strict_native
+                else "marginal_work_pruned_actor_domain_cap2_v19_selected"
+            ),
             "edge_execution_policy": (
-                "global_cap_preserving_cross_partition_pipeline_v1"
+                "upstream_graphiti_unmodified"
+                if strict_native
+                else "global_cap_preserving_cross_partition_pipeline_v1"
             ),
             "edge_partition_workers": EDGE_PARTITION_WORKERS_8B,
             "edge_physical_page_lanes": edge_page_lanes,
-            "edge_page_admission_policy": "durable_frontier_source_priority_v1",
+            "edge_page_admission_policy": (
+                "upstream_graphiti_unmodified"
+                if strict_native
+                else "durable_frontier_source_priority_v1"
+            ),
             "edge_physical_admission_policy": (
-                "adaptive_congestion_topology_derived_edge_admission_v1"
+                "upstream_graphiti_unmodified"
+                if strict_native
+                else "adaptive_congestion_topology_derived_edge_admission_v1"
                 if enable_adaptive_edge_admission
                 else "arbiter_work_conserving_partition_derived_v1"
                 if enable_work_conserving_edge_admission
@@ -265,21 +290,31 @@ def runtime_8b_manifest(
             ),
             "edge_admission_initial_lanes": EDGE_PARTITION_WORKERS_8B,
             "edge_endpoint_schema_policy": (
-                "entity_block_literal_endpoint_grounding_v1"
+                "upstream_graphiti_unmodified"
+                if strict_native
+                else "entity_block_literal_endpoint_grounding_v1"
                 if enable_endpoint_schema_grounding
                 else "graphiti_edge_endpoint_string_v1"
             ),
-            "semantic_shortcut_policy": "empty_edges_when_distinct_entity_count_lt_2_v1",
+            "semantic_shortcut_policy": (
+                "none" if strict_native else "empty_edges_when_distinct_entity_count_lt_2_v1"
+            ),
             "node_resolution_policy": (
-                "per_entity_candidate_provenance_name_predicate_pushdown_v3"
+                "upstream_graphiti_unmodified"
+                if strict_native
+                else "per_entity_candidate_provenance_name_predicate_pushdown_v3"
             ),
             "dedupe_candidate_partition_policy": (
-                f"native_dedupe_existing_candidate_pages_v1_capacity_{dedupe_candidate_page_capacity}"
+                "upstream_graphiti_unmodified"
+                if strict_native
+                else f"native_dedupe_existing_candidate_pages_v1_capacity_{dedupe_candidate_page_capacity}"
                 if dedupe_candidate_page_capacity is not None
                 else "disabled"
             ),
             "entity_summary_policy": (
-                SUMMARY_POLICY_ID
+                "upstream_graphiti_unmodified"
+                if strict_native
+                else SUMMARY_POLICY_ID
                 if enable_grounded_summary_materialization
                 else "graphiti_native_batched_summary_v1"
             ),
@@ -393,11 +428,19 @@ def build_8b_u0_runtime(
     enable_endpoint_schema_grounding: bool = False,
     enable_work_conserving_edge_admission: bool = False,
     enable_adaptive_edge_admission: bool = False,
+    strict_native: bool = False,
 ) -> U0Runtime:
-    """Build one Graphiti runtime whose only completion seam is the router."""
+    """Build one local runtime.
+
+    ``strict_native`` is intentionally explicit.  The default builder is the
+    V6.1 substrate and may install the bounded-output/work-reduction patches;
+    the strict builder below shares only transport construction and the pinned
+    Graphiti object construction, never those patches.
+    """
 
     manifest = runtime_8b_manifest(
         routing_contract,
+        strict_native=strict_native,
         enable_grounded_summary_materialization=enable_grounded_summary_materialization,
         enable_endpoint_schema_grounding=enable_endpoint_schema_grounding,
         enable_work_conserving_edge_admission=enable_work_conserving_edge_admission,
@@ -413,9 +456,13 @@ def build_8b_u0_runtime(
     from graphiti_core.cross_encoder.openai_reranker_client import OpenAIRerankerClient
     from graphiti_core.embedder.openai import OpenAIEmbedder, OpenAIEmbedderConfig
     from graphiti_core.llm_client.config import LLMConfig
+    from graphiti_core.llm_client.openai_generic_client import OpenAIGenericClient
     from graphiti_native import QwenVLLMClient
 
-    resolution_restore, resolution_evidence = install_candidate_provenance_guard()
+    resolution_restore: Callable[[], None] | None = None
+    resolution_evidence: list[dict[str, Any]] = []
+    if not strict_native:
+        resolution_restore, resolution_evidence = install_candidate_provenance_guard()
     endpoint_specs = tuple(
         EndpointSpec.from_mapping(value) for value in manifest["construction"]["endpoint_set"]
     )
@@ -463,48 +510,61 @@ def build_8b_u0_runtime(
         max_tokens=config.requested_max_tokens,
     )
     structured_certificates: list[dict[str, Any]] = []
-    llm_client = QwenVLLMClient(
-        config=llm_config,
-        client=router,
-        max_tokens=config.requested_max_tokens,
-        structured_output_mode=config.structured_output_mode,
-        structured_output_recovery_enabled=True,
-        structured_output_token_counter=local_prompt_token_count,
-        structured_output_output_token_counter=lambda value: len(
-            _local_chat_tokenizer().encode(value, add_special_tokens=False)
-        ),
-        structured_output_context_limit=LOCAL_CONTEXT_LIMIT,
-        structured_output_safety_margin=config.safety_margin_tokens,
-        structured_output_certificate_sink=structured_certificates.append,
+    llm_client_type = OpenAIGenericClient if strict_native else QwenVLLMClient
+    llm_kwargs: dict[str, Any] = {
+        "config": llm_config,
+        "client": router,
+        "max_tokens": config.requested_max_tokens,
+        "structured_output_mode": config.structured_output_mode,
+    }
+    if not strict_native:
+        llm_kwargs.update(
+            {
+                "structured_output_recovery_enabled": True,
+                "vllm_options_enabled": True,
+                "structured_output_token_counter": local_prompt_token_count,
+                "structured_output_output_token_counter": lambda value: len(
+                    _local_chat_tokenizer().encode(value, add_special_tokens=False)
+                ),
+                "structured_output_context_limit": LOCAL_CONTEXT_LIMIT,
+                "structured_output_safety_margin": config.safety_margin_tokens,
+                "structured_output_certificate_sink": structured_certificates.append,
+                "managed_recovery_enabled": True,
+            }
+        )
+    llm_client = llm_client_type(
+        **llm_kwargs,
     )
-    install_local_single_attempt_policy(llm_client)
-    context_budget_restore = install_local_context_budget_adapter(llm_client)
-    install_local_extraction_chunking_policy(
-        llm_client,
-        partition_extraction_by_turns=True,
-        partition_edge_candidates=True,
-        # A one-entity default keeps the finite summary/dedupe response space
-        # under the frozen completion bound even when the caller does not
-        # provide an explicit paging override.  Larger capacities remain an
-        # explicit, preflight-certified variant.
-        summary_entity_page_capacity=summary_entity_page_capacity or 1,
-        dedupe_candidate_page_capacity=dedupe_candidate_page_capacity or 1,
-        node_partition_concurrency=NODE_PARTITION_WORKERS_8B,
-        edge_page_capacity=2,
-        actor_domain_cover=True,
-        actor_domain_adjacent_domain=False,
-        edge_partition_concurrency=EDGE_PARTITION_WORKERS_8B,
-        edge_physical_concurrency=(
-            int(manifest["construction"]["edge_physical_page_lanes"])
-        ),
-        edge_frontier_priority=True,
-        edge_endpoint_schema_grounding=enable_endpoint_schema_grounding,
-        edge_adaptive_admission=enable_adaptive_edge_admission,
-    )
+    context_budget_restore: Callable[[], None] | None = None
+    if not strict_native:
+        install_local_single_attempt_policy(llm_client)
+        context_budget_restore = install_local_context_budget_adapter(llm_client)
+        install_local_extraction_chunking_policy(
+            llm_client,
+            partition_extraction_by_turns=True,
+            partition_edge_candidates=True,
+            # A one-entity default keeps the finite summary/dedupe response space
+            # under the frozen completion bound even when the caller does not
+            # provide an explicit paging override.  Larger capacities remain an
+            # explicit, preflight-certified variant.
+            summary_entity_page_capacity=summary_entity_page_capacity or 1,
+            dedupe_candidate_page_capacity=dedupe_candidate_page_capacity or 1,
+            node_partition_concurrency=NODE_PARTITION_WORKERS_8B,
+            edge_page_capacity=2,
+            actor_domain_cover=True,
+            actor_domain_adjacent_domain=False,
+            edge_partition_concurrency=EDGE_PARTITION_WORKERS_8B,
+            edge_physical_concurrency=(
+                int(manifest["construction"]["edge_physical_page_lanes"])
+            ),
+            edge_frontier_priority=True,
+            edge_endpoint_schema_grounding=enable_endpoint_schema_grounding,
+            edge_adaptive_admission=enable_adaptive_edge_admission,
+        )
     llm_client._membind_structured_output_certificates = structured_certificates
     summary_restore: Callable[[], None] | None = None
     summary_evidence: list[dict[str, Any]] = []
-    if enable_grounded_summary_materialization:
+    if not strict_native and enable_grounded_summary_materialization:
         diagnostics = getattr(llm_client, "_membind_extraction_diagnostics", None)
         if not isinstance(diagnostics, list):
             raise LocalRuntimeConfigurationError(
@@ -513,8 +573,11 @@ def build_8b_u0_runtime(
         summary_restore, summary_evidence = install_grounded_summary_materialization(
             evidence_sink=diagnostics.append
         )
-    shortcut_restore = install_empty_edge_shortcut(llm_client)
-    prompt_restore = install_routing_prompt_context(llm_client)
+    shortcut_restore: Callable[[], None] | None = None
+    prompt_restore: Callable[[], None] | None = None
+    if not strict_native:
+        shortcut_restore = install_empty_edge_shortcut(llm_client)
+        prompt_restore = install_routing_prompt_context(llm_client)
     embedder = OpenAIEmbedder(
         OpenAIEmbedderConfig(
             api_key=embedding_key,
@@ -539,7 +602,11 @@ def build_8b_u0_runtime(
         embedder=embedder,
         reranker=reranker,
         config=config,
-        classification=f"U0_{PROFILE_ID_8B}_{manifest['construction']['routing_policy']}",
+        classification=(
+            f"GRAPHITI_UPSTREAM_{PROFILE_ID_8B}_{manifest['construction']['routing_policy']}"
+            if strict_native
+            else f"U0_{PROFILE_ID_8B}_{manifest['construction']['routing_policy']}"
+        ),
     )
     runtime._membind_owned_transports = (router, embedder.client)
     runtime._membind_runtime_closed = False
@@ -552,7 +619,47 @@ def build_8b_u0_runtime(
     runtime._membind_grounded_summary_restore = summary_restore
     runtime._membind_grounded_summary_evidence = summary_evidence
     runtime._membind_8b_runtime_manifest = manifest
+    runtime._membind_strict_native = bool(strict_native)
+    runtime._membind_patch_inventory = {
+        "schema_version": "membind.native-patch-inventory.v1",
+        "status": "PASS",
+        "strict_native": bool(strict_native),
+        "prohibited_algorithm_patches": [] if strict_native else [
+            "candidate_provenance_guard",
+            "structured_output_recovery",
+            "single_attempt_retry_override",
+            "context_budget_adapter",
+            "extraction_chunking_and_paging",
+            "empty_edge_shortcut",
+            "routing_prompt_context",
+        ],
+        "read_only_transport_adapters": ["RoutedOpenAIClient"],
+        "graphiti_algorithm_mutated": False,
+    }
     return runtime
+
+
+def build_8b_strict_native_runtime(
+    *,
+    routing_contract: Mapping[str, Any],
+    route_event_sink: Callable[[dict[str, Any]], None] | None = None,
+) -> U0Runtime:
+    """Build A/B with no V6.1 runtime patch or recovery behavior installed."""
+
+    return build_8b_u0_runtime(
+        routing_contract=routing_contract,
+        route_event_sink=route_event_sink,
+        strict_native=True,
+    )
+
+
+def native_patch_inventory(runtime: Any) -> dict[str, Any]:
+    """Return the machine-readable patch inventory sealed with a runtime."""
+
+    value = getattr(runtime, "_membind_patch_inventory", None)
+    if not isinstance(value, Mapping):
+        raise LocalRuntimeConfigurationError("runtime patch inventory is missing")
+    return dict(value)
 
 
 async def close_8b_u0_runtime(runtime: U0Runtime) -> None:
@@ -580,6 +687,7 @@ def assert_8b_namespace_identity(namespace: str) -> None:
 def frozen_8b_config(
     routing_contract: Mapping[str, Any],
     *,
+    strict_native: bool = False,
     enable_grounded_summary_materialization: bool = False,
     enable_endpoint_schema_grounding: bool = False,
     enable_work_conserving_edge_admission: bool = False,
@@ -590,6 +698,7 @@ def frozen_8b_config(
         "status": "FROZEN_FOR_RESOURCE_MATCHED_CAMPAIGN",
         **runtime_8b_manifest(
             routing_contract,
+            strict_native=strict_native,
             enable_grounded_summary_materialization=enable_grounded_summary_materialization,
             enable_endpoint_schema_grounding=enable_endpoint_schema_grounding,
             enable_work_conserving_edge_admission=enable_work_conserving_edge_admission,
@@ -602,6 +711,7 @@ def public_8b_environment(
     routing_contract: Mapping[str, Any],
     *,
     repo_root: Path | None = None,
+    strict_native: bool = False,
     enable_grounded_summary_materialization: bool = False,
     enable_endpoint_schema_grounding: bool = False,
     enable_work_conserving_edge_admission: bool = False,
@@ -609,6 +719,7 @@ def public_8b_environment(
 ) -> dict[str, Any]:
     manifest = runtime_8b_manifest(
         routing_contract,
+        strict_native=strict_native,
         enable_grounded_summary_materialization=enable_grounded_summary_materialization,
         enable_endpoint_schema_grounding=enable_endpoint_schema_grounding,
         enable_work_conserving_edge_admission=enable_work_conserving_edge_admission,
@@ -624,6 +735,8 @@ __all__ = [
     "PROFILE_ID_8B",
     "assert_8b_namespace_identity",
     "build_8b_u0_runtime",
+    "build_8b_strict_native_runtime",
+    "native_patch_inventory",
     "close_8b_u0_runtime",
     "frozen_8b_config",
     "install_empty_edge_shortcut",

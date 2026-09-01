@@ -673,11 +673,8 @@ async def run_mab_v61_construction_async(
             if prior is not None:
                 if prior.get("idempotency_key") != idempotency_key:
                     raise V61MABError("source publication idempotency key changed on re-entry")
-                emit(
-                    "PUBLICATION_REUSED",
-                    sequence,
-                    time.monotonic_ns(),
-                )
+                emit("PUBLICATION_DURABLE", sequence, time.monotonic_ns())
+                emit("NATIVE_ENTER", sequence)
                 append_live(
                     {
                         "channel": "common",
@@ -751,7 +748,7 @@ async def run_mab_v61_construction_async(
                     with provider_scope(region="NATIVE", source_sequence=sequence):
                         with NativeBindingScope(
                             store, source_sequence=sequence, strict=bool(binding_strict)
-                        ):
+                            ):
                                 result = await graphiti.add_episode(**publication_kwargs)
             except BaseException as exc:
                 emit("NATIVE_FAILURE", sequence, time.monotonic_ns())
@@ -766,6 +763,16 @@ async def run_mab_v61_construction_async(
                     durable=True,
                 )
                 raise
+            if publication_fault_injector is not None:
+                # This is the irreducible cross-system fault window: Graphiti's
+                # Neo4j transaction has returned, but the local durable journal
+                # has not recorded the publication.  Re-entry can only reuse the
+                # stable UUID and reconcile at least once; it cannot infer an
+                # atomic commit across Neo4j and this file.
+                injected = publication_fault_injector(
+                    "after_db_commit_before_journal", sequence, publication_kwargs
+                )
+                await _maybe_await(injected)
             result_digest = hashlib.sha256(
                 json.dumps(result, ensure_ascii=False, sort_keys=True, default=str).encode(
                     "utf-8"

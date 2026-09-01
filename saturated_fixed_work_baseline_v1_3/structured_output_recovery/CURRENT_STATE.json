@@ -1,15 +1,50 @@
 {
   "schema_version": "membind.structured-output-recovery.state.v1",
   "artifact_type": "current_state",
-  "updated_at_utc": "2026-09-01T06:22:00Z",
-  "input_commit": "e943b3f",
-  "state": "R0_COMPLETE_R1_IN_PROGRESS",
-  "old_campaign_status": "CAMPAIGN_HALTED_PENDING_STRUCTURED_OUTPUT_REPAIR",
-  "active_hypothesis": "R1_bounded_schema",
-  "provider_calls_in_repair": 0,
+  "updated_at_utc": "2026-09-01T10:37:02Z",
+  "input_commit": "4c8262d656eb437f5793b097490223119f221d82",
+  "state": "BLOCKED_DATASET_MAPPING",
+  "old_campaign_status": "PRESERVED_NOT_ELIGIBLE_FOR_CURRENT_TABLE",
+  "active_hypothesis": "official_dataset_mapping_qualification",
   "formal_111_source_history_executed": false,
   "held_out_accessed": false,
   "v7_executed": false,
-  "last_transition": "initial halt and preregistration",
+  "last_transition": "R1-R4 provider-free closure passed; official dataset mapping remains unqualified",
+  "repair_gates": {
+    "r0_root_cause": "PASS_HIGH_CONFIDENCE_OUTPUT_LENGTH_TRUNCATION",
+    "r1_actual_callsite_certificate": "PASS_ACTUAL_RUNTIME_CALLSITE",
+    "r2_classified_recovery": "PASS_PROVIDER_FREE",
+    "r3_publication": "AT_LEAST_ONCE_WITH_DURABLE_RECONCILIATION",
+    "r4_finalizer": "PASS_PROVIDER_FREE"
+  },
+  "reliability_policy": {
+    "sha256": "40492aace3206f9355aae403fee578c00e0a9af0ccb5ae59f12de024da617201",
+    "transient_extra_physical_attempts": 2,
+    "truncation_smaller_variants": 0,
+    "context_budget_corrections": 0,
+    "malformed_structured_retry": "none",
+    "semantic_validation_retry": "none",
+    "unknown_failure": "fail_closed"
+  },
+  "structured_output_certificate": {
+    "path": "STRUCTURED_OUTPUT_SCHEMA_BOUND_CERTIFICATE.json",
+    "sha256": "78917cba3bee5cc89cef970cf6bb025b8e6e059d7d54c1a6643c48f41e520849",
+    "hash_definition": "canonical_certificate_json_sha256",
+    "runtime_generated_call_count": 47,
+    "runtime_generated_callsite_count": 17,
+    "qualification_status": "PASS_ACTUAL_RUNTIME_CALLSITE"
+  },
+  "blocking_evidence": {
+    "dataset_qualification": "mab_quality_v2_final_qa/evidence/MAB_DATASET_QUALIFICATION_RESULT_20260819.json",
+    "dataset_decision": "STOP_DATASET_MAPPING_UNQUALIFIED",
+    "accepted_context_count": 4,
+    "selected_record_count": 5,
+    "native_identity": "NATIVE_IMMUTABILITY_REPORT.json",
+    "publication_guarantee": "AT_LEAST_ONCE_WITH_DURABLE_RECONCILIATION"
+  },
+  "provider_calls_in_repair": 0,
+  "l5_development_live_qualification_executed": false,
+  "formal_experiment_authorized": false,
+  "engineering_canary_authorized": false,
   "append_only": true
 }

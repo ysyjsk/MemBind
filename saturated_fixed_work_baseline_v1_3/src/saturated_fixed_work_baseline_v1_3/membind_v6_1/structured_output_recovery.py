@@ -13,8 +13,8 @@ RUNTIME_RELIABILITY_PROFILE = "shared-structured-output-recovery-v1"
 SCHEMA_REVISION = "finite-edge-schema-v1"
 RECOVERY_POLICY_REVISION = "classified-request-recovery-v1"
 RECOVERY_POLICY_MAX_TRANSIENT_RETRIES = 2
-RECOVERY_POLICY_MAX_TRUNCATION_VARIANTS = 1
-RECOVERY_POLICY_MAX_CONTEXT_CORRECTIONS = 1
+RECOVERY_POLICY_MAX_TRUNCATION_VARIANTS = 0
+RECOVERY_POLICY_MAX_CONTEXT_CORRECTIONS = 0
 
 
 @dataclass(frozen=True, slots=True)
@@ -94,7 +94,12 @@ class RecoveryAttempt:
 
 
 def recovery_policy_document() -> dict[str, Any]:
-    """Return the frozen policy shared by Serial, Parallel, and V6.1."""
+    """Return the frozen V6.1 structured-output policy.
+
+    Native serial and relaxed-order arms retain upstream Graphiti semantics;
+    this recovery policy is therefore an identity artifact for the proposed
+    V6.1 path, not a native-arm algorithm change.
+    """
 
     return {
         "policy_revision": RECOVERY_POLICY_REVISION,
@@ -148,9 +153,11 @@ class StructuredRecoveryController:
     """Bounded, explicit recovery for one semantic structured request.
 
     The controller never retries malformed or semantically invalid responses.
-    A caller may provide a deterministic smaller-variant factory for a single
-    truncation recovery; every invocation remains a separately identifiable
-    physical attempt.
+    The API retains deterministic variant factories, but the frozen policy
+    sets both truncation variants and context corrections to zero.  Certified
+    truncation and context failures therefore fail closed.  Only transient
+    transport failures receive bounded physical retries under one stable
+    request variant identity.
     """
 
     def __init__(
@@ -414,7 +421,17 @@ def validate_schema_boundedness(
             for index, member in enumerate(schema_type):
                 visit({**value, "type": member}, f"{path}.type[{index}]")
             return
-        if schema_type in {None, "null", "boolean"}:
+        if schema_type is None:
+            if _finite_literal(value):
+                return
+            if any(
+                isinstance(value.get(keyword), list) and bool(value.get(keyword))
+                for keyword in ("anyOf", "oneOf", "allOf")
+            ):
+                return
+            issue(path, "schema_type_missing")
+            return
+        if schema_type in {"null", "boolean"}:
             return
         if schema_type == "string":
             maximum = value.get("maxLength")

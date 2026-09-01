@@ -478,8 +478,8 @@ class _QwenCompletionsTransport:
 
     async def create(self, *args: Any, **kwargs: Any) -> Any:
         request = dict(kwargs)
-        request["top_p"] = float(os.environ.get("CONSTRUCTION_TOP_P", "1.0"))
         if self._options_enabled:
+            request["top_p"] = float(os.environ.get("CONSTRUCTION_TOP_P", "1.0"))
             request["seed"] = int(os.environ.get("CONSTRUCTION_SEED", "20260806"))
             extra_body = dict(request.get("extra_body") or {})
             chat_template_kwargs = dict(extra_body.get("chat_template_kwargs") or {})
@@ -577,6 +577,8 @@ class QwenVLLMClient:
         structured_output_certificate_sink = kwargs.pop(
             "structured_output_certificate_sink", None
         )
+        native_identity = bool(kwargs.pop("native_identity", False))
+        managed_recovery_enabled = bool(kwargs.pop("managed_recovery_enabled", False))
 
         class Client(OpenAIGenericClient):  # type: ignore[misc]
             def __init__(self, *client_args: Any, **client_kwargs: Any) -> None:
@@ -590,6 +592,8 @@ class QwenVLLMClient:
                 self.structured_output_context_limit = structured_output_context_limit
                 self.structured_output_safety_margin = structured_output_safety_margin
                 self.structured_output_certificate_sink = structured_output_certificate_sink
+                self.native_identity = native_identity
+                self.managed_recovery_enabled = managed_recovery_enabled
                 self.runtime_reliability_profile = reliability_identity()[
                     "runtime_reliability_profile"
                 ]
@@ -621,8 +625,43 @@ class QwenVLLMClient:
                     options_enabled=self.vllm_options_enabled,
                 )
 
+            async def _generate_response_with_retry(
+                self,
+                messages: list[Any],
+                response_model: Any = None,
+                max_tokens: int = 2048,
+                model_size: Any = None,
+            ) -> Any:
+                """Use the V6.1 controller as the sole retry owner.
+
+                The pinned Graphiti ``generate_response`` surface wraps
+                ``_generate_response`` in a four-attempt tenacity decorator.
+                Native clients inherit that behavior unchanged.  V6.1 opts into
+                this narrow override so its explicit three-level controller is
+                the only retry loop and every physical attempt is accounted for.
+                """
+
+                if self.managed_recovery_enabled:
+                    return await self._generate_response(
+                        messages,
+                        response_model=response_model,
+                        max_tokens=max_tokens,
+                        model_size=model_size,
+                    )
+                return await super()._generate_response_with_retry(
+                    messages,
+                    response_model=response_model,
+                    max_tokens=max_tokens,
+                    model_size=model_size,
+                )
+
             def _build_response_format(self, response_model: Any) -> dict[str, Any]:
                 upstream = super()._build_response_format(response_model)
+                # Native Graphiti must see the exact upstream schema.  The
+                # bounded schema and single-episode index constraint are a
+                # V6.1 recovery feature and are therefore opt-in per client.
+                if self.native_identity:
+                    return upstream
                 constrained = constrain_single_episode_indices(upstream)
                 if response_model is not None and constrained.get("type") == "json_schema":
                     schema = constrained.get("json_schema", {}).get("schema", {})
@@ -641,6 +680,17 @@ class QwenVLLMClient:
                 model_size: Any = None,
             ) -> dict[str, Any]:
                 """Read transport termination metadata before decoding JSON."""
+
+                # Keep the native arm on Graphiti's pinned implementation,
+                # including its parser and retry wrapper.  The custom path is
+                # deliberately reachable only from V6.1 clients.
+                if self.native_identity:
+                    return await super()._generate_response(
+                        messages,
+                        response_model=response_model,
+                        max_tokens=max_tokens,
+                        model_size=model_size,
+                    )
 
                 openai_messages = []
                 for message in messages:
@@ -736,6 +786,10 @@ class QwenVLLMClient:
                 return record
 
         instance = Client(*args, **kwargs)
+        if not managed_recovery_enabled:
+            # Preserve the exact pinned tenacity descriptor for native/default
+            # clients.  Only the explicit V6.1 managed path owns this seam.
+            delattr(Client, "_generate_response_with_retry")
         # Keep the compatibility surface inherited from pinned Graphiti while
         # installing the reliability-aware implementation only on this client.
         reliable_generate = instance._generate_response

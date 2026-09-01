@@ -12,7 +12,17 @@ class TraceValidationError(ValueError):
 
 
 _EVENTS = {"FORMAL_START", "SUBMIT", "NATIVE_ENTER", "PUBLICATION_DURABLE", "CONSTRUCTION_SEAL", "QA_START", "QA_END"}
-_METHOD_ORDER = {"B0": True, "B0_NATIVE_SERIAL": True, "V6": True, "MEMBIND_V6": True, "B1": False, "B1_NAIVE_WHOLE_UPDATE_ASYNC": False}
+_METHOD_ORDER = {
+    "B0": True,
+    "B0_NATIVE_SERIAL": True,
+    "GRAPHITI_UPSTREAM_SERIAL": True,
+    "V6": True,
+    "MEMBIND_V6": True,
+    "MEMBIND_V6_1": True,
+    "B1": False,
+    "B1_NAIVE_WHOLE_UPDATE_ASYNC": False,
+    "RELAXED_ORDER_PARALLEL": False,
+}
 
 
 def _event_index(row: Mapping[str, Any], fallback: int) -> int:

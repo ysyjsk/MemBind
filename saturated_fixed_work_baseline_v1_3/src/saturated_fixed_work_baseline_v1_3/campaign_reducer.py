@@ -16,6 +16,11 @@ METHOD_CLASSES = {
     "B0": "ORDERED_REFERENCE",
     "B1": "RELAXED_ORDER_REFERENCE",
     "V6": "ORDERED_REFINEMENT",
+    # Public three-arm identities. The short names above remain accepted for
+    # historical offline fixtures, while new artifacts use these names.
+    "GRAPHITI_UPSTREAM_SERIAL": "GRAPHITI_UPSTREAM",
+    "RELAXED_ORDER_PARALLEL": "RELAXED_ORDER",
+    "MEMBIND_V6_1": "MEMBIND_V6_1",
 }
 ORDERS = (("B0", "B1", "V6"), ("B1", "V6", "B0"), ("V6", "B0", "B1"))
 

@@ -1,0 +1,38 @@
+{
+  "allowed_differences": [
+    "endpoint_url",
+    "api_key",
+    "wall_clock",
+    "trace_request_id",
+    "read_only_observation"
+  ],
+  "compared_fields": [
+    "add_episode_parameters",
+    "episode_order",
+    "previous_episode_ids",
+    "prompt_messages_hash",
+    "response_model_schema_hash",
+    "decode_parameters",
+    "logical_physical_call_sequence",
+    "raw_response_before_parse",
+    "canonical_graph_output",
+    "database_mutation_order"
+  ],
+  "comparison": "upstream_graphiti_runner_vs_graphiti_upstream_serial_runner",
+  "native_patch_inventory": {
+    "prohibited_algorithm_patches": 0,
+    "read_only_transport_adapters": [
+      "RoutedOpenAIClient"
+    ]
+  },
+  "prohibited_difference_count": 0,
+  "provider_calls": 0,
+  "repository_head": "4c8262d656eb437f5793b097490223119f221d82",
+  "schema_version": "membind.native-immutability-report.v1",
+  "source_hashes": {
+    "mab_runner": "5acaa9f3c01345e1c6feafff5ff5929b8f93209ef63a482a69d8e707bbc7d02e",
+    "qwen_client": "b8be363b93153a5ac6b47d8b4e15122dfe774103e370c9b97510020b44643438",
+    "runner": "c5e7fc18af3868a2ded1036feef8caa61d0d944483fcf3dfdfe1abb71d121ec4"
+  },
+  "status": "PASS_PROVIDER_FREE"
+}

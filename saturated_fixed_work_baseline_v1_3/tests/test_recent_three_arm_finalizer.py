@@ -40,10 +40,32 @@ def _attempt(root: Path, method: str, attempt_id: str, *, valid: bool = True) ->
     return attempt
 
 
-def _campaign(tmp_path: Path, *, methods: tuple[str, ...] = finalizer.METHODS) -> Path:
+def _campaign(
+    tmp_path: Path,
+    *,
+    methods: tuple[str, ...] = finalizer.METHODS,
+    campaign_scope: str = "FORMAL",
+    qualification_decision: str = "PASS_OFFICIAL_DATASET_MAPPING",
+) -> Path:
+    qualification = {
+        "decision": qualification_decision,
+        "live_authorized": qualification_decision == "PASS_OFFICIAL_DATASET_MAPPING",
+        "selected_record_count": 1,
+        "accepted_context_count": 1,
+        "rejected_context_count": 0,
+    }
+    _write(tmp_path / "DATASET_QUALIFICATION.json", qualification)
     _write(
         tmp_path / "RECENT_THREE_ARM_CAMPAIGN_PREREGISTRATION.json",
-        {"campaign_id": "fixture", "histories": [{"history": 0}]},
+        {
+            "campaign_id": "fixture",
+            "campaign_scope": campaign_scope,
+            "dataset_qualification": {
+                "path": "DATASET_QUALIFICATION.json",
+                "required_decision": "PASS_OFFICIAL_DATASET_MAPPING",
+            },
+            "histories": [{"history": 0}],
+        },
     )
     for method in methods:
         _attempt(tmp_path, method, f"{method.lower()}-0")
@@ -98,3 +120,32 @@ def test_scientific_failure_is_never_sealed_or_used_for_speedup(tmp_path: Path) 
     assert result["speedup_core"][0]["speedup"] == "MISSING"
     block = json.loads((root / "history-0" / "HISTORY_BLOCK_RESULT.json").read_text())
     assert block["status"] == "HISTORY_BLOCK_INCOMPLETE"
+
+
+def test_formal_dataset_stop_blocks_main_table_and_speedup(tmp_path: Path) -> None:
+    root = _campaign(
+        tmp_path,
+        qualification_decision="STOP_DATASET_MAPPING_UNQUALIFIED",
+    )
+    result = finalizer.finalize(root)
+    assert result["status"] == "BLOCKED_DATASET_QUALIFICATION"
+    assert result["dataset_qualification"]["decision"] == (
+        "STOP_DATASET_MAPPING_UNQUALIFIED"
+    )
+    assert "main_table" not in result
+    assert result["speedup_core"][0]["speedup"] == "MISSING"
+    assert not (root / "RECENT_THREE_ARM_MAIN_TABLE.csv").exists()
+
+
+def test_engineering_canary_is_audit_only_even_when_all_arms_pass(tmp_path: Path) -> None:
+    root = _campaign(
+        tmp_path,
+        campaign_scope="ENGINEERING_CANARY",
+        qualification_decision="PASS_ENGINEERING_SUBSET_NOT_OFFICIAL_MAIN_TABLE",
+    )
+    result = finalizer.finalize(root)
+    assert result["status"] == "ENGINEERING_CANARY_AUDIT_ONLY"
+    assert result["main_table_eligible"] is False
+    assert "main_table" not in result
+    assert result["speedup_core"][0]["speedup"] == "MISSING"
+    assert not (root / "RECENT_THREE_ARM_MAIN_TABLE.csv").exists()

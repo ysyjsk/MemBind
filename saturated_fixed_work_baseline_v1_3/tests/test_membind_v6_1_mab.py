@@ -234,8 +234,8 @@ def test_v61_mab_provider_free_composition_uses_one_arbiter_and_seals(
     assert verify_seal(tmp_path / "block")["status"] == "PASS"
 
 
-def test_v61_source_publication_faults_are_atomic_and_exact_once(tmp_path, monkeypatch):
-    """Exercise the real V6.1 construction seam with before/after commit faults."""
+def test_v61_source_publication_reconciliation_fault_windows(tmp_path, monkeypatch):
+    """Exercise the V6.1 at-least-once reconciliation fault windows."""
 
     async def fake_extract_nodes(clients, episode, *_args):
         await clients.llm_client.generate_response(
@@ -295,9 +295,11 @@ def test_v61_source_publication_faults_are_atomic_and_exact_once(tmp_path, monke
         def __init__(self, delegate):
             super().__init__(delegate)
             self.publications = 0
+            self.publication_uuids = []
 
         async def add_episode(self, **kwargs):
             self.publications += 1
+            self.publication_uuids.append(kwargs.get("uuid"))
             return await super().add_episode(**kwargs)
 
     delegate = _Delegate()
@@ -345,6 +347,37 @@ def test_v61_source_publication_faults_are_atomic_and_exact_once(tmp_path, monke
     begin_events = [json.loads(line) for line in begin_journal.read_text().splitlines()]
     assert any(row.get("event") == "PUBLICATION_BEGIN" for row in begin_events)
     assert not any(row.get("event") == "PUBLICATION_COMMITTED" for row in begin_events)
+
+    graph.publications = 0
+    graph.publication_uuids.clear()
+
+    def after_db_commit_before_journal(stage, _sequence, _kwargs):
+        if stage == "after_db_commit_before_journal":
+            raise RuntimeError("injected crash after db commit before journal")
+
+    torn_root = tmp_path / "torn"
+    with pytest.raises(RuntimeError, match="after db commit before journal"):
+        asyncio.run(
+            v61_mab.run_mab_v61_construction_async(
+                **common_kwargs(torn_root),
+                publication_fault_injector=after_db_commit_before_journal,
+            )
+        )
+    assert graph.publications == 1
+    torn_journal = tmp_path / ".torn.v61_live_events.jsonl"
+    torn_events = [json.loads(line) for line in torn_journal.read_text().splitlines()]
+    assert any(row.get("event") == "PUBLICATION_BEGIN" for row in torn_events)
+    assert not any(row.get("event") == "PUBLICATION_COMMITTED" for row in torn_events)
+
+    torn_result = asyncio.run(
+        v61_mab.run_mab_v61_construction_async(**common_kwargs(torn_root))
+    )
+    assert torn_result["status"] == "PASS"
+    assert graph.publications == 2
+    assert len(set(graph.publication_uuids)) == 1
+
+    graph.publications = 0
+    graph.publication_uuids.clear()
 
     def after_commit(stage, _sequence, _kwargs):
         if stage == "after_commit":

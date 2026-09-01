@@ -51,11 +51,18 @@ from .membind_v6.proof import (
     validate_replay_accounting,
     validate_request_comparisons,
 )
-from .membind_v6_1.structured_output_recovery import reliability_identity
 
 
 class MABLiveRunnerError(RuntimeError):
     """The live MAB block cannot satisfy the fixed-work contract."""
+
+
+def _reliability_identity() -> dict[str, str]:
+    """Load the shared structured-output identity after package initialization."""
+
+    from .membind_v6_1.structured_output_recovery import reliability_identity
+
+    return reliability_identity()
 
 
 async def resolve_runtime_builder(runtime_builder: Callable[[], Any]) -> Any:
@@ -70,12 +77,37 @@ class _AppendOnlyJsonl:
     def __init__(self, path: Path) -> None:
         self.path = Path(path)
         self.path.parent.mkdir(parents=True, exist_ok=True)
-        self._stream = self.path.open("x", encoding="utf-8")
+        self._committed: dict[int, dict[str, Any]] = {}
+        if self.path.exists():
+            for line in self.path.read_text(encoding="utf-8").splitlines():
+                try:
+                    row = json.loads(line)
+                except (UnicodeError, json.JSONDecodeError):
+                    continue
+                if (
+                    isinstance(row, Mapping)
+                    and row.get("event") == "PUBLICATION_COMMITTED"
+                    and isinstance(row.get("source_sequence"), int)
+                    and isinstance(row.get("idempotency_key"), str)
+                ):
+                    self._committed[int(row["source_sequence"])] = dict(row)
+            self._stream = self.path.open("a", encoding="utf-8")
+        else:
+            self._stream = self.path.open("x", encoding="utf-8")
+
+    def committed_publications(self) -> dict[int, dict[str, Any]]:
+        return {sequence: dict(row) for sequence, row in self._committed.items()}
 
     def append(self, row: Mapping[str, Any]) -> None:
         self._stream.write(json.dumps(dict(row), ensure_ascii=False, sort_keys=True) + "\n")
         self._stream.flush()
         os.fsync(self._stream.fileno())
+        if (
+            row.get("event") == "PUBLICATION_COMMITTED"
+            and isinstance(row.get("source_sequence"), int)
+            and isinstance(row.get("idempotency_key"), str)
+        ):
+            self._committed[int(row["source_sequence"])] = dict(row)
 
     def close(self) -> None:
         if not self._stream.closed:
@@ -158,8 +190,18 @@ def _episode_envelopes(recorder: Any, run_id: str, episodes: Sequence[MABLiveEpi
     ]
 
 
-def _mab_graphiti_kwargs(episode: MABLiveEpisode, *, namespace: str) -> dict[str, Any]:
-    """Build the pinned Graphiti call shape while keeping offline fakes light."""
+def _mab_graphiti_kwargs(
+    episode: MABLiveEpisode,
+    *,
+    namespace: str,
+    include_uuid: bool = True,
+) -> dict[str, Any]:
+    """Build the pinned Graphiti call shape.
+
+    A strict upstream write deliberately omits ``uuid``: in Graphiti's pinned
+    implementation a supplied UUID is an existing-node lookup.  V6.1 passes
+    ``include_uuid=True`` for its durable reconciliation protocol.
+    """
 
     publication_uuid = str(
         uuid.uuid5(
@@ -171,23 +213,27 @@ def _mab_graphiti_kwargs(episode: MABLiveEpisode, *, namespace: str) -> dict[str
     try:
         from graphiti_core.nodes import EpisodeType
     except ModuleNotFoundError:
-        return {
+        result = {
             "name": episode.name,
             "episode_body": episode.body,
             "source_description": "MemoryAgentBench LongMemEval session",
             "reference_time": episode.reference_time,
             "group_id": namespace,
-            "uuid": publication_uuid,
         }
-    return {
+        if include_uuid:
+            result["uuid"] = publication_uuid
+        return result
+    result = {
         "name": episode.name,
         "episode_body": episode.body,
         "source_description": "MemoryAgentBench LongMemEval session",
         "reference_time": _parse_reference_time(episode.reference_time),
         "source": EpisodeType.message,
         "group_id": namespace,
-        "uuid": publication_uuid,
     }
+    if include_uuid:
+        result["uuid"] = publication_uuid
+    return result
 
 
 def _span_metrics(
@@ -218,6 +264,7 @@ async def run_mab_construction_async(
     frozen_config: Mapping[str, Any],
     environment: Mapping[str, Any] | None = None,
     preflight: Mapping[str, Any] | None = None,
+    publication_fault_injector: Callable[[str, int, Mapping[str, Any]], Any] | None = None,
 ) -> dict[str, Any]:
     """Run one fresh MAB construction block and materialize its seal."""
 
@@ -250,6 +297,7 @@ async def run_mab_construction_async(
         key: _AppendOnlyJsonl(root.parent / f".{root.name}.live_raw_events.jsonl")
         for key, filename in (("raw", "live_raw_events.jsonl"),)
     }
+    publication_state = journals["raw"].committed_publications()
     store = TranscriptStore()
     bindings: list[dict[str, Any]] = []
     observations: list[Any] = []
@@ -277,21 +325,123 @@ async def run_mab_construction_async(
         lifecycle["events"].append({"event": "FORMAL_START", "monotonic_ns": formal_start})
         emit("FORMAL_START", stamp=formal_start)
 
+        strict_native = method in {
+            "GRAPHITI_UPSTREAM_SERIAL",
+            "RELAXED_ORDER_PARALLEL",
+        }
+
         async def direct_publish(sequence: int) -> None:
             episode = selected[sequence]
+            publication_kwargs = _mab_graphiti_kwargs(
+                episode,
+                namespace=namespace,
+                include_uuid=not strict_native,
+            )
+            if strict_native:
+                # Native A/B has no V6.1 journal replay or idempotency branch.
+                # The journal records observation only and cannot alter the
+                # upstream Graphiti write path.
+                emit("NATIVE_ENTER", sequence)
+                record(
+                    {
+                        "event": "UPSTREAM_PUBLICATION_BEGIN",
+                        "source_sequence": sequence,
+                        "context_id": context_id,
+                        "publication_guarantee": "UPSTREAM_GRAPHITI_NO_RESUME",
+                    }
+                )
+                with recorder.episode_scope(run_id, episode.name, sequence):
+                    with provider_scope(region="NATIVE", source_sequence=sequence):
+                        await graphiti.add_episode(**publication_kwargs)
+                emit("PUBLICATION_DURABLE", sequence, time.monotonic_ns())
+                record(
+                    {
+                        "event": "UPSTREAM_PUBLICATION_RETURNED",
+                        "source_sequence": sequence,
+                        "context_id": context_id,
+                        "publication_guarantee": "UPSTREAM_GRAPHITI_NO_RESUME",
+                    }
+                )
+                return
+            idempotency_key = str(publication_kwargs.get("uuid") or "")
+            if not idempotency_key:
+                raise MABLiveRunnerError("SOURCE_PUBLICATION_IDEMPOTENCY_KEY_MISSING")
+            prior = publication_state.get(sequence)
+            if prior is not None:
+                if prior.get("idempotency_key") != idempotency_key:
+                    raise MABLiveRunnerError("SOURCE_PUBLICATION_IDEMPOTENCY_KEY_CHANGED")
+                emit("NATIVE_ENTER", sequence)
+                emit("PUBLICATION_DURABLE", sequence, time.monotonic_ns())
+                record(
+                    {
+                        "event": "PUBLICATION_REUSED",
+                        "source_sequence": sequence,
+                        "idempotency_key": idempotency_key,
+                        "context_id": context_id,
+                    }
+                )
+                return
             emit("NATIVE_ENTER", sequence)
+            record(
+                {
+                    "event": "PUBLICATION_BEGIN",
+                    "source_sequence": sequence,
+                    "idempotency_key": idempotency_key,
+                    "context_id": context_id,
+                }
+            )
+            if publication_fault_injector is not None:
+                await _maybe_await(
+                    publication_fault_injector(
+                        "before_db_write", sequence, publication_kwargs
+                    )
+                )
             with recorder.episode_scope(run_id, episode.name, sequence):
                 with provider_scope(region="NATIVE", source_sequence=sequence):
-                    await graphiti.add_episode(**_mab_graphiti_kwargs(episode, namespace=namespace))
+                    result = await graphiti.add_episode(**publication_kwargs)
+            result_digest = hashlib.sha256(
+                json.dumps(result, ensure_ascii=False, sort_keys=True, default=str).encode(
+                    "utf-8"
+                )
+            ).hexdigest()
+            # This fault window models a database commit that becomes visible
+            # before the local COMMITTED journal record is durable.  It is
+            # intentionally exposed so the guarantee remains honest: a
+            # restart can replay the source and therefore provides durable
+            # reconciliation, not cross-system atomic exactly-once.
+            if publication_fault_injector is not None:
+                await _maybe_await(
+                    publication_fault_injector(
+                        "after_db_commit_before_journal", sequence, publication_kwargs
+                    )
+                )
+            record(
+                {
+                    "event": "PUBLICATION_COMMITTED",
+                    "source_sequence": sequence,
+                    "idempotency_key": idempotency_key,
+                    "result_sha256": result_digest,
+                    "context_id": context_id,
+                }
+            )
+            publication_state[sequence] = {
+                "event": "PUBLICATION_COMMITTED",
+                "idempotency_key": idempotency_key,
+                "result_sha256": result_digest,
+            }
+            if publication_fault_injector is not None:
+                await _maybe_await(
+                    publication_fault_injector("after_commit", sequence, publication_kwargs)
+                )
             durable = time.monotonic_ns()
             emit("PUBLICATION_DURABLE", sequence, durable)
             record({"event": "PUBLICATION_DURABLE", "source_sequence": sequence, "monotonic_ns": durable, "context_id": context_id})
 
-        if method == "B0":
+        if method in {"B0", "GRAPHITI_UPSTREAM_SERIAL"}:
             for sequence in range(len(selected)):
                 emit("SUBMIT", sequence)
                 await direct_publish(sequence)
-        elif method == "B1":
+        elif method in {"B1", "RELAXED_ORDER_PARALLEL"}:
             for sequence in range(len(selected)):
                 emit("SUBMIT", sequence)
             await asyncio.gather(*(direct_publish(sequence) for sequence in range(len(selected))))
@@ -412,7 +562,12 @@ async def run_mab_construction_async(
                 ),
             ),
             "transport_evidence": _transport_evidence_summary(transport_rows),
-            **reliability_identity(),
+            "publication_guarantee": (
+                "UPSTREAM_GRAPHITI_NO_RESUME"
+                if strict_native
+                else "AT_LEAST_ONCE_WITH_DURABLE_RECONCILIATION"
+            ),
+            **_reliability_identity(),
         }
         if method == "V6":
             result["refinement_validation"] = {**result["refinement_validation"], "proof": {"request": validate_request_comparisons(comparisons), "replay": validate_replay_accounting(store.summary()), "provider": validate_provider_events([], capacity=capacity.value)}}

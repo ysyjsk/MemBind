@@ -6,12 +6,15 @@ from dataclasses import dataclass
 from pathlib import Path
 from types import SimpleNamespace
 
+import pytest
+
 from saturated_fixed_work_baseline_v1_3.mab_live_runner import (
     episode_from_input,
     resolve_runtime_builder,
     run_mab_construction_async,
 )
 from saturated_fixed_work_baseline_v1_3.workload_contract import EpisodeInput, WorkloadManifest
+from saturated_fixed_work_baseline_v1_3.membind_v6_1.structured_output_recovery import reliability_identity
 
 
 @dataclass
@@ -117,6 +120,168 @@ def test_live_runner_b0_and_b1_emit_complete_shared_contract(tmp_path: Path) -> 
     assert b0_graph.calls == [0, 1, 2]
     assert sorted(b1_graph.calls) == [0, 1, 2]
     assert json.loads((tmp_path / "B0" / "construction_seal.json").read_text())["status"] == "CONSTRUCTION_SEALED"
+    assert {
+        key: b0[key] for key in reliability_identity()
+    } == reliability_identity()
+    assert {
+        key: b1[key] for key in reliability_identity()
+    } == reliability_identity()
+
+
+def test_canonical_native_arms_omit_uuid_and_disable_resume(tmp_path: Path) -> None:
+    episodes, manifest = _workload(tmp_path, count=1)
+
+    class RecordingGraph(_FakeGraph):
+        def __init__(self) -> None:
+            super().__init__()
+            self.kwargs: list[dict[str, object]] = []
+
+        async def add_episode(self, **kwargs):
+            self.kwargs.append(dict(kwargs))
+            return await super().add_episode(**kwargs)
+
+    for method in ("GRAPHITI_UPSTREAM_SERIAL", "RELAXED_ORDER_PARALLEL"):
+        graph = RecordingGraph()
+        root = tmp_path / method
+        result = asyncio.run(
+            run_mab_construction_async(
+                method=method,
+                run_id="canonical-native",
+                context_id="ctx-0",
+                namespace=f"ns-{method.lower()}",
+                episodes=episodes,
+                runtime_builder=lambda graph=graph: SimpleNamespace(graphiti=graph, llm_client=object()),
+                instrumentation_installer=lambda *_args: _FakeRecorder._Scope(),
+                recorder_factory=_FakeRecorder,
+                graph_exporter=lambda *_args: {"status": "PASS", "canonical_graph_hash": "d" * 64},
+                output_root=root,
+                authority={"authority_sha256": "b" * 64},
+                workload_manifest=manifest,
+                frozen_config={"config_sha256": "c" * 64},
+            )
+        )
+        assert graph.kwargs and "uuid" not in graph.kwargs[0]
+        assert result["publication_guarantee"] == "UPSTREAM_GRAPHITI_NO_RESUME"
+        assert result["method"] == method
+
+
+def test_legacy_b0_and_b1_resume_only_after_durable_local_commit(tmp_path: Path) -> None:
+    episodes, manifest = _workload(tmp_path, count=1)
+
+    class FaultGraph(_FakeGraph):
+        def __init__(self) -> None:
+            super().__init__()
+            self.publications = 0
+
+        async def add_episode(self, **kwargs):
+            self.publications += 1
+            return await super().add_episode(**kwargs)
+
+    def run(method: str, root: Path, graph: FaultGraph, injector=None):
+        return asyncio.run(
+            run_mab_construction_async(
+                method=method,
+                run_id="fault-run",
+                context_id="ctx-0",
+                namespace=f"fault-{method.lower()}",
+                episodes=episodes,
+                runtime_builder=lambda: SimpleNamespace(graphiti=graph, llm_client=object()),
+                instrumentation_installer=lambda *_args: _FakeRecorder._Scope(),
+                recorder_factory=_FakeRecorder,
+                graph_exporter=lambda *_args: {"status": "PASS", "canonical_graph_hash": "d" * 64},
+                output_root=root,
+                authority={"authority_sha256": "b" * 64},
+                workload_manifest=manifest,
+                frozen_config={"config_sha256": "c" * 64},
+                publication_fault_injector=injector,
+            )
+        )
+
+    for method in ("B0", "B1"):
+        before_graph = FaultGraph()
+
+        def before(stage, _sequence, _kwargs):
+            if stage == "before_db_write":
+                raise RuntimeError("before-write")
+
+        with pytest.raises(RuntimeError, match="before-write"):
+            run(method, tmp_path / f"{method}-before", before_graph, before)
+        assert before_graph.publications == 0
+
+        after_graph = FaultGraph()
+
+        def after(stage, _sequence, _kwargs):
+            if stage == "after_commit":
+                raise RuntimeError("after-commit")
+
+        root = tmp_path / f"{method}-after"
+        with pytest.raises(RuntimeError, match="after-commit"):
+            run(method, root, after_graph, after)
+        assert after_graph.publications == 1
+        result = run(method, root, after_graph)
+        assert result["status"] == "PASS"
+        assert after_graph.publications == 1
+
+
+def test_database_commit_before_journal_is_at_least_once_reconciliation(tmp_path: Path) -> None:
+    episodes, manifest = _workload(tmp_path, count=1)
+
+    class CommitGraph(_FakeGraph):
+        def __init__(self) -> None:
+            super().__init__()
+            self.publications = 0
+
+        async def add_episode(self, **kwargs):
+            self.publications += 1
+            return await super().add_episode(**kwargs)
+
+    graph = CommitGraph()
+
+    def crash_between_db_and_journal(stage, _sequence, _kwargs):
+        if stage == "after_db_commit_before_journal":
+            raise RuntimeError("database committed before journal")
+
+    def run(root: Path):
+        return asyncio.run(
+            run_mab_construction_async(
+                method="B0",
+                run_id="db-journal-window",
+                context_id="ctx-0",
+                namespace="db-journal-window",
+                episodes=episodes,
+                runtime_builder=lambda: SimpleNamespace(graphiti=graph, llm_client=object()),
+                instrumentation_installer=lambda *_args: _FakeRecorder._Scope(),
+                recorder_factory=_FakeRecorder,
+                graph_exporter=lambda *_args: {"status": "PASS", "canonical_graph_hash": "d" * 64},
+                output_root=root,
+                authority={"authority_sha256": "b" * 64},
+                workload_manifest=manifest,
+                frozen_config={"config_sha256": "c" * 64},
+            )
+        )
+
+    with pytest.raises(RuntimeError, match="database committed"):
+        asyncio.run(
+            run_mab_construction_async(
+                method="B0",
+                run_id="db-journal-window",
+                context_id="ctx-0",
+                namespace="db-journal-window",
+                episodes=episodes,
+                runtime_builder=lambda: SimpleNamespace(graphiti=graph, llm_client=object()),
+                instrumentation_installer=lambda *_args: _FakeRecorder._Scope(),
+                recorder_factory=_FakeRecorder,
+                graph_exporter=lambda *_args: {"status": "PASS", "canonical_graph_hash": "d" * 64},
+                output_root=tmp_path / "db-before-journal",
+                authority={"authority_sha256": "b" * 64},
+                workload_manifest=manifest,
+                frozen_config={"config_sha256": "c" * 64},
+                publication_fault_injector=crash_between_db_and_journal,
+            )
+        )
+    result = run(tmp_path / "db-before-journal")
+    assert result["publication_guarantee"] == "AT_LEAST_ONCE_WITH_DURABLE_RECONCILIATION"
+    assert graph.publications == 2
 
 
 def test_episode_projection_does_not_require_private_qa_fields() -> None:

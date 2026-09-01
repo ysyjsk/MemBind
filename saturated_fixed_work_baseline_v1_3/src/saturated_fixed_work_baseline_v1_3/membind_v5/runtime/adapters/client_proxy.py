@@ -11,7 +11,7 @@ from contextlib import contextmanager
 from typing import Any, Awaitable, Callable, Iterable
 
 from ..core.binder import BindingScopeError, NativeBindingScope
-from ..core.request_identity import build_request_identity
+from ..core.request_identity import RequestIdentity, build_request_identity
 from ..core.transcript import BindingMismatch, CaptureSession, TranscriptStore
 
 
@@ -31,6 +31,9 @@ _PROXY_SOURCE_SEQUENCE: contextvars.ContextVar[int | None] = contextvars.Context
 _PROXY_REQUEST_IDENTITY: contextvars.ContextVar[Any | None] = contextvars.ContextVar(
     "membind_v5_proxy_request_identity", default=None
 )
+_PROXY_RETRY_IDENTITY: contextvars.ContextVar[dict[str, Any] | None] = (
+    contextvars.ContextVar("membind_v5_proxy_retry_identity", default=None)
+)
 
 
 @contextmanager
@@ -40,6 +43,22 @@ def proxy_source_scope(source_sequence: int):
         yield
     finally:
         _PROXY_SOURCE_SEQUENCE.reset(token)
+
+
+@contextmanager
+def proxy_retry_identity_scope():
+    """Reuse one logical request identity across observable physical retries."""
+
+    active = _PROXY_RETRY_IDENTITY.get()
+    if active is not None:
+        yield active
+        return
+    holder: dict[str, Any] = {}
+    token = _PROXY_RETRY_IDENTITY.set(holder)
+    try:
+        yield holder
+    finally:
+        _PROXY_RETRY_IDENTITY.reset(token)
 
 
 def current_proxy_request_identity() -> Any | None:
@@ -88,9 +107,14 @@ class V5LLMClientProxy:
     def _identity(self, messages: Any, response_model: Any, max_tokens: int | None, model_size: Any, group_id: str | None, prompt_name: str | None, attribute_extraction: bool, source_sequence: int) -> Any:
         callsite = str(prompt_name or "unknown")
         key = (int(source_sequence), callsite)
-        ordinal = self._ordinals.get(key, 0)
-        self._ordinals[key] = ordinal + 1
-        return build_request_identity(
+        retry_scope = _PROXY_RETRY_IDENTITY.get()
+        retained = retry_scope.get("identity") if retry_scope is not None else None
+        ordinal = (
+            int(retained.ordinal)
+            if isinstance(retained, RequestIdentity)
+            else self._ordinals.get(key, 0)
+        )
+        identity = build_request_identity(
             source_sequence=source_sequence,
             callsite=callsite,
             ordinal=ordinal,
@@ -106,6 +130,16 @@ class V5LLMClientProxy:
             cache_salt=self.cache_salt,
             previous_context_digest=self.previous_context_digest,
         )
+        if isinstance(retained, RequestIdentity):
+            if identity.digest != retained.digest:
+                raise BindingScopeError(
+                    "physical retry changed the logical request variant"
+                )
+            return retained
+        self._ordinals[key] = ordinal + 1
+        if retry_scope is not None:
+            retry_scope["identity"] = identity
+        return identity
 
     async def generate_response(
         self,

@@ -1978,7 +1978,7 @@ def test_local_context_budget_adapter_uses_exact_remaining_context() -> None:
     assert completions.calls == [25_504]
 
 
-def test_local_context_budget_adapter_falls_back_on_tokenizer_drift() -> None:
+def test_local_context_budget_adapter_fails_closed_on_tokenizer_drift() -> None:
     class Completions:
         def __init__(self) -> None:
             self.calls: list[int] = []
@@ -2000,13 +2000,13 @@ def test_local_context_budget_adapter_falls_back_on_tokenizer_drift() -> None:
     )
     restore = install_local_context_budget_adapter(llm, token_counter=lambda _messages: 1_000)
     try:
-        result = asyncio.run(
-            completions.create(messages=[{"role": "user", "content": "x"}], max_tokens=32_768)
-        )
+        with pytest.raises(RuntimeError, match="maximum context length"):
+            asyncio.run(
+                completions.create(messages=[{"role": "user", "content": "x"}], max_tokens=32_768)
+            )
     finally:
         restore()
-    assert result == {"ok": True}
-    assert completions.calls == [32_768, 25_504]
+    assert completions.calls == [32_768]
 
 
 def test_local_context_budget_adapter_does_not_retry_unrelated_errors() -> None:

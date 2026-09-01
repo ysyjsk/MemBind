@@ -17,6 +17,7 @@ from typing import Any, Callable, Mapping
 from ..membind_v5.runtime.adapters.client_proxy import (
     CERTIFIED_CALLSITES,
     V5LLMClientProxy,
+    proxy_retry_identity_scope,
     proxy_source_scope,
 )
 from ..membind_v5.runtime.core.admission import AdmissionClass
@@ -30,7 +31,10 @@ from ..membind_v6.request_observation import observe_request_identity
 from .admission import ForegroundAdmissionArbiter
 from .evidence import response_sha256
 from .structured_output_recovery import (
+    RECOVERY_POLICY_MAX_CONTEXT_CORRECTIONS,
     RECOVERY_POLICY_MAX_TRANSIENT_RETRIES,
+    RECOVERY_POLICY_MAX_TRUNCATION_VARIANTS,
+    StructuredRecoveryController,
     classify_exception_for_recovery,
     reliability_identity,
     recovery_policy_sha256,
@@ -713,8 +717,9 @@ class V61ProviderClient:
         result: Any = None,
         error: BaseException | None = None,
         fallback_type: str | None = None,
+        identity_override: Any | None = None,
     ) -> None:
-        identity = _IDENTITY.get()
+        identity = identity_override if identity_override is not None else _IDENTITY.get()
         observation = _OBSERVATION.get()
         digest = response_sha256(result) if result is not None else None
         if observation is not None:
@@ -752,6 +757,15 @@ class V61ProviderClient:
             ),
             "recovery_policy_sha256": recovery_policy_sha256(),
             **reliability_identity(),
+            "recovery_controller": {
+                "name": "StructuredRecoveryController",
+                "integration": "provider_logical_call_equivalent_v1",
+                "max_transient_retries": RECOVERY_POLICY_MAX_TRANSIENT_RETRIES,
+                "malformed_structured_retry": False,
+                "semantic_validation_retry": False,
+                "context_correction_limit": RECOVERY_POLICY_MAX_CONTEXT_CORRECTIONS,
+                "truncation_variant_limit": RECOVERY_POLICY_MAX_TRUNCATION_VARIANTS,
+            },
             "semantic_operation_id": f"{int(source_sequence)}:{prompt_name or 'unknown'}",
         }
         if request_tokens is not None:
@@ -764,6 +778,11 @@ class V61ProviderClient:
             semantic_operation_id = (
                 f"{int(source_sequence)}:{identity.callsite}:{identity.ordinal}"
             )
+            physical_count = max(0, int(transport_attempt_count))
+            physical_ids = [
+                f"{semantic_operation_id}:{attempt_index}"
+                for attempt_index in range(physical_count)
+            ]
             row.update(
                 {
                     "request_digest_prefix": identity.digest[:16],
@@ -773,8 +792,9 @@ class V61ProviderClient:
                     "request_variant_id": identity.digest,
                     "physical_attempt_id": (
                         f"{semantic_operation_id}:"
-                        f"{max(0, int(transport_attempt_count) - 1)}"
+                        f"{max(0, physical_count - 1)}"
                     ),
+                    "physical_attempt_ids": physical_ids,
                 }
             )
         if error is not None:
@@ -819,6 +839,50 @@ class V61ProviderClient:
             requested = 2_048
         decode_reserve = min(requested, self.arbiter.policy.STRUCTURED_DECODE_RESERVE_TOKENS)
         return max(1, prompt_tokens + decode_reserve), prompt_tokens, decode_reserve
+
+    async def _run_recovery_controller(
+        self,
+        *,
+        source_sequence: int,
+        prompt_name: Any,
+        operation: Callable[[], Any],
+        classify: Callable[[BaseException], str] | None = None,
+        attempt_sink: Callable[[Any], None] | None = None,
+    ) -> tuple[Any, StructuredRecoveryController]:
+        """Run one logical provider call through the shared bounded policy."""
+
+        controller = StructuredRecoveryController(
+            semantic_operation_id=f"{int(source_sequence)}:{prompt_name or 'unknown'}",
+            request_variant_id=f"{int(source_sequence)}:{prompt_name or 'unknown'}:initial",
+            attempt_sink=attempt_sink,
+        )
+
+        async def invoke(_variant: str) -> Any:
+            token = _RECOVERY_ATTEMPT.set(max(0, len(controller.attempts)))
+            try:
+                result = operation()
+                if inspect.isawaitable(result):
+                    return await result
+                return result
+            finally:
+                _RECOVERY_ATTEMPT.reset(token)
+
+        try:
+            with proxy_retry_identity_scope():
+                result = await controller.run(
+                    invoke,
+                    classify=classify or classify_exception_for_recovery,
+                )
+        except BaseException as exc:
+            # Tuple assignment does not publish ``controller`` when the final
+            # attempt raises.  Attach it so failure rows retain full identity
+            # and logical-attempt accounting.
+            try:
+                setattr(exc, "_membind_recovery_controller", controller)
+            except Exception:
+                pass
+            raise
+        return result, controller
 
     @staticmethod
     def _retryable_native_connection(error: BaseException) -> bool:
@@ -885,28 +949,72 @@ class V61ProviderClient:
         service_start_ns = time.monotonic_ns()
         transport_counter = {"attempts": 0, "retries": 0}
         managed_token = _MANAGED_TRANSPORT_CALL.set(transport_counter)
+        controller: StructuredRecoveryController | None = None
         try:
-            attempts = 0
-            while True:
-                try:
-                    with provider_request_scope(request_tokens=request_tokens):
-                        with proxy_source_scope(source_sequence):
+            logical_identity = None
+            def classify(error: BaseException) -> str:
+                failure_class = classify_exception_for_recovery(error)
+                return (
+                    "TRANSPORT_INCOMPLETE"
+                    if self._retryable_native_connection(error)
+                    and failure_class not in {"SERVER_TRANSIENT", "TRANSPORT_INCOMPLETE"}
+                    else failure_class
+                )
+
+            def recovery_sink(attempt: Any) -> None:
+                if attempt.status != "failure":
+                    return
+                if (
+                    attempt.failure_class in {"SERVER_TRANSIENT", "TRANSPORT_INCOMPLETE"}
+                    and attempt.attempt_index < RECOVERY_POLICY_MAX_TRANSIENT_RETRIES
+                ):
+                    transport_counter["retries"] += 1
+                    if self.event_sink is not None:
+                        self.event_sink(
+                            {
+                                "event": "V61_PROVIDER_TRANSIENT_RETRY",
+                                "mode": self.mode,
+                                "region": region,
+                                "source_sequence": int(source_sequence),
+                                "prompt_name": prompt_name,
+                                "failure_class": attempt.failure_class,
+                                "retry_index": attempt.attempt_index,
+                                "max_extra_retries": RECOVERY_POLICY_MAX_TRANSIENT_RETRIES,
+                                "recovery_policy_sha256": recovery_policy_sha256(),
+                                "arbiter_instance_id": self.arbiter.instance_id,
+                            }
+                        )
+
+            async def operation() -> Any:
+                nonlocal logical_identity
+                with provider_request_scope(request_tokens=request_tokens):
+                    with proxy_source_scope(source_sequence):
+                        try:
                             result = await delegate()
-                    break
-                except BaseException as exc:
-                    failure_class = classify_exception_for_recovery(exc)
-                    retryable = failure_class in {
-                        "SERVER_TRANSIENT",
-                        "TRANSPORT_INCOMPLETE",
-                    } or self._retryable_native_connection(exc)
-                    if retryable and attempts < RECOVERY_POLICY_MAX_TRANSIENT_RETRIES:
-                        attempts += 1
-                        transport_counter["retries"] += 1
-                        continue
-                    raise
+                        except BaseException:
+                            if logical_identity is None:
+                                logical_identity = _IDENTITY.get()
+                            raise
+                if logical_identity is None:
+                    logical_identity = _IDENTITY.get()
+                return result
+
+            result, controller = await self._run_recovery_controller(
+                source_sequence=source_sequence,
+                prompt_name=prompt_name,
+                operation=operation,
+                classify=classify,
+                attempt_sink=recovery_sink,
+            )
         except BaseException as exc:
+            if controller is None:
+                controller = getattr(exc, "_membind_recovery_controller", None)
+            attempts = max(0, len(controller.attempts) - 1) if controller is not None else 0
             observed_transport_attempts = int(transport_counter["attempts"]) > 0
-            _ensure_physical_attempt_lower_bound(transport_counter, attempts)
+            # A binding fallback invokes the proxy's immutable delegate
+            # directly.  Test and replay delegates may not expose the local
+            # transport guard, so retain zero observed transport attempts
+            # instead of manufacturing a wire-call count.
             self._record(
                 region=region,
                 source_sequence=source_sequence,
@@ -922,16 +1030,19 @@ class V61ProviderClient:
                 decode_reserve_tokens=decode_reserve,
                 transport_attempt_count=transport_counter["attempts"],
                 transport_retry_count=transport_counter["retries"],
-                logical_attempt_count=attempts + 1,
+                logical_attempt_count=(len(controller.attempts) if controller is not None else attempts + 1),
                 transport_attempts_observed=observed_transport_attempts,
                 error=exc,
                 start_ns=start_ns,
                 fallback_type=fallback_type,
+                identity_override=logical_identity,
             )
             raise
         else:
+            attempts = max(0, len(controller.attempts) - 1) if controller is not None else 0
             observed_transport_attempts = int(transport_counter["attempts"]) > 0
-            _ensure_physical_attempt_lower_bound(transport_counter, attempts)
+            # See the failure branch above: only guarded wire calls belong in
+            # transport_attempt_count for this fresh fallback path.
             self._record(
                 region=region,
                 source_sequence=source_sequence,
@@ -947,11 +1058,12 @@ class V61ProviderClient:
                 decode_reserve_tokens=decode_reserve,
                 transport_attempt_count=transport_counter["attempts"],
                 transport_retry_count=transport_counter["retries"],
-                logical_attempt_count=attempts + 1,
+                logical_attempt_count=(len(controller.attempts) if controller is not None else attempts + 1),
                 transport_attempts_observed=observed_transport_attempts,
                 result=result,
                 start_ns=start_ns,
                 fallback_type=fallback_type,
+                identity_override=logical_identity,
             )
             return result
         finally:
@@ -1075,41 +1187,67 @@ class V61ProviderClient:
         service_start_ns = time.monotonic_ns()
         transport_counter = {"attempts": 0, "retries": 0}
         managed_token = _MANAGED_TRANSPORT_CALL.set(transport_counter)
+        controller: StructuredRecoveryController | None = None
+        logical_identity = None
         try:
-            attempts = 0
-            while True:
-                try:
-                    with provider_request_scope(request_tokens=request_tokens):
-                        with proxy_source_scope(source_sequence):
-                            result = await self._proxy.generate_response(effective_messages, **kwargs)
-                    break
-                except BaseException as exc:
-                    failure_class = classify_exception_for_recovery(exc)
-                    retryable = failure_class in {
-                        "SERVER_TRANSIENT",
-                        "TRANSPORT_INCOMPLETE",
-                    } or self._retryable_native_connection(exc)
-                    if retryable and attempts < RECOVERY_POLICY_MAX_TRANSIENT_RETRIES:
-                        attempts += 1
-                        transport_counter["retries"] += 1
-                        if self.event_sink is not None:
-                            self.event_sink(
-                                {
-                                    "event": "V61_PROVIDER_TRANSIENT_RETRY",
-                                    "mode": self.mode,
-                                    "region": region,
-                                    "source_sequence": int(source_sequence),
-                                    "prompt_name": prompt_name,
-                                    "failure_class": failure_class,
-                                    "retry_index": attempts,
-                                    "max_extra_retries": RECOVERY_POLICY_MAX_TRANSIENT_RETRIES,
-                                    "recovery_policy_sha256": recovery_policy_sha256(),
-                                    "arbiter_instance_id": self.arbiter.instance_id,
-                                }
+            def classify(error: BaseException) -> str:
+                failure_class = classify_exception_for_recovery(error)
+                return (
+                    "TRANSPORT_INCOMPLETE"
+                    if self._retryable_native_connection(error)
+                    and failure_class not in {"SERVER_TRANSIENT", "TRANSPORT_INCOMPLETE"}
+                    else failure_class
+                )
+
+            def recovery_sink(attempt: Any) -> None:
+                if attempt.status != "failure":
+                    return
+                if (
+                    attempt.failure_class in {"SERVER_TRANSIENT", "TRANSPORT_INCOMPLETE"}
+                    and attempt.attempt_index < RECOVERY_POLICY_MAX_TRANSIENT_RETRIES
+                ):
+                    transport_counter["retries"] += 1
+                    if self.event_sink is not None:
+                        self.event_sink(
+                            {
+                                "event": "V61_PROVIDER_TRANSIENT_RETRY",
+                                "mode": self.mode,
+                                "region": region,
+                                "source_sequence": int(source_sequence),
+                                "prompt_name": prompt_name,
+                                "failure_class": attempt.failure_class,
+                                "retry_index": attempt.attempt_index,
+                                "max_extra_retries": RECOVERY_POLICY_MAX_TRANSIENT_RETRIES,
+                                "recovery_policy_sha256": recovery_policy_sha256(),
+                                "arbiter_instance_id": self.arbiter.instance_id,
+                            }
+                        )
+
+            async def operation() -> Any:
+                nonlocal logical_identity
+                with provider_request_scope(request_tokens=request_tokens):
+                    with proxy_source_scope(source_sequence):
+                        try:
+                            result = await self._proxy.generate_response(
+                                effective_messages, **kwargs
                             )
-                        continue
-                    raise
+                        except BaseException:
+                            if logical_identity is None:
+                                logical_identity = _IDENTITY.get()
+                            raise
+                if logical_identity is None:
+                    logical_identity = _IDENTITY.get()
+                return result
+
+            result, controller = await self._run_recovery_controller(
+                source_sequence=int(source_sequence),
+                prompt_name=prompt_name,
+                operation=operation,
+                classify=classify,
+                attempt_sink=recovery_sink,
+            )
             observed_transport_attempts = int(transport_counter["attempts"]) > 0
+            attempts = max(0, len(controller.attempts) - 1)
             _ensure_physical_attempt_lower_bound(transport_counter, attempts)
             self._record(
                 region=region,
@@ -1126,14 +1264,18 @@ class V61ProviderClient:
                 decode_reserve_tokens=decode_reserve,
                 transport_attempt_count=transport_counter["attempts"],
                 transport_retry_count=transport_counter["retries"],
-                logical_attempt_count=attempts + 1,
+                logical_attempt_count=len(controller.attempts),
                 transport_attempts_observed=observed_transport_attempts,
                 result=result,
+                identity_override=logical_identity,
                 start_ns=start_ns,
             )
             return result
         except BaseException as exc:
+            if controller is None:
+                controller = getattr(exc, "_membind_recovery_controller", None)
             observed_transport_attempts = int(transport_counter["attempts"]) > 0
+            attempts = max(0, len(controller.attempts) - 1) if controller is not None else 0
             _ensure_physical_attempt_lower_bound(transport_counter, attempts)
             self._record(
                 region=region,
@@ -1150,9 +1292,12 @@ class V61ProviderClient:
                 decode_reserve_tokens=decode_reserve,
                 transport_attempt_count=transport_counter["attempts"],
                 transport_retry_count=transport_counter["retries"],
-                logical_attempt_count=attempts + 1,
+                logical_attempt_count=(
+                    len(controller.attempts) if controller is not None else attempts + 1
+                ),
                 transport_attempts_observed=observed_transport_attempts,
                 error=exc,
+                identity_override=logical_identity,
                 start_ns=start_ns,
             )
             raise
