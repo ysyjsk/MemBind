@@ -22,7 +22,10 @@ def test_finalizer_reuses_evaluated_commit_after_evidence_commit(monkeypatch: py
 
     commit, source = module._evaluation_base_commit()
 
-    assert commit == "c62b548d18bbf0da161069be7be86750e977581c"
+    # The evaluated epoch is intentionally re-bound as provenance is
+    # materialized for the current HEAD; the resolver must reuse that exact
+    # recorded commit rather than silently selecting a newer artifact commit.
+    assert commit == module._read(module.EVIDENCE / "CURRENT_STATE.json")["base_code_commit"]
     assert source == "existing_evidence"
 
 
@@ -61,3 +64,17 @@ def test_finalizer_rejects_mixed_evidence_epochs() -> None:
             "c62b548d18bbf0da161069be7be86750e977581c",
             [{"base_code_commit": "c62b548d18bbf0da161069be7be86750e977581c"}, {}],
         )
+
+
+def test_materialized_evidence_is_ignored_but_source_changes_are_not() -> None:
+    module = _load_finalizer()
+
+    assert module._is_materialized_evidence_path(
+        "saturated_fixed_work_baseline_v1_3/structured_output_recovery/CURRENT_STATE.json"
+    )
+    assert module._is_materialized_evidence_path(
+        "mab_quality_v2_final_qa/evidence/OFFICIAL_DATASET_PARITY_REPORT.json"
+    )
+    assert not module._is_materialized_evidence_path(
+        "saturated_fixed_work_baseline_v1_3/src/saturated_fixed_work_baseline_v1_3/mab_live_runner.py"
+    )

@@ -1,18 +1,18 @@
 {
-  "base_code_commit": "c62b548d18bbf0da161069be7be86750e977581c",
-  "base_code_commit_source": "existing_evidence",
+  "base_code_commit": "b81a52d5e7df7ba6e3b4f9b90591762a074503cf",
+  "base_code_commit_source": "cli",
   "canary_authorized": false,
-  "current_identity_match": true,
-  "decision": "BLOCKED_STALE_OR_MIXED_EVIDENCE",
+  "current_identity_match": false,
+  "decision": "BLOCKED_CURRENT_HEAD_IDENTITY",
   "evaluated_source_bundle": {
-    "base_code_commit": "c62b548d18bbf0da161069be7be86750e977581c",
+    "base_code_commit": "b81a52d5e7df7ba6e3b4f9b90591762a074503cf",
     "generator_source_sha256": "df1317d83789d2bc84a08e09ac0904c99c4b566b6d6b3a75510fc0568d66995e",
     "native_identity_sha256": "38d668c3e51e8357295c90856bb2120f0ca8874927610313979d8d8929d24b81",
     "native_report_sha256": "7cf514a1aef99ec18b825c46a98c724a96da940e2c38e09182991032dfa0c91e",
     "official_dataset_parity_sha256": "74e507b41e84b45904e6bc2e0ad12eff777aba24f74df28a28f7b5ff3903b3a9",
     "structured_qualification_sha256": "9211c0b1c12ab5b06f419631eb2081588cb54557650529677e814d385ae512a3"
   },
-  "evaluated_source_bundle_sha256": "1dfe418690ad111ce9ec33af8d12a01f6c590d296d6f6dfafe44a141c56297d9",
+  "evaluated_source_bundle_sha256": "2a3746bea7eedd70ec850552dca85a692d4f84f01718a4c64fd5ec93ce2e9d86",
   "evidence_epoch_status": "FAIL",
   "formal_three_arm_authorized": false,
   "generator_source_sha256": "df1317d83789d2bc84a08e09ac0904c99c4b566b6d6b3a75510fc0568d66995e",
@@ -25,5 +25,5 @@
   "provider_calls": 0,
   "reason": "State is computed from current implementation identity, evidence epoch, native, UUID, actual-callsite, and official-dataset evidence; no prior state is reused.",
   "schema_version": "membind.preexperiment.final-decision.v3",
-  "status": "BLOCKED_STALE_OR_MIXED_EVIDENCE"
+  "status": "BLOCKED_CURRENT_HEAD_IDENTITY"
 }

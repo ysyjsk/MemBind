@@ -55,10 +55,42 @@ def _commit_exists(commit: str) -> bool:
     ).returncode == 0
 
 
+_MATERIALIZED_EVIDENCE_PREFIXES = (
+    "saturated_fixed_work_baseline_v1_3/structured_output_recovery/",
+    "mab_quality_v2_final_qa/evidence/OFFICIAL_DATASET_PARITY_REPORT.json",
+    "mab_quality_v2_final_qa/evidence/OFFICIAL_DATASET_PARITY_REPORT.md",
+)
+
+
+def _is_materialized_evidence_path(path: str) -> bool:
+    """Return whether a path is produced while materializing provenance.
+
+    Provenance, gate, and method-seal artifacts are expected to change after
+    the evaluated source commit is selected.  They are evidence outputs, not
+    implementation input.  Runtime/source changes remain included in the
+    identity diff and therefore still invalidate the epoch.
+    """
+
+    return path.startswith(_MATERIALIZED_EVIDENCE_PREFIXES)
+
+
 def _tracked_diff_sha256() -> str | None:
-    """Hash all tracked changes relative to HEAD for identity binding."""
+    """Hash tracked implementation changes while ignoring evidence outputs."""
+
+    names = subprocess.run(
+        ["git", "diff", "HEAD", "--name-only", "--no-ext-diff"],
+        cwd=ROOT,
+        check=True,
+        capture_output=True,
+        text=True,
+    ).stdout.splitlines()
+    implementation_paths = [
+        path for path in names if path and not _is_materialized_evidence_path(path)
+    ]
+    if not implementation_paths:
+        return None
     value = subprocess.run(
-        ["git", "diff", "HEAD", "--no-ext-diff", "--binary"],
+        ["git", "diff", "HEAD", "--no-ext-diff", "--binary", "--", *implementation_paths],
         cwd=ROOT,
         check=True,
         capture_output=True,
