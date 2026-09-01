@@ -13,6 +13,11 @@ from typing import Any
 ROOT = Path(__file__).resolve().parents[1]
 EVIDENCE = ROOT / "saturated_fixed_work_baseline_v1_3/structured_output_recovery"
 PARITY = ROOT / "mab_quality_v2_final_qa/evidence/OFFICIAL_DATASET_PARITY_REPORT.json"
+_MATERIALIZED_EVIDENCE_PREFIXES = (
+    "saturated_fixed_work_baseline_v1_3/structured_output_recovery/",
+    "mab_quality_v2_final_qa/evidence/OFFICIAL_DATASET_PARITY_REPORT.json",
+    "mab_quality_v2_final_qa/evidence/OFFICIAL_DATASET_PARITY_REPORT.md",
+)
 
 
 def _read(path: Path) -> dict[str, Any]:
@@ -28,7 +33,25 @@ def _head() -> str:
 
 
 def _tracked_diff_sha() -> str | None:
-    raw = subprocess.run(["git", "diff", "HEAD", "--no-ext-diff", "--binary"], cwd=ROOT, check=True, capture_output=True).stdout
+    names = subprocess.run(
+        ["git", "diff", "HEAD", "--name-only", "--no-ext-diff"],
+        cwd=ROOT,
+        check=True,
+        capture_output=True,
+        text=True,
+    ).stdout.splitlines()
+    paths = [
+        path for path in names
+        if path and not path.startswith(_MATERIALIZED_EVIDENCE_PREFIXES)
+    ]
+    if not paths:
+        return None
+    raw = subprocess.run(
+        ["git", "diff", "HEAD", "--no-ext-diff", "--binary", "--", *paths],
+        cwd=ROOT,
+        check=True,
+        capture_output=True,
+    ).stdout
     return hashlib.sha256(raw).hexdigest() if raw else None
 
 
