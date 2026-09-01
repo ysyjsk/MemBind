@@ -1,0 +1,72 @@
+{
+  "schema_version": "membind.structured-output-recovery.preregistration.v1",
+  "artifact_type": "preregistration",
+  "created_at_utc": "2026-09-01T06:15:47Z",
+  "input": {
+    "branch": "dmsv-b1r2-structural-closure",
+    "commit": "492a006a984504ad0f3044ff5bdf2f3eded92720",
+    "remote_main": "492a006a984504ad0f3044ff5bdf2f3eded92720",
+    "worktree": "clean",
+    "profile_id": "local-qwen3-8b-awq-dualreplica-v1",
+    "graphiti_version": "0.29.3",
+    "structured_backend": "xgrammar",
+    "context_limit": 65536,
+    "configured_completion_budget": 32768,
+    "sdk_retries": 0
+  },
+  "scope": {
+    "objective": "Repair and prove reliable, bounded, classified structured-output recovery shared by NATIVE_SERIAL, NATIVE_PARALLEL, and V6.1.",
+    "formal_history_execution": false,
+    "formal_111_source_execution": false,
+    "held_out_access": false,
+    "v7_execution": false,
+    "new_provider_calls_before_l1_l4": false,
+    "development_qualification_only_after_l1_l4": true,
+    "do_not_modify_prompt_md": true,
+    "do_not_push": true,
+    "preserve_old_artifacts": true
+  },
+  "hypothesis_discipline": {
+    "active_hypotheses": 1,
+    "order": ["R0_root_cause", "R1_bounded_schema", "R2_classified_recovery", "R3_source_publication", "R4_finalizer"],
+    "per_hypothesis": ["freeze_failure_test", "implement_minimal_change", "run_provider_free_tests", "record_accept_or_reject", "commit_before_next_hypothesis"],
+    "synthesis_after_consecutive_gate_failures": 3
+  },
+  "failure_classes": [
+    "OUTPUT_LENGTH_TRUNCATION",
+    "MALFORMED_STRUCTURED_OUTPUT",
+    "TRANSPORT_INCOMPLETE",
+    "CONTEXT_BUDGET_EXHAUSTED",
+    "SERVER_TRANSIENT",
+    "SEMANTIC_VALIDATION_FAILURE",
+    "UNKNOWN_MISSING_FAILURE_EVIDENCE"
+  ],
+  "frozen_recovery_policy": {
+    "server_transient_extra_physical_attempts": 2,
+    "server_transient_backoff": "bounded_exponential",
+    "output_length_truncation": "one_deterministic_smaller_request_variant_then_fail_closed",
+    "context_budget_exhausted": "preflight_repartition_or_fail_closed",
+    "malformed_structured_output": "no_json_completion; at_most_one_diagnostic_replay",
+    "semantic_validation_failure": "no_automatic_retry",
+    "unknown": "fail_closed",
+    "opaque_sdk_retries": 0
+  },
+  "identity_contract": {
+    "semantic_operation_id": "stable_across_variants_and_physical_attempts",
+    "request_variant_id": "changes_when_partition_or_page_capacity_changes",
+    "physical_attempt_id": "unique_for_each_transport_call",
+    "retry_is_replicate": false
+  },
+  "gates": {
+    "r0": "root cause is evidence-classified with proven/inferred/unknown separation",
+    "r1": "actual sent schemas recursively bounded and every request has a conservative tokenizer certificate",
+    "r2": "finish_reason classified before parsing, retries bounded and fully accounted, invalid transcripts excluded",
+    "r3": "request/source-level recovery, no-write-before-certification, exact-once publication proven by fault injection",
+    "r4": "finalizer selects explicit ledger terminals and filters invalid rows",
+    "l1_l4": "all provider-free, orchestration fault-injection, regression, and semantic differential tests pass",
+    "l5": "restricted development-only live qualification passes after l1_l4"
+  },
+  "success_state": "CODE_READY_FOR_THREE_ARM_EXPERIMENT",
+  "non_success_states": ["RECOVERY_DESIGN_INCOMPLETE", "BLOCKED_EXTERNAL"],
+  "claim_boundary": "This task must stop before any formal three-arm experiment and may only authorize a separately preregistered experiment task."
+}
