@@ -332,6 +332,15 @@ class EdgePageCapacitySelection:
     rejected_capacities: tuple[int, ...]
 
 
+@dataclass(frozen=True, slots=True)
+class SchemaCapacitySelection:
+    """Largest finite schema capacity admitted by one completion budget."""
+
+    capacity: int
+    certificate: SchemaBoundCertificate
+    rejected_capacities: tuple[int, ...]
+
+
 def _canonical_schema(schema: Mapping[str, Any]) -> str:
     return json.dumps(schema, ensure_ascii=True, sort_keys=True, separators=(",", ":"))
 
@@ -712,6 +721,54 @@ def choose_edge_page_capacity(
     )
 
 
+def choose_node_schema_capacity(
+    *,
+    messages: Sequence[Any],
+    schemas_by_capacity: Mapping[int, Mapping[str, Any]],
+    requested_capacity: int,
+    token_counter: Callable[[Sequence[Any]], int],
+    context_limit: int,
+    effective_max_tokens: int,
+    safety_margin_tokens: int,
+    output_token_counter: Callable[[str], int] | None = None,
+) -> SchemaCapacitySelection:
+    """Choose the largest finite node schema that fits the actual request budget.
+
+    Turn-partitioned extraction deliberately uses a smaller completion budget
+    than the client-wide 32768-token setting.  Node schema capacity therefore
+    has to be selected against the budget of this physical request, rather than
+    against the configured client default.
+    """
+
+    if requested_capacity < 1:
+        raise ValueError("requested node schema capacity must be positive")
+    rejected: list[int] = []
+    for capacity in range(requested_capacity, 0, -1):
+        schema = schemas_by_capacity.get(capacity)
+        if schema is None:
+            rejected.append(capacity)
+            continue
+        certificate = build_schema_bound_certificate(
+            messages=messages,
+            schema=schema,
+            token_counter=token_counter,
+            context_limit=context_limit,
+            effective_max_tokens=effective_max_tokens,
+            safety_margin_tokens=safety_margin_tokens,
+            output_token_counter=output_token_counter,
+        )
+        if certificate.status == "PASS":
+            return SchemaCapacitySelection(
+                capacity=capacity,
+                certificate=certificate,
+                rejected_capacities=tuple(rejected),
+            )
+        rejected.append(capacity)
+    raise StructuredOutputBudgetError(
+        "no finite node schema capacity fits the certified context and completion budget"
+    )
+
+
 __all__ = [
     "EdgePageCapacitySelection",
     "RECOVERY_POLICY_REVISION",
@@ -721,6 +778,7 @@ __all__ = [
     "RUNTIME_RELIABILITY_PROFILE",
     "SCHEMA_REVISION",
     "SchemaBoundCertificate",
+    "SchemaCapacitySelection",
     "SchemaBoundednessError",
     "SchemaBoundednessReport",
     "SchemaIssue",
@@ -728,6 +786,7 @@ __all__ = [
     "StructuredOutputBudgetError",
     "StructuredOutputLengthTruncation",
     "StructuredOutputMalformed",
+    "choose_node_schema_capacity",
     "RecoveryAttempt",
     "RecoveryIdentity",
     "StructuredRecoveryController",

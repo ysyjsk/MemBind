@@ -25,6 +25,7 @@ from .structured_output_recovery import (
     StructuredOutputLengthTruncation,
     build_schema_bound_certificate,
     choose_edge_page_capacity,
+    choose_node_schema_capacity,
     validate_schema_boundedness,
 )
 
@@ -2221,13 +2222,47 @@ def install_local_extraction_chunking_policy(
                 entity_count = len(_distinct_entity_values(entity_info[2]))
             effective_response_model = request_response_model
             node_schema_max_items: int | None = None
+            requested_node_schema_max_items: int | None = None
+            node_schema_selection = None
             selected_edge_page_capacity: int | None = None
             if prompt_name in {
                 "extract_nodes.extract_message",
                 "extract_nodes.extract_text",
                 "extract_nodes.extract_json",
             }:
-                node_schema_max_items = _node_schema_capacity(request_messages)
+                requested_node_schema_max_items = _node_schema_capacity(request_messages)
+                node_schemas = {
+                    capacity: _bounded_node_response_model(capacity).model_json_schema()
+                    for capacity in range(requested_node_schema_max_items, 0, -1)
+                }
+                output_token_counter = _local_output_token_counter_if_available(
+                    llm_client
+                )
+                try:
+                    node_schema_selection = choose_node_schema_capacity(
+                        messages=request_messages,
+                        schemas_by_capacity=node_schemas,
+                        requested_capacity=requested_node_schema_max_items,
+                        token_counter=count_tokens,
+                        context_limit=LOCAL_CONTEXT_LIMIT,
+                        effective_max_tokens=int(request_max_tokens or requested or 0),
+                        safety_margin_tokens=safety_margin,
+                        output_token_counter=output_token_counter,
+                    )
+                except Exception as exc:
+                    # Provider-free scheduler fixtures do not have the live
+                    # tokenizer.  Preserve their historical behavior while
+                    # making the missing proof explicit in diagnostics; a
+                    # recovery-enabled live client remains fail-closed.
+                    if not getattr(llm_client, "structured_output_recovery_enabled", False):
+                        preflight_unverified_reason = type(exc).__name__
+                        node_schema_max_items = requested_node_schema_max_items
+                    else:
+                        raise LocalRuntimeConfigurationError(
+                            f"node structured-output preflight failed: {exc}"
+                        ) from exc
+                if node_schema_selection is not None:
+                    node_schema_max_items = node_schema_selection.capacity
                 effective_response_model = _bounded_node_response_model(node_schema_max_items)
             if prompt_name in {
                 "extract_nodes.extract_summaries_batch",
@@ -2336,7 +2371,9 @@ def install_local_extraction_chunking_policy(
                     else _bounded_edge_page_model(int(selected_edge_page_capacity))
                 )
             structured_certificate = None
-            if effective_response_model is not None and selection is None:
+            if node_schema_selection is not None:
+                structured_certificate = node_schema_selection.certificate
+            if effective_response_model is not None and selection is None and structured_certificate is None:
                 schema = _structured_model_schema(effective_response_model)
                 if schema is None:
                     if getattr(llm_client, "structured_output_recovery_enabled", False):
@@ -2403,6 +2440,16 @@ def install_local_extraction_chunking_policy(
             if node_schema_max_items is not None:
                 row["node_schema_max_items"] = node_schema_max_items
                 row["node_schema_name_max_chars"] = LOCAL_NODE_MAX_NAME_CHARS
+            if requested_node_schema_max_items is not None:
+                row["requested_node_schema_max_items"] = requested_node_schema_max_items
+                if node_schema_selection is not None:
+                    row["certified_node_schema_max_items"] = node_schema_selection.capacity
+                    row["node_schema_rejected_capacities"] = list(
+                        node_schema_selection.rejected_capacities
+                    )
+                if preflight_unverified_reason is not None:
+                    row["structured_output_preflight"] = "UNVERIFIED_PROVIDER_FREE"
+                    row["structured_output_preflight_reason"] = preflight_unverified_reason
             if selected_edge_page_capacity is not None:
                 row["requested_edge_page_capacity"] = int(edge_page_capacity)
                 row["certified_edge_page_capacity"] = int(selected_edge_page_capacity)

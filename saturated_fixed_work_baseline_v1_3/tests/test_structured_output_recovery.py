@@ -12,6 +12,7 @@ from saturated_fixed_work_baseline_v1_3.membind_v6_1.runtime import (
     _bounded_attribute_response_model,
     _bounded_edge_duplicate_model,
     _bounded_edge_page_model,
+    _bounded_node_response_model,
     _edge_candidate_capacities,
     install_local_extraction_chunking_policy,
 )
@@ -26,6 +27,7 @@ from saturated_fixed_work_baseline_v1_3.membind_v6_1.structured_output_recovery 
     build_schema_bound_certificate,
     classify_structured_failure,
     choose_edge_page_capacity,
+    choose_node_schema_capacity,
     parse_structured_content,
     recovery_policy_sha256,
     schema_worst_case_characters,
@@ -232,6 +234,43 @@ def test_page_capacity_selection_is_deterministic_and_never_calls_provider() -> 
         safety_margin_tokens=32,
     ).capacity
     assert calls == 4
+
+
+def test_node_schema_capacity_binds_to_partition_completion_budget() -> None:
+    schemas = {
+        capacity: _bounded_node_response_model(capacity).model_json_schema()
+        for capacity in range(16, 0, -1)
+    }
+
+    selected = choose_node_schema_capacity(
+        messages=[{"role": "user", "content": "fixture"}],
+        schemas_by_capacity=schemas,
+        requested_capacity=16,
+        token_counter=lambda _messages: 100,
+        context_limit=65_536,
+        effective_max_tokens=8_192,
+        safety_margin_tokens=32,
+    )
+
+    assert selected.capacity == 5
+    assert selected.rejected_capacities == (16, 15, 14, 13, 12, 11, 10, 9, 8, 7, 6)
+    assert selected.certificate.status == "PASS"
+    assert selected.certificate.schema_worst_case_tokens <= 8_192
+
+
+def test_node_schema_capacity_fails_closed_when_even_one_entity_cannot_fit() -> None:
+    schemas = {1: _bounded_node_response_model(1).model_json_schema()}
+
+    with pytest.raises(StructuredOutputBudgetError, match="node schema capacity"):
+        choose_node_schema_capacity(
+            messages=[{"role": "user", "content": "fixture"}],
+            schemas_by_capacity=schemas,
+            requested_capacity=1,
+            token_counter=lambda _messages: 100,
+            context_limit=65_536,
+            effective_max_tokens=1_000,
+            safety_margin_tokens=32,
+        )
 
 
 def test_finish_reason_precedes_json_parse_and_malformed_stop_is_distinct() -> None:
