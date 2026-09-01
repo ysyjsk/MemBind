@@ -9,6 +9,8 @@ from types import SimpleNamespace
 import pytest
 
 from saturated_fixed_work_baseline_v1_3.mab_live_runner import (
+    _mab_graphiti_kwargs,
+    _mab_publication_idempotency_key,
     episode_from_input,
     resolve_runtime_builder,
     run_mab_construction_async,
@@ -128,6 +130,42 @@ def test_live_runner_b0_and_b1_emit_complete_shared_contract(tmp_path: Path) -> 
     } == reliability_identity()
 
 
+def test_fresh_graphiti_uuid_lookup_and_v61_publication_identity_are_separate() -> None:
+    """RED proof for Graphiti's fresh UUID lookup semantics and V6.1 keys."""
+
+    from graphiti_core.errors import NodeNotFoundError
+    from graphiti_core.nodes import EpisodicNode
+
+    class FreshDriver:
+        graph_operations_interface = None
+        provider = None
+
+        async def execute_query(self, *_args, **_kwargs):
+            return [], None, None
+
+    fresh_uuid = "00000000-0000-4000-8000-000000000001"
+    with pytest.raises(NodeNotFoundError):
+        asyncio.run(EpisodicNode.get_by_uuid(FreshDriver(), fresh_uuid))
+
+    episode = EpisodeInput(
+        context_id="uuid-proof",
+        source_sequence=0,
+        episode_id="uuid-proof-0",
+        reference_time="2026-01-01T00:00:00Z",
+        body="proof",
+    )
+    projected = episode_from_input(episode)
+    strict_kwargs = _mab_graphiti_kwargs(projected, namespace="uuid-proof", include_uuid=False)
+    v61_kwargs = _mab_graphiti_kwargs(projected, namespace="uuid-proof", include_uuid=False)
+    graphiti_uuid = _mab_graphiti_kwargs(projected, namespace="uuid-proof", include_uuid=True)["uuid"]
+    idempotency_key = _mab_publication_idempotency_key(projected, namespace="uuid-proof")
+
+    assert "uuid" not in strict_kwargs
+    assert "uuid" not in v61_kwargs
+    assert idempotency_key != graphiti_uuid
+    assert idempotency_key.startswith("membind-idempotency:")
+
+
 def test_canonical_native_arms_omit_uuid_and_disable_resume(tmp_path: Path) -> None:
     episodes, manifest = _workload(tmp_path, count=1)
 
@@ -223,7 +261,7 @@ def test_legacy_b0_and_b1_resume_only_after_durable_local_commit(tmp_path: Path)
         assert after_graph.publications == 1
 
 
-def test_database_commit_before_journal_is_at_least_once_reconciliation(tmp_path: Path) -> None:
+def test_database_commit_before_journal_is_at_least_once_with_stable_key(tmp_path: Path) -> None:
     episodes, manifest = _workload(tmp_path, count=1)
 
     class CommitGraph(_FakeGraph):
@@ -280,7 +318,7 @@ def test_database_commit_before_journal_is_at_least_once_reconciliation(tmp_path
             )
         )
     result = run(tmp_path / "db-before-journal")
-    assert result["publication_guarantee"] == "AT_LEAST_ONCE_WITH_DURABLE_RECONCILIATION"
+    assert result["publication_guarantee"] == "AT_LEAST_ONCE_WITH_STABLE_IDEMPOTENCY_KEY"
     assert graph.publications == 2
 
 

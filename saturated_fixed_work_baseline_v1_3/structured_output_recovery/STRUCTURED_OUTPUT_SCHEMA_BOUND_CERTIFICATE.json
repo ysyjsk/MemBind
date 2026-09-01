@@ -1,5 +1,1579 @@
 {
+  "actual_entrypoint_probe": {
+    "entrypoint": "graphiti_core.Graphiti.add_episode",
+    "messages": [
+      [
+        {
+          "content": "You are an entity extraction specialist for conversational messages. NEVER extract abstract concepts, feelings, or generic words.\nDo not escape unicode characters.\n\n\nAny extracted information should be returned in the same language as it was written in. Only output non-English text when the user has written full sentences or phrases in that non-English language. Otherwise, output English.",
+          "role": "system"
+        },
+        {
+          "content": "\nNEVER extract any of the following:\n- Pronouns (you, me, I, he, she, they, we, us, it, them, him, her, this, that, those)\n- Abstract concepts or feelings (joy, balance, growth, resilience, happiness, passion, motivation)\n- Generic common nouns or bare object words (day, life, people, work, stuff, things, food, time,\n  way, tickets, supplies, clothes, keys, gear)\n- Generic media/content nouns unless uniquely identified in the node name itself (photo, pic, picture,\n  image, video, post, story)\n- Generic event/activity nouns unless uniquely identified in the node name itself (event, game, meeting,\n  class, workshop, competition)\n- Broad institutional nouns unless explicitly named or uniquely qualified (government, school, company,\n  team, office)\n- Ambiguous bare nouns whose meaning depends on sentence context rather than the node name itself\n- Sentence fragments or clauses (\"what you really care about\", \"results of that effort\")\n- Adjectives or descriptive phrases (\"amazing\", \"something different\", \"new hair color\")\n- Duplicate references to the same real-world entity. Extract each entity at most once per message,\n  even if it appears multiple times or both as a speaker label and in the body text.\n- Bare relational or kinship terms (dad, mom, mother, father, sister, brother, husband, wife,\n  spouse, son, daughter, uncle, aunt, cousin, grandma, grandpa, friend, boss, teacher, neighbor,\n  roommate) and bare animal/pet words (dog, cat, pet, puppy, kitten). These are too generic on\n  their own. Instead, qualify them with the possessor: extract \"Nisha's dad\" not \"dad\",\n  \"Jordan's dog\" not \"dog\".\n- Bare generic objects that cannot be meaningfully qualified with a possessor, brand, or\n  distinguishing detail (e.g., NEVER extract \"supplies\" from \"I picked up some supplies\")\n\nYour task is to extract **entity nodes** that are **explicitly** mentioned in the CURRENT MESSAGE.\nPronoun references such as he/she/they or this/that/those should be disambiguated to the names of the\nreference entities. Only extract distinct entities from the CURRENT MESSAGE.\n\n<ENTITY TYPES>\n[]\n</ENTITY TYPES>\n\n<PREVIOUS MESSAGES>\n[]\n</PREVIOUS MESSAGES>\n\n<CURRENT MESSAGE>\nAlice visited Acme.\n</CURRENT MESSAGE>\n\n1. **Speaker Extraction**: Always extract the speaker (the part before the colon `:` in each dialogue line) as the first entity node.\n   - If the speaker is mentioned again in the message, treat both mentions as a **single entity**.\n\n2. **Entity Identification**:\n   - Extract named entities and specific, concrete things that are **explicitly** mentioned in the CURRENT MESSAGE.\n   - Only extract entities that are specific enough to be uniquely identifiable. Ask: \"Could this have its own Wikipedia article or database entry, OR is it specific enough to distinguish from other items of the same category within this conversation?\"\n   - For objects, possessions, and physical items, extract when they are specific enough\n     to distinguish from other items of the same category. SHOULD be extracted:\n     - Brand-named items (\"Gamecube\", \"Ford Mustang\", \"Moen faucet\")\n     - Qualified items (\"wool coat\", \"red and purple lighting\", \"cracked windshield\",\n       \"dog leash\")\n     - Items with a concrete distinguishing descriptor (color, material, size, model,\n       owner, specific use)\n     Should NOT be extracted:\n     - Bare head nouns alone (\"car\", \"coat\", \"game\", \"lighting\", \"windshield\")\n   - When a speaker or named person refers to a relative, pet, or associate using a bare term\n     (e.g., \"my dad\", \"his cat\"), extract the entity qualified with the possessor's name\n     (e.g., \"Nisha's dad\", \"Jordan's cat\"). Do NOT extract the bare term alone.\n   - **Exclude** entities mentioned only in the PREVIOUS MESSAGES (they are for context only).\n\n3. **Entity Classification**:\n   - Use the descriptions in ENTITY TYPES to classify each extracted entity.\n   - Assign the appropriate `entity_type_id` for each one.\n\n4. **Exclusions**:\n   - Do NOT extract entities representing relationships or actions.\n   - Do NOT extract dates, times, or other temporal information \u2014 these will be handled separately.\n   - When in doubt, do NOT extract.\n\n5. **Specificity**:\n   - Always use the **most specific form** mentioned in the message. If the message says \"road cycling\",\n     extract \"road cycling\" not \"cycling\". If it says \"wool coat\", extract \"wool coat\" not \"coat\".\n   - When context makes an object's type clear, include that context in the name. For example, if the\n     message mentions forgetting a leash while discussing a dog walk, extract \"dog leash\" not \"leash\".\n   - If a phrase would not be distinguishable when read alone later, do NOT extract it.\n\n6. **Formatting**:\n   - Be **explicit and unambiguous** in naming entities (e.g., use full names when available).\n\n<EXAMPLE>\nMessage: \"Jordan: We just moved to Denver last month. My spouse started a new role at Lockheed Martin and I enrolled in a ceramics workshop at the Belmont Arts Center.\"\nGood extractions: \"Jordan\" (speaker), \"Denver\" (Location), \"Lockheed Martin\" (Organization), \"Belmont Arts Center\" (Location), \"ceramics\" (Topic)\nDo NOT extract: \"spouse\" (generic reference \u2014 extract only if named), \"new role\" (not an entity), \"last month\" (temporal), \"we\" (pronoun)\n</EXAMPLE>\n\n<EXAMPLE>\nMessage: \"Nisha: My dad is visiting next week. He loves walking his dogs in Riverside Park.\"\nGood extractions: \"Nisha\" (speaker), \"Nisha's dad\" (Person), \"Riverside Park\" (Location)\nDo NOT extract: \"dad\" (bare relational term \u2014 qualify as \"Nisha's dad\"), \"dogs\" (bare animal word \u2014 no specific identity), \"next week\" (temporal)\n</EXAMPLE>\n\n<EXAMPLE>\nMessage: \"Mary: I forgot Trigger's leash so I couldn't take him on a dog walk. After that I went road cycling in my new wool coat.\"\nGood extractions: \"Mary\" (speaker), \"Trigger\" (animal name), \"dog leash\" (Object), \"road cycling\" (Topic), \"wool coat\" (Object)\nDo NOT extract: \"leash\" (too generic \u2014 use \"dog leash\"), \"cycling\" (too generic \u2014 use \"road cycling\"), \"coat\" (too generic \u2014 use \"wool coat\"), \"dog walk\" (activity, not an entity)\n</EXAMPLE>\n\n<EXAMPLE>\nMessage: \"Nate: My gaming room has red and purple lighting and I mostly play on a Gamecube. Last week the windshield on my Mustang got cracked.\"\nGood extractions: \"Nate\" (speaker), \"gaming room\" (Object), \"red and purple lighting\" (Object), \"Gamecube\" (Object), \"Mustang\" (Object), \"cracked windshield\" (Object)\nDo NOT extract: \"lighting\" (bare head noun \u2014 use \"red and purple lighting\"), \"windshield\" (bare head noun \u2014 use \"cracked windshield\"), \"week\" (temporal)\n</EXAMPLE>\n\n<EXAMPLE>\nMessage: \"Alex: I shared a pic from the game after the event.\"\nGood extractions: \"Alex\" (speaker)\nDo NOT extract: \"pic\" (generic media noun), \"game\" (generic event noun), \"event\" (generic event noun)\n</EXAMPLE>\n\n<EXAMPLE>\nMessage: \"Jordan: We won by a tight score. Scoring that last basket felt incredible.\"\nGood extractions: \"Jordan\" (speaker)\nDo NOT extract: \"basket\" (ambiguous bare noun that depends on sentence context)\n</EXAMPLE>\n\n\n",
+          "role": "user"
+        }
+      ],
+      [
+        {
+          "content": "You are an entity extraction specialist for conversational messages. NEVER extract abstract concepts, feelings, or generic words.\nDo not escape unicode characters.\n\n\nAny extracted information should be returned in the same language as it was written in. Only output non-English text when the user has written full sentences or phrases in that non-English language. Otherwise, output English.",
+          "role": "system"
+        },
+        {
+          "content": "\nNEVER extract any of the following:\n- Pronouns (you, me, I, he, she, they, we, us, it, them, him, her, this, that, those)\n- Abstract concepts or feelings (joy, balance, growth, resilience, happiness, passion, motivation)\n- Generic common nouns or bare object words (day, life, people, work, stuff, things, food, time,\n  way, tickets, supplies, clothes, keys, gear)\n- Generic media/content nouns unless uniquely identified in the node name itself (photo, pic, picture,\n  image, video, post, story)\n- Generic event/activity nouns unless uniquely identified in the node name itself (event, game, meeting,\n  class, workshop, competition)\n- Broad institutional nouns unless explicitly named or uniquely qualified (government, school, company,\n  team, office)\n- Ambiguous bare nouns whose meaning depends on sentence context rather than the node name itself\n- Sentence fragments or clauses (\"what you really care about\", \"results of that effort\")\n- Adjectives or descriptive phrases (\"amazing\", \"something different\", \"new hair color\")\n- Duplicate references to the same real-world entity. Extract each entity at most once per message,\n  even if it appears multiple times or both as a speaker label and in the body text.\n- Bare relational or kinship terms (dad, mom, mother, father, sister, brother, husband, wife,\n  spouse, son, daughter, uncle, aunt, cousin, grandma, grandpa, friend, boss, teacher, neighbor,\n  roommate) and bare animal/pet words (dog, cat, pet, puppy, kitten). These are too generic on\n  their own. Instead, qualify them with the possessor: extract \"Nisha's dad\" not \"dad\",\n  \"Jordan's dog\" not \"dog\".\n- Bare generic objects that cannot be meaningfully qualified with a possessor, brand, or\n  distinguishing detail (e.g., NEVER extract \"supplies\" from \"I picked up some supplies\")\n\nYour task is to extract **entity nodes** that are **explicitly** mentioned in the CURRENT MESSAGE.\nPronoun references such as he/she/they or this/that/those should be disambiguated to the names of the\nreference entities. Only extract distinct entities from the CURRENT MESSAGE.\n\n<ENTITY TYPES>\n[]\n</ENTITY TYPES>\n\n<PREVIOUS MESSAGES>\n[]\n</PREVIOUS MESSAGES>\n\n<CURRENT MESSAGE>\nAlice visited Acme.\n</CURRENT MESSAGE>\n\n1. **Speaker Extraction**: Always extract the speaker (the part before the colon `:` in each dialogue line) as the first entity node.\n   - If the speaker is mentioned again in the message, treat both mentions as a **single entity**.\n\n2. **Entity Identification**:\n   - Extract named entities and specific, concrete things that are **explicitly** mentioned in the CURRENT MESSAGE.\n   - Only extract entities that are specific enough to be uniquely identifiable. Ask: \"Could this have its own Wikipedia article or database entry, OR is it specific enough to distinguish from other items of the same category within this conversation?\"\n   - For objects, possessions, and physical items, extract when they are specific enough\n     to distinguish from other items of the same category. SHOULD be extracted:\n     - Brand-named items (\"Gamecube\", \"Ford Mustang\", \"Moen faucet\")\n     - Qualified items (\"wool coat\", \"red and purple lighting\", \"cracked windshield\",\n       \"dog leash\")\n     - Items with a concrete distinguishing descriptor (color, material, size, model,\n       owner, specific use)\n     Should NOT be extracted:\n     - Bare head nouns alone (\"car\", \"coat\", \"game\", \"lighting\", \"windshield\")\n   - When a speaker or named person refers to a relative, pet, or associate using a bare term\n     (e.g., \"my dad\", \"his cat\"), extract the entity qualified with the possessor's name\n     (e.g., \"Nisha's dad\", \"Jordan's cat\"). Do NOT extract the bare term alone.\n   - **Exclude** entities mentioned only in the PREVIOUS MESSAGES (they are for context only).\n\n3. **Entity Classification**:\n   - Use the descriptions in ENTITY TYPES to classify each extracted entity.\n   - Assign the appropriate `entity_type_id` for each one.\n\n4. **Exclusions**:\n   - Do NOT extract entities representing relationships or actions.\n   - Do NOT extract dates, times, or other temporal information \u2014 these will be handled separately.\n   - When in doubt, do NOT extract.\n\n5. **Specificity**:\n   - Always use the **most specific form** mentioned in the message. If the message says \"road cycling\",\n     extract \"road cycling\" not \"cycling\". If it says \"wool coat\", extract \"wool coat\" not \"coat\".\n   - When context makes an object's type clear, include that context in the name. For example, if the\n     message mentions forgetting a leash while discussing a dog walk, extract \"dog leash\" not \"leash\".\n   - If a phrase would not be distinguishable when read alone later, do NOT extract it.\n\n6. **Formatting**:\n   - Be **explicit and unambiguous** in naming entities (e.g., use full names when available).\n\n<EXAMPLE>\nMessage: \"Jordan: We just moved to Denver last month. My spouse started a new role at Lockheed Martin and I enrolled in a ceramics workshop at the Belmont Arts Center.\"\nGood extractions: \"Jordan\" (speaker), \"Denver\" (Location), \"Lockheed Martin\" (Organization), \"Belmont Arts Center\" (Location), \"ceramics\" (Topic)\nDo NOT extract: \"spouse\" (generic reference \u2014 extract only if named), \"new role\" (not an entity), \"last month\" (temporal), \"we\" (pronoun)\n</EXAMPLE>\n\n<EXAMPLE>\nMessage: \"Nisha: My dad is visiting next week. He loves walking his dogs in Riverside Park.\"\nGood extractions: \"Nisha\" (speaker), \"Nisha's dad\" (Person), \"Riverside Park\" (Location)\nDo NOT extract: \"dad\" (bare relational term \u2014 qualify as \"Nisha's dad\"), \"dogs\" (bare animal word \u2014 no specific identity), \"next week\" (temporal)\n</EXAMPLE>\n\n<EXAMPLE>\nMessage: \"Mary: I forgot Trigger's leash so I couldn't take him on a dog walk. After that I went road cycling in my new wool coat.\"\nGood extractions: \"Mary\" (speaker), \"Trigger\" (animal name), \"dog leash\" (Object), \"road cycling\" (Topic), \"wool coat\" (Object)\nDo NOT extract: \"leash\" (too generic \u2014 use \"dog leash\"), \"cycling\" (too generic \u2014 use \"road cycling\"), \"coat\" (too generic \u2014 use \"wool coat\"), \"dog walk\" (activity, not an entity)\n</EXAMPLE>\n\n<EXAMPLE>\nMessage: \"Nate: My gaming room has red and purple lighting and I mostly play on a Gamecube. Last week the windshield on my Mustang got cracked.\"\nGood extractions: \"Nate\" (speaker), \"gaming room\" (Object), \"red and purple lighting\" (Object), \"Gamecube\" (Object), \"Mustang\" (Object), \"cracked windshield\" (Object)\nDo NOT extract: \"lighting\" (bare head noun \u2014 use \"red and purple lighting\"), \"windshield\" (bare head noun \u2014 use \"cracked windshield\"), \"week\" (temporal)\n</EXAMPLE>\n\n<EXAMPLE>\nMessage: \"Alex: I shared a pic from the game after the event.\"\nGood extractions: \"Alex\" (speaker)\nDo NOT extract: \"pic\" (generic media noun), \"game\" (generic event noun), \"event\" (generic event noun)\n</EXAMPLE>\n\n<EXAMPLE>\nMessage: \"Jordan: We won by a tight score. Scoring that last basket felt incredible.\"\nGood extractions: \"Jordan\" (speaker)\nDo NOT extract: \"basket\" (ambiguous bare noun that depends on sentence context)\n</EXAMPLE>\n\n\n",
+          "role": "user"
+        }
+      ],
+      [
+        {
+          "content": "You are an entity extraction specialist for conversational messages. NEVER extract abstract concepts, feelings, or generic words.\nDo not escape unicode characters.\n\n\nAny extracted information should be returned in the same language as it was written in. Only output non-English text when the user has written full sentences or phrases in that non-English language. Otherwise, output English.",
+          "role": "system"
+        },
+        {
+          "content": "\nNEVER extract any of the following:\n- Pronouns (you, me, I, he, she, they, we, us, it, them, him, her, this, that, those)\n- Abstract concepts or feelings (joy, balance, growth, resilience, happiness, passion, motivation)\n- Generic common nouns or bare object words (day, life, people, work, stuff, things, food, time,\n  way, tickets, supplies, clothes, keys, gear)\n- Generic media/content nouns unless uniquely identified in the node name itself (photo, pic, picture,\n  image, video, post, story)\n- Generic event/activity nouns unless uniquely identified in the node name itself (event, game, meeting,\n  class, workshop, competition)\n- Broad institutional nouns unless explicitly named or uniquely qualified (government, school, company,\n  team, office)\n- Ambiguous bare nouns whose meaning depends on sentence context rather than the node name itself\n- Sentence fragments or clauses (\"what you really care about\", \"results of that effort\")\n- Adjectives or descriptive phrases (\"amazing\", \"something different\", \"new hair color\")\n- Duplicate references to the same real-world entity. Extract each entity at most once per message,\n  even if it appears multiple times or both as a speaker label and in the body text.\n- Bare relational or kinship terms (dad, mom, mother, father, sister, brother, husband, wife,\n  spouse, son, daughter, uncle, aunt, cousin, grandma, grandpa, friend, boss, teacher, neighbor,\n  roommate) and bare animal/pet words (dog, cat, pet, puppy, kitten). These are too generic on\n  their own. Instead, qualify them with the possessor: extract \"Nisha's dad\" not \"dad\",\n  \"Jordan's dog\" not \"dog\".\n- Bare generic objects that cannot be meaningfully qualified with a possessor, brand, or\n  distinguishing detail (e.g., NEVER extract \"supplies\" from \"I picked up some supplies\")\n\nYour task is to extract **entity nodes** that are **explicitly** mentioned in the CURRENT MESSAGE.\nPronoun references such as he/she/they or this/that/those should be disambiguated to the names of the\nreference entities. Only extract distinct entities from the CURRENT MESSAGE.\n\n<ENTITY TYPES>\n[]\n</ENTITY TYPES>\n\n<PREVIOUS MESSAGES>\n[]\n</PREVIOUS MESSAGES>\n\n<CURRENT MESSAGE>\nAlice visited Acme.\n</CURRENT MESSAGE>\n\n1. **Speaker Extraction**: Always extract the speaker (the part before the colon `:` in each dialogue line) as the first entity node.\n   - If the speaker is mentioned again in the message, treat both mentions as a **single entity**.\n\n2. **Entity Identification**:\n   - Extract named entities and specific, concrete things that are **explicitly** mentioned in the CURRENT MESSAGE.\n   - Only extract entities that are specific enough to be uniquely identifiable. Ask: \"Could this have its own Wikipedia article or database entry, OR is it specific enough to distinguish from other items of the same category within this conversation?\"\n   - For objects, possessions, and physical items, extract when they are specific enough\n     to distinguish from other items of the same category. SHOULD be extracted:\n     - Brand-named items (\"Gamecube\", \"Ford Mustang\", \"Moen faucet\")\n     - Qualified items (\"wool coat\", \"red and purple lighting\", \"cracked windshield\",\n       \"dog leash\")\n     - Items with a concrete distinguishing descriptor (color, material, size, model,\n       owner, specific use)\n     Should NOT be extracted:\n     - Bare head nouns alone (\"car\", \"coat\", \"game\", \"lighting\", \"windshield\")\n   - When a speaker or named person refers to a relative, pet, or associate using a bare term\n     (e.g., \"my dad\", \"his cat\"), extract the entity qualified with the possessor's name\n     (e.g., \"Nisha's dad\", \"Jordan's cat\"). Do NOT extract the bare term alone.\n   - **Exclude** entities mentioned only in the PREVIOUS MESSAGES (they are for context only).\n\n3. **Entity Classification**:\n   - Use the descriptions in ENTITY TYPES to classify each extracted entity.\n   - Assign the appropriate `entity_type_id` for each one.\n\n4. **Exclusions**:\n   - Do NOT extract entities representing relationships or actions.\n   - Do NOT extract dates, times, or other temporal information \u2014 these will be handled separately.\n   - When in doubt, do NOT extract.\n\n5. **Specificity**:\n   - Always use the **most specific form** mentioned in the message. If the message says \"road cycling\",\n     extract \"road cycling\" not \"cycling\". If it says \"wool coat\", extract \"wool coat\" not \"coat\".\n   - When context makes an object's type clear, include that context in the name. For example, if the\n     message mentions forgetting a leash while discussing a dog walk, extract \"dog leash\" not \"leash\".\n   - If a phrase would not be distinguishable when read alone later, do NOT extract it.\n\n6. **Formatting**:\n   - Be **explicit and unambiguous** in naming entities (e.g., use full names when available).\n\n<EXAMPLE>\nMessage: \"Jordan: We just moved to Denver last month. My spouse started a new role at Lockheed Martin and I enrolled in a ceramics workshop at the Belmont Arts Center.\"\nGood extractions: \"Jordan\" (speaker), \"Denver\" (Location), \"Lockheed Martin\" (Organization), \"Belmont Arts Center\" (Location), \"ceramics\" (Topic)\nDo NOT extract: \"spouse\" (generic reference \u2014 extract only if named), \"new role\" (not an entity), \"last month\" (temporal), \"we\" (pronoun)\n</EXAMPLE>\n\n<EXAMPLE>\nMessage: \"Nisha: My dad is visiting next week. He loves walking his dogs in Riverside Park.\"\nGood extractions: \"Nisha\" (speaker), \"Nisha's dad\" (Person), \"Riverside Park\" (Location)\nDo NOT extract: \"dad\" (bare relational term \u2014 qualify as \"Nisha's dad\"), \"dogs\" (bare animal word \u2014 no specific identity), \"next week\" (temporal)\n</EXAMPLE>\n\n<EXAMPLE>\nMessage: \"Mary: I forgot Trigger's leash so I couldn't take him on a dog walk. After that I went road cycling in my new wool coat.\"\nGood extractions: \"Mary\" (speaker), \"Trigger\" (animal name), \"dog leash\" (Object), \"road cycling\" (Topic), \"wool coat\" (Object)\nDo NOT extract: \"leash\" (too generic \u2014 use \"dog leash\"), \"cycling\" (too generic \u2014 use \"road cycling\"), \"coat\" (too generic \u2014 use \"wool coat\"), \"dog walk\" (activity, not an entity)\n</EXAMPLE>\n\n<EXAMPLE>\nMessage: \"Nate: My gaming room has red and purple lighting and I mostly play on a Gamecube. Last week the windshield on my Mustang got cracked.\"\nGood extractions: \"Nate\" (speaker), \"gaming room\" (Object), \"red and purple lighting\" (Object), \"Gamecube\" (Object), \"Mustang\" (Object), \"cracked windshield\" (Object)\nDo NOT extract: \"lighting\" (bare head noun \u2014 use \"red and purple lighting\"), \"windshield\" (bare head noun \u2014 use \"cracked windshield\"), \"week\" (temporal)\n</EXAMPLE>\n\n<EXAMPLE>\nMessage: \"Alex: I shared a pic from the game after the event.\"\nGood extractions: \"Alex\" (speaker)\nDo NOT extract: \"pic\" (generic media noun), \"game\" (generic event noun), \"event\" (generic event noun)\n</EXAMPLE>\n\n<EXAMPLE>\nMessage: \"Jordan: We won by a tight score. Scoring that last basket felt incredible.\"\nGood extractions: \"Jordan\" (speaker)\nDo NOT extract: \"basket\" (ambiguous bare noun that depends on sentence context)\n</EXAMPLE>\n\n\n",
+          "role": "user"
+        }
+      ],
+      [
+        {
+          "content": "You are an entity extraction specialist for conversational messages. NEVER extract abstract concepts, feelings, or generic words.\nDo not escape unicode characters.\n\n\nAny extracted information should be returned in the same language as it was written in. Only output non-English text when the user has written full sentences or phrases in that non-English language. Otherwise, output English.",
+          "role": "system"
+        },
+        {
+          "content": "\nNEVER extract any of the following:\n- Pronouns (you, me, I, he, she, they, we, us, it, them, him, her, this, that, those)\n- Abstract concepts or feelings (joy, balance, growth, resilience, happiness, passion, motivation)\n- Generic common nouns or bare object words (day, life, people, work, stuff, things, food, time,\n  way, tickets, supplies, clothes, keys, gear)\n- Generic media/content nouns unless uniquely identified in the node name itself (photo, pic, picture,\n  image, video, post, story)\n- Generic event/activity nouns unless uniquely identified in the node name itself (event, game, meeting,\n  class, workshop, competition)\n- Broad institutional nouns unless explicitly named or uniquely qualified (government, school, company,\n  team, office)\n- Ambiguous bare nouns whose meaning depends on sentence context rather than the node name itself\n- Sentence fragments or clauses (\"what you really care about\", \"results of that effort\")\n- Adjectives or descriptive phrases (\"amazing\", \"something different\", \"new hair color\")\n- Duplicate references to the same real-world entity. Extract each entity at most once per message,\n  even if it appears multiple times or both as a speaker label and in the body text.\n- Bare relational or kinship terms (dad, mom, mother, father, sister, brother, husband, wife,\n  spouse, son, daughter, uncle, aunt, cousin, grandma, grandpa, friend, boss, teacher, neighbor,\n  roommate) and bare animal/pet words (dog, cat, pet, puppy, kitten). These are too generic on\n  their own. Instead, qualify them with the possessor: extract \"Nisha's dad\" not \"dad\",\n  \"Jordan's dog\" not \"dog\".\n- Bare generic objects that cannot be meaningfully qualified with a possessor, brand, or\n  distinguishing detail (e.g., NEVER extract \"supplies\" from \"I picked up some supplies\")\n\nYour task is to extract **entity nodes** that are **explicitly** mentioned in the CURRENT MESSAGE.\nPronoun references such as he/she/they or this/that/those should be disambiguated to the names of the\nreference entities. Only extract distinct entities from the CURRENT MESSAGE.\n\n<ENTITY TYPES>\n[]\n</ENTITY TYPES>\n\n<PREVIOUS MESSAGES>\n[]\n</PREVIOUS MESSAGES>\n\n<CURRENT MESSAGE>\nAlice visited Acme.\n</CURRENT MESSAGE>\n\n1. **Speaker Extraction**: Always extract the speaker (the part before the colon `:` in each dialogue line) as the first entity node.\n   - If the speaker is mentioned again in the message, treat both mentions as a **single entity**.\n\n2. **Entity Identification**:\n   - Extract named entities and specific, concrete things that are **explicitly** mentioned in the CURRENT MESSAGE.\n   - Only extract entities that are specific enough to be uniquely identifiable. Ask: \"Could this have its own Wikipedia article or database entry, OR is it specific enough to distinguish from other items of the same category within this conversation?\"\n   - For objects, possessions, and physical items, extract when they are specific enough\n     to distinguish from other items of the same category. SHOULD be extracted:\n     - Brand-named items (\"Gamecube\", \"Ford Mustang\", \"Moen faucet\")\n     - Qualified items (\"wool coat\", \"red and purple lighting\", \"cracked windshield\",\n       \"dog leash\")\n     - Items with a concrete distinguishing descriptor (color, material, size, model,\n       owner, specific use)\n     Should NOT be extracted:\n     - Bare head nouns alone (\"car\", \"coat\", \"game\", \"lighting\", \"windshield\")\n   - When a speaker or named person refers to a relative, pet, or associate using a bare term\n     (e.g., \"my dad\", \"his cat\"), extract the entity qualified with the possessor's name\n     (e.g., \"Nisha's dad\", \"Jordan's cat\"). Do NOT extract the bare term alone.\n   - **Exclude** entities mentioned only in the PREVIOUS MESSAGES (they are for context only).\n\n3. **Entity Classification**:\n   - Use the descriptions in ENTITY TYPES to classify each extracted entity.\n   - Assign the appropriate `entity_type_id` for each one.\n\n4. **Exclusions**:\n   - Do NOT extract entities representing relationships or actions.\n   - Do NOT extract dates, times, or other temporal information \u2014 these will be handled separately.\n   - When in doubt, do NOT extract.\n\n5. **Specificity**:\n   - Always use the **most specific form** mentioned in the message. If the message says \"road cycling\",\n     extract \"road cycling\" not \"cycling\". If it says \"wool coat\", extract \"wool coat\" not \"coat\".\n   - When context makes an object's type clear, include that context in the name. For example, if the\n     message mentions forgetting a leash while discussing a dog walk, extract \"dog leash\" not \"leash\".\n   - If a phrase would not be distinguishable when read alone later, do NOT extract it.\n\n6. **Formatting**:\n   - Be **explicit and unambiguous** in naming entities (e.g., use full names when available).\n\n<EXAMPLE>\nMessage: \"Jordan: We just moved to Denver last month. My spouse started a new role at Lockheed Martin and I enrolled in a ceramics workshop at the Belmont Arts Center.\"\nGood extractions: \"Jordan\" (speaker), \"Denver\" (Location), \"Lockheed Martin\" (Organization), \"Belmont Arts Center\" (Location), \"ceramics\" (Topic)\nDo NOT extract: \"spouse\" (generic reference \u2014 extract only if named), \"new role\" (not an entity), \"last month\" (temporal), \"we\" (pronoun)\n</EXAMPLE>\n\n<EXAMPLE>\nMessage: \"Nisha: My dad is visiting next week. He loves walking his dogs in Riverside Park.\"\nGood extractions: \"Nisha\" (speaker), \"Nisha's dad\" (Person), \"Riverside Park\" (Location)\nDo NOT extract: \"dad\" (bare relational term \u2014 qualify as \"Nisha's dad\"), \"dogs\" (bare animal word \u2014 no specific identity), \"next week\" (temporal)\n</EXAMPLE>\n\n<EXAMPLE>\nMessage: \"Mary: I forgot Trigger's leash so I couldn't take him on a dog walk. After that I went road cycling in my new wool coat.\"\nGood extractions: \"Mary\" (speaker), \"Trigger\" (animal name), \"dog leash\" (Object), \"road cycling\" (Topic), \"wool coat\" (Object)\nDo NOT extract: \"leash\" (too generic \u2014 use \"dog leash\"), \"cycling\" (too generic \u2014 use \"road cycling\"), \"coat\" (too generic \u2014 use \"wool coat\"), \"dog walk\" (activity, not an entity)\n</EXAMPLE>\n\n<EXAMPLE>\nMessage: \"Nate: My gaming room has red and purple lighting and I mostly play on a Gamecube. Last week the windshield on my Mustang got cracked.\"\nGood extractions: \"Nate\" (speaker), \"gaming room\" (Object), \"red and purple lighting\" (Object), \"Gamecube\" (Object), \"Mustang\" (Object), \"cracked windshield\" (Object)\nDo NOT extract: \"lighting\" (bare head noun \u2014 use \"red and purple lighting\"), \"windshield\" (bare head noun \u2014 use \"cracked windshield\"), \"week\" (temporal)\n</EXAMPLE>\n\n<EXAMPLE>\nMessage: \"Alex: I shared a pic from the game after the event.\"\nGood extractions: \"Alex\" (speaker)\nDo NOT extract: \"pic\" (generic media noun), \"game\" (generic event noun), \"event\" (generic event noun)\n</EXAMPLE>\n\n<EXAMPLE>\nMessage: \"Jordan: We won by a tight score. Scoring that last basket felt incredible.\"\nGood extractions: \"Jordan\" (speaker)\nDo NOT extract: \"basket\" (ambiguous bare noun that depends on sentence context)\n</EXAMPLE>\n\n\n",
+          "role": "user"
+        }
+      ],
+      [
+        {
+          "content": "You are an entity extraction specialist for conversational messages. NEVER extract abstract concepts, feelings, or generic words.\nDo not escape unicode characters.\n\n\nAny extracted information should be returned in the same language as it was written in. Only output non-English text when the user has written full sentences or phrases in that non-English language. Otherwise, output English.",
+          "role": "system"
+        },
+        {
+          "content": "\nNEVER extract any of the following:\n- Pronouns (you, me, I, he, she, they, we, us, it, them, him, her, this, that, those)\n- Abstract concepts or feelings (joy, balance, growth, resilience, happiness, passion, motivation)\n- Generic common nouns or bare object words (day, life, people, work, stuff, things, food, time,\n  way, tickets, supplies, clothes, keys, gear)\n- Generic media/content nouns unless uniquely identified in the node name itself (photo, pic, picture,\n  image, video, post, story)\n- Generic event/activity nouns unless uniquely identified in the node name itself (event, game, meeting,\n  class, workshop, competition)\n- Broad institutional nouns unless explicitly named or uniquely qualified (government, school, company,\n  team, office)\n- Ambiguous bare nouns whose meaning depends on sentence context rather than the node name itself\n- Sentence fragments or clauses (\"what you really care about\", \"results of that effort\")\n- Adjectives or descriptive phrases (\"amazing\", \"something different\", \"new hair color\")\n- Duplicate references to the same real-world entity. Extract each entity at most once per message,\n  even if it appears multiple times or both as a speaker label and in the body text.\n- Bare relational or kinship terms (dad, mom, mother, father, sister, brother, husband, wife,\n  spouse, son, daughter, uncle, aunt, cousin, grandma, grandpa, friend, boss, teacher, neighbor,\n  roommate) and bare animal/pet words (dog, cat, pet, puppy, kitten). These are too generic on\n  their own. Instead, qualify them with the possessor: extract \"Nisha's dad\" not \"dad\",\n  \"Jordan's dog\" not \"dog\".\n- Bare generic objects that cannot be meaningfully qualified with a possessor, brand, or\n  distinguishing detail (e.g., NEVER extract \"supplies\" from \"I picked up some supplies\")\n\nYour task is to extract **entity nodes** that are **explicitly** mentioned in the CURRENT MESSAGE.\nPronoun references such as he/she/they or this/that/those should be disambiguated to the names of the\nreference entities. Only extract distinct entities from the CURRENT MESSAGE.\n\n<ENTITY TYPES>\n[]\n</ENTITY TYPES>\n\n<PREVIOUS MESSAGES>\n[]\n</PREVIOUS MESSAGES>\n\n<CURRENT MESSAGE>\nAlice visited Acme.\n</CURRENT MESSAGE>\n\n1. **Speaker Extraction**: Always extract the speaker (the part before the colon `:` in each dialogue line) as the first entity node.\n   - If the speaker is mentioned again in the message, treat both mentions as a **single entity**.\n\n2. **Entity Identification**:\n   - Extract named entities and specific, concrete things that are **explicitly** mentioned in the CURRENT MESSAGE.\n   - Only extract entities that are specific enough to be uniquely identifiable. Ask: \"Could this have its own Wikipedia article or database entry, OR is it specific enough to distinguish from other items of the same category within this conversation?\"\n   - For objects, possessions, and physical items, extract when they are specific enough\n     to distinguish from other items of the same category. SHOULD be extracted:\n     - Brand-named items (\"Gamecube\", \"Ford Mustang\", \"Moen faucet\")\n     - Qualified items (\"wool coat\", \"red and purple lighting\", \"cracked windshield\",\n       \"dog leash\")\n     - Items with a concrete distinguishing descriptor (color, material, size, model,\n       owner, specific use)\n     Should NOT be extracted:\n     - Bare head nouns alone (\"car\", \"coat\", \"game\", \"lighting\", \"windshield\")\n   - When a speaker or named person refers to a relative, pet, or associate using a bare term\n     (e.g., \"my dad\", \"his cat\"), extract the entity qualified with the possessor's name\n     (e.g., \"Nisha's dad\", \"Jordan's cat\"). Do NOT extract the bare term alone.\n   - **Exclude** entities mentioned only in the PREVIOUS MESSAGES (they are for context only).\n\n3. **Entity Classification**:\n   - Use the descriptions in ENTITY TYPES to classify each extracted entity.\n   - Assign the appropriate `entity_type_id` for each one.\n\n4. **Exclusions**:\n   - Do NOT extract entities representing relationships or actions.\n   - Do NOT extract dates, times, or other temporal information \u2014 these will be handled separately.\n   - When in doubt, do NOT extract.\n\n5. **Specificity**:\n   - Always use the **most specific form** mentioned in the message. If the message says \"road cycling\",\n     extract \"road cycling\" not \"cycling\". If it says \"wool coat\", extract \"wool coat\" not \"coat\".\n   - When context makes an object's type clear, include that context in the name. For example, if the\n     message mentions forgetting a leash while discussing a dog walk, extract \"dog leash\" not \"leash\".\n   - If a phrase would not be distinguishable when read alone later, do NOT extract it.\n\n6. **Formatting**:\n   - Be **explicit and unambiguous** in naming entities (e.g., use full names when available).\n\n<EXAMPLE>\nMessage: \"Jordan: We just moved to Denver last month. My spouse started a new role at Lockheed Martin and I enrolled in a ceramics workshop at the Belmont Arts Center.\"\nGood extractions: \"Jordan\" (speaker), \"Denver\" (Location), \"Lockheed Martin\" (Organization), \"Belmont Arts Center\" (Location), \"ceramics\" (Topic)\nDo NOT extract: \"spouse\" (generic reference \u2014 extract only if named), \"new role\" (not an entity), \"last month\" (temporal), \"we\" (pronoun)\n</EXAMPLE>\n\n<EXAMPLE>\nMessage: \"Nisha: My dad is visiting next week. He loves walking his dogs in Riverside Park.\"\nGood extractions: \"Nisha\" (speaker), \"Nisha's dad\" (Person), \"Riverside Park\" (Location)\nDo NOT extract: \"dad\" (bare relational term \u2014 qualify as \"Nisha's dad\"), \"dogs\" (bare animal word \u2014 no specific identity), \"next week\" (temporal)\n</EXAMPLE>\n\n<EXAMPLE>\nMessage: \"Mary: I forgot Trigger's leash so I couldn't take him on a dog walk. After that I went road cycling in my new wool coat.\"\nGood extractions: \"Mary\" (speaker), \"Trigger\" (animal name), \"dog leash\" (Object), \"road cycling\" (Topic), \"wool coat\" (Object)\nDo NOT extract: \"leash\" (too generic \u2014 use \"dog leash\"), \"cycling\" (too generic \u2014 use \"road cycling\"), \"coat\" (too generic \u2014 use \"wool coat\"), \"dog walk\" (activity, not an entity)\n</EXAMPLE>\n\n<EXAMPLE>\nMessage: \"Nate: My gaming room has red and purple lighting and I mostly play on a Gamecube. Last week the windshield on my Mustang got cracked.\"\nGood extractions: \"Nate\" (speaker), \"gaming room\" (Object), \"red and purple lighting\" (Object), \"Gamecube\" (Object), \"Mustang\" (Object), \"cracked windshield\" (Object)\nDo NOT extract: \"lighting\" (bare head noun \u2014 use \"red and purple lighting\"), \"windshield\" (bare head noun \u2014 use \"cracked windshield\"), \"week\" (temporal)\n</EXAMPLE>\n\n<EXAMPLE>\nMessage: \"Alex: I shared a pic from the game after the event.\"\nGood extractions: \"Alex\" (speaker)\nDo NOT extract: \"pic\" (generic media noun), \"game\" (generic event noun), \"event\" (generic event noun)\n</EXAMPLE>\n\n<EXAMPLE>\nMessage: \"Jordan: We won by a tight score. Scoring that last basket felt incredible.\"\nGood extractions: \"Jordan\" (speaker)\nDo NOT extract: \"basket\" (ambiguous bare noun that depends on sentence context)\n</EXAMPLE>\n\n\n",
+          "role": "user"
+        }
+      ]
+    ],
+    "non_empty_response_count": 5,
+    "raw_responses": [
+      {
+        "choices": [
+          {
+            "finish_reason": "stop",
+            "message": {
+              "content": "{\"extracted_entities\":[{\"name\":\"Alice\",\"entity_type_id\":0,\"episode_indices\":[0]}]}"
+            }
+          }
+        ],
+        "usage": {
+          "completion_tokens": 82,
+          "prompt_tokens": 11,
+          "total_tokens": 93
+        }
+      },
+      {
+        "choices": [
+          {
+            "finish_reason": "stop",
+            "message": {
+              "content": "{\"extracted_entities\":[{\"name\":\"Alice\",\"entity_type_id\":0,\"episode_indices\":[0]}]}"
+            }
+          }
+        ],
+        "usage": {
+          "completion_tokens": 82,
+          "prompt_tokens": 11,
+          "total_tokens": 93
+        }
+      },
+      {
+        "choices": [
+          {
+            "finish_reason": "stop",
+            "message": {
+              "content": "{\"edges\":[{\"source_entity_name\":\"Alice\",\"target_entity_name\":\"Acme\",\"relation_type\":\"VISITED\",\"fact\":\"Alice visited Acme\"}]}"
+            }
+          }
+        ],
+        "usage": {
+          "completion_tokens": 124,
+          "prompt_tokens": 11,
+          "total_tokens": 135
+        }
+      },
+      {
+        "choices": [
+          {
+            "finish_reason": "stop",
+            "message": {
+              "content": "{\"edges\":[{\"source_entity_name\":\"Alice\",\"target_entity_name\":\"Acme\",\"relation_type\":\"VISITED\",\"fact\":\"Alice visited Acme\"}]}"
+            }
+          }
+        ],
+        "usage": {
+          "completion_tokens": 124,
+          "prompt_tokens": 11,
+          "total_tokens": 135
+        }
+      },
+      {
+        "choices": [
+          {
+            "finish_reason": "stop",
+            "message": {
+              "content": "{\"attributes\":{\"probe\":\"deterministic\"}}"
+            }
+          }
+        ],
+        "usage": {
+          "completion_tokens": 40,
+          "prompt_tokens": 11,
+          "total_tokens": 51
+        }
+      }
+    ],
+    "runtime_observed_callsites": [
+      "dedupe_edges.resolve_edge",
+      "dedupe_nodes.nodes",
+      "extract_edges.edge",
+      "extract_nodes.extract_attributes",
+      "extract_nodes.extract_message"
+    ],
+    "schemas": [
+      {
+        "json_schema": {
+          "name": "ExtractedEntities",
+          "schema": {
+            "$defs": {
+              "ExtractedEntity": {
+                "properties": {
+                  "entity_type_id": {
+                    "description": "ID of the classified entity type. Must be one of the provided entity_type_id integers.",
+                    "title": "Entity Type Id",
+                    "type": "integer"
+                  },
+                  "episode_indices": {
+                    "description": "List of episode numbers (0-indexed) this entity was extracted from. When processing a single episode, this should be [0].",
+                    "items": {
+                      "type": "integer"
+                    },
+                    "title": "Episode Indices",
+                    "type": "array"
+                  },
+                  "name": {
+                    "description": "Name of the extracted entity",
+                    "title": "Name",
+                    "type": "string"
+                  }
+                },
+                "required": [
+                  "name",
+                  "entity_type_id"
+                ],
+                "title": "ExtractedEntity",
+                "type": "object"
+              }
+            },
+            "properties": {
+              "extracted_entities": {
+                "description": "List of extracted entities",
+                "items": {
+                  "$ref": "#/$defs/ExtractedEntity"
+                },
+                "title": "Extracted Entities",
+                "type": "array"
+              }
+            },
+            "required": [
+              "extracted_entities"
+            ],
+            "title": "ExtractedEntities",
+            "type": "object"
+          }
+        },
+        "type": "json_schema"
+      },
+      {
+        "json_schema": {
+          "name": "ExtractedEntities",
+          "schema": {
+            "$defs": {
+              "ExtractedEntity": {
+                "properties": {
+                  "entity_type_id": {
+                    "description": "ID of the classified entity type. Must be one of the provided entity_type_id integers.",
+                    "title": "Entity Type Id",
+                    "type": "integer"
+                  },
+                  "episode_indices": {
+                    "description": "List of episode numbers (0-indexed) this entity was extracted from. When processing a single episode, this should be [0].",
+                    "items": {
+                      "type": "integer"
+                    },
+                    "title": "Episode Indices",
+                    "type": "array"
+                  },
+                  "name": {
+                    "description": "Name of the extracted entity",
+                    "title": "Name",
+                    "type": "string"
+                  }
+                },
+                "required": [
+                  "name",
+                  "entity_type_id"
+                ],
+                "title": "ExtractedEntity",
+                "type": "object"
+              }
+            },
+            "properties": {
+              "extracted_entities": {
+                "description": "List of extracted entities",
+                "items": {
+                  "$ref": "#/$defs/ExtractedEntity"
+                },
+                "title": "Extracted Entities",
+                "type": "array"
+              }
+            },
+            "required": [
+              "extracted_entities"
+            ],
+            "title": "ExtractedEntities",
+            "type": "object"
+          }
+        },
+        "type": "json_schema"
+      },
+      {
+        "json_schema": {
+          "name": "ExtractedEdges",
+          "schema": {
+            "$defs": {
+              "Edge": {
+                "properties": {
+                  "episode_indices": {
+                    "description": "List of episode numbers (0-indexed) that this fact was derived from. When processing a single episode, this should be [0].",
+                    "items": {
+                      "type": "integer"
+                    },
+                    "title": "Episode Indices",
+                    "type": "array"
+                  },
+                  "fact": {
+                    "description": "A natural language description of the relationship between the entities, paraphrased from the source text",
+                    "title": "Fact",
+                    "type": "string"
+                  },
+                  "invalid_at": {
+                    "anyOf": [
+                      {
+                        "type": "string"
+                      },
+                      {
+                        "type": "null"
+                      }
+                    ],
+                    "default": null,
+                    "description": "The date and time when the relationship described by the edge fact stopped being true or ended. Use ISO 8601 format (YYYY-MM-DDTHH:MM:SS.SSSSSSZ)",
+                    "title": "Invalid At"
+                  },
+                  "relation_type": {
+                    "description": "The type of relationship between the entities, in SCREAMING_SNAKE_CASE (e.g., WORKS_AT, LIVES_IN, IS_FRIENDS_WITH)",
+                    "title": "Relation Type",
+                    "type": "string"
+                  },
+                  "source_entity_name": {
+                    "description": "The name of the source entity from the ENTITIES list",
+                    "title": "Source Entity Name",
+                    "type": "string"
+                  },
+                  "target_entity_name": {
+                    "description": "The name of the target entity from the ENTITIES list",
+                    "title": "Target Entity Name",
+                    "type": "string"
+                  },
+                  "valid_at": {
+                    "anyOf": [
+                      {
+                        "type": "string"
+                      },
+                      {
+                        "type": "null"
+                      }
+                    ],
+                    "default": null,
+                    "description": "The date and time when the relationship described by the edge fact became true or was established. Use ISO 8601 format (YYYY-MM-DDTHH:MM:SS.SSSSSSZ)",
+                    "title": "Valid At"
+                  }
+                },
+                "required": [
+                  "source_entity_name",
+                  "target_entity_name",
+                  "relation_type",
+                  "fact"
+                ],
+                "title": "Edge",
+                "type": "object"
+              }
+            },
+            "properties": {
+              "edges": {
+                "items": {
+                  "$ref": "#/$defs/Edge"
+                },
+                "title": "Edges",
+                "type": "array"
+              }
+            },
+            "required": [
+              "edges"
+            ],
+            "title": "ExtractedEdges",
+            "type": "object"
+          }
+        },
+        "type": "json_schema"
+      },
+      {
+        "json_schema": {
+          "name": "ExtractedEdges",
+          "schema": {
+            "$defs": {
+              "Edge": {
+                "properties": {
+                  "episode_indices": {
+                    "description": "List of episode numbers (0-indexed) that this fact was derived from. When processing a single episode, this should be [0].",
+                    "items": {
+                      "type": "integer"
+                    },
+                    "title": "Episode Indices",
+                    "type": "array"
+                  },
+                  "fact": {
+                    "description": "A natural language description of the relationship between the entities, paraphrased from the source text",
+                    "title": "Fact",
+                    "type": "string"
+                  },
+                  "invalid_at": {
+                    "anyOf": [
+                      {
+                        "type": "string"
+                      },
+                      {
+                        "type": "null"
+                      }
+                    ],
+                    "default": null,
+                    "description": "The date and time when the relationship described by the edge fact stopped being true or ended. Use ISO 8601 format (YYYY-MM-DDTHH:MM:SS.SSSSSSZ)",
+                    "title": "Invalid At"
+                  },
+                  "relation_type": {
+                    "description": "The type of relationship between the entities, in SCREAMING_SNAKE_CASE (e.g., WORKS_AT, LIVES_IN, IS_FRIENDS_WITH)",
+                    "title": "Relation Type",
+                    "type": "string"
+                  },
+                  "source_entity_name": {
+                    "description": "The name of the source entity from the ENTITIES list",
+                    "title": "Source Entity Name",
+                    "type": "string"
+                  },
+                  "target_entity_name": {
+                    "description": "The name of the target entity from the ENTITIES list",
+                    "title": "Target Entity Name",
+                    "type": "string"
+                  },
+                  "valid_at": {
+                    "anyOf": [
+                      {
+                        "type": "string"
+                      },
+                      {
+                        "type": "null"
+                      }
+                    ],
+                    "default": null,
+                    "description": "The date and time when the relationship described by the edge fact became true or was established. Use ISO 8601 format (YYYY-MM-DDTHH:MM:SS.SSSSSSZ)",
+                    "title": "Valid At"
+                  }
+                },
+                "required": [
+                  "source_entity_name",
+                  "target_entity_name",
+                  "relation_type",
+                  "fact"
+                ],
+                "title": "Edge",
+                "type": "object"
+              }
+            },
+            "properties": {
+              "edges": {
+                "items": {
+                  "$ref": "#/$defs/Edge"
+                },
+                "title": "Edges",
+                "type": "array"
+              }
+            },
+            "required": [
+              "edges"
+            ],
+            "title": "ExtractedEdges",
+            "type": "object"
+          }
+        },
+        "type": "json_schema"
+      },
+      {
+        "json_schema": {
+          "name": "_ProbeAttributes",
+          "schema": {
+            "properties": {
+              "attributes": {
+                "additionalProperties": {
+                  "type": "string"
+                },
+                "default": {},
+                "title": "Attributes",
+                "type": "object"
+              }
+            },
+            "title": "_ProbeAttributes",
+            "type": "object"
+          }
+        },
+        "type": "json_schema"
+      }
+    ],
+    "status": "PASS"
+  },
+  "actual_maintenance_probe": {
+    "messages": [
+      [
+        {
+          "content": "You are an entity extraction specialist for unstructured text. NEVER extract abstract concepts, feelings, or generic words.\nDo not escape unicode characters.\n\n\nAny extracted information should be returned in the same language as it was written in. Only output non-English text when the user has written full sentences or phrases in that non-English language. Otherwise, output English.",
+          "role": "system"
+        },
+        {
+          "content": "\nNEVER extract:\n- Pronouns (you, me, he, she, they, it, them, him, her, we, us, this, that, those)\n- Abstract concepts (joy, balance, growth, resilience, passion, motivation)\n- Generic common nouns or bare object words (day, life, people, work, stuff, things, food, time,\n  tickets, supplies, clothes, keys, gear)\n- Generic media/content nouns unless uniquely identified in the node name itself (photo, pic, picture,\n  image, video, post, story)\n- Generic event/activity nouns unless uniquely identified in the node name itself (event, game, meeting,\n  class, workshop, competition)\n- Broad institutional nouns unless explicitly named or uniquely qualified (government, school, company,\n  team, office)\n- Ambiguous bare nouns whose meaning depends on sentence context rather than the node name itself\n- Sentence fragments or clauses as entity names\n- Bare relational or kinship terms (dad, mom, sister, brother, spouse, friend, boss, pet, dog,\n  cat) unless qualified with a possessor (e.g., \"Nisha's dad\" is acceptable, \"dad\" alone is not)\n- Bare generic objects that cannot be meaningfully qualified with a possessor, brand, or\n  distinguishing detail (e.g., NEVER extract \"supplies\" from \"I picked up some supplies\")\n\nExtract entities from the TEXT that are **explicitly mentioned**.\nFor each entity, classify it using the ENTITY TYPES above.\nOnly extract entities specific enough to be uniquely identifiable \u2014 ask: \"Could this have its own Wikipedia article or database entry?\"\n\n<ENTITY TYPES>\n[{'entity_type_id': 0, 'entity_type_name': 'Entity', 'entity_type_description': 'A specific, identifiable entity that does not fit any of the other listed types. Must still be a concrete, meaningful thing \u2014 specific enough to be uniquely identifiable. GOOD: a named entity not covered by the other types. BAD: \"luck\", \"ideas\", \"tomorrow\", \"things\", \"them\", \"everybody\", \"a sense of wonder\", \"great times\". When in doubt, do not extract the entity.'}]\n</ENTITY TYPES>\n\n<TEXT>\nAlice visited Acme.\n</TEXT>\n\nGuidelines:\n1. Extract named entities and specific, concrete things.\n2. Do not create nodes for relationships or actions.\n3. Do not create nodes for temporal information like dates, times or years.\n4. Be explicit in node names, using full names and avoiding abbreviations.\n5. Always use the most specific form from the text (e.g., \"road cycling\" not \"cycling\",\n   \"wool coat\" not \"coat\"). Include qualifying context when it's clear from the text.\n6. When the text refers to a person's relative, pet, or associate by a bare term, qualify the\n   entity with the possessor's name (e.g., \"Dr. Osei's colleague\" not \"colleague\").\n7. If a phrase would not be meaningful and distinguishable when read alone later, do NOT extract it.\n8. When in doubt, do NOT extract.\n\n\n\n<EXAMPLE>\nText: \"Dr. Amara Osei presented her migraine study results at the AAN conference. The study tracked 340 patients using a new CGRP combination protocol.\"\nGood extractions: \"Dr. Amara Osei\" (Person), \"AAN\" (Organization), \"migraine study\" (Topic), \"CGRP combination protocol\" (Object)\nDo NOT extract: \"results\" (generic noun), \"340\" (number), \"patients\" (generic noun), \"conference\" (generic without a specific name)\n</EXAMPLE>\n\n<EXAMPLE>\nText: \"Alex shared a pic after the event and said scoring the last basket felt incredible.\"\nGood extractions: \"Alex\" (Person)\nDo NOT extract: \"pic\" (generic media noun), \"event\" (generic event noun), \"basket\" (ambiguous bare noun)\n</EXAMPLE>\n",
+          "role": "user"
+        }
+      ],
+      [
+        {
+          "content": "You are an entity extraction specialist for JSON data. NEVER extract abstract concepts, dates, or generic field values.\nDo not escape unicode characters.\n\n\nAny extracted information should be returned in the same language as it was written in. Only output non-English text when the user has written full sentences or phrases in that non-English language. Otherwise, output English.",
+          "role": "system"
+        },
+        {
+          "content": "\nNEVER extract:\n- Date, time, or timestamp values\n- Abstract concepts or generic field values (e.g., \"true\", \"active\", \"pending\")\n- Numeric IDs or codes that are not meaningful entity names\n- Bare relational or kinship terms (e.g., \"spouse\", \"parent\", \"pet\") \u2014 only extract if qualified\n  with a possessor name\n- Bare generic objects or common nouns (e.g., \"supplies\", \"tickets\", \"gear\") \u2014 only extract if\n  qualified with a distinguishing detail\n- Generic media/content nouns unless uniquely identified in the value itself (photo, pic, picture,\n  image, video, post, story)\n- Generic event/activity nouns unless uniquely identified in the value itself (event, game, meeting,\n  class, workshop, competition)\n- Broad institutional nouns unless explicitly named or uniquely qualified (government, school, company,\n  team, office)\n- Ambiguous bare nouns whose meaning depends on surrounding text rather than the extracted value itself\n\nExtract entities from the JSON and classify each using the ENTITY TYPES above.\n\n<ENTITY TYPES>\n[{'entity_type_id': 0, 'entity_type_name': 'Entity', 'entity_type_description': 'A specific, identifiable entity that does not fit any of the other listed types. Must still be a concrete, meaningful thing \u2014 specific enough to be uniquely identifiable. GOOD: a named entity not covered by the other types. BAD: \"luck\", \"ideas\", \"tomorrow\", \"things\", \"them\", \"everybody\", \"a sense of wonder\", \"great times\". When in doubt, do not extract the entity.'}]\n</ENTITY TYPES>\n\n<SOURCE DESCRIPTION>\nLongMemEval-S haystack session\n</SOURCE DESCRIPTION>\n\n<JSON>\nAlice visited Acme.\n</JSON>\n\nGuidelines:\n1. Extract the primary entity the JSON represents (e.g., a \"name\" or \"user\" field).\n2. Extract named entities referenced in other properties throughout the JSON structure.\n3. Only extract entities specific enough to be uniquely identifiable.\n4. Be explicit in naming entities \u2014 use full names when available.\n5. Use the most specific form present in the data (e.g., \"road cycling\" not \"cycling\").\n6. If a value would not be meaningful and distinguishable when read alone later, do NOT extract it.\n\n\n\n<EXAMPLE>\nJSON: {\"user\": \"Jordan Lee\", \"company\": \"Acme Corp\", \"role\": \"engineer\", \"start_date\": \"2024-01-15\", \"location\": \"Denver\", \"active\": true}\nGood extractions: \"Jordan Lee\" (Person), \"Acme Corp\" (Organization), \"Denver\" (Location)\nDo NOT extract: \"engineer\" (role, not an entity), \"2024-01-15\" (date), \"true\" (field value)\n</EXAMPLE>\n\n<EXAMPLE>\nJSON: {\"author\": \"Alex\", \"attachment_type\": \"photo\", \"event_name\": \"event\", \"agency\": \"government\"}\nGood extractions: \"Alex\" (Person)\nDo NOT extract: \"photo\" (generic media noun), \"event\" (generic event noun), \"government\" (broad institutional noun)\n</EXAMPLE>\n",
+          "role": "user"
+        }
+      ],
+      [
+        {
+          "content": "You are an entity deduplication assistant. NEVER fabricate entity names or mark distinct entities as duplicates.\nDo not escape unicode characters.\n\n\nAny extracted information should be returned in the same language as it was written in. Only output non-English text when the user has written full sentences or phrases in that non-English language. Otherwise, output English.",
+          "role": "system"
+        },
+        {
+          "content": "\n<PREVIOUS MESSAGES>\n[]\n</PREVIOUS MESSAGES>\n\n<CURRENT MESSAGE>\nAlice visited Acme.\n</CURRENT MESSAGE>\n\n<ENTITIES>\n[{\"id\": 0, \"name\": \"Alice\", \"entity_type\": [], \"entity_type_description\": \"Default Entity Type\"}]\n</ENTITIES>\n\n<EXISTING ENTITIES>\n[{\"candidate_id\": 0, \"name\": \"Alice\", \"entity_types\": [], \"summary\": \"\"}, {\"candidate_id\": 1, \"name\": \"Alice\", \"entity_types\": [], \"summary\": \"\"}]\n</EXISTING ENTITIES>\n\nEach of the above ENTITIES was extracted from the CURRENT MESSAGE.\nFor each entity, determine if it is a duplicate of any EXISTING ENTITY.\nEntities should only be considered duplicates if they refer to the *same real-world object or concept*.\n\nNEVER mark entities as duplicates if:\n- They are related but distinct.\n- They have similar names or purposes but refer to separate instances or concepts.\n\nTask:\nENTITIES contains 1 entities with IDs 0 through 0.\nYour response MUST include EXACTLY 1 resolutions with IDs 0 through 0. Do not skip or add IDs.\n\nFor every entity, provide:\n- `id`: integer id from ENTITIES\n- `name`: the best full name for the entity (preserve the original name unless a duplicate has a more complete name)\n- `duplicate_candidate_id`: the `candidate_id` of the EXISTING ENTITY that is the best duplicate match, or -1 if there is no duplicate\n\n<EXAMPLE>\nENTITY: \"Sam\" (Person)\nEXISTING ENTITIES: [{\"candidate_id\": 0, \"name\": \"Sam\", \"entity_types\": [\"Person\"], \"summary\": \"Sam enjoys hiking and photography\"}]\nResult: duplicate_candidate_id = 0 (same person referenced in conversation)\n\nENTITY: \"NYC\"\nEXISTING ENTITIES: [{\"candidate_id\": 0, \"name\": \"New York City\", \"entity_types\": [\"Location\"]}, {\"candidate_id\": 1, \"name\": \"New York Knicks\", \"entity_types\": [\"Organization\"]}]\nResult: duplicate_candidate_id = 0 (same location, abbreviated name)\n\nENTITY: \"Java\" (programming language)\nEXISTING ENTITIES: [{\"candidate_id\": 0, \"name\": \"Java\", \"entity_types\": [\"Location\"], \"summary\": \"An island in Indonesia\"}]\nResult: duplicate_candidate_id = -1 (same name but distinct real-world things)\n\nENTITY: \"Marco's car\"\nEXISTING ENTITIES: [{\"candidate_id\": 0, \"name\": \"Marco's vehicle\", \"entity_types\": [\"Entity\"], \"summary\": \"Marco drives a red sedan.\"}]\nResult: duplicate_candidate_id = 0 (synonym \u2014 \"car\" and \"vehicle\" refer to the same thing, same possessor)\n</EXAMPLE>\n",
+          "role": "user"
+        }
+      ],
+      [
+        {
+          "content": "You are an expert fact extractor that extracts fact triples from text. 1. Extracted fact triples should also be extracted with relevant date information. 2. The CURRENT_MESSAGE may contain multiple episodes, each with its own timestamp. Use each episode's timestamp to resolve temporal references within that episode. REFERENCE_TIME is a fallback for when no per-episode timestamp is available.\nDo not escape unicode characters.\n\n\nAny extracted information should be returned in the same language as it was written in. Only output non-English text when the user has written full sentences or phrases in that non-English language. Otherwise, output English.",
+          "role": "system"
+        },
+        {
+          "content": "\n<PREVIOUS_MESSAGES>\n[]\n</PREVIOUS_MESSAGES>\n\n<CURRENT_MESSAGE>\n[Episode 0] (timestamp: 2026-01-01T00:00:00+00:00)\nAlice visited Acme.\n\n[Episode 1] (timestamp: 2026-01-01T00:00:00+00:00)\nAlice visited Acme.\n</CURRENT_MESSAGE>\n\n<ENTITIES>\n[{\"name\": \"Alice\", \"entity_types\": [\"Entity\", \"Person\"]}, {\"name\": \"Acme\", \"entity_types\": [\"Entity\"]}]\n</ENTITIES>\n\n<REFERENCE_TIME>\n2026-01-01 00:00:00+00:00  # ISO 8601 (UTC); used to resolve relative time mentions\n</REFERENCE_TIME>\n\n# TASK\nExtract all factual relationships between the given ENTITIES based on the CURRENT MESSAGE.\nOnly extract facts that:\n- involve two DISTINCT ENTITIES from the ENTITIES list,\n- are clearly stated or unambiguously implied in the CURRENT MESSAGE,\n    and can be represented as edges in a knowledge graph.\n- Facts should include entity names rather than pronouns whenever possible.\n\nYou may use information from the PREVIOUS MESSAGES only to disambiguate references or support continuity.\n\n\n\n8. **Episode Attribution**: The CURRENT_MESSAGE contains multiple episodes labeled [Episode 0], [Episode 1], etc. Each episode header includes a timestamp indicating when that episode occurred. Use the per-episode timestamp to resolve relative time mentions within each episode rather than relying solely on REFERENCE_TIME. For each extracted fact, set `episode_indices` to the 0-based list of episode numbers that the fact was derived from. A fact sourced from Episodes 0 and 1 should have `episode_indices: [0, 1]`.\n\n# EXTRACTION RULES\n\n1. **Entity Name Validation**: `source_entity_name` and `target_entity_name` must use only the `name` values from the ENTITIES list provided above.\n   - **CRITICAL**: Using names not in the list will cause the edge to be rejected\n2. Each fact must involve two **distinct** entities \u2014 `source_entity_name` and `target_entity_name` NEVER refer to the same entity.\n3. Prefer facts that involve two distinct entities from the ENTITIES list. When a sentence describes a specific, concrete detail about a single entity (a brand name, a specific item, a physical description, a quantity, a location, a named activity), do NOT drop it. Instead, look for a second entity in the ENTITIES list that the detail relates to and form a proper triple (e.g., Entity -> OWNS -> item-entity, Entity -> LIVES_IN -> place-entity, Entity -> HAS_ATTRIBUTE -> detail-entity). Only skip the fact when no second entity in the ENTITIES list can anchor the detail.\n   - BAD: \"Alice feels happy\" (vague single-entity state with no concrete detail \u2014 what is Alice happy about?)\n   - GOOD: \"Alice feels happy about Bob's promotion\" \u2192 Alice -> FEELS_HAPPY_ABOUT -> Bob's promotion\n   - GOOD: \"Nate plays games on a Gamecube\" \u2192 Nate -> PLAYS_GAMES_ON -> Gamecube (when \"Gamecube\" is in ENTITIES)\n   - GOOD: \"Alice congratulated Bob\" (relationship between two entities), \"Alice lives in Paris\" (relationship between entity and place)\n4. Do not emit semantically redundant facts, even across episodes within the CURRENT_MESSAGE. However, if a later episode adds specific details to a previously stated fact (e.g., adding a brand name, a count, a color, a location, or any concrete attribute), extract the more detailed version as a NEW fact \u2014 it is NOT a duplicate. Only treat facts as duplicates when they convey the same specificity.\n   - NOT a duplicate: \"user plays video games\" (Episode 0) vs. \"user plays games on a Gamecube\" (Episode 1) \u2192 extract the second, more detailed fact.\n   - IS a duplicate: \"user plays games on a Gamecube\" (Episode 0) vs. \"user plays Gamecube games\" (Episode 1) \u2192 extract once, list both episodes in `episode_indices`.\n5. The `fact` MUST preserve all specific details from the source text: proper nouns, brand names, product names, model numbers, quantities, counts, colors, materials, physical descriptions, specific items, named locations, and named activities. Paraphrase the sentence structure but NEVER generalize:\n   - NEVER generalize \"Gamecube\" to \"gaming console\", \"Ford Mustang\" to \"car\", \"wool coat\" to \"coat\", \"red and purple lighting\" to \"lighting\", \"cracked windshield\" to \"car damage\", or \"three screenplays\" to \"several screenplays\".\n   - Do not verbatim quote the original text, but every concrete noun, number, and descriptor in the source should survive into the `fact`.\n6. Use `REFERENCE_TIME` to resolve vague or relative temporal expressions (e.g., \"last week\"). When the CURRENT_MESSAGE contains multiple episodes with per-episode timestamps, prefer the timestamp of the specific episode the fact originates from.\n7. Do **not** hallucinate or infer temporal bounds from unrelated events.\n\n# RELATION TYPE RULES\n\n- If FACT_TYPES are provided and the relationship matches one of the types (considering the entity type signature), use that fact_type_name as the `relation_type`.\n- Otherwise, derive a `relation_type` from the relationship predicate in SCREAMING_SNAKE_CASE (e.g., WORKS_AT, LIVES_IN, IS_FRIENDS_WITH).\n\n# DATETIME RULES\n\n- Use ISO 8601 with \"Z\" suffix (UTC) (e.g., 2025-04-30T00:00:00Z).\n- If the fact is ongoing (present tense), set `valid_at` to the timestamp of the episode the fact originates from. If no per-episode timestamp is available, use REFERENCE_TIME.\n- If a change/termination is expressed, set `invalid_at` to the relevant timestamp.\n- Leave both fields `null` if no explicit or resolvable time is stated.\n- If only a date is mentioned (no time), assume 00:00:00.\n- If only a year is mentioned, use January 1st at 00:00:00.\n        ",
+          "role": "user"
+        }
+      ],
+      [
+        {
+          "content": "You are a fact attribute extraction specialist. You ONLY emit attribute values that are explicitly stated in the FACT or already present in EXISTING ATTRIBUTES. You output strictly the JSON specified by the response schema \u2014 no reasoning, no explanation, no commentary in any field.\nDo not escape unicode characters.\n\n\n<<graphiti.attr_extraction.preamble.v1>>\nATTRIBUTE EXTRACTION: Field descriptions in the response schema describe what a real value LOOKS LIKE \u2014 they are NEVER themselves valid values and must NEVER be copied into any field. If you have no value for a field, set it to null; never explain the absence in the field itself.\n\nAny extracted information should be returned in the same language as it was written in. Only output non-English text when the user has written full sentences or phrases in that non-English language. Otherwise, output English.",
+          "role": "system"
+        },
+        {
+          "content": "Given the following FACT, its REFERENCE TIME, and any EXISTING ATTRIBUTES, update the attributes.\n\nHARD RULES \u2014 violating any of these is a failure:\n\n1. Each attribute value MUST be one of:\n   (a) a clean value copied or directly normalized from the FACT,\n   (b) the existing value already in EXISTING ATTRIBUTES (preserved unchanged), or\n   (c) null / omitted, when neither (a) nor (b) applies.\n\n2. NEVER write reasoning, justification, or commentary into any field. Specifically:\n   - NEVER include parenthetical explanations like \"(implied by ...)\", \"(Context: ...)\",\n     \"(not explicitly stated ...)\", \"(based on ...)\".\n   - NEVER include first-person or deliberative phrases like \"I should...\", \"However...\",\n     \"Sticking to...\", \"Since no...\", \"the instruction is to...\", \"must be kept...\".\n   - NEVER list alternatives or candidates inside one field (\"X, or Y, or maybe Z\").\n   - NEVER explain why a value is null. If unknown, set the field to null and stop.\n\n3. Each attribute schema description tells you the FORMAT a real value should take. The\n   description text is NEVER itself a value. NEVER copy schema description text into the field.\n\n4. The literal strings \"null\", \"N/A\", \"Not specified\", \"unknown\", \"none\", \"not provided\",\n   or any sentence describing absence are NOT valid values. If no value is supported by\n   the FACT, set the field to null (or omit it) \u2014 do not write a sentence.\n\n5. Each attribute value must be a short, well-formed instance of the type the field\n   describes. If you cannot produce a clean value of that type from the FACT, the field is null.\n\n6. Use REFERENCE TIME to resolve any relative temporal expressions in the fact.\n\n7. Preserve existing attribute values unless the FACT explicitly provides a new value.\n\n<FACT>\nAlice visited Acme.\n</FACT>\n\n<REFERENCE TIME>\n2026-01-01 00:00:00+00:00\n</REFERENCE TIME>\n\n<EXISTING ATTRIBUTES>\n{}\n</EXISTING ATTRIBUTES>\n",
+          "role": "user"
+        }
+      ],
+      [
+        {
+          "content": "You extract temporal bounds from facts. NEVER hallucinate dates.\nDo not escape unicode characters.\n\n\nAny extracted information should be returned in the same language as it was written in. Only output non-English text when the user has written full sentences or phrases in that non-English language. Otherwise, output English.",
+          "role": "system"
+        },
+        {
+          "content": "Given a FACT and its REFERENCE TIME, determine when the fact became true\n(valid_at) and when it stopped being true (invalid_at).\n\nRules:\n- Resolve relative expressions (\"last week\", \"2 years ago\", \"yesterday\") using REFERENCE TIME.\n- If the fact is ongoing (present tense), set valid_at to REFERENCE TIME.\n- If a change or end is expressed, set invalid_at to the relevant time.\n- Leave both null if no time is stated or resolvable.\n- If only a date is mentioned (no time), assume 00:00:00.\n- Use ISO 8601 with Z suffix (e.g., 2025-04-30T00:00:00Z).\n- Do NOT hallucinate or infer dates from unrelated events.\n\n<FACT>\nAlice visited Acme.\n</FACT>\n\n<REFERENCE TIME>\n2026-01-01T00:00:00+00:00\n</REFERENCE TIME>\n",
+          "role": "user"
+        }
+      ],
+      [
+        {
+          "content": "You are a fact deduplication assistant. NEVER mark facts with key differences as duplicates.\nDo not escape unicode characters.\n\n\nAny extracted information should be returned in the same language as it was written in. Only output non-English text when the user has written full sentences or phrases in that non-English language. Otherwise, output English.",
+          "role": "system"
+        },
+        {
+          "content": "\nNEVER mark facts as duplicates if they have key differences, particularly around numeric values, dates, or key qualifiers.\n\nIMPORTANT constraints:\n- duplicate_facts: ONLY idx values from EXISTING FACTS (NEVER include FACT INVALIDATION CANDIDATES)\n- contradicted_facts: idx values from EITHER list (EXISTING FACTS or FACT INVALIDATION CANDIDATES)\n- The idx values are continuous across both lists (INVALIDATION CANDIDATES start where EXISTING FACTS end)\n\n<EXISTING FACTS>\n[{'idx': 0, 'fact': 'Alice met Acme.'}]\n</EXISTING FACTS>\n\n<FACT INVALIDATION CANDIDATES>\n[]\n</FACT INVALIDATION CANDIDATES>\n\n<NEW FACT>\nAlice visited Acme.\n</NEW FACT>\n\nYou will receive TWO lists of facts with CONTINUOUS idx numbering across both lists.\nEXISTING FACTS are indexed first, followed by FACT INVALIDATION CANDIDATES.\n\n1. DUPLICATE DETECTION:\n   - If the NEW FACT represents identical factual information as any fact in EXISTING FACTS, return those idx values in duplicate_facts.\n   - If no duplicates, return an empty list for duplicate_facts.\n\n2. CONTRADICTION DETECTION:\n   - Determine which facts the NEW FACT contradicts from either list.\n   - A fact from EXISTING FACTS can be both a duplicate AND contradicted (e.g., semantically the same but the new fact updates/supersedes it).\n   - Return all contradicted idx values in contradicted_facts.\n   - If no contradictions, return an empty list for contradicted_facts.\n\n<EXAMPLE>\nEXISTING FACT: idx=0, \"Alice joined Acme Corp in 2020\"\nNEW FACT: \"Alice joined Acme Corp in 2020\"\nResult: duplicate_facts=[0], contradicted_facts=[] (identical factual information)\n\nEXISTING FACT: idx=1, \"Alice works at Acme Corp as a software engineer\"\nNEW FACT: \"Alice works at Acme Corp as a senior engineer\"\nResult: duplicate_facts=[], contradicted_facts=[1] (same relationship but updated title \u2014 contradiction, NOT a duplicate)\n\nEXISTING FACT: idx=2, \"Bob ran 5 miles on Tuesday\"\nNEW FACT: \"Bob ran 3 miles on Wednesday\"\nResult: duplicate_facts=[], contradicted_facts=[] (different events on different days \u2014 neither duplicate nor contradiction)\n</EXAMPLE>\n",
+          "role": "user"
+        }
+      ],
+      [
+        {
+          "content": "You are an entity attribute extraction specialist. You ONLY emit attribute values that are explicitly stated in MESSAGES or already present on the ENTITY. You output strictly the JSON specified by the response schema \u2014 no reasoning, no explanation, no commentary in any field.\nDo not escape unicode characters.\n\n\n<<graphiti.attr_extraction.preamble.v1>>\nATTRIBUTE EXTRACTION: Field descriptions in the response schema describe what a real value LOOKS LIKE \u2014 they are NEVER themselves valid values and must NEVER be copied into any field. If you have no value for a field, set it to null; never explain the absence in the field itself.\n\nAny extracted information should be returned in the same language as it was written in. Only output non-English text when the user has written full sentences or phrases in that non-English language. Otherwise, output English.",
+          "role": "system"
+        },
+        {
+          "content": "Given the MESSAGES and the following ENTITY, update its attributes.\n\nHARD RULES \u2014 violating any of these is a failure:\n\n1. Each attribute value MUST be one of:\n   (a) a clean value copied or directly normalized from text in MESSAGES,\n   (b) the existing value already on the ENTITY (preserved unchanged), or\n   (c) null / omitted, when neither (a) nor (b) applies.\n\n2. NEVER write reasoning, justification, or commentary into any field. Specifically:\n   - NEVER include parenthetical explanations like \"(implied by ...)\", \"(Context: ...)\",\n     \"(not explicitly stated ...)\", \"(based on ...)\".\n   - NEVER include first-person or deliberative phrases like \"I should...\", \"However...\",\n     \"Sticking to...\", \"Since no...\", \"the instruction is to...\", \"must be kept...\",\n     \"if no value is present...\".\n   - NEVER list alternatives or candidates inside one field (\"X, or Y, or maybe Z\").\n   - NEVER explain why a value is null. If unknown, set the field to null and stop.\n\n3. Each attribute schema description (e.g. an \"Industry sector\" field whose description\n   reads \"Industry classification, single word where possible\") tells you the FORMAT a\n   real value should take. The description text is NEVER itself a value. NEVER copy\n   schema description text into the field.\n\n4. The literal strings \"null\", \"N/A\", \"Not specified\", \"unknown\", \"none\", \"not provided\",\n   or any sentence describing absence are NOT valid values. If no value is supported by\n   MESSAGES, set the field to null (or omit it) \u2014 do not write a sentence.\n\n5. Each attribute value must be a short, well-formed instance of the type the field\n   describes (a phone number, an industry name, a URL, a postal address). If you cannot\n   produce a clean value of that type from MESSAGES, the field is null.\n\n6. NEVER infer attribute values from the entity's name, from related entities, from\n   generic world knowledge, or from prior summaries. Only verbatim or directly normalized\n   text from MESSAGES qualifies as a new value.\n\n7. If MESSAGES contain no information about an attribute, leave the existing entity\n   value unchanged. If the entity has no existing value, the field is null.\n\nEXAMPLES\n\nENTITY: {\"name\": \"Sam Rivera\", \"phones\": \"415-555-0142\"}\nMESSAGES contain no phone information for Sam.\nGOOD \u2192 \"phones\": \"415-555-0142\"   (preserved existing value)\nBAD  \u2192 \"phones\": \"415-555-0142 (implied by original entity, but no new information in\n        messages, retaining original value as per instruction...)\"\n\nENTITY: {\"name\": \"Northwind\", \"industry\": null}\nMESSAGES mention Northwind only as the platform some content was posted to.\nGOOD \u2192 \"industry\": null   (no explicit industry classification was stated)\nBAD  \u2192 \"industry\": \"Content platform, SaaS (implied by usage context, though not stated\n        explicitly as industry classification...)\"\n\nENTITY: {\"name\": \"Priya\"}\nMESSAGES contain no phone for Priya, but discuss a project she contributed to.\nGOOD \u2192 \"phones\": null\nBAD  \u2192 \"phones\": \"Worked with Lin and Marco on the Q3 launch...\"   (off-topic content dump)\n\n<MESSAGES>\n[]\n\"Alice visited Acme.\"\n</MESSAGES>\n\n<ENTITY>\n{'name': 'Alice', 'entity_types': ['Entity', 'Person'], 'attributes': {}}\n</ENTITY>\n",
+          "role": "user"
+        }
+      ],
+      [
+        {
+          "content": "You maintain detailed, information-dense entity memories from episode text.\n\nUse ONLY facts explicitly stated in EPISODES and durable facts already present in EXISTING_SUMMARY.\nNEVER infer beyond what is directly supported.\n\nPrimary goal:\nWrite a dense factual summary of the entity that preserves as many supported details as possible while staying coherent and durable.\n\nWhen the input includes entity_type_descriptions, use them to decide which facts are most relevant to the entity type. NEVER mention the entity type, type description, or classification in the summary text itself.\n\nWhat to capture:\n- Stable facts about the entity\n- All materially relevant named people, organizations, places, events, documents, objects, and other entities linked to it\n- Explicit actions, roles, responsibilities, relationships, and outcomes\n- Counts, sequences, and repeated patterns when the evidence supports them\n- Temporal details at the highest fidelity available: dates, months, years, ordering, and changes over time\n- Current state over superseded state when newer episodes clearly update older information\n\nRules:\n- Be exhaustive within the evidence. Prefer retaining a supported concrete detail over omitting it for brevity.\n- NEVER infer preferences, habits, recurrence, frequency, causality, intent, importance, or category from a name, a single mention, or weak evidence.\n- Only describe something as recurring, preferred, typical, habitual, or ongoing when multiple episodes explicitly support that claim or one episode states it directly.\n- Include all materially relevant named participants that appear in the evidence.\n- Include temporal qualifiers whenever they are available.\n- Mention counts when they are directly supported and meaningful. Prefer direct factual phrasing over meta phrasing.\n- When the durable fact is the content of what was said, state the content directly instead of describing that it was said.\n- Use communication verbs only when the act of speaking, asking, sharing, presenting, announcing, or telling is itself the important fact.\n- NEVER manufacture pattern language from a single occurrence. A single mention can support a fact, but not a trend, habit, or preference unless the text states that directly.\n- If the evidence is insufficient or ambiguous, omit the claim.\n- NEVER mention the source material or summarization process.\n- NEVER mention episodes, messages, prompts, summaries, memory, graphs, nodes, labels, node types, ontology, schema, or categorization.\n- NEVER output phrases like \"the summary\", \"the entity\", \"categorized as\", \"tagged as\", \"suggests\", \"implies\", \"appears to\", or \"recorded interaction\".\n- NEVER use \"the entity\" as a pronoun. Use the entity's actual name or a natural pronoun (he, she, it, they).\n- NEVER use meta-language verbs like \"mentioned\", \"described\", \"stated\", \"noted\", \"discussed\", \"referenced\", \"indicated\", or \"reported\". State the fact directly instead of describing how it was communicated.\n- NEVER begin the summary with \"A \", \"An \", or \"This is\". If the entity's name starts with \"The\" (e.g. \"The Washington Post\"), that is acceptable; otherwise NEVER lead with \"The \". Lead with the entity's name or a concrete fact.\n- When newer episode text conflicts with older summary content, prefer the newer explicit fact.\n- If the new episodes add no durable fact, return the existing summary unchanged.\n- The summary should read like a compact brief, not a tagline.\n- Write 2-6 dense sentences in third person.\n- Return only the summary text.\n\n<EXAMPLES>\nInput: {\"name\": \"Jordan Lee\", \"existing_summary\": \"Jordan Lee works at Belmont Arts Center.\", \"episodes\": [{\"content\": \"Mina: Jordan Lee presented a ceramics workshop at Belmont Arts Center on March 3, 2025. The workshop had 24 attendees and focused on wheel-thrown bowls.\\nOwen: After the session, Jordan announced a second April workshop for returning students.\"}, {\"content\": \"Mina: Jordan shared that the new kiln room opened last month and that Jordan now supervises two studio assistants.\\nOwen: Jordan still teaches beginner ceramics on Wednesday evenings.\"}]}\nGOOD: \"Jordan Lee works at Belmont Arts Center. Jordan presented a ceramics workshop there on March 3, 2025 for 24 attendees focused on wheel-thrown bowls, and later announced a second April workshop for returning students. Jordan supervises two studio assistants, teaches beginner ceramics on Wednesday evenings, and works out of the new kiln room that opened the previous month.\"\nBAD: \"Jordan Lee seems interested in ceramics. Jordan mentioned teaching and was described as busy at the arts center.\"\n</EXAMPLES>\nDo not escape unicode characters.\n\n\nAny extracted information should be returned in the same language as it was written in. Only output non-English text when the user has written full sentences or phrases in that non-English language. Otherwise, output English.",
+          "role": "system"
+        },
+        {
+          "content": "NEVER include meta-language about the summarization process. Use ONLY facts from the provided EPISODES.\nEach summary must be under 1000 characters. Write 2-6 dense sentences in third person. Preserve all material names, roles, dates, counts, and changes over time that are explicitly supported.\n\nFor each entity below, generate an updated summary using ONLY the provided EPISODES and any existing summary already on the entity.\n\n<EPISODES>\n[]\n\"Alice visited Acme.\"\n</EPISODES>\n\n<ENTITIES>\n[{\"name\": \"Alice\", \"summary\": \"\", \"entity_types\": [\"Entity\", \"Person\"], \"attributes\": {\"label\": \"deterministic\", \"aliases\": [\"probe\"], \"score\": 1}}]\n</ENTITIES>\n\nOnly return summaries for entities that have meaningful information to summarize.\nIf an entity has no relevant information in the episodes and no existing summary, you may skip it.\n",
+          "role": "user"
+        }
+      ],
+      [
+        {
+          "content": "You are a helpful assistant that generates concise entity summaries from provided context.\nDo not escape unicode characters.\n\n\nAny extracted information should be returned in the same language as it was written in. Only output non-English text when the user has written full sentences or phrases in that non-English language. Otherwise, output English.",
+          "role": "system"
+        },
+        {
+          "content": "\nGiven the MESSAGES and a list of ENTITIES, generate an updated summary for each entity that needs one.\nEach summary must be under 1000 characters.\n\nGuidelines:\n        1. Output only factual content. Never explain what you're doing, why, or mention limitations or constraints.\n        2. Only use the provided messages, entity, and entity context to set attribute values.\n        3. Keep the summary information-dense and entity-specific. STATE FACTS DIRECTLY IN UNDER 1000 CHARACTERS.\n        4. Preserve all materially relevant names, roles, places, dates, counts, and temporal qualifiers that are explicitly supported.\n        5. Prefer compact factual sentences over vague thematic phrasing or meta-language.\n        6. When the durable fact is the content of what was said, state the content directly instead of narrating that it was said.\n        7. Use communication verbs only when the act of speaking, asking, sharing, presenting, announcing, or telling is itself the important fact.\n        8. Never use filler verbs like \"mentioned\", \"described\", \"stated\", \"reported\", \"noted\", \"discussed\", \"referenced\", or \"indicated\" unless the communication act itself is the fact.\n        9. Include temporal anchors when the messages provide them and they help ground the fact.\n        10. Begin with the entity name or a direct fact, not with \"A\", \"An\", \"The\", or \"This is\" unless that wording is part of the entity name.\n\n        Example summary:\n        BAD: \"The context shows John ordered pizza. Due to length constraints, other details are omitted from this summary.\"\n        GOOD: \"John ordered pepperoni pizza from Mario's at 7:30 PM and had it delivered to the office.\"\n        \n\n<MESSAGES>\n[]\n\"Alice visited Acme.\"\n</MESSAGES>\n\n<ENTITIES>\n[{\"name\": \"Alice\", \"summary\": \"\", \"entity_types\": [], \"attributes\": {}}]\n</ENTITIES>\n\nFor each entity, combine relevant information from the MESSAGES with any existing summary content.\nOnly return summaries for entities that have meaningful information to summarize.\nIf an entity has no relevant information in the messages and no existing summary, you may skip it.\n",
+          "role": "user"
+        }
+      ],
+      [
+        {
+          "content": "You are an expert knowledge graph extraction specialist for an AI agent memory system. You extract both entity nodes and relationship facts from conversations in a single pass. The extracted graph will be searched later by an AI agent to answer questions, personalize responses, and maintain long-term memory. The original conversation will NOT be available at retrieval time \u2014 only the entities and facts you extract will survive.\nDo not escape unicode characters.\n\n\nAny extracted information should be returned in the same language as it was written in. Only output non-English text when the user has written full sentences or phrases in that non-English language. Otherwise, output English.",
+          "role": "system"
+        },
+        {
+          "content": "\nENTITY RULES:\n1. Extract speakers and named entities explicitly mentioned in CURRENT MESSAGES.\n2. Entity names must be at most 5 words. Use the most specific form mentioned.\n3. When someone discusses their possession, project, pet, or creation, extract it\n   as a SEPARATE possessive entity \u2014 not just the person, not just the bare noun:\n   GOOD: \"James's notebook\", \"Calvin's guitar\", \"Audrey's dogs\", \"Sam's cooking class\"\n   BAD: \"notebook\", \"guitar\", \"dogs\" (too generic) or just \"James\" (collapses detail)\n4. Extract hobbies and activities as entities when someone engages in them:\n   \"video games\", \"watercolor painting\", \"VR gaming\", \"road cycling\", \"cooking\"\n5. Extract named/described objects (\"Gamecube\", \"Ford Mustang\", \"wool coat\") and\n   places (\"Riverside Park\", \"the gym\", \"the beach\") \u2014 not bare generics (\"car\", \"coat\").\n6. Entity names must be NOUN PHRASES that refer to a discrete thing in the user's\n   world. Do NOT extract any of the following \u2014 they belong inside fact text, as\n   properties of another entity, or not at all:\n   a. Pronouns, articles, and unresolved references: \"the city\", \"this issue\",\n      \"that rule\", \"the victim\", \"the game\". Resolve to the actual referent or skip.\n   b. Vague abstractions and filler nouns (balance, growth, motivation, day, life,\n      stuff, time). Full sentences or propositions as names are also banned.\n   c. Specific clock times and dates as entities (\"5:54 am\", \"8:47 am\",\n      \"January 15\"). A time/date is a property of the event \u2014 keep it in fact text.\n   d. Bare quantities, measurements, durations, prices, counts, or recipe amounts\n      (\"7-8 hours\", \"7.5 hours of daylight\", \"$150/hour\", \"10-pound dumbbells\",\n      \"1 cup granulated white sugar\", \"4 cups water\", \"15-30 minutes\"). Numbers\n      are properties of the thing they measure \u2014 preserve them inside the fact.\n   e. Geographic coordinates / latitudes / longitudes (\"52 degrees north\",\n      \"66\u00b033' north of the equator\"). They are attributes of the location entity.\n   f. Multiple-choice answer labels, response-option tokens, or rubric/template\n      scaffolding the assistant is constrained to emit (\"Agree\",\n      \"Strongly disagree\", \"the four answers\", \"the score\", \"scorr\"). These are\n      prompt-template tokens, not entities in the user's world.\n   g. Imperative verb-phrase advice \u2014 bullet headers from how-to / tip lists\n      (\"Buy in bulk\", \"Cook in bulk\", \"Plan your meals\", \"Follow up on leads\",\n      \"Personalize your outreach\", \"Shop sales\", \"Keep it simple\"). Entity names\n      are noun phrases. If the topic is worth keeping, name the topical noun\n      (\"bulk buying\", \"meal planning\") and put the advice in the fact text.\n   h. Quoted slogans, idioms, definitional phrases, or loaded adjective phrases\n      from opinion statements (\"from each according to his ability, to each\n      according to his need\", \"the enemy of my enemy\", \"the perpetrator of a\n      crime\", \"genuinely disadvantaged\"). They are not retrievable referents.\n7. Each entity appears exactly ONCE. Classify using the ENTITY TYPES provided.\n8. Only extract entities from CURRENT MESSAGES \u2014 PREVIOUS MESSAGES are context only.\n9. Skip didactic / tutorial scaffolding when the assistant is teaching a topic\n   (Unix commands, astronomy, cooking technique, etc.). Tutorial example values\n   (\"/path/to/source\", \"file.txt\", \"<username>\") and explanatory primitives are\n   external didactic material, not facts about the user. The user's interest in\n   the topic (\"user is learning Unix commands\") is one fact \u2014 do not turn each\n   command, flag, or example path into its own node.\n\nFACT RULES:\n1. source_entity_name and target_entity_name must match your extracted entity names.\n2. When a fact involves two entities that are BOTH in your extracted entities list,\n   you MUST use both as source and target \u2014 never collapse into a self-referencing fact:\n   \"Nate plays games on a Gamecube\" \u2192 Nate -> PLAYS_GAMES_ON -> Gamecube\n   \"Sarah lives in San Francisco\" \u2192 Sarah -> LIVES_IN -> San Francisco\n   \"James has a dog named Maximilian\" \u2192 James -> HAS_PET -> Maximilian\n   Only use a self-referencing fact when no second entity in your list fits.\n   Self-referencing facts are still common and valuable \u2014 do NOT skip them:\n   - Routines/health: \"Deborah goes jogging every morning\", \"Evan has a knee injury\"\n   - Preferences/plans: \"Nate's favorite game is Xenoblade Chronicles\",\n     \"Jon said he would not quit on his dreams\"\n   - Emotions/states: \"Sam feels he lacks motivation\"\n3. Facts must be SELF-CONTAINED \u2014 understandable without the original episode.\n   Use entity names, not pronouns. Preserve specific details where possible.\n4. Extract facts from EVERY episode \u2014 not just the meatiest one. Conversational\n   setup episodes still contain real facts that belong in the graph:\n   - Narrative announcements: \"something funny happened last night\",\n     \"I have news to share\", \"you won't believe what happened\"\n   - Forward commitments: \"I'll keep you posted\", \"I'll let you know how it\n     goes\", \"I'll call you when I land\"\n   - Plans / intentions: \"I'm calling them tomorrow\", \"I'm planning to start\n     next week\"\n   - Emotional / state setup: \"I've been feeling stressed lately\",\n     \"I'm so excited about this\"\n   Process each episode's CURRENT_MESSAGE independently. Set `episode_indices`\n   to the 0-based episode number(s) each fact comes from (matching\n   [Episode N] headers). If the SAME fact appears across multiple episodes,\n   extract it ONCE and list ALL episode indices \u2014 do NOT emit duplicate facts\n   with different episode numbers.\n5. You MAY use PREVIOUS MESSAGES to resolve what the current message refers to.\n   If the current message reacts to or confirms prior context, extract the full\n   contextualized fact (e.g., \"all the hard work paid off\" \u2192 extract what paid off).\n6. Extract liberally \u2014 when in doubt, extract the fact. Preferences, opinions,\n   reactions, advice, plans, states, and experiences are all valuable. Only skip\n   content-free utterances like \"Hi!\", \"Bye!\", \"Thanks!\".\n7. Do not emit redundant facts across episodes. But if a later episode adds new\n   details (brand, count, location), extract the more detailed version as a new fact.\n8. Prefer DIRECT speaker-to-target edges over fragmenting a relationship through\n   descriptive intermediaries. When a person is/visits/wants/recommends a\n   Location, performs at/works for an Organization, owns/uses/likes an Object,\n   or feels strongly about a Topic, emit the edge directly from the person \u2014\n   do not route the relationship through scenery nouns, observed features, or\n   ad-hoc descriptive entities.\n   GOOD: Calvin -> TOOK_PHOTO_IN -> Tokyo\n         Calvin -> PERFORMED_IN -> Tokyo\n         Dave -> WANTS_TO_VISIT -> Tokyo\n   BAD:  city lights -> LOCATED_IN -> Tokyo,\n         night skyline -> LOCATED_IN -> Tokyo,\n         insane crowd -> LOCATED_IN -> Tokyo\n         (the descriptive scenery is observation about the location, not its\n         own subject \u2014 Calvin's and Dave's actual relationships to Tokyo\n         become unretrievable. Put the scenery details inside fact text.)\n   The same applies for organizations and possessions: each speaker-relevant\n   thing should have at least one edge with the speaker (or an entity they\n   own/identify with) as source, not an observation noun.\n\nOUTPUT DISCIPLINE:\n- Entity `name` is a literal mention from CURRENT MESSAGES, \u22645 words. NEVER use a full\n  sentence, action item, goal statement, or quoted aspiration as a name.\n  BAD: \"Establish a firm training/onboarding program\",\n       \"Secure competitive advantage through IP\",\n       \"Decide whether to expand into Europe next quarter\".\n  GOOD (terse-name fallback for the same source content): \"training program\",\n       \"competitive advantage\", \"European expansion\" \u2014 extract the topical noun\n       phrase, not the full proposition. Multi-word topic names like \"watercolor\n       painting\" or \"VR gaming\" remain valid (see ENTITY RULE 4).\n- The `fact` field is one self-contained sentence. NEVER include reasoning, hedging\n  (\"appears to\", \"implies\", \"suggests\"), parenthetical commentary, or schema-description text.\n- `relation_type` is SCREAMING_SNAKE_CASE letters/underscores only. NEVER spaces,\n  punctuation, or sentences.\n- Output ONLY the JSON specified by the response schema. No preamble, no trailing notes,\n  no explanation of choices.\n\n<NEGATIVE EXAMPLES>\nEach example shows the source phrasing, what NOT to extract as an entity, and\nwhat to keep instead. The skipped content still survives \u2014 inside fact text on\nthe surviving entity.\n\nA) Multiple-choice / response-option scaffolding\n   Source (assistant): \"Reply with one of: Strongly disagree, Disagree, Agree,\n   or Strongly agree.\"\n   SKIP entities: \"Agree\", \"Strongly disagree\", \"the four answers\", \"responses\".\n   KEEP: nothing \u2014 this is template instruction, not a fact about the user.\n\nB) Specific clock times\n   Source: \"The sun rises around 8:47 am in Stockholm on the winter solstice.\"\n   SKIP entities: \"8:47 am\", \"2:48 pm\".\n   KEEP: \"Stockholm\", \"winter solstice\". The time stays in the fact text:\n   \"The sun rises around 8:47 am in Stockholm on the winter solstice.\"\n\nC) Quantities / durations / prices / recipe amounts\n   Source: \"Berlin and London experience approximately 7.5 hours of daylight\n   on the winter solstice.\"\n   SKIP entities: \"7.5 hours of daylight\", \"7-8 hours\", \"6 hours of daylight\".\n   KEEP: \"Berlin\", \"London\", \"winter solstice\". Duration stays inside the fact.\n\n   Source: \"Mix 1 cup granulated white sugar into 4 cups water to make nectar.\"\n   SKIP entities: \"1 cup granulated white sugar\", \"4 cups water\".\n   KEEP: \"sugar-water nectar\" (the recipe topic). The amounts stay in the fact.\n\nD) Geographic coordinates\n   Source: \"Melbourne is located approximately 37 degrees south of the equator;\n   Stockholm is around 59 degrees north.\"\n   SKIP entities: \"37 degrees south of the equator\", \"59 degrees north\".\n   KEEP: \"Melbourne\", \"Stockholm\", \"equator\". The latitude stays in the fact.\n\nE) Imperative verb-phrase advice from tip lists\n   Source (assistant): \"Tips for saving money on groceries: Buy in bulk; Cook\n   in bulk; Plan your meals; Shop sales; Use cashback apps.\"\n   SKIP entities: \"Buy in bulk\", \"Cook in bulk\", \"Plan your meals\",\n   \"Shop sales\", \"Use cashback apps\".\n   KEEP: \"saving money on groceries\" (the topical noun phrase). Each tip lives\n   inside a fact attached to that topic, not as its own node.\n\nF) Quoted slogans / idioms / loaded phrases\n   Source (user): \"I believe in 'from each according to his ability, to each\n   according to his need' \u2014 the rich are too highly taxed though.\"\n   SKIP entities: \"from each according to his ability...\", \"the enemy of my\n   enemy\", \"the rich\", \"genuinely disadvantaged\".\n   KEEP: the User entity. The belief and opinion go into facts in plain\n   language (e.g. user -> BELIEVES_IN -> Marxist distribution principle).\n\nG) Direct speaker-to-target edges (no fragmenting through scenery)\n   Source: Calvin: \"I took that pic in Tokyo last night. The skyline was\n   stunning! [...]\"  Dave: \"Wow, the night skyline really pops with those\n   city lights. I gotta take a trip there soon!\"  Calvin (later): \"Touring\n   with Frank Ocean last week was wild. Tokyo was unreal \u2014 the crowd was\n   insane.\"\n   SKIP edge sources/targets: city lights -> Tokyo,\n        night skyline -> Tokyo, insane crowd -> Tokyo.\n   KEEP edges: Calvin -> TOOK_PHOTO_IN -> Tokyo\n               Calvin -> PERFORMED_IN -> Tokyo\n               Calvin -> TOURED_WITH -> Frank Ocean\n               Dave -> WANTS_TO_VISIT -> Tokyo\n   Descriptive scenery (\"stunning skyline\", \"city lights pop\", \"insane\n   crowd\") goes inside the fact text on these direct edges, not as its\n   own edges.\n</NEGATIVE EXAMPLES>\n\n<ENTITY TYPES>\n[{'entity_type_id': 0, 'entity_type_name': 'Entity', 'entity_type_description': 'A specific, identifiable entity that does not fit any of the other listed types. Must still be a concrete, meaningful thing \u2014 specific enough to be uniquely identifiable. GOOD: a named entity not covered by the other types. BAD: \"luck\", \"ideas\", \"tomorrow\", \"things\", \"them\", \"everybody\", \"a sense of wonder\", \"great times\". When in doubt, do not extract the entity.'}]\n</ENTITY TYPES>\n\n<PREVIOUS MESSAGES>\n[]\n</PREVIOUS MESSAGES>\n\n<CURRENT MESSAGES>\n[Episode 0] (timestamp: 2026-01-01T00:00:00+00:00)\nAlice visited Acme.\n\n[Episode 1] (timestamp: 2026-01-01T00:00:00+00:00)\nAlice visited Acme.\n</CURRENT MESSAGES>\n\n\n",
+          "role": "user"
+        }
+      ],
+      [
+        {
+          "content": "You extract temporal bounds from facts. NEVER hallucinate dates.\nDo not escape unicode characters.\n\n\nAny extracted information should be returned in the same language as it was written in. Only output non-English text when the user has written full sentences or phrases in that non-English language. Otherwise, output English.",
+          "role": "system"
+        },
+        {
+          "content": "Given a list of FACTS with their REFERENCE TIMES, determine when each fact\nbecame true (valid_at) and when it stopped being true (invalid_at).\n\nRules:\n- Resolve relative expressions (\"last week\", \"2 years ago\", \"yesterday\") using each fact's REFERENCE TIME.\n- If the fact is ongoing (present tense), set valid_at to its REFERENCE TIME.\n- If a change or end is expressed, set invalid_at to the relevant time.\n- Leave both null if no time is stated or resolvable.\n- If only a date is mentioned (no time), assume 00:00:00.\n- Use ISO 8601 with Z suffix (e.g., 2025-04-30T00:00:00Z).\n- Do NOT hallucinate or infer dates from unrelated events.\n\nReturn one timestamps entry per fact, in the same order.\n\n<FACTS>\n[{\"fact\": \"Alice visited Acme\", \"reference_time\": \"2026-01-01T00:00:00+00:00\"}]\n</FACTS>\n",
+          "role": "user"
+        }
+      ],
+      [
+        {
+          "content": "You are a helpful assistant that combines summaries into a single dense factual summary.\nDo not escape unicode characters.\n\n\nAny extracted information should be returned in the same language as it was written in. Only output non-English text when the user has written full sentences or phrases in that non-English language. Otherwise, output English.",
+          "role": "system"
+        },
+        {
+          "content": "\n        Synthesize the information from the following two summaries into a single information-dense summary.\n\n        IMPORTANT:\n        - Preserve all materially relevant names, roles, places, dates, counts, and changes over time that are explicitly supported.\n        - Prefer compact factual sentences over vague thematic phrasing.\n        - When the durable fact is the content of what was said, state the content directly instead of narrating that it was said.\n        - Use communication verbs only when the act of speaking, asking, sharing, presenting, or announcing is itself the important fact.\n        - Avoid filler verbs like \"mentioned\", \"described\", \"stated\", \"reported\", \"noted\", \"discussed\", \"referenced\", and \"indicated\" unless the communication act itself matters.\n        - SUMMARIES MUST BE LESS THAN 1000 CHARACTERS.\n\n        Summaries:\n        [{\"summary\": \"Alice visited Acme.\"}, {\"summary\": \"Acme was visited by Alice.\"}]\n        ",
+          "role": "user"
+        }
+      ],
+      [
+        {
+          "content": "You are a helpful assistant that describes provided contents in a single sentence.\nDo not escape unicode characters.\n\n\nAny extracted information should be returned in the same language as it was written in. Only output non-English text when the user has written full sentences or phrases in that non-English language. Otherwise, output English.",
+          "role": "system"
+        },
+        {
+          "content": "\n        Create a short one sentence description of the summary that explains what kind of information is summarized.\n        Summaries must be under 1000 characters.\n\n        Summary:\n        \"Alice visited Acme.\"\n        ",
+          "role": "user"
+        }
+      ],
+      [
+        {
+          "content": "You extract durable knowledge from message threads. Output a factual knowledge brief \u2014 facts, decisions, preferences, plans, entities, and relationships \u2014 that stands alone without reference to the original messages. Stay under 1000 characters.\nDo not escape unicode characters.\n\n\nAny extracted information should be returned in the same language as it was written in. Only output non-English text when the user has written full sentences or phrases in that non-English language. Otherwise, output English.",
+          "role": "system"
+        },
+        {
+          "content": "NEVER use meta-language verbs: \"mentioned\", \"discussed\", \"noted\", \"stated\", \"described\", \"referenced\", \"indicated\", \"reported\", \"talked about\", \"brought up\" \u2014 these describe conversational dynamics, not knowledge. State facts directly instead.\nNEVER refer to the messages, conversation, thread, or participants' communicative acts. The output must read as if no conversation happened \u2014 only the facts matter.\nNEVER begin with \"This conversation\", \"The thread\", \"In this thread\", or \"The discussion\".\nNEVER infer preferences or habits from a single passing mention. When a person explicitly states a preference (\"I prefer X\", \"I love X\", \"I always do X\"), capture it as a stated preference attributed to that person.\n\nYour task: extract all durable knowledge from the MESSAGES below and produce a factual knowledge brief for the topic \"r1-saga\".\n\nCapture explicitly stated:\n- Facts and concrete details (names, dates, numbers, locations)\n- Decisions and their outcomes\n- Preferences and requirements (when a person explicitly claims them)\n- Plans, next steps, and commitments\n- Relationships between entities (who works where, who owns what)\n- State changes (what was X, now is Y)\n\nWrite 2-6 dense sentences. Use third person. Preserve all names, dates, counts, and temporal qualifiers. Lead with the most important fact or decision.\n\n<MESSAGES>\nAlice visited Acme.\n</MESSAGES>\n\n<EXAMPLES>\nMESSAGES: \"Jordan: We decided to move the deployment to March 15 instead of March 8. The staging environment isn't ready.\\n---\\nPriya: Agreed. I'll update the client timeline. We also need to switch from PostgreSQL to CockroachDB for the multi-region requirement.\"\nGOOD: \"Deployment moved from March 8 to March 15 because the staging environment is not ready. Priya owns updating the client timeline. The database is switching from PostgreSQL to CockroachDB to support the multi-region requirement.\"\nBAD: \"Jordan mentioned moving the deployment date. Priya discussed updating the timeline and talked about switching databases. The team noted staging issues.\"\n</EXAMPLES>\n\n<EXAMPLES>\nMESSAGES: \"Alex: I tried the new Thai place on Elm Street last night \u2014 the pad see ew was incredible. Definitely going back.\\n---\\nMina: Oh nice, I've been wanting to try that. Is it the one next to the bookstore?\\n---\\nAlex: Yeah, Siam Kitchen. They're open until 11 PM on weekends.\"\nGOOD: \"Siam Kitchen is a Thai restaurant on Elm Street, next to a bookstore, open until 11 PM on weekends. Alex considers the pad see ew excellent.\"\nBAD: \"Alex mentioned trying a new Thai place and discussed the pad see ew. Mina asked about the location. Alex noted it was Siam Kitchen and stated the weekend hours.\"\n</EXAMPLES>\n\n<EXAMPLES>\nMESSAGES: \"Sam: I really prefer working in the mornings \u2014 I'm way more productive before noon.\\n---\\nDana: Same. I've been blocking 9-11 AM for deep work. Also, I can't stand Jira \u2014 can we move the tracker to Linear?\\n---\\nSam: Fine by me. I'll set up the workspace.\"\nGOOD: \"Sam prefers morning work and reports higher productivity before noon. Dana blocks 9-11 AM for deep work. Dana prefers Linear over Jira for issue tracking. Sam is setting up the Linear workspace.\"\nBAD: \"Sam and Dana discussed their work preferences. They talked about morning productivity and mentioned switching from Jira to Linear.\"\n</EXAMPLES>\n",
+          "role": "user"
+        }
+      ]
+    ],
+    "non_empty_response_count": 15,
+    "probe_entrypoints": [
+      "node_operations.extract_nodes(message/text/json)",
+      "node_operations.resolve_extracted_nodes",
+      "edge_operations.extract_edges",
+      "edge_operations.resolve_extracted_edge(attributes/timestamps/dedupe)",
+      "node_operations.extract_attributes_from_nodes(summary variants)",
+      "combined_extraction.extract_nodes_and_edges",
+      "community_operations.build_community",
+      "Graphiti.summarize_saga"
+    ],
+    "raw_responses": [
+      {
+        "choices": [
+          {
+            "finish_reason": "stop",
+            "message": {
+              "content": "{\"extracted_entities\":[{\"name\":\"Alice\",\"entity_type_id\":0,\"episode_indices\":[0]}]}"
+            }
+          }
+        ],
+        "usage": {
+          "completion_tokens": 82,
+          "prompt_tokens": 11,
+          "total_tokens": 93
+        }
+      },
+      {
+        "choices": [
+          {
+            "finish_reason": "stop",
+            "message": {
+              "content": "{\"extracted_entities\":[{\"name\":\"Alice\",\"entity_type_id\":0,\"episode_indices\":[0]}]}"
+            }
+          }
+        ],
+        "usage": {
+          "completion_tokens": 82,
+          "prompt_tokens": 11,
+          "total_tokens": 93
+        }
+      },
+      {
+        "choices": [
+          {
+            "finish_reason": "stop",
+            "message": {
+              "content": "{\"entity_resolutions\":[{\"id\":0,\"name\":\"Alice\",\"duplicate_candidate_id\":0}]}"
+            }
+          }
+        ],
+        "usage": {
+          "completion_tokens": 75,
+          "prompt_tokens": 11,
+          "total_tokens": 86
+        }
+      },
+      {
+        "choices": [
+          {
+            "finish_reason": "stop",
+            "message": {
+              "content": "{\"edges\":[{\"source_entity_name\":\"Alice\",\"target_entity_name\":\"Acme\",\"relation_type\":\"VISITED\",\"fact\":\"Alice visited Acme\"}]}"
+            }
+          }
+        ],
+        "usage": {
+          "completion_tokens": 124,
+          "prompt_tokens": 11,
+          "total_tokens": 135
+        }
+      },
+      {
+        "choices": [
+          {
+            "finish_reason": "stop",
+            "message": {
+              "content": "{\"label\":\"deterministic\",\"aliases\":[\"probe\"],\"score\":1}"
+            }
+          }
+        ],
+        "usage": {
+          "completion_tokens": 55,
+          "prompt_tokens": 11,
+          "total_tokens": 66
+        }
+      },
+      {
+        "choices": [
+          {
+            "finish_reason": "stop",
+            "message": {
+              "content": "{\"valid_at\":\"2026-01-01T00:00:00Z\",\"invalid_at\":null}"
+            }
+          }
+        ],
+        "usage": {
+          "completion_tokens": 53,
+          "prompt_tokens": 11,
+          "total_tokens": 64
+        }
+      },
+      {
+        "choices": [
+          {
+            "finish_reason": "stop",
+            "message": {
+              "content": "{\"duplicate_facts\":[],\"contradicted_facts\":[]}"
+            }
+          }
+        ],
+        "usage": {
+          "completion_tokens": 46,
+          "prompt_tokens": 11,
+          "total_tokens": 57
+        }
+      },
+      {
+        "choices": [
+          {
+            "finish_reason": "stop",
+            "message": {
+              "content": "{\"label\":\"deterministic\",\"aliases\":[\"probe\"],\"score\":1}"
+            }
+          }
+        ],
+        "usage": {
+          "completion_tokens": 55,
+          "prompt_tokens": 11,
+          "total_tokens": 66
+        }
+      },
+      {
+        "choices": [
+          {
+            "finish_reason": "stop",
+            "message": {
+              "content": "{\"summaries\":[{\"name\":\"Alice\",\"summary\":\"Alice visited Acme.\"}]}"
+            }
+          }
+        ],
+        "usage": {
+          "completion_tokens": 64,
+          "prompt_tokens": 11,
+          "total_tokens": 75
+        }
+      },
+      {
+        "choices": [
+          {
+            "finish_reason": "stop",
+            "message": {
+              "content": "{\"summaries\":[{\"name\":\"Alice\",\"summary\":\"Alice visited Acme.\"}]}"
+            }
+          }
+        ],
+        "usage": {
+          "completion_tokens": 64,
+          "prompt_tokens": 11,
+          "total_tokens": 75
+        }
+      },
+      {
+        "choices": [
+          {
+            "finish_reason": "stop",
+            "message": {
+              "content": "{\"extracted_entities\":[{\"name\":\"Alice\",\"entity_type_id\":0},{\"name\":\"Acme\",\"entity_type_id\":0}],\"edges\":[{\"source_entity_name\":\"Alice\",\"target_entity_name\":\"Acme\",\"relation_type\":\"VISITED\",\"fact\":\"Alice visited Acme\"}]}"
+            }
+          }
+        ],
+        "usage": {
+          "completion_tokens": 218,
+          "prompt_tokens": 11,
+          "total_tokens": 229
+        }
+      },
+      {
+        "choices": [
+          {
+            "finish_reason": "stop",
+            "message": {
+              "content": "{\"timestamps\":[{\"valid_at\":\"2026-01-01T00:00:00Z\",\"invalid_at\":null}]}"
+            }
+          }
+        ],
+        "usage": {
+          "completion_tokens": 70,
+          "prompt_tokens": 11,
+          "total_tokens": 81
+        }
+      },
+      {
+        "choices": [
+          {
+            "finish_reason": "stop",
+            "message": {
+              "content": "{\"summary\":\"Alice visited Acme.\"}"
+            }
+          }
+        ],
+        "usage": {
+          "completion_tokens": 33,
+          "prompt_tokens": 11,
+          "total_tokens": 44
+        }
+      },
+      {
+        "choices": [
+          {
+            "finish_reason": "stop",
+            "message": {
+              "content": "{\"description\":\"Alice and Acme.\"}"
+            }
+          }
+        ],
+        "usage": {
+          "completion_tokens": 33,
+          "prompt_tokens": 11,
+          "total_tokens": 44
+        }
+      },
+      {
+        "choices": [
+          {
+            "finish_reason": "stop",
+            "message": {
+              "content": "{\"summary\":\"Alice visited Acme.\"}"
+            }
+          }
+        ],
+        "usage": {
+          "completion_tokens": 33,
+          "prompt_tokens": 11,
+          "total_tokens": 44
+        }
+      }
+    ],
+    "runtime_observed_callsites": [
+      "dedupe_edges.resolve_edge",
+      "dedupe_nodes.nodes",
+      "extract_edges.edge",
+      "extract_edges.extract_attributes",
+      "extract_edges.extract_timestamps",
+      "extract_edges.extract_timestamps_batch",
+      "extract_nodes.extract_attributes",
+      "extract_nodes.extract_entity_summaries_from_episodes",
+      "extract_nodes.extract_json",
+      "extract_nodes.extract_summaries_batch",
+      "extract_nodes.extract_text",
+      "extract_nodes_and_edges.extract_message",
+      "summarize_nodes.summarize_pair",
+      "summarize_nodes.summary_description",
+      "summarize_sagas.summarize_saga"
+    ],
+    "schemas": [
+      {
+        "json_schema": {
+          "name": "ExtractedEntities",
+          "schema": {
+            "$defs": {
+              "ExtractedEntity": {
+                "properties": {
+                  "entity_type_id": {
+                    "description": "ID of the classified entity type. Must be one of the provided entity_type_id integers.",
+                    "title": "Entity Type Id",
+                    "type": "integer"
+                  },
+                  "episode_indices": {
+                    "description": "List of episode numbers (0-indexed) this entity was extracted from. When processing a single episode, this should be [0].",
+                    "items": {
+                      "type": "integer"
+                    },
+                    "title": "Episode Indices",
+                    "type": "array"
+                  },
+                  "name": {
+                    "description": "Name of the extracted entity",
+                    "title": "Name",
+                    "type": "string"
+                  }
+                },
+                "required": [
+                  "name",
+                  "entity_type_id"
+                ],
+                "title": "ExtractedEntity",
+                "type": "object"
+              }
+            },
+            "properties": {
+              "extracted_entities": {
+                "description": "List of extracted entities",
+                "items": {
+                  "$ref": "#/$defs/ExtractedEntity"
+                },
+                "title": "Extracted Entities",
+                "type": "array"
+              }
+            },
+            "required": [
+              "extracted_entities"
+            ],
+            "title": "ExtractedEntities",
+            "type": "object"
+          }
+        },
+        "type": "json_schema"
+      },
+      {
+        "json_schema": {
+          "name": "ExtractedEntities",
+          "schema": {
+            "$defs": {
+              "ExtractedEntity": {
+                "properties": {
+                  "entity_type_id": {
+                    "description": "ID of the classified entity type. Must be one of the provided entity_type_id integers.",
+                    "title": "Entity Type Id",
+                    "type": "integer"
+                  },
+                  "episode_indices": {
+                    "description": "List of episode numbers (0-indexed) this entity was extracted from. When processing a single episode, this should be [0].",
+                    "items": {
+                      "type": "integer"
+                    },
+                    "title": "Episode Indices",
+                    "type": "array"
+                  },
+                  "name": {
+                    "description": "Name of the extracted entity",
+                    "title": "Name",
+                    "type": "string"
+                  }
+                },
+                "required": [
+                  "name",
+                  "entity_type_id"
+                ],
+                "title": "ExtractedEntity",
+                "type": "object"
+              }
+            },
+            "properties": {
+              "extracted_entities": {
+                "description": "List of extracted entities",
+                "items": {
+                  "$ref": "#/$defs/ExtractedEntity"
+                },
+                "title": "Extracted Entities",
+                "type": "array"
+              }
+            },
+            "required": [
+              "extracted_entities"
+            ],
+            "title": "ExtractedEntities",
+            "type": "object"
+          }
+        },
+        "type": "json_schema"
+      },
+      {
+        "json_schema": {
+          "name": "NodeResolutions",
+          "schema": {
+            "$defs": {
+              "NodeDuplicate": {
+                "properties": {
+                  "duplicate_candidate_id": {
+                    "description": "candidate_id of the matching EXISTING ENTITY, or -1 if no duplicate exists.",
+                    "title": "Duplicate Candidate Id",
+                    "type": "integer"
+                  },
+                  "id": {
+                    "description": "integer id of the entity",
+                    "title": "Id",
+                    "type": "integer"
+                  },
+                  "name": {
+                    "description": "Name of the entity. Should be the most complete and descriptive name of the entity. Do not include any JSON formatting in the Entity name such as {}.",
+                    "title": "Name",
+                    "type": "string"
+                  }
+                },
+                "required": [
+                  "id",
+                  "name",
+                  "duplicate_candidate_id"
+                ],
+                "title": "NodeDuplicate",
+                "type": "object"
+              }
+            },
+            "properties": {
+              "entity_resolutions": {
+                "description": "List of resolved nodes",
+                "items": {
+                  "$ref": "#/$defs/NodeDuplicate"
+                },
+                "title": "Entity Resolutions",
+                "type": "array"
+              }
+            },
+            "required": [
+              "entity_resolutions"
+            ],
+            "title": "NodeResolutions",
+            "type": "object"
+          }
+        },
+        "type": "json_schema"
+      },
+      {
+        "json_schema": {
+          "name": "ExtractedEdges",
+          "schema": {
+            "$defs": {
+              "Edge": {
+                "properties": {
+                  "episode_indices": {
+                    "description": "List of episode numbers (0-indexed) that this fact was derived from. When processing a single episode, this should be [0].",
+                    "items": {
+                      "type": "integer"
+                    },
+                    "title": "Episode Indices",
+                    "type": "array"
+                  },
+                  "fact": {
+                    "description": "A natural language description of the relationship between the entities, paraphrased from the source text",
+                    "title": "Fact",
+                    "type": "string"
+                  },
+                  "invalid_at": {
+                    "anyOf": [
+                      {
+                        "type": "string"
+                      },
+                      {
+                        "type": "null"
+                      }
+                    ],
+                    "default": null,
+                    "description": "The date and time when the relationship described by the edge fact stopped being true or ended. Use ISO 8601 format (YYYY-MM-DDTHH:MM:SS.SSSSSSZ)",
+                    "title": "Invalid At"
+                  },
+                  "relation_type": {
+                    "description": "The type of relationship between the entities, in SCREAMING_SNAKE_CASE (e.g., WORKS_AT, LIVES_IN, IS_FRIENDS_WITH)",
+                    "title": "Relation Type",
+                    "type": "string"
+                  },
+                  "source_entity_name": {
+                    "description": "The name of the source entity from the ENTITIES list",
+                    "title": "Source Entity Name",
+                    "type": "string"
+                  },
+                  "target_entity_name": {
+                    "description": "The name of the target entity from the ENTITIES list",
+                    "title": "Target Entity Name",
+                    "type": "string"
+                  },
+                  "valid_at": {
+                    "anyOf": [
+                      {
+                        "type": "string"
+                      },
+                      {
+                        "type": "null"
+                      }
+                    ],
+                    "default": null,
+                    "description": "The date and time when the relationship described by the edge fact became true or was established. Use ISO 8601 format (YYYY-MM-DDTHH:MM:SS.SSSSSSZ)",
+                    "title": "Valid At"
+                  }
+                },
+                "required": [
+                  "source_entity_name",
+                  "target_entity_name",
+                  "relation_type",
+                  "fact"
+                ],
+                "title": "Edge",
+                "type": "object"
+              }
+            },
+            "properties": {
+              "edges": {
+                "items": {
+                  "$ref": "#/$defs/Edge"
+                },
+                "title": "Edges",
+                "type": "array"
+              }
+            },
+            "required": [
+              "edges"
+            ],
+            "title": "ExtractedEdges",
+            "type": "object"
+          }
+        },
+        "type": "json_schema"
+      },
+      {
+        "json_schema": {
+          "name": "_AttributesModel",
+          "schema": {
+            "properties": {
+              "aliases": {
+                "default": [],
+                "items": {
+                  "type": "string"
+                },
+                "title": "Aliases",
+                "type": "array"
+              },
+              "label": {
+                "anyOf": [
+                  {
+                    "type": "string"
+                  },
+                  {
+                    "type": "null"
+                  }
+                ],
+                "default": null,
+                "title": "Label"
+              },
+              "score": {
+                "anyOf": [
+                  {
+                    "type": "integer"
+                  },
+                  {
+                    "type": "null"
+                  }
+                ],
+                "default": null,
+                "title": "Score"
+              }
+            },
+            "title": "_AttributesModel",
+            "type": "object"
+          }
+        },
+        "type": "json_schema"
+      },
+      {
+        "json_schema": {
+          "name": "EdgeTimestamps",
+          "schema": {
+            "description": "Temporal bounds extracted from a fact.",
+            "properties": {
+              "invalid_at": {
+                "anyOf": [
+                  {
+                    "type": "string"
+                  },
+                  {
+                    "type": "null"
+                  }
+                ],
+                "default": null,
+                "description": "When the fact stopped being true. ISO 8601 with Z suffix (e.g., 2025-04-30T00:00:00Z)",
+                "title": "Invalid At"
+              },
+              "valid_at": {
+                "anyOf": [
+                  {
+                    "type": "string"
+                  },
+                  {
+                    "type": "null"
+                  }
+                ],
+                "default": null,
+                "description": "When the fact became true. ISO 8601 with Z suffix (e.g., 2025-04-30T00:00:00Z)",
+                "title": "Valid At"
+              }
+            },
+            "title": "EdgeTimestamps",
+            "type": "object"
+          }
+        },
+        "type": "json_schema"
+      },
+      {
+        "json_schema": {
+          "name": "EdgeDuplicate",
+          "schema": {
+            "properties": {
+              "contradicted_facts": {
+                "description": "List of idx values of contradicted facts (from full idx range). Empty list if none.",
+                "items": {
+                  "type": "integer"
+                },
+                "title": "Contradicted Facts",
+                "type": "array"
+              },
+              "duplicate_facts": {
+                "description": "List of idx values of duplicate facts (only from EXISTING FACTS range). Empty list if none.",
+                "items": {
+                  "type": "integer"
+                },
+                "title": "Duplicate Facts",
+                "type": "array"
+              }
+            },
+            "required": [
+              "duplicate_facts",
+              "contradicted_facts"
+            ],
+            "title": "EdgeDuplicate",
+            "type": "object"
+          }
+        },
+        "type": "json_schema"
+      },
+      {
+        "json_schema": {
+          "name": "_AttributesModel",
+          "schema": {
+            "properties": {
+              "aliases": {
+                "default": [],
+                "items": {
+                  "type": "string"
+                },
+                "title": "Aliases",
+                "type": "array"
+              },
+              "label": {
+                "anyOf": [
+                  {
+                    "type": "string"
+                  },
+                  {
+                    "type": "null"
+                  }
+                ],
+                "default": null,
+                "title": "Label"
+              },
+              "score": {
+                "anyOf": [
+                  {
+                    "type": "integer"
+                  },
+                  {
+                    "type": "null"
+                  }
+                ],
+                "default": null,
+                "title": "Score"
+              }
+            },
+            "title": "_AttributesModel",
+            "type": "object"
+          }
+        },
+        "type": "json_schema"
+      },
+      {
+        "json_schema": {
+          "name": "SummarizedEntities",
+          "schema": {
+            "$defs": {
+              "SummarizedEntity": {
+                "properties": {
+                  "name": {
+                    "description": "Name of the entity being summarized",
+                    "title": "Name",
+                    "type": "string"
+                  },
+                  "summary": {
+                    "description": "Updated summary for the entity",
+                    "title": "Summary",
+                    "type": "string"
+                  }
+                },
+                "required": [
+                  "name",
+                  "summary"
+                ],
+                "title": "SummarizedEntity",
+                "type": "object"
+              }
+            },
+            "properties": {
+              "summaries": {
+                "description": "List of entity summaries. Only include entities that need summary updates.",
+                "items": {
+                  "$ref": "#/$defs/SummarizedEntity"
+                },
+                "title": "Summaries",
+                "type": "array"
+              }
+            },
+            "required": [
+              "summaries"
+            ],
+            "title": "SummarizedEntities",
+            "type": "object"
+          }
+        },
+        "type": "json_schema"
+      },
+      {
+        "json_schema": {
+          "name": "SummarizedEntities",
+          "schema": {
+            "$defs": {
+              "SummarizedEntity": {
+                "properties": {
+                  "name": {
+                    "description": "Name of the entity being summarized",
+                    "title": "Name",
+                    "type": "string"
+                  },
+                  "summary": {
+                    "description": "Updated summary for the entity",
+                    "title": "Summary",
+                    "type": "string"
+                  }
+                },
+                "required": [
+                  "name",
+                  "summary"
+                ],
+                "title": "SummarizedEntity",
+                "type": "object"
+              }
+            },
+            "properties": {
+              "summaries": {
+                "description": "List of entity summaries. Only include entities that need summary updates.",
+                "items": {
+                  "$ref": "#/$defs/SummarizedEntity"
+                },
+                "title": "Summaries",
+                "type": "array"
+              }
+            },
+            "required": [
+              "summaries"
+            ],
+            "title": "SummarizedEntities",
+            "type": "object"
+          }
+        },
+        "type": "json_schema"
+      },
+      {
+        "json_schema": {
+          "name": "CombinedExtraction",
+          "schema": {
+            "$defs": {
+              "CombinedEntity": {
+                "description": "Entity extracted by the combined node+edge extraction prompt.",
+                "properties": {
+                  "entity_type_id": {
+                    "description": "ID of the classified entity type. Must be one of the provided entity_type_id integers.",
+                    "title": "Entity Type Id",
+                    "type": "integer"
+                  },
+                  "name": {
+                    "description": "Name of the extracted entity",
+                    "title": "Name",
+                    "type": "string"
+                  }
+                },
+                "required": [
+                  "name",
+                  "entity_type_id"
+                ],
+                "title": "CombinedEntity",
+                "type": "object"
+              },
+              "CombinedFact": {
+                "description": "Relationship fact extracted by the combined node+edge extraction prompt.",
+                "properties": {
+                  "episode_indices": {
+                    "description": "List of episode numbers (0-indexed) that this fact was derived from. When processing a single episode, this should be [0].",
+                    "items": {
+                      "type": "integer"
+                    },
+                    "title": "Episode Indices",
+                    "type": "array"
+                  },
+                  "fact": {
+                    "description": "A self-contained natural language description of the relationship, paraphrased from the source text with all specific details preserved",
+                    "title": "Fact",
+                    "type": "string"
+                  },
+                  "relation_type": {
+                    "description": "The type of relationship between the entities, in SCREAMING_SNAKE_CASE (e.g., WORKS_AT, LIVES_IN, IS_FRIENDS_WITH)",
+                    "title": "Relation Type",
+                    "type": "string"
+                  },
+                  "source_entity_name": {
+                    "description": "The name of the source entity from the extracted entities list",
+                    "title": "Source Entity Name",
+                    "type": "string"
+                  },
+                  "target_entity_name": {
+                    "description": "The name of the target entity from the extracted entities list",
+                    "title": "Target Entity Name",
+                    "type": "string"
+                  }
+                },
+                "required": [
+                  "source_entity_name",
+                  "target_entity_name",
+                  "relation_type",
+                  "fact"
+                ],
+                "title": "CombinedFact",
+                "type": "object"
+              }
+            },
+            "description": "Combined node and edge extraction response.",
+            "properties": {
+              "edges": {
+                "description": "List of extracted relationship facts",
+                "items": {
+                  "$ref": "#/$defs/CombinedFact"
+                },
+                "title": "Edges",
+                "type": "array"
+              },
+              "extracted_entities": {
+                "description": "List of extracted entities",
+                "items": {
+                  "$ref": "#/$defs/CombinedEntity"
+                },
+                "title": "Extracted Entities",
+                "type": "array"
+              }
+            },
+            "required": [
+              "extracted_entities",
+              "edges"
+            ],
+            "title": "CombinedExtraction",
+            "type": "object"
+          }
+        },
+        "type": "json_schema"
+      },
+      {
+        "json_schema": {
+          "name": "BatchEdgeTimestamps",
+          "schema": {
+            "$defs": {
+              "EdgeTimestamps": {
+                "description": "Temporal bounds extracted from a fact.",
+                "properties": {
+                  "invalid_at": {
+                    "anyOf": [
+                      {
+                        "type": "string"
+                      },
+                      {
+                        "type": "null"
+                      }
+                    ],
+                    "default": null,
+                    "description": "When the fact stopped being true. ISO 8601 with Z suffix (e.g., 2025-04-30T00:00:00Z)",
+                    "title": "Invalid At"
+                  },
+                  "valid_at": {
+                    "anyOf": [
+                      {
+                        "type": "string"
+                      },
+                      {
+                        "type": "null"
+                      }
+                    ],
+                    "default": null,
+                    "description": "When the fact became true. ISO 8601 with Z suffix (e.g., 2025-04-30T00:00:00Z)",
+                    "title": "Valid At"
+                  }
+                },
+                "title": "EdgeTimestamps",
+                "type": "object"
+              }
+            },
+            "description": "Temporal bounds for a batch of facts.",
+            "properties": {
+              "timestamps": {
+                "description": "Timestamps for each fact, in the same order as the input facts",
+                "items": {
+                  "$ref": "#/$defs/EdgeTimestamps"
+                },
+                "title": "Timestamps",
+                "type": "array"
+              }
+            },
+            "required": [
+              "timestamps"
+            ],
+            "title": "BatchEdgeTimestamps",
+            "type": "object"
+          }
+        },
+        "type": "json_schema"
+      },
+      {
+        "json_schema": {
+          "name": "Summary",
+          "schema": {
+            "properties": {
+              "summary": {
+                "description": "Summary containing the important information about the entity. Under 1000 characters",
+                "title": "Summary",
+                "type": "string"
+              }
+            },
+            "required": [
+              "summary"
+            ],
+            "title": "Summary",
+            "type": "object"
+          }
+        },
+        "type": "json_schema"
+      },
+      {
+        "json_schema": {
+          "name": "SummaryDescription",
+          "schema": {
+            "properties": {
+              "description": {
+                "description": "One sentence description of the provided summary",
+                "title": "Description",
+                "type": "string"
+              }
+            },
+            "required": [
+              "description"
+            ],
+            "title": "SummaryDescription",
+            "type": "object"
+          }
+        },
+        "type": "json_schema"
+      },
+      {
+        "json_schema": {
+          "name": "SagaSummary",
+          "schema": {
+            "properties": {
+              "summary": {
+                "description": "Factual knowledge brief. Under 1000 characters.",
+                "title": "Summary",
+                "type": "string"
+              }
+            },
+            "required": [
+              "summary"
+            ],
+            "title": "SagaSummary",
+            "type": "object"
+          }
+        },
+        "type": "json_schema"
+      }
+    ],
+    "status": "PASS"
+  },
   "artifact_type": "schema_bound_certificate",
+  "base_code_commit": "c62b548d18bbf0da161069be7be86750e977581c",
   "callsite_completion_budgets": {
     "default": 32768,
     "extract_edges.edge": 16384
@@ -7,7 +1581,139 @@
   "configured_effective_max_tokens": 32768,
   "context_limit": 65536,
   "context_safety_margin": 32,
+  "covered_callsites": [
+    "dedupe_edges.resolve_edge",
+    "dedupe_nodes.nodes",
+    "extract_edges.edge",
+    "extract_edges.extract_attributes",
+    "extract_edges.extract_timestamps",
+    "extract_edges.extract_timestamps_batch",
+    "extract_nodes.extract_attributes",
+    "extract_nodes_and_edges.extract_message",
+    "summarize_nodes.summarize_pair",
+    "summarize_nodes.summary_description",
+    "summarize_sagas.summarize_saga"
+  ],
+  "covered_source_callsites": [
+    {
+      "line": 538,
+      "prompt_name": "summarize_sagas.summarize_saga",
+      "source_file": "graphiti.py",
+      "source_key": "graphiti.py:538",
+      "witness": "actual maintenance or Graphiti entrypoint probe"
+    },
+    {
+      "line": 128,
+      "prompt_name": "extract_nodes_and_edges.extract_message",
+      "source_file": "utils/maintenance/combined_extraction.py",
+      "source_key": "utils/maintenance/combined_extraction.py:128",
+      "witness": "actual maintenance or Graphiti entrypoint probe"
+    },
+    {
+      "line": 245,
+      "prompt_name": "extract_edges.extract_timestamps_batch",
+      "source_file": "utils/maintenance/combined_extraction.py",
+      "source_key": "utils/maintenance/combined_extraction.py:245",
+      "witness": "actual maintenance or Graphiti entrypoint probe"
+    },
+    {
+      "line": 147,
+      "prompt_name": "summarize_nodes.summarize_pair",
+      "source_file": "utils/maintenance/community_operations.py",
+      "source_key": "utils/maintenance/community_operations.py:147",
+      "witness": "actual maintenance or Graphiti entrypoint probe"
+    },
+    {
+      "line": 163,
+      "prompt_name": "summarize_nodes.summary_description",
+      "source_file": "utils/maintenance/community_operations.py",
+      "source_key": "utils/maintenance/community_operations.py:163",
+      "witness": "actual maintenance or Graphiti entrypoint probe"
+    },
+    {
+      "line": 202,
+      "prompt_name": "extract_edges.edge",
+      "source_file": "utils/maintenance/edge_operations.py",
+      "source_key": "utils/maintenance/edge_operations.py:202",
+      "witness": "actual maintenance or Graphiti entrypoint probe"
+    },
+    {
+      "line": 726,
+      "prompt_name": "dedupe_edges.resolve_edge",
+      "source_file": "utils/maintenance/edge_operations.py",
+      "source_key": "utils/maintenance/edge_operations.py:726",
+      "witness": "actual maintenance or Graphiti entrypoint probe"
+    },
+    {
+      "line": 598,
+      "prompt_name": "extract_edges.extract_timestamps",
+      "source_file": "utils/maintenance/edge_operations.py",
+      "source_key": "utils/maintenance/edge_operations.py:598",
+      "witness": "actual maintenance or Graphiti entrypoint probe"
+    },
+    {
+      "line": 788,
+      "prompt_name": "extract_edges.extract_attributes",
+      "source_file": "utils/maintenance/edge_operations.py",
+      "source_key": "utils/maintenance/edge_operations.py:788",
+      "witness": "actual maintenance or Graphiti entrypoint probe"
+    },
+    {
+      "line": 662,
+      "prompt_name": "extract_edges.extract_attributes",
+      "source_file": "utils/maintenance/edge_operations.py",
+      "source_key": "utils/maintenance/edge_operations.py:662",
+      "witness": "actual maintenance or Graphiti entrypoint probe"
+    },
+    {
+      "line": 275,
+      "observed_variants": [
+        "extract_nodes.extract_json",
+        "extract_nodes.extract_message",
+        "extract_nodes.extract_text"
+      ],
+      "prompt_name": "<dynamic>",
+      "source_file": "utils/maintenance/node_operations.py",
+      "source_key": "utils/maintenance/node_operations.py:275",
+      "witness": "_call_extraction_llm exercised message/text/json variants"
+    },
+    {
+      "line": 552,
+      "prompt_name": "dedupe_nodes.nodes",
+      "source_file": "utils/maintenance/node_operations.py",
+      "source_key": "utils/maintenance/node_operations.py:552",
+      "witness": "actual maintenance or Graphiti entrypoint probe"
+    },
+    {
+      "line": 804,
+      "prompt_name": "extract_nodes.extract_attributes",
+      "source_file": "utils/maintenance/node_operations.py",
+      "source_key": "utils/maintenance/node_operations.py:804",
+      "witness": "actual maintenance or Graphiti entrypoint probe"
+    },
+    {
+      "line": 976,
+      "observed_variants": [
+        "extract_nodes.extract_entity_summaries_from_episodes",
+        "extract_nodes.extract_summaries_batch"
+      ],
+      "prompt_name": "<dynamic>",
+      "source_file": "utils/maintenance/node_operations.py",
+      "source_key": "utils/maintenance/node_operations.py:976",
+      "witness": "_process_summary_flight exercised both prompt variants"
+    }
+  ],
+  "evaluated_source_bundle": {
+    "base_code_commit": "c62b548d18bbf0da161069be7be86750e977581c",
+    "generator_source_sha256": "06dbd73b160e4f5118b71ed2675ac39411dfaae1694d664ba870f2ed96ed6241",
+    "graphiti_source_sha256": "7c65051a62982d8b510ebdbf37bae4d07020e74520e1f6d9bf8a0ffb26beeccb",
+    "mab_live_runner_sha256": "302c228e8950593a3094f6dbf3fd7cb6a41f013767f425bf57ce3a8292fb3e4b",
+    "v61_mab_sha256": "16b0741930c014306ad969fdb2032655cf82f345e747175bb7380c528a60fff3",
+    "v61_runtime_sha256": "b30fe7b8a8c2ca2982f6b636ddfbe570b58e37e9678bf606618313e3c576e009"
+  },
+  "evaluated_source_bundle_sha256": "8728ddd3fc6aaa191d3fa415fba228933ca589a917c23bd96e231679e5a15152",
   "formal_certificate_complete": true,
+  "generator_source_sha256": "06dbd73b160e4f5118b71ed2675ac39411dfaae1694d664ba870f2ed96ed6241",
   "graphiti_commit": "021d3a57d511f21b10adaf7fa923bd5c1fce5e9d",
   "graphiti_source_root": "/data/predator/ly/Mem/envs/membind-local/lib/python3.12/site-packages/graphiti_core",
   "graphiti_source_sha256": "7c65051a62982d8b510ebdbf37bae4d07020e74520e1f6d9bf8a0ffb26beeccb",
@@ -17,14 +1723,86 @@
   "output_token_bound_method": "one_token_per_compact_ensure_ascii_json_character_v2_with_exact_tokenizer_witness",
   "provider_calls_used": 0,
   "qualification_status": "PASS_ACTUAL_RUNTIME_CALLSITE",
+  "r2_classification_probe": {
+    "context_attempts": [
+      {
+        "attempt_index": 0,
+        "failure_class": "CONTEXT_BUDGET_EXHAUSTED",
+        "identity": {
+          "physical_attempt_id": "r2-context:physical:0",
+          "request_variant_id": "r2-variant",
+          "semantic_operation_id": "r2-context"
+        },
+        "status": "failure"
+      }
+    ],
+    "context_operation_calls": 1,
+    "context_retry_count": 0,
+    "malformed_retry_count": 0,
+    "status": "PASS",
+    "three_level_identity": true,
+    "transient_attempts": [
+      {
+        "failure": "SERVER_TRANSIENT"
+      },
+      {
+        "attempt_index": 0,
+        "failure_class": "SERVER_TRANSIENT",
+        "identity": {
+          "physical_attempt_id": "r2-semantic:physical:0",
+          "request_variant_id": "r2-variant",
+          "semantic_operation_id": "r2-semantic"
+        },
+        "status": "failure"
+      },
+      {
+        "failure": "SERVER_TRANSIENT"
+      },
+      {
+        "attempt_index": 1,
+        "failure_class": "SERVER_TRANSIENT",
+        "identity": {
+          "physical_attempt_id": "r2-semantic:physical:1",
+          "request_variant_id": "r2-variant",
+          "semantic_operation_id": "r2-semantic"
+        },
+        "status": "failure"
+      },
+      {
+        "success": true
+      },
+      {
+        "attempt_index": 2,
+        "failure_class": null,
+        "identity": {
+          "physical_attempt_id": "r2-semantic:physical:2",
+          "request_variant_id": "r2-variant",
+          "semantic_operation_id": "r2-semantic"
+        },
+        "status": "success"
+      }
+    ],
+    "truncation_attempts": [
+      {
+        "attempt_index": 0,
+        "failure_class": "OUTPUT_LENGTH_TRUNCATION",
+        "identity": {
+          "physical_attempt_id": "r2-truncation:physical:0",
+          "request_variant_id": "r2-variant",
+          "semantic_operation_id": "r2-truncation"
+        },
+        "status": "failure"
+      }
+    ]
+  },
   "reliability_identity": {
     "recovery_policy_revision": "classified-request-recovery-v1",
     "recovery_policy_sha256": "40492aace3206f9355aae403fee578c00e0a9af0ccb5ae59f12de024da617201",
     "runtime_reliability_profile": "shared-structured-output-recovery-v1",
     "schema_revision": "finite-edge-schema-v1"
   },
-  "repository_dirty_diff_sha256": "a860c77e3c0a2552cff0161f4761da289ca88e030913b7da2927b90bd2338fd7",
-  "repository_head": "4c8262d656eb437f5793b097490223119f221d82",
+  "repository_dirty_diff_sha256": "f938c8233311e2e737d73ff5288ae1b2d6e5dcb7fb3264327e1fb93e5af1ebbe",
+  "repository_head": "c62b548d18bbf0da161069be7be86750e977581c",
   "runtime_generated_call_count": 47,
   "runtime_generated_callsites": {
     "dedupe_edges.resolve_edge": [
@@ -1096,9 +2874,116 @@
       }
     ]
   },
+  "runtime_observed_callsites": [
+    "dedupe_edges.resolve_edge",
+    "dedupe_nodes.nodes",
+    "extract_edges.edge",
+    "extract_edges.extract_attributes",
+    "extract_edges.extract_timestamps",
+    "extract_edges.extract_timestamps_batch",
+    "extract_nodes.extract_attributes",
+    "extract_nodes.extract_entity_summaries_from_episodes",
+    "extract_nodes.extract_json",
+    "extract_nodes.extract_message",
+    "extract_nodes.extract_summaries_batch",
+    "extract_nodes.extract_text",
+    "extract_nodes_and_edges.extract_message",
+    "summarize_nodes.summarize_pair",
+    "summarize_nodes.summary_description",
+    "summarize_sagas.summarize_saga"
+  ],
   "runtime_source_sha256": "b30fe7b8a8c2ca2982f6b636ddfbe570b58e37e9678bf606618313e3c576e009",
   "schema_version": "membind.structured-output-recovery.schema-bound-certificate.v2",
-  "status": "PASS",
+  "source_discovered_callsites": [
+    {
+      "line": 538,
+      "prompt_name": "summarize_sagas.summarize_saga",
+      "source_file": "graphiti.py"
+    },
+    {
+      "line": 266,
+      "prompt_name": "<dynamic>",
+      "source_file": "llm_client/gliner2_client.py"
+    },
+    {
+      "line": 128,
+      "prompt_name": "extract_nodes_and_edges.extract_message",
+      "source_file": "utils/maintenance/combined_extraction.py"
+    },
+    {
+      "line": 245,
+      "prompt_name": "extract_edges.extract_timestamps_batch",
+      "source_file": "utils/maintenance/combined_extraction.py"
+    },
+    {
+      "line": 147,
+      "prompt_name": "summarize_nodes.summarize_pair",
+      "source_file": "utils/maintenance/community_operations.py"
+    },
+    {
+      "line": 163,
+      "prompt_name": "summarize_nodes.summary_description",
+      "source_file": "utils/maintenance/community_operations.py"
+    },
+    {
+      "line": 202,
+      "prompt_name": "extract_edges.edge",
+      "source_file": "utils/maintenance/edge_operations.py"
+    },
+    {
+      "line": 726,
+      "prompt_name": "dedupe_edges.resolve_edge",
+      "source_file": "utils/maintenance/edge_operations.py"
+    },
+    {
+      "line": 598,
+      "prompt_name": "extract_edges.extract_timestamps",
+      "source_file": "utils/maintenance/edge_operations.py"
+    },
+    {
+      "line": 788,
+      "prompt_name": "extract_edges.extract_attributes",
+      "source_file": "utils/maintenance/edge_operations.py"
+    },
+    {
+      "line": 662,
+      "prompt_name": "extract_edges.extract_attributes",
+      "source_file": "utils/maintenance/edge_operations.py"
+    },
+    {
+      "line": 275,
+      "prompt_name": "<dynamic>",
+      "source_file": "utils/maintenance/node_operations.py"
+    },
+    {
+      "line": 552,
+      "prompt_name": "dedupe_nodes.nodes",
+      "source_file": "utils/maintenance/node_operations.py"
+    },
+    {
+      "line": 804,
+      "prompt_name": "extract_nodes.extract_attributes",
+      "source_file": "utils/maintenance/node_operations.py"
+    },
+    {
+      "line": 976,
+      "prompt_name": "<dynamic>",
+      "source_file": "utils/maintenance/node_operations.py"
+    }
+  ],
+  "status": "PASS_ACTUAL_RUNTIME_CALLSITE",
+  "synthetic_suite_status": "PASS_PROVIDER_FREE_SYNTHETIC_CALLSITE_SUITE",
   "tokenizer_revision": "d5d09f07b48c3086c508b30d1c9114bd1189145b74e982a265350c923acd8101",
-  "tokenizer_vocab_sha256": "aeb13307a71acd8fe81861d94ad54ab689df773318809eed3cbe794b4492dae4"
+  "tokenizer_vocab_sha256": "aeb13307a71acd8fe81861d94ad54ab689df773318809eed3cbe794b4492dae4",
+  "uncovered_callsites": [],
+  "uncovered_source_callsites": [],
+  "unreachable_with_proof": [
+    {
+      "line": 266,
+      "prompt_name": "<dynamic>",
+      "proof": "The selected strict-native runtime constructs OpenAIGenericClient; Gliner2Client is not instantiated or reachable from the pinned Graphiti.add_episode path.",
+      "source_file": "llm_client/gliner2_client.py",
+      "source_key": "llm_client/gliner2_client.py:266"
+    }
+  ]
 }

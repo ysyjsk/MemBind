@@ -1,14 +1,32 @@
 {
-  "certificate_sha256": "78917cba3bee5cc89cef970cf6bb025b8e6e059d7d54c1a6643c48f41e520849",
+  "base_code_commit": "c62b548d18bbf0da161069be7be86750e977581c",
+  "certificate_sha256": "55f7d876c9946c4224642e12ad79d374d52b3fcb0c48b9e3e645e2497c52f0fd",
+  "covered_callsite_count": 11,
+  "covered_source_callsite_count": 14,
+  "evaluated_source_bundle_sha256": "8728ddd3fc6aaa191d3fa415fba228933ca589a917c23bd96e231679e5a15152",
   "formal_history_executed": false,
+  "generator_source_sha256": "06dbd73b160e4f5118b71ed2675ac39411dfaae1694d664ba870f2ed96ed6241",
   "held_out_accessed": false,
   "provider_calls_used": 0,
-  "r1_actual_callsite_inventory": "PASS_ACTUAL_RUNTIME_CERTIFICATE",
-  "r1_schema_boundedness": "PASS_ACTUAL_RUNTIME_CALLSITE",
-  "r2_classified_recovery": "PASS_PROVIDER_FREE",
-  "r3_publication": "AT_LEAST_ONCE_WITH_DURABLE_RECONCILIATION",
+  "r1_actual_callsite_inventory": "PASS_ACTUAL_RUNTIME_CALLSITE",
+  "r1_schema_boundedness": "PASS_PROVIDER_FREE_SYNTHETIC_CALLSITE_SUITE",
+  "r2_classified_recovery": "PASS_PROVIDER_FREE_CLASSIFIED_RECOVERY",
+  "r3_publication": "AT_LEAST_ONCE_WITH_STABLE_IDEMPOTENCY_KEY",
   "r4_finalizer": "PASS_PROVIDER_FREE",
-  "reason": "All runtime-generated structured-output variants were certified with the local tokenizer and bounded wire schemas before provider invocation.",
+  "reason": "Synthetic schema certificates and actual Graphiti.add_episode coverage are reported separately; production qualification is fail-closed until every reachable source callsite has a runtime witness.",
+  "runtime_observed_callsite_count": 16,
   "schema_version": "membind.structured-output-recovery.qualification.v2",
-  "status": "PASS"
+  "source_discovered_callsite_count": 15,
+  "status": "PASS_ACTUAL_RUNTIME_CALLSITE",
+  "uncovered_callsite_count": 0,
+  "uncovered_source_callsite_count": 0,
+  "unreachable_with_proof": [
+    {
+      "line": 266,
+      "prompt_name": "<dynamic>",
+      "proof": "The selected strict-native runtime constructs OpenAIGenericClient; Gliner2Client is not instantiated or reachable from the pinned Graphiti.add_episode path.",
+      "source_file": "llm_client/gliner2_client.py",
+      "source_key": "llm_client/gliner2_client.py:266"
+    }
+  ]
 }

@@ -199,8 +199,9 @@ def _mab_graphiti_kwargs(
     """Build the pinned Graphiti call shape.
 
     A strict upstream write deliberately omits ``uuid``: in Graphiti's pinned
-    implementation a supplied UUID is an existing-node lookup.  V6.1 passes
-    ``include_uuid=True`` for its durable reconciliation protocol.
+    implementation a supplied UUID is an existing-node lookup.  Strict native
+    and V6.1 publication therefore omit it; V6.1 keeps a separate local
+    idempotency key for at-least-once replay accounting.
     """
 
     publication_uuid = str(
@@ -234,6 +235,26 @@ def _mab_graphiti_kwargs(
     if include_uuid:
         result["uuid"] = publication_uuid
     return result
+
+
+def _mab_publication_idempotency_key(
+    episode: MABLiveEpisode,
+    *,
+    namespace: str,
+) -> str:
+    """Derive a stable source key without assigning Graphiti's episode UUID.
+
+    Graphiti 0.29.3 interprets ``uuid=`` as a lookup of an already persisted
+    ``Episodic`` node.  The key is therefore a local publication identity only;
+    callers must not pass it as the Graphiti ``uuid`` on a fresh write.
+    """
+
+    source_key = uuid.uuid5(
+        uuid.NAMESPACE_URL,
+        f"membind-idempotency:{namespace}:{episode.context_id}:"
+        f"{episode.source_sequence}:{episode.source_hash}",
+    )
+    return f"membind-idempotency:{source_key}"
 
 
 def _span_metrics(
@@ -332,10 +353,13 @@ async def run_mab_construction_async(
 
         async def direct_publish(sequence: int) -> None:
             episode = selected[sequence]
+            # Graphiti 0.29.3 treats ``uuid=`` as an existing-node lookup.
+            # Every fresh publication therefore omits it; the V6.1-compatible
+            # local key below is the only replay identity used by this branch.
             publication_kwargs = _mab_graphiti_kwargs(
                 episode,
                 namespace=namespace,
-                include_uuid=not strict_native,
+                include_uuid=False,
             )
             if strict_native:
                 # Native A/B has no V6.1 journal replay or idempotency branch.
@@ -363,9 +387,9 @@ async def run_mab_construction_async(
                     }
                 )
                 return
-            idempotency_key = str(publication_kwargs.get("uuid") or "")
-            if not idempotency_key:
-                raise MABLiveRunnerError("SOURCE_PUBLICATION_IDEMPOTENCY_KEY_MISSING")
+            idempotency_key = _mab_publication_idempotency_key(
+                episode, namespace=namespace
+            )
             prior = publication_state.get(sequence)
             if prior is not None:
                 if prior.get("idempotency_key") != idempotency_key:
@@ -406,9 +430,9 @@ async def run_mab_construction_async(
             ).hexdigest()
             # This fault window models a database commit that becomes visible
             # before the local COMMITTED journal record is durable.  It is
-            # intentionally exposed so the guarantee remains honest: a
-            # restart can replay the source and therefore provides durable
-            # reconciliation, not cross-system atomic exactly-once.
+            # Intentionally expose this fault window: a restart can replay the
+            # source under the stable local key, but the database and journal
+            # are separate systems and do not provide atomic exactly-once.
             if publication_fault_injector is not None:
                 await _maybe_await(
                     publication_fault_injector(
@@ -565,7 +589,7 @@ async def run_mab_construction_async(
             "publication_guarantee": (
                 "UPSTREAM_GRAPHITI_NO_RESUME"
                 if strict_native
-                else "AT_LEAST_ONCE_WITH_DURABLE_RECONCILIATION"
+                else "AT_LEAST_ONCE_WITH_STABLE_IDEMPOTENCY_KEY"
             ),
             **_reliability_identity(),
         }

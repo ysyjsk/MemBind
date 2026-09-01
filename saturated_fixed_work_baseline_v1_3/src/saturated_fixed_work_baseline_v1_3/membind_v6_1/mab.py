@@ -23,6 +23,7 @@ from ..mab_live_runner import (
     _episode_envelopes,
     _event_sink,
     _mab_graphiti_kwargs,
+    _mab_publication_idempotency_key,
     episode_from_input,
 )
 from ..membind_v5.live_runner import _episode_node, _maybe_await
@@ -665,10 +666,16 @@ async def run_mab_v61_construction_async(
 
         async def publish(sequence: int, _prepared: Any) -> Any:
             episode = selected[sequence]
-            publication_kwargs = _mab_graphiti_kwargs(episode, namespace=namespace)
-            idempotency_key = str(publication_kwargs.get("uuid") or "")
-            if not idempotency_key:
-                raise V61MABError("source publication is missing a stable idempotency key")
+            # Keep the stable local publication identity separate from
+            # Graphiti's ``uuid`` parameter.  In graphiti-core 0.29.3 a
+            # supplied UUID calls EpisodicNode.get_by_uuid() and raises
+            # NodeNotFoundError for a fresh namespace; it is not a create key.
+            idempotency_key = _mab_publication_idempotency_key(
+                episode, namespace=namespace
+            )
+            publication_kwargs = _mab_graphiti_kwargs(
+                episode, namespace=namespace, include_uuid=False
+            )
             prior = publication_state.get(sequence)
             if prior is not None:
                 if prior.get("idempotency_key") != idempotency_key:
@@ -686,11 +693,10 @@ async def run_mab_v61_construction_async(
                     durable=True,
                 )
                 # Reconstruct the certified Native extraction ledger without
-                # invoking Graphiti publication.  A prior commit may come from
-                # an interrupted process whose in-memory transcript was lost;
-                # the provider proxy records a bounded fresh fallback for any
-                # missing response, while the stable source UUID prevents a
-                # second database write.
+                # invoking Graphiti publication.  A prior commit is trusted as
+                # a local idempotency record only.  No claim is made that this
+                # file and Neo4j form one atomic transaction; a torn commit
+                # without a journal record is replayed at least once.
                 node_episode = _episode_node(episode, namespace=namespace)
                 previous = [
                     _episode_node(
@@ -723,9 +729,10 @@ async def run_mab_v61_construction_async(
                                 None,
                                 None,
                             )
-                # The committed graph state is authoritative after a process
-                # crash.  The executor only needs an opaque prepared result;
-                # never call Graphiti again for this source.
+                # The journal is the local publication authority after a clean
+                # committed record.  The executor only needs an opaque result;
+                # no exactly-once or cross-system durable reconciliation claim
+                # is made here.
                 return {"recovered": True, "idempotency_key": idempotency_key}
             emit("NATIVE_ENTER", sequence)
             append_live(
@@ -766,8 +773,9 @@ async def run_mab_v61_construction_async(
             if publication_fault_injector is not None:
                 # This is the irreducible cross-system fault window: Graphiti's
                 # Neo4j transaction has returned, but the local durable journal
-                # has not recorded the publication.  Re-entry can only reuse the
-                # stable UUID and reconcile at least once; it cannot infer an
+                # has not recorded the publication. Re-entry reuses the stable
+                # local idempotency key while omitting Graphiti's UUID lookup;
+                # it can therefore replay at least once but cannot infer an
                 # atomic commit across Neo4j and this file.
                 injected = publication_fault_injector(
                     "after_db_commit_before_journal", sequence, publication_kwargs

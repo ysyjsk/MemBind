@@ -1,21 +1,26 @@
 {
-  "schema_version": "membind.structured-output-recovery.final-decision.v1",
-  "status": "BLOCKED_DATASET_MAPPING",
-  "decision": "BLOCKED_DATASET_MAPPING",
-  "readiness_target": "CODE_READY_FOR_THREE_ARM_EXPERIMENT",
-  "native_identity": "PASS_PROVIDER_FREE",
-  "uuid_fresh_namespace": "PASS_CODE_PATH_PROVIDER_FREE",
-  "r1_actual_callsite_certificate": "PASS_ACTUAL_RUNTIME_CALLSITE",
-  "r2": "PASS_PROVIDER_FREE",
-  "r3": "AT_LEAST_ONCE_WITH_DURABLE_RECONCILIATION",
-  "r4": "PASS_PROVIDER_FREE",
-  "dataset_evaluator_qualification": "STOP_DATASET_MAPPING_UNQUALIFIED",
-  "provider_calls_used": 0,
-  "l5_development_live_qualification_executed": false,
-  "formal_experiment_authorized": false,
-  "engineering_canary_authorized": false,
-  "formal_experiment_started": false,
-  "canary_started": false,
-  "old_campaigns_reused": false,
-  "next_allowed_action": "repair_or_authoritatively_resolve_official_dataset_mapping; do_not_create_formal_three_arm_task_until_dataset_gate_passes"
+  "base_code_commit": "c62b548d18bbf0da161069be7be86750e977581c",
+  "canary_authorized": true,
+  "decision": "CODE_READY_FOR_THREE_ARM_ENGINEERING_CANARY",
+  "evaluated_source_bundle": {
+    "base_code_commit": "c62b548d18bbf0da161069be7be86750e977581c",
+    "generator_source_sha256": "11d2c6ffed8ee74170e430cd9f7b61c0eb32c32bfbfa2421cd710b231c86c4ef",
+    "native_identity_sha256": "7bf4c44e29900c1d1ae4d543cc9297e13fba511309a9465643b8cf9591d5a5b2",
+    "native_report_sha256": "9d7e074647a176ef02adfd110c8e3f393a20f065c0448d52a7224848997ba163",
+    "official_dataset_parity_sha256": "1b890be003f3b2ac1bafc3d06d4433f179d8132ae314e807d8a3e3ad5728a007",
+    "structured_qualification_sha256": "c31c3053c968696caa00386993b0bb6368df4bbcd59e0b1f8b5d947eeca1cfa0"
+  },
+  "evaluated_source_bundle_sha256": "a939d0191fd539390c0df95c6417d15eeb58a86d4bcca0daa4ef0b0a7b641f3b",
+  "formal_three_arm_authorized": false,
+  "generator_source_sha256": "11d2c6ffed8ee74170e430cd9f7b61c0eb32c32bfbfa2421cd710b231c86c4ef",
+  "inputs": {
+    "native_identity": "/data/predator/ly/MemBind/saturated_fixed_work_baseline_v1_3/structured_output_recovery/NATIVE_BASELINE_IDENTITY.json",
+    "native_report": "/data/predator/ly/MemBind/saturated_fixed_work_baseline_v1_3/structured_output_recovery/NATIVE_IMMUTABILITY_REPORT.json",
+    "official_dataset_parity": "/data/predator/ly/MemBind/mab_quality_v2_final_qa/evidence/OFFICIAL_DATASET_PARITY_REPORT.json",
+    "structured_qualification": "/data/predator/ly/MemBind/saturated_fixed_work_baseline_v1_3/structured_output_recovery/STRUCTURED_OUTPUT_QUALIFICATION_RESULT.json"
+  },
+  "provider_calls": 0,
+  "reason": "State is computed from native, UUID, actual-callsite, and official-dataset evidence; no prior state is reused.",
+  "schema_version": "membind.preexperiment.final-decision.v2",
+  "status": "CODE_READY_FOR_THREE_ARM_ENGINEERING_CANARY"
 }

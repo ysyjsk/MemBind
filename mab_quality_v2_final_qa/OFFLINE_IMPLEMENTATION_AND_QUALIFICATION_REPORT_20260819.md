@@ -1,5 +1,10 @@
 # MAB Quality v2 Final QA Offline Implementation and Qualification Report
 
+> `HISTORICAL_SUPERSEDED`: this 2026-08-19 offline qualification retained a
+> four-context subset and is preserved for provenance only. The current
+> official five-record parity and gate result is in
+> `evidence/OFFICIAL_DATASET_PARITY_REPORT.json`.
+
 **Date:** 2026-08-19  
 **Scope:** isolated offline implementation only  
 **Live execution:** not performed

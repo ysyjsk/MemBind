@@ -2,49 +2,23 @@
   "arms": {
     "GRAPHITI_UPSTREAM_SERIAL": {
       "algorithm": "pinned_graphiti_0.29.3",
-      "allowed_changes": [
-        "transparent_transport",
-        "read_only_observation"
-      ],
-      "prohibited_patches": [
-        "chunking",
-        "bounded_schema",
-        "paging",
-        "empty_edge_shortcut",
-        "routing_prompt_context",
-        "provenance_guard",
-        "max_token_correction",
-        "extra_retry",
-        "response_repair",
-        "candidate_collection_change"
-      ],
       "publication": "upstream_graphiti_no_resume",
       "schedule": "strict_source_order"
     },
     "MEMBIND_V6_1": {
       "algorithm": "membind_v6_1",
-      "allowed_changes": [
-        "extraction_chunking",
-        "bounded_schema",
-        "structured_recovery",
-        "paging",
-        "work_conserving_admission",
-        "routing_context",
-        "provenance_guard",
-        "publication_recovery"
-      ],
-      "publication": "AT_LEAST_ONCE_WITH_DURABLE_RECONCILIATION",
+      "publication": "AT_LEAST_ONCE_WITH_STABLE_IDEMPOTENCY_KEY",
       "schedule": "v6_1_frontier_scheduler"
     },
     "RELAXED_ORDER_PARALLEL": {
       "algorithm": "pinned_graphiti_0.29.3",
       "classification": "RELAXED_ORDER_AUXILIARY_UPPER_BOUND",
-      "inherits_native_algorithm": true,
       "schedule": "relaxed_episode_order_parallel"
     }
   },
-  "repository_head": "4c8262d656eb437f5793b097490223119f221d82",
-  "runner_source_sha256": "c5e7fc18af3868a2ded1036feef8caa61d0d944483fcf3dfdfe1abb71d121ec4",
-  "schema_version": "membind.three-arm-method-boundaries.v1",
-  "status": "PASS_PROVIDER_FREE"
+  "base_code_commit": "c62b548d18bbf0da161069be7be86750e977581c",
+  "evaluated_source_bundle_sha256": "fd5946c190e54472817ab5c760dbd5645853b5781536f2d8b006235d7678a5df",
+  "generator_source_sha256": "a9f24b96f5747475ea676d91052a69252a421cc382906df16aa6359afca94431",
+  "schema_version": "membind.three-arm-method-boundaries.v2",
+  "status": "PASS"
 }

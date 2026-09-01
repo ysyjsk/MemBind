@@ -1,50 +1,59 @@
 {
-  "schema_version": "membind.structured-output-recovery.state.v1",
-  "artifact_type": "current_state",
-  "updated_at_utc": "2026-09-01T10:37:02Z",
-  "input_commit": "4c8262d656eb437f5793b097490223119f221d82",
-  "state": "BLOCKED_DATASET_MAPPING",
-  "old_campaign_status": "PRESERVED_NOT_ELIGIBLE_FOR_CURRENT_TABLE",
-  "active_hypothesis": "official_dataset_mapping_qualification",
-  "formal_111_source_history_executed": false,
-  "held_out_accessed": false,
-  "v7_executed": false,
-  "last_transition": "R1-R4 provider-free closure passed; official dataset mapping remains unqualified",
-  "repair_gates": {
-    "r0_root_cause": "PASS_HIGH_CONFIDENCE_OUTPUT_LENGTH_TRUNCATION",
-    "r1_actual_callsite_certificate": "PASS_ACTUAL_RUNTIME_CALLSITE",
-    "r2_classified_recovery": "PASS_PROVIDER_FREE",
-    "r3_publication": "AT_LEAST_ONCE_WITH_DURABLE_RECONCILIATION",
-    "r4_finalizer": "PASS_PROVIDER_FREE"
+  "base_code_commit": "c62b548d18bbf0da161069be7be86750e977581c",
+  "engineering_canary_executed": false,
+  "evaluated_source_bundle": {
+    "base_code_commit": "c62b548d18bbf0da161069be7be86750e977581c",
+    "generator_source_sha256": "11d2c6ffed8ee74170e430cd9f7b61c0eb32c32bfbfa2421cd710b231c86c4ef",
+    "native_identity_sha256": "7bf4c44e29900c1d1ae4d543cc9297e13fba511309a9465643b8cf9591d5a5b2",
+    "native_report_sha256": "9d7e074647a176ef02adfd110c8e3f393a20f065c0448d52a7224848997ba163",
+    "official_dataset_parity_sha256": "1b890be003f3b2ac1bafc3d06d4433f179d8132ae314e807d8a3e3ad5728a007",
+    "structured_qualification_sha256": "c31c3053c968696caa00386993b0bb6368df4bbcd59e0b1f8b5d947eeca1cfa0"
   },
-  "reliability_policy": {
-    "sha256": "40492aace3206f9355aae403fee578c00e0a9af0ccb5ae59f12de024da617201",
-    "transient_extra_physical_attempts": 2,
-    "truncation_smaller_variants": 0,
-    "context_budget_corrections": 0,
-    "malformed_structured_retry": "none",
-    "semantic_validation_retry": "none",
-    "unknown_failure": "fail_closed"
+  "evaluated_source_bundle_sha256": "a939d0191fd539390c0df95c6417d15eeb58a86d4bcca0daa4ef0b0a7b641f3b",
+  "evidence_inputs": {
+    "native_identity": "/data/predator/ly/MemBind/saturated_fixed_work_baseline_v1_3/structured_output_recovery/NATIVE_BASELINE_IDENTITY.json",
+    "native_report": "/data/predator/ly/MemBind/saturated_fixed_work_baseline_v1_3/structured_output_recovery/NATIVE_IMMUTABILITY_REPORT.json",
+    "official_dataset_parity": "/data/predator/ly/MemBind/mab_quality_v2_final_qa/evidence/OFFICIAL_DATASET_PARITY_REPORT.json",
+    "structured_qualification": "/data/predator/ly/MemBind/saturated_fixed_work_baseline_v1_3/structured_output_recovery/STRUCTURED_OUTPUT_QUALIFICATION_RESULT.json"
   },
-  "structured_output_certificate": {
-    "path": "STRUCTURED_OUTPUT_SCHEMA_BOUND_CERTIFICATE.json",
-    "sha256": "78917cba3bee5cc89cef970cf6bb025b8e6e059d7d54c1a6643c48f41e520849",
-    "hash_definition": "canonical_certificate_json_sha256",
-    "runtime_generated_call_count": 47,
-    "runtime_generated_callsite_count": 17,
-    "qualification_status": "PASS_ACTUAL_RUNTIME_CALLSITE"
+  "formal_history_executed": false,
+  "generator_source_sha256": "11d2c6ffed8ee74170e430cd9f7b61c0eb32c32bfbfa2421cd710b231c86c4ef",
+  "native_immutability": {
+    "identity_status": "PASS",
+    "prohibited_difference_count": 0,
+    "status": "PASS",
+    "unknown_comparison_count": 0
   },
-  "blocking_evidence": {
-    "dataset_qualification": "mab_quality_v2_final_qa/evidence/MAB_DATASET_QUALIFICATION_RESULT_20260819.json",
-    "dataset_decision": "STOP_DATASET_MAPPING_UNQUALIFIED",
-    "accepted_context_count": 4,
-    "selected_record_count": 5,
-    "native_identity": "NATIVE_IMMUTABILITY_REPORT.json",
-    "publication_guarantee": "AT_LEAST_ONCE_WITH_DURABLE_RECONCILIATION"
+  "official_dataset": {
+    "anomaly_disclosure": [
+      {
+        "note": "question 38 is retained exactly as published; any missing common-context gold session is disclosed rather than removed",
+        "question_index": 38,
+        "record_index": 4
+      }
+    ],
+    "differences": 0,
+    "selection": "OFFICIAL_AS_PUBLISHED_5_RECORDS",
+    "status": "PASS"
   },
-  "provider_calls_in_repair": 0,
-  "l5_development_live_qualification_executed": false,
-  "formal_experiment_authorized": false,
-  "engineering_canary_authorized": false,
-  "append_only": true
+  "provider_calls": 0,
+  "schema_version": "membind.preexperiment.current-state.v2",
+  "state": "CODE_READY_FOR_THREE_ARM_ENGINEERING_CANARY",
+  "status_reason": "State is computed from native, UUID, actual-callsite, and official-dataset evidence; no prior state is reused.",
+  "structured_output": {
+    "r1_actual_callsite_inventory": "PASS_ACTUAL_RUNTIME_CALLSITE",
+    "r1_schema_boundedness": "PASS_PROVIDER_FREE_SYNTHETIC_CALLSITE_SUITE",
+    "r2_classified_recovery": "PASS_PROVIDER_FREE_CLASSIFIED_RECOVERY",
+    "r3_publication": "AT_LEAST_ONCE_WITH_STABLE_IDEMPOTENCY_KEY",
+    "r4_finalizer": "PASS_PROVIDER_FREE",
+    "status": "PASS_ACTUAL_RUNTIME_CALLSITE"
+  },
+  "three_arm_experiment_created": false,
+  "v61_uuid_semantics": {
+    "fresh_uuid_lookup": "NodeNotFoundError",
+    "fresh_write_uuid_omitted": true,
+    "publication_guarantee": "AT_LEAST_ONCE_WITH_STABLE_IDEMPOTENCY_KEY",
+    "stable_key_repeatable": true,
+    "status": "PASS"
+  }
 }

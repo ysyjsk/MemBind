@@ -1,4 +1,6 @@
 {
+  "actual_entrypoint_status": "PASS_ACTUAL_RUNTIME_CALLSITE",
+  "base_code_commit": "c62b548d18bbf0da161069be7be86750e977581c",
   "callsite_count": 17,
   "callsites": [
     {
@@ -219,9 +221,155 @@
       ]
     }
   ],
-  "certificate_sha256": "78917cba3bee5cc89cef970cf6bb025b8e6e059d7d54c1a6643c48f41e520849",
+  "certificate_sha256": "55f7d876c9946c4224642e12ad79d374d52b3fcb0c48b9e3e645e2497c52f0fd",
+  "covered_callsites": [
+    "dedupe_edges.resolve_edge",
+    "dedupe_nodes.nodes",
+    "extract_edges.edge",
+    "extract_edges.extract_attributes",
+    "extract_edges.extract_timestamps",
+    "extract_edges.extract_timestamps_batch",
+    "extract_nodes.extract_attributes",
+    "extract_nodes_and_edges.extract_message",
+    "summarize_nodes.summarize_pair",
+    "summarize_nodes.summary_description",
+    "summarize_sagas.summarize_saga"
+  ],
+  "covered_source_callsites": [
+    {
+      "line": 538,
+      "prompt_name": "summarize_sagas.summarize_saga",
+      "source_file": "graphiti.py",
+      "source_key": "graphiti.py:538",
+      "witness": "actual maintenance or Graphiti entrypoint probe"
+    },
+    {
+      "line": 128,
+      "prompt_name": "extract_nodes_and_edges.extract_message",
+      "source_file": "utils/maintenance/combined_extraction.py",
+      "source_key": "utils/maintenance/combined_extraction.py:128",
+      "witness": "actual maintenance or Graphiti entrypoint probe"
+    },
+    {
+      "line": 245,
+      "prompt_name": "extract_edges.extract_timestamps_batch",
+      "source_file": "utils/maintenance/combined_extraction.py",
+      "source_key": "utils/maintenance/combined_extraction.py:245",
+      "witness": "actual maintenance or Graphiti entrypoint probe"
+    },
+    {
+      "line": 147,
+      "prompt_name": "summarize_nodes.summarize_pair",
+      "source_file": "utils/maintenance/community_operations.py",
+      "source_key": "utils/maintenance/community_operations.py:147",
+      "witness": "actual maintenance or Graphiti entrypoint probe"
+    },
+    {
+      "line": 163,
+      "prompt_name": "summarize_nodes.summary_description",
+      "source_file": "utils/maintenance/community_operations.py",
+      "source_key": "utils/maintenance/community_operations.py:163",
+      "witness": "actual maintenance or Graphiti entrypoint probe"
+    },
+    {
+      "line": 202,
+      "prompt_name": "extract_edges.edge",
+      "source_file": "utils/maintenance/edge_operations.py",
+      "source_key": "utils/maintenance/edge_operations.py:202",
+      "witness": "actual maintenance or Graphiti entrypoint probe"
+    },
+    {
+      "line": 726,
+      "prompt_name": "dedupe_edges.resolve_edge",
+      "source_file": "utils/maintenance/edge_operations.py",
+      "source_key": "utils/maintenance/edge_operations.py:726",
+      "witness": "actual maintenance or Graphiti entrypoint probe"
+    },
+    {
+      "line": 598,
+      "prompt_name": "extract_edges.extract_timestamps",
+      "source_file": "utils/maintenance/edge_operations.py",
+      "source_key": "utils/maintenance/edge_operations.py:598",
+      "witness": "actual maintenance or Graphiti entrypoint probe"
+    },
+    {
+      "line": 788,
+      "prompt_name": "extract_edges.extract_attributes",
+      "source_file": "utils/maintenance/edge_operations.py",
+      "source_key": "utils/maintenance/edge_operations.py:788",
+      "witness": "actual maintenance or Graphiti entrypoint probe"
+    },
+    {
+      "line": 662,
+      "prompt_name": "extract_edges.extract_attributes",
+      "source_file": "utils/maintenance/edge_operations.py",
+      "source_key": "utils/maintenance/edge_operations.py:662",
+      "witness": "actual maintenance or Graphiti entrypoint probe"
+    },
+    {
+      "line": 275,
+      "observed_variants": [
+        "extract_nodes.extract_json",
+        "extract_nodes.extract_message",
+        "extract_nodes.extract_text"
+      ],
+      "prompt_name": "<dynamic>",
+      "source_file": "utils/maintenance/node_operations.py",
+      "source_key": "utils/maintenance/node_operations.py:275",
+      "witness": "_call_extraction_llm exercised message/text/json variants"
+    },
+    {
+      "line": 552,
+      "prompt_name": "dedupe_nodes.nodes",
+      "source_file": "utils/maintenance/node_operations.py",
+      "source_key": "utils/maintenance/node_operations.py:552",
+      "witness": "actual maintenance or Graphiti entrypoint probe"
+    },
+    {
+      "line": 804,
+      "prompt_name": "extract_nodes.extract_attributes",
+      "source_file": "utils/maintenance/node_operations.py",
+      "source_key": "utils/maintenance/node_operations.py:804",
+      "witness": "actual maintenance or Graphiti entrypoint probe"
+    },
+    {
+      "line": 976,
+      "observed_variants": [
+        "extract_nodes.extract_entity_summaries_from_episodes",
+        "extract_nodes.extract_summaries_batch"
+      ],
+      "prompt_name": "<dynamic>",
+      "source_file": "utils/maintenance/node_operations.py",
+      "source_key": "utils/maintenance/node_operations.py:976",
+      "witness": "_process_summary_flight exercised both prompt variants"
+    }
+  ],
+  "evaluated_source_bundle": {
+    "base_code_commit": "c62b548d18bbf0da161069be7be86750e977581c",
+    "generator_source_sha256": "06dbd73b160e4f5118b71ed2675ac39411dfaae1694d664ba870f2ed96ed6241",
+    "graphiti_source_sha256": "7c65051a62982d8b510ebdbf37bae4d07020e74520e1f6d9bf8a0ffb26beeccb",
+    "mab_live_runner_sha256": "302c228e8950593a3094f6dbf3fd7cb6a41f013767f425bf57ce3a8292fb3e4b",
+    "v61_mab_sha256": "16b0741930c014306ad969fdb2032655cf82f345e747175bb7380c528a60fff3",
+    "v61_runtime_sha256": "b30fe7b8a8c2ca2982f6b636ddfbe570b58e37e9678bf606618313e3c576e009"
+  },
+  "evaluated_source_bundle_sha256": "8728ddd3fc6aaa191d3fa415fba228933ca589a917c23bd96e231679e5a15152",
   "formal_gate": "PASS",
+  "generator_source_sha256": "06dbd73b160e4f5118b71ed2675ac39411dfaae1694d664ba870f2ed96ed6241",
   "provider_calls_used": 0,
+  "runtime_observed_callsite_count": 16,
   "schema_version": "membind.structured-output-recovery.callsite-inventory.v2",
-  "status": "PASS_ACTUAL_RUNTIME_CALLSITE"
+  "source_discovered_callsite_count": 15,
+  "status": "PASS_ACTUAL_RUNTIME_CALLSITE",
+  "synthetic_suite_status": "PASS_PROVIDER_FREE_SYNTHETIC_CALLSITE_SUITE",
+  "uncovered_callsites": [],
+  "uncovered_source_callsites": [],
+  "unreachable_with_proof": [
+    {
+      "line": 266,
+      "prompt_name": "<dynamic>",
+      "proof": "The selected strict-native runtime constructs OpenAIGenericClient; Gliner2Client is not instantiated or reachable from the pinned Graphiti.add_episode path.",
+      "source_file": "llm_client/gliner2_client.py",
+      "source_key": "llm_client/gliner2_client.py:266"
+    }
+  ]
 }

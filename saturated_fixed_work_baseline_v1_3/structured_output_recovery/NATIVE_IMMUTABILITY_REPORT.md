@@ -1,5 +1,9 @@
 # Native Immutability Report
 
-Status: `PASS_PROVIDER_FREE`. The strict native builder uses the pinned Graphiti algorithm and permits only transparent transport observation.
+Status: `PASS`.
 
-Prohibited algorithm patch count: `0`. Provider calls during evidence generation: `0`.
+Prohibited differences: `0`; unknown comparisons: `0`.
+
+Generated from an executable provider-free Graphiti.add_episode differential trace.
+
+Evaluated source bundle SHA-256: `fd5946c190e54472817ab5c760dbd5645853b5781536f2d8b006235d7678a5df`; generator source SHA-256: `a9f24b96f5747475ea676d91052a69252a421cc382906df16aa6359afca94431`; base code commit: `c62b548d18bbf0da161069be7be86750e977581c`.

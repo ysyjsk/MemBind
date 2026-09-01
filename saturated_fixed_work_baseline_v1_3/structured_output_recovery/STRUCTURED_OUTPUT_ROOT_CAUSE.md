@@ -1,4 +1,10 @@
-# Structured Output Root Cause
+# Structured Output Root Cause (Historical, Superseded)
+
+> `HISTORICAL_SUPERSEDED`: this artifact records the preserved 8B failure and
+> the diagnosis that preceded the current provider-free certificates. It is
+> retained for provenance and must not be read as the current R3 or dataset
+> decision. The current policy and gate are in
+> `STRUCTURED_OUTPUT_QUALIFICATION_REPORT.md` and `CURRENT_STATE.json`.
 
 The preserved old attempt `05b11f4007a9` failed at source 35 in `extract_edges.edge`. The transport evidence is decisive: `finish_reason=length`, `completion_tokens=8192`, and `effective_max_tokens=8192`. The JSON decoder then reported an unterminated string at the end of the response. The machine classification is therefore `OUTPUT_LENGTH_TRUNCATION`; `JSONDecodeError` is a downstream parser symptom, not the failure class.
 
@@ -8,4 +14,4 @@ The corrected R1 bound follows the actual pinned call path. Graphiti 0.29.3 call
 
 The resulting provider-free runtime certificate covers 47 generated request variants across 17 actual callsites with the local Qwen tokenizer and reports `PASS_ACTUAL_RUNTIME_CALLSITE`. The recovery policy performs no truncation smaller-variant resend and no context-budget correction resend; a certified truncation or context rejection fails closed. Only transient transport failures receive at most two extra physical attempts under a stable semantic operation and request-variant identity, with a unique physical-attempt identity for each wire call.
 
-Proven facts, inferences, and unknown publication details remain machine-readable in `STRUCTURED_OUTPUT_ROOT_CAUSE.json`. No old response or source text is retained or reconstructed. R3 is intentionally reported as `AT_LEAST_ONCE_WITH_DURABLE_RECONCILIATION`, because a Neo4j commit and an append-only journal record are not one atomic transaction. The independent official dataset mapping gate remains `STOP_DATASET_MAPPING_UNQUALIFIED`, so neither a development canary nor a formal three-arm task is authorized.
+Proven facts, inferences, and unknown publication details remain machine-readable in `STRUCTURED_OUTPUT_ROOT_CAUSE.json`. No old response or source text is retained or reconstructed. Any R3 and dataset-gate wording from the preserved historical attempt is superseded: the current R3 guarantee is `AT_LEAST_ONCE_WITH_STABLE_IDEMPOTENCY_KEY`, and the current official parity artifact is `OFFICIAL_DATASET_PARITY_REPORT.json` with selection `OFFICIAL_AS_PUBLISHED_5_RECORDS`. This historical file does not authorize a canary or a formal three-arm task.

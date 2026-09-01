@@ -20,6 +20,7 @@ from saturated_fixed_work_baseline_v1_3.membind_v6_1.structured_output_recovery 
     RecoveryIdentity,
     SchemaBoundednessError,
     StructuredOutputLengthTruncation,
+    StructuredOutputBudgetError,
     StructuredOutputMalformed,
     StructuredRecoveryController,
     build_schema_bound_certificate,
@@ -515,6 +516,29 @@ async def test_recovery_controller_fails_closed_on_certified_truncation() -> Non
     assert attempts[0].identity.request_variant_id == "page:2"
     assert all(isinstance(item.identity, RecoveryIdentity) for item in attempts)
     assert recovery_policy_sha256()
+
+
+@pytest.mark.asyncio
+async def test_recovery_controller_does_not_retry_context_budget_variant() -> None:
+    calls = 0
+
+    async def operation(_variant: str) -> None:
+        nonlocal calls
+        calls += 1
+        raise StructuredOutputBudgetError("context budget exhausted")
+
+    controller = StructuredRecoveryController(
+        semantic_operation_id="source:5:node:0", request_variant_id="base"
+    )
+    with pytest.raises(StructuredOutputBudgetError):
+        await controller.run(
+            operation,
+            context_variant=lambda variant: f"{variant}:reduced-context",
+            classify=lambda _error: "CONTEXT_BUDGET_EXHAUSTED",
+        )
+    assert calls == 1
+    assert len(controller.attempts) == 1
+    assert controller.attempts[0].identity.request_variant_id == "base"
 
 
 @pytest.mark.asyncio

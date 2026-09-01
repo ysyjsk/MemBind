@@ -296,10 +296,12 @@ def test_v61_source_publication_reconciliation_fault_windows(tmp_path, monkeypat
             super().__init__(delegate)
             self.publications = 0
             self.publication_uuids = []
+            self.db_objects = set()
 
         async def add_episode(self, **kwargs):
             self.publications += 1
             self.publication_uuids.append(kwargs.get("uuid"))
+            self.db_objects.add(kwargs["name"])
             return await super().add_episode(**kwargs)
 
     delegate = _Delegate()
@@ -364,6 +366,8 @@ def test_v61_source_publication_reconciliation_fault_windows(tmp_path, monkeypat
             )
         )
     assert graph.publications == 1
+    assert graph.publication_uuids == [None]
+    assert episodes[0].context_id + "::episode::0000" in graph.db_objects
     torn_journal = tmp_path / ".torn.v61_live_events.jsonl"
     torn_events = [json.loads(line) for line in torn_journal.read_text().splitlines()]
     assert any(row.get("event") == "PUBLICATION_BEGIN" for row in torn_events)
@@ -374,7 +378,7 @@ def test_v61_source_publication_reconciliation_fault_windows(tmp_path, monkeypat
     )
     assert torn_result["status"] == "PASS"
     assert graph.publications == 2
-    assert len(set(graph.publication_uuids)) == 1
+    assert graph.publication_uuids == [None, None]
 
     graph.publications = 0
     graph.publication_uuids.clear()
@@ -400,6 +404,8 @@ def test_v61_source_publication_reconciliation_fault_windows(tmp_path, monkeypat
     ]
     assert len(committed) == 1
     committed_uuid = committed[0]["idempotency_key"]
+    assert committed_uuid.startswith("membind-idempotency:")
+    assert graph.publication_uuids == [None]
 
     result = asyncio.run(v61_mab.run_mab_v61_construction_async(**common_kwargs(root)))
     assert result["status"] == "PASS"
@@ -410,3 +416,19 @@ def test_v61_source_publication_reconciliation_fault_windows(tmp_path, monkeypat
         if json.loads(line).get("event") == "PUBLICATION_REUSED"
     ]
     assert reused and reused[-1]["idempotency_key"] == committed_uuid
+
+    # A DB object without a matching local commit record is intentionally not
+    # treated as reconciled: the next run replays at least once, still omitting
+    # Graphiti's UUID lookup. This models a partial/inconsistent cross-system
+    # state and keeps the guarantee honest.
+    graph.publications = 0
+    graph.publication_uuids.clear()
+    graph.db_objects.add(episodes[0].context_id + "::episode::0000")
+    inconsistent = asyncio.run(
+        v61_mab.run_mab_v61_construction_async(
+            **common_kwargs(tmp_path / "inconsistent-db")
+        )
+    )
+    assert inconsistent["status"] == "PASS"
+    assert graph.publications == 1
+    assert graph.publication_uuids == [None]
