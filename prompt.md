@@ -1,983 +1,705 @@
-请基于MemBind当前本地分支，执行一次严格限时、限范围的：
+# MemBind V7 Autoresearch：从当前状态推进至主实验与投稿级证据
 
-# Frozen V6 Identity Fix → Immediate V7 2-Source Probe
+你是 MemBind 项目的首席研究工程 Agent，同时扮演严格的系统领域审稿人。你的任务不是证明预设结论，而是在不污染 held-out、不改变既有历史记录、不夸大失败实验的前提下，持续运行一个可审计的 autoresearch 闭环：
 
-本轮不是新的V6研究阶段，也不是继续扩展DMSV methodology。
+> 修复并重新证明 V6 身份基础 → 获得有效的 V7 机会观测 → 实现并验证 V7 架构 → 冻结方法 → 完成资源公平、统计有效的主实验 → 生成投稿级证据包。
 
-唯一目标是：
+你必须持续工作到下列任一终态：
 
-```text
-确认旧headline V6是否实际删除过非空previous context
-→ 恢复Frozen V6的same-logical-work实现身份
-→ 做最小qualification
-→ 同一轮立即启动并尽量完成2-source V7 semantic observer
-```
+1. `SUBMISSION_READY_POSITIVE`  
+   V7 架构正确实现，主实验完成，质量非劣且性能结论有统计支持，可以进入顶会论文写作与投稿准备。
 
-不得在完成V6 identity fix后继续增加新Gate、theorem、closure或审计阶段。
+2. `SUBMISSION_READY_NEGATIVE`  
+   在预注册、充分验证和合理功效下，V7 的核心机会或性能假设被否定；形成可复现、可写入论文的负面结果、边界条件或系统设计教训。
 
----
+3. `BLOCKED_EXTERNAL`  
+   连续达到预定义的基础设施重试上限，或需要新的权限、资源、密钥、held-out 解封或重大科学决策。此时停止实验，完整报告阻塞证据，不得猜测结果。
 
-# 0. 最高优先级执行规则
-
-本轮必须遵循：
-
-```text
-一次最小V6 baseline identity修复
-→ 立即恢复V7实验
-```
-
-禁止将本轮扩展成：
-
-```text
-V6 semantic audit
-→ output audit
-→ graph audit
-→ quality campaign
-→ B1R3
-→ B1R4
-→ 新theorem
-→ 新Gate体系
-```
-
-本轮最多完成：
-
-```text
-1. Existing V6 artifact dynamic-effect scan
-2. Provider-free previous-window equivalence
-3. Frozen V6 identity fix
-4. Minimal corrected-V6 qualification
-5. One 2-source V7 observer
-6. Seal and stop
-```
-
-总wall-clock上限：
-
-```text
-5 hours
-```
-
-到4小时30分钟时禁止启动任何新实验，剩余30分钟只允许封存artifact、写报告和停止本轮任务。
+“投稿级”不等于保证论文录用，也不等于必须得到正结果。禁止通过重复采样、事后改指标或访问 held-out 来制造正结果。
 
 ---
 
-# 1. 输入身份
+## 一、工作目录与当前可信起点
 
-预期本地历史：
+工作目录：
 
-```text
-PUBLIC_BASE_COMMIT=
-37871aae8193d994a1642605e3a705712dd786e1
+`/data/predator/ly/MemBind`
 
-B1R2_PREREG_COMMIT=
-5031f10dcd37df1f6f199ee1125e1fae1760d580
+开始时执行只读审计，记录：
 
-B1R2_RESULT_COMMIT=
-a1aee32cc76e6c60a39c3aa28451a3241a6f9e63
+- 当前分支、HEAD、工作区状态；
+- Python、依赖、Graphiti、数据库和 provider 配置；
+- 当前 artifact、run registry、namespace 和远端分支状态；
+- 是否存在用户未提交改动。
 
-expected_branch=
-dmsv-b1r2-structural-closure
-```
+预期但必须验证的起点：
 
-首先检查：
+- 分支：`dmsv-b1r2-structural-closure`
+- 最新已发布提交：`ab22dc9838f7f2c5e3de168962712be347c86a3c`
+- V6 修复结果提交：`a702e600`
+- 旧状态声明：`V6_IDENTITY_FIXED_V7_PROBE_INVALID`
+- V7 旧二源 run：`v6fix-v7probe-07741c45-2s-20260831-r1`
+- 旧二源结果：`PROBE_INVALID`
+- 失败位置：source 1 的 `extract_edges.edge`
+- 失败类型：provider 返回截断 JSON
+- `pair_count=0` 不是结构性零机会证据，因为完整二源对未形成
+- 6-source、held-out、主实验、Top-K maintainer 均尚未授权
+- 旧 V6 headline：`UNKNOWN_NOT_REUSABLE`
+- 历史 B1R2：`BLOCKED_STRUCTURAL_CLOSURE_INCOMPLETE`
 
-```bash
-git rev-parse HEAD
-git status --short
-git log --oneline --decorate -5
-git merge-base --is-ancestor 37871aae8193d994a1642605e3a705712dd786e1 HEAD
-```
+若实际 HEAD 或文件状态不符：
 
-必须保留用户未跟踪的：
+- 不得 reset、覆盖或删除用户改动；
+- 记录差异并判断哪些 artifact 仍可复用；
+- 创建 append-only 状态说明；
+- 不得假装仍处于预期提交。
 
-```text
-prompt.md
-```
-
-不得修改、删除、覆盖、提交或stash该文件。
-
-不得：
-
-```text
-git reset --hard
-git checkout -- user files
-git clean
-push
-```
-
-若HEAD不是`a1aee32...`且存在无法归属的新提交，停止并输出：
-
-```text
-FINAL_STATE=BLOCKED_INPUT_IDENTITY
-```
+`prompt.md` 属于研究指令输入，不是科学结果。不要在研究结果提交中继续修改它，也不要通过回写旧报告改变历史。
 
 ---
 
-# 2. 冻结科学身份
+## 二、不可更改的科学原则
 
-Frozen V6方法身份继续是：
-
-```text
-method_identity=v6-membind-core-v1
-```
-
-允许的变化只有：
-
-```text
-dependency-aware PREPARE/NATIVE overlap
-dependency-aware admission
-exact certified replay of the same logical extraction request
-bounded speculative frontier
-source-order authoritative publication
-```
-
-明确禁止：
-
-```text
-删除Native previous context
-修改prompt语义
-减少Native logical work
-用不同request的相同output冒充exact replay
-把work reduction算成concurrency收益
-```
-
-当前公开实现事实已经确定：
-
-```text
-strip_certified_previous_context=ON_CORE_PATH
-```
-
-历史关系已经确定：
-
-```text
-984ea2d:
-early V6.1引入strip
-
-8fba929:
-冻结v6-membind-core-v1时错误继承该transform
-```
-
-本轮不再重复证明静态调用链，不再生成新的call-path theorem。
-
-本轮只回答动态问题：
-
-```text
-过去headline V6正式artifact中，
-previous_context_chars_removed是否大于0？
-```
-
-方法身份不重新定义。
-
-如果修改实现，只增加：
-
-```text
-implementation_revision=context-integrity-fix-v1
-```
-
-不得静默把旧commit与新实现称为字节相同版本。
+1. 所有历史失败、invalid run 和负面结论必须保留。
+2. `INVALID`、`UNKNOWN`、`BLOCKED` 不得改写为零效应或成功。
+3. 任何使用 fresh provider 调用的单元不得标记为 transcript replay。
+4. 所有影响语义边界的改动都必须产生新方法身份，例如：
+   - prompt 或 schema 改动；
+   - batching、拆分或排序改动；
+   - reference time、ties、serialization 改动；
+   - source/group/membership 绑定改动；
+   - 模型、解码参数或 provider routing 改动；
+   - 算法由全量重算变为增量维护。
+5. 不得使用 held-out 做调试、阈值选择、架构选择或失败定位。
+6. 不得把 provider 重试次数当作独立实验样本。
+7. 不得用 B1 relaxed-order 替代 B0 Native serial headline。
+8. 不得把历史 V6.1 的 context removal 结果迁移成修复后 V6 的证据。
+9. 不得以累加的 saved-work 推断 wall-clock speedup；必须分析关键路径、并行度和资源竞争。
+10. 证据缺失时输出 `UNKNOWN`，不要进行无依据补全。
 
 ---
 
-# 3. 最小Stage A：冻结三分支决策
+## 三、强制 Phase 0：重新审计 V6 身份修复
 
-在读取旧artifact统计结果前，创建一个紧凑preregistration：
+当前状态不得直接视为 `V6_IDENTITY_QUALIFIED`。
 
-```text
-saturated_fixed_work_baseline_v1_3/v6_core_identity_fix/
-V6_CORE_IDENTITY_FIX_PREREGISTRATION.json
-```
+### 已知待验证矛盾
 
-只冻结以下内容：
+在 mismatch 情况下，当前实现可能出现：
 
-```text
-input commit
-eligible headline artifact definition
-NOOP/NONEMPTY_REMOVAL/MISSING分类
-previous-window equality字段
-A/B/C修复分支
-qualification条件
-2-source probe字段
-forbidden actions
-5-hour deadline
-```
+- 捕获到一个 transcript；
+- transcript 因绑定不匹配被丢弃；
+- 执行一次 fresh fallback；
+- `logical_captured=1`；
+- `logical_consumed=0`；
+- `unconsumed=0`；
+- 最终 proof 仍要求 `captured == consumed`。
 
-不得新增claim taxonomy、E1–E13扩展、理论Gate或论文related-work章节。
+与此同时，完整构建层可能把 binding 写成 `consume_count=1`、`external_transport_attempted_during_replay=false`，并禁止 replay 阶段发生 fresh transport。
 
-允许的artifact分类：
+这会导致局部 fallback 测试通过，但完整 construction 无法合法封存 mismatch/fresh 路径。
 
-```text
-NOOP
-NONEMPTY_REMOVAL
-MISSING
-```
+### Phase 0 执行要求
 
-允许的修复分支：
+首先生成并提交一份 append-only 预注册：
 
-```text
-BRANCH_A_NOOP
-BRANCH_B_RECONSTRUCTABLE
-BRANCH_C_NOT_RECONSTRUCTABLE
-BRANCH_MISSING_OLD_EFFECT
-```
+`V6_IDENTITY_INTEGRATION_AUDIT_PREREGISTRATION.json`
 
-preregistration写入并计算SHA-256后，再扫描旧artifact。
+至少冻结：
 
-可以创建一个本地prereg commit，但禁止push。若创建，commit message固定为：
+- 方法身份和代码基线；
+- 将测试的 exact、missing、mismatch 三条路径；
+- accounting 字段定义；
+- 预期 invariant；
+- 允许和禁止的 transport 行为；
+- success、failure、invalid 判定；
+- 测试列表；
+- 不允许访问的数据和实验。
+
+然后实现明确的总账语义。最低要求：
 
 ```text
-preregister frozen V6 context identity fix
+captured
+= exact_consumed
++ discarded_unconsumed
++ remaining_unconsumed
 ```
 
----
-
-# 4. Step 1：扫描已有headline V6 artifact
-
-只扫描满足以下身份的正式V6 blocks：
+fresh fallback 必须独立记录：
 
 ```text
-method=MEMBIND_CORE
-core version=v6-membind-core-v1
-construction sealed
-expected=submitted=completed
-使用headline Frozen V6入口
+fresh_fallback
+= mismatch_fallback
++ missing_fallback
 ```
 
-不得把V6.1 autoresearch候选、ablation、V7 observer、失败run混入headline统计。
+其中：
 
-读取已有：
+- `exact_consumed` 才属于 replay；
+- `discarded_unconsumed` 不得伪装为 consumed；
+- mismatch fallback 应能对应被丢弃的候选；
+- missing fallback 可以没有 discarded candidate；
+- 每次实际 transport attempt 必须按真实阶段和原因记录；
+- binding 行必须记录实际的 consume count、fallback 类型和 transport 状态；
+- proof 不得通过硬编码字段绕过真实执行。
 
-```text
-CERTIFIED_CONTEXT_SELECTION
-previous_context_chars_removed
-previous_context_block_count
-retained_previous_episode_count
-prompt_name
-region
-source_sequence
-```
+### 必须新增的端到端测试
 
-对每个正式block输出：
+至少覆盖：
 
-```text
-run_id
-history/context
-certified_call_count
-context_event_count
-calls_with_nonempty_removal
-total_removed_chars
-max_removed_chars
-missing_event_count
-classification
-artifact hash
-```
+1. Exact binding  
+   完整调用 `run_membind_core_construction_async`；使用 prepared response；不发生 fresh 调用；proof 和 accounting 成立。
 
-分类规则：
+2. Intentional mismatch  
+   完整 construction；prepared response 不被消费；恰好发生一次 fresh 调用；fresh 成功后可以合法封存；ordered publication 与 no-write-before-certification 仍成立。
 
-## NOOP
+3. Missing transcript  
+   明确验证 missing fallback 的计数和 proof 语义。
 
-只有同时满足：
+4. Fresh failure  
+   provider 失败时不得发布部分状态，artifact 标记为失败或 invalid。
 
-```text
-所有预期certified extraction call都有context event
-AND
-所有previous_context_chars_removed=0
-AND
-所有previous_context_block_count对应空body或零删除
-```
+5. Duplicate、unconsumed、serialization mismatch  
+   不得被吞掉或错误归类。
 
-才能分类为：
+6. Multi-source integration  
+   至少完成 provider-free/mock 的二源完整构建，而不是只调用 store 层。
 
-```text
-NOOP
-```
+运行：
 
-事件缺失不能算NOOP。
+- 新增 targeted tests；
+- V6/V6.1 相关全量测试；
+- 项目完整测试套件；
+- import/compile 检查；
+- diff hygiene；
+- 可用时运行类型和静态检查。
 
-## NONEMPTY_REMOVAL
+不得只报告“35 tests passed”。必须列明新增测试是否真正经过完整 construction path。
 
-只要存在：
+### Phase 0 闸门
 
-```text
-previous_context_chars_removed > 0
-```
+只有在以下条件全部成立时，才能写入新的 append-only 决策：
 
-就分类为：
+`V6_IDENTITY_INTEGRATION_QUALIFIED`
 
-```text
-NONEMPTY_REMOVAL
-```
+- exact、missing、mismatch 的 accounting 一致；
+- fresh fallback 不被标记为 replay；
+- 端到端 mismatch 路径成功；
+- full mock 二源构建成功；
+- 无发布顺序或写入隔离回归；
+- 全套测试通过；
+- artifact 可从 frozen manifest 重现。
 
-## MISSING
+否则状态必须为：
 
-如果正式block缺少决定性字段，分类为：
+`V6_IDENTITY_FIX_INCOMPLETE`
 
-```text
-MISSING
-```
+并停止一切正式 provider/V7 实验，继续在 Phase 0 内一次只修复一个可证伪问题。
 
-禁止为了确认旧run而重跑旧headline实验。
-
-artifact扫描最多允许30分钟。超过30分钟仍找不到完整证据，直接进入：
-
-```text
-BRANCH_MISSING_OLD_EFFECT
-```
-
-不得继续全盘搜索半天。
-
-输出合并到：
-
-```text
-V6_CORE_IDENTITY_FIX_DECISION.json
-```
-
-不要为每个小结论创建一个新文件。
+历史 `V6_IDENTITY_QUALIFIED` artifact 不得覆盖；使用新的 correction artifact 声明其适用边界。
 
 ---
 
-# 5. Step 2：Provider-free previous-window equivalence
+## 四、研究状态与持久化
 
-此步骤不调用LLM provider，不执行Neo4j写入，不重新跑B0/V6 live。
+建立并持续更新：
 
-唯一问题：
+- `V7_AUTORESEARCH_STATE.json`
+- `V7_AUTORESEARCH_LEDGER.jsonl`
+- `V7_RUN_REGISTRY.jsonl`
+- `V7_METHOD_IDENTITY.json`
+- 每阶段独立 preregistration、result、decision、manifest
 
-```text
-PREPARE阶段的_native_previous_window(...)
-能否构造与Native retrieve_episodes(...)相同的
-prompt-visible previous window？
+状态文件至少包含：
+
+```json
+{
+  "branch": "",
+  "head": "",
+  "method_identity": "",
+  "phase": "",
+  "current_hypothesis": "",
+  "last_completed_action": "",
+  "gate_status": {},
+  "authorization": {
+    "provider_dev": false,
+    "six_source": false,
+    "held_out": false,
+    "main_experiment": false,
+    "topk_maintainer": false,
+    "push": false
+  },
+  "valid_runs": [],
+  "invalid_runs": [],
+  "known_blockers": [],
+  "next_action": ""
+}
 ```
 
-至少比较：
-
-```text
-membership
-order
-content projection
-valid_at/reference_time
-group_id/source filter
-last_n
-tie behavior
-prompt serialization
-```
-
-必须比较实际Graphiti 0.29.3调用约定，不得只比较Python对象数量。
-
-按certified callsite分别判断：
-
-```text
-extract_nodes.extract_message
-extract_nodes.extract_text
-extract_nodes.extract_json
-extract_edges.edge
-```
-
-输出状态：
-
-```text
-SAME_LOGICAL_REQUEST_PROVEN
-NOT_EQUIVALENT
-UNKNOWN_MISSING_BINDING
-NOT_INVOKED_IN_WORKLOAD
-```
-
-注意：
-
-```text
-相同response
-≠ 相同request
-
-相同episode IDs
-≠ 相同prompt bytes
-
-两次独立LLM输出不同
-≠ request不等价
-```
-
-request identity比较必须在provider调用前完成。
-
-如果现有冻结workload和artifact足以重建，不得启动新provider实验。
+每次提交、运行或状态迁移后立即更新。发生上下文压缩、进程重启或 Agent 接力时，先读取这些文件和最近提交，不得重复已经完成的实验。
 
 ---
 
-# 6. Step 3：立即选择并实施A/B/C分支
+## 五、标准 Autoresearch 循环
 
-## Branch A：旧正式V6全部NOOP
+Phase 0 通过后，对每一个研究问题严格执行以下循环：
 
-条件：
+1. 从当前最主要瓶颈中选择一个可证伪假设。
+2. 记录它为何是当前最高价值问题。
+3. 在观察新数据之前冻结：
+   - 假设；
+   - 方法身份；
+   - 数据范围；
+   - 指标；
+   - success/failure/invalid 阈值；
+   - 运行预算；
+   - 允许的基础设施重试；
+   - 下一闸门。
+4. 提交 preregistration。
+5. 优先添加失败测试或最小诊断。
+6. 实现最小改动，不混入第二个架构变化。
+7. 先运行 provider-free correctness/differential tests。
+8. 只有通过当前闸门，才运行最小规模 development provider 实验。
+9. 把所有运行写入 registry，包括 invalid 和失败。
+10. 接受或否定假设；输出证据和下一假设。
 
-```text
-所有eligible headline blocks=NOOP
-```
+限制：
 
-操作：
-
-1. 旧V6正式结果继续有效；
-2. 从Frozen Core路径移除`strip_certified_previous_context`；
-3. historical V6.1/ablation路径可保留helper，但必须与Core隔离；
-4. Core增加硬合同：
-
-```text
-certified_message_transform=None
-same_logical_request_required=true
-context_removal_allowed=false
-```
-
-5. 增加：
-
-```text
-implementation_revision=context-integrity-fix-v1
-```
-
-6. 不重跑完整V6 campaign；
-7. 只做最小request-identity qualification。
-
-旧artifact状态：
-
-```text
-OLD_V6_HEADLINE_STATUS=REUSABLE_NOOP
-```
-
-## Branch B：存在NONEMPTY_REMOVAL，但previous window可重建
-
-条件：
-
-```text
-存在NONEMPTY_REMOVAL
-AND
-SAME_LOGICAL_REQUEST_PROVEN
-```
-
-操作：
-
-1. 从Core路径移除strip；
-2. PREPARE使用Native-equivalent previous window；
-3. capture与NATIVE replay比较原始logical request；
-4. request exact才允许consume prepared response；
-5. mismatch必须fresh执行Native call；
-6. 保留提前extraction能力；
-7. 旧受影响artifact降级为：
-
-```text
-V6_CONTEXT_ELIDED_DIAGNOSTIC
-```
-
-8. 只重跑受影响的最小正式V6 baseline block/qualification，不重跑B0。
-
-旧artifact状态：
-
-```text
-OLD_V6_HEADLINE_STATUS=INVALID_FOR_TIMING_ONLY_HEADLINE
-```
-
-## Branch C：存在NONEMPTY_REMOVAL且previous window不可重建
-
-条件：
-
-```text
-存在NONEMPTY_REMOVAL
-AND
-previous-window equivalence=NOT_EQUIVALENT或UNKNOWN
-```
-
-操作：
-
-1. 从Frozen Core路径移除strip；
-2. 将无法证明same-logical-request的callsite移出Core-specific certified set；
-3. 对应call在NATIVE阶段fresh执行；
-4. 不修改全局历史`CERTIFIED_CALLSITES`来破坏旧replay；
-5. 新建Core-specific集合，例如：
-
-```text
-MEMBIND_CORE_CERTIFIED_CALLSITES
-```
-
-6. 只包含被证明dependency-free的callsite；
-7. mismatch或unknown统一fresh；
-8. 重跑一个最小corrected-V6 baseline/qualification；
-9. 不重跑B0。
-
-旧artifact状态：
-
-```text
-OLD_V6_HEADLINE_STATUS=INVALID_FOR_TIMING_ONLY_HEADLINE
-```
-
-## Branch MISSING：旧artifact缺少动态字段
-
-条件：
-
-```text
-旧headline effect=MISSING
-```
-
-操作：
-
-1. 旧V6结果不能继续作为timing-only正式baseline；
-2. 不再追查旧run；
-3. 根据provider-free previous-window结果选择Branch B式修复或Branch C式降级；
-4. 修复后跑一个最小corrected-V6 baseline/qualification。
-
-状态：
-
-```text
-OLD_V6_HEADLINE_STATUS=UNKNOWN_NOT_REUSABLE
-```
-
-禁止出现：
-
-```text
-既然代码strip了，就把V6论文重定义成context-elided算法
-```
+- 同时只能有一个 active hypothesis。
+- 一个运行中不能同时改变架构、prompt、批处理和 scheduler。
+- 连续三个架构假设未达到预注册闸门后，必须进入 synthesis checkpoint：
+  - 汇总失败原因；
+  - 判断是假设错误、实现失败、机会不足还是基础设施失败；
+  - 决定形成负面结果，或请求用户批准新的研究身份；
+  - 禁止无休止地换参数。
 
 ---
 
-# 7. 实现约束
+## 六、Phase 1：替换无效的 V7 二源观测
 
-不得删除旧helper或旧测试，以免破坏历史复现。
+旧二源 run 永久保留为 `PROBE_INVALID`，不得覆盖。
 
-正确结构应是：
+创建新的 run ID、namespace、manifest 和预注册。新 run 只能在 Phase 0 通过后启动。
 
-```text
-historical V6.1/extension path
-→ 可以显式启用旧strip policy
-→ artifact identity必须标记context-elided
+### 基础设施失败策略
 
-Frozen MemBind-Core path
-→ transform=None
-→ same logical request required
-→ mismatch/unknown fresh
-```
+必须在运行前冻结 transient failure 分类，例如：
 
-`work_reduction_extensions_enabled=False`必须由运行时断言支持，不能只存在metadata中。
+- truncated JSON；
+- provider timeout；
+- rate limit；
+- transport disconnect；
+- schema extraction failure。
 
-至少增加以下测试：
+对于基础设施 invalid：
 
-1. headline Core入口不能安装strip；
-2. Core出现`previous_context_chars_removed>0`立即失败；
-3. historical V6.1 path仍可复现旧行为；
-4. PREPARE/NATIVE request exact时只进行一次物理provider调用；
-5. request mismatch时不consume transcript，转fresh；
-6. unknown previous-window binding时转fresh；
-7. ordered authoritative publication保持；
-8. replay不进行pre-publication DB write；
-9. Core identity包含implementation revision；
-   10.旧sealed artifact字节不变。
+- 每次 attempt 都保留；
+- replacement run 使用新 run ID；
+- replacement 不是独立科学样本；
+- 最多允许两次预注册 replacement；
+- 不得因为结果不理想而 replacement；
+- 超过上限则输出 `BLOCKED_PROVIDER_INSTABILITY`。
 
-不要求完整repository suite，除非修改范围导致相关回归无法局部覆盖。
+### 有效二源 probe 的条件
 
----
+- 两个 source 均完整；
+- 所有 stage 均有可验证输出；
+- pair universe 非空或被结构性证明为空；
+- observer 不改变被观测方法；
+- 无 held-out；
+- 无结果驱动阈值变更；
+- provenance、reference time、order、serialization 和 source binding 完整。
 
-# 8. Step 4：最小Corrected-V6 Qualification
+有效 probe 必须测量：
 
-qualification只验证修复后的Core是否恢复Frozen合同，不扩成新campaign。
+- eligible pair 数量和比例；
+- exact-binding rate；
+- mismatch/missing/fresh-fallback rate；
+- affected work；
+- 可复用与必须重算的阶段；
+- 关键路径上的可移除工作；
+- provider 和数据库时间；
+- correctness/semantic mismatch；
+- quality 风险。
 
-必须验证：
-
-```text
-CORE_CONTEXT_TRANSFORM=NONE
-same-logical-request comparison before replay
-exact request → single consume
-mismatch/unknown → fresh
-no pre-publication DB write
-source-order durable publication
-work-reduction extension disabled
-```
-
-若进行2-source或最小prefix live qualification，还需记录：
-
-```text
-logical request count
-exact replay count
-fresh fallback count
-provider physical call count
-context removed chars=0
-durable publication count
-makespan（diagnostic only）
-```
-
-不要求两次独立LLM推理输出完全相同。
-
-正确性oracle是：
-
-```text
-相同canonical logical request
-→ single captured response可以exact replay
-```
-
-不是：
-
-```text
-对同一request独立调用两次LLM
-→ response必须相同
-```
-
-qualification允许状态：
-
-```text
-V6_IDENTITY_QUALIFIED
-V6_IDENTITY_FIX_FAILED
-V6_IDENTITY_FIX_BLOCKED_ENVIRONMENT
-```
-
-只有：
-
-```text
-V6_IDENTITY_QUALIFIED
-```
-
-才允许进入下一步2-source V7 probe。
-
-如果失败，停止代码扩张，报告具体失败点；不得继续V7。
+如果完整 pair 为零，只能输出 `NO_OBSERVED_OPPORTUNITY_IN_THIS_PROBE`；除非有完整结构性证明，否则不得称为“V7 不可能”。
 
 ---
 
-# 9. Step 5：同一轮立即执行2-source V7 semantic observer
+## 七、Phase 2：六源 development observer
 
-只要：
+只有有效二源 probe 达到预注册的机会闸门后，才能设置：
 
-```text
-V6_IDENTITY_QUALIFIED
-```
+`authorization.six_source=true`
 
-就必须继续执行2-source observer。不得因为“报告已经很多”而在V6 qualification后停止。
+六源数据必须来自既有 development split。开始前：
 
-这不是V7 treatment，不做reuse，不修改authoritative state语义。
+- 从仓库读取已冻结的 dev/held-out 划分；
+- 核对 ID 和哈希；
+- 如果没有可验证的冻结划分，先建立并提交划分，再访问内容；
+- 不得把未知样本自行当作 development；
+- held-out 继续保持未访问。
 
-选择一个non-held-out development history，冻结：
+六源 observer 的目标不是证明 speedup，而是判断：
 
-```text
-source 0
-source 1
-```
+1. V7 是否有足够的重复/局部更新机会；
+2. 哪个阶段支配 wall-clock；
+3. 哪些依赖能被可靠证明未受影响；
+4. UNKNOWN fallback 是否过高；
+5. 可省工作是否位于关键路径；
+6. 新维护开销是否小于被避免的工作。
 
-运行关系：
+在查看六源结果前冻结机会阈值。若仓库没有现成阈值，应先用系统成本模型和功效分析设计阈值并提交，不得观察结果后补阈值。
 
-```text
-corrected Frozen V6 prepares source 1
-        ↓
-在合法旧state上记录stateful semantic view/request
-        ↓
-authoritatively publish source 0
-        ↓
-在新state上对同一个prepared source 1 fresh resolve
-        ↓
-比较old/new semantic view和canonical request
-        ↓
-只记录机会，不执行reuse
-```
+六源结果只能产生以下决策：
 
-必须保持：
-
-```text
-same PreparedArtifact
-same source
-same model/config/template/schema/index epoch
-ordered publication
-no speculative publication
-no held-out
-```
-
-2-source observer至少记录：
-
-```text
-base_view_ready_before_authoritative_need
-old/new state version
-previous_episodes membership/order exact
-previous prompt projection exact
-Node candidate membership exact
-Node candidate order exact
-candidate payload exact
-unresolved batch shape exact
-canonical dedupe_nodes.nodes request exact
-request changed fields
-dominant Node LLM service time
-validation time
-fresh recomputation time
-potentially preservable critical-path time
-visible repair time
-output reconvergence（diagnostic only）
-ordered continuation status
-```
-
-必须使用实际critical-path accounting：
-
-```text
-ReusableHiddenCP
-+
-ReconvergenceSavedDescendantCP
--
-VisibleRepairCP
--
-ValidationCost
-```
-
-不得把：
-
-```text
-request变化后重新执行了Node LLM
-但输出最后相同
-```
-
-记成Node LLM saved work。
+- `V7_ARCHITECTURE_AUTHORIZED`
+- `V7_OPPORTUNITY_INSUFFICIENT`
+- `V7_OBSERVER_INVALID`
+- `V7_EVIDENCE_INCONCLUSIVE`
 
 ---
 
-# 10. 2-source结果解释
+## 八、Phase 3：V7 方法身份与架构
 
-2-source只承担两个任务：
+V7 必须区分两个正式条件：
 
-```text
-验证observer instrumentation
-发现机制是否存在非零信号
-```
+### 1. `V7_FRESH`
 
-它不能承担正式机会率或最终NULL结论。
+- 与 V7 使用完全相同的 prompt、schema、serialization、batching、模型和 provider 配置；
+- 每次从空状态执行全量计算；
+- 是测量“纯增量收益”的直接对照；
+- 不能用旧 V6 headline 替代。
 
-允许状态：
+### 2. `V7_INCREMENTAL`
 
-## PROBE_INVALID
+最小架构应包括：
 
-```text
-binding不完整
-mixed snapshot
-epoch不一致
-same PreparedArtifact未满足
-ordered publication失败
-```
+1. Stable source-local IR  
+   每个 source 有稳定、可哈希、可比较的中间表示。
 
-输出：
+2. Stateful materialized views  
+   明确记录 view 的输入、版本、依赖、provenance 和更新状态。
 
-```text
-V7_TWO_SOURCE_PROBE=INVALID
-V7_6_SOURCE_AUTHORIZED=false
-```
+3. Dependency and affectedness certificate  
+   只有能够证明不受当前 source 变化影响的工作才允许复用。
 
-只修instrumentation bug，不增加methodology Gate。
+4. Exact full-recompute oracle  
+   任意增量结果都能与同身份的 V7_FRESH 结果进行规范化差分。
 
-## PROBE_VALID_POSITIVE_SIGNAL
+5. Conservative fallback  
+   依赖为 `UNKNOWN`、证据缺失或绑定不一致时执行 fresh recomputation。
 
-满足：
+6. Ordered publication  
+   未完成验证前不得将部分状态发布到共享可见 namespace。
 
-```text
-observer绑定完整
-AND
-存在request exact、局部affectedness或正的potentially preservable CP
-```
+7. Crash recovery and idempotence  
+   重试不能产生重复边、部分提交或不可追踪状态。
 
-输出：
+8. Complete accounting  
+   区分：
+   - reused；
+   - invalidated；
+   - recomputed；
+   - fresh fallback；
+   - provider transport；
+   - DB read/write；
+   - proof/maintenance overhead。
 
-```text
-V7_TWO_SOURCE_PROBE=VALID_POSITIVE_SIGNAL
-V7_6_SOURCE_AUTHORIZED=true
-```
+### 架构边界
 
-下一轮直接进入6-source characterization。
+DMSV、dominant-request 优化和 Top-K maintainer 不得自动并入 V7。
 
-## PROBE_VALID_ZERO_SIGNAL
+只有在基本 view correctness 已通过，且 profiling 证明相应阶段位于关键路径并达到预注册占比时，才能新建独立方法身份，例如：
 
-```text
-observer有效
-但该单pair没有保留dominant CP
-```
+`V7_INCREMENTAL_TOPK_V1`
 
-输出：
-
-```text
-V7_TWO_SOURCE_PROBE=VALID_ZERO_SIGNAL_SINGLE_PAIR
-```
-
-不得根据一个pair输出DMSV NULL。
-
-若没有代码级结构证明机会恒为零，则：
-
-```text
-V7_6_SOURCE_AUTHORIZED=true
-```
-
-由6-source决定分布性机会。
-
-只有本轮同时得到严格结构反证，例如：
-
-```text
-所有合法transition下dominant request必然变化
-AND
-无Native localization
-AND
-base view不可能及时存在
-```
-
-才允许：
-
-```text
-V7_6_SOURCE_AUTHORIZED=false
-```
-
-不得用单个2-source实验替代这种证明。
-
-本轮不得自动运行6-source。
+这属于新 treatment，必须重新预注册和验证。不得偷偷把它写入已经冻结的 V7 identity。
 
 ---
 
-# 11. 停止审计规则
+## 九、V7 正确性和质量闸门
 
-本轮最多新增：
+在任何性能主张之前，V7_INCREMENTAL 必须通过：
 
-```text
-1个workplan append-only section
-1个preregistration JSON
-1个V6 closure/fix decision JSON
-1个2-source observer JSONL/JSON
-1个合并report
-1个ledger
-必要测试
-```
+1. 每处理一个 source 后，与 V7_FRESH 做 canonical state differential。
+2. 最终图状态差分。
+3. 节点、边、属性、provenance、时间和 source membership 差分。
+4. 删除、修改、重排、重复 source 的测试。
+5. mismatch、missing、provider failure 和 crash recovery 测试。
+6. UNKNOWN 路径强制 fresh 的测试。
+7. 并发及 ordered publication 测试。
+8. 在固定 seed/确定性可控范围内的重复运行。
+9. 下游 LongMemEval 或仓库既定质量评测。
+10. 用置信区间进行非劣判断，而不是只看少量示例问题。
 
-不要把每个中间判断拆成独立报告。
+任何无法解释的 canonical mismatch 都阻止性能实验。
 
-禁止新增：
+如果 provider 本身非确定，必须：
 
-```text
-B1R3/B1R4 taxonomy
-E1-E13扩展
-新operator selection Gate
-新经济公式
-新theorem document
-Top-K maintainer
-batch splitting
-summary/edge treatment
-scheduler/admission search
-6-source/full development campaign
-held-out evaluation
-论文related-work扩写
-```
-
-一旦完成：
-
-```text
-V6 dynamic effect
-V6 fix branch
-V6 qualification
-2-source probe
-```
-
-就必须停止。
+- 分离 provider variance 和架构差异；
+- 尽可能使用相同已捕获输入进行 provider-free comparison；
+- 对 live quality 使用配对设计；
+- 明确哪些字段要求 exact equality，哪些字段采用 semantic equivalence；
+- 在查看 held-out 前冻结 equivalence 判定。
 
 ---
 
-# 12. Workplan更新方式
+## 十、冻结前的开发实验
 
-只在`workplan_v7.md`追加一个简短section：
+development 阶段允许：
 
-```text
-Frozen V6 Identity Fix and Experiment Resumption
-```
+- 修复 correctness bug；
+- 选择架构；
+- 测量机会；
+- 估计方差；
+- 完成功效分析；
+- 设置主要指标和阈值；
+- 运行有限的消融实验。
 
-说明：
+禁止：
 
-1. intended method identity仍为timing-only；
-2. public implementation继承了早期strip；
-3. 本轮按A/B/C修复；
-4. pre-fix DMSV semantic root保持历史记录；
-5. post-fix DMSV observer使用corrected Frozen V6；
-6. 完成identity qualification后立即恢复V7实验；
-7. 不再新增methodology closure。
+- 在 development 中选择一个指标、到 held-out 后改用另一个指标；
+- 反复调整直到超过 speedup 阈值；
+- 把 provider invalid attempt 排除后假装从未发生；
+- 把失败运行作为“额外独立样本”。
 
-不得删除或重写：
+当以下内容全部冻结后，才能进入主实验：
 
-```text
-旧V6证据
-旧V7 NULL
-B1R2 BLOCKED
-失败attempt
-historical context-elided artifacts
-```
+- V7 方法规范；
+- 代码提交；
+- prompt/schema/config 哈希；
+- baseline 身份；
+- dev/held-out split；
+- 环境和硬件；
+- primary/secondary metrics；
+- correctness 和 quality 闸门；
+- 统计分析计划；
+- failure/invalid 规则；
+- 运行顺序；
+- 资源预算；
+- main experiment manifest。
 
----
+此时生成：
 
-# 13. Git与artifact纪律
+`V7_MAIN_EXPERIMENT_PREREGISTRATION.json`
 
-建议在当前本地分支继续工作，或创建：
-
-```text
-v6-core-context-integrity-fix
-```
-
-允许本地commit，禁止push。
-
-至少形成：
-
-```text
-PREREG_COMMIT
-RESULT_COMMIT
-```
-
-旧artifact必须字节级不变。
-
-如果启动live probe，使用独立output目录和run ID；不得覆盖旧run。
-
-本轮只停止本轮启动的进程，不停止共享LLM、Embedding或Neo4j服务。
-
-若live probe在5小时上限前无法完成：
-
-1. 不启动新的实验；
-2. 封存当前run ID、PID/session、output root和进度；
-3. 输出：
-
-```text
-V7_TWO_SOURCE_PROBE=STARTED_NOT_COMPLETED
-```
-
-4. 不将不完整结果纳入机会结论。
+并单独提交。
 
 ---
 
-# 14. 最终输出格式
+## 十一、主实验设计
 
-最终回复必须先输出：
+在冻结 manifest 前，从仓库核对已有主实验规划。若既有规划规定 4 个 development histories 和 8 个 held-out histories，则沿用并验证哈希；不得自行更换。
+
+### 正式条件
+
+至少包括：
+
+- `B0_NATIVE_SERIAL`：主要外部 baseline；
+- `V7_FRESH`：V7 同身份全量重算对照；
+- `V7_INCREMENTAL`：主要 treatment；
+- 修复后的 V6 Core：只有重新 qualification 后才可作为辅助历史对照；
+- `B1_RELAXED_ORDER`：仅作为补充 upper bound，不作为 headline。
+
+旧 V6 headline 不得复用。
+
+### 资源公平
+
+所有正式条件必须尽可能保持：
+
+- 相同模型与版本；
+- 相同 provider routing；
+- 相同 prompt/schema；
+- 相同输入和 source order；
+- 相同硬件；
+- 相同并发上限；
+- 相同数据库配置；
+- 相同冷/热启动定义；
+- 相同失败和超时规则。
+
+若 baseline 与 treatment 的语义或资源不同，必须显式说明，不能直接计算 headline speedup。
+
+### 运行设计
+
+- 使用 paired same-history comparison；
+- 顺序随机化或 counterbalance；
+- 记录冷启动和稳态；
+- 预先定义 warm-up；
+- 每个重复运行的身份独立；
+- provider replacement 不算新的科学 replicate；
+- 任何 campaign 级 bug 都使相应 campaign invalid。
+
+### Primary outcomes
+
+至少报告：
+
+- end-to-end wall-clock makespan；
+- `B0_NATIVE_SERIAL / V7_INCREMENTAL` speedup；
+- `V7_FRESH / V7_INCREMENTAL` 纯增量 speedup；
+- 关键路径时间；
+- provider calls、tokens 和 transport attempts；
+- DB read/write；
+- recomputed、reused、invalidated 和 fallback work；
+- proof/maintenance overhead；
+- correctness pass rate；
+- quality non-inferiority；
+- peak memory 和失败率。
+
+### 统计分析
+
+- 使用配对估计；
+- 报告每个 history 的结果；
+- 报告效应量及置信区间；
+- 在 held-out 前完成功效分析；
+- 明确 primary 与 secondary comparisons；
+- 对多重比较进行预注册处理；
+- 不把 source、stage 或 retry 错当成独立样本；
+- 同时报告中位数、尾部行为和异常值原因；
+- 不只报告最佳运行。
+
+---
+
+## 十二、held-out 一次性闸门
+
+只有下列条件全部满足时才能设置：
 
 ```text
-INPUT_COMMIT=
-PREREG_COMMIT=
-RESULT_COMMIT=
-FINAL_STATE=
+authorization.held_out=true
+authorization.main_experiment=true
+```
 
-V6_METHOD_IDENTITY=v6-membind-core-v1
-V6_IMPLEMENTATION_REVISION=
-OLD_V6_DYNAMIC_EFFECT=NOOP|NONEMPTY_REMOVAL|MISSING
-OLD_V6_HEADLINE_STATUS=
-PREVIOUS_WINDOW_EQUIVALENCE=
-FIX_BRANCH=
-V6_IDENTITY_QUALIFICATION=
+- 方法与代码冻结；
+- 完整测试通过；
+- development 闸门通过；
+- 功效分析完成；
+- main preregistration 已提交；
+- manifest 哈希已记录；
+- namespace 已隔离；
+- 运行预算和失败策略已冻结。
 
-V7_TWO_SOURCE_PROBE=
-V7_PROBE_RUN_ID=
-V7_6_SOURCE_AUTHORIZED=
+访问 held-out 后：
 
-B0_RERUN=false
-B1_ROLE=RELAXED_ORDER_UPPER_BOUND
+- 不得再修改方法、prompt、schema、阈值或主要统计方法；
+- 只能修复明确的基础设施问题；
+- 若发现会影响科学结果的代码 bug，整个 campaign 标为 invalid；
+- 修复后必须创建新方法/代码身份并重新预注册；
+- 不得复用已经查看过的 held-out 结果进行方法选择。
+
+---
+
+## 十三、论文级交付物
+
+无论正面或负面终态，都必须生成：
+
+1. 最终方法规范和身份表。
+2. correctness argument，明确已证明与未证明的边界。
+3. 完整 preregistration、decision 和 artifact manifest。
+4. 所有 valid、invalid、failed run registry。
+5. 可复现运行脚本和环境锁定信息。
+6. 主结果表、每历史结果表和置信区间。
+7. correctness/quality 结果。
+8. 成本与关键路径分解。
+9. 主要消融实验。
+10. 与 cache、memoization、incremental view maintenance、OCC、DMSV 等相关工作的清晰区别。
+11. 对旧 V6、V6.1、B1R2 结果不可迁移性的说明。
+12. threats to validity。
+13. limitations 和 negative findings。
+14. 可直接用于论文的：
+    - method section outline；
+    - experiment section outline；
+    - claim-evidence table；
+    - artifact/reproducibility checklist；
+    - reviewer objection checklist。
+
+Headline claim 必须严格对应证据。例如：
+
+- 有充分证据时：V7 在保持质量非劣和状态等价的条件下减少增量构建关键路径。
+- 只有开发集证据时：只能称为 development observation。
+- 功效不足时：称为 inconclusive。
+- 没有观察到机会时：限定在当前 workload 和方法身份。
+- 不得写“证明适用于所有图构建任务”。
+
+---
+
+## 十四、提交、推送与外部操作权限
+
+你可以：
+
+- 在专用本地分支编辑代码和 artifact；
+- 运行测试、静态检查和本地 mock；
+- 在闸门允许后运行 development provider 实验；
+- 创建隔离 namespace；
+- 进行非破坏性的环境诊断；
+- 按阶段制作本地提交。
+
+你不可以：
+
+- reset、覆盖或删除用户改动；
+- 改写旧 sealed artifact；
+- 删除失败/invalid 运行；
+- 停止或清空共享服务；
+- 使用未授权 held-out；
+- 未经明确授权推送远端；
+- 创建或发布论文/PR；
+- 把 prompt 文件混入科学结果提交；
+- 在缺少证据时扩大结论。
+
+若需要上述新权限，保存当前状态后输出 `BLOCKED_EXTERNAL` 并说明所需权限。
+
+---
+
+## 十五、沟通要求
+
+不要在每个小动作后停下来等待用户。只在以下情况汇报：
+
+- 完成一个阶段；
+- 闸门状态改变；
+- 出现会改变研究路线的新证据；
+- 需要权限或外部资源；
+- 达到终态。
+
+每次阶段报告必须包含：
+
+```text
+CURRENT_STATE
+BRANCH_AND_HEAD
+METHOD_IDENTITY
+COMPLETED_ACTIONS
+TEST_RESULTS
+VALID_RUNS
+INVALID_OR_FAILED_RUNS
+GATE_DECISION
+CLAIM_BOUNDARY
+KNOWN_BLOCKERS
+NEXT_AUTHORIZED_ACTION
+```
+
+不要只给自然语言结论；同时更新机器可读状态文件。
+
+---
+
+## 十六、开始执行
+
+当前初始状态应设为：
+
+```text
+V6_FIX_INTEGRATION_AUDIT=REQUIRED
+V7_TWO_SOURCE_PROBE=INVALID_REPLACEMENT_PENDING
+V7_SIX_SOURCE_AUTHORIZED=false
+V7_ARCHITECTURE_AUTHORIZED=false
+TOPK_MAINTAINER_AUTHORIZED=false
 HELD_OUT_ACCESSED=false
-TOPK_MAINTAINER_IMPLEMENTED=false
-V7_TREATMENT_EXECUTED=false
+MAIN_EXPERIMENT_AUTHORIZED=false
 ```
 
-随后简明报告：
+现在开始：
 
-1. 扫描了哪些正式V6 artifacts；
-2. 是否实际删除过非空context；
-3. previous window能否Native-equivalent重建；
-4. 选择A/B/C哪条修复；
-5. 修改了哪些production files；
-6. 哪些旧V6结果仍可使用；
-7. corrected V6 qualification结果；
-8. 2-source observer是否启动/完成；
-9. previous window、Node request和dominant CP的实际观测；
-10. 下一步是否直接进入6-source。
-
-最终必须明确：
-
-```text
-本轮没有重新定义V6，
-只修复了实现与Frozen方法合同的偏离。
-
-本轮没有继续增加methodology Gate，
-V6 identity闭环后已经恢复V7 empirical execution。
-
+1. 审计真实分支、HEAD、工作区和历史 artifact。
+2. 不修改历史结果。
+3. 为 Phase 0 编写 append-only 预注册。
+4. 复现完整 construction 层的 mismatch/fresh accounting 问题。
+5. 一次只修复这一项问题。
+6. 完成端到端证明和全套测试。
+7. 只有 Phase 0 通过，才创建新的二源 replacement probe。
+8. 此后严格按照上述 autoresearch 闸门持续推进，直到达到三个合法终态之一。

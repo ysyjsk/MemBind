@@ -25,7 +25,7 @@ from ..membind_v5.runtime.core.provider_admission import (
     current_provider_scope,
     provider_request_scope,
 )
-from ..membind_v5.runtime.core.transcript import TranscriptStore
+from ..membind_v5.runtime.core.transcript import BindingMismatch, TranscriptStore
 from ..membind_v6.request_observation import observe_request_identity
 from .admission import ForegroundAdmissionArbiter
 from .evidence import response_sha256
@@ -586,6 +586,7 @@ class V61ProviderClient:
             [Sequence[Any], str | None], tuple[list[Any], dict[str, Any]] | None
         ]
         | None = None,
+        binding_strict: bool = True,
         event_sink: Callable[[dict[str, Any]], None] | None = None,
     ) -> None:
         if mode not in {"capture", "replay"}:
@@ -599,6 +600,7 @@ class V61ProviderClient:
         self.token_counter = token_counter
         self.certified_message_transform = certified_message_transform
         self.native_message_transform = native_message_transform
+        self.binding_strict = bool(binding_strict)
         self._routed_physical_admission = bool(
             getattr(
                 getattr(delegate, "client", None),
@@ -669,6 +671,7 @@ class V61ProviderClient:
         transport_retry_count: int = 0,
         result: Any = None,
         error: BaseException | None = None,
+        fallback_type: str | None = None,
     ) -> None:
         identity = _IDENTITY.get()
         observation = _OBSERVATION.get()
@@ -710,6 +713,8 @@ class V61ProviderClient:
             row["error_message_digest"] = hashlib.sha256(
                 str(error).encode("utf-8", errors="backslashreplace")
             ).hexdigest()[:16]
+        if fallback_type is not None:
+            row["fallback_type"] = str(fallback_type)
         self.provider_calls.append(row)
         row["duration_ns"] = int(row["end_ns"]) - int(row["start_ns"])
         service_start = int(service_start_ns if service_start_ns is not None else start_ns)
@@ -773,6 +778,94 @@ class V61ProviderClient:
         # prompts and includes a small framing allowance per message.
         return max(1, int(math.ceil(chars / 3.0)) + 16 * len(messages))
 
+    async def _run_fresh_delegate(
+        self,
+        delegate: Callable[[], Any],
+        *,
+        region: str,
+        source_sequence: int,
+        prompt_name: Any,
+        effective_messages: Sequence[Any],
+        kwargs: Mapping[str, Any],
+        start_ns: int,
+        fallback_type: str,
+    ) -> Any:
+        """Execute a binding fallback through the normal admission path.
+
+        The proxy has already computed and observed the Native identity.  Its
+        delegate closure is therefore the exact immutable Native request; this
+        helper supplies the admission, transport accounting and provider-call
+        row that certified replay deliberately skips.
+        """
+
+        initial_class = self._class(source_sequence, region)
+        request_tokens, prompt_tokens, decode_reserve = self._estimate_request_tokens(
+            effective_messages, kwargs
+        )
+        admitted = None
+        if not self._routed_physical_admission:
+            admitted = await self.arbiter.acquire_physical(
+                initial_class,
+                source_sequence=source_sequence,
+                request_tokens=request_tokens,
+                prompt_tokens=prompt_tokens,
+                decode_reserve_tokens=decode_reserve,
+                class_resolver=lambda: self._class(source_sequence, region),
+            )
+        service_start_ns = time.monotonic_ns()
+        transport_counter = {"attempts": 0, "retries": 0}
+        managed_token = _MANAGED_TRANSPORT_CALL.set(transport_counter)
+        try:
+            try:
+                with provider_request_scope(request_tokens=request_tokens):
+                    with proxy_source_scope(source_sequence):
+                        result = await delegate()
+            except BaseException as exc:
+                self._record(
+                    region=region,
+                    source_sequence=source_sequence,
+                    prompt_name=prompt_name,
+                    admission_class=(
+                        admitted.admission_class if admitted is not None else initial_class
+                    ),
+                    replay=False,
+                    status="failure",
+                    service_start_ns=service_start_ns,
+                    request_tokens=request_tokens,
+                    prompt_tokens=prompt_tokens,
+                    decode_reserve_tokens=decode_reserve,
+                    transport_attempt_count=transport_counter["attempts"],
+                    transport_retry_count=transport_counter["retries"],
+                    error=exc,
+                    start_ns=start_ns,
+                    fallback_type=fallback_type,
+                )
+                raise
+            self._record(
+                region=region,
+                source_sequence=source_sequence,
+                prompt_name=prompt_name,
+                admission_class=(
+                    admitted.admission_class if admitted is not None else initial_class
+                ),
+                replay=False,
+                status="success",
+                service_start_ns=service_start_ns,
+                request_tokens=request_tokens,
+                prompt_tokens=prompt_tokens,
+                decode_reserve_tokens=decode_reserve,
+                transport_attempt_count=transport_counter["attempts"],
+                transport_retry_count=transport_counter["retries"],
+                result=result,
+                start_ns=start_ns,
+                fallback_type=fallback_type,
+            )
+            return result
+        finally:
+            _MANAGED_TRANSPORT_CALL.reset(managed_token)
+            if admitted is not None:
+                await self.arbiter.release_physical(admitted)
+
     async def generate_response(self, messages: list[Any], **kwargs: Any) -> Any:
         start_ns = time.monotonic_ns()
         region, source_sequence = current_provider_scope()
@@ -809,11 +902,33 @@ class V61ProviderClient:
                     self.event_sink(dict(context_event))
         if self.mode == "replay" and certified:
             transport_counter = {"attempts": 0, "retries": 0}
+            fallback_state = {"used": False}
+
+            async def binding_fallback(
+                mismatch: BindingMismatch, delegate: Callable[[], Any]
+            ) -> Any:
+                fallback_state["used"] = True
+                fallback_type = "missing" if mismatch.reason == "missing" else "mismatch"
+                return await self._run_fresh_delegate(
+                    delegate,
+                    region=region,
+                    source_sequence=int(source_sequence),
+                    prompt_name=prompt_name,
+                    effective_messages=effective_messages,
+                    kwargs=kwargs,
+                    start_ns=start_ns,
+                    fallback_type=fallback_type,
+                )
+
             try:
                 managed_token = _MANAGED_TRANSPORT_CALL.set(transport_counter)
                 try:
                     with proxy_source_scope(source_sequence):
-                        result = await self._proxy.generate_response(effective_messages, **kwargs)
+                        result = await self._proxy.generate_response(
+                            effective_messages,
+                            binding_fallback=binding_fallback,
+                            **kwargs,
+                        )
                 finally:
                     _MANAGED_TRANSPORT_CALL.reset(managed_token)
             except BaseException as exc:
@@ -831,6 +946,8 @@ class V61ProviderClient:
                     start_ns=start_ns,
                 )
                 raise
+            if fallback_state["used"]:
+                return result
             self._record(
                 region=region,
                 source_sequence=source_sequence,

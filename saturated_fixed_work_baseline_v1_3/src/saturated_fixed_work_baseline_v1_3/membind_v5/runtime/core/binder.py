@@ -74,18 +74,27 @@ class NativeBindingScope(AbstractContextManager["NativeBindingScope"]):
         delegate: Callable[[], Awaitable[Any]],
         *,
         certified: bool,
+        fallback_delegate: Callable[[BindingMismatch], Awaitable[Any]] | None = None,
     ) -> Any:
         if certified:
             try:
                 return self.consume(identity)
-            except BindingMismatch:
-                if self.strict:
+            except BindingMismatch as exc:
+                # A duplicate consume is a protocol violation even for the
+                # Core's non-strict compatibility path.  Silently issuing a
+                # fresh call would hide double execution and corrupt the
+                # replay ledger.
+                if self.strict or exc.reason == "duplicate_consume":
                     raise
                 # Core preserves the full Native request.  If the request is
                 # different (or no transcript is bound), discard only the
                 # unconsumed candidate for this callsite/ordinal and execute
                 # the authoritative delegate exactly once.
                 self.store.discard_for(identity)
+                fallback_type = "missing" if exc.reason == "missing" else "mismatch"
+                self.store.record_fresh_fallback(fallback_type)
+                if fallback_delegate is not None:
+                    return await fallback_delegate(exc)
         return await delegate()
 
 

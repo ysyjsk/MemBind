@@ -46,7 +46,12 @@ def test_certified_replay_bypasses_provider_and_noncertified_native_is_real() ->
 
     calls, summary, evidence = asyncio.run(run())
     assert calls == 2
-    assert summary == {"logical_captured": 1, "logical_consumed": 1, "unconsumed": 0, "duplicates": 0}
+    assert {
+        key: summary[key]
+        for key in ("logical_captured", "logical_consumed", "unconsumed", "duplicates")
+    } == {"logical_captured": 1, "logical_consumed": 1, "unconsumed": 0, "duplicates": 0}
+    assert summary["logical_discarded"] == 0
+    assert summary["fresh_fallback"] == 0
     assert evidence["outstanding"] == 0
     assert evidence["events"]
 

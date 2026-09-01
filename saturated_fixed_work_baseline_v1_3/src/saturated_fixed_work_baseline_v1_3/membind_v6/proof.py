@@ -42,13 +42,44 @@ def validate_provider_events(events: Sequence[Mapping[str, Any]], *, capacity: i
 def validate_replay_accounting(summary: Mapping[str, Any]) -> dict[str, Any]:
     captured = summary.get("logical_captured")
     consumed = summary.get("logical_consumed")
+    discarded = summary.get("logical_discarded", 0)
     duplicates = summary.get("duplicates")
     unconsumed = summary.get("unconsumed")
-    if not all(isinstance(value, int) and value >= 0 for value in (captured, consumed, duplicates, unconsumed)):
+    fresh_fallback = summary.get("fresh_fallback", 0)
+    mismatch_fallback = summary.get("mismatch_fallback", 0)
+    missing_fallback = summary.get("missing_fallback", 0)
+    values = (
+        captured,
+        consumed,
+        discarded,
+        duplicates,
+        unconsumed,
+        fresh_fallback,
+        mismatch_fallback,
+        missing_fallback,
+    )
+    if not all(
+        isinstance(value, int) and not isinstance(value, bool) and value >= 0
+        for value in values
+    ):
         raise V6ProofError("replay accounting fields are invalid")
-    if captured != consumed or duplicates != 0 or unconsumed != 0:
+    if (
+        captured != consumed + discarded + unconsumed
+        or fresh_fallback != mismatch_fallback + missing_fallback
+        or duplicates != 0
+        or unconsumed != 0
+    ):
         raise V6ProofError("replay accounting is incomplete")
-    return {"schema_version": "membind.v6.replay-proof.v1", "status": "PASS", "logical_captured": captured, "logical_consumed": consumed}
+    return {
+        "schema_version": "membind.v6.replay-proof.v2",
+        "status": "PASS",
+        "logical_captured": captured,
+        "logical_consumed": consumed,
+        "logical_discarded": discarded,
+        "fresh_fallback": fresh_fallback,
+        "mismatch_fallback": mismatch_fallback,
+        "missing_fallback": missing_fallback,
+    }
 
 
 def validate_request_comparisons(comparisons: Sequence[Mapping[str, Any]]) -> dict[str, Any]:

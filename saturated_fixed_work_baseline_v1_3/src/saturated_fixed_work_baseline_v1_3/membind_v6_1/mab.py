@@ -508,6 +508,7 @@ async def run_mab_v61_construction_async(
             certified_callsites=certified_callsites,
             certified_message_transform=transform,
             native_message_transform=None,
+            binding_strict=binding_strict,
             event_sink=provider_sink,
         )
         replay = V61ProviderClient(
@@ -527,6 +528,7 @@ async def run_mab_v61_construction_async(
                 if method_boundary == "WORK_REDUCTION_EXTENSION"
                 else None
             ),
+            binding_strict=binding_strict,
             event_sink=provider_sink,
         )
 
@@ -701,9 +703,45 @@ async def run_mab_v61_construction_async(
         }
         comparisons: list[dict[str, Any]] = []
         bindings: list[dict[str, Any]] = []
+        provider_by_key: dict[tuple[int, str, int], dict[str, Any]] = {}
+        for row in provider_calls:
+            callsite = row.get("callsite")
+            ordinal = row.get("ordinal")
+            sequence = row.get("source_sequence")
+            if not isinstance(callsite, str) or not isinstance(ordinal, int) or not isinstance(sequence, int):
+                continue
+            key = (sequence, callsite, ordinal)
+            # Prefer the Native row.  A fallback is deliberately replay=False;
+            # an exact certified consume is replay=True.
+            if row.get("region") == "NATIVE" or key not in provider_by_key:
+                provider_by_key[key] = row
         for key in sorted(set(shadow) | set(native)):
             if key not in shadow or key not in native:
                 comparisons.append({"key": key, "match": False, "reason": "missing_side"})
+                if key in native and key not in shadow:
+                    right = native[key]
+                    provider_row = provider_by_key.get(key, {})
+                    bindings.append(
+                        {
+                            "source_sequence": key[0],
+                            "callsite": key[1],
+                            "ordinal_within_episode": key[2],
+                            "request_identity_hash": None,
+                            "prepared_response_hash": None,
+                            "native_request_hash": right["public_summary"]["digest"],
+                            "native_response_hash": right["response_sha256"],
+                            "capture_count": 0,
+                            "consume_count": 0,
+                            "discard_count": 0,
+                            "match_status": "MISSING_FRESH_FALLBACK",
+                            "fallback_type": "missing",
+                            "external_transport_attempted_during_replay": False,
+                            "external_transport_attempted": True,
+                            "transport_attempt_count": int(
+                                provider_row.get("transport_attempt_count", 0)
+                            ),
+                        }
+                    )
                 continue
             left = shadow[key]
             right = native[key]
@@ -711,6 +749,18 @@ async def run_mab_v61_construction_async(
             response_match = left["response_sha256"] == right["response_sha256"]
             comparison = {**comparison, "response_match": response_match}
             comparisons.append({"key": key, **comparison})
+            provider_row = provider_by_key.get(key, {})
+            fallback_type = provider_row.get("fallback_type")
+            is_fallback = fallback_type in {"mismatch", "missing"}
+            match_status = (
+                "MISMATCH_FRESH_FALLBACK"
+                if fallback_type == "mismatch"
+                else "MISSING_FRESH_FALLBACK"
+                if fallback_type == "missing"
+                else "EXACT_MATCH"
+                if comparison["match"] and response_match
+                else "MISMATCH"
+            )
             bindings.append(
                 {
                     "source_sequence": key[0],
@@ -721,11 +771,15 @@ async def run_mab_v61_construction_async(
                     "native_request_hash": right["public_summary"]["digest"],
                     "native_response_hash": right["response_sha256"],
                     "capture_count": 1,
-                    "consume_count": 1,
-                    "match_status": (
-                        "EXACT_MATCH" if comparison["match"] and response_match else "MISMATCH"
-                    ),
+                    "consume_count": 0 if is_fallback else 1,
+                    "discard_count": 1 if fallback_type == "mismatch" else 0,
+                    "match_status": match_status,
+                    "fallback_type": fallback_type,
                     "external_transport_attempted_during_replay": False,
+                    "external_transport_attempted": bool(is_fallback),
+                    "transport_attempt_count": int(
+                        provider_row.get("transport_attempt_count", 0)
+                    ),
                 }
             )
         if not bindings:

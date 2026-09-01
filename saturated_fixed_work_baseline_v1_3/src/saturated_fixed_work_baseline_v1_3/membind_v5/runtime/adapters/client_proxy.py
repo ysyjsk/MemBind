@@ -12,7 +12,7 @@ from typing import Any, Awaitable, Callable, Iterable
 
 from ..core.binder import BindingScopeError, NativeBindingScope
 from ..core.request_identity import build_request_identity
-from ..core.transcript import CaptureSession, TranscriptStore
+from ..core.transcript import BindingMismatch, CaptureSession, TranscriptStore
 
 
 CERTIFIED_CALLSITES = frozenset(
@@ -68,6 +68,9 @@ class V5LLMClientProxy:
     cache_salt: str = ""
     previous_context_digest: str = ""
     identity_sink: Callable[[RequestIdentity], None] | None = None
+    binding_fallback: Callable[
+        [BindingMismatch, Callable[[], Awaitable[Any]]], Awaitable[Any]
+    ] | None = None
     # V6 may extend the certified seam after a request-stability probe.  The
     # default remains the frozen V5 callsite set, so existing captures/replays
     # retain exactly their prior behavior.
@@ -114,6 +117,9 @@ class V5LLMClientProxy:
         prompt_name: str | None = None,
         *,
         attribute_extraction: bool = False,
+        binding_fallback: Callable[
+            [BindingMismatch, Callable[[], Awaitable[Any]]], Awaitable[Any]
+        ] | None = None,
     ) -> Any:
         # The proxy must preserve Graphiti's client default.  Its explicit
         # ``None`` default would otherwise replace ``ModelSize.medium`` and
@@ -159,7 +165,19 @@ class V5LLMClientProxy:
                 raise BindingScopeError("certified Graphiti call outside V5 native scope")
             if scope is None:
                 return await delegate()
-            return await scope.invoke(identity, delegate, certified=certified)
+            fallback_handler = binding_fallback or self.binding_fallback
+            if fallback_handler is None:
+                return await scope.invoke(identity, delegate, certified=certified)
+
+            async def fallback(exc: BindingMismatch) -> Any:
+                return await fallback_handler(exc, delegate)
+
+            return await scope.invoke(
+                identity,
+                delegate,
+                certified=certified,
+                fallback_delegate=fallback,
+            )
         finally:
             _PROXY_REQUEST_IDENTITY.reset(identity_token)
 

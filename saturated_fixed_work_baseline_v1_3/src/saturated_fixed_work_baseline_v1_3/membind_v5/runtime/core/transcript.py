@@ -86,7 +86,11 @@ class TranscriptStore:
         self._items: dict[str, Transcript] = {}
         self._captured = 0
         self._consumed = 0
+        self._discarded = 0
         self._duplicates = 0
+        self._fresh_fallback = 0
+        self._mismatch_fallback = 0
+        self._missing_fallback = 0
 
     def capture(self, identity: RequestIdentity, response: Any, *, transport_attempts: int = 1) -> Transcript:
         if identity.digest in self._items:
@@ -165,7 +169,19 @@ class TranscriptStore:
         ]
         for key in keys:
             del self._items[key]
+        self._discarded += len(keys)
         return len(keys)
+
+    def record_fresh_fallback(self, fallback_type: str) -> None:
+        """Account one authoritative fresh call after a binding miss."""
+
+        if fallback_type not in {"mismatch", "missing"}:
+            raise ValueError("fallback_type must be mismatch or missing")
+        self._fresh_fallback += 1
+        if fallback_type == "mismatch":
+            self._mismatch_fallback += 1
+        else:
+            self._missing_fallback += 1
 
     def unconsumed(self) -> tuple[RequestIdentity, ...]:
         return tuple(item.identity for item in self._items.values() if not item.consumed)
@@ -181,8 +197,12 @@ class TranscriptStore:
         return {
             "logical_captured": self._captured,
             "logical_consumed": self._consumed,
+            "logical_discarded": self._discarded,
             "unconsumed": len(self.unconsumed()),
             "duplicates": self._duplicates,
+            "fresh_fallback": self._fresh_fallback,
+            "mismatch_fallback": self._mismatch_fallback,
+            "missing_fallback": self._missing_fallback,
         }
 
     def export_public_summary(self) -> dict[str, Any]:

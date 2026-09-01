@@ -214,16 +214,62 @@ def validate_v6_bindings(rows: Sequence[Mapping[str, Any]]) -> dict[str, Any]:
         if key in seen:
             raise TraceValidationError("duplicate V6 binding consume")
         seen.add(key)
-        for field in ("request_identity_hash", "prepared_response_hash", "native_request_hash"):
-            _hash(row.get(field), field)
-        if row.get("capture_count") != 1:
-            raise TraceValidationError("capture count must equal one")
-        if row.get("consume_count") != 1:
-            raise TraceValidationError("consume count must equal one")
-        if row.get("match_status") != "EXACT_MATCH":
-            raise TraceValidationError("V6 binding is not an exact match")
+        status = row.get("match_status")
+        discard_count = row.get("discard_count", 0)
+        transport_attempt_count = row.get("transport_attempt_count", 0)
+        external_attempted = row.get("external_transport_attempted", False)
+        if (
+            isinstance(discard_count, bool)
+            or not isinstance(discard_count, int)
+            or discard_count < 0
+            or isinstance(transport_attempt_count, bool)
+            or not isinstance(transport_attempt_count, int)
+            or transport_attempt_count < 0
+            or not isinstance(external_attempted, bool)
+        ):
+            raise TraceValidationError("V6 binding accounting is invalid")
         if row.get("external_transport_attempted_during_replay") is not False:
             raise TraceValidationError("replay attempted external transport")
+        if status == "EXACT_MATCH":
+            for field in (
+                "request_identity_hash",
+                "prepared_response_hash",
+                "native_request_hash",
+            ):
+                _hash(row.get(field), field)
+            if row.get("capture_count") != 1:
+                raise TraceValidationError("capture count must equal one")
+            if row.get("consume_count") != 1:
+                raise TraceValidationError("consume count must equal one")
+            if discard_count != 0 or row.get("fallback_type") is not None:
+                raise TraceValidationError("exact binding has fallback accounting")
+            if external_attempted or transport_attempt_count != 0:
+                raise TraceValidationError("exact replay attempted external transport")
+        elif status == "MISMATCH_FRESH_FALLBACK":
+            for field in (
+                "request_identity_hash",
+                "prepared_response_hash",
+                "native_request_hash",
+            ):
+                _hash(row.get(field), field)
+            if row.get("capture_count") != 1 or row.get("consume_count") != 0:
+                raise TraceValidationError("mismatch fallback must not consume")
+            if discard_count != 1 or row.get("fallback_type") != "mismatch":
+                raise TraceValidationError("mismatch fallback accounting is invalid")
+            if not external_attempted:
+                raise TraceValidationError("mismatch fallback lacks fresh transport")
+        elif status == "MISSING_FRESH_FALLBACK":
+            _hash(row.get("native_request_hash"), "native_request_hash")
+            native_response = row.get("native_response_hash")
+            _hash(native_response, "native_response_hash")
+            if row.get("capture_count") != 0 or row.get("consume_count") != 0:
+                raise TraceValidationError("missing fallback has capture/consume work")
+            if discard_count != 0 or row.get("fallback_type") != "missing":
+                raise TraceValidationError("missing fallback accounting is invalid")
+            if not external_attempted:
+                raise TraceValidationError("missing fallback lacks fresh transport")
+        else:
+            raise TraceValidationError("V6 binding status is invalid")
     return {
         "schema_version": "membind.v1.3.refinement-validation.v1",
         "refinement_status": "PASS",
