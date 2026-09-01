@@ -63,6 +63,7 @@ from .provider import (
     strip_certified_previous_context,
 )
 from .runtime import close_local_u0_runtime, local_prompt_token_count
+from .structured_output_recovery import reliability_identity
 
 
 class V61MABError(MABLiveRunnerError):
@@ -100,9 +101,41 @@ class _Journal:
     def __init__(self, path: Path) -> None:
         path.parent.mkdir(parents=True, exist_ok=True)
         self.path = path
-        self._stream = path.open("x", encoding="utf-8")
+        self._committed: dict[int, dict[str, Any]] = {}
+        if path.exists():
+            self._load_existing()
+            self._stream = path.open("a", encoding="utf-8")
+        else:
+            self._stream = path.open("x", encoding="utf-8")
         self._closed = False
         self._last_sync_ns = time.monotonic_ns()
+
+    def _load_existing(self) -> None:
+        """Recover only complete commit records from a prior interrupted run."""
+
+        try:
+            rows = self.path.read_text(encoding="utf-8").splitlines()
+        except OSError:
+            return
+        for line in rows:
+            try:
+                row = json.loads(line)
+            except (TypeError, json.JSONDecodeError):
+                # A torn final line is deliberately ignored; no publication is
+                # considered committed without a complete JSON record.
+                continue
+            if not isinstance(row, Mapping) or row.get("event") not in {
+                "PUBLICATION_COMMITTED",
+                "PUBLICATION_DURABLE",
+            }:
+                continue
+            sequence = row.get("source_sequence")
+            key = row.get("idempotency_key")
+            if isinstance(sequence, int) and isinstance(key, str) and key:
+                self._committed[int(sequence)] = dict(row)
+
+    def committed_publications(self) -> dict[int, dict[str, Any]]:
+        return {sequence: dict(row) for sequence, row in self._committed.items()}
 
     def _sync(self) -> None:
         self._stream.flush()
@@ -124,6 +157,11 @@ class _Journal:
         self._stream.flush()
         if durable or time.monotonic_ns() - self._last_sync_ns >= self.SYNC_INTERVAL_NS:
             self._sync()
+        if row.get("event") in {"PUBLICATION_COMMITTED", "PUBLICATION_DURABLE"}:
+            sequence = row.get("source_sequence")
+            key = row.get("idempotency_key")
+            if isinstance(sequence, int) and isinstance(key, str) and key:
+                self._committed[int(sequence)] = dict(row)
 
     def close(self) -> None:
         if not self._stream.closed:
@@ -345,6 +383,7 @@ async def run_mab_v61_construction_async(
     certified_message_transform: Callable[..., Any] | None | object = _DEFAULT_CERTIFIED_MESSAGE_TRANSFORM,
     binding_strict: bool = True,
     implementation_revision: str | None = None,
+    publication_fault_injector: Callable[[str, int, Mapping[str, Any]], Any] | None = None,
 ) -> dict[str, Any]:
     selected = tuple(episode_from_input(item) for item in episodes)
     if not selected or [item.source_sequence for item in selected] != list(range(len(selected))):
@@ -376,6 +415,7 @@ async def run_mab_v61_construction_async(
     frontier_events: list[dict[str, Any]] = []
     provider_calls: list[dict[str, Any]] = []
     shadow_db_attempts: list[dict[str, Any]] = []
+    publication_state: dict[int, dict[str, Any]] = journal.committed_publications()
     runtime: Any = None
     graphiti: Any = None
     instrumentation: Any = None
@@ -625,15 +665,134 @@ async def run_mab_v61_construction_async(
 
         async def publish(sequence: int, _prepared: Any) -> Any:
             episode = selected[sequence]
+            publication_kwargs = _mab_graphiti_kwargs(episode, namespace=namespace)
+            idempotency_key = str(publication_kwargs.get("uuid") or "")
+            if not idempotency_key:
+                raise V61MABError("source publication is missing a stable idempotency key")
+            prior = publication_state.get(sequence)
+            if prior is not None:
+                if prior.get("idempotency_key") != idempotency_key:
+                    raise V61MABError("source publication idempotency key changed on re-entry")
+                emit(
+                    "PUBLICATION_REUSED",
+                    sequence,
+                    time.monotonic_ns(),
+                )
+                append_live(
+                    {
+                        "channel": "common",
+                        "event": "PUBLICATION_REUSED",
+                        "source_sequence": sequence,
+                        "idempotency_key": idempotency_key,
+                        "recovered_from": prior.get("event"),
+                    },
+                    durable=True,
+                )
+                # Reconstruct the certified Native extraction ledger without
+                # invoking Graphiti publication.  A prior commit may come from
+                # an interrupted process whose in-memory transcript was lost;
+                # the provider proxy records a bounded fresh fallback for any
+                # missing response, while the stable source UUID prevents a
+                # second database write.
+                node_episode = _episode_node(episode, namespace=namespace)
+                previous = [
+                    _episode_node(
+                        item,
+                        namespace=namespace,
+                        uuid_value=f"prep-{item.source_sequence}",
+                    )
+                    for item in _native_previous_window(selected, sequence)
+                ]
+                with recorder.episode_scope(run_id, episode.name, sequence):
+                    with provider_scope(region="NATIVE", source_sequence=sequence):
+                        with NativeBindingScope(
+                            store, source_sequence=sequence, strict=bool(binding_strict)
+                        ):
+                            await extract_nodes(
+                                graphiti.clients,
+                                node_episode,
+                                previous,
+                                None,
+                                None,
+                                None,
+                            )
+                            await extract_edges(
+                                graphiti.clients,
+                                node_episode,
+                                [],
+                                previous,
+                                {("Entity", "Entity"): []},
+                                namespace,
+                                None,
+                                None,
+                            )
+                # The committed graph state is authoritative after a process
+                # crash.  The executor only needs an opaque prepared result;
+                # never call Graphiti again for this source.
+                return {"recovered": True, "idempotency_key": idempotency_key}
             emit("NATIVE_ENTER", sequence)
-            with recorder.episode_scope(run_id, episode.name, sequence):
-                with provider_scope(region="NATIVE", source_sequence=sequence):
-                    with NativeBindingScope(
-                        store, source_sequence=sequence, strict=bool(binding_strict)
-                    ):
-                        result = await graphiti.add_episode(
-                            **_mab_graphiti_kwargs(episode, namespace=namespace)
-                        )
+            append_live(
+                {
+                    "channel": "common",
+                    "event": "PUBLICATION_BEGIN",
+                    "source_sequence": sequence,
+                    "idempotency_key": idempotency_key,
+                    "source_hash": episode.source_hash,
+                },
+                durable=True,
+            )
+            if publication_fault_injector is not None:
+                injected = publication_fault_injector(
+                    "before_db_write", sequence, publication_kwargs
+                )
+                await _maybe_await(injected)
+            try:
+                with recorder.episode_scope(run_id, episode.name, sequence):
+                    with provider_scope(region="NATIVE", source_sequence=sequence):
+                        with NativeBindingScope(
+                            store, source_sequence=sequence, strict=bool(binding_strict)
+                        ):
+                                result = await graphiti.add_episode(**publication_kwargs)
+            except BaseException as exc:
+                emit("NATIVE_FAILURE", sequence, time.monotonic_ns())
+                append_live(
+                    {
+                        "channel": "common",
+                        "event": "NATIVE_FAILURE",
+                        "source_sequence": sequence,
+                        "idempotency_key": idempotency_key,
+                        "error_type": f"{type(exc).__module__}.{type(exc).__qualname__}",
+                    },
+                    durable=True,
+                )
+                raise
+            result_digest = hashlib.sha256(
+                json.dumps(result, ensure_ascii=False, sort_keys=True, default=str).encode(
+                    "utf-8"
+                )
+            ).hexdigest()
+            append_live(
+                {
+                    "channel": "common",
+                    "event": "PUBLICATION_COMMITTED",
+                    "source_sequence": sequence,
+                    "idempotency_key": idempotency_key,
+                    "source_hash": episode.source_hash,
+                    "result_sha256": result_digest,
+                },
+                durable=True,
+            )
+            publication_state[sequence] = {
+                "idempotency_key": idempotency_key,
+                "result": result,
+                "event": "PUBLICATION_COMMITTED",
+                "result_sha256": result_digest,
+            }
+            if publication_fault_injector is not None:
+                injected = publication_fault_injector(
+                    "after_commit", sequence, publication_kwargs
+                )
+                await _maybe_await(injected)
             durable = time.monotonic_ns()
             publication_frontier_ref["value"] = sequence
             if execution_strategy in {
@@ -647,6 +806,7 @@ async def run_mab_v61_construction_async(
                     "channel": "common",
                     "event": "PUBLICATION_DURABLE",
                     "source_sequence": sequence,
+                    "idempotency_key": idempotency_key,
                     "monotonic_ns": durable,
                 }
             )
@@ -839,8 +999,14 @@ async def run_mab_v61_construction_async(
         managed_provider_calls = [
             row for row in external_provider_calls if row.get("auxiliary") is not True
         ]
+        unverified_provider_attempts = sum(
+            int(row.get("transport_attempt_count", 0))
+            for row in managed_provider_calls
+            if row.get("transport_attempts_observed") is False
+        )
         expected_instrumented_transport_attempts = sum(
             int(row.get("transport_attempt_count", 0)) for row in managed_provider_calls
+            if row.get("transport_attempts_observed") is not False
         )
         auxiliary_transport_attempts = sum(
             int(row.get("transport_attempt_count", 0)) for row in auxiliary_provider_calls
@@ -856,7 +1022,9 @@ async def run_mab_v61_construction_async(
             int(row.get("transport_attempt_count", 0)) for row in external_provider_calls
         )
         observed_transport_attempts = (
-            observed_instrumented_transport_attempts + auxiliary_transport_attempts
+            observed_instrumented_transport_attempts
+            + auxiliary_transport_attempts
+            + unverified_provider_attempts
         )
         transport_expansion_attempts = sum(
             max(
@@ -917,6 +1085,7 @@ async def run_mab_v61_construction_async(
             ),
             "instrumented_transport_attempts": observed_instrumented_transport_attempts,
             "auxiliary_transport_attempts": auxiliary_transport_attempts,
+            "unverified_provider_attempts": unverified_provider_attempts,
             "transport_retry_attempts": transport_retry_attempts,
             "transport_true_retry_attempts": transport_retry_attempts,
             "transport_expansion_attempts": transport_expansion_attempts,
@@ -1023,6 +1192,7 @@ async def run_mab_v61_construction_async(
             },
             "graph_diagnostics": dict(canonical),
             "t_build_ns": lifecycle_validation["t_build_ns"],
+            **reliability_identity(),
         }
         seal = _materialize(
             root,

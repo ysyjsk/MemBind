@@ -12,6 +12,9 @@ from typing import Any, Callable, Mapping, Sequence
 RUNTIME_RELIABILITY_PROFILE = "shared-structured-output-recovery-v1"
 SCHEMA_REVISION = "finite-edge-schema-v1"
 RECOVERY_POLICY_REVISION = "classified-request-recovery-v1"
+RECOVERY_POLICY_MAX_TRANSIENT_RETRIES = 2
+RECOVERY_POLICY_MAX_TRUNCATION_VARIANTS = 1
+RECOVERY_POLICY_MAX_CONTEXT_CORRECTIONS = 1
 
 
 @dataclass(frozen=True, slots=True)
@@ -73,6 +76,163 @@ class StructuredOutputMalformed(json.JSONDecodeError, StructuredOutputError):
         self.metadata = dict(metadata)
 
 
+@dataclass(frozen=True, slots=True)
+class RecoveryIdentity:
+    """Three-level identity for one semantic request and its physical calls."""
+
+    semantic_operation_id: str
+    request_variant_id: str
+    physical_attempt_id: str
+
+
+@dataclass(frozen=True, slots=True)
+class RecoveryAttempt:
+    identity: RecoveryIdentity
+    attempt_index: int
+    failure_class: str | None
+    status: str
+
+
+def recovery_policy_document() -> dict[str, Any]:
+    """Return the frozen policy shared by Serial, Parallel, and V6.1."""
+
+    return {
+        "policy_revision": RECOVERY_POLICY_REVISION,
+        "transient_extra_physical_attempts": RECOVERY_POLICY_MAX_TRANSIENT_RETRIES,
+        "truncation_smaller_variants": RECOVERY_POLICY_MAX_TRUNCATION_VARIANTS,
+        "context_budget_corrections": RECOVERY_POLICY_MAX_CONTEXT_CORRECTIONS,
+        "malformed_replay": "none",
+        "semantic_validation_retry": "none",
+        "unknown_failure": "fail_closed",
+        "transcript_capture": "final_valid_response_only",
+    }
+
+
+def recovery_policy_sha256() -> str:
+    return hashlib.sha256(
+        json.dumps(
+            recovery_policy_document(), sort_keys=True, separators=(",", ":")
+        ).encode("utf-8")
+    ).hexdigest()
+
+
+def reliability_identity() -> dict[str, str]:
+    """Return the immutable policy identity shared by every construction arm."""
+
+    return {
+        "runtime_reliability_profile": RUNTIME_RELIABILITY_PROFILE,
+        "schema_revision": SCHEMA_REVISION,
+        "recovery_policy_revision": RECOVERY_POLICY_REVISION,
+        "recovery_policy_sha256": recovery_policy_sha256(),
+    }
+
+
+def classify_exception_for_recovery(
+    error: BaseException,
+    *,
+    finish_reason: str | None = None,
+    response_present: bool = False,
+    status_code: int | None = None,
+) -> str:
+    """Use the structured classifier for retry decisions."""
+
+    return classify_structured_failure(
+        finish_reason=finish_reason,
+        error=error,
+        response_present=response_present,
+        status_code=status_code,
+    )
+
+
+class StructuredRecoveryController:
+    """Bounded, explicit recovery for one semantic structured request.
+
+    The controller never retries malformed or semantically invalid responses.
+    A caller may provide a deterministic smaller-variant factory for a single
+    truncation recovery; every invocation remains a separately identifiable
+    physical attempt.
+    """
+
+    def __init__(
+        self,
+        *,
+        semantic_operation_id: str,
+        request_variant_id: str,
+        attempt_sink: Callable[[RecoveryAttempt], None] | None = None,
+    ) -> None:
+        if not semantic_operation_id or not request_variant_id:
+            raise ValueError("recovery identities must be non-empty")
+        self.semantic_operation_id = str(semantic_operation_id)
+        self.request_variant_id = str(request_variant_id)
+        self.attempt_sink = attempt_sink
+        self.attempts: list[RecoveryAttempt] = []
+
+    async def run(
+        self,
+        operation: Callable[[str], Any],
+        *,
+        classify: Callable[[BaseException], str] | None = None,
+        smaller_variant: Callable[[str], str | None] | None = None,
+        context_variant: Callable[[str], str | None] | None = None,
+    ) -> Any:
+        import inspect
+
+        variant = self.request_variant_id
+        transient_retries = 0
+        truncation_variants = 0
+        context_corrections = 0
+        attempt_index = 0
+        while True:
+            physical_id = f"{self.semantic_operation_id}:physical:{attempt_index}"
+            identity = RecoveryIdentity(
+                semantic_operation_id=self.semantic_operation_id,
+                request_variant_id=variant,
+                physical_attempt_id=physical_id,
+            )
+            try:
+                result = operation(variant)
+                if inspect.isawaitable(result):
+                    result = await result
+            except BaseException as exc:
+                failure_class = (
+                    classify(exc) if classify is not None else classify_exception_for_recovery(exc)
+                )
+                record = RecoveryAttempt(identity, attempt_index, failure_class, "failure")
+                self.attempts.append(record)
+                if self.attempt_sink is not None:
+                    self.attempt_sink(record)
+                if failure_class == "SERVER_TRANSIENT" or failure_class in {
+                    "TRANSPORT_INCOMPLETE",
+                }:
+                    if transient_retries < RECOVERY_POLICY_MAX_TRANSIENT_RETRIES:
+                        transient_retries += 1
+                        attempt_index += 1
+                        continue
+                elif failure_class == "OUTPUT_LENGTH_TRUNCATION":
+                    if smaller_variant is not None and truncation_variants < RECOVERY_POLICY_MAX_TRUNCATION_VARIANTS:
+                        next_variant = smaller_variant(variant)
+                        if next_variant is not None and next_variant != variant:
+                            variant = str(next_variant)
+                            truncation_variants += 1
+                            attempt_index += 1
+                            continue
+                elif failure_class == "CONTEXT_BUDGET_EXHAUSTED":
+                    if context_variant is not None and context_corrections < RECOVERY_POLICY_MAX_CONTEXT_CORRECTIONS:
+                        next_variant = context_variant(variant)
+                        if next_variant is not None and next_variant != variant:
+                            variant = str(next_variant)
+                            context_corrections += 1
+                            attempt_index += 1
+                            continue
+                raise
+            else:
+                record = RecoveryAttempt(identity, attempt_index, None, "success")
+                self.attempts.append(record)
+                if self.attempt_sink is not None:
+                    self.attempt_sink(record)
+                return result
+
+
 def classify_structured_failure(
     *,
     finish_reason: str | None = None,
@@ -84,6 +244,8 @@ def classify_structured_failure(
 
     reason = str(finish_reason or "").casefold()
     if reason in {"length", "max_tokens", "token_limit"}:
+        return "OUTPUT_LENGTH_TRUNCATION"
+    if isinstance(error, StructuredOutputLengthTruncation):
         return "OUTPUT_LENGTH_TRUNCATION"
     if status_code == 429 or (isinstance(status_code, int) and status_code >= 500):
         return "SERVER_TRANSIENT"
@@ -459,16 +621,14 @@ def build_schema_bound_certificate(
     )
     if tokenizer_witness_tokens is not None and tokenizer_witness_tokens < 0:
         raise ValueError("output token count cannot be negative")
-    output_tokens = (
-        tokenizer_witness_tokens
-        if tokenizer_witness_tokens is not None
-        else characters
-    )
-    bound_method = (
-        "exact_tokenizer_worst_case_witness_v1"
-        if tokenizer_witness_tokens is not None
-        else "one_token_per_compact_ensure_ascii_json_character_v1"
-    )
+    # The tokenizer witness is diagnostic evidence, not a proof of the maximum
+    # BPE token count: another bounded string can segment into more tokens than
+    # the selected witness.  ``ensure_ascii`` makes every witness byte an ASCII
+    # character, and a byte-level tokenizer cannot emit more tokens than bytes,
+    # so the serialized-character bound is conservative for every admitted
+    # value.  Keep the exact witness count alongside that proof for auditing.
+    output_tokens = characters
+    bound_method = "one_token_per_compact_ensure_ascii_json_character_v2"
     context_available = max(0, context_limit - prompt_tokens - safety_margin_tokens)
     completion_budget = min(effective_max_tokens, context_available)
     failures: list[str] = []
@@ -538,6 +698,9 @@ def choose_edge_page_capacity(
 __all__ = [
     "EdgePageCapacitySelection",
     "RECOVERY_POLICY_REVISION",
+    "RECOVERY_POLICY_MAX_CONTEXT_CORRECTIONS",
+    "RECOVERY_POLICY_MAX_TRANSIENT_RETRIES",
+    "RECOVERY_POLICY_MAX_TRUNCATION_VARIANTS",
     "RUNTIME_RELIABILITY_PROFILE",
     "SCHEMA_REVISION",
     "SchemaBoundCertificate",
@@ -548,10 +711,17 @@ __all__ = [
     "StructuredOutputBudgetError",
     "StructuredOutputLengthTruncation",
     "StructuredOutputMalformed",
+    "RecoveryAttempt",
+    "RecoveryIdentity",
+    "StructuredRecoveryController",
     "build_schema_bound_certificate",
+    "classify_exception_for_recovery",
     "classify_structured_failure",
     "choose_edge_page_capacity",
     "parse_structured_content",
+    "recovery_policy_document",
+    "recovery_policy_sha256",
+    "reliability_identity",
     "schema_sha256",
     "schema_worst_case_characters",
     "schema_worst_case_json",

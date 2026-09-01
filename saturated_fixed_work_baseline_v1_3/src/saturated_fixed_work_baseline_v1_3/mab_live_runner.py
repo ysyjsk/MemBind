@@ -13,6 +13,7 @@ import inspect
 import json
 import os
 import time
+import uuid
 from dataclasses import dataclass
 from pathlib import Path
 from typing import Any, Callable, Mapping, Sequence
@@ -50,6 +51,7 @@ from .membind_v6.proof import (
     validate_replay_accounting,
     validate_request_comparisons,
 )
+from .membind_v6_1.structured_output_recovery import reliability_identity
 
 
 class MABLiveRunnerError(RuntimeError):
@@ -159,6 +161,13 @@ def _episode_envelopes(recorder: Any, run_id: str, episodes: Sequence[MABLiveEpi
 def _mab_graphiti_kwargs(episode: MABLiveEpisode, *, namespace: str) -> dict[str, Any]:
     """Build the pinned Graphiti call shape while keeping offline fakes light."""
 
+    publication_uuid = str(
+        uuid.uuid5(
+            uuid.NAMESPACE_URL,
+            f"membind:{namespace}:{episode.context_id}:{episode.source_sequence}:"
+            f"{episode.source_hash}",
+        )
+    )
     try:
         from graphiti_core.nodes import EpisodeType
     except ModuleNotFoundError:
@@ -168,6 +177,7 @@ def _mab_graphiti_kwargs(episode: MABLiveEpisode, *, namespace: str) -> dict[str
             "source_description": "MemoryAgentBench LongMemEval session",
             "reference_time": episode.reference_time,
             "group_id": namespace,
+            "uuid": publication_uuid,
         }
     return {
         "name": episode.name,
@@ -176,6 +186,7 @@ def _mab_graphiti_kwargs(episode: MABLiveEpisode, *, namespace: str) -> dict[str
         "reference_time": _parse_reference_time(episode.reference_time),
         "source": EpisodeType.message,
         "group_id": namespace,
+        "uuid": publication_uuid,
     }
 
 
@@ -401,6 +412,7 @@ async def run_mab_construction_async(
                 ),
             ),
             "transport_evidence": _transport_evidence_summary(transport_rows),
+            **reliability_identity(),
         }
         if method == "V6":
             result["refinement_validation"] = {**result["refinement_validation"], "proof": {"request": validate_request_comparisons(comparisons), "replay": validate_replay_accounting(store.summary()), "provider": validate_provider_events([], capacity=capacity.value)}}

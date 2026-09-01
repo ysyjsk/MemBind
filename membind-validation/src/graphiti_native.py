@@ -26,6 +26,7 @@ from saturated_fixed_work_baseline_v1_3.membind_v6_1.structured_output_recovery 
     classify_structured_failure,
     parse_structured_content,
     validate_schema_boundedness,
+    reliability_identity,
 )
 from tracing import EpisodeTrace, JsonlTraceWriter, now_ns
 
@@ -589,6 +590,16 @@ class QwenVLLMClient:
                 self.structured_output_context_limit = structured_output_context_limit
                 self.structured_output_safety_margin = structured_output_safety_margin
                 self.structured_output_certificate_sink = structured_output_certificate_sink
+                self.runtime_reliability_profile = reliability_identity()[
+                    "runtime_reliability_profile"
+                ]
+                self.schema_revision = reliability_identity()["schema_revision"]
+                self.recovery_policy_revision = reliability_identity()[
+                    "recovery_policy_revision"
+                ]
+                self.recovery_policy_sha256 = reliability_identity()[
+                    "recovery_policy_sha256"
+                ]
                 self.call_count = 0
                 self.parse_failure_count = 0
                 self.structured_request_count = 0

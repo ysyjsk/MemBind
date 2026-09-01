@@ -29,6 +29,12 @@ from ..membind_v5.runtime.core.transcript import BindingMismatch, TranscriptStor
 from ..membind_v6.request_observation import observe_request_identity
 from .admission import ForegroundAdmissionArbiter
 from .evidence import response_sha256
+from .structured_output_recovery import (
+    RECOVERY_POLICY_MAX_TRANSIENT_RETRIES,
+    classify_exception_for_recovery,
+    reliability_identity,
+    recovery_policy_sha256,
+)
 
 
 class V61ProviderError(RuntimeError):
@@ -46,6 +52,9 @@ _MANAGED_TRANSPORT_CALL: contextvars.ContextVar[dict[str, int] | None] = context
 )
 _MANAGED_TRANSPORT_DEPTH: contextvars.ContextVar[int] = contextvars.ContextVar(
     "membind_v6_1_managed_transport_depth", default=0
+)
+_RECOVERY_ATTEMPT: contextvars.ContextVar[int] = contextvars.ContextVar(
+    "membind_v6_1_recovery_attempt", default=0
 )
 _PREVIOUS_CONTEXT_PATTERNS = (
     re.compile(
@@ -244,6 +253,24 @@ def _record_managed_transport_retry() -> bool:
     counter["attempts"] += 1
     counter["retries"] += 1
     return True
+
+
+def _ensure_physical_attempt_lower_bound(
+    counter: dict[str, int], logical_attempts: int
+) -> int:
+    """Close the accounting gap when a fake delegate bypasses the transport guard.
+
+    A logical provider invocation always performs at least one physical call.
+    Real transports increment ``attempts`` in ``install_auxiliary_transport_guard``;
+    provider-free delegates may not expose that seam, so retain the conservative
+    lower bound without double-counting calls that were observed already.
+    """
+
+    observed = max(0, int(counter.get("attempts", 0)))
+    required = max(1, int(logical_attempts) + 1)
+    if observed < required:
+        counter["attempts"] = required
+    return int(counter["attempts"])
 
 
 def _heuristic_transport_tokens(messages: Any) -> int:
@@ -638,6 +665,18 @@ class V61ProviderClient:
             "observation": observation,
             "response_sha256": None,
             "arbiter_instance_id": self.arbiter.instance_id,
+            "recovery_policy_sha256": recovery_policy_sha256(),
+            "semantic_operation_id": (
+                f"{int(source) if isinstance(source, int) else 'unknown'}:"
+                f"{observation.public_summary.get('callsite', 'unknown')}:"
+                f"{observation.public_summary.get('ordinal', 0)}"
+            ),
+            "request_variant_id": observation.public_summary.get("digest"),
+            "physical_attempt_id": (
+                f"{int(source) if isinstance(source, int) else 'unknown'}:"
+                f"{observation.public_summary.get('callsite', 'unknown')}:"
+                f"{observation.public_summary.get('ordinal', 0)}:0"
+            ),
         }
         self.observations.append(row)
         _IDENTITY.set(identity)
@@ -669,6 +708,8 @@ class V61ProviderClient:
         decode_reserve_tokens: int | None = None,
         transport_attempt_count: int = 0,
         transport_retry_count: int = 0,
+        logical_attempt_count: int = 1,
+        transport_attempts_observed: bool | None = None,
         result: Any = None,
         error: BaseException | None = None,
         fallback_type: str | None = None,
@@ -693,6 +734,25 @@ class V61ProviderClient:
             "end_ns": time.monotonic_ns(),
             "transport_attempt_count": int(transport_attempt_count),
             "transport_retry_count": int(transport_retry_count),
+            "logical_attempt_count": max(1, int(logical_attempt_count)),
+            "physical_attempt_count": max(0, int(transport_attempt_count)),
+            "transport_attempts_observed": (
+                bool(transport_attempts_observed)
+                if transport_attempts_observed is not None
+                else int(transport_attempt_count) > 0
+            ),
+            "transport_evidence": (
+                "OBSERVED"
+                if (
+                    bool(transport_attempts_observed)
+                    if transport_attempts_observed is not None
+                    else int(transport_attempt_count) > 0
+                )
+                else "UNVERIFIED_PROVIDER_FREE"
+            ),
+            "recovery_policy_sha256": recovery_policy_sha256(),
+            **reliability_identity(),
+            "semantic_operation_id": f"{int(source_sequence)}:{prompt_name or 'unknown'}",
         }
         if request_tokens is not None:
             row["request_tokens"] = int(request_tokens)
@@ -701,11 +761,20 @@ class V61ProviderClient:
         if decode_reserve_tokens is not None:
             row["decode_reserve_tokens"] = int(decode_reserve_tokens)
         if identity is not None:
+            semantic_operation_id = (
+                f"{int(source_sequence)}:{identity.callsite}:{identity.ordinal}"
+            )
             row.update(
                 {
                     "request_digest_prefix": identity.digest[:16],
                     "callsite": identity.callsite,
                     "ordinal": identity.ordinal,
+                    "semantic_operation_id": semantic_operation_id,
+                    "request_variant_id": identity.digest,
+                    "physical_attempt_id": (
+                        f"{semantic_operation_id}:"
+                        f"{max(0, int(transport_attempt_count) - 1)}"
+                    ),
                 }
             )
         if error is not None:
@@ -713,6 +782,7 @@ class V61ProviderClient:
             row["error_message_digest"] = hashlib.sha256(
                 str(error).encode("utf-8", errors="backslashreplace")
             ).hexdigest()[:16]
+            row["failure_class"] = classify_exception_for_recovery(error)
         if fallback_type is not None:
             row["fallback_type"] = str(fallback_type)
         self.provider_calls.append(row)
@@ -816,31 +886,52 @@ class V61ProviderClient:
         transport_counter = {"attempts": 0, "retries": 0}
         managed_token = _MANAGED_TRANSPORT_CALL.set(transport_counter)
         try:
-            try:
-                with provider_request_scope(request_tokens=request_tokens):
-                    with proxy_source_scope(source_sequence):
-                        result = await delegate()
-            except BaseException as exc:
-                self._record(
-                    region=region,
-                    source_sequence=source_sequence,
-                    prompt_name=prompt_name,
-                    admission_class=(
-                        admitted.admission_class if admitted is not None else initial_class
-                    ),
-                    replay=False,
-                    status="failure",
-                    service_start_ns=service_start_ns,
-                    request_tokens=request_tokens,
-                    prompt_tokens=prompt_tokens,
-                    decode_reserve_tokens=decode_reserve,
-                    transport_attempt_count=transport_counter["attempts"],
-                    transport_retry_count=transport_counter["retries"],
-                    error=exc,
-                    start_ns=start_ns,
-                    fallback_type=fallback_type,
-                )
-                raise
+            attempts = 0
+            while True:
+                try:
+                    with provider_request_scope(request_tokens=request_tokens):
+                        with proxy_source_scope(source_sequence):
+                            result = await delegate()
+                    break
+                except BaseException as exc:
+                    failure_class = classify_exception_for_recovery(exc)
+                    retryable = failure_class in {
+                        "SERVER_TRANSIENT",
+                        "TRANSPORT_INCOMPLETE",
+                    } or self._retryable_native_connection(exc)
+                    if retryable and attempts < RECOVERY_POLICY_MAX_TRANSIENT_RETRIES:
+                        attempts += 1
+                        transport_counter["retries"] += 1
+                        continue
+                    raise
+        except BaseException as exc:
+            observed_transport_attempts = int(transport_counter["attempts"]) > 0
+            _ensure_physical_attempt_lower_bound(transport_counter, attempts)
+            self._record(
+                region=region,
+                source_sequence=source_sequence,
+                prompt_name=prompt_name,
+                admission_class=(
+                    admitted.admission_class if admitted is not None else initial_class
+                ),
+                replay=False,
+                status="failure",
+                service_start_ns=service_start_ns,
+                request_tokens=request_tokens,
+                prompt_tokens=prompt_tokens,
+                decode_reserve_tokens=decode_reserve,
+                transport_attempt_count=transport_counter["attempts"],
+                transport_retry_count=transport_counter["retries"],
+                logical_attempt_count=attempts + 1,
+                transport_attempts_observed=observed_transport_attempts,
+                error=exc,
+                start_ns=start_ns,
+                fallback_type=fallback_type,
+            )
+            raise
+        else:
+            observed_transport_attempts = int(transport_counter["attempts"]) > 0
+            _ensure_physical_attempt_lower_bound(transport_counter, attempts)
             self._record(
                 region=region,
                 source_sequence=source_sequence,
@@ -856,6 +947,8 @@ class V61ProviderClient:
                 decode_reserve_tokens=decode_reserve,
                 transport_attempt_count=transport_counter["attempts"],
                 transport_retry_count=transport_counter["retries"],
+                logical_attempt_count=attempts + 1,
+                transport_attempts_observed=observed_transport_attempts,
                 result=result,
                 start_ns=start_ns,
                 fallback_type=fallback_type,
@@ -942,6 +1035,7 @@ class V61ProviderClient:
                     request_tokens=None,
                     transport_attempt_count=transport_counter["attempts"],
                     transport_retry_count=transport_counter["retries"],
+                    logical_attempt_count=1,
                     error=exc,
                     start_ns=start_ns,
                 )
@@ -958,6 +1052,7 @@ class V61ProviderClient:
                 request_tokens=None,
                 transport_attempt_count=transport_counter["attempts"],
                 transport_retry_count=transport_counter["retries"],
+                logical_attempt_count=1,
                 result=result,
                 start_ns=start_ns,
             )
@@ -989,31 +1084,33 @@ class V61ProviderClient:
                             result = await self._proxy.generate_response(effective_messages, **kwargs)
                     break
                 except BaseException as exc:
-                    # Native suffix calls are not transcript-certified. One
-                    # bounded retry absorbs a transient localhost connection
-                    # reset while preserving the fixed SDK retry contract for
-                    # capture/replay extraction calls.
-                    if (
-                        region == "NATIVE"
-                        and not certified
-                        and attempts == 0
-                        and self._retryable_native_connection(exc)
-                    ):
+                    failure_class = classify_exception_for_recovery(exc)
+                    retryable = failure_class in {
+                        "SERVER_TRANSIENT",
+                        "TRANSPORT_INCOMPLETE",
+                    } or self._retryable_native_connection(exc)
+                    if retryable and attempts < RECOVERY_POLICY_MAX_TRANSIENT_RETRIES:
                         attempts += 1
                         transport_counter["retries"] += 1
                         if self.event_sink is not None:
                             self.event_sink(
                                 {
-                                    "event": "V61_NATIVE_CONNECTION_RETRY",
+                                    "event": "V61_PROVIDER_TRANSIENT_RETRY",
                                     "mode": self.mode,
                                     "region": region,
                                     "source_sequence": int(source_sequence),
                                     "prompt_name": prompt_name,
+                                    "failure_class": failure_class,
+                                    "retry_index": attempts,
+                                    "max_extra_retries": RECOVERY_POLICY_MAX_TRANSIENT_RETRIES,
+                                    "recovery_policy_sha256": recovery_policy_sha256(),
                                     "arbiter_instance_id": self.arbiter.instance_id,
                                 }
                             )
                         continue
                     raise
+            observed_transport_attempts = int(transport_counter["attempts"]) > 0
+            _ensure_physical_attempt_lower_bound(transport_counter, attempts)
             self._record(
                 region=region,
                 source_sequence=source_sequence,
@@ -1029,11 +1126,15 @@ class V61ProviderClient:
                 decode_reserve_tokens=decode_reserve,
                 transport_attempt_count=transport_counter["attempts"],
                 transport_retry_count=transport_counter["retries"],
+                logical_attempt_count=attempts + 1,
+                transport_attempts_observed=observed_transport_attempts,
                 result=result,
                 start_ns=start_ns,
             )
             return result
         except BaseException as exc:
+            observed_transport_attempts = int(transport_counter["attempts"]) > 0
+            _ensure_physical_attempt_lower_bound(transport_counter, attempts)
             self._record(
                 region=region,
                 source_sequence=source_sequence,
@@ -1049,6 +1150,8 @@ class V61ProviderClient:
                 decode_reserve_tokens=decode_reserve,
                 transport_attempt_count=transport_counter["attempts"],
                 transport_retry_count=transport_counter["retries"],
+                logical_attempt_count=attempts + 1,
+                transport_attempts_observed=observed_transport_attempts,
                 error=exc,
                 start_ns=start_ns,
             )

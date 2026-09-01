@@ -1,0 +1,68 @@
+{
+  "schema_version": "membind.structured-output-recovery.schema-bound-certificate.v1",
+  "artifact_type": "schema_bound_certificate",
+  "created_at_utc": "2026-09-01T00:00:00Z",
+  "input_commit": "1585f46",
+  "runtime_reliability_profile": "shared-structured-output-recovery-v1",
+  "schema_revision": "finite-edge-schema-v1",
+  "context_limit": 65536,
+  "configured_effective_max_tokens": 32768,
+  "context_safety_margin": 32,
+  "prompt_tokens_witness": 100,
+  "tokenizer_witness_available": false,
+  "output_token_bound_method": "one_token_per_compact_ensure_ascii_json_character_v2",
+  "selection_rule": "largest_capacity_with_status_PASS; otherwise deterministic smaller variant or fail closed",
+  "schemas": [
+    {
+      "callsite": "extract_edges.edge",
+      "variant_id": "page_capacity_1",
+      "schema_sha256": "1e96fa866b10c3e6fd87438f6bae96ebd078bf5bed2bd3319ab931385aca0bb5",
+      "schema_worst_case_characters": 22462,
+      "schema_worst_case_tokens": 22462,
+      "status": "PASS",
+      "failure_reasons": []
+    },
+    {
+      "callsite": "extract_edges.edge",
+      "variant_id": "page_capacity_2",
+      "schema_sha256": "a0619b211154383bcd0afddea4eaef69a21c7e9f4fc70f1209e874ace78002e0",
+      "schema_worst_case_characters": 44913,
+      "schema_worst_case_tokens": 44913,
+      "status": "FAIL",
+      "failure_reasons": ["completion_budget_below_schema_bound"]
+    },
+    {
+      "callsite": "extract_nodes.extract_message",
+      "variant_id": "entity_capacity_64",
+      "schema_sha256": "2facebac5150c64b7ad5708f3144101e0531c4f84bf66cf03ca9d1a27e30f171",
+      "schema_worst_case_characters": 101912,
+      "schema_worst_case_tokens": 101912,
+      "status": "FAIL",
+      "failure_reasons": ["completion_budget_below_schema_bound", "context_budget_exhausted"],
+      "note": "live node turn partition derives a smaller entity capacity from each bounded evidence chunk"
+    },
+    {
+      "callsite": "extract_nodes.extract_summaries_batch",
+      "variant_id": "entity_capacity_1",
+      "schema_sha256": "bfb84b19fbcf25a7a9ffadda8f5872bac09f5e75bd99e26f88e3293b64ff4506",
+      "schema_worst_case_characters": 7576,
+      "schema_worst_case_tokens": 7576,
+      "status": "PASS",
+      "failure_reasons": [],
+      "note": "runtime_8b default summary page capacity is one"
+    },
+    {
+      "callsite": "dedupe_nodes.nodes",
+      "variant_id": "candidate_capacity_1",
+      "schema_sha256": "e3052992b8659caa500d8eedf1710f6ff33b87bb59ec135dbaef452947f5e254",
+      "schema_worst_case_characters": 1607,
+      "schema_worst_case_tokens": 1607,
+      "status": "PASS",
+      "failure_reasons": [],
+      "note": "candidate page capacity is one; extracted cardinality remains bounded by node extraction"
+    }
+  ],
+  "provider_calls_used": 0,
+  "formal_history_executed": false,
+  "held_out_accessed": false
+}

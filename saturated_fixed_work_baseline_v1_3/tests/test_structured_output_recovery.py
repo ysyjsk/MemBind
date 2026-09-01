@@ -4,13 +4,38 @@ import json
 
 import pytest
 
+from saturated_fixed_work_baseline_v1_3.membind_v6_1.runtime import (
+    install_local_extraction_chunking_policy,
+)
+
 from saturated_fixed_work_baseline_v1_3.membind_v6_1.structured_output_recovery import (
+    RecoveryIdentity,
     SchemaBoundednessError,
+    StructuredOutputLengthTruncation,
+    StructuredOutputMalformed,
+    StructuredRecoveryController,
     build_schema_bound_certificate,
+    classify_structured_failure,
     choose_edge_page_capacity,
+    parse_structured_content,
+    recovery_policy_sha256,
     schema_worst_case_characters,
     validate_schema_boundedness,
 )
+from saturated_fixed_work_baseline_v1_3.membind_v6_1.provider import V61ProviderClient
+from saturated_fixed_work_baseline_v1_3.membind_v5.runtime.core.admission import (
+    CapacityAuthority,
+)
+from saturated_fixed_work_baseline_v1_3.membind_v5.runtime.core.provider_admission import (
+    provider_scope,
+)
+from saturated_fixed_work_baseline_v1_3.membind_v5.runtime.core.transcript import (
+    TranscriptStore,
+)
+from saturated_fixed_work_baseline_v1_3.membind_v6_1.admission import (
+    ForegroundAdmissionArbiter,
+)
+from saturated_fixed_work_baseline_v1_3.membind_v6_1.policy import V61Policy
 
 
 def finite_edge_schema(*, max_items: int = 1, fact_max_length: int = 256) -> dict:
@@ -169,3 +194,175 @@ def test_page_capacity_selection_is_deterministic_and_never_calls_provider() -> 
         safety_margin_tokens=32,
     ).capacity
     assert calls == 4
+
+
+def test_finish_reason_precedes_json_parse_and_malformed_stop_is_distinct() -> None:
+    with pytest.raises(StructuredOutputLengthTruncation):
+        parse_structured_content(
+            '{"edges":[{"fact":"unterminated',
+            finish_reason="length",
+            max_tokens=8,
+        )
+    assert classify_structured_failure(
+        finish_reason="length", response_present=True
+    ) == "OUTPUT_LENGTH_TRUNCATION"
+    with pytest.raises(StructuredOutputMalformed) as raised:
+        parse_structured_content('{"edges":', finish_reason="stop")
+    assert classify_structured_failure(
+        finish_reason="stop", error=raised.value, response_present=True
+    ) == "MALFORMED_STRUCTURED_OUTPUT"
+
+
+def test_provider_free_retry_counts_physical_attempts_without_transport_guard() -> None:
+    class Delegate:
+        def __init__(self) -> None:
+            self.calls = 0
+
+        async def generate_response(self, *_args, **_kwargs):
+            self.calls += 1
+            if self.calls < 3:
+                raise ConnectionError("connection reset in fixture delegate")
+            return {"ok": True}
+
+    async def scenario() -> tuple[Delegate, list[dict[str, object]]]:
+        delegate = Delegate()
+        events: list[dict[str, object]] = []
+        arbiter = ForegroundAdmissionArbiter(
+            CapacityAuthority(2),
+            policy=V61Policy(lookahead=1, future_cap=1, native_future_quota=0),
+            event_sink=events.append,
+        )
+        client = V61ProviderClient(
+            delegate,
+            store=TranscriptStore(),
+            arbiter=arbiter,
+            mode="capture",
+            durable_frontier=lambda: -1,
+            event_sink=events.append,
+        )
+        with provider_scope(region="PREPARE", source_sequence=0):
+            result = await client.generate_response(
+                [{"role": "user", "content": "fixture"}],
+                prompt_name="extract_nodes.extract_message",
+                max_tokens=32,
+            )
+        assert result == {"ok": True}
+        return delegate, [row for row in events if row.get("event") == "V61_PROVIDER_CALL"]
+
+    import asyncio
+
+    delegate, rows = asyncio.run(scenario())
+    assert delegate.calls == 3
+    assert len(rows) == 1
+    row = rows[0]
+    assert row["logical_attempt_count"] == 3
+    assert row["physical_attempt_count"] == 3
+    assert row["transport_attempt_count"] == 3
+    assert row["transport_retry_count"] == 2
+
+
+@pytest.mark.asyncio
+async def test_recovery_controller_bounds_transient_and_truncation_attempts() -> None:
+    variants: list[str] = []
+    attempts = []
+
+    async def operation(variant: str) -> dict[str, str]:
+        variants.append(variant)
+        if len(variants) == 1:
+            raise StructuredOutputLengthTruncation(response_characters=4)
+        return {"variant": variant}
+
+    controller = StructuredRecoveryController(
+        semantic_operation_id="source:3:edge:0",
+        request_variant_id="page:2",
+        attempt_sink=attempts.append,
+    )
+    result = await controller.run(
+        operation,
+        smaller_variant=lambda variant: "page:1" if variant == "page:2" else None,
+    )
+    assert result == {"variant": "page:1"}
+    assert variants == ["page:2", "page:1"]
+    assert len(attempts) == 2
+    assert attempts[0].identity.request_variant_id == "page:2"
+    assert attempts[1].identity.request_variant_id == "page:1"
+    assert all(isinstance(item.identity, RecoveryIdentity) for item in attempts)
+    assert recovery_policy_sha256()
+
+
+@pytest.mark.asyncio
+async def test_recovery_controller_stops_persistent_transient_and_never_retries_malformed() -> None:
+    calls = 0
+
+    async def always_transient(_variant: str) -> None:
+        nonlocal calls
+        calls += 1
+        raise ConnectionError("connection reset")
+
+    controller = StructuredRecoveryController(
+        semantic_operation_id="source:4:node:0", request_variant_id="base"
+    )
+    with pytest.raises(ConnectionError):
+        await controller.run(always_transient)
+    assert calls == 3
+
+    malformed_calls = 0
+
+    async def malformed(_variant: str) -> None:
+        nonlocal malformed_calls
+        malformed_calls += 1
+        raise StructuredOutputMalformed("bad json", position=2)
+
+    with pytest.raises(StructuredOutputMalformed):
+        await StructuredRecoveryController(
+            semantic_operation_id="source:4:edge:0", request_variant_id="base"
+        ).run(malformed)
+    assert malformed_calls == 1
+
+
+@pytest.mark.asyncio
+async def test_edge_length_stop_uses_one_smaller_page_variant() -> None:
+    calls: list[int] = []
+
+    class Client:
+        max_tokens = 32_768
+
+        async def generate_response(self, _messages, *, response_model=None, **_kwargs):
+            calls.append(len(calls))
+            if len(calls) == 1:
+                raise StructuredOutputLengthTruncation(
+                    finish_reason="length", response_characters=64
+                )
+            return {"edges": []}
+
+    client = Client()
+    install_local_extraction_chunking_policy(
+        client,
+        token_counter=lambda _messages: 100,
+        edge_page_capacity=2,
+    )
+    result = await client.generate_response(
+        [
+            {
+                "role": "user",
+                "content": (
+                    "<CURRENT MESSAGE>facts</CURRENT MESSAGE>"
+                    '<ENTITIES>[{"name":"A"},{"name":"B"}]</ENTITIES>'
+                ),
+            }
+        ],
+        response_model=object(),
+        max_tokens=65_536,
+        prompt_name="extract_edges.edge",
+    )
+    assert result == {"edges": []}
+    assert calls == [0, 1]
+    physical = [
+        row
+        for row in client._membind_extraction_diagnostics
+        if row.get("schema_version") == "membind.v6.1.extraction-diagnostic.v1"
+    ]
+    assert [row["status"] for row in physical] == ["failure", "success"]
+    assert physical[0]["failure_class"] == "OUTPUT_LENGTH_TRUNCATION"
+    assert physical[0]["certified_edge_page_capacity"] == 2
+    assert physical[1]["certified_edge_page_capacity"] == 1

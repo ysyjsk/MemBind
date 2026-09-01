@@ -1,9 +1,12 @@
 from __future__ import annotations
 
 import asyncio
+import json
 import sys
 from types import ModuleType
 from types import SimpleNamespace
+
+import pytest
 
 from saturated_fixed_work_baseline_v1_3.artifact_seals import verify_seal
 from saturated_fixed_work_baseline_v1_3.membind_v6_1.mab import (
@@ -229,3 +232,148 @@ def test_v61_mab_provider_free_composition_uses_one_arbiter_and_seals(
     assert all(row["prepared_response_hash"] == row["native_response_hash"] for row in result["bindings"])
     assert delegate.calls == 6
     assert verify_seal(tmp_path / "block")["status"] == "PASS"
+
+
+def test_v61_source_publication_faults_are_atomic_and_exact_once(tmp_path, monkeypatch):
+    """Exercise the real V6.1 construction seam with before/after commit faults."""
+
+    async def fake_extract_nodes(clients, episode, *_args):
+        await clients.llm_client.generate_response(
+            [{"role": "user", "content": episode.name}],
+            **_provider_kwargs("extract_nodes.extract_message", episode.group_id),
+        )
+        return [SimpleNamespace(name="node")], {0: 0}
+
+    async def fake_extract_edges(clients, episode, *_args):
+        await clients.llm_client.generate_response(
+            [{"role": "user", "content": episode.name}],
+            **_provider_kwargs("extract_edges.edge", episode.group_id),
+        )
+        return [SimpleNamespace(name="edge")]
+
+    modules = {
+        name: ModuleType(name)
+        for name in (
+            "graphiti_core",
+            "graphiti_core.utils",
+            "graphiti_core.utils.maintenance",
+            "graphiti_core.utils.maintenance.edge_operations",
+            "graphiti_core.utils.maintenance.node_operations",
+        )
+    }
+    modules["graphiti_core.utils.maintenance.node_operations"].extract_nodes = fake_extract_nodes
+    modules["graphiti_core.utils.maintenance.edge_operations"].extract_edges = fake_extract_edges
+    for name, module in modules.items():
+        monkeypatch.setitem(sys.modules, name, module)
+    monkeypatch.setattr(
+        v61_mab,
+        "_episode_node",
+        lambda episode, *, namespace, uuid_value=None: SimpleNamespace(
+            name=episode.name, group_id=namespace, uuid=uuid_value
+        ),
+    )
+    monkeypatch.setattr(v61_mab, "_native_previous_window", lambda *_args: [])
+
+    episodes = (
+        EpisodeInput(
+            context_id="ctx",
+            source_sequence=0,
+            episode_id="episode-0",
+            reference_time="2026-01-01T00:00:00Z",
+            body="message 0",
+        ),
+    )
+    manifest = WorkloadManifest.from_episodes(
+        context_id="ctx",
+        episodes=episodes,
+        dataset_revision="revision",
+        dataset_file_sha256="a" * 64,
+        expected_episode_count=1,
+    )
+
+    class Graph(_Graph):
+        def __init__(self, delegate):
+            super().__init__(delegate)
+            self.publications = 0
+
+        async def add_episode(self, **kwargs):
+            self.publications += 1
+            return await super().add_episode(**kwargs)
+
+    delegate = _Delegate()
+    graph = Graph(delegate)
+
+    def common_kwargs(root):
+        return dict(
+            run_id="fault-test",
+            context_id="ctx",
+            namespace="local-qwen3-14b-awq-v1-fault",
+            episodes=episodes,
+            policy=V61Policy(lookahead=1, future_cap=1, native_future_quota=0),
+            runtime_builder=lambda: SimpleNamespace(
+                graphiti=graph,
+                llm_client=delegate,
+                config=SimpleNamespace(max_coroutines=2),
+            ),
+            instrumentation_installer=lambda *_args: _Recorder.Scope(),
+            recorder_factory=_Recorder,
+            graph_exporter=lambda *_args: {
+                "status": "PASS",
+                "canonical_graph_hash": "b" * 64,
+            },
+            output_root=root,
+            authority={"authority_sha256": "c" * 64},
+            workload_manifest=manifest,
+            frozen_config={"profile_id": "local-qwen3-14b-awq-v1"},
+            environment={"profile_id": "local-qwen3-14b-awq-v1"},
+            preflight={"status": "PASS"},
+        )
+
+    def before_db_write(stage, _sequence, _kwargs):
+        if stage == "before_db_write":
+            raise RuntimeError("injected before db write")
+
+    with pytest.raises(RuntimeError, match="injected before db write"):
+        asyncio.run(
+            v61_mab.run_mab_v61_construction_async(
+                **common_kwargs(tmp_path / "before"),
+                publication_fault_injector=before_db_write,
+            )
+        )
+    assert graph.publications == 0
+    begin_journal = tmp_path / ".before.v61_live_events.jsonl"
+    begin_events = [json.loads(line) for line in begin_journal.read_text().splitlines()]
+    assert any(row.get("event") == "PUBLICATION_BEGIN" for row in begin_events)
+    assert not any(row.get("event") == "PUBLICATION_COMMITTED" for row in begin_events)
+
+    def after_commit(stage, _sequence, _kwargs):
+        if stage == "after_commit":
+            raise RuntimeError("injected crash after commit")
+
+    root = tmp_path / "after"
+    with pytest.raises(RuntimeError, match="injected crash after commit"):
+        asyncio.run(
+            v61_mab.run_mab_v61_construction_async(
+                **common_kwargs(root),
+                publication_fault_injector=after_commit,
+            )
+        )
+    assert graph.publications == 1
+    journal_path = tmp_path / ".after.v61_live_events.jsonl"
+    committed = [
+        json.loads(line)
+        for line in journal_path.read_text().splitlines()
+        if json.loads(line).get("event") == "PUBLICATION_COMMITTED"
+    ]
+    assert len(committed) == 1
+    committed_uuid = committed[0]["idempotency_key"]
+
+    result = asyncio.run(v61_mab.run_mab_v61_construction_async(**common_kwargs(root)))
+    assert result["status"] == "PASS"
+    assert graph.publications == 1
+    reused = [
+        json.loads(line)
+        for line in journal_path.read_text().splitlines()
+        if json.loads(line).get("event") == "PUBLICATION_REUSED"
+    ]
+    assert reused and reused[-1]["idempotency_key"] == committed_uuid

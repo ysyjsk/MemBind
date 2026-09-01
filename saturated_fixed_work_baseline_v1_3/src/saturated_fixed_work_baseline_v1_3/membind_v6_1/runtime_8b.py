@@ -483,8 +483,12 @@ def build_8b_u0_runtime(
         llm_client,
         partition_extraction_by_turns=True,
         partition_edge_candidates=True,
-        summary_entity_page_capacity=summary_entity_page_capacity,
-        dedupe_candidate_page_capacity=dedupe_candidate_page_capacity,
+        # A one-entity default keeps the finite summary/dedupe response space
+        # under the frozen completion bound even when the caller does not
+        # provide an explicit paging override.  Larger capacities remain an
+        # explicit, preflight-certified variant.
+        summary_entity_page_capacity=summary_entity_page_capacity or 1,
+        dedupe_candidate_page_capacity=dedupe_candidate_page_capacity or 1,
         node_partition_concurrency=NODE_PARTITION_WORKERS_8B,
         edge_page_capacity=2,
         actor_domain_cover=True,

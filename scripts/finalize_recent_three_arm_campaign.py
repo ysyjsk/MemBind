@@ -13,7 +13,6 @@ import csv
 import hashlib
 import json
 import math
-import statistics
 import time
 from pathlib import Path
 from typing import Any, Iterable, Mapping
@@ -33,9 +32,19 @@ INFRA_MARKERS = (
     "neo4j",
     "embedding",
     "provider truncated",
-    "jsondecodeerror",
     "gpu",
     "transport",
+)
+
+STRUCTURED_SCIENTIFIC_CLASSES = frozenset(
+    {
+        "OUTPUT_LENGTH_TRUNCATION",
+        "MALFORMED_STRUCTURED_OUTPUT",
+        "SEMANTIC_VALIDATION_FAILURE",
+    }
+)
+STRUCTURED_INFRA_CLASSES = frozenset(
+    {"TRANSPORT_INCOMPLETE", "SERVER_TRANSIENT", "CONTEXT_BUDGET_EXHAUSTED"}
 )
 
 
@@ -83,11 +92,74 @@ def _attempts(root: Path, context_index: int, method: str) -> list[Path]:
     return sorted(path for path in parent.iterdir() if path.is_dir())
 
 
+def _ledger_terminal_selection(
+    root: Path, context_index: int, method: str
+) -> tuple[str | None, str | None]:
+    """Read an explicit terminal-attempt choice from the campaign ledger."""
+
+    ledger = root / "campaign_ledger.jsonl"
+    if not ledger.is_file():
+        return None, None
+    candidates: list[tuple[int, str]] = []
+    for index, row in enumerate(read_jsonl(ledger)):
+        if row.get("context_index") != context_index or row.get("method") != method:
+            continue
+        if row.get("event") not in {
+            "ATTEMPT_TERMINAL_SELECTED",
+            "TERMINAL_ATTEMPT_SELECTED",
+            "ATTEMPT_SELECTION",
+        }:
+            continue
+        attempt_id = row.get("attempt_id")
+        if isinstance(attempt_id, str) and attempt_id:
+            candidates.append((index, attempt_id))
+    if not candidates:
+        return None, None
+    selected = candidates[-1][1]
+    if len({attempt_id for _, attempt_id in candidates}) > 1:
+        return None, "conflicting_terminal_selection"
+    return selected, None
+
+
+def _failure_validity(row: Mapping[str, Any]) -> str:
+    """Classify a failed attempt from structured evidence before text markers."""
+
+    failure_class = str(row.get("failure_class") or "").upper()
+    if failure_class in STRUCTURED_SCIENTIFIC_CLASSES:
+        return "SCIENTIFIC_FAILURE"
+    if failure_class in STRUCTURED_INFRA_CLASSES:
+        return "INFRA_INVALID"
+    finish_reason = str(row.get("finish_reason") or "").casefold()
+    if finish_reason in {"length", "max_tokens", "token_limit"}:
+        return "SCIENTIFIC_FAILURE"
+    text = f"{row.get('error_type', '')} {row.get('error', '')}".casefold()
+    if any(marker in text for marker in INFRA_MARKERS):
+        return "INFRA_INVALID"
+    # An unclassified parse or provider failure is invalid evidence, never an
+    # infrastructure success.  Keep it scientific/unknown for the report.
+    return "SCIENTIFIC_FAILURE"
+
+
 def _terminal_attempt(root: Path, context_index: int, method: str) -> tuple[Path | None, str, dict[str, Any]]:
     attempts = _attempts(root, context_index, method)
     complete = [(path, read_json(path / "complete.json")) for path in attempts if (path / "complete.json").is_file()]
-    if complete:
-        path, row = complete[0]
+    failures = [(path, read_json(path / "failure.json")) for path in attempts if (path / "failure.json").is_file()]
+    selected_id, selection_error = _ledger_terminal_selection(root, context_index, method)
+    terminal = [*complete, *failures]
+    if selected_id is not None:
+        selected = [(path, row) for path, row in terminal if row.get("attempt_id") == selected_id or path.name == selected_id]
+        if len(selected) != 1:
+            return None, "MISSING", {"selection_error": "selected_attempt_not_found", "selected_attempt_id": selected_id}
+        path, row = selected[0]
+    elif selection_error is not None:
+        return None, "MISSING", {"selection_error": selection_error}
+    elif len(terminal) == 1:
+        path, row = terminal[0]
+    elif len(terminal) > 1:
+        return None, "MISSING", {"selection_error": "multiple_terminal_attempts_require_ledger_selection"}
+    else:
+        return None, "MISSING", {}
+    if (path / "complete.json").is_file():
         block = path / "block"
         seal = read_json(block / "construction_seal.json") if (block / "construction_seal.json").is_file() else {}
         lifecycle = read_json(block / "lifecycle_validation.json") if (block / "lifecycle_validation.json").is_file() else {}
@@ -101,13 +173,7 @@ def _terminal_attempt(root: Path, context_index: int, method: str) -> tuple[Path
             and (method != "V6_1" or refinement.get("refinement_status") == "PASS")
         )
         return path, "PASS_VALID" if valid else "SCIENTIFIC_FAILURE", row
-    failures = [(path, read_json(path / "failure.json")) for path in attempts if (path / "failure.json").is_file()]
-    if failures:
-        path, row = failures[0]
-        text = f"{row.get('error_type', '')} {row.get('error', '')}".casefold()
-        status = "INFRA_INVALID" if any(marker in text for marker in INFRA_MARKERS) else "SCIENTIFIC_FAILURE"
-        return path, status, row
-    return None, "MISSING", {}
+    return path, _failure_validity(row), row
 
 
 def _numbers(value: Any) -> list[float]:
@@ -146,6 +212,8 @@ def _attempt_record(root: Path, context_index: int, method: str) -> dict[str, An
         "attempt_root": str(attempt_root.resolve()) if attempt_root else None,
         "quality_status": "MISSING",
     }
+    if terminal.get("selection_error"):
+        row["selection_error"] = terminal["selection_error"]
     if attempt_root is None:
         return row
     block = attempt_root / "block"
@@ -222,17 +290,25 @@ def _summary_stats(rows: list[dict[str, Any]], key: str) -> dict[str, Any]:
     values = [float(row[key]) / 1_000_000_000 if key == "makespan" and isinstance(row.get(key), (int, float)) else float(row[key]) for row in rows if isinstance(row.get(key), (int, float))]
     if not values:
         return {"count": 0, "median": "MISSING", "mean": "MISSING", "standard_deviation": "MISSING", "ci95": "MISSING"}
-    mean = statistics.mean(values)
-    sd = statistics.stdev(values) if len(values) > 1 else 0.0
+    mean = sum(values) / len(values)
+    sd = (
+        math.sqrt(sum((value - mean) ** 2 for value in values) / (len(values) - 1))
+        if len(values) > 1
+        else 0.0
+    )
     margin = 2.776 * sd / math.sqrt(len(values)) if len(values) > 1 else "MISSING"
-    return {"count": len(values), "median": statistics.median(values), "mean": mean, "standard_deviation": sd, "ci95": [mean - margin, mean + margin] if isinstance(margin, float) else margin}
+    ordered = sorted(values)
+    middle = len(ordered) // 2
+    median = ordered[middle] if len(ordered) % 2 else (ordered[middle - 1] + ordered[middle]) / 2
+    return {"count": len(values), "median": median, "mean": mean, "standard_deviation": sd, "ci95": [mean - margin, mean + margin] if isinstance(margin, float) else margin}
 
 
 def _core_speedups(rows: list[dict[str, Any]]) -> list[dict[str, Any]]:
     result = []
-    for history in range(5):
-        serial = next((row.get("makespan") for row in rows if row.get("history") == history and row.get("method") == "NATIVE_SERIAL" and isinstance(row.get("makespan"), (int, float))), None)
-        core = next((row.get("makespan") for row in rows if row.get("history") == history and row.get("method") == "V6_1" and isinstance(row.get("makespan"), (int, float))), None)
+    histories = sorted({int(row["history"]) for row in rows if isinstance(row.get("history"), int)})
+    for history in histories:
+        serial = next((row.get("makespan") for row in rows if row.get("history") == history and row.get("method") == "NATIVE_SERIAL" and row.get("validity") == "PASS_VALID" and isinstance(row.get("makespan"), (int, float))), None)
+        core = next((row.get("makespan") for row in rows if row.get("history") == history and row.get("method") == "V6_1" and row.get("validity") == "PASS_VALID" and isinstance(row.get("makespan"), (int, float))), None)
         result.append({"history": history, "speedup": serial / core if isinstance(serial, (int, float)) and isinstance(core, (int, float)) and core else "MISSING"})
     return result
 
@@ -247,12 +323,38 @@ def finalize(root: Path, *, requested_history: int | None = None) -> dict[str, A
         rows = [_attempt_record(root, history, method) for method in METHODS]
         all_rows.extend(rows)
         history_root = root / f"history-{history}"
-        write_json(history_root / "HISTORY_BLOCK_RESULT.json", {"schema_version": "membind.history-block-result.v1", "history": history, "context_index": history, "status": "HISTORY_BLOCK_SEALED" if all(row["validity"] != "MISSING" for row in rows) else "HISTORY_BLOCK_INCOMPLETE", "methods": rows, "fairness_checked": all(row["validity"] == "PASS_VALID" for row in rows if row["method"] != "NATIVE_PARALLEL")})
+        history_valid = len(rows) == len(METHODS) and all(
+            row["validity"] == "PASS_VALID" for row in rows
+        )
+        write_json(history_root / "HISTORY_BLOCK_RESULT.json", {"schema_version": "membind.history-block-result.v1", "history": history, "context_index": history, "status": "HISTORY_BLOCK_SEALED" if history_valid else "HISTORY_BLOCK_INCOMPLETE", "methods": rows, "fairness_checked": history_valid})
         write_text(history_root / "HISTORY_BLOCK_REPORT.md", _history_report(history, rows))
 
-    complete_histories = len(selected) == len(histories) and all(row["validity"] != "MISSING" for row in all_rows)
+    complete_histories = (
+        len(selected) == len(histories)
+        and len(all_rows) == len(histories) * len(METHODS)
+        and all(row["validity"] == "PASS_VALID" for row in all_rows)
+    )
     if not complete_histories:
-        return {"status": "PARTIAL", "histories_materialized": [int(item["history"]) for item in selected], "rows": all_rows}
+        return {
+            "status": "PARTIAL",
+            "histories_materialized": [int(item["history"]) for item in selected],
+            "rows": all_rows,
+            "speedup_core": _core_speedups(all_rows),
+            "statistics": {
+                method: _summary_stats(
+                    [
+                        row
+                        for row in all_rows
+                        if row["method"] == method and row["validity"] == "PASS_VALID"
+                    ],
+                    "makespan",
+                )
+                for method in METHODS
+            },
+            "invalid_and_replacements": [
+                row for row in all_rows if row["validity"] != "PASS_VALID"
+            ],
+        }
 
     table_rows = []
     for row in all_rows:

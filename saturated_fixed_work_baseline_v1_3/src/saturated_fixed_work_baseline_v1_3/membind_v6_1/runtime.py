@@ -21,6 +21,7 @@ from urllib.parse import urlsplit, urlunsplit
 from native_characterization_runtime import U0Config, U0Runtime
 from .structured_output_recovery import (
     SchemaBoundednessError,
+    StructuredOutputLengthTruncation,
     build_schema_bound_certificate,
     choose_edge_page_capacity,
     validate_schema_boundedness,
@@ -457,6 +458,28 @@ def _local_output_token_counter_if_available(
     return lambda value: len(tokenizer.encode(value, add_special_tokens=False))
 
 
+def _structured_model_schema(response_model: Any) -> Mapping[str, Any] | None:
+    """Extract the final JSON schema handed to the provider, if available."""
+
+    if response_model is None:
+        return None
+    builder = getattr(response_model, "model_json_schema", None)
+    if callable(builder):
+        schema = builder()
+        return schema if isinstance(schema, Mapping) else None
+    if isinstance(response_model, Mapping):
+        # Accept either a bare JSON schema or the OpenAI response-format
+        # wrapper used by a few provider-free fixtures.
+        nested = response_model.get("json_schema")
+        if isinstance(nested, Mapping) and isinstance(nested.get("schema"), Mapping):
+            return nested["schema"]
+        if isinstance(response_model.get("schema"), Mapping):
+            return response_model["schema"]
+        if isinstance(response_model.get("type"), str):
+            return response_model
+    return None
+
+
 def local_prompt_token_count(messages: Sequence[Any]) -> int:
     """Public exact prompt counter used by the V6.1 weighted admission path."""
 
@@ -497,25 +520,27 @@ def install_local_context_budget_adapter(
             raise LocalRuntimeConfigurationError("local chat prompt leaves no completion budget")
         requested = min(requested, available)
         request_kwargs["max_tokens"] = requested
-        for _retry in range(6):
-            try:
-                return await original_create(*args, **request_kwargs)
-            except Exception as exc:
-                effective = _context_retry_max_tokens(
-                    exc,
-                    requested,
-                    safety_margin=safety_margin,
-                )
-                if effective is None or effective >= requested:
-                    raise
-                requested = effective
-                request_kwargs["max_tokens"] = effective
-                # The admission guard wraps this adapter. Account for this
-                # inner wire retry in the owning provider call's counter.
-                from .provider import _record_managed_transport_retry
+        context_corrections = 0
+        try:
+            return await original_create(*args, **request_kwargs)
+        except Exception as exc:
+            effective = _context_retry_max_tokens(
+                exc,
+                requested,
+                safety_margin=safety_margin,
+            )
+            if effective is None or effective >= requested or context_corrections >= 1:
+                raise
+            context_corrections += 1
+            requested = effective
+            request_kwargs["max_tokens"] = effective
+            # This is one explicitly audited wire-budget correction for
+            # tokenizer drift, not an opaque retry loop.  Certified structured
+            # requests are preflighted before reaching this seam.
+            from .provider import _record_managed_transport_retry
 
-                _record_managed_transport_retry()
-        return await original_create(*args, **request_kwargs)
+            _record_managed_transport_retry()
+            return await original_create(*args, **request_kwargs)
 
     setattr(completions, "create", create_with_effective_budget)
 
@@ -1376,7 +1401,7 @@ def _endpoint_grounded_edge_page_model(
     model = _finite_edge_page_model(page_capacity, names, fact_max_length)
     # Preserve the historical model names in schema evidence while using the
     # finite field definitions above.
-    from pydantic import Field, create_model
+    from pydantic import ConfigDict, Field, create_model
 
     edge_ref = model.model_fields["edges"].annotation.__args__[0]
     edge_model = create_model(
@@ -1386,6 +1411,7 @@ def _endpoint_grounded_edge_page_model(
     return create_model(
         f"MemBindEndpointGroundedEdgePage{page_capacity}_{len(names)}",
         edges=(list[edge_model], Field(default_factory=list, max_length=page_capacity)),
+        __config__=ConfigDict(extra="forbid"),
     )
 
 
@@ -1511,7 +1537,7 @@ def _provider_scope_key() -> tuple[str | None, int | None]:
 def _bounded_summary_response_model(max_items: int) -> Any:
     """Mirror Graphiti's summary contract in the structured-output schema."""
 
-    from pydantic import Field, create_model
+    from pydantic import ConfigDict, Field, create_model
     from graphiti_core.utils.text_utils import MAX_SUMMARY_CHARS
 
     if max_items < 1:
@@ -1535,6 +1561,7 @@ def _bounded_summary_response_model(max_items: int) -> Any:
                 description="Updated summary for the entity",
             ),
         ),
+        __config__=ConfigDict(extra="forbid"),
     )
     return create_model(
         f"MemBindBoundedSummarizedEntities{max_items}",
@@ -1548,6 +1575,7 @@ def _bounded_summary_response_model(max_items: int) -> Any:
                 ),
             ),
         ),
+        __config__=ConfigDict(extra="forbid"),
     )
 
 
@@ -1555,7 +1583,7 @@ def _bounded_summary_response_model(max_items: int) -> Any:
 def _bounded_node_response_model(max_items: int) -> Any:
     """Bound node extraction to what one evidence chunk can represent."""
 
-    from pydantic import Field, create_model
+    from pydantic import ConfigDict, Field, create_model
 
     if max_items < 1 or max_items > LOCAL_NODE_MAX_ENTITIES_PER_CHUNK:
         raise ValueError("node response capacity is outside the local contract")
@@ -1591,6 +1619,7 @@ def _bounded_node_response_model(max_items: int) -> Any:
                 description="The single episode index for this extraction request",
             ),
         ),
+        __config__=ConfigDict(extra="forbid"),
     )
     return create_model(
         f"MemBindBoundedExtractedEntities{max_items}",
@@ -1602,6 +1631,89 @@ def _bounded_node_response_model(max_items: int) -> Any:
                 description="Distinct entities supported by the current evidence chunk",
             ),
         ),
+        __config__=ConfigDict(extra="forbid"),
+    )
+
+
+@lru_cache(maxsize=128)
+def _bounded_dedupe_response_model(
+    max_items: int, candidate_capacity: int
+) -> Any:
+    """Finite NodeResolutions schema for one existing-candidate page."""
+
+    from pydantic import ConfigDict, Field, create_model
+
+    if max_items < 1 or candidate_capacity < 1:
+        raise ValueError("dedupe response capacities must be positive")
+    item_model = create_model(
+        "MemBindBoundedNodeDuplicate",
+        id=(int, Field(..., ge=0, le=max_items - 1)),
+        name=(str, Field(..., min_length=1, max_length=LOCAL_NODE_MAX_NAME_CHARS)),
+        duplicate_candidate_id=(
+            int,
+            Field(..., ge=-1, le=candidate_capacity - 1),
+        ),
+        __config__=ConfigDict(extra="forbid"),
+    )
+    return create_model(
+        f"MemBindBoundedNodeResolutions{max_items}_{candidate_capacity}",
+        entity_resolutions=(
+            list[item_model],
+            Field(..., min_length=max_items, max_length=max_items),
+        ),
+        __config__=ConfigDict(extra="forbid"),
+    )
+
+
+@lru_cache(maxsize=8)
+def _bounded_edge_timestamps_model(max_items: int = 1, *, exact: bool = True) -> Any:
+    """Bound scalar timestamp extraction, including batch timestamp pages."""
+
+    from pydantic import ConfigDict, Field, create_model
+
+    if max_items < 1 or max_items > 64:
+        raise ValueError("timestamp response capacity is outside the local contract")
+    item_model = create_model(
+        "MemBindBoundedEdgeTimestamp",
+        valid_at=(str | None, Field(default=None, max_length=LOCAL_EDGE_DATETIME_MAX_CHARS)),
+        invalid_at=(str | None, Field(default=None, max_length=LOCAL_EDGE_DATETIME_MAX_CHARS)),
+        __config__=ConfigDict(extra="forbid"),
+    )
+    if max_items == 1:
+        return item_model
+    return create_model(
+        f"MemBindBoundedEdgeTimestamps{max_items}",
+        timestamps=(
+            list[item_model],
+            Field(
+                ...,
+                min_length=max_items if exact else 0,
+                max_length=max_items,
+            ),
+        ),
+        __config__=ConfigDict(extra="forbid"),
+    )
+
+
+@lru_cache(maxsize=8)
+def _bounded_edge_duplicate_model(max_items: int = 64) -> Any:
+    """Bound edge-resolution index lists to the finite candidate flight."""
+
+    from pydantic import ConfigDict, Field, create_model
+
+    if max_items < 1 or max_items > 64:
+        raise ValueError("edge duplicate capacity is outside the local contract")
+    return create_model(
+        f"MemBindBoundedEdgeDuplicate{max_items}",
+        duplicate_facts=(
+            list[int],
+            Field(default_factory=list, min_length=0, max_length=max_items),
+        ),
+        contradicted_facts=(
+            list[int],
+            Field(default_factory=list, min_length=0, max_length=max_items),
+        ),
+        __config__=ConfigDict(extra="forbid"),
     )
 
 
@@ -1874,6 +1986,7 @@ def install_local_extraction_chunking_policy(
             page_index: int | None = None,
             queue_wait_ns: int | None = None,
             physical_active_at_start: int | None = None,
+            edge_capacity_override: int | None = None,
         ) -> Any:
             selection = None
             preflight_unverified_reason: str | None = None
@@ -1896,6 +2009,20 @@ def install_local_extraction_chunking_policy(
                 "extract_nodes.extract_entity_summaries_from_episodes",
             } and entity_count:
                 effective_response_model = _bounded_summary_response_model(entity_count)
+            if prompt_name == "dedupe_nodes.nodes" and request_response_model is not None:
+                existing_info = _existing_entity_block(request_messages)
+                candidate_capacity = (
+                    len(existing_info[2]) if existing_info is not None else 1
+                )
+                effective_response_model = _bounded_dedupe_response_model(
+                    max(1, int(entity_count or 1)), max(1, candidate_capacity)
+                )
+            if prompt_name == "extract_edges.extract_timestamps":
+                effective_response_model = _bounded_edge_timestamps_model(1)
+            if prompt_name == "extract_edges.extract_timestamps_batch":
+                effective_response_model = _bounded_edge_timestamps_model(64, exact=False)
+            if prompt_name == "dedupe_edges.resolve_edge":
+                effective_response_model = _bounded_edge_duplicate_model(64)
             if prompt_name == "extract_edges.edge" and request_response_model is not None:
                 endpoint_names: tuple[str, ...] = ()
                 if entity_info is not None:
@@ -1907,7 +2034,11 @@ def install_local_extraction_chunking_policy(
                             and str(value.get("name", "")).strip()
                         )
                     )
-                requested_capacity = int(edge_page_capacity)
+                requested_capacity = int(
+                    edge_page_capacity
+                    if edge_capacity_override is None
+                    else edge_capacity_override
+                )
                 schemas = {
                     capacity: (
                         _endpoint_grounded_edge_page_model(capacity, endpoint_names)
@@ -1952,6 +2083,45 @@ def install_local_extraction_chunking_policy(
                     if edge_endpoint_schema_grounding and endpoint_names
                     else _bounded_edge_page_model(int(selected_edge_page_capacity))
                 )
+            structured_certificate = None
+            if request_response_model is not None and selection is None:
+                schema = _structured_model_schema(effective_response_model)
+                if schema is None:
+                    if getattr(llm_client, "structured_output_recovery_enabled", False):
+                        raise LocalRuntimeConfigurationError(
+                            f"structured response model for {prompt_name!r} has no inspectable JSON schema"
+                        )
+                else:
+                    try:
+                        output_token_counter = _local_output_token_counter_if_available(
+                            llm_client
+                        )
+                        structured_certificate = build_schema_bound_certificate(
+                            messages=request_messages,
+                            schema=schema,
+                            token_counter=count_tokens,
+                            context_limit=LOCAL_CONTEXT_LIMIT,
+                            effective_max_tokens=int(
+                                request_max_tokens
+                                or requested
+                                or getattr(llm_client, "max_tokens", 0)
+                                or 0
+                            ),
+                            safety_margin_tokens=safety_margin,
+                            output_token_counter=output_token_counter,
+                        )
+                    except Exception as exc:
+                        if getattr(llm_client, "structured_output_recovery_enabled", False):
+                            raise LocalRuntimeConfigurationError(
+                                f"structured-output preflight failed for {prompt_name!r}: {exc}"
+                            ) from exc
+                        preflight_unverified_reason = type(exc).__name__
+                    if structured_certificate is not None and structured_certificate.status != "PASS":
+                        if getattr(llm_client, "structured_output_recovery_enabled", False):
+                            raise LocalRuntimeConfigurationError(
+                                f"structured-output budget failed for {prompt_name!r}: "
+                                + ",".join(structured_certificate.failure_reasons)
+                            )
             call_kwargs: dict[str, Any] = {
                 "response_model": effective_response_model,
                 "max_tokens": request_max_tokens,
@@ -1991,6 +2161,8 @@ def install_local_extraction_chunking_policy(
                 if preflight_unverified_reason is not None:
                     row["structured_output_preflight"] = "UNVERIFIED_PROVIDER_FREE"
                     row["structured_output_preflight_reason"] = preflight_unverified_reason
+            if structured_certificate is not None:
+                row["structured_output_certificate"] = structured_certificate.to_dict()
             if queue_wait_ns is not None:
                 row["queue_wait_ns"] = queue_wait_ns
             if physical_active_at_start is not None:
@@ -1999,6 +2171,38 @@ def install_local_extraction_chunking_policy(
             service_start_ns = time.monotonic_ns()
             try:
                 result = await original(request_messages, **call_kwargs)
+            except StructuredOutputLengthTruncation as exc:
+                row.update(
+                    {
+                        "status": "failure",
+                        "failure_class": "OUTPUT_LENGTH_TRUNCATION",
+                        "finish_reason": getattr(exc, "metadata", {}).get("finish_reason"),
+                        "error_type": f"{type(exc).__module__}.{type(exc).__qualname__}",
+                        "service_ns": time.monotonic_ns() - service_start_ns,
+                    }
+                )
+                diagnostics.append(row)
+                if (
+                    prompt_name == "extract_edges.edge"
+                    and int(selected_edge_page_capacity or 1) > 1
+                    and edge_capacity_override is None
+                ):
+                    # A certified larger page gets exactly one deterministic
+                    # smaller variant.  The recursive invocation performs a
+                    # fresh capacity-1 certificate and cannot retry again.
+                    return await invoke(
+                        request_messages,
+                        request_max_tokens,
+                        request_response_model,
+                        partition_id=partition_id,
+                        partition_count=partition_count,
+                        partition_kind=partition_kind,
+                        page_index=page_index,
+                        queue_wait_ns=queue_wait_ns,
+                        physical_active_at_start=physical_active_at_start,
+                        edge_capacity_override=1,
+                    )
+                raise
             except BaseException as exc:
                 row.update(
                     {
