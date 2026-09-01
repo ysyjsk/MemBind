@@ -1,0 +1,55 @@
+{
+  "schema_version": "membind.structured-output-recovery.root-cause.v1",
+  "artifact_type": "root_cause_evidence",
+  "created_at_utc": "2026-09-01T06:22:00Z",
+  "input_commit": "e943b3f",
+  "failure_attempt": {
+    "campaign_root": "/data/predator/ly/Mem/experiments/local-qwen3-8b-awq-dualreplica-v1/recent-three-arm-20260901T040532Z",
+    "context_index": 0,
+    "method": "NATIVE_SERIAL",
+    "attempt_id": "05b11f4007a9",
+    "source_sequence": 35,
+    "prompt_name": "extract_edges.edge",
+    "partition_id": 3,
+    "partition_count": 9,
+    "page_index": null,
+    "error_type": "json.decoder.JSONDecodeError",
+    "error_position": {"line": 967, "column": 7, "char": 32774},
+    "finish_reason": "length",
+    "requested_max_tokens": 8192,
+    "effective_max_tokens": 8192,
+    "prompt_tokens": 31953,
+    "completion_tokens": 8192,
+    "total_tokens": 40145,
+    "distinct_entity_count": 2,
+    "llm_failure_events": 0,
+    "db_write_or_publication_evidence": "not observed in failure artifact"
+  },
+  "classification": {
+    "failure_class": "OUTPUT_LENGTH_TRUNCATION",
+    "confidence": "HIGH",
+    "rule": "Explicit finish_reason=length takes precedence over JSON parser exception; completion reached effective budget and response ended before valid JSON completion.",
+    "json_decode_error_is_root_cause": false
+  },
+  "proven": [
+    "Graphiti 0.29.3 extract_edges sends max_tokens=16384, while the failed MemBind path recorded an effective 8192 budget.",
+    "Pinned Graphiti Edge and ExtractedEdges schemas contain unbounded string fields, an unbounded episode_indices array, and no additionalProperties=false closure.",
+    "The Qwen transport records finish_reason, usage, effective max_tokens, and raw response metadata before generic JSON parsing.",
+    "The generic Graphiti parser currently calls json.loads before consulting finish_reason, so length-capped JSON is misreported as JSONDecodeError.",
+    "Graphiti's upstream retry wrapper is replaced by a local single-attempt seam for the 8B runtime.",
+    "No old campaign runner process was active at audit time; the replacement attempt has no terminal artifact and remains incomplete."
+  ],
+  "inferred": [
+    "The unbounded edge field space materially increased the probability that grammar-conforming generation would consume the output budget before closing JSON.",
+    "The smaller effective budget than upstream Graphiti increased truncation exposure in the failed path."
+  ],
+  "unknown": [
+    "Whether any Neo4j write occurred before the failed source in the old runner cannot be established from the available failure artifact alone.",
+    "Whether the truncated response content itself was semantically recoverable is intentionally not inferred and will not be reconstructed."
+  ],
+  "next_falsifiable_hypothesis": {
+    "id": "R1_bounded_schema",
+    "statement": "A recursively closed schema with finite field, array, and numeric bounds plus a conservative tokenizer certificate can reject or split every oversized request before provider invocation and prevent a valid bound-certified request from silently reaching an unbounded grammar.",
+    "provider_calls_authorized": false
+  }
+}
