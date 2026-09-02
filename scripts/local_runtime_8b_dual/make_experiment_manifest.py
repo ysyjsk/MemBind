@@ -31,6 +31,9 @@ from saturated_fixed_work_baseline_v1_3.membind_v6_1.core import (  # noqa: E402
     MEMBIND_CORE_ROUTE_POLICY,
     core_identity,
 )
+from saturated_fixed_work_baseline_v1_3.membind_v6_1.shared_structured_output import (  # noqa: E402
+    adapter_identity,
+)
 
 
 def read_json(path: Path) -> dict[str, Any]:
@@ -192,6 +195,11 @@ def main() -> int:
         help="Required for V6.1: distinguish semantics-preserving Core from work-changing extensions.",
     )
     parser.add_argument("--extension-id", help="Stable identifier for a non-Core extension/ablation.")
+    parser.add_argument(
+        "--shared-bounded-structured-output",
+        action="store_true",
+        help="Bind this contract to the shared finite structured-output substrate.",
+    )
     parser.add_argument("--output", type=Path, required=True)
     args = parser.parse_args()
 
@@ -215,7 +223,9 @@ def main() -> int:
     ):
         raise RuntimeError("platform manifest is not eligible")
     route_name = (
-        "native_dual_resource_matched"
+        "v61_dual_elastic_affinity"
+        if args.shared_bounded_structured_output
+        else "native_dual_resource_matched"
         if args.arm in {"native-dual", "native-serial-dual", "native-parallel-dual"}
         else "native_dual_static_role"
         if args.arm == "native-static-role-dual"
@@ -224,7 +234,7 @@ def main() -> int:
         else "single_gpu_ablation"
     )
     route_source: dict[str, Any]
-    if args.arm == "v61-dual":
+    if args.arm == "v61-dual" or args.shared_bounded_structured_output:
         route_path = Path(os.environ["MEMBIND_V61_ROUTING_CONFIG"]).resolve()
         route = read_json(route_path)
         platform_endpoints = {
@@ -260,6 +270,21 @@ def main() -> int:
     if initial_counts != {"node_count": 0, "relationship_count": 0}:
         raise RuntimeError(f"namespace is not fresh: {initial_counts}")
     method, comparison_class, state_contract = semantics_for_arm(args.arm)
+    if args.shared_bounded_structured_output:
+        method, comparison_class = {
+            "native-serial-dual": (
+                "GRAPHITI_SERIAL_SHARED_BOUNDED_SO",
+                "GRAPHITI_SERIAL_SHARED_BOUNDED_SO",
+            ),
+            "native-parallel-dual": (
+                "RELAXED_ORDER_SHARED_BOUNDED_SO",
+                "RELAXED_ORDER_SHARED_BOUNDED_SO",
+            ),
+            "v61-dual": (
+                "MEMBIND_V6_1_SHARED_BOUNDED_SO",
+                "MEMBIND_V6_1_SHARED_BOUNDED_SO",
+            ),
+        }.get(args.arm, (method, comparison_class))
     if args.arm == "v61-dual" and args.method_boundary is None:
         raise RuntimeError("--method-boundary is required for v61-dual; do not mix Core with extensions")
     if args.arm != "v61-dual" and args.method_boundary is not None:
@@ -269,14 +294,14 @@ def main() -> int:
     if args.method_boundary == "MEMBIND_CORE" and args.extension_id:
         raise RuntimeError("Core contracts cannot carry an extension id")
     if (
-        args.arm == "v61-dual"
+        (args.arm == "v61-dual" or args.shared_bounded_structured_output)
         and args.method_boundary == "MEMBIND_CORE"
         and route.get("router", {}).get("policy") != MEMBIND_CORE_ROUTE_POLICY
     ):
         raise RuntimeError(
             "MemBind-Core contracts require the frozen semantic-phase elastic route"
         )
-    is_b1 = comparison_class == "RELAXED_ORDER_B1_UPPER_BOUND"
+    is_b1 = comparison_class == "RELAXED_ORDER_B1_UPPER_BOUND" or args.arm == "native-parallel-dual"
     method_boundary = {
         "id": (
             "B1_RELAXED_ORDER_REFERENCE"
@@ -348,6 +373,9 @@ def main() -> int:
             "structured_outputs_backend": "xgrammar",
             "max_completion_tokens": 32768,
             "sdk_max_retries": 0,
+            "shared_structured_output": (
+                adapter_identity() if args.shared_bounded_structured_output else None
+            ),
         },
         "cache_protocol": {
             "policy": "reset_then_identical_structured_warmup_v1",

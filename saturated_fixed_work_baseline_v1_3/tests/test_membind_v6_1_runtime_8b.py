@@ -171,6 +171,28 @@ def test_8b_manifest_rejects_route_endpoint_drift(
         runtime_8b_manifest(contract)
 
 
+def test_8b_shared_manifest_exposes_one_adapter_identity_for_all_arms(
+    tmp_path: Path, monkeypatch: pytest.MonkeyPatch
+) -> None:
+    profile_root = tmp_path / "profile"
+    install_environment(monkeypatch, profile_root)
+    write_platform(profile_root)
+    manifest = runtime_8b_manifest(
+        route_contract(),
+        shared_bounded_structured_output=True,
+        enable_endpoint_schema_grounding=True,
+        enable_work_conserving_edge_admission=True,
+    )
+    identity = manifest["construction"]["shared_structured_output"]
+    assert identity["arm_identity"] is None
+    assert identity["page_capacity"] == 1
+    assert identity["max_pages"] == 64
+    assert identity["retry_policy"] == "single_attempt_no_retry_until_lucky_v1"
+    assert manifest["construction"]["edge_endpoint_schema_policy"] == (
+        "entity_block_literal_endpoint_grounding_v1"
+    )
+
+
 def test_v61_build_close_then_strict_native_has_no_patch_leakage(
     tmp_path: Path, monkeypatch: pytest.MonkeyPatch
 ) -> None:

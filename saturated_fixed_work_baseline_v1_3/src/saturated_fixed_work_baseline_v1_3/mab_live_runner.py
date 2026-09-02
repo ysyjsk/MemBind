@@ -461,11 +461,13 @@ async def run_mab_construction_async(
             emit("PUBLICATION_DURABLE", sequence, durable)
             record({"event": "PUBLICATION_DURABLE", "source_sequence": sequence, "monotonic_ns": durable, "context_id": context_id})
 
-        if method in {"B0", "GRAPHITI_UPSTREAM_SERIAL"}:
+        shared_serial = method in {"GRAPHITI_SERIAL_SHARED_BOUNDED_SO"}
+        shared_parallel = method in {"RELAXED_ORDER_SHARED_BOUNDED_SO"}
+        if method in {"B0", "GRAPHITI_UPSTREAM_SERIAL"} or shared_serial:
             for sequence in range(len(selected)):
                 emit("SUBMIT", sequence)
                 await direct_publish(sequence)
-        elif method in {"B1", "RELAXED_ORDER_PARALLEL"}:
+        elif method in {"B1", "RELAXED_ORDER_PARALLEL"} or shared_parallel:
             for sequence in range(len(selected)):
                 emit("SUBMIT", sequence)
             await asyncio.gather(*(direct_publish(sequence) for sequence in range(len(selected))))

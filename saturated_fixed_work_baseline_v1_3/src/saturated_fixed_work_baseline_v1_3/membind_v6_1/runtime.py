@@ -28,6 +28,17 @@ from .structured_output_recovery import (
     choose_node_schema_capacity,
     validate_schema_boundedness,
 )
+from .shared_structured_output import (
+    SHARED_ADAPTER_VERSION,
+    SHARED_FACT_MAX_LENGTH,
+    SHARED_MAX_PAGES,
+    SHARED_MAX_TOKENS,
+    SHARED_PAGE_CAPACITY,
+    SharedStructuredOutputContract,
+    adapter_identity,
+    finite_edge_page_model,
+    validate_edge_page,
+)
 
 
 LOCAL_PROFILE_ID = "local-qwen3-14b-awq-v1"
@@ -45,7 +56,7 @@ LOCAL_EXTRACTION_CHUNKING_POLICY = "dialogue_turn_partition_merge_v1"
 LOCAL_EXTRACTION_CHUNK_TRIGGER_TOKENS = 28_000
 LOCAL_EXTRACTION_CHUNK_CURRENT_CHARS = 3_000
 LOCAL_EDGE_PAGE_CAPACITY = 1
-LOCAL_EDGE_MAX_PAGES = 64
+LOCAL_EDGE_MAX_PAGES = SHARED_MAX_PAGES
 LOCAL_EDGE_PARTITION_CONCURRENCY = 1
 LOCAL_EDGE_PHYSICAL_CONCURRENCY = 2
 LOCAL_NODE_PARTITION_CONCURRENCY = 1
@@ -61,7 +72,7 @@ LOCAL_EDGE_RELATION_MAX_CHARS = 128
 # (16,384 total) for a one-edge page.  Keep 522 proof tokens of headroom by
 # capping facts at 1,900; this is still far above Graphiti's ordinary factual
 # edge size, and the method identity records the resulting wire constraint.
-LOCAL_EDGE_FACT_MAX_CHARS = 1_900
+LOCAL_EDGE_FACT_MAX_CHARS = SHARED_FACT_MAX_LENGTH
 LOCAL_EDGE_DATETIME_MAX_CHARS = 40
 LOCAL_TIMESTAMP_BATCH_MAX_ITEMS = 63
 LOCAL_ENTITY_TYPE_ID_MAX = 1_023
@@ -1505,82 +1516,13 @@ def _finite_edge_page_model(
     endpoint_names: tuple[str, ...] = (),
     fact_max_length: int = LOCAL_EDGE_FACT_MAX_CHARS,
 ) -> Any:
-    """Build the finite edge contract sent to xgrammar for one request variant."""
+    """Build the one finite edge contract shared by all formal arms."""
 
-    from pydantic import ConfigDict, Field, create_model
-
-    if page_capacity < 1:
-        raise ValueError("edge page capacity must be positive")
-    if fact_max_length < 1:
-        raise ValueError("edge fact bound must be positive")
-    names = tuple(dict.fromkeys(str(name) for name in endpoint_names if str(name)))
-    endpoint_type: Any = Literal.__getitem__(names) if names else str
-    edge_name = (
-        "MemBindSingleEdge"
-        if page_capacity == 1
-        else f"MemBindBoundedEdge{page_capacity}"
-    )
-    edge_model = create_model(
-        edge_name,
-        source_entity_name=(
-            endpoint_type,
-            Field(
-                ...,
-                max_length=LOCAL_NODE_MAX_NAME_CHARS,
-                description="The name of the source entity from the ENTITIES list",
-            ),
-        ),
-        target_entity_name=(
-            endpoint_type,
-            Field(
-                ...,
-                max_length=LOCAL_NODE_MAX_NAME_CHARS,
-                description="The name of the target entity from the ENTITIES list",
-            ),
-        ),
-        relation_type=(
-            str,
-            Field(
-                ...,
-                min_length=1,
-                max_length=LOCAL_EDGE_RELATION_MAX_CHARS,
-                description="The relationship type in SCREAMING_SNAKE_CASE",
-            ),
-        ),
-        fact=(
-            str,
-            Field(
-                ...,
-                min_length=1,
-                max_length=fact_max_length,
-                description="A factual relationship paraphrased from the source",
-            ),
-        ),
-        valid_at=(
-            str | None,
-            Field(default=None, max_length=LOCAL_EDGE_DATETIME_MAX_CHARS),
-        ),
-        invalid_at=(
-            str | None,
-            Field(default=None, max_length=LOCAL_EDGE_DATETIME_MAX_CHARS),
-        ),
-        episode_indices=(
-            list[Literal[0]],
-            Field(default_factory=lambda: [0], min_length=1, max_length=1),
-        ),
-        __config__=ConfigDict(extra="forbid"),
-    )
-    return create_model(
-        (
-            "MemBindSingleEdgePage"
-            if page_capacity == 1
-            else f"MemBindBoundedEdgePage{page_capacity}"
-        ),
-        edges=(
-            list[edge_model],
-            Field(default_factory=list, max_length=page_capacity),
-        ),
-        __config__=ConfigDict(extra="forbid"),
+    return finite_edge_page_model(
+        int(page_capacity),
+        tuple(endpoint_names),
+        int(fact_max_length),
+        name_prefix="MemBind",
     )
 
 
@@ -1606,25 +1548,14 @@ def _endpoint_grounded_edge_page_model(
     preserving the full relation/fact surface and pagination protocol.
     """
 
-    names = tuple(dict.fromkeys(str(name) for name in endpoint_names if str(name)))
-    if page_capacity < 1:
-        raise ValueError("edge page capacity must be positive")
-    if not names:
-        return _bounded_edge_page_model(page_capacity)
-    model = _finite_edge_page_model(page_capacity, names, fact_max_length)
-    # Preserve the historical model names in schema evidence while using the
-    # finite field definitions above.
-    from pydantic import ConfigDict, Field, create_model
-
-    edge_ref = model.model_fields["edges"].annotation.__args__[0]
-    edge_model = create_model(
-        f"MemBindEndpointGroundedEdge{page_capacity}_{len(names)}",
-        __base__=edge_ref,
-    )
-    return create_model(
-        f"MemBindEndpointGroundedEdgePage{page_capacity}_{len(names)}",
-        edges=(list[edge_model], Field(default_factory=list, max_length=page_capacity)),
-        __config__=ConfigDict(extra="forbid"),
+    names = tuple(dict.fromkeys(str(name) for name in endpoint_names if str(name).strip()))
+    return finite_edge_page_model(
+        int(page_capacity),
+        names,
+        int(fact_max_length),
+        name_prefix="MemBindEndpointGrounded",
+        edge_name=f"MemBindEndpointGroundedEdge{page_capacity}_{len(names)}",
+        page_name=f"MemBindEndpointGroundedEdgePage{page_capacity}_{len(names)}",
     )
 
 
@@ -2122,6 +2053,7 @@ def install_local_extraction_chunking_policy(
     edge_priority_burst: int | None = None,
     edge_endpoint_schema_grounding: bool = False,
     edge_adaptive_admission: bool = False,
+    shared_bounded_structured_output: bool = False,
 ) -> None:
     """Partition local extraction prompts while preserving Graphiti semantics.
 
@@ -2170,6 +2102,8 @@ def install_local_extraction_chunking_policy(
     edge_shared_max_active_page_requests = 0
     diagnostics: list[dict[str, Any]] = []
     setattr(llm_client, "_membind_extraction_diagnostics", diagnostics)
+    setattr(llm_client, "_membind_shared_structured_output", adapter_identity())
+    setattr(llm_client, "_membind_shared_bounded_structured_output", bool(shared_bounded_structured_output))
     entity_partition_hints_by_scope: dict[
         tuple[str | None, int | None], dict[str, list[int]]
     ] = {(None, None): {}}
@@ -2843,13 +2777,23 @@ def install_local_extraction_chunking_policy(
                         )
                         if not isinstance(page, Mapping):
                             raise LocalRuntimeConfigurationError("edge page response is not an object")
-                        page_edges = page.get("edges")
-                        if not isinstance(page_edges, list):
-                            raise LocalRuntimeConfigurationError("edge page response has no edges list")
-                        if len(page_edges) > edge_page_capacity or not all(
-                            isinstance(edge, Mapping) for edge in page_edges
-                        ):
-                            raise LocalRuntimeConfigurationError("edge page returned an invalid cardinality")
+                        try:
+                            page_edges = list(
+                                validate_edge_page(
+                                    page,
+                                    contract=SharedStructuredOutputContract(
+                                        page_capacity=edge_page_capacity,
+                                        max_pages=LOCAL_EDGE_MAX_PAGES,
+                                        fact_max_length=LOCAL_EDGE_FACT_MAX_CHARS,
+                                    ),
+                                    authoritative_entities=partition_endpoint_names,
+                                    reject_invalid_endpoints=bool(shared_bounded_structured_output),
+                                )
+                            )
+                        except (TypeError, ValueError) as exc:
+                            raise LocalRuntimeConfigurationError(
+                                f"edge page violates shared bounded contract: {exc}"
+                            ) from exc
                         delta: list[Mapping[str, Any]] = []
                         page_identities: set[str] = set()
                         raw_unique_progress: list[Mapping[str, Any]] = []
@@ -2985,6 +2929,22 @@ def install_local_extraction_chunking_policy(
                                     }
                                 )
                                 continue
+                            if not shared_bounded_structured_output:
+                                diagnostics.append(
+                                    {
+                                        "schema_version": "membind.v6.1.edge-fixed-point.v1",
+                                        "prompt_name": prompt_name,
+                                        "partition_id": partition_id,
+                                        "partition_count": partition_count,
+                                        "page_index": page_index,
+                                        "distinct_edge_count": len(accepted_partition_edges),
+                                        "raw_distinct_edge_count": len(pagination_history),
+                                        "event": "EDGE_PAGINATION_ZERO_DELTA",
+                                        "termination_reason": "zero_delta",
+                                        "status": "converged",
+                                    }
+                                )
+                                return partition_responses, "zero_delta", page_index + 1
                             diagnostics.append(
                                 {
                                     "schema_version": "membind.v6.1.edge-fixed-point.v1",
@@ -2994,12 +2954,14 @@ def install_local_extraction_chunking_policy(
                                     "page_index": page_index,
                                     "distinct_edge_count": len(accepted_partition_edges),
                                     "raw_distinct_edge_count": len(pagination_history),
-                                    "event": "EDGE_PAGINATION_ZERO_DELTA",
-                                    "termination_reason": "zero_delta",
-                                    "status": "converged",
+                                    "event": "EDGE_PAGINATION_NO_PROGRESS",
+                                    "termination_reason": "invalid_no_progress",
+                                    "status": "invalid",
                                 }
                             )
-                            return partition_responses, "zero_delta", page_index + 1
+                            raise LocalRuntimeConfigurationError(
+                                "edge pagination made no accepted progress after deterministic recovery"
+                            )
                         duplicate_recovery_edge = None
                         pagination_history.extend(raw_unique_progress)
                         seen_raw_identities.update(page_identities)

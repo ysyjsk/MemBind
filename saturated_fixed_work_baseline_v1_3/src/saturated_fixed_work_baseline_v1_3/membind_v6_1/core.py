@@ -18,7 +18,7 @@ from .executor import DUAL_STREAMING_EXECUTION_STRATEGY
 from .mab import run_mab_v61_construction_async
 from .policy import V61Policy
 from .runtime_8b import (
-    build_8b_u0_runtime,
+    build_8b_shared_bounded_runtime,
     frozen_8b_config,
     public_8b_environment,
 )
@@ -101,23 +101,29 @@ def build_membind_core_runtime_8b(
             "MemBind-Core requires the retained semantic-phase elastic route; "
             f"received {policy!r}"
         )
-    runtime = build_8b_u0_runtime(
+    runtime = build_8b_shared_bounded_runtime(
         routing_contract=routing_contract,
         route_event_sink=route_event_sink,
-        enable_grounded_summary_materialization=False,
-        enable_endpoint_schema_grounding=False,
-        enable_work_conserving_edge_admission=True,
-        enable_adaptive_edge_admission=False,
     )
     manifest = getattr(runtime, "_membind_8b_runtime_manifest", {})
     construction = manifest.get("construction", {})
     expected = {
         "entity_summary_policy": "graphiti_native_batched_summary_v1",
-        "edge_endpoint_schema_policy": "graphiti_edge_endpoint_string_v1",
+        "edge_endpoint_schema_policy": "entity_block_literal_endpoint_grounding_v1",
         "edge_physical_admission_policy": "arbiter_work_conserving_partition_derived_v1",
+        "shared_structured_output": {
+            "adapter_version": "shared-bounded-structured-output-v1",
+        },
     }
     for field, value in expected.items():
-        if construction.get(field) != value:
+        observed = construction.get(field)
+        matches = (
+            isinstance(observed, Mapping)
+            and all(observed.get(key) == expected_value for key, expected_value in value.items())
+            if field == "shared_structured_output"
+            else observed == value
+        )
+        if not matches:
             raise MemBindCoreConfigurationError(
                 f"Core runtime drifted at construction.{field}: "
                 f"{construction.get(field)!r} != {value!r}"
@@ -134,8 +140,8 @@ def frozen_membind_core_config_8b(
     return _annotate(
         frozen_8b_config(
             routing_contract,
-            enable_grounded_summary_materialization=False,
-            enable_endpoint_schema_grounding=False,
+            shared_bounded_structured_output=True,
+            enable_endpoint_schema_grounding=True,
             enable_work_conserving_edge_admission=True,
             enable_adaptive_edge_admission=False,
         )
@@ -153,8 +159,8 @@ def public_membind_core_environment_8b(
         public_8b_environment(
             routing_contract,
             repo_root=repo_root,
-            enable_grounded_summary_materialization=False,
-            enable_endpoint_schema_grounding=False,
+            shared_bounded_structured_output=True,
+            enable_endpoint_schema_grounding=True,
             enable_work_conserving_edge_admission=True,
             enable_adaptive_edge_admission=False,
         )
@@ -166,6 +172,7 @@ async def run_membind_core_construction_async(
     policy: V61Policy,
     execution_strategy: str | None = None,
     method_boundary: str | None = None,
+    shared_bounded_label: str | None = None,
     **kwargs: Any,
 ) -> dict[str, Any]:
     """Run one frozen Core block; extension and tuning arguments are rejected."""
@@ -183,18 +190,23 @@ async def run_membind_core_construction_async(
         raise MemBindCoreConfigurationError(
             "MemBind-Core artifact identity is fixed and cannot be overridden"
         )
+    artifact_method = (
+        "MEMBIND_V6_1_SHARED_BOUNDED_SO"
+        if shared_bounded_label == "MEMBIND_V6_1_SHARED_BOUNDED_SO"
+        else "MEMBIND_CORE"
+    )
     result = await run_mab_v61_construction_async(
         policy=policy,
         execution_strategy=MEMBIND_CORE_EXECUTION_STRATEGY,
         method_boundary=MEMBIND_CORE_BOUNDARY,
-        artifact_method="MEMBIND_CORE",
+        artifact_method=artifact_method,
         certified_callsites=MEMBIND_CORE_CERTIFIED_CALLSITES,
         certified_message_transform=None,
         binding_strict=False,
         implementation_revision=MEMBIND_CORE_IMPLEMENTATION_REVISION,
         **kwargs,
     )
-    result["method"] = "MEMBIND_CORE"
+    result["method"] = artifact_method
     result["method_boundary"] = MEMBIND_CORE_BOUNDARY
     result["core_identity"] = core_identity()
     return result

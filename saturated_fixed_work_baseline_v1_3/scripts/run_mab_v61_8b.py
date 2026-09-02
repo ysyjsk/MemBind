@@ -55,6 +55,7 @@ from saturated_fixed_work_baseline_v1_3.membind_v6_1.runtime_8b import (  # noqa
     PROFILE_ID_8B,
     assert_8b_namespace_identity,
     build_8b_strict_native_runtime,
+    build_8b_shared_bounded_runtime,
     build_8b_u0_runtime,
     close_8b_u0_runtime,
     frozen_8b_config,
@@ -80,6 +81,27 @@ METHODS = {
         "route_env": "MEMBIND_V61_ROUTING_CONFIG",
         "contract_arm": "v61-dual",
     },
+    "GRAPHITI_SERIAL_SHARED_BOUNDED_SO": {
+        "legacy_method": "GRAPHITI_SERIAL_SHARED_BOUNDED_SO",
+        "route_env": "MEMBIND_V61_ROUTING_CONFIG",
+        "contract_arm": "native-serial-dual",
+    },
+    "RELAXED_ORDER_SHARED_BOUNDED_SO": {
+        "legacy_method": "RELAXED_ORDER_SHARED_BOUNDED_SO",
+        "route_env": "MEMBIND_V61_ROUTING_CONFIG",
+        "contract_arm": "native-parallel-dual",
+    },
+    "MEMBIND_V6_1_SHARED_BOUNDED_SO": {
+        "legacy_method": "MEMBIND_V6_1_SHARED_BOUNDED_SO",
+        "route_env": "MEMBIND_V61_ROUTING_CONFIG",
+        "contract_arm": "v61-dual",
+    },
+}
+
+SHARED_ARMS = {
+    "GRAPHITI_SERIAL_SHARED_BOUNDED_SO",
+    "RELAXED_ORDER_SHARED_BOUNDED_SO",
+    "MEMBIND_V6_1_SHARED_BOUNDED_SO",
 }
 
 
@@ -247,6 +269,7 @@ def _create_run_contract(
         str(workload_manifest),
         "--runner-implementation",
         str(Path(__file__).resolve()),
+        *( ["--shared-bounded-structured-output"] if method in SHARED_ARMS else [] ),
         *( ["--method-boundary", method_boundary] if method_boundary else [] ),
         *( ["--extension-id", extension_id] if extension_id else [] ),
         "--output",
@@ -268,7 +291,7 @@ def _reusable_reference(
 ) -> dict[str, Any] | None:
     """Resolve one fully sealed non-V6.1 reference for an identical contract."""
 
-    if method == "MEMBIND_V6_1":
+    if method in {"MEMBIND_V6_1", "MEMBIND_V6_1_SHARED_BOUNDED_SO"}:
         return None
     runner_hash = _sha256(Path(__file__).resolve())
     implementation_hash = implementation_bundle(Path(__file__).resolve())["payload_sha256"]
@@ -569,13 +592,18 @@ async def _main(args: argparse.Namespace) -> int:
             def runtime_builder() -> Any:
                 if runtime_holder:
                     raise RuntimeError("attempt runtime builder was called more than once")
-                if method == "MEMBIND_V6_1" and args.v61_boundary == "MEMBIND_CORE":
+                if method in {"MEMBIND_V6_1", "MEMBIND_V6_1_SHARED_BOUNDED_SO"} and args.v61_boundary == "MEMBIND_CORE":
                     runtime = build_membind_core_runtime_8b(
                         routing_contract=routes[method],
                         route_event_sink=route_events.append,
                     )
                 elif method in {"GRAPHITI_UPSTREAM_SERIAL", "RELAXED_ORDER_PARALLEL"}:
                     runtime = build_8b_strict_native_runtime(
+                        routing_contract=routes[method],
+                        route_event_sink=route_events.append,
+                    )
+                elif method in SHARED_ARMS:
+                    runtime = build_8b_shared_bounded_runtime(
                         routing_contract=routes[method],
                         route_event_sink=route_events.append,
                     )
@@ -587,9 +615,10 @@ async def _main(args: argparse.Namespace) -> int:
                             method == "MEMBIND_V6_1" and args.v61_boundary == "WORK_REDUCTION_EXTENSION"
                         ),
                         enable_endpoint_schema_grounding=(
-                            method == "MEMBIND_V6_1" and args.v61_boundary == "WORK_REDUCTION_EXTENSION"
+                            method in SHARED_ARMS
+                            or (method == "MEMBIND_V6_1" and args.v61_boundary == "WORK_REDUCTION_EXTENSION")
                         ),
-                        enable_work_conserving_edge_admission=(method == "MEMBIND_V6_1"),
+                        enable_work_conserving_edge_admission=(method in SHARED_ARMS or method == "MEMBIND_V6_1"),
                         # The adaptive controller was rejected at r66a. Keep it
                         # opt-in for an explicitly named ablation so the default
                         # V6.1 substrate remains the retained fixed admission path.
@@ -627,7 +656,7 @@ async def _main(args: argparse.Namespace) -> int:
                 ):
                     raise RuntimeError("attempt preparation evidence is invalid")
                 failure_phase = "MEASURED_CONSTRUCTION"
-                if method == "MEMBIND_V6_1" and args.v61_boundary == "MEMBIND_CORE":
+                if method in {"MEMBIND_V6_1", "MEMBIND_V6_1_SHARED_BOUNDED_SO"} and args.v61_boundary == "MEMBIND_CORE":
                     environment = public_membind_core_environment_8b(
                         routes[method], repo_root=ROOT
                     )
@@ -637,18 +666,21 @@ async def _main(args: argparse.Namespace) -> int:
                         routes[method],
                         repo_root=ROOT,
                         strict_native=method in {"GRAPHITI_UPSTREAM_SERIAL", "RELAXED_ORDER_PARALLEL"},
+                        shared_bounded_structured_output=method in SHARED_ARMS,
                         enable_grounded_summary_materialization=(
                             method == "MEMBIND_V6_1" and args.v61_boundary == "WORK_REDUCTION_EXTENSION"
                         ),
                         enable_endpoint_schema_grounding=(
-                            method == "MEMBIND_V6_1" and args.v61_boundary == "WORK_REDUCTION_EXTENSION"
+                            method in SHARED_ARMS
+                            or (method == "MEMBIND_V6_1" and args.v61_boundary == "WORK_REDUCTION_EXTENSION")
                         ),
-                        enable_work_conserving_edge_admission=(method == "MEMBIND_V6_1"),
+                        enable_work_conserving_edge_admission=(method in SHARED_ARMS or method == "MEMBIND_V6_1"),
                         enable_adaptive_edge_admission=False,
                     )
                     frozen_config = frozen_8b_config(
                         routes[method],
                         strict_native=method in {"GRAPHITI_UPSTREAM_SERIAL", "RELAXED_ORDER_PARALLEL"},
+                        shared_bounded_structured_output=method in SHARED_ARMS,
                         enable_grounded_summary_materialization=(
                             method == "MEMBIND_V6_1" and args.v61_boundary == "WORK_REDUCTION_EXTENSION"
                         ),
@@ -684,10 +716,13 @@ async def _main(args: argparse.Namespace) -> int:
                         "namespace_initial_counts": counts,
                     },
                 }
-                if method == "MEMBIND_V6_1":
+                if method in {"MEMBIND_V6_1", "MEMBIND_V6_1_SHARED_BOUNDED_SO"}:
                     if args.v61_boundary == "MEMBIND_CORE":
                         result = await run_membind_core_construction_async(
                             policy=policy,
+                            shared_bounded_label=(
+                                method if method == "MEMBIND_V6_1_SHARED_BOUNDED_SO" else None
+                            ),
                             **common,
                         )
                     else:
@@ -700,9 +735,11 @@ async def _main(args: argparse.Namespace) -> int:
                 else:
                     result = await run_mab_construction_async(
                         method=(
-                            method
-                            if method in {"GRAPHITI_UPSTREAM_SERIAL", "RELAXED_ORDER_PARALLEL"}
-                            else str(METHODS[method]["legacy_method"])
+                            "GRAPHITI_SERIAL_SHARED_BOUNDED_SO"
+                            if method == "GRAPHITI_SERIAL_SHARED_BOUNDED_SO"
+                            else "RELAXED_ORDER_SHARED_BOUNDED_SO"
+                            if method == "RELAXED_ORDER_SHARED_BOUNDED_SO"
+                            else method
                         ),
                         **common,
                     )

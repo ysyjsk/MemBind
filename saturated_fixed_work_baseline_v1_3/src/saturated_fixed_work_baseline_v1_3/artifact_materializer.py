@@ -71,6 +71,9 @@ def materialize_construction_block(
         "GRAPHITI_UPSTREAM_SERIAL",
         "RELAXED_ORDER_PARALLEL",
         "MEMBIND_V6_1",
+        "GRAPHITI_SERIAL_SHARED_BOUNDED_SO",
+        "RELAXED_ORDER_SHARED_BOUNDED_SO",
+        "MEMBIND_V6_1_SHARED_BOUNDED_SO",
     }:
         raise ArtifactMaterializationError("method is not frozen")
     if not isinstance(result, Mapping) or result.get("expected_episode_count") != result.get("submitted_count") or result.get("expected_episode_count") != result.get("completed_count"):

@@ -33,6 +33,7 @@ from .runtime import (
     _local_chat_tokenizer,
     local_prompt_token_count,
 )
+from .shared_structured_output import adapter_identity
 
 
 PROFILE_ID_8B = "local-qwen3-8b-awq-dualreplica-v1"
@@ -173,6 +174,7 @@ def runtime_8b_manifest(
     enable_work_conserving_edge_admission: bool = False,
     enable_adaptive_edge_admission: bool = False,
     dedupe_candidate_page_capacity: int | None = None,
+    shared_bounded_structured_output: bool = False,
 ) -> dict[str, Any]:
     """Validate runtime identity and resolve the selected fair routing arm."""
 
@@ -318,6 +320,9 @@ def runtime_8b_manifest(
                 if enable_grounded_summary_materialization
                 else "graphiti_native_batched_summary_v1"
             ),
+            "shared_structured_output": (
+                adapter_identity() if shared_bounded_structured_output else None
+            ),
         },
         "embedding": {
             "base_url": _normalized_url(_required("EMBEDDING_BASE_URL")),
@@ -429,6 +434,7 @@ def build_8b_u0_runtime(
     enable_work_conserving_edge_admission: bool = False,
     enable_adaptive_edge_admission: bool = False,
     strict_native: bool = False,
+    shared_bounded_structured_output: bool = False,
 ) -> U0Runtime:
     """Build one local runtime.
 
@@ -446,6 +452,7 @@ def build_8b_u0_runtime(
         enable_work_conserving_edge_admission=enable_work_conserving_edge_admission,
         enable_adaptive_edge_admission=enable_adaptive_edge_admission,
         dedupe_candidate_page_capacity=dedupe_candidate_page_capacity,
+        shared_bounded_structured_output=shared_bounded_structured_output,
     )
     construction_key = _required("CONSTRUCTION_LLM_API_KEY")
     embedding_key = _required("EMBEDDING_API_KEY")
@@ -560,6 +567,7 @@ def build_8b_u0_runtime(
             edge_frontier_priority=True,
             edge_endpoint_schema_grounding=enable_endpoint_schema_grounding,
             edge_adaptive_admission=enable_adaptive_edge_admission,
+            shared_bounded_structured_output=shared_bounded_structured_output,
         )
     llm_client._membind_structured_output_certificates = structured_certificates
     summary_restore: Callable[[], None] | None = None
@@ -620,6 +628,10 @@ def build_8b_u0_runtime(
     runtime._membind_grounded_summary_evidence = summary_evidence
     runtime._membind_8b_runtime_manifest = manifest
     runtime._membind_strict_native = bool(strict_native)
+    runtime._membind_shared_bounded_structured_output = bool(shared_bounded_structured_output)
+    runtime._membind_shared_structured_output_identity = (
+        adapter_identity() if shared_bounded_structured_output else None
+    )
     runtime._membind_patch_inventory = {
         "schema_version": "membind.native-patch-inventory.v1",
         "status": "PASS",
@@ -651,6 +663,27 @@ def build_8b_strict_native_runtime(
         route_event_sink=route_event_sink,
         strict_native=True,
     )
+
+
+def build_8b_shared_bounded_runtime(
+    *,
+    routing_contract: Mapping[str, Any],
+    route_event_sink: Callable[[dict[str, Any]], None] | None = None,
+) -> U0Runtime:
+    """Build the finite structured-output substrate shared by formal A/B/C."""
+
+    runtime = build_8b_u0_runtime(
+        routing_contract=routing_contract,
+        route_event_sink=route_event_sink,
+        enable_endpoint_schema_grounding=True,
+        enable_work_conserving_edge_admission=True,
+        enable_adaptive_edge_admission=False,
+        shared_bounded_structured_output=True,
+    )
+    identity = getattr(runtime, "_membind_shared_structured_output_identity", None)
+    if not isinstance(identity, Mapping) or identity.get("arm_identity") is not None:
+        raise LocalRuntimeConfigurationError("shared structured-output identity is invalid")
+    return runtime
 
 
 def native_patch_inventory(runtime: Any) -> dict[str, Any]:
@@ -692,6 +725,7 @@ def frozen_8b_config(
     enable_endpoint_schema_grounding: bool = False,
     enable_work_conserving_edge_admission: bool = False,
     enable_adaptive_edge_admission: bool = False,
+    shared_bounded_structured_output: bool = False,
 ) -> dict[str, Any]:
     return {
         "schema_version": "membind.local-qwen3-8b-dual.config.v1",
@@ -703,6 +737,7 @@ def frozen_8b_config(
             enable_endpoint_schema_grounding=enable_endpoint_schema_grounding,
             enable_work_conserving_edge_admission=enable_work_conserving_edge_admission,
             enable_adaptive_edge_admission=enable_adaptive_edge_admission,
+            shared_bounded_structured_output=shared_bounded_structured_output,
         ),
     }
 
@@ -716,6 +751,7 @@ def public_8b_environment(
     enable_endpoint_schema_grounding: bool = False,
     enable_work_conserving_edge_admission: bool = False,
     enable_adaptive_edge_admission: bool = False,
+    shared_bounded_structured_output: bool = False,
 ) -> dict[str, Any]:
     manifest = runtime_8b_manifest(
         routing_contract,
@@ -724,6 +760,7 @@ def public_8b_environment(
         enable_endpoint_schema_grounding=enable_endpoint_schema_grounding,
         enable_work_conserving_edge_admission=enable_work_conserving_edge_admission,
         enable_adaptive_edge_admission=enable_adaptive_edge_admission,
+        shared_bounded_structured_output=shared_bounded_structured_output,
     )
     manifest["repo_root"] = str((repo_root or Path(__file__).resolve().parents[4]).resolve())
     manifest["python"] = os.path.realpath(os.sys.executable)
@@ -735,6 +772,7 @@ __all__ = [
     "PROFILE_ID_8B",
     "assert_8b_namespace_identity",
     "build_8b_u0_runtime",
+    "build_8b_shared_bounded_runtime",
     "build_8b_strict_native_runtime",
     "native_patch_inventory",
     "close_8b_u0_runtime",

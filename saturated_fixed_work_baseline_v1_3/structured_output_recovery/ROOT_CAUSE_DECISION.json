@@ -1,0 +1,46 @@
+{
+  "audits": [
+    {
+      "complete_json_prefix_characters": 5950,
+      "complete_prefix_edge_count": 21,
+      "duplicate_start_groups": 0,
+      "duplicate_start_repetitions": 0,
+      "duplicate_tuple_groups": 0,
+      "duplicate_tuple_repetitions": 0,
+      "finish_reason": "length",
+      "max_start_repeat": 1,
+      "max_tuple_repeat": 1,
+      "path": "/data/predator/ly/Mem/run/local-qwen3-8b-awq-dualreplica-v1/root-cause-20260902T24/edge_16384.txt",
+      "response_characters": 472328,
+      "sha256": "c24a1081de4a736c2eaa76a8790d30f1ddbd40f7d73ff3bd9a8035bad6872f54",
+      "unique_tuple_count": 21
+    },
+    {
+      "complete_json_prefix_characters": 5950,
+      "complete_prefix_edge_count": 21,
+      "duplicate_start_groups": 0,
+      "duplicate_start_repetitions": 0,
+      "duplicate_tuple_groups": 0,
+      "duplicate_tuple_repetitions": 0,
+      "finish_reason": "length",
+      "max_start_repeat": 1,
+      "max_tuple_repeat": 1,
+      "path": "/data/predator/ly/Mem/run/local-qwen3-8b-awq-dualreplica-v1/root-cause-20260902T24/edge_32768.txt",
+      "response_characters": 996616,
+      "sha256": "cd7066c5f9a55c4ed5fea3cbb40fb38598fbf82c6744b098496ef4c46be132d3",
+      "unique_tuple_count": 21
+    }
+  ],
+  "classification": "UNBOUNDED_ARRAY_RUNAWAY_LENGTH_TRUNCATION",
+  "conclusion": "The strict unbounded edge array consumes the full provider budget; bounded paging is required for this local substrate.",
+  "prefix_relation": {
+    "common_prefix_characters": 472328,
+    "edge_16384_is_prefix_of_edge_32768": true
+  },
+  "raw_response_persisted": true,
+  "run_root": "/data/predator/ly/Mem/run/local-qwen3-8b-awq-dualreplica-v1/root-cause-20260902T24",
+  "schema_version": "membind.root-cause-decision.v1",
+  "scope": "diagnostic_only_not_construction_data",
+  "source": "official context index 0, source sequence 0",
+  "status": "L0_COMPLETE"
+}

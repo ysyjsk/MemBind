@@ -79,7 +79,7 @@ def _assert_core_context_integrity(
 ) -> None:
     """Fail a Core construction that reports any previous-context removal."""
 
-    if artifact_method != "MEMBIND_CORE":
+    if artifact_method not in {"MEMBIND_CORE", "MEMBIND_V6_1_SHARED_BOUNDED_SO"}:
         return
     removed = int(inventory.get("certified_previous_context_chars_removed", 0) or 0)
     removed += int(
@@ -397,7 +397,11 @@ async def run_mab_v61_construction_async(
         raise V61MABError(f"unknown V6.1 execution strategy: {execution_strategy}")
     if method_boundary not in {"MEMBIND_CORE", "WORK_REDUCTION_EXTENSION"}:
         raise V61MABError(f"unknown V6.1 method boundary: {method_boundary}")
-    if artifact_method not in {"V6_1", "MEMBIND_CORE"}:
+    if artifact_method not in {
+        "V6_1",
+        "MEMBIND_CORE",
+        "MEMBIND_V6_1_SHARED_BOUNDED_SO",
+    }:
         raise V61MABError(f"unknown V6.1 artifact method: {artifact_method}")
     if not isinstance(certified_callsites, frozenset):
         certified_callsites = frozenset(certified_callsites)
