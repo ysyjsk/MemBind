@@ -1657,6 +1657,17 @@ def _edge_page_messages(
             if marker is not None
             else content + instruction
         )
+        if marker is not None and duplicate_recovery_edge is not None:
+            # Graphiti places its extraction task after the prompt seam.  Put a
+            # final recovery directive after that task as well, so the model's
+            # last instruction cannot silently erase the exclusion request.
+            updated += (
+                "\n\n<FINAL_DUPLICATE_RECOVERY_DIRECTIVE>\n"
+                "This is a duplicate-recovery request. Do not return the repeated tuple "
+                "again. Return one different supported edge absent from "
+                "ALREADY_RETURNED_EDGES, or return {\"edges\": []} only when none exists.\n"
+                "</FINAL_DUPLICATE_RECOVERY_DIRECTIVE>\n"
+            )
         if isinstance(message, Mapping):
             message["content"] = updated
         else:

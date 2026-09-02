@@ -3219,6 +3219,8 @@ def test_edge_pagination_recovers_once_from_a_duplicate_before_converging(
     assert "<DUPLICATE_RECOVERY>" in prompts[2][0]["content"]
     assert "<DUPLICATE_RECOVERY>" not in prompts[3][0]["content"]
     recovery_content = prompts[2][0]["content"]
+    assert "<FINAL_DUPLICATE_RECOVERY_DIRECTIVE>" in recovery_content
+    assert recovery_content.rindex("<FINAL_DUPLICATE_RECOVERY_DIRECTIVE>") > recovery_content.index("# TASK")
     rejected_block = recovery_content.split("The previous response repeated this already-returned edge:\n", 1)[1].split(
         "\nThat repeat is not evidence", 1
     )[0]
