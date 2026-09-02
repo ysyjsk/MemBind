@@ -76,10 +76,11 @@ def test_recovery_identity_uses_explicit_no_additional_edge_discriminator() -> N
     )
     schema = model.model_json_schema()
     assert schema["properties"]["status"]["enum"] == [
-        "edge",
+        "new_edge",
         "no_additional_edge",
     ]
-    assert set(schema["required"]) == {"edges", "status"}
+    assert set(schema["required"]) == {"status"}
+    assert "edge" in schema["properties"]
 
 
 def test_shared_finite_model_supports_grounded_endpoints() -> None:

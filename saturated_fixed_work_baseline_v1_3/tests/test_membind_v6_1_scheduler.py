@@ -2990,10 +2990,10 @@ def test_shared_duplicate_recovery_accepts_explicit_no_additional_edge(
                 assert "<DUPLICATE_RECOVERY>" not in content
                 return {"edges": [edge()]}
             schema = response_model.model_json_schema()
-            assert schema["properties"]["status"]["enum"] == ["edge", "no_additional_edge"]
+            assert schema["properties"]["status"]["enum"] == ["new_edge", "no_additional_edge"]
             assert "<DUPLICATE_RECOVERY>" in content
             assert "<FINAL_DUPLICATE_RECOVERY_DIRECTIVE>" in content
-            return {"status": "no_additional_edge", "edges": []}
+            return {"status": "no_additional_edge"}
 
     monkeypatch.setenv("CONSTRUCTION_CONTEXT_SAFETY_TOKENS", "32")
     client = Client()
@@ -3029,8 +3029,9 @@ def test_shared_duplicate_recovery_accepts_explicit_no_additional_edge(
         for row in client._membind_extraction_diagnostics
         if row.get("event") == "EDGE_PAGINATION_PAGE"
     ]
-    assert pages[-1]["recovery_status"] == "no_additional_edge"
-    assert pages[-1]["duplicate_recovery_request"] is True
+    recovery_pages = [row for row in pages if row["duplicate_recovery_request"]]
+    assert recovery_pages
+    assert recovery_pages[-1]["recovery_status"] == "no_additional_edge"
 
 
 def test_edge_pagination_duplicate_page_is_audited_zero_delta_fixed_point(monkeypatch) -> None:

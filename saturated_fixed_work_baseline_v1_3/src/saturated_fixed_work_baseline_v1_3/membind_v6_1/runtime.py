@@ -2883,20 +2883,23 @@ def install_local_extraction_chunking_policy(
                         )
                         if not isinstance(page, Mapping):
                             raise LocalRuntimeConfigurationError("edge page response is not an object")
+                        recovery_status: str | None = None
                         if is_duplicate_recovery and shared_bounded_structured_output:
                             status = page.get("status")
-                            if status not in {"edge", "no_additional_edge"}:
+                            recovery_status = str(status)
+                            if status not in {"new_edge", "no_additional_edge"}:
                                 raise LocalRuntimeConfigurationError(
                                     "duplicate recovery response is missing a valid status discriminator"
                                 )
-                            if status == "no_additional_edge" and page.get("edges") != []:
+                            if status == "no_additional_edge" and page.get("edge") is not None:
                                 raise LocalRuntimeConfigurationError(
-                                    "no_additional_edge recovery response must contain an empty edge list"
+                                    "no_additional_edge recovery response must omit the edge payload"
                                 )
-                            if status == "edge" and not isinstance(page.get("edges"), list):
+                            if status == "new_edge" and not isinstance(page.get("edge"), Mapping):
                                 raise LocalRuntimeConfigurationError(
-                                    "edge recovery response must contain an edge list"
+                                    "new_edge recovery response must contain one edge payload"
                                 )
+                            page = {"edges": []} if status == "no_additional_edge" else {"edges": [page["edge"]]}
                         try:
                             page_edges = list(
                                 validate_edge_page(
@@ -2973,7 +2976,7 @@ def install_local_extraction_chunking_policy(
                                     is_duplicate_recovery and bool(raw_unique_progress)
                                 ),
                                 "recovery_status": (
-                                    page.get("status") if is_duplicate_recovery else None
+                                    recovery_status if is_duplicate_recovery else None
                                 ),
                                 "invalid_endpoint_edge_count": invalid_endpoint_count,
                                 "non_boundary_edge_count": non_boundary_edge_count,
@@ -3018,7 +3021,7 @@ def install_local_extraction_chunking_policy(
                             explicit_termination = (
                                 "explicit_no_additional_edge"
                                 if is_duplicate_recovery
-                                and page.get("status") == "no_additional_edge"
+                                and recovery_status == "no_additional_edge"
                                 else "empty_page"
                             )
                             diagnostics.append(

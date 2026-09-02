@@ -87,11 +87,17 @@ def _finite_schema(
         },
         "required": ["source_entity_name", "target_entity_name", "relation_type", "fact"],
     }
-    properties: dict[str, Any] = {"edges": {"type": "array", "minItems": 0, "maxItems": page_capacity, "items": edge}}
-    required = ["edges"]
     if termination_discriminator:
-        properties["status"] = {"type": "string", "enum": ["edge", "no_additional_edge"]}
-        required.append("status")
+        properties: dict[str, Any] = {
+            "status": {"type": "string", "enum": ["new_edge", "no_additional_edge"]},
+            "edge": edge,
+        }
+        required = ["status"]
+    else:
+        properties = {
+            "edges": {"type": "array", "minItems": 0, "maxItems": page_capacity, "items": edge}
+        }
+        required = ["edges"]
     return {
         "type": "object", "additionalProperties": False,
         "properties": properties,
@@ -160,14 +166,18 @@ def finite_edge_page_model(
         episode_indices=(list[Literal[0]], Field(default_factory=lambda: [0], min_length=1, max_length=1)),
         __config__=ConfigDict(extra="forbid"),
     )
-    edges_field = (
-        Field(..., max_length=page_capacity)
-        if termination_discriminator
-        else Field(default_factory=list, max_length=page_capacity)
-    )
-    fields: dict[str, Any] = {"edges": (list[edge_model], edges_field)}
     if termination_discriminator:
-        fields["status"] = (Literal["edge", "no_additional_edge"], ...)
+        fields: dict[str, Any] = {
+            "status": (Literal["new_edge", "no_additional_edge"], ...),
+            "edge": (edge_model | None, None),
+        }
+    else:
+        fields = {
+            "edges": (
+                list[edge_model],
+                Field(default_factory=list, max_length=page_capacity),
+            )
+        }
     return create_model(
         page_name or (
             f"{name_prefix}RecoveryEdgePage"
