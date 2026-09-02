@@ -1611,18 +1611,29 @@ def _edge_page_messages(
             + json.dumps(rejected, ensure_ascii=False, sort_keys=True)
             + "\nThat repeat is not evidence that extraction is complete. Scan the ENTITIES "
             "in listed order and return the first different supported factual edge whose "
-            "full tuple is absent from ALREADY_RETURNED_EDGES. Return {\"edges\": []} "
-            "only if no such edge exists.\n"
+            "full tuple is absent from ALREADY_RETURNED_EDGES. For a different edge, "
+            "return {\"status\":\"new_edge\",\"edge\":{...}}. Return "
+            "{\"status\":\"no_additional_edge\",\"edge\":null} only if no such "
+            "edge exists.\n"
             "</DUPLICATE_RECOVERY>\n"
         )
-    page_instruction = (
-        "Return exactly one not-yet-returned factual edge supported by CURRENT_MESSAGE. "
-        if page_capacity == 1
-        else (
-            f"Return up to {page_capacity} distinct not-yet-returned factual edges "
-            "supported by CURRENT_MESSAGE. "
+    if duplicate_recovery_edge is not None:
+        page_instruction = (
+            "Return exactly one JSON object using the explicit recovery discriminator. "
+            "For a different not-yet-returned factual edge supported by CURRENT_MESSAGE, "
+            "return {\"status\":\"new_edge\",\"edge\":{...}}. If no additional "
+            "supported edge remains, return {\"status\":\"no_additional_edge\","
+            "\"edge\":null}. Do not return an edges array. "
         )
-    )
+    else:
+        page_instruction = (
+            "Return exactly one not-yet-returned factual edge supported by CURRENT_MESSAGE. "
+            if page_capacity == 1
+            else (
+                f"Return up to {page_capacity} distinct not-yet-returned factual edges "
+                "supported by CURRENT_MESSAGE. "
+            )
+        )
     utility_instruction = ""
     if memory_utility_order:
         utility_instruction = (
@@ -1641,11 +1652,16 @@ def _edge_page_messages(
             "plan, possession, or action.\n"
             "</MEMORY_UTILITY_ORDER>\n"
         )
+    termination_instruction = (
+        "Use only the explicit status/edge recovery shape above; do not return an edges array.\n"
+        if duplicate_recovery_edge is not None
+        else "Return {\"edges\": []} only when no additional supported edge remains.\n"
+    )
     instruction = (
         "\n\n<EDGE_PAGINATION>\n"
         + page_instruction
-        + "Return {\"edges\": []} only when no additional supported edge remains. "
-        "Never repeat or paraphrase an already returned edge.\n"
+        + termination_instruction
+        + "Never repeat or paraphrase an already returned edge.\n"
         + recovery_instruction
         + utility_instruction
         + "<ALREADY_RETURNED_EDGES>\n"
@@ -1673,7 +1689,9 @@ def _edge_page_messages(
                 "\n\n<FINAL_DUPLICATE_RECOVERY_DIRECTIVE>\n"
                 "This is a duplicate-recovery request. Do not return the repeated tuple "
                 "again. Return one different supported edge absent from "
-                "ALREADY_RETURNED_EDGES, or return {\"edges\": []} only when none exists.\n"
+                "ALREADY_RETURNED_EDGES as {\"status\":\"new_edge\",\"edge\":{...}}, "
+                "or return {\"status\":\"no_additional_edge\",\"edge\":null} only "
+                "when none exists. Do not return an edges array.\n"
                 "</FINAL_DUPLICATE_RECOVERY_DIRECTIVE>\n"
             )
         if isinstance(message, Mapping):
@@ -2538,6 +2556,9 @@ def install_local_extraction_chunking_policy(
                         if isinstance(usage, Mapping):
                             row["completion_tokens"] = usage.get("completion_tokens")
                             row["observed_prompt_tokens"] = usage.get("prompt_tokens")
+                        request_evidence = last.get("request_evidence")
+                        if isinstance(request_evidence, Mapping):
+                            row["structured_request_evidence"] = dict(request_evidence)
                 diagnostics.append(row)
                 raise
             row["status"] = "success"
@@ -2590,6 +2611,9 @@ def install_local_extraction_chunking_policy(
                     if isinstance(usage, Mapping):
                         row["completion_tokens"] = usage.get("completion_tokens")
                         row["observed_prompt_tokens"] = usage.get("prompt_tokens")
+                    request_evidence = last.get("request_evidence")
+                    if isinstance(request_evidence, Mapping):
+                        row["structured_request_evidence"] = dict(request_evidence)
             diagnostics.append(row)
             return result
 

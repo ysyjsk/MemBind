@@ -298,7 +298,81 @@ def safe_structured_request_evidence(request: dict[str, Any]) -> dict[str, Any]:
         separators=(",", ":"),
         default=str,
     ).encode("ascii")
-    return {
+
+    # Recovery evidence is deliberately structural and non-leaking.  It lets
+    # a failed live attempt prove which response variant reached the provider
+    # without retaining the schema (or source/fact text) itself.  The recovery
+    # model is identified by the explicit root discriminator and required
+    # nullable ``edge`` field; its nested edge definition carries the
+    # fail-closed canonical-tuple exclusion.
+    root_properties = schema.get("properties") if isinstance(schema, dict) else None
+    root_properties = root_properties if isinstance(root_properties, dict) else {}
+    root_required = schema.get("required") if isinstance(schema, dict) else None
+    root_required = [str(value) for value in root_required] if isinstance(root_required, list) else []
+    recovery_schema_detected = (
+        "status" in root_properties
+        and "edge" in root_properties
+        and "status" in root_required
+        and "edge" in root_required
+    )
+    edge_property = root_properties.get("edge")
+    edge_nullable = False
+    edge_ref: str | None = None
+    if isinstance(edge_property, dict):
+        variants = edge_property.get("anyOf")
+        if isinstance(variants, list):
+            edge_nullable = any(
+                isinstance(variant, dict) and variant.get("type") == "null"
+                for variant in variants
+            )
+            refs = [
+                str(variant.get("$ref"))
+                for variant in variants
+                if isinstance(variant, dict) and variant.get("$ref")
+            ]
+            edge_ref = refs[0] if refs else None
+        elif edge_property.get("type") == ["object", "null"]:
+            edge_nullable = True
+    defs = schema.get("$defs") if isinstance(schema, dict) else None
+    defs = defs if isinstance(defs, dict) else {}
+    nested_edge: dict[str, Any] | None = None
+    if edge_ref and edge_ref.startswith("#/$defs/"):
+        candidate = defs.get(edge_ref.rsplit("/", 1)[-1])
+        if isinstance(candidate, dict):
+            nested_edge = candidate
+    if nested_edge is None and recovery_schema_detected:
+        candidates = [value for value in defs.values() if isinstance(value, dict)]
+        nested_edge = next((value for value in candidates if "not" in value), None)
+    exclusion = nested_edge.get("not") if isinstance(nested_edge, dict) else None
+    exclusion = exclusion if isinstance(exclusion, dict) else None
+    exclusion_properties = (
+        exclusion.get("properties")
+        if isinstance(exclusion, dict)
+        else None
+    )
+    exclusion_properties = (
+        exclusion_properties if isinstance(exclusion_properties, dict) else {}
+    )
+    exclusion_values = {
+        str(name): value.get("const")
+        for name, value in exclusion_properties.items()
+        if isinstance(value, dict) and "const" in value
+    }
+    exclusion_fields = (
+        "source_entity_name",
+        "target_entity_name",
+        "relation_type",
+        "fact",
+        "valid_at",
+        "invalid_at",
+    )
+    excluded_tuple = [exclusion_values.get(name) for name in exclusion_fields]
+    recovery_required_keys = (
+        [str(value) for value in nested_edge.get("required", [])]
+        if isinstance(nested_edge, dict) and isinstance(nested_edge.get("required"), list)
+        else []
+    )
+    result = {
         "request_envelope_sha256": hashlib.sha256(canonical_request).hexdigest(),
         "model": str(request.get("model") or ""),
         "temperature": request.get("temperature"),
@@ -316,7 +390,24 @@ def safe_structured_request_evidence(request: dict[str, Any]) -> dict[str, Any]:
         "json_schema_sha256": hashlib.sha256(canonical_schema).hexdigest(),
         "structured_output_backend_requested": backend_requested,
         "chat_template_kwargs": chat_template_kwargs,
+        "recovery_schema_detected": recovery_schema_detected,
+        "recovery_required_keys": root_required if recovery_schema_detected else [],
+        "recovery_edge_required": bool(recovery_schema_detected and "edge" in root_required),
+        "recovery_edge_nullable": bool(recovery_schema_detected and edge_nullable),
+        "recovery_edge_not_present": bool(recovery_schema_detected and isinstance(exclusion, dict)),
+        "recovery_edge_not_required_keys": recovery_required_keys if recovery_schema_detected else [],
+        "recovery_edge_schema_sha256": (
+            hashlib.sha256(json.dumps(nested_edge, sort_keys=True, separators=(",", ":"), default=str).encode("ascii")).hexdigest()
+            if isinstance(nested_edge, dict)
+            else None
+        ),
+        "recovery_excluded_edge_sha256": (
+            hashlib.sha256(json.dumps(excluded_tuple, separators=(",", ":"), default=str).encode("ascii")).hexdigest()
+            if isinstance(exclusion, dict)
+            else None
+        ),
     }
+    return result
 
 
 def clamp_max_tokens(requested: int | None, frozen_limit: int) -> int:
@@ -488,6 +579,7 @@ class _QwenCompletionsTransport:
             request["extra_body"] = extra_body
 
         self._owner.structured_request_count += 1
+        request_evidence = safe_structured_request_evidence(request)
         try:
             response = await self._inner.create(*args, **request)
         except Exception:
@@ -509,6 +601,7 @@ class _QwenCompletionsTransport:
                 "token_usage": usage,
                 "max_tokens": budget,
                 "finish_reason": finish_reason,
+                "request_evidence": request_evidence,
             }
         )
         for key in self._owner.usage_totals:
@@ -519,6 +612,7 @@ class _QwenCompletionsTransport:
                 "token_usage": usage,
                 "max_tokens": budget,
                 "finish_reason": finish_reason,
+                "request_evidence": request_evidence,
                 "response_characters": len(result),
                 "response_sha256": hashlib.sha256(result.encode("utf-8")).hexdigest(),
             }

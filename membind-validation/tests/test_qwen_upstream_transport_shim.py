@@ -7,6 +7,7 @@ wire fields, and collect transport telemetry.
 
 from __future__ import annotations
 
+import hashlib
 import json
 import sys
 from copy import deepcopy
@@ -27,6 +28,7 @@ from graphiti_core.llm_client.openai_generic_client import (  # noqa: E402
 )
 from graphiti_core.prompts.models import Message  # noqa: E402
 from graphiti_native import QwenVLLMClient  # noqa: E402
+from graphiti_native import safe_structured_request_evidence  # noqa: E402
 from native_characterization_instrumentation import instrument_llm_client  # noqa: E402
 from native_characterization_tracing import TraceRecorder  # noqa: E402
 from structured_output import constrain_single_episode_indices  # noqa: E402
@@ -92,6 +94,58 @@ def _messages() -> list[Message]:
 
 
 class QwenUpstreamTransportShimTests(IsolatedAsyncioTestCase):
+    async def test_live_request_evidence_preserves_duplicate_recovery_schema_contract(self) -> None:
+        """The transport must expose non-leaking evidence for the exact wire schema."""
+        from saturated_fixed_work_baseline_v1_3.membind_v6_1.runtime import (
+            _endpoint_grounded_edge_page_model,
+        )
+
+        completions = _Completions(
+            content='{"status":"no_additional_edge","edge":null}'
+        )
+        client = QwenVLLMClient(
+            config=LLMConfig(
+                api_key="test", model="qwen3-32b-fp8", small_model="qwen3-32b-fp8",
+                base_url="http://127.0.0.1:1/v1", temperature=0.0, max_tokens=16_384,
+            ),
+            client=SimpleNamespace(chat=SimpleNamespace(completions=completions)),
+            max_tokens=16_384,
+            structured_output_mode="json_schema",
+            structured_output_recovery_enabled=True,
+            managed_recovery_enabled=True,
+            structured_output_token_counter=lambda _messages: 1,
+            structured_output_context_limit=100_000,
+        )
+        recovery_model = _endpoint_grounded_edge_page_model(
+            1,
+            ("A", "B"),
+            termination_discriminator=True,
+            excluded_edge=("A", "B", "R", "F", None, None),
+        )
+
+        result = await client.generate_response(
+            _messages(),
+            response_model=recovery_model,
+        )
+
+        self.assertEqual(result["status"], "no_additional_edge")
+        self.assertEqual(len(completions.calls), 1)
+        request = completions.calls[0]
+        evidence = safe_structured_request_evidence(request)
+        self.assertEqual(evidence["response_format_type"], "json_schema")
+        self.assertTrue(evidence["recovery_schema_detected"])
+        self.assertTrue(evidence["recovery_edge_required"])
+        self.assertTrue(evidence["recovery_edge_nullable"])
+        self.assertTrue(evidence["recovery_edge_not_present"])
+        self.assertEqual(evidence["recovery_required_keys"], ["status", "edge"])
+        self.assertEqual(evidence["recovery_edge_not_required_keys"], [
+            "source_entity_name", "target_entity_name", "relation_type",
+            "fact", "valid_at", "invalid_at", "episode_indices",
+        ])
+        self.assertEqual(evidence["recovery_excluded_edge_sha256"], hashlib.sha256(
+            json.dumps(("A", "B", "R", "F", None, None), separators=(",", ":"), default=str).encode()
+        ).hexdigest())
+
     async def test_recovery_disabled_preserves_upstream_schema_and_parser_surface(self) -> None:
         completions = _Completions(content='{"edges":[]}')
         client = _client(completions)
