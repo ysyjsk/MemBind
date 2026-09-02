@@ -94,6 +94,25 @@ class RuntimeTopology:
                 raise ValueError("SILICONFLOW_EMBEDDING_MODEL_DRIFT")
             if embedding_dimension != SILICONFLOW_EMBEDDING_DIMENSION:
                 raise ValueError("SILICONFLOW_EMBEDDING_DIMENSION_DRIFT")
+        elif provider == "LOCAL_8B":
+            # The formal three-arm 8B campaign uses the same local model for
+            # construction, read-only QA and embeddings.  Keep this explicit
+            # rather than allowing arbitrary endpoint drift through the QA
+            # gate.
+            quality_url = str(env.get("QUALITY_LLM_BASE_URL", construction_url)).rstrip("/")
+            quality_model = str(env.get("QUALITY_LLM_MODEL", construction_model))
+            if construction_url != "http://127.0.0.1:18200/v1":
+                raise ValueError("LOCAL_8B_CONSTRUCTION_ENDPOINT_DRIFT")
+            if construction_model != "qwen3-8b-awq":
+                raise ValueError("LOCAL_8B_CONSTRUCTION_MODEL_DRIFT")
+            if quality_url != construction_url or quality_model != construction_model:
+                raise ValueError("LOCAL_8B_QUALITY_ENDPOINT_DRIFT")
+            if embedding_url != "http://127.0.0.1:18202/v1":
+                raise ValueError("LOCAL_8B_EMBEDDING_ENDPOINT_DRIFT")
+            if embedding_model != "qwen3-embedding-0.6b":
+                raise ValueError("LOCAL_8B_EMBEDDING_MODEL_DRIFT")
+            if embedding_dimension != 1024:
+                raise ValueError("LOCAL_8B_EMBEDDING_DIMENSION_DRIFT")
         elif provider == "FROZEN_V31":
             quality_url = str(
                 env.get("QUALITY_LLM_BASE_URL", construction_url)

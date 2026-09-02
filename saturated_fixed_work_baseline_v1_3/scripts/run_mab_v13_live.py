@@ -125,7 +125,12 @@ async def _run_qa(
     from graphiti_native import load_env_file
 
     env.update(load_env_file(VALIDATION / ".env"))
-    env.update({key: value for key, value in os.environ.items() if key in {"CONSTRUCTION_LLM_API_KEY", "VLLM_API_KEY", "NEO4J_URI", "NEO4J_USER", "NEO4J_PASSWORD"}})
+    env.update({key: value for key, value in os.environ.items() if key in {
+        "CONSTRUCTION_LLM_API_KEY", "VLLM_API_KEY", "NEO4J_URI", "NEO4J_USER", "NEO4J_PASSWORD",
+        "MAB_RUNTIME_PROVIDER", "CONSTRUCTION_LLM_BASE_URL", "CONSTRUCTION_LLM_MODEL",
+        "EMBEDDING_BASE_URL", "EMBEDDING_MODEL", "EMBEDDING_DIM",
+        "QUALITY_LLM_BASE_URL", "QUALITY_LLM_MODEL", "QUALITY_LLM_API_KEY",
+    }})
     key = env.get("CONSTRUCTION_LLM_API_KEY") or env.get("VLLM_API_KEY")
     if not key:
         raise RuntimeError("QA_API_KEY_MISSING")

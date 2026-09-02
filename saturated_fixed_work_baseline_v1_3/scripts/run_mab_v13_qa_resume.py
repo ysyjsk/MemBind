@@ -70,7 +70,12 @@ def _validate_target(
         raise RuntimeError("AUTHORITY_HASH_MISMATCH")
     if identity.get("dataset_authority_sha256") != frozen_authority.get("authority_sha256"):
         raise RuntimeError("FROZEN_AUTHORITY_HASH_MISMATCH")
-    if identity.get("method") not in {"B0", "B1", "V6"}:
+    if identity.get("method") not in {
+        "B0", "B1", "V6",
+        "GRAPHITI_SERIAL_SHARED_BOUNDED_SO",
+        "RELAXED_ORDER_SHARED_BOUNDED_SO",
+        "MEMBIND_V6_1_SHARED_BOUNDED_SO",
+    }:
         raise RuntimeError("METHOD_NOT_FROZEN")
     if not isinstance(identity.get("namespace"), str) or not identity["namespace"]:
         raise RuntimeError("NAMESPACE_IDENTITY_INVALID")
@@ -111,6 +116,18 @@ async def _main(args: argparse.Namespace) -> int:
     load_env_file(VALIDATION / ".env")
 
     def runtime_builder():
+        if str(identity.get("method", "")).endswith("_SHARED_BOUNDED_SO"):
+            from saturated_fixed_work_baseline_v1_3.membind_v6_1.runtime_8b import (
+                build_8b_shared_bounded_runtime,
+            )
+            from saturated_fixed_work_baseline_v1_3.membind_v6_1.runtime_8b import (
+                load_8b_routing_contract,
+            )
+            return build_8b_shared_bounded_runtime(
+                routing_contract=load_8b_routing_contract(
+                    os.environ["MEMBIND_V61_ROUTING_CONFIG"]
+                )
+            )
         return build_u0_graphiti_from_env(
             authorization_checker=lambda *_args, **_kwargs: {"allowed": True},
             env_loader=lambda: load_env_file(VALIDATION / ".env"),
@@ -191,6 +208,15 @@ def main() -> int:
     args = parser.parse_args()
     args.qa_runtime = None
     try:
+        if os.environ.get("MAB_RUNTIME_PROVIDER") == "LOCAL_8B":
+            # The generic quality runtime defaults to the historical 32B
+            # deployment.  Formal 8B QA binds the same read-only graph-quality
+            # implementation to the authenticated local embedding endpoint.
+            from paper_eval import graph_quality_live
+            graph_quality_live.NEO4J_URI = os.environ.get("NEO4J_URI", "bolt://127.0.0.1:7687")
+            graph_quality_live.EMBEDDING_BASE_URL = os.environ.get("EMBEDDING_BASE_URL", "http://127.0.0.1:18202/v1").rstrip("/")
+            graph_quality_live.EMBEDDING_MODEL = os.environ.get("EMBEDDING_MODEL", "qwen3-embedding-0.6b")
+            graph_quality_live.EMBEDDING_DIMENSION = int(os.environ.get("EMBEDDING_DIM", "1024"))
         from graphiti_native import load_env_file
         from paper_eval.graph_quality_live import build_graph_quality_runtime
 

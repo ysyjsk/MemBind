@@ -538,11 +538,19 @@ async def _main(args: argparse.Namespace) -> int:
                 _append(ledger, reused)
                 print(json.dumps(reused, ensure_ascii=False, sort_keys=True), flush=True)
                 continue
-            attempt_id = uuid.uuid4().hex[:12]
-            namespace = (
+            # Formal orchestration may pre-seal an attempt/namespace identity
+            # in its cell manifest.  The defaults remain fresh UUIDs for
+            # engineering runs; an explicit identity is accepted only for a
+            # single-context, single-method invocation and is never resumed.
+            attempt_id = args.attempt_id or uuid.uuid4().hex[:12]
+            namespace = args.namespace or (
                 f"{PROFILE_ID_8B}-v61mab-{args.run_id}-c{context_index}-"
                 f"{method.casefold().replace('_', '-')}-{attempt_id}"
             )
+            if args.attempt_id and args.attempt_id != attempt_id:
+                raise RuntimeError("FORMAL_ATTEMPT_ID_INVALID")
+            if args.namespace and not args.namespace.startswith(f"{PROFILE_ID_8B}-"):
+                raise RuntimeError("FORMAL_NAMESPACE_ID_INVALID")
             assert_8b_namespace_identity(namespace)
             counts = _namespace_counts(namespace)
             if counts != {"node_count": 0, "relationship_count": 0}:
@@ -862,6 +870,8 @@ def main() -> int:
         ),
     )
     parser.add_argument("--run-id", required=True)
+    parser.add_argument("--attempt-id", help="pre-sealed attempt id for one formal cell")
+    parser.add_argument("--namespace", help="pre-sealed namespace for one formal cell")
     parser.add_argument("--contexts", type=int, nargs="+", default=[0])
     parser.add_argument("--session-limit", type=int)
     parser.add_argument("--methods", nargs="+", required=True, choices=tuple(METHODS))
@@ -886,6 +896,10 @@ def main() -> int:
         parser.error("--v61-extension-id is required for WORK_REDUCTION_EXTENSION")
     if args.v61_boundary == "MEMBIND_CORE" and args.v61_extension_id:
         parser.error("--v61-extension-id is only valid for WORK_REDUCTION_EXTENSION")
+    if (args.attempt_id or args.namespace) and (len(args.contexts) != 1 or len(args.methods) != 1):
+        parser.error("--attempt-id/--namespace require exactly one context and one method")
+    if bool(args.attempt_id) != bool(args.namespace):
+        parser.error("--attempt-id and --namespace must be provided together")
     try:
         return asyncio.run(_main(args))
     except BaseException as exc:
