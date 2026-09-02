@@ -2921,6 +2921,7 @@ def test_shared_edge_substrate_enforces_wire_budget_when_client_is_32768(
         token_counter=lambda _messages: 100,
         partition_extraction_by_turns=True,
         partition_edge_candidates=True,
+        edge_page_capacity=2,
         shared_bounded_structured_output=True,
     )
     result = asyncio.run(
@@ -2947,6 +2948,8 @@ def test_shared_edge_substrate_enforces_wire_budget_when_client_is_32768(
     ]
     assert rows
     assert all(row["requested_max_tokens"] == 16_384 for row in rows)
+    assert all(row["requested_edge_page_capacity"] == 1 for row in rows)
+    assert all(row["certified_edge_page_capacity"] == 1 for row in rows)
     assert all(row["shared_structured_output_wire_max_tokens"] == 16_384 for row in rows)
     assert all(row["shared_structured_output_construction_max_tokens"] == 32_768 for row in rows)
 
@@ -3141,6 +3144,7 @@ def test_edge_pagination_recovers_once_from_a_duplicate_before_converging(
     monkeypatch,
 ) -> None:
     prompts: list[list[dict[str, object]]] = []
+    schema_capacities: list[int] = []
 
     def edge(fact: str) -> dict[str, object]:
         return {
@@ -3157,8 +3161,11 @@ def test_edge_pagination_recovers_once_from_a_duplicate_before_converging(
         max_tokens = 32_768
         call_events: list[dict[str, object]] = []
 
-        async def generate_response(self, messages, **_kwargs):
+        async def generate_response(self, messages, response_model=None, **_kwargs):
             prompts.append(messages)
+            schema_capacities.append(
+                response_model.model_json_schema()["properties"]["edges"]["maxItems"]
+            )
             self.call_events.append(
                 {
                     "finish_reason": "stop",
@@ -3211,6 +3218,33 @@ def test_edge_pagination_recovers_once_from_a_duplicate_before_converging(
     assert len(prompts) == 4
     assert "<DUPLICATE_RECOVERY>" in prompts[2][0]["content"]
     assert "<DUPLICATE_RECOVERY>" not in prompts[3][0]["content"]
+    recovery_content = prompts[2][0]["content"]
+    rejected_block = recovery_content.split("The previous response repeated this already-returned edge:\n", 1)[1].split(
+        "\nThat repeat is not evidence", 1
+    )[0]
+    assert json.loads(rejected_block) == {
+        "source_entity_name": "A",
+        "target_entity_name": "B",
+        "relation_type": "KNOWS",
+        "fact": "A knows B",
+        "valid_at": None,
+        "invalid_at": None,
+    }
+    returned_block = recovery_content.split("<ALREADY_RETURNED_EDGES>", 1)[1].split(
+        "</ALREADY_RETURNED_EDGES>", 1
+    )[0]
+    assert json.loads(returned_block) == [
+        {
+            "source_entity_name": "A",
+            "target_entity_name": "B",
+            "relation_type": "KNOWS",
+            "fact": "A knows B",
+            "valid_at": None,
+            "invalid_at": None,
+        }
+    ]
+    assert "arm_identity" not in recovery_content
+    assert schema_capacities == [1, 1, 1, 1]
     pages = [
         row
         for row in client._membind_extraction_diagnostics

@@ -2063,6 +2063,11 @@ def install_local_extraction_chunking_policy(
     remains disabled for the frozen 14B runtime.
     """
 
+    # The shared substrate has a frozen one-edge page contract.  Normalize the
+    # caller's requested capacity before building prompts, schemas, validation,
+    # and diagnostics so a preflight downgrade cannot leave mixed identities.
+    if shared_bounded_structured_output:
+        edge_page_capacity = SHARED_PAGE_CAPACITY
     original = getattr(llm_client, "generate_response", None)
     if not callable(original):
         raise LocalRuntimeConfigurationError("local extraction seam is unavailable")

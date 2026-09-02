@@ -557,6 +557,9 @@ def build_8b_u0_runtime(
             summary_entity_page_capacity=summary_entity_page_capacity or 1,
             dedupe_candidate_page_capacity=dedupe_candidate_page_capacity or 1,
             node_partition_concurrency=NODE_PARTITION_WORKERS_8B,
+            # Shared structured output is normalized to the frozen one-edge
+            # page contract inside the installation seam.  Keep non-shared
+            # development variants at their explicit capacity below.
             edge_page_capacity=2,
             actor_domain_cover=True,
             actor_domain_adjacent_domain=False,
