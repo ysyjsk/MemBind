@@ -1690,7 +1690,9 @@ def _edge_page_messages(
             updated += (
                 "\n\n<FINAL_DUPLICATE_RECOVERY_DIRECTIVE>\n"
                 "This is a duplicate-recovery request. Do not return the repeated tuple "
-                "again. Return one different supported edge absent from "
+                "again. The rejected tuple is "
+                + json.dumps(rejected, ensure_ascii=False, sort_keys=True, separators=(",", ":"))
+                + "; it must never appear as the `edge` value. Return one different supported edge absent from "
                 "ALREADY_RETURNED_EDGES as {\"status\":\"new_edge\",\"edge\":{...}}, "
                 "or return {\"status\":\"no_additional_edge\",\"edge\":null} only "
                 "when none exists. Do not return an edges array. IMPORTANT: never copy "

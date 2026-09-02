@@ -3376,6 +3376,8 @@ def test_edge_pagination_recovers_once_from_a_duplicate_before_converging(
     )[1].split("</FINAL_DUPLICATE_RECOVERY_DIRECTIVE>", 1)[0]
     assert "never copy the rejected tuple into a new_edge payload" in final_directive
     assert 'return exactly {"status":"no_additional_edge","edge":null}' in final_directive
+    assert '"source_entity_name":"A"' in final_directive
+    assert '"fact":"A knows B"' in final_directive
     rejected_block = recovery_content.split("The previous response repeated this already-returned edge:\n", 1)[1].split(
         "\nThat repeat is not evidence", 1
     )[0]
