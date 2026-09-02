@@ -565,6 +565,7 @@ def build_8b_u0_runtime(
                 int(manifest["construction"]["edge_physical_page_lanes"])
             ),
             edge_frontier_priority=True,
+            edge_duplicate_recovery=shared_bounded_structured_output,
             edge_endpoint_schema_grounding=enable_endpoint_schema_grounding,
             edge_adaptive_admission=enable_adaptive_edge_admission,
             shared_bounded_structured_output=shared_bounded_structured_output,
