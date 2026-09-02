@@ -44,7 +44,7 @@ from saturated_fixed_work_baseline_v1_3.membind_v6_1.identity import (  # noqa: 
 from saturated_fixed_work_baseline_v1_3.membind_v6_1.mab import (  # noqa: E402
     run_mab_v61_construction_async,
 )
-from saturated_fixed_work_baseline_v1_3.membind_v6_1.policy import V61Policy  # noqa: E402
+from saturated_fixed_work_baseline_v1_3.membind_v6_1.policy import V61Policy, ResourceCreditPolicy  # noqa: E402
 from saturated_fixed_work_baseline_v1_3.membind_v6_1.routing import (  # noqa: E402
     validate_route_evidence,
 )
@@ -457,10 +457,14 @@ async def _main(args: argparse.Namespace) -> int:
     output_root.mkdir(parents=True, exist_ok=True)
     ledger = output_root / "campaign_ledger.jsonl"
     authority = build_authority(MAB / "data/official_5_contexts.json")
-    policy = V61Policy(
-        lookahead=args.lookahead,
-        future_cap=args.future_cap,
-        native_future_quota=args.native_future_quota,
+    policy = (
+        ResourceCreditPolicy()
+        if args.v61_boundary == "MEMBIND_CORE" and V61_ARMS.intersection(args.methods)
+        else V61Policy(
+            lookahead=args.lookahead,
+            future_cap=args.future_cap,
+            native_future_quota=args.native_future_quota,
+        )
     )
     routes = {
         method: load_8b_routing_contract(os.environ[str(METHODS[method]["route_env"])])

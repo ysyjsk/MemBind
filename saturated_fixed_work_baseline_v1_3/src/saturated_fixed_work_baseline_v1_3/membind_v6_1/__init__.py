@@ -1,6 +1,7 @@
 """MemBind V6.1 local-profile runtime and foreground-aware replay."""
 
 from .policy import V61Policy
+from .resource_credit import ResourceCreditAuthority, ResourceCreditPolicy, ResourcePool, ReadyQueue
 from .runtime import LOCAL_PROFILE_ID, build_local_u0_runtime, local_runtime_manifest
 from .core import (
     MEMBIND_CORE_BOUNDARY,
@@ -13,6 +14,10 @@ from .core import (
 __all__ = [
     "LOCAL_PROFILE_ID",
     "V61Policy",
+    "ResourceCreditPolicy",
+    "ResourceCreditAuthority",
+    "ResourcePool",
+    "ReadyQueue",
     "build_local_u0_runtime",
     "local_runtime_manifest",
     "MEMBIND_CORE_BOUNDARY",

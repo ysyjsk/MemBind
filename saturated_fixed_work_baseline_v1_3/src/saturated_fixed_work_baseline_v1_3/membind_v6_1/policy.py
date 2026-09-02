@@ -5,6 +5,8 @@ from __future__ import annotations
 from dataclasses import asdict, dataclass
 from typing import Any, ClassVar
 
+from .resource_credit import ResourceCreditPolicy
+
 
 @dataclass(frozen=True, slots=True)
 class V61Policy:
@@ -64,3 +66,6 @@ class V61Policy:
         if isinstance(authority, bool) or not isinstance(authority, int) or authority <= 0:
             raise ValueError("authority must be a positive integer")
         return min(authority * 8_192, self.MAX_ADMITTED_KV_TOKENS)
+
+
+__all__ = ["V61Policy", "ResourceCreditPolicy"]

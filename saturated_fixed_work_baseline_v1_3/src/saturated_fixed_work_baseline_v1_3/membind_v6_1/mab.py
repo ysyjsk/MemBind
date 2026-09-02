@@ -54,8 +54,10 @@ from .executor import (
     STAGED_EXECUTION_STRATEGY,
     run_jit_frontier_history_async,
     run_staged_frontier_history_async,
+    run_resource_credit_frontier_history_async,
 )
 from .policy import V61Policy
+from .resource_credit import ResourceCreditPolicy
 from .provider import (
     V61ProviderClient,
     incremental_native_summary_context,
@@ -366,7 +368,7 @@ async def run_mab_v61_construction_async(
     context_id: str,
     namespace: str,
     episodes: Sequence[Any],
-    policy: V61Policy,
+    policy: V61Policy | ResourceCreditPolicy,
     runtime_builder: Callable[[], Any],
     instrumentation_installer: Callable[[Any, Any], Any],
     recorder_factory: Callable[[], Any],
@@ -395,12 +397,15 @@ async def run_mab_v61_construction_async(
         STAGED_EXECUTION_STRATEGY,
     }:
         raise V61MABError(f"unknown V6.1 execution strategy: {execution_strategy}")
+    if isinstance(policy, ResourceCreditPolicy) and not policy.is_resource_credit:
+        raise V61MABError("fixed ablation must use the legacy V61Policy executor")
     if method_boundary not in {"MEMBIND_CORE", "WORK_REDUCTION_EXTENSION"}:
         raise V61MABError(f"unknown V6.1 method boundary: {method_boundary}")
     if artifact_method not in {
         "V6_1",
         "MEMBIND_CORE",
         "MEMBIND_V6_1_SHARED_BOUNDED_SO",
+        "MEMBIND_RESOURCE_CREDIT_V1",
     }:
         raise V61MABError(f"unknown V6.1 artifact method: {artifact_method}")
     if not isinstance(certified_callsites, frozenset):
@@ -837,7 +842,15 @@ async def run_mab_v61_construction_async(
             "admission": arbiter,
             "event_sink": frontier_sink,
         }
-        if execution_strategy == STAGED_EXECUTION_STRATEGY:
+        if isinstance(policy, ResourceCreditPolicy):
+            execution = await run_resource_credit_frontier_history_async(
+                len(selected),
+                prepare,
+                publish,
+                execution_strategy=execution_strategy,
+                **executor_common,
+            )
+        elif execution_strategy == STAGED_EXECUTION_STRATEGY:
             execution = await run_staged_frontier_history_async(
                 len(selected),
                 prepare,
@@ -970,7 +983,11 @@ async def run_mab_v61_construction_async(
             "provider": provider_proof(
                 admission_events,
                 capacity=capacity.value,
-                future_cap=policy.future_cap,
+                future_cap=(
+                    policy.future_cap
+                    if hasattr(policy, "future_cap")
+                    else capacity.value
+                ),
                 arbiter_instance_id=arbiter.instance_id,
                 token_budget=arbiter.token_budget,
                 phase_isolated=arbiter.phase_isolated,

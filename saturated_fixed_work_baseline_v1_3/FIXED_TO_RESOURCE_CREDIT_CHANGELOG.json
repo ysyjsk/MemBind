@@ -1,0 +1,18 @@
+{
+  "schema_version": "membind.method-migration.v1",
+  "old_method": "V6_FIXED_POLICY",
+  "new_method": "MEMBIND_RESOURCE_CREDIT_V1",
+  "legacy_ablation": "MEMBIND_FIXED_2_1_0_ABLATION",
+  "classifications": {
+    "certified_capacity": "PLATFORM_DERIVED_PARAMETER",
+    "bounded_future_request_cost": "METHOD_INVARIANT",
+    "active_physical_requests": "RUNTIME_STATE",
+    "authoritative_reserve": "RUNTIME_STATE",
+    "request_credit": "METHOD_INVARIANT",
+    "future_credit": "METHOD_INVARIANT",
+    "lookahead": "ABLATION_ONLY_CONSTANT",
+    "future_cap": "ABLATION_ONLY_CONSTANT",
+    "native_future_quota": "ABLATION_ONLY_CONSTANT",
+    "latency_predictors": "REMOVED_HEURISTIC"
+  }
+}

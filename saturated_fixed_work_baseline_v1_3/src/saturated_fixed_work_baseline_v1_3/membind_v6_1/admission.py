@@ -13,6 +13,7 @@ from ..membind_v5.runtime.core.admission import (
     CapacityAuthority,
 )
 from .policy import V61Policy
+from .resource_credit import ResourceCreditAuthority, ResourceCreditPolicy, ResourcePool
 
 
 _PRIORITY = {
@@ -66,7 +67,7 @@ class ForegroundAdmissionArbiter:
         self,
         authority: CapacityAuthority,
         *,
-        policy: V61Policy,
+        policy: V61Policy | ResourceCreditPolicy,
         token_budget: int | None = None,
         name: str = "v6.1-shared-provider",
         event_sink: Callable[[dict[str, Any]], None] | None = None,
@@ -77,6 +78,7 @@ class ForegroundAdmissionArbiter:
             raise ValueError("provider capacity must be positive")
         self.authority = authority
         self.policy = policy
+        self.resource_credit_enabled = bool(getattr(policy, "is_resource_credit", False))
         self.token_budget = (
             policy.token_budget(authority.value) if token_budget is None else int(token_budget)
         )
@@ -109,6 +111,85 @@ class ForegroundAdmissionArbiter:
         self._durable_frontier = -1
         self._native_guard_sequence: int | None = None
         self._events: list[dict[str, Any]] = []
+        self.resource_credit_authority: ResourceCreditAuthority | None = None
+        if self.resource_credit_enabled:
+            self.resource_credit_authority = ResourceCreditAuthority(policy=policy)
+            if self.phase_isolated:
+                self.resource_credit_authority.register_pool(
+                    ResourcePool(
+                        "native",
+                        certified_capacity=authority.value,
+                        bounded_future_request_cost=policy.bounded_future_request_cost,
+                        shared_native_guard=True,
+                    )
+                )
+                self.resource_credit_authority.register_pool(
+                    ResourcePool(
+                        "prepare",
+                        certified_capacity=authority.value,
+                        bounded_future_request_cost=policy.bounded_future_request_cost,
+                        shared_native_guard=False,
+                    )
+                )
+                self.resource_credit_authority.set_authoritative_reserve("native", 1)
+                self.resource_credit_authority.set_authoritative_reserve("prepare", 1)
+            else:
+                self.resource_credit_authority.register_pool(
+                    ResourcePool(
+                        "shared",
+                        certified_capacity=authority.value,
+                        bounded_future_request_cost=policy.bounded_future_request_cost,
+                        shared_native_guard=True,
+                    )
+                )
+                self.resource_credit_authority.set_authoritative_reserve("shared", 1)
+
+    def _resource_pool_id(self, admission_class: AdmissionClass | None = None) -> str:
+        if not self.resource_credit_enabled:
+            return ""
+        if self.phase_isolated:
+            return "native" if admission_class is AdmissionClass.NATIVE_FRONTIER else "prepare"
+        return "shared"
+
+    def _resource_snapshot(self, admission_class: AdmissionClass, ready: int = 1):
+        if self.resource_credit_authority is None:
+            return None
+        pool_id = self._resource_pool_id(admission_class)
+        if self.phase_isolated:
+            active = (
+                self._native_outstanding
+                if pool_id == "native"
+                else self.prepare_outstanding
+            )
+        else:
+            active = self._outstanding
+        self.resource_credit_authority.set_active_physical_requests(pool_id, max(0, int(active)))
+        self.resource_credit_authority.set_native_guard(
+            pool_id,
+            self.native_guard_active and pool_id == "shared",
+        )
+        return self.resource_credit_authority.snapshot(
+            pool_id, dependency_ready_future_count=max(0, int(ready))
+        )
+
+    def future_credit(self, *, dependency_ready_future_count: int = 1, pool_id: str | None = None) -> int:
+        """Return current future credit without creating a task or call."""
+        if self.resource_credit_authority is None:
+            return max(0, int(self.policy.future_cap) - self._future_outstanding)
+        selected_pool = pool_id or ("prepare" if self.phase_isolated else "shared")
+        # Keep authoritative state synchronized with real active physical calls.
+        if self.phase_isolated:
+            active = self.prepare_outstanding if selected_pool == "prepare" else self._native_outstanding
+        else:
+            active = self._outstanding
+        self.resource_credit_authority.set_active_physical_requests(selected_pool, max(0, int(active)))
+        self.resource_credit_authority.set_native_guard(
+            selected_pool,
+            self.native_guard_active and selected_pool == "shared",
+        )
+        return self.resource_credit_authority.snapshot(
+            selected_pool, dependency_ready_future_count=max(0, int(dependency_ready_future_count))
+        ).future_credit
 
     @property
     def outstanding(self) -> int:
@@ -182,8 +263,17 @@ class ForegroundAdmissionArbiter:
             "phase_isolated": self.phase_isolated,
             "bootstrap_future_borrow": self.bootstrap_future_borrow,
             "durable_frontier": self._durable_frontier,
-            "resource_model": self.policy.to_dict()["resource_model"],
-            "future_cap": self.policy.future_cap,
+            "resource_model": self.policy.to_dict().get(
+                "resource_model",
+                {
+                    "kind": "per_pool_resource_credit",
+                    "dimensions": ["certified_physical_requests"],
+                    "token_authority_reliable": getattr(
+                        self.policy, "token_authority_reliable", False
+                    ),
+                },
+            ),
+            "future_cap": getattr(self.policy, "future_cap", None),
             "native_guard_active": self.native_guard_active,
             "native_guard_sequence": self._native_guard_sequence,
             "source_outstanding": self._source_outstanding,
@@ -253,7 +343,11 @@ class ForegroundAdmissionArbiter:
                         current_class is not AdmissionClass.FUTURE_PREPARE
                         or (
                             (self.phase_isolated or not self.native_guard_active)
-                            and self._future_source_outstanding < self.policy.future_cap
+                            and (
+                                self.future_credit(dependency_ready_future_count=1) > 0
+                                if self.resource_credit_enabled
+                                else self._future_source_outstanding < getattr(self.policy, "future_cap", 0)
+                            )
                         )
                     )
                     if (
@@ -401,10 +495,14 @@ class ForegroundAdmissionArbiter:
                         capacity_available = self._outstanding < self.authority.value
                         resource_outstanding = self._outstanding
                         resource_tokens = self._tokens_outstanding
-                    bootstrap_limit = self.policy.future_cap + 1
+                    bootstrap_limit = (
+                        getattr(self.policy, "future_cap", 0) + 1
+                        if not self.resource_credit_enabled
+                        else 0
+                    )
                     bootstrap_available = (
                         self.bootstrap_future_borrow
-                        and self.policy.future_cap > 0
+                        and getattr(self.policy, "future_cap", 0) > 0
                         and self._durable_frontier < 0
                         and not self.native_guard_active
                         and self._future_outstanding < bootstrap_limit
@@ -425,8 +523,11 @@ class ForegroundAdmissionArbiter:
                                 or (
                                     not _return_permit
                                     and (
-                                        self._future_outstanding < self.policy.future_cap
-                                        or bootstrap_available
+                                        (
+                                            self.future_credit(dependency_ready_future_count=1) > 0
+                                            if self.resource_credit_enabled
+                                            else self._future_outstanding < getattr(self.policy, "future_cap", 0)
+                                        ) or bootstrap_available
                                     )
                                 )
                             )
@@ -449,7 +550,8 @@ class ForegroundAdmissionArbiter:
                         bootstrap_borrowed = (
                             current_class is AdmissionClass.FUTURE_PREPARE
                             and not _return_permit
-                            and self._future_outstanding >= self.policy.future_cap
+                            and not self.resource_credit_enabled
+                            and self._future_outstanding >= getattr(self.policy, "future_cap", 0)
                         )
                         self._waiters.remove(waiter)
                         self._outstanding += 1

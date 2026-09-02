@@ -17,6 +17,7 @@ from ..membind_v5.runtime.adapters.client_proxy import CERTIFIED_CALLSITES
 from .executor import DUAL_STREAMING_EXECUTION_STRATEGY
 from .mab import run_mab_v61_construction_async
 from .policy import V61Policy
+from .resource_credit import ResourceCreditPolicy
 from .runtime_8b import (
     build_8b_shared_bounded_runtime,
     frozen_8b_config,
@@ -24,13 +25,15 @@ from .runtime_8b import (
 )
 
 
-MEMBIND_CORE_VERSION = "v6-membind-core-v1"
+MEMBIND_CORE_VERSION = "v6-membind-core-resource-credit-v1"
 MEMBIND_CORE_BOUNDARY = "MEMBIND_CORE"
 MEMBIND_CORE_EXECUTION_STRATEGY = DUAL_STREAMING_EXECUTION_STRATEGY
 MEMBIND_CORE_STATE_CONTRACT = "B0_SERIAL_STATEFUL_ORDERED_PUBLICATION"
 MEMBIND_CORE_ROUTE_POLICY = "semantic_phase_elastic_affinity"
 MEMBIND_CORE_CANDIDATE = "r63b-work-conserving-edge-admission"
-MEMBIND_CORE_POLICY = V61Policy(lookahead=2, future_cap=1, native_future_quota=0)
+MEMBIND_CORE_METHOD_IDENTITY = "MEMBIND_RESOURCE_CREDIT_V1"
+MEMBIND_CORE_POLICY = ResourceCreditPolicy()
+MEMBIND_FIXED_ABLATION_POLICY = V61Policy(lookahead=2, future_cap=1, native_future_quota=0)
 # Core preserves the complete Native request. Exact identity validation decides
 # reuse; a mismatch is delegated to a fresh Native call by the Core binding.
 MEMBIND_CORE_CERTIFIED_CALLSITES = CERTIFIED_CALLSITES
@@ -41,19 +44,18 @@ class MemBindCoreConfigurationError(ValueError):
     """Raised when a run attempts to mutate the frozen Core composition."""
 
 
-def core_policy() -> V61Policy:
+def core_policy() -> ResourceCreditPolicy:
     """Return a fresh immutable copy of the selected policy."""
 
-    return V61Policy(**asdict(MEMBIND_CORE_POLICY))
+    return ResourceCreditPolicy(**asdict(MEMBIND_CORE_POLICY))
 
 
-def assert_core_policy(policy: V61Policy) -> None:
+def assert_core_policy(policy: ResourceCreditPolicy) -> None:
     """Reject scheduler tuning on the headline Core path."""
 
-    if not isinstance(policy, V61Policy) or policy != MEMBIND_CORE_POLICY:
+    if not isinstance(policy, ResourceCreditPolicy) or policy != MEMBIND_CORE_POLICY:
         raise MemBindCoreConfigurationError(
-            "MemBind-Core policy is frozen at lookahead=2, future_cap=1, "
-            "native_future_quota=0"
+            "MemBind-Core requires frozen MEMBIND_RESOURCE_CREDIT_V1 policy"
         )
 
 
@@ -85,7 +87,11 @@ def core_identity() -> dict[str, Any]:
 
 
 def _annotate(value: Mapping[str, Any]) -> dict[str, Any]:
-    return {**dict(value), "membind_core": core_identity()}
+    return {
+        **dict(value),
+        "method_identity": MEMBIND_CORE_METHOD_IDENTITY,
+        "membind_core": core_identity(),
+    }
 
 
 def build_membind_core_runtime_8b(
@@ -169,7 +175,7 @@ def public_membind_core_environment_8b(
 
 async def run_membind_core_construction_async(
     *,
-    policy: V61Policy,
+    policy: ResourceCreditPolicy,
     execution_strategy: str | None = None,
     method_boundary: str | None = None,
     shared_bounded_label: str | None = None,
@@ -207,6 +213,7 @@ async def run_membind_core_construction_async(
         **kwargs,
     )
     result["method"] = artifact_method
+    result["method_identity"] = MEMBIND_CORE_METHOD_IDENTITY
     result["method_boundary"] = MEMBIND_CORE_BOUNDARY
     result["core_identity"] = core_identity()
     return result

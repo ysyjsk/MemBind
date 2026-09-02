@@ -27,7 +27,7 @@ ROOT = Path(__file__).resolve().parents[2]
 SFWB = ROOT / "saturated_fixed_work_baseline_v1_3"
 EVIDENCE = SFWB / "structured_output_recovery"
 # Formal execution order is fixed by the latest preregistration: Native
-# (serial/stateful) -> Ours (MemBind fixed scheduler) -> Async (relaxed-order
+# (serial/stateful) -> Ours (MemBind resource-credit scheduler) -> Async (relaxed-order
 # ceiling).  This is intentionally *not* cyclic counterbalancing; the user
 # requested one history at a time in this exact order for every replicate.
 ARMS = (
@@ -99,7 +99,7 @@ def build_manifest(
                     "implementation_identity_sha256": _identity_hash(implementation_identity),
                     "implementation_source_bundle_sha256": implementation_identity.get("source_bundle_sha256"),
                     "method_frozen_seal_sha256": method_frozen.get("seal_sha256"),
-                    "method_identity": "V6_FIXED_POLICY",
+                    "method_identity": "MEMBIND_RESOURCE_CREDIT_V1",
                     "evaluator_identity_sha256": implementation_identity.get("evaluator_sha256"),
                     "config_identity_sha256": implementation_identity.get("config_sha256"),
                     "platform_manifest_sha256": "b9ec43b60f91df42ef0002411b298d580e3267159b6fba81f522363a1155905d",

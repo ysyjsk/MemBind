@@ -62,9 +62,8 @@ def validate(root: Path) -> dict[str, Any]:
     if campaign.get("v61_method_boundary") != "MEMBIND_CORE":
         raise RuntimeError("CANARY_V61_BOUNDARY_MISMATCH")
     policy = campaign.get("v6_1_policy") or {}
-    expected_policy = {"lookahead": 2, "future_cap": 1, "native_future_quota": 0}
-    if any(policy.get(k) != v for k, v in expected_policy.items()):
-        raise RuntimeError("CANARY_FIXED_POLICY_MISMATCH")
+    if policy.get("method_identity") != "MEMBIND_RESOURCE_CREDIT_V1":
+        raise RuntimeError("CANARY_RESOURCE_CREDIT_POLICY_MISMATCH")
 
     rows: list[dict[str, Any]] = []
     shared_contract_hashes: dict[str, str] = {}
@@ -146,7 +145,8 @@ def validate(root: Path) -> dict[str, Any]:
         "head_commit": _git_head(),
         "methods": list(METHODS),
         "scope": {"history_indices": [0], "source_limit": 2, "selection_use": "AUDIT_ONLY_NOT_FOR_METHOD_SELECTION"},
-        "fixed_policy": expected_policy,
+        "method_identity": "MEMBIND_RESOURCE_CREDIT_V1",
+        "resource_credit_policy": policy,
         "shared_adapter_identity_sha256": next(iter(shared_contract_hashes.values())),
         "shared_adapter_contract": {
             "backend": "xgrammar",
@@ -179,8 +179,8 @@ def freeze(root: Path) -> dict[str, Any]:
     frozen = {
         "schema_version": "membind.final-method-frozen.v1",
         "status": "FINAL_METHOD_FROZEN",
-        "method_identity": "V6_FIXED_POLICY",
-        "policy": {"lookahead": 2, "future_cap": 1, "native_future_quota": 0},
+        "method_identity": "MEMBIND_RESOURCE_CREDIT_V1",
+        "policy": validation.get("resource_credit_policy", {}),
         "arms": {
             "A": "GRAPHITI_SERIAL_SHARED_BOUNDED_SO",
             "B": "RELAXED_ORDER_SHARED_BOUNDED_SO",
