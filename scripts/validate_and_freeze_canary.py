@@ -25,6 +25,7 @@ METHODS = (
     "MEMBIND_V6_1_SHARED_BOUNDED_SO",
     "RELAXED_ORDER_SHARED_BOUNDED_SO",
 )
+V61_METHOD = "MEMBIND_V6_1_SHARED_BOUNDED_SO"
 
 
 def _json(path: Path) -> dict[str, Any]:
@@ -92,7 +93,10 @@ def validate(root: Path) -> dict[str, Any]:
         if runtime.get("balanced") is not True or any(runtime.get("outstanding", {}).values()): issues.append("resource_balance")
         if inventory.get("submitted_count") != inventory.get("expected_episode_count") or inventory.get("completed_count") != inventory.get("expected_episode_count"): issues.append("work_coverage")
         if inventory.get("transport_failed_attempts", 0) != 0 or inventory.get("transport_retry_attempts", 0) != 0 or inventory.get("transport_true_retry_attempts", 0) != 0: issues.append("transport_failure_or_retry")
-        if method == METHODS[-1]:
+        # Policy identity belongs to the MemBind arm explicitly; do not infer
+        # it from tuple position because formal execution order is
+        # Native -> Ours -> Async and Async is the final element.
+        if method == V61_METHOD:
             identity = seal.get("identity", {})
             if identity.get("policy") != policy: issues.append("policy_identity")
             if inventory.get("expected_transport_attempts_from_provider") != inventory.get("instrumented_transport_attempts"): issues.append("transport_accounting")
