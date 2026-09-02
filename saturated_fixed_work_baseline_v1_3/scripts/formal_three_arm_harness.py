@@ -26,11 +26,18 @@ from typing import Any, Mapping, Sequence
 ROOT = Path(__file__).resolve().parents[2]
 SFWB = ROOT / "saturated_fixed_work_baseline_v1_3"
 EVIDENCE = SFWB / "structured_output_recovery"
+# Formal execution order is fixed by the latest preregistration: Native
+# (serial/stateful) -> Ours (MemBind fixed scheduler) -> Async (relaxed-order
+# ceiling).  This is intentionally *not* cyclic counterbalancing; the user
+# requested one history at a time in this exact order for every replicate.
 ARMS = (
     "GRAPHITI_SERIAL_SHARED_BOUNDED_SO",
-    "RELAXED_ORDER_SHARED_BOUNDED_SO",
     "MEMBIND_V6_1_SHARED_BOUNDED_SO",
+    "RELAXED_ORDER_SHARED_BOUNDED_SO",
 )
+NATIVE_ARM = "GRAPHITI_SERIAL_SHARED_BOUNDED_SO"
+OURS_ARM = "MEMBIND_V6_1_SHARED_BOUNDED_SO"
+ASYNC_ARM = "RELAXED_ORDER_SHARED_BOUNDED_SO"
 
 
 def _canonical(value: Any) -> str:
@@ -72,7 +79,7 @@ def build_manifest(
     cells: list[dict[str, Any]] = []
     for history in range(5):
         for replicate in range(3):
-            order = ARMS[replicate:] + ARMS[:replicate]
+            order = ARMS
             for arm in order:
                 cell_id = f"h{history}-r{replicate}-{arm}"
                 attempt_id = uuid.uuid4().hex[:12]
@@ -112,7 +119,12 @@ def build_manifest(
         "full_qa_cell_count": 45,
         "full_qa_question_count": 2700,
         "arms": list(ARMS),
-        "counterbalance": {"replicate_0": list(ARMS), "replicate_1": list(ARMS[1:] + ARMS[:1]), "replicate_2": list(ARMS[2:] + ARMS[:2])},
+        "counterbalance": {
+            "type": "FIXED_WITHIN_HISTORY",
+            "replicate_0": list(ARMS),
+            "replicate_1": list(ARMS),
+            "replicate_2": list(ARMS),
+        },
         "history_order": list(range(5)),
         "cells": cells,
         "identity": {
@@ -149,8 +161,8 @@ def validate_manifest(manifest: Mapping[str, Any]) -> None:
     for h in range(5):
         for r in range(3):
             rows = [cell for cell in cells if cell["history_index"] == h and cell["replicate_id"] == r]
-            if [cell["arm"] for cell in rows] != list(ARMS[r:] + ARMS[:r]):
-                raise ValueError("manifest counterbalance mismatch")
+            if [cell["arm"] for cell in rows] != list(ARMS):
+                raise ValueError("manifest fixed order mismatch")
 
 
 def _valid_cell(row: Mapping[str, Any]) -> bool:
@@ -168,8 +180,8 @@ def reduce_formal(rows: Sequence[Mapping[str, Any]]) -> dict[str, Any]:
         by_rep: list[dict[str, Any]] = []
         for rep in range(3):
             pair = {r.get("arm"): r for r in hrows if r.get("replicate_id") == rep}
-            a, c = pair[ARMS[0]], pair[ARMS[2]]
-            by_rep.append({"replicate_id": rep, "a_t_build_ns": a.get("t_build_ns"), "c_t_build_ns": c.get("t_build_ns"), "a_vs_c_ratio": (float(a["t_build_ns"]) / float(c["t_build_ns"]) if float(c.get("t_build_ns", 0)) else None)})
+            native, ours = pair[NATIVE_ARM], pair[OURS_ARM]
+            by_rep.append({"replicate_id": rep, "a_t_build_ns": native.get("t_build_ns"), "c_t_build_ns": ours.get("t_build_ns"), "a_vs_c_ratio": (float(native["t_build_ns"]) / float(ours["t_build_ns"]) if float(ours.get("t_build_ns", 0)) else None)})
         ratios = [x["a_vs_c_ratio"] for x in by_rep if isinstance(x["a_vs_c_ratio"], (int, float))]
         effects.append({"history_index": history, "replicate_effects": by_rep, "a_vs_c_geometric_mean": math.exp(sum(math.log(v) for v in ratios) / len(ratios)) if ratios and all(v > 0 for v in ratios) else None})
     vals = [e["a_vs_c_geometric_mean"] for e in effects if isinstance(e["a_vs_c_geometric_mean"], (int, float)) and e["a_vs_c_geometric_mean"] > 0]

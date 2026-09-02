@@ -15,7 +15,7 @@ def main() -> int:
       'primary_performance_estimand':'same-history same-replicate paired A_vs_C T_build ratio; B is relaxed-order ceiling',
       'quality_policy':'PAIRED_QUALITY_DELTA_ONLY; report per-question deltas/disagreement and cluster-aware descriptive uncertainty; no automatic non-inferiority claim',
       'qa_contract':{'questions_per_history':60,'total_rows':2700,'gold_mapping_anomaly':'question 38 retained and disclosed'},
-      'run_order':{'history_atomic':True,'replicate_orders':{'0':['GRAPHITI_SERIAL_SHARED_BOUNDED_SO','RELAXED_ORDER_SHARED_BOUNDED_SO','MEMBIND_V6_1_SHARED_BOUNDED_SO'],'1':['RELAXED_ORDER_SHARED_BOUNDED_SO','MEMBIND_V6_1_SHARED_BOUNDED_SO','GRAPHITI_SERIAL_SHARED_BOUNDED_SO'],'2':['MEMBIND_V6_1_SHARED_BOUNDED_SO','GRAPHITI_SERIAL_SHARED_BOUNDED_SO','RELAXED_ORDER_SHARED_BOUNDED_SO']}},
+      'run_order':{'history_atomic':True,'type':'FIXED_WITHIN_HISTORY','replicate_orders':{'0':['GRAPHITI_SERIAL_SHARED_BOUNDED_SO','MEMBIND_V6_1_SHARED_BOUNDED_SO','RELAXED_ORDER_SHARED_BOUNDED_SO'],'1':['GRAPHITI_SERIAL_SHARED_BOUNDED_SO','MEMBIND_V6_1_SHARED_BOUNDED_SO','RELAXED_ORDER_SHARED_BOUNDED_SO'],'2':['GRAPHITI_SERIAL_SHARED_BOUNDED_SO','MEMBIND_V6_1_SHARED_BOUNDED_SO','RELAXED_ORDER_SHARED_BOUNDED_SO']}},
       'failure_policy':'NO_RESUME_FORMAL_ATTEMPT','selection_policy':'formal data cannot tune fixed method','uncertainty':'five top-level histories are clusters; descriptive cluster-aware uncertainty only',
       'created_at':time.time()
     }

@@ -6,10 +6,12 @@ from __future__ import annotations
 import argparse
 import json
 import os
+import re
 import subprocess
 import sys
 import time
 import uuid
+from urllib.request import urlopen
 from pathlib import Path
 from typing import Any
 
@@ -30,12 +32,123 @@ def _append(path: Path, row: dict[str, Any]) -> None:
         os.fsync(handle.fileno())
 
 
-def _run_process(cmd: list[str], *, env: dict[str, str], log: Path, pidfile: Path) -> int:
+HEARTBEAT_SECONDS = 30.0
+
+
+def _proc_cmdline(pid: int) -> list[str]:
+    """Return argv for *pid*, or [] when it has exited/unreadable."""
+    try:
+        raw = Path(f"/proc/{pid}/cmdline").read_bytes()
+    except (FileNotFoundError, PermissionError, OSError):
+        return []
+    return [item.decode("utf-8", "replace") for item in raw.split(b"\0") if item]
+
+
+def _argv_has_exact_identity(argv: list[str], *, attempt_root: Path, cell: dict[str, Any]) -> bool:
+    """Recognise only this exact construction attempt.
+
+    A PID file can be stale or recycled.  Matching the project runner path,
+    output root, attempt id and namespace prevents accidentally waiting on or
+    launching alongside an unrelated process.
+    """
+    required = {
+        str(RUNNER),
+        "--output-root",
+        str(attempt_root),
+        "--attempt-id",
+        str(cell["attempt_id"]),
+        "--namespace",
+        str(cell["namespace"]),
+    }
+    return bool(argv) and required.issubset(set(argv))
+
+
+def _active_exact_pids(attempt_root: Path, cell: dict[str, Any], pidfile: Path) -> list[int]:
+    """Find active children for one cell, ignoring stale/mismatched PIDs."""
+    candidates: set[int] = set()
+    if pidfile.is_file():
+        try:
+            candidates.add(int(pidfile.read_text(encoding="utf-8").strip()))
+        except (ValueError, OSError):
+            pass
+    # PID reuse is possible, so scan /proc for the exact identity as a second
+    # source of truth instead of trusting the file alone.
+    for entry in Path("/proc").iterdir():
+        if entry.name.isdigit():
+            candidates.add(int(entry.name))
+    return sorted(pid for pid in candidates if pid > 0 and _argv_has_exact_identity(_proc_cmdline(pid), attempt_root=attempt_root, cell=cell))
+
+
+def _provider_metrics() -> dict[str, float | None]:
+    """Best-effort local vLLM metrics; missing metrics are recorded as null."""
+    result: dict[str, float | None] = {
+        "provider_running": None,
+        "provider_waiting": None,
+        "provider_kv_usage": None,
+        "generation_tokens": None,
+    }
+    try:
+        with urlopen("http://127.0.0.1:18200/metrics", timeout=2) as response:
+            payload = response.read().decode("utf-8", "replace")
+    except Exception:
+        return result
+    patterns = {
+        "provider_running": (r"(?:num_requests_running|requests_running)\s+([0-9.eE+-]+)",),
+        "provider_waiting": (r"(?:num_requests_waiting|requests_waiting)\s+([0-9.eE+-]+)",),
+        "provider_kv_usage": (r"(?:gpu_cache_usage_perc|kv_cache_usage_perc|kv_cache_usage)\s+([0-9.eE+-]+)",),
+        "generation_tokens": (r"(?:generation_tokens_total|num_generation_tokens_total)\s+([0-9.eE+-]+)",),
+    }
+    for key, candidates in patterns.items():
+        for pattern in candidates:
+            match = re.search(pattern, payload)
+            if match:
+                try:
+                    result[key] = float(match.group(1))
+                except ValueError:
+                    pass
+                break
+    return result
+
+
+def _event_frontier(log: Path, attempt: Path) -> int:
+    """Return a monotone-ish event frontier from available local artifacts."""
+    for path in (attempt / "campaign_ledger.jsonl", log):
+        if path.is_file():
+            try:
+                return sum(1 for line in path.open(encoding="utf-8", errors="replace") if line.strip())
+            except OSError:
+                continue
+    return 0
+
+
+def _append_heartbeat(path: Path, *, runner_pid: int, child_pid: int | None, cell: dict[str, Any], attempt: Path, log: Path) -> None:
+    metrics = _provider_metrics()
+    row = {
+        "timestamp": time.time(),
+        "runner_pid": runner_pid,
+        "active_child_pid": child_pid,
+        "cell_id": cell.get("cell_id"),
+        "attempt_id": cell.get("attempt_id"),
+        "namespace": cell.get("namespace"),
+        "event_frontier": _event_frontier(log, attempt),
+        **metrics,
+    }
+    _append(path, row)
+
+
+def _run_process(cmd: list[str], *, env: dict[str, str], log: Path, pidfile: Path, heartbeat: Path, cell: dict[str, Any], attempt: Path) -> int:
     log.parent.mkdir(parents=True, exist_ok=True)
     with log.open("a", encoding="utf-8") as output:
         proc = subprocess.Popen(cmd, stdout=output, stderr=subprocess.STDOUT, env=env, cwd=ROOT)
         pidfile.write_text(str(proc.pid) + "\n", encoding="utf-8")
-        return proc.wait()
+        _append_heartbeat(heartbeat, runner_pid=os.getpid(), child_pid=proc.pid, cell=cell, attempt=attempt, log=log)
+        while True:
+            try:
+                returncode = proc.wait(timeout=HEARTBEAT_SECONDS)
+                _append_heartbeat(heartbeat, runner_pid=os.getpid(), child_pid=None, cell=cell, attempt=attempt, log=log)
+                return returncode
+            except subprocess.TimeoutExpired:
+                _append_heartbeat(heartbeat, runner_pid=os.getpid(), child_pid=proc.pid, cell=cell, attempt=attempt, log=log)
 
 
 def _formal_env() -> dict[str, str]:
@@ -82,24 +195,32 @@ def _execute_cell(root: Path, frozen_root: Path, cell: dict[str, Any], *, env: d
     existing_terminal = complete.is_file() or failure.is_file()
     start = {"event": "CELL_CONSTRUCTION_START", **cell, "started_at": time.time(), "existing_attempt": existing_terminal}
     _append(ledger, start)
-    if not existing_terminal and (cell_root / "construction.pid").is_file():
-        try:
-            pid = int((cell_root / "construction.pid").read_text().strip())
-        except ValueError:
-            pid = -1
-        deadline = time.time() + 3600
-        while pid > 0 and time.time() < deadline and Path(f"/proc/{pid}").exists() and not complete.is_file() and not failure.is_file():
-            time.sleep(30)
+    if not existing_terminal:
+        # Wait only for an exact, still-live attempt.  A stale PID file or a
+        # recycled PID with different argv is ignored and cannot suppress a
+        # fresh launch.  There is deliberately no short outer timeout: a
+        # provider request may legally run for up to the configured 3600 s.
+        while not complete.is_file() and not failure.is_file():
+            active = _active_exact_pids(attempt_root, cell, cell_root / "construction.pid")
+            if not active:
+                break
+            _append_heartbeat(root / "heartbeat.jsonl", runner_pid=os.getpid(), child_pid=active[0], cell=cell, attempt=attempt, log=cell_root / "construction.log")
+            time.sleep(HEARTBEAT_SECONDS)
         existing_terminal = complete.is_file() or failure.is_file()
     if existing_terminal:
         rc = 0 if complete.is_file() else 2
     else:
-        rc = _run_process(cmd, env=env, log=cell_root / "construction.log", pidfile=cell_root / "construction.pid")
+        rc = _run_process(cmd, env=env, log=cell_root / "construction.log", pidfile=cell_root / "construction.pid", heartbeat=root / "heartbeat.jsonl", cell=cell, attempt=attempt)
+    if not complete.is_file() and not failure.is_file():
+        # A child can exit without materialising its terminal seal (for
+        # example, SIGTERM from an external supervisor).  Make that outcome
+        # explicit before the replacement policy is considered.
+        _write(failure, {"status": "FAIL", "reason": "runner_exit_without_terminal_artifact", "attempt_id": cell["attempt_id"], "namespace": cell["namespace"], "returncode": rc, "created_at": time.time()})
     construction_status = "PASS" if rc == 0 and complete.is_file() and _json(complete).get("status") == "PASS" else "INVALID"
     row: dict[str, Any] = {**cell, "actual_attempt_id": cell["attempt_id"], "actual_namespace": cell["namespace"], "construction_status": construction_status, "construction_returncode": rc, "construction_root": str(attempt.resolve()), "qa_status": "MISSING", "qa_rows": 0}
     if construction_status == "PASS":
         qa_cmd = [sys.executable, str(QA_RUNNER), "--frozen-root", str(frozen_root), "--block-root", str(attempt / "block"), "--scope", "FULL", "--qa-output-root", str(attempt / "block" / "qa_full")]
-        qa_rc = _run_process(qa_cmd, env=env, log=cell_root / "qa.log", pidfile=cell_root / "qa.pid")
+        qa_rc = _run_process(qa_cmd, env=env, log=cell_root / "qa.log", pidfile=cell_root / "qa.pid", heartbeat=root / "heartbeat.jsonl", cell=cell, attempt=attempt)
         summary_path = attempt / "block" / "qa_full" / "quality_summary.json"
         summary = _json(summary_path) if summary_path.is_file() else {}
         row["qa_status"] = "PASS" if qa_rc == 0 and summary.get("quality_status") == "PASS" and summary.get("expected_count") == 60 and summary.get("completed_count") == 60 and summary.get("invalid_count") == 0 else "INVALID"
@@ -114,13 +235,14 @@ def run(root: Path, frozen_root: Path) -> dict[str, Any]:
     manifest = _json(root / "FORMAL_CAMPAIGN_MANIFEST_SEAL.json")
     validate_manifest(manifest)
     ledger = root / "formal_ledger.jsonl"
+    (root / "formal_runner.pid").write_text(f"{os.getpid()}\n", encoding="utf-8")
     env = _formal_env()
     rows: list[dict[str, Any]] = []
     invalid: list[dict[str, Any]] = []
     # History-atomic order is explicit and independent of filesystem order.
     for history in range(5):
         for replicate in range(3):
-            for arm in ARMS[replicate:] + ARMS[:replicate]:
+            for arm in ARMS:
                 cell = next(c for c in manifest["cells"] if c["history_index"] == history and c["replicate_id"] == replicate and c["arm"] == arm)
                 row = _execute_cell(root, frozen_root, cell, env=env, ledger=ledger)
                 if row["construction_status"] != "PASS" or row["qa_status"] != "PASS":

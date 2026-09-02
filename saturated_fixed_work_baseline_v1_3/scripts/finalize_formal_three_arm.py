@@ -15,9 +15,12 @@ from typing import Any
 
 ARMS = (
     "GRAPHITI_SERIAL_SHARED_BOUNDED_SO",
-    "RELAXED_ORDER_SHARED_BOUNDED_SO",
     "MEMBIND_V6_1_SHARED_BOUNDED_SO",
+    "RELAXED_ORDER_SHARED_BOUNDED_SO",
 )
+NATIVE_ARM = "GRAPHITI_SERIAL_SHARED_BOUNDED_SO"
+OURS_ARM = "MEMBIND_V6_1_SHARED_BOUNDED_SO"
+ASYNC_ARM = "RELAXED_ORDER_SHARED_BOUNDED_SO"
 
 
 def _json(path: Path) -> dict[str, Any]:
@@ -133,9 +136,9 @@ def finalize(root: Path) -> dict[str, Any]:
             pair = {row.get("arm"): row for row in hrows if row.get("replicate_id") == replicate}
             if set(pair) != set(ARMS) or not all(isinstance(pair[a].get("t_build_ns"), (int, float)) for a in ARMS):
                 continue
-            ratio = float(pair[ARMS[0]]["t_build_ns"]) / float(pair[ARMS[2]]["t_build_ns"])
+            ratio = float(pair[NATIVE_ARM]["t_build_ns"]) / float(pair[OURS_ARM]["t_build_ns"])
             ratios.append(ratio)
-            replicate_effects.append({"history_index": history, "replicate_id": replicate, "a_t_build_ns": pair[ARMS[0]]["t_build_ns"], "c_t_build_ns": pair[ARMS[2]]["t_build_ns"], "a_vs_c_ratio": ratio, "b_t_build_ns": pair[ARMS[1]]["t_build_ns"]})
+            replicate_effects.append({"history_index": history, "replicate_id": replicate, "a_t_build_ns": pair[NATIVE_ARM]["t_build_ns"], "c_t_build_ns": pair[OURS_ARM]["t_build_ns"], "a_vs_c_ratio": ratio, "b_t_build_ns": pair[ASYNC_ARM]["t_build_ns"]})
         history_effects.append({"history_index": history, "history_id": (hrows[0].get("history_id") if hrows else None), "replicate_count": len(ratios), "a_vs_c_geometric_mean": _geo(ratios)})
     (root / "PER_REPLICATE_PAIRED_EFFECTS.json").write_text(json.dumps(replicate_effects, ensure_ascii=False, sort_keys=True, indent=2) + "\n", encoding="utf-8")
     (root / "PER_HISTORY_PAIRED_EFFECTS.json").write_text(json.dumps(history_effects, ensure_ascii=False, sort_keys=True, indent=2) + "\n", encoding="utf-8")
