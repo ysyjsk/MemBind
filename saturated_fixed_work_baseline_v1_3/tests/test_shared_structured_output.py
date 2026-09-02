@@ -83,6 +83,28 @@ def test_recovery_identity_uses_explicit_no_additional_edge_discriminator() -> N
     assert "edge" in schema["properties"]
 
 
+def test_recovery_edge_schema_excludes_the_repeated_canonical_tuple() -> None:
+    repeated = canonical_edge_tuple(edge("A", "B", "A knows B"))
+    model = finite_edge_page_model(
+        1,
+        ("A", "B"),
+        name_prefix="Shared",
+        termination_discriminator=True,
+        excluded_edge=repeated,
+    )
+    edge_schema = model.model_json_schema()["$defs"]
+    edge_schema = next(value for value in edge_schema.values() if "not" in value)
+    assert edge_schema["not"]["required"] == [
+        "source_entity_name",
+        "target_entity_name",
+        "relation_type",
+        "fact",
+        "valid_at",
+        "invalid_at",
+    ]
+    assert edge_schema["not"]["properties"]["fact"]["const"] == "A knows B"
+
+
 def test_shared_finite_model_supports_grounded_endpoints() -> None:
     model = finite_edge_page_model(1, ("A", "B"), name_prefix="Shared")
     schema = model.model_json_schema()

@@ -1538,6 +1538,7 @@ def _endpoint_grounded_edge_page_model(
     endpoint_names: tuple[str, ...],
     fact_max_length: int = LOCAL_EDGE_FACT_MAX_CHARS,
     termination_discriminator: bool = False,
+    excluded_edge: tuple[Any, ...] = (),
 ) -> Any:
     """Constrain edge endpoints to the entities in the current evidence block.
 
@@ -1562,6 +1563,7 @@ def _endpoint_grounded_edge_page_model(
             else f"MemBindEndpointGroundedEdgePage{page_capacity}_{len(names)}"
         ),
         termination_discriminator=termination_discriminator,
+        excluded_edge=excluded_edge,
     )
 
 
@@ -2179,6 +2181,7 @@ def install_local_extraction_chunking_policy(
             queue_wait_ns: int | None = None,
             physical_active_at_start: int | None = None,
             duplicate_recovery_request: bool = False,
+            excluded_recovery_edge: tuple[Any, ...] = (),
         ) -> Any:
             if (
                 shared_bounded_structured_output
@@ -2307,6 +2310,7 @@ def install_local_extraction_chunking_policy(
                                 duplicate_recovery_request
                                 and shared_bounded_structured_output
                             ),
+                            excluded_edge=excluded_recovery_edge,
                         )
                         if edge_endpoint_schema_grounding and endpoint_names
                         else finite_edge_page_model(
@@ -2318,6 +2322,7 @@ def install_local_extraction_chunking_policy(
                                 duplicate_recovery_request
                                 and shared_bounded_structured_output
                             ),
+                            excluded_edge=excluded_recovery_edge,
                         )
                     ).model_json_schema()
                     for capacity in range(requested_capacity, 0, -1)
@@ -2359,6 +2364,7 @@ def install_local_extraction_chunking_policy(
                             duplicate_recovery_request
                             and shared_bounded_structured_output
                         ),
+                        excluded_edge=excluded_recovery_edge,
                     )
                     if edge_endpoint_schema_grounding and endpoint_names
                     else finite_edge_page_model(
@@ -2370,6 +2376,7 @@ def install_local_extraction_chunking_policy(
                                 duplicate_recovery_request
                                 and shared_bounded_structured_output
                             ),
+                            excluded_edge=excluded_recovery_edge,
                     )
                 )
             shared_request_identity = None
@@ -2382,6 +2389,7 @@ def install_local_extraction_chunking_policy(
                         duplicate_recovery_request
                         and shared_bounded_structured_output
                     ),
+                    excluded_edge=excluded_recovery_edge,
                 )
             structured_certificate = None
             if node_schema_selection is not None:
@@ -2738,6 +2746,7 @@ def install_local_extraction_chunking_policy(
                     page_index: int,
                     response_model: Any,
                     duplicate_recovery_request: bool = False,
+                    excluded_recovery_edge: tuple[Any, ...] = (),
                 ) -> tuple[Any, int, int, int | None, dict[str, Any] | None]:
                     nonlocal edge_active_page_requests
                     nonlocal edge_shared_max_active_page_requests
@@ -2784,6 +2793,7 @@ def install_local_extraction_chunking_policy(
                                 duplicate_recovery_request
                                 and shared_bounded_structured_output
                             ),
+                            excluded_recovery_edge=excluded_recovery_edge,
                         )
                         observed_service_ns = time.monotonic_ns() - service_start_ns
                         return (
@@ -2879,6 +2889,22 @@ def install_local_extraction_chunking_policy(
                             duplicate_recovery_request=(
                                 is_duplicate_recovery
                                 and shared_bounded_structured_output
+                            ),
+                            excluded_recovery_edge=(
+                                tuple(
+                                    duplicate_recovery_edge.get(field)
+                                    for field in (
+                                        "source_entity_name",
+                                        "target_entity_name",
+                                        "relation_type",
+                                        "fact",
+                                        "valid_at",
+                                        "invalid_at",
+                                    )
+                                )
+                                if is_duplicate_recovery
+                                and duplicate_recovery_edge is not None
+                                else ()
                             ),
                         )
                         if not isinstance(page, Mapping):

@@ -63,6 +63,7 @@ def _finite_schema(
     fact_max_length: int = SHARED_FACT_MAX_LENGTH,
     *,
     termination_discriminator: bool = False,
+    excluded_edge: tuple[Any, ...] = (),
 ) -> dict[str, Any]:
     if page_capacity < 1:
         raise ValueError("page capacity must be positive")
@@ -87,6 +88,22 @@ def _finite_schema(
         },
         "required": ["source_entity_name", "target_entity_name", "relation_type", "fact"],
     }
+    if excluded_edge:
+        fields = (
+            "source_entity_name",
+            "target_entity_name",
+            "relation_type",
+            "fact",
+            "valid_at",
+            "invalid_at",
+        )
+        edge["not"] = {
+            "properties": {
+                name: {"const": value}
+                for name, value in zip(fields, excluded_edge, strict=True)
+            },
+            "required": list(fields),
+        }
     if termination_discriminator:
         properties: dict[str, Any] = {
             "status": {"type": "string", "enum": ["new_edge", "no_additional_edge"]},
@@ -142,6 +159,7 @@ def finite_edge_page_model(
     edge_name: str | None = None,
     page_name: str | None = None,
     termination_discriminator: bool = False,
+    excluded_edge: tuple[Any, ...] = (),
 ) -> Any:
     """Build the finite Pydantic wire model used by every formal arm."""
 
@@ -155,16 +173,38 @@ def finite_edge_page_model(
         if page_capacity == 1
         else f"{name_prefix}BoundedEdge{page_capacity}"
     )
+    edge_config = ConfigDict(extra="forbid")
+    if excluded_edge:
+        fields = (
+            "source_entity_name",
+            "target_entity_name",
+            "relation_type",
+            "fact",
+            "valid_at",
+            "invalid_at",
+        )
+        edge_config = ConfigDict(
+            extra="forbid",
+            json_schema_extra={
+                "not": {
+                    "properties": {
+                        name: {"const": value}
+                        for name, value in zip(fields, excluded_edge, strict=True)
+                    },
+                    "required": list(fields),
+                }
+            },
+        )
     edge_model = create_model(
         edge_name,
         source_entity_name=(endpoint_type, Field(..., max_length=256)),
         target_entity_name=(endpoint_type, Field(..., max_length=256)),
         relation_type=(str, Field(..., min_length=1, max_length=128)),
         fact=(str, Field(..., min_length=1, max_length=fact_max_length)),
-        valid_at=(str | None, Field(default=None, max_length=40)),
-        invalid_at=(str | None, Field(default=None, max_length=40)),
-        episode_indices=(list[Literal[0]], Field(default_factory=lambda: [0], min_length=1, max_length=1)),
-        __config__=ConfigDict(extra="forbid"),
+        valid_at=(str | None, Field(... if excluded_edge else None, max_length=40)),
+        invalid_at=(str | None, Field(... if excluded_edge else None, max_length=40)),
+        episode_indices=(list[Literal[0]], Field(... if excluded_edge else [0], min_length=1, max_length=1)),
+        __config__=edge_config,
     )
     if termination_discriminator:
         fields: dict[str, Any] = {
@@ -197,6 +237,7 @@ def adapter_identity(
     page_capacity: int = SHARED_PAGE_CAPACITY,
     fact_max_length: int = SHARED_FACT_MAX_LENGTH,
     recovery: bool = False,
+    excluded_edge: tuple[Any, ...] = (),
 ) -> dict[str, Any]:
     """Return source, schema, prompt, and policy identity for the substrate.
 
@@ -218,6 +259,7 @@ def adapter_identity(
         (),
         contract.fact_max_length,
         termination_discriminator=bool(recovery),
+        excluded_edge=excluded_edge,
     )
     schema_template_hash = hashlib.sha256(
         json.dumps(schema_template, sort_keys=True, separators=(",", ":")).encode()
@@ -227,6 +269,7 @@ def adapter_identity(
         normalized_endpoints,
         contract.fact_max_length,
         termination_discriminator=bool(recovery),
+        excluded_edge=excluded_edge,
     )
     schema_hash = hashlib.sha256(
         json.dumps(concrete_schema, sort_keys=True, separators=(",", ":")).encode()
