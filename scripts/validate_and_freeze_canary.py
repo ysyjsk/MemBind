@@ -22,8 +22,8 @@ ROOT = Path(__file__).resolve().parents[1]
 EVIDENCE = ROOT / "saturated_fixed_work_baseline_v1_3/structured_output_recovery"
 METHODS = (
     "GRAPHITI_SERIAL_SHARED_BOUNDED_SO",
-    "RELAXED_ORDER_SHARED_BOUNDED_SO",
     "MEMBIND_V6_1_SHARED_BOUNDED_SO",
+    "RELAXED_ORDER_SHARED_BOUNDED_SO",
 )
 
 
