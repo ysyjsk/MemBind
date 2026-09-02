@@ -187,7 +187,7 @@ def test_8b_shared_manifest_exposes_one_adapter_identity_for_all_arms(
     assert identity["arm_identity"] is None
     assert identity["page_capacity"] == 1
     assert identity["max_pages"] == 64
-    assert identity["retry_policy"] == "single_attempt_no_retry_until_lucky_v1"
+    assert identity["retry_policy"] == "single_duplicate_recovery_confirmation_abstention_v1"
     assert manifest["construction"]["edge_endpoint_schema_policy"] == (
         "entity_block_literal_endpoint_grounding_v1"
     )

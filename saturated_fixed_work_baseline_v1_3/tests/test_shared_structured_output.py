@@ -49,7 +49,7 @@ def test_shared_adapter_identity_is_frozen_and_arm_agnostic() -> None:
     assert identity["schema_scope"] == "template"
     assert identity["schema_template_sha256"] == identity["schema_sha256"]
     assert len(identity["prompt_template_sha256"]) == 64
-    assert identity["retry_policy"] == "single_attempt_no_retry_until_lucky_v1"
+    assert identity["retry_policy"] == "single_duplicate_recovery_confirmation_abstention_v1"
 
 
 def test_endpoint_grounded_identity_separates_template_and_concrete_schema() -> None:
@@ -83,6 +83,25 @@ def test_recovery_identity_uses_explicit_no_additional_edge_discriminator() -> N
         "new_edge",
         "no_additional_edge",
     ]
+
+
+def test_final_abstention_identity_allows_only_no_additional_edge() -> None:
+    identity = adapter_identity(
+        ("A", "B"), recovery=True, no_additional_only=True
+    )
+    assert identity["response_variant"] == "duplicate_recovery_final_abstention"
+    model = finite_edge_page_model(
+        1,
+        ("A", "B"),
+        name_prefix="MemBindEndpointGrounded",
+        edge_name="MemBindEndpointGroundedEdge1_2",
+        page_name="MemBindEndpointGroundedRecoveryEdgePage1_2",
+        termination_discriminator=True,
+        no_additional_only=True,
+    )
+    schema = model.model_json_schema()
+    assert schema["properties"]["status"]["const"] == "no_additional_edge"
+    assert schema["properties"]["edge"]["type"] == "null"
     assert set(schema["required"]) == {"status", "edge"}
     assert "edge" in schema["properties"]
     assert identity["schema_sha256"] == hashlib.sha256(

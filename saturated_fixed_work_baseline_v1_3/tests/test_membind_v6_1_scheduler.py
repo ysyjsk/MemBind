@@ -3278,6 +3278,107 @@ def test_duplicate_recovery_budget_resets_after_accepted_progress(monkeypatch) -
     assert [row["confirmation"] for row in scheduled] == [False, False]
 
 
+def test_duplicate_recovery_final_abstention_is_fail_closed(monkeypatch) -> None:
+    prompts: list[str] = []
+    schemas: list[dict[str, object]] = []
+
+    def edge() -> dict[str, object]:
+        return {
+            "source_entity_name": "A",
+            "target_entity_name": "B",
+            "relation_type": "KNOWS",
+            "fact": "A knows B",
+            "valid_at": None,
+            "invalid_at": None,
+            "episode_indices": [0],
+        }
+
+    class Client:
+        max_tokens = 32_768
+        call_events: list[dict[str, object]] = []
+
+        async def generate_response(self, messages, response_model=None, **_kwargs):
+            content = messages[0]["content"]
+            prompts.append(content)
+            schemas.append(response_model.model_json_schema()["properties"])
+            self.call_events.append(
+                {
+                    "finish_reason": "stop",
+                    "token_usage": {"prompt_tokens": 100, "completion_tokens": 20},
+                }
+            )
+            if (
+                "<DUPLICATE_RECOVERY>" not in content
+                and "<DUPLICATE_RECOVERY_CONFIRMATION>" not in content
+                and "<DUPLICATE_RECOVERY_FINAL_ABSTENTION>" not in content
+            ):
+                return {"edges": [edge()]}
+            if "<DUPLICATE_RECOVERY_FINAL_ABSTENTION>" in content:
+                assert "final fail-closed abstention" in content
+                assert schemas[-1]["status"]["const"] == "no_additional_edge"
+                return {"status": "no_additional_edge", "edge": None}
+            if "<DUPLICATE_RECOVERY_CONFIRMATION>" in content:
+                return {"status": "new_edge", "edge": edge()}
+            return {"status": "new_edge", "edge": edge()}
+
+    monkeypatch.setenv("CONSTRUCTION_CONTEXT_SAFETY_TOKENS", "32")
+    client = Client()
+    install_local_extraction_chunking_policy(
+        client,
+        token_counter=lambda _messages: 100,
+        partition_extraction_by_turns=True,
+        partition_edge_candidates=True,
+        edge_duplicate_recovery=True,
+        edge_page_capacity=2,
+        shared_bounded_structured_output=True,
+    )
+    client._membind_entity_partition_hints.update({"a": [0], "b": [0], "c": [0]})
+    result = asyncio.run(
+        client.generate_response(
+            [
+                {
+                    "role": "user",
+                    "content": (
+                        "<CURRENT MESSAGE>\n[USER]\nA knows B\n</CURRENT MESSAGE>\n"
+                        '<ENTITIES>[{"name":"A"},{"name":"B"},{"name":"C"}]</ENTITIES>\n# TASK'
+                    ),
+                }
+            ],
+            max_tokens=32_768,
+            prompt_name="extract_edges.edge",
+        )
+    )
+    assert [row["fact"] for row in result["edges"]] == ["A knows B"]
+    assert len(prompts) == 5
+    pages = [
+        row
+        for row in client._membind_extraction_diagnostics
+        if row.get("event") == "EDGE_PAGINATION_PAGE"
+    ]
+    recovery_pages = [row for row in pages if row["duplicate_recovery_request"]]
+    assert [row["duplicate_recovery_confirmation"] for row in recovery_pages] == [
+        False,
+        True,
+        False,
+    ]
+    assert [row["duplicate_recovery_final_abstention"] for row in recovery_pages] == [
+        False,
+        False,
+        True,
+    ]
+    assert recovery_pages[-1]["recovery_status"] == "no_additional_edge"
+    scheduled = [
+        row
+        for row in client._membind_extraction_diagnostics
+        if row.get("event") == "EDGE_PAGINATION_DUPLICATE_RECOVERY"
+    ]
+    assert [row["status"] for row in scheduled] == [
+        "scheduled",
+        "confirmation_scheduled",
+        "final_abstention_scheduled",
+    ]
+
+
 def test_edge_pagination_duplicate_page_is_audited_zero_delta_fixed_point(monkeypatch) -> None:
     calls = 0
 

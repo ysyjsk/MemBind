@@ -27,7 +27,7 @@ SHARED_CONSTRUCTION_MAX_TOKENS = 32_768
 SHARED_PAGE_CAPACITY = 1
 SHARED_MAX_PAGES = 64
 SHARED_FACT_MAX_LENGTH = 1_900
-SHARED_RETRY_POLICY = "single_attempt_no_retry_until_lucky_v1"
+SHARED_RETRY_POLICY = "single_duplicate_recovery_confirmation_abstention_v1"
 SHARED_PROMPT_TEMPLATE = (
     "graphiti.extract_edges.edge|bounded-json-edge-page-v1|"
     "ALREADY_RETURNED_EDGES|empty-page-only"
@@ -64,6 +64,7 @@ def _finite_schema(
     *,
     termination_discriminator: bool = False,
     excluded_edge: tuple[Any, ...] = (),
+    no_additional_only: bool = False,
 ) -> dict[str, Any]:
     if page_capacity < 1:
         raise ValueError("page capacity must be positive")
@@ -106,8 +107,12 @@ def _finite_schema(
         }
     if termination_discriminator:
         properties: dict[str, Any] = {
-            "status": {"type": "string", "enum": ["new_edge", "no_additional_edge"]},
-            "edge": edge,
+            "status": {"type": "string", "enum": (
+                ["no_additional_edge"]
+                if no_additional_only
+                else ["new_edge", "no_additional_edge"]
+            )},
+            "edge": {"type": "null"} if no_additional_only else edge,
         }
         required = ["status", "edge"]
     else:
@@ -160,6 +165,7 @@ def finite_edge_page_model(
     page_name: str | None = None,
     termination_discriminator: bool = False,
     excluded_edge: tuple[Any, ...] = (),
+    no_additional_only: bool = False,
 ) -> Any:
     """Build the finite Pydantic wire model used by every formal arm."""
 
@@ -208,8 +214,13 @@ def finite_edge_page_model(
     )
     if termination_discriminator:
         fields: dict[str, Any] = {
-            "status": (Literal["new_edge", "no_additional_edge"], ...),
-            "edge": (edge_model | None, ...),
+            "status": (
+                Literal["no_additional_edge"]
+                if no_additional_only
+                else Literal["new_edge", "no_additional_edge"],
+                ...,
+            ),
+            "edge": ((type(None) if no_additional_only else edge_model | None), ...),
         }
     else:
         fields = {
@@ -238,6 +249,7 @@ def adapter_identity(
     fact_max_length: int = SHARED_FACT_MAX_LENGTH,
     recovery: bool = False,
     excluded_edge: tuple[Any, ...] = (),
+    no_additional_only: bool = False,
 ) -> dict[str, Any]:
     """Return source, schema, prompt, and policy identity for the substrate.
 
@@ -271,6 +283,7 @@ def adapter_identity(
                 ),
                 termination_discriminator=bool(recovery),
                 excluded_edge=excluded_edge,
+                no_additional_only=bool(no_additional_only),
             ).model_json_schema()
         return finite_edge_page_model(
             contract.page_capacity,
@@ -279,6 +292,7 @@ def adapter_identity(
             name_prefix="MemBind",
             termination_discriminator=bool(recovery),
             excluded_edge=excluded_edge,
+            no_additional_only=bool(no_additional_only),
         ).model_json_schema()
 
     schema_template = _identity_schema(())
@@ -309,7 +323,13 @@ def adapter_identity(
         "retry_policy": SHARED_RETRY_POLICY,
         "termination_policy": contract.termination,
         "endpoint_names": list(normalized_endpoints) if normalized_endpoints else None,
-        "response_variant": "duplicate_recovery" if recovery else "page",
+        "response_variant": (
+            "duplicate_recovery_final_abstention"
+            if recovery and no_additional_only
+            else "duplicate_recovery"
+            if recovery
+            else "page"
+        ),
         "arm_identity": None,
     }
 

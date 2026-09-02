@@ -1539,6 +1539,7 @@ def _endpoint_grounded_edge_page_model(
     fact_max_length: int = LOCAL_EDGE_FACT_MAX_CHARS,
     termination_discriminator: bool = False,
     excluded_edge: tuple[Any, ...] = (),
+    no_additional_only: bool = False,
 ) -> Any:
     """Constrain edge endpoints to the entities in the current evidence block.
 
@@ -1564,6 +1565,7 @@ def _endpoint_grounded_edge_page_model(
         ),
         termination_discriminator=termination_discriminator,
         excluded_edge=excluded_edge,
+        no_additional_only=no_additional_only,
     )
 
 
@@ -1574,6 +1576,7 @@ def _edge_page_messages(
     page_capacity: int = LOCAL_EDGE_PAGE_CAPACITY,
     duplicate_recovery_edge: Mapping[str, Any] | None = None,
     duplicate_recovery_confirmation: bool = False,
+    duplicate_recovery_final_abstention: bool = False,
     memory_utility_order: bool = False,
 ) -> list[Any]:
     """Add continuation state to one edge request without artifact leakage."""
@@ -1628,13 +1631,36 @@ def _edge_page_messages(
                 "This is the one and only confirmation attempt; correct the response now.\n",
                 1,
             ).replace("</DUPLICATE_RECOVERY>\n", "</DUPLICATE_RECOVERY_CONFIRMATION>\n", 1)
+        if duplicate_recovery_final_abstention:
+            recovery_instruction = re.sub(
+                r"<DUPLICATE_RECOVERY(?:_CONFIRMATION)?>\n",
+                "<DUPLICATE_RECOVERY_FINAL_ABSTENTION>\n"
+                "The previous recovery and confirmation responses both repeated the rejected tuple. "
+                "This is the final fail-closed abstention; return no additional edge now.\n",
+                recovery_instruction,
+                count=1,
+            )
+            recovery_instruction = recovery_instruction.replace(
+                "</DUPLICATE_RECOVERY_CONFIRMATION>\n",
+                "</DUPLICATE_RECOVERY_FINAL_ABSTENTION>\n",
+                1,
+            ).replace(
+                "</DUPLICATE_RECOVERY>\n",
+                "</DUPLICATE_RECOVERY_FINAL_ABSTENTION>\n",
+                1,
+            )
     if duplicate_recovery_edge is not None:
         page_instruction = (
+            "This is a final fail-closed abstention. Return exactly "
+            "{\"status\":\"no_additional_edge\",\"edge\":null}; do not return an edge. "
+            if duplicate_recovery_final_abstention
+            else (
             "Return exactly one JSON object using the explicit recovery discriminator. "
             "For a different not-yet-returned factual edge supported by CURRENT_MESSAGE, "
             "return {\"status\":\"new_edge\",\"edge\":{...}}. If no additional "
             "supported edge remains, return {\"status\":\"no_additional_edge\"," 
             "\"edge\":null}. Do not return an edges array. "
+            )
         )
     else:
         page_instruction = (
@@ -1699,9 +1725,14 @@ def _edge_page_messages(
             updated += (
                 "\n\n<FINAL_DUPLICATE_RECOVERY_DIRECTIVE>\n"
                 + (
-                    "This is the one and only duplicate-recovery confirmation attempt. "
-                    if duplicate_recovery_confirmation
-                    else "This is a duplicate-recovery request. "
+                    "This is the final fail-closed abstention. Return exactly "
+                    "{\"status\":\"no_additional_edge\",\"edge\":null}; do not return an edge. "
+                    if duplicate_recovery_final_abstention
+                    else (
+                        "This is the one and only duplicate-recovery confirmation attempt. "
+                        if duplicate_recovery_confirmation
+                        else "This is a duplicate-recovery request. "
+                    )
                 )
                 + "Do not return the repeated tuple "
                 "again. The rejected tuple is "
@@ -2220,6 +2251,7 @@ def install_local_extraction_chunking_policy(
             physical_active_at_start: int | None = None,
             duplicate_recovery_request: bool = False,
             duplicate_recovery_confirmation: bool = False,
+            duplicate_recovery_final_abstention: bool = False,
             excluded_recovery_edge: tuple[Any, ...] = (),
         ) -> Any:
             if (
@@ -2350,6 +2382,7 @@ def install_local_extraction_chunking_policy(
                                 and shared_bounded_structured_output
                             ),
                             excluded_edge=excluded_recovery_edge,
+                            no_additional_only=duplicate_recovery_final_abstention,
                         )
                         if edge_endpoint_schema_grounding and endpoint_names
                         else finite_edge_page_model(
@@ -2404,6 +2437,7 @@ def install_local_extraction_chunking_policy(
                             and shared_bounded_structured_output
                         ),
                         excluded_edge=excluded_recovery_edge,
+                        no_additional_only=duplicate_recovery_final_abstention,
                     )
                     if edge_endpoint_schema_grounding and endpoint_names
                     else finite_edge_page_model(
@@ -2416,6 +2450,7 @@ def install_local_extraction_chunking_policy(
                                 and shared_bounded_structured_output
                             ),
                             excluded_edge=excluded_recovery_edge,
+                            no_additional_only=duplicate_recovery_final_abstention,
                     )
                 )
             shared_request_identity = None
@@ -2429,6 +2464,7 @@ def install_local_extraction_chunking_policy(
                         and shared_bounded_structured_output
                     ),
                     excluded_edge=excluded_recovery_edge,
+                    no_additional_only=duplicate_recovery_final_abstention,
                 )
             structured_certificate = None
             if node_schema_selection is not None:
@@ -2794,6 +2830,7 @@ def install_local_extraction_chunking_policy(
                     response_model: Any,
                     duplicate_recovery_request: bool = False,
                     duplicate_recovery_confirmation: bool = False,
+                    duplicate_recovery_final_abstention: bool = False,
                     excluded_recovery_edge: tuple[Any, ...] = (),
                 ) -> tuple[Any, int, int, int | None, dict[str, Any] | None]:
                     nonlocal edge_active_page_requests
@@ -2845,6 +2882,10 @@ def install_local_extraction_chunking_policy(
                                 duplicate_recovery_confirmation
                                 and shared_bounded_structured_output
                             ),
+                            duplicate_recovery_final_abstention=(
+                                duplicate_recovery_final_abstention
+                                and shared_bounded_structured_output
+                            ),
                             excluded_recovery_edge=excluded_recovery_edge,
                         )
                         observed_service_ns = time.monotonic_ns() - service_start_ns
@@ -2884,6 +2925,8 @@ def install_local_extraction_chunking_policy(
                     duplicate_recovery_used = False
                     duplicate_recovery_confirmation = False
                     duplicate_recovery_confirmation_used = False
+                    duplicate_recovery_final_abstention = False
+                    duplicate_recovery_final_abstention_used = False
                     partition_entity_block = _entity_block(partition)
                     if partition_entity_block is None:
                         raise LocalRuntimeConfigurationError(
@@ -2923,7 +2966,9 @@ def install_local_extraction_chunking_policy(
                     for page_index in range(LOCAL_EDGE_MAX_PAGES):
                         is_duplicate_recovery = duplicate_recovery_edge is not None
                         is_duplicate_recovery_confirmation = (
-                            is_duplicate_recovery and duplicate_recovery_confirmation
+                            is_duplicate_recovery
+                            and duplicate_recovery_confirmation
+                            and not duplicate_recovery_final_abstention
                         )
                         page_messages = _edge_page_messages(
                             partition,
@@ -2931,6 +2976,7 @@ def install_local_extraction_chunking_policy(
                             page_capacity=edge_page_capacity,
                             duplicate_recovery_edge=duplicate_recovery_edge,
                             duplicate_recovery_confirmation=duplicate_recovery_confirmation,
+                            duplicate_recovery_final_abstention=duplicate_recovery_final_abstention,
                             memory_utility_order=memory_utility_order,
                         )
                         (
@@ -2950,6 +2996,10 @@ def install_local_extraction_chunking_policy(
                             ),
                             duplicate_recovery_confirmation=(
                                 is_duplicate_recovery_confirmation
+                                and shared_bounded_structured_output
+                            ),
+                            duplicate_recovery_final_abstention=(
+                                duplicate_recovery_final_abstention
                                 and shared_bounded_structured_output
                             ),
                             excluded_recovery_edge=(
@@ -2978,6 +3028,10 @@ def install_local_extraction_chunking_policy(
                             if status not in {"new_edge", "no_additional_edge"}:
                                 raise LocalRuntimeConfigurationError(
                                     "duplicate recovery response is missing a valid status discriminator"
+                                )
+                            if duplicate_recovery_final_abstention and status != "no_additional_edge":
+                                raise LocalRuntimeConfigurationError(
+                                    "final duplicate recovery abstention must return no_additional_edge"
                                 )
                             if status == "no_additional_edge" and (
                                 "edge" not in page or page.get("edge") is not None
@@ -3063,6 +3117,7 @@ def install_local_extraction_chunking_policy(
                                 "duplicate_edge_count": duplicate_count,
                                 "duplicate_recovery_request": is_duplicate_recovery,
                                 "duplicate_recovery_confirmation": is_duplicate_recovery_confirmation,
+                                "duplicate_recovery_final_abstention": duplicate_recovery_final_abstention,
                                 "duplicate_recovery_succeeded": (
                                     is_duplicate_recovery and bool(raw_unique_progress)
                                 ),
@@ -3173,6 +3228,28 @@ def install_local_extraction_chunking_policy(
                                     }
                                 )
                                 continue
+                            if (
+                                is_duplicate_recovery
+                                and is_duplicate_recovery_confirmation
+                                and not duplicate_recovery_final_abstention
+                                and not duplicate_recovery_final_abstention_used
+                            ):
+                                duplicate_recovery_final_abstention_used = True
+                                duplicate_recovery_final_abstention = True
+                                diagnostics.append(
+                                    {
+                                        "schema_version": "membind.v6.1.edge-duplicate-recovery.v1",
+                                        "prompt_name": prompt_name,
+                                        "partition_id": partition_id,
+                                        "partition_count": partition_count,
+                                        "page_index": page_index,
+                                        "event": "EDGE_PAGINATION_DUPLICATE_RECOVERY",
+                                        "status": "final_abstention_scheduled",
+                                        "confirmation": False,
+                                        "final_abstention": True,
+                                    }
+                                )
+                                continue
                             if not shared_bounded_structured_output:
                                 diagnostics.append(
                                     {
@@ -3214,6 +3291,8 @@ def install_local_extraction_chunking_policy(
                             duplicate_recovery_used = False
                         duplicate_recovery_confirmation = False
                         duplicate_recovery_confirmation_used = False
+                        duplicate_recovery_final_abstention = False
+                        duplicate_recovery_final_abstention_used = False
                         pagination_history.extend(raw_unique_progress)
                         seen_raw_identities.update(page_identities)
                         if delta:
