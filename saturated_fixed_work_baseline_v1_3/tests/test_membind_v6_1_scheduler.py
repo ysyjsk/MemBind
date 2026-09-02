@@ -3369,6 +3369,8 @@ def test_edge_pagination_recovers_once_from_a_duplicate_before_converging(
     assert '"status":"new_edge"' in recovery_content
     assert '"status":"no_additional_edge"' in recovery_content
     assert '"edge":null' in recovery_content
+    assert "never copy the rejected tuple into a new_edge payload" in recovery_content
+    assert 'return exactly {"status":"no_additional_edge","edge":null}' in recovery_content
     rejected_block = recovery_content.split("The previous response repeated this already-returned edge:\n", 1)[1].split(
         "\nThat repeat is not evidence", 1
     )[0]

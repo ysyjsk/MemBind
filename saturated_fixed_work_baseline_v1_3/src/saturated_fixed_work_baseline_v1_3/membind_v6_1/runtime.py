@@ -1614,7 +1614,9 @@ def _edge_page_messages(
             "full tuple is absent from ALREADY_RETURNED_EDGES. For a different edge, "
             "return {\"status\":\"new_edge\",\"edge\":{...}}. Return "
             "{\"status\":\"no_additional_edge\",\"edge\":null} only if no such "
-            "edge exists.\n"
+            "edge exists. IMPORTANT: never copy the rejected tuple into a new_edge "
+            "payload; if it is the only supported candidate, return exactly "
+            "{\"status\":\"no_additional_edge\",\"edge\":null}.\n"
             "</DUPLICATE_RECOVERY>\n"
         )
     if duplicate_recovery_edge is not None:
@@ -1622,7 +1624,7 @@ def _edge_page_messages(
             "Return exactly one JSON object using the explicit recovery discriminator. "
             "For a different not-yet-returned factual edge supported by CURRENT_MESSAGE, "
             "return {\"status\":\"new_edge\",\"edge\":{...}}. If no additional "
-            "supported edge remains, return {\"status\":\"no_additional_edge\","
+            "supported edge remains, return {\"status\":\"no_additional_edge\"," 
             "\"edge\":null}. Do not return an edges array. "
         )
     else:
