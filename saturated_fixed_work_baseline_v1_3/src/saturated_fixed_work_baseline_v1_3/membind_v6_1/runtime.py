@@ -3207,6 +3207,11 @@ def install_local_extraction_chunking_policy(
                                 "edge pagination made no accepted progress after deterministic recovery"
                             )
                         duplicate_recovery_edge = None
+                        if delta and shared_bounded_structured_output:
+                            # A new canonical edge closes this duplicate episode.
+                            # The next independent duplicate may receive its own
+                            # bounded recovery+confirmation pair.
+                            duplicate_recovery_used = False
                         duplicate_recovery_confirmation = False
                         duplicate_recovery_confirmation_used = False
                         pagination_history.extend(raw_unique_progress)
