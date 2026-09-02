@@ -72,12 +72,29 @@ def _execute_cell(root: Path, frozen_root: Path, cell: dict[str, Any], *, env: d
     attempt_root.mkdir(parents=True, exist_ok=True)
     run_id = f"{cell['campaign_id']}-{cell['cell_id']}-{cell['attempt_id']}"
     cmd = [sys.executable, str(RUNNER), "--output-root", str(attempt_root), "--run-id", run_id, "--contexts", str(cell["history_index"]), "--methods", cell["arm"], "--v61-boundary", "MEMBIND_CORE", "--continue-on-error", "--force-reference-rerun", "--attempt-id", cell["attempt_id"], "--namespace", cell["namespace"]]
-    start = {"event": "CELL_CONSTRUCTION_START", **cell, "started_at": time.time()}
-    _append(ledger, start)
-    rc = _run_process(cmd, env=env, log=cell_root / "construction.log", pidfile=cell_root / "construction.pid")
     attempt = attempt_root / f"context-{cell['history_index']}" / cell["arm"] / cell["attempt_id"]
     complete = attempt / "complete.json"
     failure = attempt / "failure.json"
+    # If a persistent client was interrupted after dispatch, wait for that
+    # exact PID instead of issuing a second request.  A terminal artifact is
+    # consumed as-is; failed attempts are handled by the caller's replacement
+    # policy and are never resumed.
+    existing_terminal = complete.is_file() or failure.is_file()
+    start = {"event": "CELL_CONSTRUCTION_START", **cell, "started_at": time.time(), "existing_attempt": existing_terminal}
+    _append(ledger, start)
+    if not existing_terminal and (cell_root / "construction.pid").is_file():
+        try:
+            pid = int((cell_root / "construction.pid").read_text().strip())
+        except ValueError:
+            pid = -1
+        deadline = time.time() + 3600
+        while pid > 0 and time.time() < deadline and Path(f"/proc/{pid}").exists() and not complete.is_file() and not failure.is_file():
+            time.sleep(30)
+        existing_terminal = complete.is_file() or failure.is_file()
+    if existing_terminal:
+        rc = 0 if complete.is_file() else 2
+    else:
+        rc = _run_process(cmd, env=env, log=cell_root / "construction.log", pidfile=cell_root / "construction.pid")
     construction_status = "PASS" if rc == 0 and complete.is_file() and _json(complete).get("status") == "PASS" else "INVALID"
     row: dict[str, Any] = {**cell, "actual_attempt_id": cell["attempt_id"], "actual_namespace": cell["namespace"], "construction_status": construction_status, "construction_returncode": rc, "construction_root": str(attempt.resolve()), "qa_status": "MISSING", "qa_rows": 0}
     if construction_status == "PASS":
