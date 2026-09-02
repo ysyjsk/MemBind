@@ -49,6 +49,16 @@ def validate_block_status(block: Mapping[str, Any]) -> dict[str, Any]:
     method = _status(value.get("method"), "method")
     if method not in METHOD_CLASSES:
         raise CampaignReductionError("method is not a frozen arm")
+    if method in {"GRAPHITI_UPSTREAM_SERIAL", "RELAXED_ORDER_PARALLEL"}:
+        raise CampaignReductionError(
+            "strict A0 Native substrate is compatibility-only and cannot enter formal reduction"
+        )
+    if method in {
+        "GRAPHITI_SERIAL_SHARED_BOUNDED_SO",
+        "RELAXED_ORDER_SHARED_BOUNDED_SO",
+        "MEMBIND_V6_1_SHARED_BOUNDED_SO",
+    } and value.get("formal_eligible") is not True:
+        raise CampaignReductionError("shared formal arm is missing formal_eligible seal")
     if value.get("scope") != "FORMAL":
         raise CampaignReductionError("prefix/diagnostic block cannot enter formal reducer")
     artifact_status = "PASS" if value.get("sealed") is True and value.get("artifact_status") == "PASS" else "FAIL"

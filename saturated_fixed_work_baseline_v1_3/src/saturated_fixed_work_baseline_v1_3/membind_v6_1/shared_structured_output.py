@@ -18,11 +18,20 @@ from typing import Any, Awaitable, Callable, Mapping, Sequence
 
 
 SHARED_ADAPTER_VERSION = "shared-bounded-structured-output-v1"
+# Graphiti pins ``extract_edges.edge`` to a 16,384 completion-token request.
+# The local 8B construction client remains configured for 32,768 tokens for
+# non-edge operators; this lower bound is the wire budget of each shared edge
+# page and is enforced at the callsite.
 SHARED_MAX_TOKENS = 16_384
+SHARED_CONSTRUCTION_MAX_TOKENS = 32_768
 SHARED_PAGE_CAPACITY = 1
 SHARED_MAX_PAGES = 64
 SHARED_FACT_MAX_LENGTH = 1_900
 SHARED_RETRY_POLICY = "single_attempt_no_retry_until_lucky_v1"
+SHARED_PROMPT_TEMPLATE = (
+    "graphiti.extract_edges.edge|bounded-json-edge-page-v1|"
+    "ALREADY_RETURNED_EDGES|empty-page-only"
+)
 
 
 class PageCapExhausted(RuntimeError):
@@ -154,25 +163,63 @@ def finite_edge_page_model(
     )
 
 
-def adapter_identity() -> dict[str, Any]:
-    """Return source, schema, prompt, and policy identity for the substrate."""
+def adapter_identity(
+    endpoint_names: Sequence[str] = (),
+    *,
+    page_capacity: int = SHARED_PAGE_CAPACITY,
+    fact_max_length: int = SHARED_FACT_MAX_LENGTH,
+) -> dict[str, Any]:
+    """Return source, schema, prompt, and policy identity for the substrate.
 
-    contract = SharedStructuredOutputContract()
+    ``schema_template_sha256`` is stable across all requests and arms.  When
+    endpoint grounding is active, ``schema_sha256`` additionally identifies
+    the concrete enum schema for that evidence block; it is deliberately not
+    used as the cross-arm method identity because entity sets vary by source.
+    """
+
+    contract = SharedStructuredOutputContract(
+        page_capacity=int(page_capacity), fact_max_length=int(fact_max_length)
+    )
+    normalized_endpoints = tuple(
+        dict.fromkeys(str(name).strip() for name in endpoint_names if str(name).strip())
+    )
     source_hash = hashlib.sha256(Path(__file__).read_bytes()).hexdigest()
+    schema_template = _finite_schema(
+        contract.page_capacity,
+        (),
+        contract.fact_max_length,
+    )
+    schema_template_hash = hashlib.sha256(
+        json.dumps(schema_template, sort_keys=True, separators=(",", ":")).encode()
+    ).hexdigest()
+    concrete_schema = _finite_schema(
+        contract.page_capacity,
+        normalized_endpoints,
+        contract.fact_max_length,
+    )
     schema_hash = hashlib.sha256(
-        json.dumps(contract.schema, sort_keys=True, separators=(",", ":")).encode()
+        json.dumps(concrete_schema, sort_keys=True, separators=(",", ":")).encode()
     ).hexdigest()
     continuation_hash = hashlib.sha256(contract.continuation(()).encode()).hexdigest()
+    prompt_hash = hashlib.sha256(SHARED_PROMPT_TEMPLATE.encode("utf-8")).hexdigest()
     return {
         "adapter_version": SHARED_ADAPTER_VERSION,
         "adapter_source_sha256": source_hash,
+        "schema_scope": "endpoint_grounded_concrete" if normalized_endpoints else "template",
+        "schema_template_sha256": schema_template_hash,
         "schema_sha256": schema_hash,
         "continuation_prompt_sha256": continuation_hash,
+        "prompt_template_sha256": prompt_hash,
         "page_capacity": contract.page_capacity,
         "max_pages": contract.max_pages,
+        "wire_max_tokens": SHARED_MAX_TOKENS,
+        "construction_request_max_tokens": SHARED_CONSTRUCTION_MAX_TOKENS,
+        # ``max_tokens`` is retained as a compatibility alias for consumers
+        # that already expect the page-level bound.
         "max_tokens": SHARED_MAX_TOKENS,
         "retry_policy": SHARED_RETRY_POLICY,
         "termination_policy": contract.termination,
+        "endpoint_names": list(normalized_endpoints) if normalized_endpoints else None,
         "arm_identity": None,
     }
 
@@ -270,5 +317,6 @@ __all__ = [
     "BoundedStructuredOutputAdapter", "CollectedEdges", "EdgePage", "PageCapExhausted",
     "SharedStructuredOutputContract", "SHARED_ADAPTER_VERSION", "SHARED_MAX_TOKENS",
     "SHARED_PAGE_CAPACITY", "SHARED_MAX_PAGES", "SHARED_FACT_MAX_LENGTH",
+    "SHARED_CONSTRUCTION_MAX_TOKENS", "SHARED_PROMPT_TEMPLATE",
     "adapter_identity", "canonical_edge_tuple", "finite_edge_page_model", "validate_edge_page",
 ]

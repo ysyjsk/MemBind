@@ -12,6 +12,8 @@ from saturated_fixed_work_baseline_v1_3.membind_v6_1.shared_structured_output im
     canonical_edge_tuple,
     adapter_identity,
     finite_edge_page_model,
+    SHARED_CONSTRUCTION_MAX_TOKENS,
+    SHARED_MAX_TOKENS,
 )
 
 
@@ -40,7 +42,22 @@ def test_shared_adapter_identity_is_frozen_and_arm_agnostic() -> None:
     assert len(identity["continuation_prompt_sha256"]) == 64
     assert identity["arm_identity"] is None
     assert identity["max_tokens"] == 16_384
+    assert identity["wire_max_tokens"] == SHARED_MAX_TOKENS
+    assert identity["construction_request_max_tokens"] == SHARED_CONSTRUCTION_MAX_TOKENS
+    assert identity["schema_scope"] == "template"
+    assert identity["schema_template_sha256"] == identity["schema_sha256"]
+    assert len(identity["prompt_template_sha256"]) == 64
     assert identity["retry_policy"] == "single_attempt_no_retry_until_lucky_v1"
+
+
+def test_endpoint_grounded_identity_separates_template_and_concrete_schema() -> None:
+    template = adapter_identity()
+    concrete = adapter_identity(("A", "B"))
+    assert concrete["arm_identity"] is None
+    assert concrete["schema_scope"] == "endpoint_grounded_concrete"
+    assert concrete["schema_template_sha256"] == template["schema_template_sha256"]
+    assert concrete["schema_sha256"] != template["schema_sha256"]
+    assert concrete["endpoint_names"] == ["A", "B"]
 
 
 def test_shared_finite_model_supports_grounded_endpoints() -> None:

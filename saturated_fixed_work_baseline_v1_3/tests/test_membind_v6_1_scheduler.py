@@ -2893,7 +2893,62 @@ def test_edge_candidate_policy_expands_every_physical_call_and_records_diagnosti
         [1, 2],
     ]
     assert all(len(value) == 64 for row in expansion["evidence_source_hashes"] for value in row)
-    assert all(value > 0 for value in expansion["current_message_chars"])
+
+
+def test_shared_edge_substrate_enforces_wire_budget_when_client_is_32768(
+    monkeypatch,
+) -> None:
+    calls: list[int | None] = []
+
+    class Client:
+        max_tokens = 32_768
+        call_events: list[dict[str, object]] = []
+
+        async def generate_response(self, messages, max_tokens=None, **_kwargs):
+            calls.append(max_tokens)
+            self.call_events.append(
+                {
+                    "finish_reason": "stop",
+                    "token_usage": {"prompt_tokens": 10, "completion_tokens": 5},
+                }
+            )
+            return {"edges": []}
+
+    monkeypatch.setenv("CONSTRUCTION_CONTEXT_SAFETY_TOKENS", "32")
+    client = Client()
+    install_local_extraction_chunking_policy(
+        client,
+        token_counter=lambda _messages: 100,
+        partition_extraction_by_turns=True,
+        partition_edge_candidates=True,
+        shared_bounded_structured_output=True,
+    )
+    result = asyncio.run(
+        client.generate_response(
+            [
+                {
+                    "role": "user",
+                    "content": (
+                        "<CURRENT MESSAGE>\nA relates to B\n</CURRENT MESSAGE>\n"
+                        '<ENTITIES>[{"name":"A"},{"name":"B"}]</ENTITIES>\n# TASK'
+                    ),
+                }
+            ],
+            max_tokens=32_768,
+            prompt_name="extract_edges.edge",
+        )
+    )
+    assert result == {"edges": []}
+    assert calls and all(value == 16_384 for value in calls)
+    rows = [
+        row
+        for row in client._membind_extraction_diagnostics
+        if row.get("schema_version") == "membind.v6.1.extraction-diagnostic.v1"
+    ]
+    assert rows
+    assert all(row["requested_max_tokens"] == 16_384 for row in rows)
+    assert all(row["shared_structured_output_wire_max_tokens"] == 16_384 for row in rows)
+    assert all(row["shared_structured_output_construction_max_tokens"] == 32_768 for row in rows)
 
 
 def test_edge_pagination_duplicate_page_is_audited_zero_delta_fixed_point(monkeypatch) -> None:

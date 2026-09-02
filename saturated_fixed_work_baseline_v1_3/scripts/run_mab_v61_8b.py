@@ -103,6 +103,8 @@ SHARED_ARMS = {
     "RELAXED_ORDER_SHARED_BOUNDED_SO",
     "MEMBIND_V6_1_SHARED_BOUNDED_SO",
 }
+V61_ARMS = {"MEMBIND_V6_1", "MEMBIND_V6_1_SHARED_BOUNDED_SO"}
+NATIVE_ARMS = {"GRAPHITI_UPSTREAM_SERIAL", "RELAXED_ORDER_PARALLEL"}
 
 
 def _append(path: Path, row: Mapping[str, Any]) -> None:
@@ -291,7 +293,7 @@ def _reusable_reference(
 ) -> dict[str, Any] | None:
     """Resolve one fully sealed non-V6.1 reference for an identical contract."""
 
-    if method in {"MEMBIND_V6_1", "MEMBIND_V6_1_SHARED_BOUNDED_SO"}:
+    if method in V61_ARMS:
         return None
     runner_hash = _sha256(Path(__file__).resolve())
     implementation_hash = implementation_bundle(Path(__file__).resolve())["payload_sha256"]
@@ -475,20 +477,20 @@ async def _main(args: argparse.Namespace) -> int:
         "contexts": list(args.contexts),
         "session_limit": args.session_limit,
         "methods": list(args.methods),
-        "v61_method_boundary": args.v61_boundary if "MEMBIND_V6_1" in args.methods else None,
-        "v61_extension_id": args.v61_extension_id if "MEMBIND_V6_1" in args.methods else None,
+        "v61_method_boundary": args.v61_boundary if V61_ARMS.intersection(args.methods) else None,
+        "v61_extension_id": args.v61_extension_id if V61_ARMS.intersection(args.methods) else None,
         "method_contracts": {
             method: {
                 **METHODS[method],
                 "routing": routes[method],
                 "execution_strategy": (
-                    MEMBIND_CORE_EXECUTION_STRATEGY if method == "MEMBIND_V6_1" else None
+                    MEMBIND_CORE_EXECUTION_STRATEGY if method in V61_ARMS else None
                 ),
-                "core_version": MEMBIND_CORE_VERSION if method == "MEMBIND_V6_1" else None,
+                "core_version": MEMBIND_CORE_VERSION if method in V61_ARMS else None,
             }
             for method in args.methods
         },
-        "v6_1_policy": policy.to_dict() if "MEMBIND_V6_1" in args.methods else None,
+        "v6_1_policy": policy.to_dict() if V61_ARMS.intersection(args.methods) else None,
         "git": _git_identity(),
         "dataset": str((MAB / "data/official_5_contexts.json").resolve()),
         "created_at_unix": time.time(),
@@ -558,8 +560,8 @@ async def _main(args: argparse.Namespace) -> int:
                 platform_manifest=platform_path,
                 workload_manifest=workload_path,
                 output=contract_path,
-                method_boundary=(args.v61_boundary if method == "MEMBIND_V6_1" else None),
-                extension_id=(args.v61_extension_id if method == "MEMBIND_V6_1" else None),
+                method_boundary=(args.v61_boundary if method in V61_ARMS else None),
+                extension_id=(args.v61_extension_id if method in V61_ARMS else None),
             )
             attempt_preparation_path = attempt_root / "attempt_preparation.json"
             start = {
@@ -575,9 +577,9 @@ async def _main(args: argparse.Namespace) -> int:
                 "episode_count": len(inputs),
                 "routing_policy": routes[method]["router"]["policy"],
                 "execution_strategy": (
-                    MEMBIND_CORE_EXECUTION_STRATEGY if method == "MEMBIND_V6_1" else None
+                    MEMBIND_CORE_EXECUTION_STRATEGY if method in V61_ARMS else None
                 ),
-                "core_version": MEMBIND_CORE_VERSION if method == "MEMBIND_V6_1" else None,
+                "core_version": MEMBIND_CORE_VERSION if method in V61_ARMS else None,
                 "attempt_phase": "ATTEMPT_PREPARATION",
                 "run_contract_sha256": contract["payload_sha256"],
                 "started_at_unix": time.time(),
@@ -592,12 +594,12 @@ async def _main(args: argparse.Namespace) -> int:
             def runtime_builder() -> Any:
                 if runtime_holder:
                     raise RuntimeError("attempt runtime builder was called more than once")
-                if method in {"MEMBIND_V6_1", "MEMBIND_V6_1_SHARED_BOUNDED_SO"} and args.v61_boundary == "MEMBIND_CORE":
+                if method in V61_ARMS and args.v61_boundary == "MEMBIND_CORE":
                     runtime = build_membind_core_runtime_8b(
                         routing_contract=routes[method],
                         route_event_sink=route_events.append,
                     )
-                elif method in {"GRAPHITI_UPSTREAM_SERIAL", "RELAXED_ORDER_PARALLEL"}:
+                elif method in NATIVE_ARMS:
                     runtime = build_8b_strict_native_runtime(
                         routing_contract=routes[method],
                         route_event_sink=route_events.append,
@@ -612,13 +614,13 @@ async def _main(args: argparse.Namespace) -> int:
                         routing_contract=routes[method],
                         route_event_sink=route_events.append,
                         enable_grounded_summary_materialization=(
-                            method == "MEMBIND_V6_1" and args.v61_boundary == "WORK_REDUCTION_EXTENSION"
+                            method in V61_ARMS and args.v61_boundary == "WORK_REDUCTION_EXTENSION"
                         ),
                         enable_endpoint_schema_grounding=(
                             method in SHARED_ARMS
-                            or (method == "MEMBIND_V6_1" and args.v61_boundary == "WORK_REDUCTION_EXTENSION")
+                            or (method in V61_ARMS and args.v61_boundary == "WORK_REDUCTION_EXTENSION")
                         ),
-                        enable_work_conserving_edge_admission=(method in SHARED_ARMS or method == "MEMBIND_V6_1"),
+                        enable_work_conserving_edge_admission=(method in SHARED_ARMS or method in V61_ARMS),
                         # The adaptive controller was rejected at r66a. Keep it
                         # opt-in for an explicitly named ablation so the default
                         # V6.1 substrate remains the retained fixed admission path.
@@ -656,7 +658,7 @@ async def _main(args: argparse.Namespace) -> int:
                 ):
                     raise RuntimeError("attempt preparation evidence is invalid")
                 failure_phase = "MEASURED_CONSTRUCTION"
-                if method in {"MEMBIND_V6_1", "MEMBIND_V6_1_SHARED_BOUNDED_SO"} and args.v61_boundary == "MEMBIND_CORE":
+                if method in V61_ARMS and args.v61_boundary == "MEMBIND_CORE":
                     environment = public_membind_core_environment_8b(
                         routes[method], repo_root=ROOT
                     )
@@ -665,29 +667,29 @@ async def _main(args: argparse.Namespace) -> int:
                     environment = public_8b_environment(
                         routes[method],
                         repo_root=ROOT,
-                        strict_native=method in {"GRAPHITI_UPSTREAM_SERIAL", "RELAXED_ORDER_PARALLEL"},
+                        strict_native=method in NATIVE_ARMS,
                         shared_bounded_structured_output=method in SHARED_ARMS,
                         enable_grounded_summary_materialization=(
-                            method == "MEMBIND_V6_1" and args.v61_boundary == "WORK_REDUCTION_EXTENSION"
+                            method in V61_ARMS and args.v61_boundary == "WORK_REDUCTION_EXTENSION"
                         ),
                         enable_endpoint_schema_grounding=(
                             method in SHARED_ARMS
-                            or (method == "MEMBIND_V6_1" and args.v61_boundary == "WORK_REDUCTION_EXTENSION")
+                            or (method in V61_ARMS and args.v61_boundary == "WORK_REDUCTION_EXTENSION")
                         ),
-                        enable_work_conserving_edge_admission=(method in SHARED_ARMS or method == "MEMBIND_V6_1"),
+                        enable_work_conserving_edge_admission=(method in SHARED_ARMS or method in V61_ARMS),
                         enable_adaptive_edge_admission=False,
                     )
                     frozen_config = frozen_8b_config(
                         routes[method],
-                        strict_native=method in {"GRAPHITI_UPSTREAM_SERIAL", "RELAXED_ORDER_PARALLEL"},
+                        strict_native=method in NATIVE_ARMS,
                         shared_bounded_structured_output=method in SHARED_ARMS,
                         enable_grounded_summary_materialization=(
-                            method == "MEMBIND_V6_1" and args.v61_boundary == "WORK_REDUCTION_EXTENSION"
+                            method in V61_ARMS and args.v61_boundary == "WORK_REDUCTION_EXTENSION"
                         ),
                         enable_endpoint_schema_grounding=(
-                            method == "MEMBIND_V6_1" and args.v61_boundary == "WORK_REDUCTION_EXTENSION"
+                            method in V61_ARMS and args.v61_boundary == "WORK_REDUCTION_EXTENSION"
                         ),
-                        enable_work_conserving_edge_admission=(method == "MEMBIND_V6_1"),
+                        enable_work_conserving_edge_admission=(method in V61_ARMS),
                         enable_adaptive_edge_admission=False,
                     )
                 common = {
@@ -698,7 +700,7 @@ async def _main(args: argparse.Namespace) -> int:
                     "runtime_builder": runtime_builder,
                     "instrumentation_installer": (
                         _install_v61_instrumentation
-                        if method == "MEMBIND_V6_1"
+                        if method in V61_ARMS
                         else _install_instrumentation
                     ),
                     "recorder_factory": TraceRecorder,
@@ -716,7 +718,7 @@ async def _main(args: argparse.Namespace) -> int:
                         "namespace_initial_counts": counts,
                     },
                 }
-                if method in {"MEMBIND_V6_1", "MEMBIND_V6_1_SHARED_BOUNDED_SO"}:
+                if method in V61_ARMS:
                     if args.v61_boundary == "MEMBIND_CORE":
                         result = await run_membind_core_construction_async(
                             policy=policy,

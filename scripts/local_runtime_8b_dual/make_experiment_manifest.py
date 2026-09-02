@@ -203,6 +203,15 @@ def main() -> int:
     parser.add_argument("--output", type=Path, required=True)
     args = parser.parse_args()
 
+    if args.shared_bounded_structured_output and args.arm not in {
+        "native-serial-dual",
+        "native-parallel-dual",
+        "v61-dual",
+    }:
+        raise RuntimeError(
+            "shared bounded structured-output contracts require one of the formal A/B/C arms"
+        )
+
     experiment_root = Path(os.environ["MEMBIND_EXPERIMENT_ROOT"]).resolve()
     output = args.output.resolve()
     if experiment_root != output and experiment_root not in output.parents:
@@ -301,7 +310,13 @@ def main() -> int:
         raise RuntimeError(
             "MemBind-Core contracts require the frozen semantic-phase elastic route"
         )
-    is_b1 = comparison_class == "RELAXED_ORDER_B1_UPPER_BOUND" or args.arm == "native-parallel-dual"
+    is_b1 = (
+        comparison_class in {
+            "RELAXED_ORDER_B1_UPPER_BOUND",
+            "RELAXED_ORDER_SHARED_BOUNDED_SO",
+        }
+        or args.arm == "native-parallel-dual"
+    )
     method_boundary = {
         "id": (
             "B1_RELAXED_ORDER_REFERENCE"
@@ -336,6 +351,10 @@ def main() -> int:
         "namespace": args.namespace,
         "arm": args.arm,
         "method": method,
+        # Strict A0 remains a compatibility characterization only.  Formal
+        # reducers must require this bit for the new shared epoch, preventing
+        # accidental admission of the unbounded Native substrate.
+        "formal_eligible": bool(args.shared_bounded_structured_output),
         # Kept for consumers of the v1 schema; the structured contract below
         # is authoritative and is populated for Native, V6.1, and ablations.
         "native_execution_semantics": state_contract["mode"],
@@ -376,6 +395,12 @@ def main() -> int:
             "shared_structured_output": (
                 adapter_identity() if args.shared_bounded_structured_output else None
             ),
+            "shared_structured_output_wire_max_tokens": (
+                adapter_identity()["wire_max_tokens"]
+                if args.shared_bounded_structured_output
+                else None
+            ),
+            "construction_request_max_tokens": 32768,
         },
         "cache_protocol": {
             "policy": "reset_then_identical_structured_warmup_v1",

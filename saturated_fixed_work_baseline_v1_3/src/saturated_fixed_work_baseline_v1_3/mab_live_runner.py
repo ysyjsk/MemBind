@@ -346,9 +346,15 @@ async def run_mab_construction_async(
         lifecycle["events"].append({"event": "FORMAL_START", "monotonic_ns": formal_start})
         emit("FORMAL_START", stamp=formal_start)
 
+        # Shared bounded-output A/B keep the Native state/publication
+        # semantics while changing only the arm-agnostic wire substrate.
+        # Treat them as Native for the journal/resume contract; C alone uses
+        # the V6.1 recovery/scheduler path.
         strict_native = method in {
             "GRAPHITI_UPSTREAM_SERIAL",
             "RELAXED_ORDER_PARALLEL",
+            "GRAPHITI_SERIAL_SHARED_BOUNDED_SO",
+            "RELAXED_ORDER_SHARED_BOUNDED_SO",
         }
 
         async def direct_publish(sequence: int) -> None:

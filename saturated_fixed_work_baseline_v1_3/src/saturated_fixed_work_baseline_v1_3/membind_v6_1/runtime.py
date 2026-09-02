@@ -2135,6 +2135,15 @@ def install_local_extraction_chunking_policy(
         attribute_extraction: bool = False,
     ) -> Any:
         requested = int(max_tokens or getattr(llm_client, "max_tokens", 0) or 0)
+        # The shared substrate keeps Graphiti's 16,384-token edge budget as a
+        # real wire bound.  The client-wide 32,768-token setting remains the
+        # construction budget for node/summary operators and is recorded
+        # separately in the runtime identity.
+        shared_edge_request_tokens = (
+            min(requested or SHARED_MAX_TOKENS, SHARED_MAX_TOKENS)
+            if shared_bounded_structured_output
+            else None
+        )
 
         async def invoke(
             request_messages: list[Any],
@@ -2148,6 +2157,12 @@ def install_local_extraction_chunking_policy(
             queue_wait_ns: int | None = None,
             physical_active_at_start: int | None = None,
         ) -> Any:
+            if (
+                shared_bounded_structured_output
+                and prompt_name == "extract_edges.edge"
+                and request_max_tokens is not None
+            ):
+                request_max_tokens = min(int(request_max_tokens), SHARED_MAX_TOKENS)
             selection = None
             preflight_unverified_reason: str | None = None
             entity_info = _entity_block(request_messages)
@@ -2304,6 +2319,13 @@ def install_local_extraction_chunking_policy(
                     if edge_endpoint_schema_grounding and endpoint_names
                     else _bounded_edge_page_model(int(selected_edge_page_capacity))
                 )
+            shared_request_identity = None
+            if shared_bounded_structured_output and prompt_name == "extract_edges.edge":
+                shared_request_identity = adapter_identity(
+                    endpoint_names=endpoint_names,
+                    page_capacity=int(selected_edge_page_capacity or edge_page_capacity),
+                    fact_max_length=LOCAL_EDGE_FACT_MAX_CHARS,
+                )
             structured_certificate = None
             if node_schema_selection is not None:
                 structured_certificate = node_schema_selection.certificate
@@ -2371,6 +2393,24 @@ def install_local_extraction_chunking_policy(
                 "page_index": page_index,
                 "status": "started",
             }
+            if shared_bounded_structured_output:
+                row["shared_structured_output_wire_max_tokens"] = SHARED_MAX_TOKENS
+                row["shared_structured_output_construction_max_tokens"] = (
+                    int(getattr(llm_client, "max_tokens", 0) or requested or 0)
+                )
+                if shared_request_identity is not None:
+                    row["shared_structured_output_schema_scope"] = shared_request_identity[
+                        "schema_scope"
+                    ]
+                    row["shared_structured_output_schema_template_sha256"] = (
+                        shared_request_identity["schema_template_sha256"]
+                    )
+                    row["shared_structured_output_concrete_schema_sha256"] = (
+                        shared_request_identity["schema_sha256"]
+                    )
+                    row["shared_structured_output_prompt_template_sha256"] = (
+                        shared_request_identity["prompt_template_sha256"]
+                    )
             if node_schema_max_items is not None:
                 row["node_schema_max_items"] = node_schema_max_items
                 row["node_schema_name_max_chars"] = LOCAL_NODE_MAX_NAME_CHARS
@@ -2674,7 +2714,7 @@ def install_local_extraction_chunking_policy(
                     try:
                         page = await invoke(
                             page_messages,
-                            requested,
+                            shared_edge_request_tokens or requested,
                             response_model,
                             partition_id=partition_id,
                             partition_count=partition_count,
