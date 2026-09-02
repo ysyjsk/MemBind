@@ -1573,6 +1573,7 @@ def _edge_page_messages(
     *,
     page_capacity: int = LOCAL_EDGE_PAGE_CAPACITY,
     duplicate_recovery_edge: Mapping[str, Any] | None = None,
+    duplicate_recovery_confirmation: bool = False,
     memory_utility_order: bool = False,
 ) -> list[Any]:
     """Add continuation state to one edge request without artifact leakage."""
@@ -1619,6 +1620,14 @@ def _edge_page_messages(
             "{\"status\":\"no_additional_edge\",\"edge\":null}.\n"
             "</DUPLICATE_RECOVERY>\n"
         )
+        if duplicate_recovery_confirmation:
+            recovery_instruction = recovery_instruction.replace(
+                "<DUPLICATE_RECOVERY>\n",
+                "<DUPLICATE_RECOVERY_CONFIRMATION>\n"
+                "The previous duplicate-recovery response was invalid because it repeated the rejected tuple. "
+                "This is the one and only confirmation attempt; correct the response now.\n",
+                1,
+            ).replace("</DUPLICATE_RECOVERY>\n", "</DUPLICATE_RECOVERY_CONFIRMATION>\n", 1)
     if duplicate_recovery_edge is not None:
         page_instruction = (
             "Return exactly one JSON object using the explicit recovery discriminator. "
@@ -1689,7 +1698,12 @@ def _edge_page_messages(
             # last instruction cannot silently erase the exclusion request.
             updated += (
                 "\n\n<FINAL_DUPLICATE_RECOVERY_DIRECTIVE>\n"
-                "This is a duplicate-recovery request. Do not return the repeated tuple "
+                + (
+                    "This is the one and only duplicate-recovery confirmation attempt. "
+                    if duplicate_recovery_confirmation
+                    else "This is a duplicate-recovery request. "
+                )
+                + "Do not return the repeated tuple "
                 "again. The rejected tuple is "
                 + json.dumps(rejected, ensure_ascii=False, sort_keys=True, separators=(",", ":"))
                 + "; it must never appear as the `edge` value. Return one different supported edge absent from "
@@ -2205,6 +2219,7 @@ def install_local_extraction_chunking_policy(
             queue_wait_ns: int | None = None,
             physical_active_at_start: int | None = None,
             duplicate_recovery_request: bool = False,
+            duplicate_recovery_confirmation: bool = False,
             excluded_recovery_edge: tuple[Any, ...] = (),
         ) -> Any:
             if (
@@ -2480,6 +2495,8 @@ def install_local_extraction_chunking_policy(
                 "partition_count": partition_count,
                 "partition_kind": partition_kind,
                 "page_index": page_index,
+                "duplicate_recovery_request": bool(duplicate_recovery_request),
+                "duplicate_recovery_confirmation": bool(duplicate_recovery_confirmation),
                 "status": "started",
             }
             if shared_bounded_structured_output:
@@ -2776,6 +2793,7 @@ def install_local_extraction_chunking_policy(
                     page_index: int,
                     response_model: Any,
                     duplicate_recovery_request: bool = False,
+                    duplicate_recovery_confirmation: bool = False,
                     excluded_recovery_edge: tuple[Any, ...] = (),
                 ) -> tuple[Any, int, int, int | None, dict[str, Any] | None]:
                     nonlocal edge_active_page_requests
@@ -2823,6 +2841,10 @@ def install_local_extraction_chunking_policy(
                                 duplicate_recovery_request
                                 and shared_bounded_structured_output
                             ),
+                            duplicate_recovery_confirmation=(
+                                duplicate_recovery_confirmation
+                                and shared_bounded_structured_output
+                            ),
                             excluded_recovery_edge=excluded_recovery_edge,
                         )
                         observed_service_ns = time.monotonic_ns() - service_start_ns
@@ -2860,6 +2882,8 @@ def install_local_extraction_chunking_policy(
                     accepted_partition_edges: list[Mapping[str, Any]] = []
                     duplicate_recovery_edge: Mapping[str, Any] | None = None
                     duplicate_recovery_used = False
+                    duplicate_recovery_confirmation = False
+                    duplicate_recovery_confirmation_used = False
                     partition_entity_block = _entity_block(partition)
                     if partition_entity_block is None:
                         raise LocalRuntimeConfigurationError(
@@ -2898,11 +2922,15 @@ def install_local_extraction_chunking_policy(
                     )
                     for page_index in range(LOCAL_EDGE_MAX_PAGES):
                         is_duplicate_recovery = duplicate_recovery_edge is not None
+                        is_duplicate_recovery_confirmation = (
+                            is_duplicate_recovery and duplicate_recovery_confirmation
+                        )
                         page_messages = _edge_page_messages(
                             partition,
                             pagination_history,
                             page_capacity=edge_page_capacity,
                             duplicate_recovery_edge=duplicate_recovery_edge,
+                            duplicate_recovery_confirmation=duplicate_recovery_confirmation,
                             memory_utility_order=memory_utility_order,
                         )
                         (
@@ -2918,6 +2946,10 @@ def install_local_extraction_chunking_policy(
                             response_model=partition_page_model,
                             duplicate_recovery_request=(
                                 is_duplicate_recovery
+                                and shared_bounded_structured_output
+                            ),
+                            duplicate_recovery_confirmation=(
+                                is_duplicate_recovery_confirmation
                                 and shared_bounded_structured_output
                             ),
                             excluded_recovery_edge=(
@@ -3030,6 +3062,7 @@ def install_local_extraction_chunking_policy(
                                 "delta_edge_count": len(delta),
                                 "duplicate_edge_count": duplicate_count,
                                 "duplicate_recovery_request": is_duplicate_recovery,
+                                "duplicate_recovery_confirmation": is_duplicate_recovery_confirmation,
                                 "duplicate_recovery_succeeded": (
                                     is_duplicate_recovery and bool(raw_unique_progress)
                                 ),
@@ -3116,6 +3149,27 @@ def install_local_extraction_chunking_policy(
                                         "page_index": page_index,
                                         "event": "EDGE_PAGINATION_DUPLICATE_RECOVERY",
                                         "status": "scheduled",
+                                        "confirmation": False,
+                                    }
+                                )
+                                continue
+                            if (
+                                is_duplicate_recovery
+                                and not is_duplicate_recovery_confirmation
+                                and not duplicate_recovery_confirmation_used
+                            ):
+                                duplicate_recovery_confirmation_used = True
+                                duplicate_recovery_confirmation = True
+                                diagnostics.append(
+                                    {
+                                        "schema_version": "membind.v6.1.edge-duplicate-recovery.v1",
+                                        "prompt_name": prompt_name,
+                                        "partition_id": partition_id,
+                                        "partition_count": partition_count,
+                                        "page_index": page_index,
+                                        "event": "EDGE_PAGINATION_DUPLICATE_RECOVERY",
+                                        "status": "confirmation_scheduled",
+                                        "confirmation": True,
                                     }
                                 )
                                 continue
@@ -3153,6 +3207,8 @@ def install_local_extraction_chunking_policy(
                                 "edge pagination made no accepted progress after deterministic recovery"
                             )
                         duplicate_recovery_edge = None
+                        duplicate_recovery_confirmation = False
+                        duplicate_recovery_confirmation_used = False
                         pagination_history.extend(raw_unique_progress)
                         seen_raw_identities.update(page_identities)
                         if delta:

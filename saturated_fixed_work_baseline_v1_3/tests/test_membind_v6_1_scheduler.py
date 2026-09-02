@@ -3099,6 +3099,98 @@ def test_shared_duplicate_recovery_rejects_missing_null_edge(monkeypatch) -> Non
         )
 
 
+def test_shared_duplicate_recovery_confirmation_is_bounded_and_audited(monkeypatch) -> None:
+    prompts: list[str] = []
+
+    def edge() -> dict[str, object]:
+        return {
+            "source_entity_name": "A",
+            "target_entity_name": "B",
+            "relation_type": "KNOWS",
+            "fact": "A knows B",
+            "valid_at": None,
+            "invalid_at": None,
+            "episode_indices": [0],
+        }
+
+    class Client:
+        max_tokens = 32_768
+        call_events: list[dict[str, object]] = []
+
+        async def generate_response(self, messages, response_model=None, **_kwargs):
+            content = messages[0]["content"]
+            prompts.append(content)
+            self.call_events.append(
+                {
+                    "finish_reason": "stop",
+                    "token_usage": {"prompt_tokens": 100, "completion_tokens": 20},
+                }
+            )
+            if len(prompts) <= 2:
+                return {"edges": [edge()]}
+            schema = response_model.model_json_schema()
+            assert schema["properties"]["status"]["enum"] == [
+                "new_edge",
+                "no_additional_edge",
+            ]
+            if len(prompts) == 3:
+                return {"status": "new_edge", "edge": edge()}
+            assert "one and only duplicate-recovery confirmation attempt" in content
+            return {"status": "no_additional_edge", "edge": None}
+
+    monkeypatch.setenv("CONSTRUCTION_CONTEXT_SAFETY_TOKENS", "32")
+    client = Client()
+    install_local_extraction_chunking_policy(
+        client,
+        token_counter=lambda _messages: 100,
+        partition_extraction_by_turns=True,
+        partition_edge_candidates=True,
+        edge_duplicate_recovery=True,
+        edge_page_capacity=2,
+        shared_bounded_structured_output=True,
+    )
+    client._membind_entity_partition_hints.update({"a": [0], "b": [0], "c": [0]})
+    result = asyncio.run(
+        client.generate_response(
+            [
+                {
+                    "role": "user",
+                    "content": (
+                        "<CURRENT MESSAGE>\n[USER]\nA knows B\n</CURRENT MESSAGE>\n"
+                        '<ENTITIES>[{"name":"A"},{"name":"B"},{"name":"C"}]</ENTITIES>\n# TASK'
+                    ),
+                }
+            ],
+            max_tokens=32_768,
+            prompt_name="extract_edges.edge",
+        )
+    )
+    assert [row["fact"] for row in result["edges"]] == ["A knows B"]
+    assert len(prompts) == 4
+    assert "one and only duplicate-recovery confirmation attempt" in prompts[3]
+    pages = [
+        row
+        for row in client._membind_extraction_diagnostics
+        if row.get("event") == "EDGE_PAGINATION_PAGE"
+    ]
+    recovery_pages = [row for row in pages if row["duplicate_recovery_request"]]
+    assert [row["duplicate_recovery_confirmation"] for row in recovery_pages] == [
+        False,
+        True,
+    ]
+    assert recovery_pages[-1]["recovery_status"] == "no_additional_edge"
+    scheduled = [
+        row
+        for row in client._membind_extraction_diagnostics
+        if row.get("event") == "EDGE_PAGINATION_DUPLICATE_RECOVERY"
+    ]
+    assert [row["status"] for row in scheduled] == [
+        "scheduled",
+        "confirmation_scheduled",
+    ]
+    assert [row["confirmation"] for row in scheduled] == [False, True]
+
+
 def test_edge_pagination_duplicate_page_is_audited_zero_delta_fixed_point(monkeypatch) -> None:
     calls = 0
 
