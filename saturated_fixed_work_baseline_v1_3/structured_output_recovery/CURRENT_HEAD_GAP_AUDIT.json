@@ -2,7 +2,34 @@
   "authorization_rule": "old CODE_READY is historical only; current HEAD canary/formal authorization requires exact current EVALUATED_IMPLEMENTATION_IDENTITY plus matching G1-G4 evidence",
   "current": {
     "branch": "dmsv-b1r2-structural-closure",
-    "head_commit": "b81a52d5e7df7ba6e3b4f9b90591762a074503cf",
+    "head_commit": "72633ca53dc5984d7e7f224921cbe97292410c05",
+    "materialized_evidence_status": [
+      " M mab_quality_v2_final_qa/evidence/OFFICIAL_DATASET_PARITY_REPORT.json",
+      " M mab_quality_v2_final_qa/evidence/OFFICIAL_DATASET_PARITY_REPORT.md",
+      " M saturated_fixed_work_baseline_v1_3/structured_output_recovery/AUTORESEARCH_LEDGER.jsonl",
+      " M saturated_fixed_work_baseline_v1_3/structured_output_recovery/AUTORESEARCH_STATE.json",
+      " M saturated_fixed_work_baseline_v1_3/structured_output_recovery/CURRENT_HEAD_GAP_AUDIT.json",
+      " M saturated_fixed_work_baseline_v1_3/structured_output_recovery/CURRENT_HEAD_GAP_AUDIT.md",
+      " M saturated_fixed_work_baseline_v1_3/structured_output_recovery/CURRENT_STATE.json",
+      " M saturated_fixed_work_baseline_v1_3/structured_output_recovery/EVALUATED_IMPLEMENTATION_IDENTITY.json",
+      " M saturated_fixed_work_baseline_v1_3/structured_output_recovery/FINAL_DECISION.json",
+      " M saturated_fixed_work_baseline_v1_3/structured_output_recovery/FINAL_METHOD_SPEC.json",
+      " M saturated_fixed_work_baseline_v1_3/structured_output_recovery/FOUR_GATE_RESULT.json",
+      " M saturated_fixed_work_baseline_v1_3/structured_output_recovery/FOUR_GATE_RESULT.md",
+      " M saturated_fixed_work_baseline_v1_3/structured_output_recovery/FROZEN_DEV_WORKLOAD_MANIFEST.json",
+      " M saturated_fixed_work_baseline_v1_3/structured_output_recovery/NATIVE_BASELINE_IDENTITY.json",
+      " M saturated_fixed_work_baseline_v1_3/structured_output_recovery/NATIVE_IMMUTABILITY_REPORT.json",
+      " M saturated_fixed_work_baseline_v1_3/structured_output_recovery/NATIVE_IMMUTABILITY_REPORT.md",
+      " M saturated_fixed_work_baseline_v1_3/structured_output_recovery/PRECANARY_METHOD_SEAL.json",
+      " M saturated_fixed_work_baseline_v1_3/structured_output_recovery/SCHEDULER_STRESS_TEST_RESULT.json",
+      " M saturated_fixed_work_baseline_v1_3/structured_output_recovery/STRUCTURED_OUTPUT_CALLSITE_INVENTORY.json",
+      " M saturated_fixed_work_baseline_v1_3/structured_output_recovery/STRUCTURED_OUTPUT_QUALIFICATION_REPORT.md",
+      " M saturated_fixed_work_baseline_v1_3/structured_output_recovery/STRUCTURED_OUTPUT_QUALIFICATION_RESULT.json",
+      " M saturated_fixed_work_baseline_v1_3/structured_output_recovery/STRUCTURED_OUTPUT_RECOVERY_LEDGER.jsonl",
+      " M saturated_fixed_work_baseline_v1_3/structured_output_recovery/STRUCTURED_OUTPUT_SCHEMA_BOUND_CERTIFICATE.json",
+      " M saturated_fixed_work_baseline_v1_3/structured_output_recovery/THREE_ARM_METHOD_BOUNDARIES.json",
+      " M saturated_fixed_work_baseline_v1_3/structured_output_recovery/V61_PARAMETER_IDENTITY.json"
+    ],
     "origin_main": "b81a52d5e7df7ba6e3b4f9b90591762a074503cf",
     "status_porcelain_sha256": "e3b0c44298fc1c149afbf4c8996fb92427ae41e4649b934ca495991b7852b855",
     "tracked_diff_sha256": null,
@@ -20,6 +47,7 @@
     "M\tsaturated_fixed_work_baseline_v1_3/src/saturated_fixed_work_baseline_v1_3/mab_live_runner.py",
     "M\tsaturated_fixed_work_baseline_v1_3/src/saturated_fixed_work_baseline_v1_3/membind_v6_1/mab.py",
     "M\tsaturated_fixed_work_baseline_v1_3/src/saturated_fixed_work_baseline_v1_3/membind_v6_1/runtime.py",
+    "M\tsaturated_fixed_work_baseline_v1_3/src/saturated_fixed_work_baseline_v1_3/membind_v6_1/structured_output_recovery.py",
     "A\tsaturated_fixed_work_baseline_v1_3/structured_output_recovery/ADAPTIVE_DECISION.json",
     "A\tsaturated_fixed_work_baseline_v1_3/structured_output_recovery/AUTORESEARCH_LEDGER.jsonl",
     "A\tsaturated_fixed_work_baseline_v1_3/structured_output_recovery/AUTORESEARCH_STATE.json",
@@ -80,16 +108,16 @@
     "M\tscripts/generate_structured_output_certificate.py",
     "M\tscripts/generate_three_arm_identity_evidence.py"
   ],
-  "generated_at": "2026-09-01T17:35:02.233031+00:00",
+  "generated_at": "2026-09-01T19:31:27.121348+00:00",
   "known_runtime_changes": [
     "saturated_fixed_work_baseline_v1_3/src/saturated_fixed_work_baseline_v1_3/mab_live_runner.py",
     "saturated_fixed_work_baseline_v1_3/src/saturated_fixed_work_baseline_v1_3/membind_v6_1/mab.py"
   ],
   "old_evidence": {
     "base_code_commit": "c62b548d18bbf0da161069be7be86750e977581c",
-    "canary_authorized_in_old_epoch": false,
-    "current_state": "BLOCKED_STALE_OR_MIXED_EVIDENCE",
-    "evaluated_source_bundle_sha256": "1dfe418690ad111ce9ec33af8d12a01f6c590d296d6f6dfafe44a141c56297d9"
+    "canary_authorized_in_old_epoch": true,
+    "current_state": "CODE_READY_FOR_THREE_ARM_ENGINEERING_CANARY",
+    "evaluated_source_bundle_sha256": "23da376615bbbc577fb987e495e6ba661a242bd17914d757416edf9f6964656b"
   },
   "provider_calls": 0,
   "recomputed_current_head": [

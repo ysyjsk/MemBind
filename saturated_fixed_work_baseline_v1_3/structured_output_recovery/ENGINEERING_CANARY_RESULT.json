@@ -1,0 +1,57 @@
+{
+  "schema_version": "membind.engineering-canary-result.v1",
+  "status": "FAIL_NATIVE_AB_REPRODUCIBLE_OUTPUT_BLOCKER",
+  "run_id": "engineering-canary-20260902T0410",
+  "root": "/data/predator/ly/Mem/experiments/local-qwen3-8b-awq-dualreplica-v1/engineering-canary-20260902T0410",
+  "head_commit": "72633ca53dc5984d7e7f224921cbe97292410c05",
+  "implementation_identity_sha256": "16b5d7ba08c83afe9ec05cb58fb40c8f862e374fbf6de683af568b46b4e69e50",
+  "scope": "engineering_canary_only",
+  "contexts": [0],
+  "session_limit": 2,
+  "arms": {
+    "GRAPHITI_UPSTREAM_SERIAL": {
+      "status": "FAIL",
+      "attempt_id": "ed9746e2166c",
+      "failure_type": "json.decoder.JSONDecodeError",
+      "error": "Unterminated string starting at: line 1505 column 7 (char 50901)",
+      "route_event_count": 5,
+      "construction_seal": false,
+      "failure_artifacts_preserved": true
+    },
+    "RELAXED_ORDER_PARALLEL": {
+      "status": "FAIL",
+      "attempt_id": "74e7fd3afffc",
+      "failure_type": "json.decoder.JSONDecodeError",
+      "error": "Unterminated string starting at: line 1505 column 7 (char 50901)",
+      "route_event_count": 7,
+      "construction_seal": false,
+      "failure_artifacts_preserved": true
+    },
+    "MEMBIND_V6_1": {
+      "status": "PASS",
+      "attempt_id": "0f83a13e4e4b",
+      "build_makespan_ns": 47714805395,
+      "construction_seal": true,
+      "route_seal": true,
+      "policy": {
+        "lookahead": 2,
+        "future_cap": 1,
+        "native_future_quota": 0,
+        "boundary": "MEMBIND_CORE"
+      }
+    }
+  },
+  "canary_checks": {
+    "fresh_attempts": true,
+    "shared_resource_pool": true,
+    "native_boundary_checked": true,
+    "c_fixed_scheduler_checked": true,
+    "uuid_publication_order_work_coverage_checked": true,
+    "artifacts_checked": true,
+    "all_three_arms_pass": false
+  },
+  "decision": "DO_NOT_GENERATE_FINAL_METHOD_FROZEN_OR_FORMAL_CAMPAIGN",
+  "blocker": "A/B strict Graphiti edge extraction on the authenticated 8B xgrammar deployment exhausts the native unbounded edge schema budget and returns malformed JSON; changing that schema/request or model would change the frozen arm identity.",
+  "next_authority_required": "separately authorized model/deployment decision or explicit change to the A/B Native contract",
+  "heartbeat": "/data/predator/ly/Mem/experiments/local-qwen3-8b-awq-dualreplica-v1/engineering-canary-20260902T0410/heartbeat.log"
+}

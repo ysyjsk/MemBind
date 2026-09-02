@@ -9,4 +9,4 @@ The edge certificate's worst-case compact JSON is `15862` tokens with a `1900`-c
 R3 is `AT_LEAST_ONCE_WITH_STABLE_IDEMPOTENCY_KEY`; no cross-system durable reconciliation or exactly-once claim is made.
 
 Source-discovered callsites: `15`; actual observed: `16`; covered names: `11`; uncovered names: `0`; covered source rows: `14`; unreachable with proof: `1`.
-Evaluated source bundle SHA-256: `956a7bb706918a6a14532835c64d54373c377c32a7a32c4ce32aae6f9d7c74aa`; generator source SHA-256: `06dbd73b160e4f5118b71ed2675ac39411dfaae1694d664ba870f2ed96ed6241`; base code commit: `b81a52d5e7df7ba6e3b4f9b90591762a074503cf`.
+Evaluated source bundle SHA-256: `63a47c9193951820fe76cdc749feeacedb3a9979f33091ccfb1905c331258b38`; generator source SHA-256: `06dbd73b160e4f5118b71ed2675ac39411dfaae1694d664ba870f2ed96ed6241`; base code commit: `72633ca53dc5984d7e7f224921cbe97292410c05`.

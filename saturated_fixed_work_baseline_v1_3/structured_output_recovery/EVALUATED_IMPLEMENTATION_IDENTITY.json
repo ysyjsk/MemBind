@@ -1,20 +1,47 @@
 {
   "branch": "dmsv-b1r2-structural-closure",
   "config_sha256": "6317572b03dd3c4bd383886a326ad68b4a9f93e18f3f04da8fc6efaec62d6f3e",
-  "dataset_sha256": "c62de964534d54295db6db0905f0442c1ccb82ffa6bc0196fcd7a5bbcc2a8fb8",
+  "dataset_sha256": "15ee488450f0a17dcb05335c671b6ad76b1f9f1a9c5ce0c78f6f8df8e7ef6258",
   "evaluator_sha256": "940fd92602a6a45fa2367dec5ab0e9b4a2aa4dd3e227af14b0faaf95b81e99b5",
   "generation_metadata": {
-    "generated_at": "2026-09-01T17:35:02.233031+00:00",
+    "generated_at": "2026-09-01T19:31:27.121348+00:00",
     "generator": "scripts/generate_current_head_identity.py",
     "provider_calls": 0,
     "purpose": "current-head-provenance-only; no canary authorization"
   },
-  "head_commit": "b81a52d5e7df7ba6e3b4f9b90591762a074503cf",
-  "method_spec_sha256": "903a86225eccd46d9b7a758b1ad015db61534fdd4d2f454ceb37744ba537a85b",
+  "head_commit": "72633ca53dc5984d7e7f224921cbe97292410c05",
+  "materialized_evidence_status": [
+    " M mab_quality_v2_final_qa/evidence/OFFICIAL_DATASET_PARITY_REPORT.json",
+    " M mab_quality_v2_final_qa/evidence/OFFICIAL_DATASET_PARITY_REPORT.md",
+    " M saturated_fixed_work_baseline_v1_3/structured_output_recovery/AUTORESEARCH_LEDGER.jsonl",
+    " M saturated_fixed_work_baseline_v1_3/structured_output_recovery/AUTORESEARCH_STATE.json",
+    " M saturated_fixed_work_baseline_v1_3/structured_output_recovery/CURRENT_HEAD_GAP_AUDIT.json",
+    " M saturated_fixed_work_baseline_v1_3/structured_output_recovery/CURRENT_HEAD_GAP_AUDIT.md",
+    " M saturated_fixed_work_baseline_v1_3/structured_output_recovery/CURRENT_STATE.json",
+    " M saturated_fixed_work_baseline_v1_3/structured_output_recovery/EVALUATED_IMPLEMENTATION_IDENTITY.json",
+    " M saturated_fixed_work_baseline_v1_3/structured_output_recovery/FINAL_DECISION.json",
+    " M saturated_fixed_work_baseline_v1_3/structured_output_recovery/FINAL_METHOD_SPEC.json",
+    " M saturated_fixed_work_baseline_v1_3/structured_output_recovery/FOUR_GATE_RESULT.json",
+    " M saturated_fixed_work_baseline_v1_3/structured_output_recovery/FOUR_GATE_RESULT.md",
+    " M saturated_fixed_work_baseline_v1_3/structured_output_recovery/FROZEN_DEV_WORKLOAD_MANIFEST.json",
+    " M saturated_fixed_work_baseline_v1_3/structured_output_recovery/NATIVE_BASELINE_IDENTITY.json",
+    " M saturated_fixed_work_baseline_v1_3/structured_output_recovery/NATIVE_IMMUTABILITY_REPORT.json",
+    " M saturated_fixed_work_baseline_v1_3/structured_output_recovery/NATIVE_IMMUTABILITY_REPORT.md",
+    " M saturated_fixed_work_baseline_v1_3/structured_output_recovery/PRECANARY_METHOD_SEAL.json",
+    " M saturated_fixed_work_baseline_v1_3/structured_output_recovery/SCHEDULER_STRESS_TEST_RESULT.json",
+    " M saturated_fixed_work_baseline_v1_3/structured_output_recovery/STRUCTURED_OUTPUT_CALLSITE_INVENTORY.json",
+    " M saturated_fixed_work_baseline_v1_3/structured_output_recovery/STRUCTURED_OUTPUT_QUALIFICATION_REPORT.md",
+    " M saturated_fixed_work_baseline_v1_3/structured_output_recovery/STRUCTURED_OUTPUT_QUALIFICATION_RESULT.json",
+    " M saturated_fixed_work_baseline_v1_3/structured_output_recovery/STRUCTURED_OUTPUT_RECOVERY_LEDGER.jsonl",
+    " M saturated_fixed_work_baseline_v1_3/structured_output_recovery/STRUCTURED_OUTPUT_SCHEMA_BOUND_CERTIFICATE.json",
+    " M saturated_fixed_work_baseline_v1_3/structured_output_recovery/THREE_ARM_METHOD_BOUNDARIES.json",
+    " M saturated_fixed_work_baseline_v1_3/structured_output_recovery/V61_PARAMETER_IDENTITY.json"
+  ],
+  "method_spec_sha256": "e23e610fcbc804eb73fd0c0963a8efe999b84db677c72611033639450a262da7",
   "native_boundary_sha256": "2a435cd6da3bd004329ac124c40a8b709434993b9ff7d413eef20f01bdd0bee1",
   "old_evidence_base_commit": "c62b548d18bbf0da161069be7be86750e977581c",
   "origin_main": "b81a52d5e7df7ba6e3b4f9b90591762a074503cf",
-  "runner_sha256": "f6fa1dd45b54a22a33d708e815198cb2512e4da4a9a2dcdde3278ebf132c917e",
+  "runner_sha256": "0f766f512d1b7d3cb49c6ecef827866804003a0c859d3e9dc555e1d88f167d62",
   "schema_version": "membind.evaluated-implementation-identity.v1",
   "source_bundle_members": {
     "config": [
@@ -38,7 +65,7 @@
       },
       {
         "path": "mab_quality_v2_final_qa/evidence/OFFICIAL_DATASET_PARITY_REPORT.json",
-        "sha256": "74e507b41e84b45904e6bc2e0ad12eff777aba24f74df28a28f7b5ff3903b3a9"
+        "sha256": "def746fbce2606c158d34f3fc7598c207f14119e69ed3866e7416c1802e72b97"
       }
     ],
     "evaluator": [
@@ -117,16 +144,12 @@
     ],
     "method_spec": [
       {
-        "path": "saturated_fixed_work_baseline_v1_3/structured_output_recovery/FINAL_METHOD_SPEC.json",
-        "sha256": "89e082a6ded27bd1c556ca61f917fec32ecb611ba1971fc3285a16279ffe6352"
-      },
-      {
         "path": "saturated_fixed_work_baseline_v1_3/structured_output_recovery/STRUCTURED_OUTPUT_RECOVERY_POLICY.json",
         "sha256": "ac69a0baa85c411387e19b0cc79f30143f176b1fe0c647b9362d38ea1ba3104d"
       },
       {
         "path": "saturated_fixed_work_baseline_v1_3/structured_output_recovery/THREE_ARM_METHOD_BOUNDARIES.json",
-        "sha256": "1dbb8927744e686883ae5d59516504b7485d9f15fa2d26a2e613ac85e8bffd7a"
+        "sha256": "f61ccec6ff957b2faba06e7cd9749ee7c243fc19ac60d3f69900fb8fcf890481"
       }
     ],
     "native_boundary": [
@@ -162,7 +185,7 @@
       },
       {
         "path": "scripts/audit_current_four_gates.py",
-        "sha256": "f688b428c8f77b3224337e375a27841cb2cf824f86011a7bf07fcfef5c4ffd65"
+        "sha256": "a63bedd2e139e5042c4974788e0c3be7c488d96e3e2832b690a727a6e40cee20"
       },
       {
         "path": "scripts/audit_v61_h5.py",
@@ -170,7 +193,7 @@
       },
       {
         "path": "scripts/finalize_preexperiment_state.py",
-        "sha256": "df1317d83789d2bc84a08e09ac0904c99c4b566b6d6b3a75510fc0568d66995e"
+        "sha256": "82e68d5d00c2c2ec3b58146c3cde728f7d63ee306e657c154e476bdbe0888703"
       },
       {
         "path": "scripts/freeze_v61_fixed_method.py",
@@ -232,7 +255,7 @@
       },
       {
         "path": "saturated_fixed_work_baseline_v1_3/src/saturated_fixed_work_baseline_v1_3/membind_v6_1/runtime.py",
-        "sha256": "b19c008fd8d7fd1440236611f2f141d489c92f91be7874f172b7af7f926f100f"
+        "sha256": "504883393a749a952256dd9de91b8037aab46adc877c46ebc969cd9d1d283048"
       },
       {
         "path": "saturated_fixed_work_baseline_v1_3/src/saturated_fixed_work_baseline_v1_3/membind_v6_1/runtime_8b.py",
@@ -240,7 +263,7 @@
       },
       {
         "path": "saturated_fixed_work_baseline_v1_3/src/saturated_fixed_work_baseline_v1_3/membind_v6_1/structured_output_recovery.py",
-        "sha256": "100cd4684aea09d98359c960f71821e310449c00c79d95356840ab54b13c4c5e"
+        "sha256": "8d787d47acc9e1e3627acbc9675e2cc94c508fc4046a91fc9053cf5f5103f29d"
       },
       {
         "path": "saturated_fixed_work_baseline_v1_3/src/saturated_fixed_work_baseline_v1_3/membind_v6_1/summary_materialization.py",
@@ -248,10 +271,10 @@
       }
     ]
   },
-  "source_bundle_sha256": "b74de6719f607e67de5fd193503876c0a20a86ac7d6822ba121d549000d67ed2",
+  "source_bundle_sha256": "b1a0c89307bfe4cf4598c41eb628b04df8c55ef5c0cb17782aedc20479b88f5b",
   "status_porcelain_sha256": "e3b0c44298fc1c149afbf4c8996fb92427ae41e4649b934ca495991b7852b855",
   "tracked_diff_sha256": null,
   "tracked_status": [],
-  "v61_source_sha256": "4b71afa6f33b9d79caea754df46985067894acf39446c9fd5785eaa7fbe95371",
+  "v61_source_sha256": "3757b92fd1b7866a732259f6a28176708db2032a01f2e8c66fa0af7265136f06",
   "working_tree_clean": true
 }

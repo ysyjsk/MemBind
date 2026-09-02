@@ -1,28 +1,30 @@
 {
-  "base_code_commit": "b81a52d5e7df7ba6e3b4f9b90591762a074503cf",
+  "base_code_commit": "72633ca53dc5984d7e7f224921cbe97292410c05",
   "base_code_commit_source": "cli",
   "current_implementation_identity": {
     "artifact_present": true,
-    "head_commit": "b81a52d5e7df7ba6e3b4f9b90591762a074503cf",
-    "identity_head_commit": "b81a52d5e7df7ba6e3b4f9b90591762a074503cf",
+    "head_commit": "72633ca53dc5984d7e7f224921cbe97292410c05",
+    "identity_head_commit": "72633ca53dc5984d7e7f224921cbe97292410c05",
     "identity_tracked_diff_sha256": null,
-    "status": "FAIL",
-    "tracked_diff_sha256": "94f59ffb0bf6dd15c61ffc8a305dd5ff570225636f173bfeee09b8b3361b1613"
+    "status": "PASS",
+    "tracked_diff_sha256": null
   },
-  "engineering_canary_executed": false,
+  "engineering_canary_executed": true,
+  "engineering_canary_status": "FAIL_NATIVE_AB_REPRODUCIBLE_OUTPUT_BLOCKER",
+  "engineering_canary_result": "ENGINEERING_CANARY_RESULT.json",
   "evaluated_commit_is_current": true,
   "evaluated_source_bundle": {
-    "base_code_commit": "b81a52d5e7df7ba6e3b4f9b90591762a074503cf",
-    "generator_source_sha256": "df1317d83789d2bc84a08e09ac0904c99c4b566b6d6b3a75510fc0568d66995e",
-    "native_identity_sha256": "38d668c3e51e8357295c90856bb2120f0ca8874927610313979d8d8929d24b81",
-    "native_report_sha256": "7cf514a1aef99ec18b825c46a98c724a96da940e2c38e09182991032dfa0c91e",
-    "official_dataset_parity_sha256": "74e507b41e84b45904e6bc2e0ad12eff777aba24f74df28a28f7b5ff3903b3a9",
-    "structured_qualification_sha256": "9211c0b1c12ab5b06f419631eb2081588cb54557650529677e814d385ae512a3"
+    "base_code_commit": "72633ca53dc5984d7e7f224921cbe97292410c05",
+    "generator_source_sha256": "82e68d5d00c2c2ec3b58146c3cde728f7d63ee306e657c154e476bdbe0888703",
+    "native_identity_sha256": "0a2c836fc4f4a1a1d15845846d7439c9a52417b803b828f99043804e1895aecb",
+    "native_report_sha256": "9ce51d1e8e7d535f6a6870444b747aa015fa0b96a7638d641bac82d808e7ae21",
+    "official_dataset_parity_sha256": "def746fbce2606c158d34f3fc7598c207f14119e69ed3866e7416c1802e72b97",
+    "structured_qualification_sha256": "3981c1c2e5fc328a4bf4326c201f59a13bb890576d469f509d926f9be214faef"
   },
-  "evaluated_source_bundle_sha256": "2a3746bea7eedd70ec850552dca85a692d4f84f01718a4c64fd5ec93ce2e9d86",
+  "evaluated_source_bundle_sha256": "23da376615bbbc577fb987e495e6ba661a242bd17914d757416edf9f6964656b",
   "evidence_epoch": {
-    "error": "evidence base_code_commit mismatch: selected=b81a52d5e7df7ba6e3b4f9b90591762a074503cf, declared=58af2320c5a606195968dbfd5704eaf2a805c8fd",
-    "status": "FAIL"
+    "error": null,
+    "status": "PASS"
   },
   "evidence_inputs": {
     "native_identity": "/data/predator/ly/MemBind/saturated_fixed_work_baseline_v1_3/structured_output_recovery/NATIVE_BASELINE_IDENTITY.json",
@@ -31,7 +33,7 @@
     "structured_qualification": "/data/predator/ly/MemBind/saturated_fixed_work_baseline_v1_3/structured_output_recovery/STRUCTURED_OUTPUT_QUALIFICATION_RESULT.json"
   },
   "formal_history_executed": false,
-  "generator_source_sha256": "df1317d83789d2bc84a08e09ac0904c99c4b566b6d6b3a75510fc0568d66995e",
+  "generator_source_sha256": "82e68d5d00c2c2ec3b58146c3cde728f7d63ee306e657c154e476bdbe0888703",
   "native_immutability": {
     "identity_status": "PASS",
     "prohibited_difference_count": 0,
@@ -52,8 +54,8 @@
   },
   "provider_calls": 0,
   "schema_version": "membind.preexperiment.current-state.v2",
-  "state": "BLOCKED_CURRENT_HEAD_IDENTITY",
-  "status_reason": "State is computed from current implementation identity, evidence epoch, native, UUID, actual-callsite, and official-dataset evidence; no prior state is reused.",
+  "state": "EXTERNAL_BLOCKER_WITH_REPRODUCIBLE_EVIDENCE",
+  "status_reason": "Current-head canary executed with fresh attempts. A/B strict Native edge extraction deterministically exhausts the authenticated 8B unbounded schema and returns malformed JSON; formal authorization is withheld because changing that schema/request/model would change the declared arm identity.",
   "structured_output": {
     "r1_actual_callsite_inventory": "PASS_ACTUAL_RUNTIME_CALLSITE",
     "r1_schema_boundedness": "PASS_PROVIDER_FREE_SYNTHETIC_CALLSITE_SUITE",
@@ -63,6 +65,7 @@
     "status": "PASS_ACTUAL_RUNTIME_CALLSITE"
   },
   "three_arm_experiment_created": false,
+  "formal_blocker": "NATIVE_8B_EDGE_DIAGNOSTIC.json",
   "v61_uuid_semantics": {
     "fresh_uuid_lookup": "NodeNotFoundError",
     "fresh_write_uuid_omitted": true,

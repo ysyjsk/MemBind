@@ -1,0 +1,74 @@
+{
+  "schema_version": "membind.native-8b-edge-diagnostic.v1",
+  "status": "REPRODUCIBLE_NATIVE_SCHEMA_OUTPUT_BLOCKER",
+  "profile_id": "local-qwen3-8b-awq-dualreplica-v1",
+  "head_commit": "72633ca53dc5984d7e7f224921cbe97292410c05",
+  "scope": "engineering_diagnostic_only",
+  "source": "official_5_contexts.json context index 0, source sequence 0",
+  "service_identity": {
+    "native_endpoint": "http://127.0.0.1:18200/v1",
+    "prepare_endpoint": "http://127.0.0.1:18201/v1",
+    "model": "qwen3-8b-awq",
+    "structured_outputs_backend": "xgrammar",
+    "seed": 20260806,
+    "temperature": 0.0,
+    "top_p": 1.0
+  },
+  "observations": [
+    {
+      "diagnostic": "pinned_native_request",
+      "prompt_name": "extract_nodes.extract_message",
+      "requested_max_tokens": 32768,
+      "finish_reason": "stop",
+      "completion_tokens": 444,
+      "prompt_tokens": 4786,
+      "response_characters": 1344,
+      "status": "complete"
+    },
+    {
+      "diagnostic": "pinned_native_request",
+      "prompt_name": "extract_edges.edge",
+      "requested_max_tokens": 16384,
+      "finish_reason": "length",
+      "completion_tokens": 16384,
+      "prompt_tokens": 4624,
+      "response_characters": 50902,
+      "status": "truncated_json",
+      "json_error": "Unterminated string starting at: line 1505 column 7 (char 50901)"
+    },
+    {
+      "diagnostic": "provider_budget_hypothesis_test",
+      "prompt_name": "extract_edges.edge",
+      "pinned_requested_max_tokens": 16384,
+      "diagnostic_max_tokens": 32768,
+      "finish_reason": "length",
+      "completion_tokens": 32768,
+      "prompt_tokens": 4624,
+      "response_characters": 104767,
+      "status": "truncated_json",
+      "json_error": "Unterminated string starting at: line 2920 column 7 (char 104766)"
+    }
+  ],
+  "native_retry_observation": {
+    "policy": "pinned_graphiti_tenacity_json_decode_retry",
+    "attempts_observed": 4,
+    "semantic_request_variants": 1,
+    "status": "same_malformed_response_shape_repeated"
+  },
+  "exclusion_checks": {
+    "http_transport_failure": false,
+    "vllm_process_failure": false,
+    "gpu_oom": false,
+    "neo4j_failure": false,
+    "queue_stall": false,
+    "context_length_rejection": false,
+    "native_edge_schema_is_bounded": false
+  },
+  "conclusion": {
+    "classification": "MODEL_SCHEMA_OUTPUT_UNAVAILABLE_FOR_STRICT_NATIVE_8B",
+    "formal_canary_eligible": false,
+    "required_change": "change native edge schema/request or use a different model/deployment",
+    "method_identity_impact": "changing native schema/request would violate GRAPHITI_UPSTREAM_SERIAL and RELAXED_ORDER_PARALLEL contracts",
+    "recovery_action": "do not repeat identical canary; preserve failed attempts and request a separately authorized deployment/model decision"
+  }
+}
