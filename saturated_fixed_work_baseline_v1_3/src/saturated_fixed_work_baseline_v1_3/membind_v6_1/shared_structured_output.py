@@ -359,9 +359,15 @@ def validate_edge_page(
         if source not in allowed or target not in allowed:
             if reject_invalid_endpoints:
                 raise ValueError("edge endpoint is outside authoritative entity set")
+        # A provider may emit a malformed self-edge after otherwise valid
+        # candidates.  Reject that candidate without discarding the entire
+        # bounded page; the accepted tuple set remains canonical and the
+        # continuation asks for further unseen edges.  Unknown endpoints stay
+        # fatal because they indicate a grounding breach rather than a local
+        # semantic candidate error.
         if source == target:
             if reject_invalid_endpoints:
-                raise ValueError("edge endpoints must be distinct")
+                continue
         validated.append(edge)
     return tuple(validated)
 
@@ -407,7 +413,9 @@ class BoundedStructuredOutputAdapter:
                 if source not in self.authoritative_entities or target not in self.authoritative_entities:
                     raise ValueError("edge endpoint is outside authoritative entity set")
                 if source == target:
-                    raise ValueError("edge endpoints must be distinct")
+                    # Ignore a malformed self-edge candidate while preserving
+                    # the rest of this bounded page for canonical progress.
+                    continue
                 identity = canonical_edge_tuple(edge)
                 if identity in seen:
                     continue

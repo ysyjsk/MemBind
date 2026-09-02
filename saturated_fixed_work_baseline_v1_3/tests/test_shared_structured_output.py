@@ -189,3 +189,15 @@ def test_unknown_endpoint_is_rejected() -> None:
     )
     with pytest.raises(ValueError, match="authoritative"):
         asyncio.run(adapter.collect())
+
+
+def test_self_edge_candidate_is_rejected_without_poisoning_valid_page() -> None:
+    from saturated_fixed_work_baseline_v1_3.membind_v6_1.shared_structured_output import validate_edge_page
+
+    page = {"edges": [edge("a", "a"), edge("a", "b")]}
+    contract = SharedStructuredOutputContract(page_capacity=2, max_pages=1)
+    validated = validate_edge_page(
+        page, contract=contract, authoritative_entities=("a", "b")
+    )
+    assert len(validated) == 1
+    assert validated[0]["source_entity_name"] == "a"
