@@ -1693,7 +1693,9 @@ def _edge_page_messages(
                 "again. Return one different supported edge absent from "
                 "ALREADY_RETURNED_EDGES as {\"status\":\"new_edge\",\"edge\":{...}}, "
                 "or return {\"status\":\"no_additional_edge\",\"edge\":null} only "
-                "when none exists. Do not return an edges array.\n"
+                "when none exists. Do not return an edges array. IMPORTANT: never copy "
+                "the rejected tuple into a new_edge payload; if it is the only supported "
+                "candidate, return exactly {\"status\":\"no_additional_edge\",\"edge\":null}.\n"
                 "</FINAL_DUPLICATE_RECOVERY_DIRECTIVE>\n"
             )
         if isinstance(message, Mapping):
