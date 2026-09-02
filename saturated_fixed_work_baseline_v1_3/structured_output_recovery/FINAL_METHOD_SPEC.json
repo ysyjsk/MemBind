@@ -1,5 +1,5 @@
 {
-  "canary_validation_sha256": "24ea58734603af423bed58c60c0d1e648ca2a29ba3d027fea53ddc4ac1bcabc1",
+  "canary_validation_sha256": "a0d66b4c5f823f1e532d90dd309ee069662273b29b3a1cb76e4d44c2964ebaa6",
   "deployment_artifact": "DEPLOYMENT_PARAMETERS.json",
   "dev_manifest": "FROZEN_DEV_WORKLOAD_MANIFEST.json",
   "formal_recovery_policy": "NO_RESUME_FORMAL_ATTEMPT",
@@ -11,17 +11,27 @@
   "generated_at": "2026-09-02T05:44:59.147679+00:00",
   "heuristic_artifact": "HEURISTIC_PARAMETERS.json",
   "invariants_artifact": "METHOD_INVARIANTS.json",
-  "method_identity": "V6_FIXED_POLICY",
+  "method_identity": "MEMBIND_RESOURCE_CREDIT_V1",
   "policy": {
-    "future_cap": 1,
-    "lookahead": 2,
-    "native_future_quota": 0
+    "bounded_future_request_cost": 1,
+    "fixed_ablation": {
+      "future_cap": 1,
+      "lookahead": 2,
+      "method_identity": "MEMBIND_FIXED_2_1_0_ABLATION",
+      "native_future_quota": 0
+    },
+    "formula": {
+      "future_credit": "min(dependency_ready_future_count, request_credit, token_credit when authoritative)",
+      "request_credit": "max(0, certified_capacity - active_physical_requests - authoritative_reserve)"
+    },
+    "method_identity": "MEMBIND_RESOURCE_CREDIT_V1",
+    "token_authority_reliable": false
   },
   "resource_and_routing_contract": "FROZEN_RESOURCE_AND_ROUTING_CONTRACT.json",
   "schema_version": "membind.final-method-spec.v1",
   "source_identity": {
-    "head_commit": "fb7172f113251ca3e2d4b4b66aaa72265178708d",
-    "source_bundle_sha256": "06beaecdff193aa61184d6b7589f539bc15b3d4302b09e41818348dd24b2a5cd",
+    "head_commit": "487e3cb1f59080f9472bf3517315c560b19b921a",
+    "source_bundle_sha256": "2efa800de89598d30e652cd09cdbd1772f5c7a35fba684387c567db92ed10587",
     "tracked_diff_sha256": null
   },
   "status": "FINAL_CANARY_AUTHENTICATED"

@@ -1,7 +1,8 @@
 # Final Method Spec
 
-Method identity: `V6_FIXED_POLICY`.
+Method identity: `MEMBIND_RESOURCE_CREDIT_V1`.
 
-The fixed policy is `lookahead=2`, `future_cap=1`, `native_future_quota=0`. These are bounded-admission safeguards, not optimality claims. P1 is disabled without a direct-consumer proof; P0/P2 priority, weighted physical permits, ordered durable publication, and `NO_RESUME_FORMAL_ATTEMPT` are frozen.
+Speculative admission uses the deterministic per-pool formula
+`future_credit = min(dependency_ready_future_count, max(0, certified_capacity - active_physical_requests - authoritative_reserve), token_credit when authoritative)`. Future work is lazy and dependency-ready; P0 authoritative work has priority, publication remains ordered, and `NO_RESUME_FORMAL_ATTEMPT` is frozen. The former `lookahead=2/future_cap=1/native_future_quota=0` policy is retained only as `MEMBIND_FIXED_2_1_0_ABLATION`.
 
-Status: `PRECANARY_FROZEN`; engineering canary and formal campaign remain unauthorized.
+Status: `FINAL_CANARY_AUTHENTICATED`; engineering canary passed and formal campaign is ready for a fresh sealed manifest.

@@ -1,57 +1,80 @@
 {
-  "schema_version": "membind.engineering-canary-result.v1",
-  "status": "FAIL_NATIVE_AB_REPRODUCIBLE_OUTPUT_BLOCKER",
-  "run_id": "engineering-canary-20260902T0410",
-  "root": "/data/predator/ly/Mem/experiments/local-qwen3-8b-awq-dualreplica-v1/engineering-canary-20260902T0410",
-  "head_commit": "72633ca53dc5984d7e7f224921cbe97292410c05",
-  "implementation_identity_sha256": "16b5d7ba08c83afe9ec05cb58fb40c8f862e374fbf6de683af568b46b4e69e50",
-  "scope": "engineering_canary_only",
-  "contexts": [0],
-  "session_limit": 2,
-  "arms": {
-    "GRAPHITI_UPSTREAM_SERIAL": {
-      "status": "FAIL",
-      "attempt_id": "ed9746e2166c",
-      "failure_type": "json.decoder.JSONDecodeError",
-      "error": "Unterminated string starting at: line 1505 column 7 (char 50901)",
-      "route_event_count": 5,
-      "construction_seal": false,
-      "failure_artifacts_preserved": true
-    },
-    "RELAXED_ORDER_PARALLEL": {
-      "status": "FAIL",
-      "attempt_id": "74e7fd3afffc",
-      "failure_type": "json.decoder.JSONDecodeError",
-      "error": "Unterminated string starting at: line 1505 column 7 (char 50901)",
-      "route_event_count": 7,
-      "construction_seal": false,
-      "failure_artifacts_preserved": true
-    },
-    "MEMBIND_V6_1": {
+  "attempts": [
+    {
+      "attempt_id": "9918e7ffdd7a",
+      "expected_episode_count": 2,
+      "issues": [],
+      "method": "GRAPHITI_SERIAL_SHARED_BOUNDED_SO",
+      "namespace": "local-qwen3-8b-awq-dualreplica-v1-v61mab-engineering-canary-resource-credit-20260902T162519Z-c0-graphiti-serial-shared-bounded-so-9918e7ffdd7a",
+      "order_contract_status": "PASS",
+      "route_endpoint_counts": {
+        "native-replica": 103,
+        "prepare-replica": 81
+      },
+      "route_seal_sha256": "7a85f5fbb6497b19be8968754197f3fca57460dbde9515761a906ac2140a6f35",
       "status": "PASS",
-      "attempt_id": "0f83a13e4e4b",
-      "build_makespan_ns": 47714805395,
-      "construction_seal": true,
-      "route_seal": true,
-      "policy": {
-        "lookahead": 2,
-        "future_cap": 1,
-        "native_future_quota": 0,
-        "boundary": "MEMBIND_CORE"
-      }
+      "submitted_count": 2,
+      "transport_attempts": 184
+    },
+    {
+      "attempt_id": "65f1a50343d2",
+      "expected_episode_count": 2,
+      "issues": [],
+      "method": "MEMBIND_V6_1_SHARED_BOUNDED_SO",
+      "namespace": "local-qwen3-8b-awq-dualreplica-v1-v61mab-engineering-canary-resource-credit-20260902T162519Z-c0-membind-v6-1-shared-bounded-so-65f1a50343d2",
+      "order_contract_status": "PASS",
+      "route_endpoint_counts": {
+        "native-replica": 78,
+        "prepare-replica": 106
+      },
+      "route_seal_sha256": "3e31f1b5d5dae17c3cdb66562c91b492a2d085b4f937e72763e921254674cf37",
+      "status": "PASS",
+      "submitted_count": 2,
+      "transport_attempts": 184
+    },
+    {
+      "attempt_id": "4ba49130ff45",
+      "expected_episode_count": 2,
+      "issues": [],
+      "method": "RELAXED_ORDER_SHARED_BOUNDED_SO",
+      "namespace": "local-qwen3-8b-awq-dualreplica-v1-v61mab-engineering-canary-resource-credit-20260902T162519Z-c0-relaxed-order-shared-bounded-so-4ba49130ff45",
+      "order_contract_status": "NOT_REQUIRED",
+      "route_endpoint_counts": {
+        "native-replica": 141,
+        "prepare-replica": 70
+      },
+      "route_seal_sha256": "fc0c0b5dc44c8c89455ebd67ccd6d5afbeada69d8bef2eca0a177a1c6093fcf4",
+      "status": "PASS",
+      "submitted_count": 2,
+      "transport_attempts": 211
     }
+  ],
+  "canary_root": "/data/predator/ly/Mem/experiments/local-qwen3-8b-awq-dualreplica-v1/engineering-canary-resource-credit-20260902T162519Z",
+  "frozen_method_seal_sha256": "ba46f4434f11fa4f88033379e7f90a2af7f8884f2257c1c699fa35afe13361ba",
+  "generated_at": "2026-09-02T16:40:01.662059+00:00",
+  "implementation_identity_sha256": "e0489fa9651c7c45c6d89f4e03db9e64820f97268e03158bef925a83f89fb961",
+  "method_identity": "MEMBIND_RESOURCE_CREDIT_V1",
+  "methods": [
+    "GRAPHITI_SERIAL_SHARED_BOUNDED_SO",
+    "MEMBIND_V6_1_SHARED_BOUNDED_SO",
+    "RELAXED_ORDER_SHARED_BOUNDED_SO"
+  ],
+  "performance_use": "AUDIT_ONLY_NOT_FOR_METHOD_SELECTION",
+  "resource_credit_trace": {
+    "future_credit_observed": true,
+    "future_credit_values": [
+      1,
+      0
+    ],
+    "shared_guard_future_admit_count": 0
   },
-  "canary_checks": {
-    "fresh_attempts": true,
-    "shared_resource_pool": true,
-    "native_boundary_checked": true,
-    "c_fixed_scheduler_checked": true,
-    "uuid_publication_order_work_coverage_checked": true,
-    "artifacts_checked": true,
-    "all_three_arms_pass": false
+  "schema_version": "membind.engineering-canary-result.v1",
+  "scope": {
+    "history_indices": [
+      0
+    ],
+    "selection_use": "AUDIT_ONLY_NOT_FOR_METHOD_SELECTION",
+    "source_limit": 2
   },
-  "decision": "DO_NOT_GENERATE_FINAL_METHOD_FROZEN_OR_FORMAL_CAMPAIGN",
-  "blocker": "A/B strict Graphiti edge extraction on the authenticated 8B xgrammar deployment exhausts the native unbounded edge schema budget and returns malformed JSON; changing that schema/request or model would change the frozen arm identity.",
-  "next_authority_required": "separately authorized model/deployment decision or explicit change to the A/B Native contract",
-  "heartbeat": "/data/predator/ly/Mem/experiments/local-qwen3-8b-awq-dualreplica-v1/engineering-canary-20260902T0410/heartbeat.log"
+  "status": "PASS"
 }

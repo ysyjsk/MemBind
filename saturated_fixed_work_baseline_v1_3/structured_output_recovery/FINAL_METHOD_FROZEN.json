@@ -7,68 +7,87 @@
   "canary": {
     "attempts": [
       {
-        "attempt_id": "33e71a71094a",
+        "attempt_id": "9918e7ffdd7a",
         "expected_episode_count": 2,
         "issues": [],
         "method": "GRAPHITI_SERIAL_SHARED_BOUNDED_SO",
-        "namespace": "local-qwen3-8b-awq-dualreplica-v1-v61mab-engineering-canary-native-ours-async-20260902T132654Z-c0-graphiti-serial-shared-bounded-so-33e71a71094a",
+        "namespace": "local-qwen3-8b-awq-dualreplica-v1-v61mab-engineering-canary-resource-credit-20260902T162519Z-c0-graphiti-serial-shared-bounded-so-9918e7ffdd7a",
         "order_contract_status": "PASS",
         "route_endpoint_counts": {
           "native-replica": 103,
           "prepare-replica": 81
         },
-        "route_seal_sha256": "7083722760dcc2a6370e65fe7b64c4b44ad13254475f7fd2f8e6db7ad516d075",
+        "route_seal_sha256": "7a85f5fbb6497b19be8968754197f3fca57460dbde9515761a906ac2140a6f35",
         "status": "PASS",
         "submitted_count": 2,
         "transport_attempts": 184
       },
       {
-        "attempt_id": "2a9e39396483",
+        "attempt_id": "65f1a50343d2",
         "expected_episode_count": 2,
         "issues": [],
         "method": "MEMBIND_V6_1_SHARED_BOUNDED_SO",
-        "namespace": "local-qwen3-8b-awq-dualreplica-v1-v61mab-engineering-canary-native-ours-async-20260902T132654Z-c0-membind-v6-1-shared-bounded-so-2a9e39396483",
+        "namespace": "local-qwen3-8b-awq-dualreplica-v1-v61mab-engineering-canary-resource-credit-20260902T162519Z-c0-membind-v6-1-shared-bounded-so-65f1a50343d2",
         "order_contract_status": "PASS",
         "route_endpoint_counts": {
           "native-replica": 78,
           "prepare-replica": 106
         },
-        "route_seal_sha256": "e668c6cc7f12bd585bdd15c392e11a12d88778acdc19c6ee2c80664cdd3ef4d7",
+        "route_seal_sha256": "3e31f1b5d5dae17c3cdb66562c91b492a2d085b4f937e72763e921254674cf37",
         "status": "PASS",
         "submitted_count": 2,
         "transport_attempts": 184
       },
       {
-        "attempt_id": "83bf348b4bc0",
+        "attempt_id": "4ba49130ff45",
         "expected_episode_count": 2,
         "issues": [],
         "method": "RELAXED_ORDER_SHARED_BOUNDED_SO",
-        "namespace": "local-qwen3-8b-awq-dualreplica-v1-v61mab-engineering-canary-native-ours-async-20260902T132654Z-c0-relaxed-order-shared-bounded-so-83bf348b4bc0",
+        "namespace": "local-qwen3-8b-awq-dualreplica-v1-v61mab-engineering-canary-resource-credit-20260902T162519Z-c0-relaxed-order-shared-bounded-so-4ba49130ff45",
         "order_contract_status": "NOT_REQUIRED",
         "route_endpoint_counts": {
-          "native-replica": 143,
-          "prepare-replica": 68
+          "native-replica": 141,
+          "prepare-replica": 70
         },
-        "route_seal_sha256": "9d647cda4932f5c26dfaea34fe4338c773e3bcf4385317a9b2d947057e48f87d",
+        "route_seal_sha256": "fc0c0b5dc44c8c89455ebd67ccd6d5afbeada69d8bef2eca0a177a1c6093fcf4",
         "status": "PASS",
         "submitted_count": 2,
         "transport_attempts": 211
       }
     ],
-    "canary_root": "/data/predator/ly/Mem/experiments/local-qwen3-8b-awq-dualreplica-v1/engineering-canary-native-ours-async-20260902T132654Z",
-    "fixed_policy": {
-      "future_cap": 1,
-      "lookahead": 2,
-      "native_future_quota": 0
-    },
-    "generated_at": "2026-09-02T13:32:17.842307+00:00",
-    "head_commit": "fb7172f113251ca3e2d4b4b66aaa72265178708d",
+    "canary_root": "/data/predator/ly/Mem/experiments/local-qwen3-8b-awq-dualreplica-v1/engineering-canary-resource-credit-20260902T162519Z",
+    "generated_at": "2026-09-02T16:41:33.422113+00:00",
+    "head_commit": "487e3cb1f59080f9472bf3517315c560b19b921a",
+    "method_identity": "MEMBIND_RESOURCE_CREDIT_V1",
     "methods": [
       "GRAPHITI_SERIAL_SHARED_BOUNDED_SO",
       "MEMBIND_V6_1_SHARED_BOUNDED_SO",
       "RELAXED_ORDER_SHARED_BOUNDED_SO"
     ],
-    "run_id": "engineering-canary-native-ours-async-20260902T132654Z",
+    "resource_credit_policy": {
+      "bounded_future_request_cost": 1,
+      "forbidden_inputs": [
+        "latency_prediction",
+        "quality",
+        "arm_id",
+        "observed_mean_cost"
+      ],
+      "formula": {
+        "future_credit": "min(dependency_ready_future_count, request_credit, token_credit when authoritative)",
+        "request_credit": "max(0, certified_capacity - active_physical_requests - authoritative_reserve)",
+        "token_credit": "floor(max(0, available_token_budget - authoritative_token_reserve) / bounded_future_request_cost)"
+      },
+      "is_resource_credit": true,
+      "method_identity": "MEMBIND_RESOURCE_CREDIT_V1",
+      "resource_model": {
+        "kind": "per_pool_resource_credit",
+        "structured_decode_reserve_tokens": 4096,
+        "token_budget": "authoritative_only"
+      },
+      "schema_version": "membind.resource-credit-policy.v1",
+      "token_authority_reliable": false
+    },
+    "run_id": "engineering-canary-resource-credit-20260902T162519Z",
     "schema_version": "membind.engineering-canary-validation.v1",
     "scope": {
       "history_indices": [
@@ -90,21 +109,39 @@
     "status": "PASS"
   },
   "formal_status": "READY_FOR_45_CELL_MANIFEST",
-  "generated_at": "2026-09-02T13:32:17.842746+00:00",
-  "implementation_identity_sha256": "0c72125cda26f7b96ba936b15402cf7445b91ea0e6bb67d3280662d12d0ce8e9",
-  "method_identity": "V6_FIXED_POLICY",
+  "generated_at": "2026-09-02T16:41:33.422561+00:00",
+  "implementation_identity_sha256": "3ae31e5d01fd2bcf476d625c9917b9909fd1caeca6337da3ffde016c6f6b85b5",
+  "method_identity": "MEMBIND_RESOURCE_CREDIT_V1",
   "platform_manifest": {
     "path": "/data/predator/ly/Mem/profiles/local-qwen3-8b-awq-dualreplica-v1/platform_manifest.20260902T101532Z.b9ec43b60f91.json",
     "payload_sha256": "b9ec43b60f91df42ef0002411b298d580e3267159b6fba81f522363a1155905d"
   },
   "policy": {
-    "future_cap": 1,
-    "lookahead": 2,
-    "native_future_quota": 0
+    "bounded_future_request_cost": 1,
+    "forbidden_inputs": [
+      "latency_prediction",
+      "quality",
+      "arm_id",
+      "observed_mean_cost"
+    ],
+    "formula": {
+      "future_credit": "min(dependency_ready_future_count, request_credit, token_credit when authoritative)",
+      "request_credit": "max(0, certified_capacity - active_physical_requests - authoritative_reserve)",
+      "token_credit": "floor(max(0, available_token_budget - authoritative_token_reserve) / bounded_future_request_cost)"
+    },
+    "is_resource_credit": true,
+    "method_identity": "MEMBIND_RESOURCE_CREDIT_V1",
+    "resource_model": {
+      "kind": "per_pool_resource_credit",
+      "structured_decode_reserve_tokens": 4096,
+      "token_budget": "authoritative_only"
+    },
+    "schema_version": "membind.resource-credit-policy.v1",
+    "token_authority_reliable": false
   },
   "recovery_policy": "NO_RESUME_FORMAL_ATTEMPT",
   "schema_version": "membind.final-method-frozen.v1",
-  "seal_sha256": "9867980a5f11f6e7baf6400e6d6c0874a024abb0eac0cac57140d781d2a1500d",
+  "seal_sha256": "4212c325ff372d13559d2fd75c101ba8bdc17f6c101097e1cca2d42dfc88c9a2",
   "shared_structured_output_substrate": {
     "arm_branching": false,
     "backend": "xgrammar",
@@ -113,6 +150,6 @@
     "model": "qwen3-8b-awq",
     "strict_upstream_characterization": "A0_STRICT_UPSTREAM_COMPATIBILITY_CHARACTERIZATION"
   },
-  "source_bundle_sha256": "06beaecdff193aa61184d6b7589f539bc15b3d4302b09e41818348dd24b2a5cd",
+  "source_bundle_sha256": "2efa800de89598d30e652cd09cdbd1772f5c7a35fba684387c567db92ed10587",
   "status": "FINAL_METHOD_FROZEN"
 }
