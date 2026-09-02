@@ -2,7 +2,7 @@
 
 Status: `PASS_G1_G4_CURRENT_HEAD`.
 
-Current HEAD: `72633ca53dc5984d7e7f224921cbe97292410c05`.
+Current HEAD: `fb7172f113251ca3e2d4b4b66aaa72265178708d`.
 Implementation identity current: `True`.
 
 - `G1_NATIVE_IDENTITY_AND_FAIRNESS`: `PASS`

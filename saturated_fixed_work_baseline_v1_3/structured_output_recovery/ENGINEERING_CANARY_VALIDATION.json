@@ -1,0 +1,85 @@
+{
+  "attempts": [
+    {
+      "attempt_id": "33e71a71094a",
+      "expected_episode_count": 2,
+      "issues": [],
+      "method": "GRAPHITI_SERIAL_SHARED_BOUNDED_SO",
+      "namespace": "local-qwen3-8b-awq-dualreplica-v1-v61mab-engineering-canary-native-ours-async-20260902T132654Z-c0-graphiti-serial-shared-bounded-so-33e71a71094a",
+      "order_contract_status": "PASS",
+      "route_endpoint_counts": {
+        "native-replica": 103,
+        "prepare-replica": 81
+      },
+      "route_seal_sha256": "7083722760dcc2a6370e65fe7b64c4b44ad13254475f7fd2f8e6db7ad516d075",
+      "status": "PASS",
+      "submitted_count": 2,
+      "transport_attempts": 184
+    },
+    {
+      "attempt_id": "2a9e39396483",
+      "expected_episode_count": 2,
+      "issues": [],
+      "method": "MEMBIND_V6_1_SHARED_BOUNDED_SO",
+      "namespace": "local-qwen3-8b-awq-dualreplica-v1-v61mab-engineering-canary-native-ours-async-20260902T132654Z-c0-membind-v6-1-shared-bounded-so-2a9e39396483",
+      "order_contract_status": "PASS",
+      "route_endpoint_counts": {
+        "native-replica": 78,
+        "prepare-replica": 106
+      },
+      "route_seal_sha256": "e668c6cc7f12bd585bdd15c392e11a12d88778acdc19c6ee2c80664cdd3ef4d7",
+      "status": "PASS",
+      "submitted_count": 2,
+      "transport_attempts": 184
+    },
+    {
+      "attempt_id": "83bf348b4bc0",
+      "expected_episode_count": 2,
+      "issues": [],
+      "method": "RELAXED_ORDER_SHARED_BOUNDED_SO",
+      "namespace": "local-qwen3-8b-awq-dualreplica-v1-v61mab-engineering-canary-native-ours-async-20260902T132654Z-c0-relaxed-order-shared-bounded-so-83bf348b4bc0",
+      "order_contract_status": "NOT_REQUIRED",
+      "route_endpoint_counts": {
+        "native-replica": 143,
+        "prepare-replica": 68
+      },
+      "route_seal_sha256": "9d647cda4932f5c26dfaea34fe4338c773e3bcf4385317a9b2d947057e48f87d",
+      "status": "PASS",
+      "submitted_count": 2,
+      "transport_attempts": 211
+    }
+  ],
+  "canary_root": "/data/predator/ly/Mem/experiments/local-qwen3-8b-awq-dualreplica-v1/engineering-canary-native-ours-async-20260902T132654Z",
+  "fixed_policy": {
+    "future_cap": 1,
+    "lookahead": 2,
+    "native_future_quota": 0
+  },
+  "generated_at": "2026-09-02T13:32:17.842307+00:00",
+  "head_commit": "fb7172f113251ca3e2d4b4b66aaa72265178708d",
+  "methods": [
+    "GRAPHITI_SERIAL_SHARED_BOUNDED_SO",
+    "MEMBIND_V6_1_SHARED_BOUNDED_SO",
+    "RELAXED_ORDER_SHARED_BOUNDED_SO"
+  ],
+  "run_id": "engineering-canary-native-ours-async-20260902T132654Z",
+  "schema_version": "membind.engineering-canary-validation.v1",
+  "scope": {
+    "history_indices": [
+      0
+    ],
+    "selection_use": "AUDIT_ONLY_NOT_FOR_METHOD_SELECTION",
+    "source_limit": 2
+  },
+  "shared_adapter_contract": {
+    "arm_branching": false,
+    "backend": "xgrammar",
+    "duplicate_recovery": "one_duplicate_confirmation_then_fail_closed",
+    "max_tokens": 32768,
+    "model": "qwen3-8b-awq",
+    "page_capacity": "construction-observed-and-frozen-by-policy",
+    "termination": "empty_page_only"
+  },
+  "shared_adapter_identity_sha256": "8c027a61338c835559bbf87033ab945e4c81337decb9c899ffbf6ab566ace2e0",
+  "status": "PASS"
+}

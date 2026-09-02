@@ -1,20 +1,22 @@
 {
-  "base_code_commit": "72633ca53dc5984d7e7f224921cbe97292410c05",
+  "base_code_commit": "fb7172f113251ca3e2d4b4b66aaa72265178708d",
   "base_code_commit_source": "cli",
-  "canary_authorized": false,
+  "canary_authorized": true,
   "current_identity_match": true,
-  "decision": "EXTERNAL_BLOCKER_WITH_REPRODUCIBLE_EVIDENCE",
+  "decision": "CODE_READY_FOR_THREE_ARM_EXPERIMENT",
   "evaluated_source_bundle": {
-    "base_code_commit": "72633ca53dc5984d7e7f224921cbe97292410c05",
+    "base_code_commit": "fb7172f113251ca3e2d4b4b66aaa72265178708d",
     "generator_source_sha256": "82e68d5d00c2c2ec3b58146c3cde728f7d63ee306e657c154e476bdbe0888703",
-    "native_identity_sha256": "0a2c836fc4f4a1a1d15845846d7439c9a52417b803b828f99043804e1895aecb",
-    "native_report_sha256": "9ce51d1e8e7d535f6a6870444b747aa015fa0b96a7638d641bac82d808e7ae21",
-    "official_dataset_parity_sha256": "def746fbce2606c158d34f3fc7598c207f14119e69ed3866e7416c1802e72b97",
-    "structured_qualification_sha256": "3981c1c2e5fc328a4bf4326c201f59a13bb890576d469f509d926f9be214faef"
+    "native_identity_sha256": "5ad608b05dd2509fa7eb3e9f799a114254563eef6b2cbefa52734dcf983dfa3f",
+    "native_report_sha256": "c04065d0510d2ae5c0d321ba9d6a1167e459b2ffcd6ae1f1b7570c46580eab7e",
+    "official_dataset_parity_sha256": "863ec0deaf9850617e595b0d1810275ee8a1aa77593f6d1bdfb80cd75925e373",
+    "structured_qualification_sha256": "df59f96341f72ac37ce03c69c952498166fdf8da08096616a9c8ad01ced635e5"
   },
-  "evaluated_source_bundle_sha256": "23da376615bbbc577fb987e495e6ba661a242bd17914d757416edf9f6964656b",
+  "evaluated_source_bundle_sha256": "4ee498b7cb7520d5c4c41611825dc1474fe8c5906b026ea30ebe6bef9891a3ff",
   "evidence_epoch_status": "PASS",
-  "formal_three_arm_authorized": false,
+  "final_method_frozen_sha256": "cfa0dc209d43249b9af6f2b91b05316bcb6a8db382b4baca4d4c562e515bba22",
+  "formal_manifest_sha256": "88970982ab322dd39db5c4be4fd34e0a319f33f605baee925d3818d1101b02a6",
+  "formal_three_arm_authorized": true,
   "generator_source_sha256": "82e68d5d00c2c2ec3b58146c3cde728f7d63ee306e657c154e476bdbe0888703",
   "inputs": {
     "native_identity": "/data/predator/ly/MemBind/saturated_fixed_work_baseline_v1_3/structured_output_recovery/NATIVE_BASELINE_IDENTITY.json",
@@ -23,9 +25,7 @@
     "structured_qualification": "/data/predator/ly/MemBind/saturated_fixed_work_baseline_v1_3/structured_output_recovery/STRUCTURED_OUTPUT_QUALIFICATION_RESULT.json"
   },
   "provider_calls": 0,
-  "reason": "Fresh current-head canary completed. A/B strict Native edge extraction returned deterministic length-truncated malformed JSON on the authenticated 8B deployment; no formal campaign can be authorized without changing the frozen Native contract or model/deployment authority.",
+  "reason": "State is computed from current implementation identity, evidence epoch, native, UUID, actual-callsite, and official-dataset evidence; no prior state is reused.",
   "schema_version": "membind.preexperiment.final-decision.v3",
-  "status": "EXTERNAL_BLOCKER_WITH_REPRODUCIBLE_EVIDENCE",
-  "engineering_canary_result": "ENGINEERING_CANARY_RESULT.json",
-  "formal_blocker": "NATIVE_8B_EDGE_DIAGNOSTIC.json"
+  "status": "CODE_READY_FOR_THREE_ARM_EXPERIMENT"
 }
