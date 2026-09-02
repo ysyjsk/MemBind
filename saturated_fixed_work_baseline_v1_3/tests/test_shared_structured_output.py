@@ -60,6 +60,28 @@ def test_endpoint_grounded_identity_separates_template_and_concrete_schema() -> 
     assert concrete["endpoint_names"] == ["A", "B"]
 
 
+def test_recovery_identity_uses_explicit_no_additional_edge_discriminator() -> None:
+    identity = adapter_identity(("A", "B"), recovery=True)
+    normal = adapter_identity(("A", "B"))
+    assert identity["arm_identity"] is None
+    assert identity["response_variant"] == "duplicate_recovery"
+    assert normal["response_variant"] == "page"
+    assert identity["prompt_template_sha256"] == normal["prompt_template_sha256"]
+    assert identity["schema_template_sha256"] != normal["schema_template_sha256"]
+    model = finite_edge_page_model(
+        1,
+        ("A", "B"),
+        name_prefix="Shared",
+        termination_discriminator=True,
+    )
+    schema = model.model_json_schema()
+    assert schema["properties"]["status"]["enum"] == [
+        "edge",
+        "no_additional_edge",
+    ]
+    assert set(schema["required"]) == {"edges", "status"}
+
+
 def test_shared_finite_model_supports_grounded_endpoints() -> None:
     model = finite_edge_page_model(1, ("A", "B"), name_prefix="Shared")
     schema = model.model_json_schema()

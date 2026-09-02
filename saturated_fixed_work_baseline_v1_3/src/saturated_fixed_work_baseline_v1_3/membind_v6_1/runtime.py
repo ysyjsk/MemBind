@@ -1537,6 +1537,7 @@ def _endpoint_grounded_edge_page_model(
     page_capacity: int,
     endpoint_names: tuple[str, ...],
     fact_max_length: int = LOCAL_EDGE_FACT_MAX_CHARS,
+    termination_discriminator: bool = False,
 ) -> Any:
     """Constrain edge endpoints to the entities in the current evidence block.
 
@@ -1555,7 +1556,12 @@ def _endpoint_grounded_edge_page_model(
         int(fact_max_length),
         name_prefix="MemBindEndpointGrounded",
         edge_name=f"MemBindEndpointGroundedEdge{page_capacity}_{len(names)}",
-        page_name=f"MemBindEndpointGroundedEdgePage{page_capacity}_{len(names)}",
+        page_name=(
+            f"MemBindEndpointGroundedRecoveryEdgePage{page_capacity}_{len(names)}"
+            if termination_discriminator
+            else f"MemBindEndpointGroundedEdgePage{page_capacity}_{len(names)}"
+        ),
+        termination_discriminator=termination_discriminator,
     )
 
 
@@ -2172,6 +2178,7 @@ def install_local_extraction_chunking_policy(
             page_index: int | None = None,
             queue_wait_ns: int | None = None,
             physical_active_at_start: int | None = None,
+            duplicate_recovery_request: bool = False,
         ) -> Any:
             if (
                 shared_bounded_structured_output
@@ -2293,9 +2300,25 @@ def install_local_extraction_chunking_policy(
                 requested_capacity = int(edge_page_capacity)
                 schemas = {
                     capacity: (
-                        _endpoint_grounded_edge_page_model(capacity, endpoint_names)
+                        _endpoint_grounded_edge_page_model(
+                            capacity,
+                            endpoint_names,
+                            termination_discriminator=(
+                                duplicate_recovery_request
+                                and shared_bounded_structured_output
+                            ),
+                        )
                         if edge_endpoint_schema_grounding and endpoint_names
-                        else _bounded_edge_page_model(capacity)
+                        else finite_edge_page_model(
+                            capacity,
+                            (),
+                            LOCAL_EDGE_FACT_MAX_CHARS,
+                            name_prefix="MemBind",
+                            termination_discriminator=(
+                                duplicate_recovery_request
+                                and shared_bounded_structured_output
+                            ),
+                        )
                     ).model_json_schema()
                     for capacity in range(requested_capacity, 0, -1)
                 }
@@ -2330,10 +2353,24 @@ def install_local_extraction_chunking_policy(
                     selected_edge_page_capacity = selection.capacity
                 effective_response_model = (
                     _endpoint_grounded_edge_page_model(
-                        int(selected_edge_page_capacity), endpoint_names
+                        int(selected_edge_page_capacity),
+                        endpoint_names,
+                        termination_discriminator=(
+                            duplicate_recovery_request
+                            and shared_bounded_structured_output
+                        ),
                     )
                     if edge_endpoint_schema_grounding and endpoint_names
-                    else _bounded_edge_page_model(int(selected_edge_page_capacity))
+                    else finite_edge_page_model(
+                        int(selected_edge_page_capacity),
+                        (),
+                        LOCAL_EDGE_FACT_MAX_CHARS,
+                        name_prefix="MemBind",
+                            termination_discriminator=(
+                                duplicate_recovery_request
+                                and shared_bounded_structured_output
+                            ),
+                    )
                 )
             shared_request_identity = None
             if shared_bounded_structured_output and prompt_name == "extract_edges.edge":
@@ -2341,6 +2378,10 @@ def install_local_extraction_chunking_policy(
                     endpoint_names=endpoint_names,
                     page_capacity=int(selected_edge_page_capacity or edge_page_capacity),
                     fact_max_length=LOCAL_EDGE_FACT_MAX_CHARS,
+                    recovery=(
+                        duplicate_recovery_request
+                        and shared_bounded_structured_output
+                    ),
                 )
             structured_certificate = None
             if node_schema_selection is not None:
@@ -2696,6 +2737,7 @@ def install_local_extraction_chunking_policy(
                     partition_id: int,
                     page_index: int,
                     response_model: Any,
+                    duplicate_recovery_request: bool = False,
                 ) -> tuple[Any, int, int, int | None, dict[str, Any] | None]:
                     nonlocal edge_active_page_requests
                     nonlocal edge_shared_max_active_page_requests
@@ -2738,6 +2780,10 @@ def install_local_extraction_chunking_policy(
                             page_index=page_index,
                             queue_wait_ns=admitted_ns - queued_ns,
                             physical_active_at_start=edge_active_page_requests,
+                            duplicate_recovery_request=(
+                                duplicate_recovery_request
+                                and shared_bounded_structured_output
+                            ),
                         )
                         observed_service_ns = time.monotonic_ns() - service_start_ns
                         return (
@@ -2830,9 +2876,27 @@ def install_local_extraction_chunking_policy(
                             partition_id=partition_id,
                             page_index=page_index,
                             response_model=partition_page_model,
+                            duplicate_recovery_request=(
+                                is_duplicate_recovery
+                                and shared_bounded_structured_output
+                            ),
                         )
                         if not isinstance(page, Mapping):
                             raise LocalRuntimeConfigurationError("edge page response is not an object")
+                        if is_duplicate_recovery and shared_bounded_structured_output:
+                            status = page.get("status")
+                            if status not in {"edge", "no_additional_edge"}:
+                                raise LocalRuntimeConfigurationError(
+                                    "duplicate recovery response is missing a valid status discriminator"
+                                )
+                            if status == "no_additional_edge" and page.get("edges") != []:
+                                raise LocalRuntimeConfigurationError(
+                                    "no_additional_edge recovery response must contain an empty edge list"
+                                )
+                            if status == "edge" and not isinstance(page.get("edges"), list):
+                                raise LocalRuntimeConfigurationError(
+                                    "edge recovery response must contain an edge list"
+                                )
                         try:
                             page_edges = list(
                                 validate_edge_page(
@@ -2908,6 +2972,9 @@ def install_local_extraction_chunking_policy(
                                 "duplicate_recovery_succeeded": (
                                     is_duplicate_recovery and bool(raw_unique_progress)
                                 ),
+                                "recovery_status": (
+                                    page.get("status") if is_duplicate_recovery else None
+                                ),
                                 "invalid_endpoint_edge_count": invalid_endpoint_count,
                                 "non_boundary_edge_count": non_boundary_edge_count,
                                 "cumulative_raw_distinct_edge_count": (
@@ -2948,6 +3015,12 @@ def install_local_extraction_chunking_policy(
                             }
                         )
                         if not page_edges:
+                            explicit_termination = (
+                                "explicit_no_additional_edge"
+                                if is_duplicate_recovery
+                                and page.get("status") == "no_additional_edge"
+                                else "empty_page"
+                            )
                             diagnostics.append(
                                 {
                                     "schema_version": "membind.v6.1.edge-fixed-point.v1",
@@ -2958,7 +3031,7 @@ def install_local_extraction_chunking_policy(
                                     "distinct_edge_count": len(accepted_partition_edges),
                                     "raw_distinct_edge_count": len(pagination_history),
                                     "event": "EDGE_PAGINATION_EMPTY_PAGE",
-                                    "termination_reason": "empty_page",
+                                    "termination_reason": explicit_termination,
                                     "status": "converged",
                                 }
                             )

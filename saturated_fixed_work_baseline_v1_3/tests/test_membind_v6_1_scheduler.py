@@ -2954,6 +2954,85 @@ def test_shared_edge_substrate_enforces_wire_budget_when_client_is_32768(
     assert all(row["shared_structured_output_construction_max_tokens"] == 32_768 for row in rows)
 
 
+def test_shared_duplicate_recovery_accepts_explicit_no_additional_edge(
+    monkeypatch,
+) -> None:
+    prompts: list[str] = []
+
+    def edge() -> dict[str, object]:
+        return {
+            "source_entity_name": "A",
+            "target_entity_name": "B",
+            "relation_type": "KNOWS",
+            "fact": "A knows B",
+            "valid_at": None,
+            "invalid_at": None,
+            "episode_indices": [0],
+        }
+
+    class Client:
+        max_tokens = 32_768
+        call_events: list[dict[str, object]] = []
+
+        async def generate_response(self, messages, response_model=None, **_kwargs):
+            content = messages[0]["content"]
+            prompts.append(content)
+            self.call_events.append(
+                {
+                    "finish_reason": "stop",
+                    "token_usage": {"prompt_tokens": 100, "completion_tokens": 20},
+                }
+            )
+            if len(prompts) == 1:
+                assert response_model.model_json_schema()["properties"]["edges"]["maxItems"] == 1
+                return {"edges": [edge()]}
+            if len(prompts) == 2:
+                assert "<DUPLICATE_RECOVERY>" not in content
+                return {"edges": [edge()]}
+            schema = response_model.model_json_schema()
+            assert schema["properties"]["status"]["enum"] == ["edge", "no_additional_edge"]
+            assert "<DUPLICATE_RECOVERY>" in content
+            assert "<FINAL_DUPLICATE_RECOVERY_DIRECTIVE>" in content
+            return {"status": "no_additional_edge", "edges": []}
+
+    monkeypatch.setenv("CONSTRUCTION_CONTEXT_SAFETY_TOKENS", "32")
+    client = Client()
+    install_local_extraction_chunking_policy(
+        client,
+        token_counter=lambda _messages: 100,
+        partition_extraction_by_turns=True,
+        partition_edge_candidates=True,
+        edge_duplicate_recovery=True,
+        edge_page_capacity=2,
+        shared_bounded_structured_output=True,
+    )
+    client._membind_entity_partition_hints.update({"a": [0], "b": [0], "c": [0]})
+    result = asyncio.run(
+        client.generate_response(
+            [
+                {
+                    "role": "user",
+                    "content": (
+                        "<CURRENT MESSAGE>\n[USER]\nA knows B\n</CURRENT MESSAGE>\n"
+                        '<ENTITIES>[{"name":"A"},{"name":"B"},{"name":"C"}]</ENTITIES>\n# TASK'
+                    ),
+                }
+            ],
+            max_tokens=32_768,
+            prompt_name="extract_edges.edge",
+        )
+    )
+    assert result["edges"][0]["fact"] == "A knows B"
+    assert len(prompts) == 3
+    pages = [
+        row
+        for row in client._membind_extraction_diagnostics
+        if row.get("event") == "EDGE_PAGINATION_PAGE"
+    ]
+    assert pages[-1]["recovery_status"] == "no_additional_edge"
+    assert pages[-1]["duplicate_recovery_request"] is True
+
+
 def test_edge_pagination_duplicate_page_is_audited_zero_delta_fixed_point(monkeypatch) -> None:
     calls = 0
 

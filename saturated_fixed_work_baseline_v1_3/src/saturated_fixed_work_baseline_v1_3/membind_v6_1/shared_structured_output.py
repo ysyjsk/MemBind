@@ -61,6 +61,8 @@ def _finite_schema(
     page_capacity: int,
     endpoint_names: Sequence[str] = (),
     fact_max_length: int = SHARED_FACT_MAX_LENGTH,
+    *,
+    termination_discriminator: bool = False,
 ) -> dict[str, Any]:
     if page_capacity < 1:
         raise ValueError("page capacity must be positive")
@@ -85,10 +87,15 @@ def _finite_schema(
         },
         "required": ["source_entity_name", "target_entity_name", "relation_type", "fact"],
     }
+    properties: dict[str, Any] = {"edges": {"type": "array", "minItems": 0, "maxItems": page_capacity, "items": edge}}
+    required = ["edges"]
+    if termination_discriminator:
+        properties["status"] = {"type": "string", "enum": ["edge", "no_additional_edge"]}
+        required.append("status")
     return {
         "type": "object", "additionalProperties": False,
-        "properties": {"edges": {"type": "array", "minItems": 0, "maxItems": page_capacity, "items": edge}},
-        "required": ["edges"],
+        "properties": properties,
+        "required": required,
     }
 
 
@@ -128,6 +135,7 @@ def finite_edge_page_model(
     name_prefix: str = "Shared",
     edge_name: str | None = None,
     page_name: str | None = None,
+    termination_discriminator: bool = False,
 ) -> Any:
     """Build the finite Pydantic wire model used by every formal arm."""
 
@@ -152,13 +160,23 @@ def finite_edge_page_model(
         episode_indices=(list[Literal[0]], Field(default_factory=lambda: [0], min_length=1, max_length=1)),
         __config__=ConfigDict(extra="forbid"),
     )
+    edges_field = (
+        Field(..., max_length=page_capacity)
+        if termination_discriminator
+        else Field(default_factory=list, max_length=page_capacity)
+    )
+    fields: dict[str, Any] = {"edges": (list[edge_model], edges_field)}
+    if termination_discriminator:
+        fields["status"] = (Literal["edge", "no_additional_edge"], ...)
     return create_model(
         page_name or (
-            f"{name_prefix}SingleEdgePage"
+            f"{name_prefix}RecoveryEdgePage"
+            if termination_discriminator
+            else f"{name_prefix}SingleEdgePage"
             if page_capacity == 1
             else f"{name_prefix}BoundedEdgePage{page_capacity}"
         ),
-        edges=(list[edge_model], Field(default_factory=list, max_length=page_capacity)),
+        **fields,
         __config__=ConfigDict(extra="forbid"),
     )
 
@@ -168,6 +186,7 @@ def adapter_identity(
     *,
     page_capacity: int = SHARED_PAGE_CAPACITY,
     fact_max_length: int = SHARED_FACT_MAX_LENGTH,
+    recovery: bool = False,
 ) -> dict[str, Any]:
     """Return source, schema, prompt, and policy identity for the substrate.
 
@@ -188,6 +207,7 @@ def adapter_identity(
         contract.page_capacity,
         (),
         contract.fact_max_length,
+        termination_discriminator=bool(recovery),
     )
     schema_template_hash = hashlib.sha256(
         json.dumps(schema_template, sort_keys=True, separators=(",", ":")).encode()
@@ -196,6 +216,7 @@ def adapter_identity(
         contract.page_capacity,
         normalized_endpoints,
         contract.fact_max_length,
+        termination_discriminator=bool(recovery),
     )
     schema_hash = hashlib.sha256(
         json.dumps(concrete_schema, sort_keys=True, separators=(",", ":")).encode()
@@ -220,6 +241,7 @@ def adapter_identity(
         "retry_policy": SHARED_RETRY_POLICY,
         "termination_policy": contract.termination,
         "endpoint_names": list(normalized_endpoints) if normalized_endpoints else None,
+        "response_variant": "duplicate_recovery" if recovery else "page",
         "arm_identity": None,
     }
 
