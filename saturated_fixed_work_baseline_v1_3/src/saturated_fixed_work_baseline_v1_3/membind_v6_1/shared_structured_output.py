@@ -109,7 +109,7 @@ def _finite_schema(
             "status": {"type": "string", "enum": ["new_edge", "no_additional_edge"]},
             "edge": edge,
         }
-        required = ["status"]
+        required = ["status", "edge"]
     else:
         properties = {
             "edges": {"type": "array", "minItems": 0, "maxItems": page_capacity, "items": edge}
@@ -209,7 +209,7 @@ def finite_edge_page_model(
     if termination_discriminator:
         fields: dict[str, Any] = {
             "status": (Literal["new_edge", "no_additional_edge"], ...),
-            "edge": (edge_model | None, None),
+            "edge": (edge_model | None, ...),
         }
     else:
         fields = {
@@ -254,23 +254,38 @@ def adapter_identity(
         dict.fromkeys(str(name).strip() for name in endpoint_names if str(name).strip())
     )
     source_hash = hashlib.sha256(Path(__file__).read_bytes()).hexdigest()
-    schema_template = _finite_schema(
-        contract.page_capacity,
-        (),
-        contract.fact_max_length,
-        termination_discriminator=bool(recovery),
-        excluded_edge=excluded_edge,
-    )
+    def _identity_schema(names: tuple[str, ...]) -> dict[str, Any]:
+        if names:
+            return finite_edge_page_model(
+                contract.page_capacity,
+                names,
+                contract.fact_max_length,
+                name_prefix="MemBindEndpointGrounded",
+                edge_name=(
+                    f"MemBindEndpointGroundedEdge{contract.page_capacity}_{len(names)}"
+                ),
+                page_name=(
+                    f"MemBindEndpointGroundedRecoveryEdgePage{contract.page_capacity}_{len(names)}"
+                    if recovery
+                    else f"MemBindEndpointGroundedEdgePage{contract.page_capacity}_{len(names)}"
+                ),
+                termination_discriminator=bool(recovery),
+                excluded_edge=excluded_edge,
+            ).model_json_schema()
+        return finite_edge_page_model(
+            contract.page_capacity,
+            (),
+            contract.fact_max_length,
+            name_prefix="MemBind",
+            termination_discriminator=bool(recovery),
+            excluded_edge=excluded_edge,
+        ).model_json_schema()
+
+    schema_template = _identity_schema(())
     schema_template_hash = hashlib.sha256(
         json.dumps(schema_template, sort_keys=True, separators=(",", ":")).encode()
     ).hexdigest()
-    concrete_schema = _finite_schema(
-        contract.page_capacity,
-        normalized_endpoints,
-        contract.fact_max_length,
-        termination_discriminator=bool(recovery),
-        excluded_edge=excluded_edge,
-    )
+    concrete_schema = _identity_schema(normalized_endpoints)
     schema_hash = hashlib.sha256(
         json.dumps(concrete_schema, sort_keys=True, separators=(",", ":")).encode()
     ).hexdigest()

@@ -1,6 +1,8 @@
 from __future__ import annotations
 
 import asyncio
+import hashlib
+import json
 
 import pytest
 
@@ -71,7 +73,9 @@ def test_recovery_identity_uses_explicit_no_additional_edge_discriminator() -> N
     model = finite_edge_page_model(
         1,
         ("A", "B"),
-        name_prefix="Shared",
+        name_prefix="MemBindEndpointGrounded",
+        edge_name="MemBindEndpointGroundedEdge1_2",
+        page_name="MemBindEndpointGroundedRecoveryEdgePage1_2",
         termination_discriminator=True,
     )
     schema = model.model_json_schema()
@@ -79,8 +83,11 @@ def test_recovery_identity_uses_explicit_no_additional_edge_discriminator() -> N
         "new_edge",
         "no_additional_edge",
     ]
-    assert set(schema["required"]) == {"status"}
+    assert set(schema["required"]) == {"status", "edge"}
     assert "edge" in schema["properties"]
+    assert identity["schema_sha256"] == hashlib.sha256(
+        json.dumps(schema, sort_keys=True, separators=(",", ":")).encode()
+    ).hexdigest()
 
 
 def test_recovery_edge_schema_excludes_the_repeated_canonical_tuple() -> None:

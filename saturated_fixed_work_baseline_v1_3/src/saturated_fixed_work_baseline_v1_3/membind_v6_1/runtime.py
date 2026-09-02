@@ -2917,9 +2917,11 @@ def install_local_extraction_chunking_policy(
                                 raise LocalRuntimeConfigurationError(
                                     "duplicate recovery response is missing a valid status discriminator"
                                 )
-                            if status == "no_additional_edge" and page.get("edge") is not None:
+                            if status == "no_additional_edge" and (
+                                "edge" not in page or page.get("edge") is not None
+                            ):
                                 raise LocalRuntimeConfigurationError(
-                                    "no_additional_edge recovery response must omit the edge payload"
+                                    "no_additional_edge recovery response must contain edge:null"
                                 )
                             if status == "new_edge" and not isinstance(page.get("edge"), Mapping):
                                 raise LocalRuntimeConfigurationError(

@@ -223,6 +223,7 @@ def test_critical_scheduler_rejects_duplicate_or_unknown_tasks() -> None:
             )
         )
 from saturated_fixed_work_baseline_v1_3.membind_v6_1.runtime import (
+    LocalRuntimeConfigurationError,
     _AdaptiveEdgePagePriorityGate,
     _EdgePagePriorityGate,
     _edge_page_messages,
@@ -2993,7 +2994,7 @@ def test_shared_duplicate_recovery_accepts_explicit_no_additional_edge(
             assert schema["properties"]["status"]["enum"] == ["new_edge", "no_additional_edge"]
             assert "<DUPLICATE_RECOVERY>" in content
             assert "<FINAL_DUPLICATE_RECOVERY_DIRECTIVE>" in content
-            return {"status": "no_additional_edge"}
+            return {"status": "no_additional_edge", "edge": None}
 
     monkeypatch.setenv("CONSTRUCTION_CONTEXT_SAFETY_TOKENS", "32")
     client = Client()
@@ -3032,6 +3033,70 @@ def test_shared_duplicate_recovery_accepts_explicit_no_additional_edge(
     recovery_pages = [row for row in pages if row["duplicate_recovery_request"]]
     assert recovery_pages
     assert recovery_pages[-1]["recovery_status"] == "no_additional_edge"
+
+
+def test_shared_duplicate_recovery_rejects_missing_null_edge(monkeypatch) -> None:
+    calls = 0
+
+    def edge() -> dict[str, object]:
+        return {
+            "source_entity_name": "A",
+            "target_entity_name": "B",
+            "relation_type": "KNOWS",
+            "fact": "A knows B",
+            "valid_at": None,
+            "invalid_at": None,
+            "episode_indices": [0],
+        }
+
+    class Client:
+        max_tokens = 32_768
+        call_events: list[dict[str, object]] = []
+
+        async def generate_response(self, _messages, **_kwargs):
+            nonlocal calls
+            calls += 1
+            self.call_events.append(
+                {
+                    "finish_reason": "stop",
+                    "token_usage": {"prompt_tokens": 100, "completion_tokens": 20},
+                }
+            )
+            if calls <= 2:
+                return {"edges": [edge()]}
+            return {"status": "no_additional_edge"}
+
+    monkeypatch.setenv("CONSTRUCTION_CONTEXT_SAFETY_TOKENS", "32")
+    client = Client()
+    install_local_extraction_chunking_policy(
+        client,
+        token_counter=lambda _messages: 100,
+        partition_extraction_by_turns=True,
+        partition_edge_candidates=True,
+        edge_duplicate_recovery=True,
+        shared_bounded_structured_output=True,
+    )
+    client._membind_entity_partition_hints.update({"a": [0], "b": [0], "c": [0]})
+    with pytest.raises(
+        LocalRuntimeConfigurationError,
+        match="must contain edge:null",
+    ):
+        asyncio.run(
+            client.generate_response(
+                [
+                    {
+                        "role": "user",
+                        "content": (
+                            "<CURRENT MESSAGE>\nA knows B\n</CURRENT MESSAGE>\n"
+                            '<ENTITIES>[{"name":"A"},{"name":"B"},'
+                            '{"name":"C"}]</ENTITIES>\n# TASK'
+                        ),
+                    }
+                ],
+                max_tokens=32_768,
+                prompt_name="extract_edges.edge",
+            )
+        )
 
 
 def test_edge_pagination_duplicate_page_is_audited_zero_delta_fixed_point(monkeypatch) -> None:
