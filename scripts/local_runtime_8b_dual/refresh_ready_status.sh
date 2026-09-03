@@ -2,7 +2,10 @@
 set -euo pipefail
 
 SCRIPT_DIR="$(cd -- "$(dirname -- "${BASH_SOURCE[0]}")" && pwd)"
-source "$SCRIPT_DIR/local_env.sh"
+# The live preflight includes an authenticated Bolt query.  Use the same full
+# experiment environment as construction runners, not only the path/profile
+# subset from local_env.sh.
+source "$SCRIPT_DIR/activate.sh" >/dev/null
 
 preflight_file="$MEMBIND_RUN_ROOT/refresh-live-preflight.json"
 manifest_result="$MEMBIND_RUN_ROOT/refresh-platform-manifest-result.json"

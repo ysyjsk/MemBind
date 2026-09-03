@@ -125,6 +125,13 @@ class MABLiveEpisode:
     body: str
     session_id: str
     source_hash: str
+    dataset_revision: str = "UNSPECIFIED"
+    original_source_sequence: int = 0
+    chunk_ordinal: int = 0
+    chunk_count: int = 1
+    chunk_id: str = ""
+    previous_chunk_id: str | None = None
+    adapter_version: str | None = None
 
     @property
     def name(self) -> str:
@@ -165,7 +172,55 @@ def episode_from_input(item: Any) -> MABLiveEpisode:
         body=body,
         session_id=str(getattr(item, "session_id", item.episode_id)),
         source_hash=source_hash,
+        dataset_revision=str(getattr(item, "dataset_revision", "UNSPECIFIED")),
+        original_source_sequence=int(
+            getattr(item, "original_source_sequence", getattr(item, "source_sequence", sequence))
+        ),
+        chunk_ordinal=int(getattr(item, "chunk_ordinal", 0)),
+        chunk_count=int(getattr(item, "chunk_count", 1)),
+        chunk_id=str(getattr(item, "chunk_id", "")),
+        previous_chunk_id=getattr(item, "previous_chunk_id", None),
+        adapter_version=getattr(item, "adapter_version", None),
     )
+
+
+def _logical_identity(episode: MABLiveEpisode) -> dict[str, Any]:
+    return {
+        "dataset_revision": episode.dataset_revision,
+        "context_id": episode.context_id,
+        "source_sequence": episode.original_source_sequence,
+        "chunk_ordinal": episode.chunk_ordinal,
+        "session_id": episode.session_id,
+        "chunk_id": episode.chunk_id or episode.episode_id,
+    }
+
+
+def _adapter_coverage(episodes: Sequence[MABLiveEpisode]) -> dict[str, Any]:
+    by_session: dict[str, list[MABLiveEpisode]] = {}
+    for episode in episodes:
+        by_session.setdefault(episode.session_id, []).append(episode)
+    violations: list[dict[str, Any]] = []
+    for session_id, values in by_session.items():
+        values.sort(key=lambda item: item.source_sequence)
+        if [item.chunk_ordinal for item in values] != list(range(len(values))):
+            violations.append({"session_id": session_id, "reason": "chunk_ordinal_gap"})
+            continue
+        if any(item.chunk_count != len(values) for item in values):
+            violations.append({"session_id": session_id, "reason": "chunk_count_mismatch"})
+        for index, item in enumerate(values):
+            expected = None if index == 0 else values[index - 1].chunk_id
+            if item.previous_chunk_id != expected:
+                violations.append({"session_id": session_id, "reason": "predecessor_mismatch"})
+    versions = {item.adapter_version for item in episodes if item.adapter_version is not None}
+    return {
+        "status": "PASS" if not violations else "FAIL",
+        "adapter_version": next(iter(versions)) if len(versions) == 1 else None,
+        "chunk_count": len(episodes),
+        "session_count": len(by_session),
+        "all_chunk_bodies_bounded": all(len(item.body) <= 8192 for item in episodes),
+        "dependency_violation_count": len(violations),
+        "violations": violations,
+    }
 
 
 def _event_sink(events: list[dict[str, Any]], context_id: str) -> Callable[[str, int | None, int | None], None]:
@@ -355,6 +410,8 @@ async def run_mab_construction_async(
             "RELAXED_ORDER_PARALLEL",
             "GRAPHITI_SERIAL_SHARED_BOUNDED_SO",
             "RELAXED_ORDER_SHARED_BOUNDED_SO",
+            "GRAPHITI_SERIAL_UPSTREAM_CORE_MAB8192",
+            "GRAPHITI_ASYNC_UPSTREAM_CORE_MAB8192",
         }
 
         async def direct_publish(sequence: int) -> None:
@@ -380,9 +437,12 @@ async def run_mab_construction_async(
                         "publication_guarantee": "UPSTREAM_GRAPHITI_NO_RESUME",
                     }
                 )
-                with recorder.episode_scope(run_id, episode.name, sequence):
-                    with provider_scope(region="NATIVE", source_sequence=sequence):
-                        await graphiti.add_episode(**publication_kwargs)
+                from .membind_v6_1.upstream_runtime import logical_request_context
+
+                with logical_request_context(_logical_identity(episode)):
+                    with recorder.episode_scope(run_id, episode.name, sequence):
+                        with provider_scope(region="NATIVE", source_sequence=sequence):
+                            await graphiti.add_episode(**publication_kwargs)
                 emit("PUBLICATION_DURABLE", sequence, time.monotonic_ns())
                 record(
                     {
@@ -469,14 +529,34 @@ async def run_mab_construction_async(
 
         shared_serial = method in {"GRAPHITI_SERIAL_SHARED_BOUNDED_SO"}
         shared_parallel = method in {"RELAXED_ORDER_SHARED_BOUNDED_SO"}
-        if method in {"B0", "GRAPHITI_UPSTREAM_SERIAL"} or shared_serial:
+        if method in {
+            "B0",
+            "GRAPHITI_UPSTREAM_SERIAL",
+            "GRAPHITI_SERIAL_UPSTREAM_CORE_MAB8192",
+        } or shared_serial:
             for sequence in range(len(selected)):
                 emit("SUBMIT", sequence)
                 await direct_publish(sequence)
-        elif method in {"B1", "RELAXED_ORDER_PARALLEL"} or shared_parallel:
+        elif method in {
+            "B1",
+            "RELAXED_ORDER_PARALLEL",
+            "GRAPHITI_ASYNC_UPSTREAM_CORE_MAB8192",
+        } or shared_parallel:
             for sequence in range(len(selected)):
                 emit("SUBMIT", sequence)
-            await asyncio.gather(*(direct_publish(sequence) for sequence in range(len(selected))))
+            by_session: dict[str, list[int]] = {}
+            for sequence, episode in enumerate(selected):
+                by_session.setdefault(episode.session_id, []).append(sequence)
+
+            async def publish_session(sequences: Sequence[int]) -> None:
+                for sequence in sequences:
+                    await direct_publish(sequence)
+
+            # Session tasks may overlap, but every task owns one complete,
+            # ascending chunk dependency chain.
+            await asyncio.gather(
+                *(asyncio.create_task(publish_session(tuple(sequences))) for sequences in by_session.values())
+            )
         else:
             from graphiti_core.utils.maintenance.edge_operations import extract_edges
             from graphiti_core.utils.maintenance.node_operations import extract_nodes
@@ -599,8 +679,22 @@ async def run_mab_construction_async(
                 if strict_native
                 else "AT_LEAST_ONCE_WITH_STABLE_IDEMPOTENCY_KEY"
             ),
-            **_reliability_identity(),
+            "adapter_coverage": _adapter_coverage(selected),
+            **(
+                {
+                    "structured_output_policy": "UPSTREAM_GRAPHITI_PYDANTIC_JSON_SCHEMA",
+                    "response_repair_enabled": False,
+                    "finite_pair_tasks_enabled": False,
+                }
+                if method in {
+                    "GRAPHITI_SERIAL_UPSTREAM_CORE_MAB8192",
+                    "GRAPHITI_ASYNC_UPSTREAM_CORE_MAB8192",
+                }
+                else _reliability_identity()
+            ),
         }
+        if result["adapter_coverage"]["status"] != "PASS":
+            raise MABLiveRunnerError("MAB8192_ADAPTER_COVERAGE_INVALID")
         if method == "V6":
             result["refinement_validation"] = {**result["refinement_validation"], "proof": {"request": validate_request_comparisons(comparisons), "replay": validate_replay_accounting(store.summary()), "provider": validate_provider_events([], capacity=capacity.value)}}
         journals["raw"].close()

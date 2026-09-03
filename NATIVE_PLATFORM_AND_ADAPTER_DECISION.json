@@ -1,0 +1,85 @@
+{
+  "schema_version": "membind.native-platform-adapter-decision.v1",
+  "status": "FROZEN_FOR_L0",
+  "sources": [
+    {
+      "project": "Graphiti",
+      "version": "0.29.3",
+      "commit": "021d3a57d511f21b10adaf7fa923bd5c1fce5e9d",
+      "directly_adopted": [
+        "Graphiti.add_episode",
+        "OpenAIGenericClient",
+        "extract_nodes/extract_edges prompts",
+        "ExtractedEdges response model",
+        "upstream node/edge resolution and mutation semantics",
+        "extract_edges edge max_tokens=16384"
+      ],
+      "reference": "https://github.com/getzep/graphiti/tree/021d3a57d511f21b10adaf7fa923bd5c1fce5e9d"
+    },
+    {
+      "project": "Qwen",
+      "model": "Qwen3-8B-AWQ",
+      "directly_adopted": [
+        "enable_thinking=false",
+        "temperature=0.7",
+        "top_p=0.8",
+        "top_k=20",
+        "min_p=0",
+        "presence_penalty=1.5",
+        "structured output backend=xgrammar"
+      ],
+      "reference": "https://qwen.readthedocs.io/en/stable/deployment/vllm.html"
+    },
+    {
+      "project": "Qwen",
+      "model": "Qwen2.5-7B-Instruct-AWQ",
+      "directly_adopted": ["fallback generation temperature=0.7", "fallback top_p=0.8", "fallback top_k=20", "fallback repetition_penalty=1.05"],
+      "reference": "https://huggingface.co/Qwen/Qwen2.5-7B-Instruct-AWQ/blob/refs%2Fpr%2F4/generation_config.json"
+    },
+    {
+      "project": "AutoSchemaKG",
+      "commit": "d0a1666ae6621806faf814504c73678de4e809f2",
+      "directly_adopted": ["Qwen2.5-7B-Instruct extraction precedent", "chunk_size=8192 characters", "chunk_overlap=0", "full chunk processing"],
+      "reference": "https://github.com/HKUST-KnowComp/AutoSchemaKG/tree/d0a1666ae6621806faf814504c73678de4e809f2"
+    },
+    {
+      "project": "MemoryAgentBench",
+      "commit": "fe1735de8cf8b9908e1e3d3b5612afc815698062",
+      "directly_adopted": ["official 5-context dataset and QA authority"],
+      "reference": "https://github.com/HUST-AI-HYZ/MemoryAgentBench/tree/fe1735de8cf8b9908e1e3d3b5612afc815698062"
+    }
+  ],
+  "adapter": {
+    "version": "MAB_ROLE_AWARE_LOSSLESS_8192_V1",
+    "chunk_size_characters": 8192,
+    "chunk_overlap": 0,
+    "lossless": true,
+    "identity_fields_outside_body": true,
+    "session_dependency": "strict_chunk_ordinal_chain"
+  },
+  "platform": {
+    "model": "Qwen3-8B-AWQ",
+    "topology": "two identical single-GPU replicas on RTX 3090 Ti; tensor_parallel_size=1",
+    "structured_output": {"mode": "json_schema", "backend": "xgrammar"},
+    "sdk_retries": 0,
+    "logical_seed": "uint32(SHA256(dataset_revision,context_id,source_sequence,chunk_ordinal,prompt_name,canonical_messages_hash))"
+  },
+  "context_budget_decision": {
+    "method": "L0_static_tokenizer_budget",
+    "safety_margin_tokens": 256,
+    "selected_profile": "YARN_2X_65536",
+    "max_model_len": 65536,
+    "yarn": {"factor": 2.0, "original_max_position_embeddings": 32768},
+    "max_request_witness": {
+      "historical_max_prompt_tokens": 39832,
+      "upstream_max_output_tokens": 16384,
+      "sum_tokens": 56472,
+      "l0_artifact": "/data/predator/ly/Mem/experiments/local-qwen3-8b-awq-dualreplica-v1/l0-mab8192-20260903T000100Z/L0_BUDGET_DECISION.json"
+    }
+  },
+  "non_extrapolation": [
+    "No single cited source simultaneously evaluates Graphiti 0.29.3, Qwen3-8B-AWQ, the complete MAB workload, and dual 3090 Ti hardware.",
+    "The cited Qwen and AutoSchemaKG settings are compatibility evidence, not a guarantee of Graphiti success.",
+    "The official Zep 9998-character truncation is retained only as a reference and is not the primary workload adapter."
+  ]
+}

@@ -18,6 +18,7 @@ from .executor import DUAL_STREAMING_EXECUTION_STRATEGY
 from .mab import run_mab_v61_construction_async
 from .policy import V61Policy
 from .resource_credit import ResourceCreditPolicy
+from .shared_structured_output import SHARED_ADAPTER_VERSION
 from .runtime_8b import (
     build_8b_shared_bounded_runtime,
     frozen_8b_config,
@@ -118,7 +119,7 @@ def build_membind_core_runtime_8b(
         "edge_endpoint_schema_policy": "entity_block_literal_endpoint_grounding_v1",
         "edge_physical_admission_policy": "arbiter_work_conserving_partition_derived_v1",
         "shared_structured_output": {
-            "adapter_version": "shared-bounded-structured-output-v1",
+            "adapter_version": SHARED_ADAPTER_VERSION,
         },
     }
     for field, value in expected.items():

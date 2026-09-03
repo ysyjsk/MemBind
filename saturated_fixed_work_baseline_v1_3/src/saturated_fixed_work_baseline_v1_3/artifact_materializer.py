@@ -32,6 +32,7 @@ _MEMBERS = (
     "refinement_validation.json",
     "graph_diagnostics.json",
     "metrics.json",
+    "adapter_coverage.json",
 )
 
 
@@ -74,6 +75,9 @@ def materialize_construction_block(
         "GRAPHITI_SERIAL_SHARED_BOUNDED_SO",
         "RELAXED_ORDER_SHARED_BOUNDED_SO",
         "MEMBIND_V6_1_SHARED_BOUNDED_SO",
+        "GRAPHITI_SERIAL_UPSTREAM_CORE_MAB8192",
+        "GRAPHITI_ASYNC_UPSTREAM_CORE_MAB8192",
+        "MEMBIND_V6_1_UPSTREAM_CORE_MAB8192",
     }:
         raise ArtifactMaterializationError("method is not frozen")
     if not isinstance(result, Mapping) or result.get("expected_episode_count") != result.get("submitted_count") or result.get("expected_episode_count") != result.get("completed_count"):
@@ -152,6 +156,17 @@ def materialize_construction_block(
         "durable_goodput": (int(result["expected_episode_count"]) / (int(result["t_build_ns"]) / 1_000_000_000)) if isinstance(result.get("t_build_ns"), int) and result.get("t_build_ns", 0) > 0 else None,
         "method": method,
     })
+    _write_json(
+        block_root / "adapter_coverage.json",
+        result.get(
+            "adapter_coverage",
+            {
+                "status": "NOT_APPLICABLE",
+                "adapter_version": None,
+                "chunk_count": result.get("expected_episode_count"),
+            },
+        ),
+    )
     seal_identity = {
         **dict(identity),
         "namespace": identity.get("namespace", result.get("namespace")),

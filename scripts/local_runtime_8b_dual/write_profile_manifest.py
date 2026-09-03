@@ -91,8 +91,8 @@ def endpoint(
         "scheduling_policy": "fcfs",
         "rope": {
             "type": "yarn",
-            "factor": 1.6,
-            "original_max_position_embeddings": 40960,
+            "factor": 2.0,
+            "original_max_position_embeddings": 32768,
             "rope_theta": 1000000,
         },
         "structured_outputs_backend": "xgrammar",
@@ -104,6 +104,14 @@ def endpoint(
         "prefix_caching": True,
         "chunked_prefill": True,
         "thinking": False,
+        "sampling": {
+            "temperature": 0.7,
+            "top_p": 0.8,
+            "top_k": 20,
+            "min_p": 0,
+            "presence_penalty": 1.5,
+            "logical_seed": "request_identity_sha256_uint32",
+        },
     }
 
 

@@ -448,9 +448,12 @@ def structured_probe(client: httpx.Client, base_url: str) -> dict[str, Any]:
         json={
             "model": EXPECTED_MODEL,
             "messages": [{"role": "user", "content": "Return ok=true and replica='qwen3-8b-awq'."}],
-            "temperature": 0,
-            "top_p": 1,
-            "seed": 20260806,
+            "temperature": 0.7,
+            "top_p": 0.8,
+            "top_k": 20,
+            "min_p": 0,
+            "presence_penalty": 1.5,
+            "seed": 2407528123,
             "max_tokens": 64,
             "chat_template_kwargs": {"enable_thinking": False},
             "response_format": {
@@ -633,7 +636,7 @@ def run_live(checks: Checks, timeout: float) -> None:
         "--seed": "20260806",
         "--structured-outputs-config": '{"backend":"xgrammar","disable_any_whitespace":true}',
         "--default-chat-template-kwargs": '{"enable_thinking":false}',
-        "--hf-overrides": '{"rope_parameters":{"rope_type":"yarn","factor":1.6,"original_max_position_embeddings":40960,"rope_theta":1000000}}',
+        "--hf-overrides": '{"rope_parameters":{"rope_type":"yarn","factor":2.0,"original_max_position_embeddings":32768,"rope_theta":1000000}}',
     }
     checks.capture(
         "native_process_contract",

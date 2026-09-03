@@ -62,6 +62,31 @@ def test_core_runtime_rejects_non_selected_route_before_provider_access() -> Non
         )
 
 
+def test_core_runtime_accepts_current_finite_pair_adapter(monkeypatch: pytest.MonkeyPatch) -> None:
+    """The frozen Core must accept the currently sealed shared wire substrate."""
+
+    from saturated_fixed_work_baseline_v1_3.membind_v6_1.shared_structured_output import (
+        adapter_identity,
+    )
+    import saturated_fixed_work_baseline_v1_3.membind_v6_1.core as core_module
+
+    class FakeRuntime:
+        _membind_8b_runtime_manifest = {
+            "construction": {
+                "entity_summary_policy": "graphiti_native_batched_summary_v1",
+                "edge_endpoint_schema_policy": "entity_block_literal_endpoint_grounding_v1",
+                "edge_physical_admission_policy": "arbiter_work_conserving_partition_derived_v1",
+                "shared_structured_output": adapter_identity(),
+            }
+        }
+
+    monkeypatch.setattr(core_module, "build_8b_shared_bounded_runtime", lambda **_: FakeRuntime())
+    runtime = build_membind_core_runtime_8b(
+        routing_contract={"router": {"policy": MEMBIND_CORE_ROUTE_POLICY}}
+    )
+    assert runtime._membind_core_identity == core_identity()
+
+
 def test_core_runner_rejects_tuning_and_extension_arguments() -> None:
     async def invoke() -> None:
         with pytest.raises(MemBindCoreConfigurationError):
