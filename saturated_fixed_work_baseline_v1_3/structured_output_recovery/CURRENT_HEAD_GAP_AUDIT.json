@@ -2,11 +2,10 @@
   "authorization_rule": "old CODE_READY is historical only; current HEAD canary/formal authorization requires exact current EVALUATED_IMPLEMENTATION_IDENTITY plus matching G1-G4 evidence",
   "current": {
     "branch": "dmsv-b1r2-structural-closure",
-    "head_commit": "5f845852198f649f816d424862df257654cf90c9",
+    "head_commit": "839c33c947855f5d7659f7ee99a90ae9a232d048",
     "materialized_evidence_status": [
       " M mab_quality_v2_final_qa/evidence/OFFICIAL_DATASET_PARITY_REPORT.json",
       " M mab_quality_v2_final_qa/evidence/OFFICIAL_DATASET_PARITY_REPORT.md",
-      " M saturated_fixed_work_baseline_v1_3/structured_output_recovery/ADAPTIVE_DECISION.json",
       " M saturated_fixed_work_baseline_v1_3/structured_output_recovery/CURRENT_HEAD_GAP_AUDIT.json",
       " M saturated_fixed_work_baseline_v1_3/structured_output_recovery/CURRENT_HEAD_GAP_AUDIT.md",
       " M saturated_fixed_work_baseline_v1_3/structured_output_recovery/CURRENT_STATE.json",
@@ -14,14 +13,9 @@
       " M saturated_fixed_work_baseline_v1_3/structured_output_recovery/FINAL_DECISION.json",
       " M saturated_fixed_work_baseline_v1_3/structured_output_recovery/FOUR_GATE_RESULT.json",
       " M saturated_fixed_work_baseline_v1_3/structured_output_recovery/FOUR_GATE_RESULT.md",
-      " M saturated_fixed_work_baseline_v1_3/structured_output_recovery/HEURISTIC_NECESSITY_AUDIT.json",
-      " M saturated_fixed_work_baseline_v1_3/structured_output_recovery/HISTORICAL_SCHEDULER_NEGATIVE_EVIDENCE.json",
       " M saturated_fixed_work_baseline_v1_3/structured_output_recovery/NATIVE_BASELINE_IDENTITY.json",
       " M saturated_fixed_work_baseline_v1_3/structured_output_recovery/NATIVE_IMMUTABILITY_REPORT.json",
       " M saturated_fixed_work_baseline_v1_3/structured_output_recovery/NATIVE_IMMUTABILITY_REPORT.md",
-      " M saturated_fixed_work_baseline_v1_3/structured_output_recovery/SCHEDULER_PROBLEM_AUDIT.json",
-      " M saturated_fixed_work_baseline_v1_3/structured_output_recovery/SCHEDULER_RESOURCE_CREDIT_MAP.json",
-      " M saturated_fixed_work_baseline_v1_3/structured_output_recovery/SCHEDULER_STRESS_TEST_RESULT.json",
       " M saturated_fixed_work_baseline_v1_3/structured_output_recovery/STRUCTURED_OUTPUT_CALLSITE_INVENTORY.json",
       " M saturated_fixed_work_baseline_v1_3/structured_output_recovery/STRUCTURED_OUTPUT_QUALIFICATION_REPORT.md",
       " M saturated_fixed_work_baseline_v1_3/structured_output_recovery/STRUCTURED_OUTPUT_QUALIFICATION_RESULT.json",
@@ -29,36 +23,16 @@
       " M saturated_fixed_work_baseline_v1_3/structured_output_recovery/STRUCTURED_OUTPUT_SCHEMA_BOUND_CERTIFICATE.json",
       " M saturated_fixed_work_baseline_v1_3/structured_output_recovery/THREE_ARM_METHOD_BOUNDARIES.json"
     ],
-    "origin_main": "5f845852198f649f816d424862df257654cf90c9",
-    "status_porcelain_sha256": "1e14244b29427a6b2079226fac58ab9712e3b8ee2ca6969d8aff832982ed6da1",
-    "tracked_diff_sha256": "29edf21490afabd287403d8f71cf3f7166354c34093889e9057176f3bdb078a3",
-    "tracked_status": [
-      " M saturated_fixed_work_baseline_v1_3/scripts/finalize_formal_three_arm.py",
-      " M saturated_fixed_work_baseline_v1_3/scripts/formal_three_arm_harness.py",
-      " M saturated_fixed_work_baseline_v1_3/scripts/run_formal_three_arm.py",
-      " M saturated_fixed_work_baseline_v1_3/src/saturated_fixed_work_baseline_v1_3/membind_v6_1/evidence.py",
-      " M saturated_fixed_work_baseline_v1_3/src/saturated_fixed_work_baseline_v1_3/membind_v6_1/mab.py",
-      " M saturated_fixed_work_baseline_v1_3/src/saturated_fixed_work_baseline_v1_3/membind_v6_1/runtime.py",
-      " M saturated_fixed_work_baseline_v1_3/src/saturated_fixed_work_baseline_v1_3/membind_v6_1/shared_structured_output.py",
-      " M saturated_fixed_work_baseline_v1_3/tests/test_formal_three_arm_harness.py",
-      " M saturated_fixed_work_baseline_v1_3/tests/test_membind_v6_1_runtime_8b.py",
-      " M saturated_fixed_work_baseline_v1_3/tests/test_membind_v6_1_scheduler.py",
-      " M saturated_fixed_work_baseline_v1_3/tests/test_shared_structured_output.py",
-      " M saturated_fixed_work_baseline_v1_3/tests/test_structured_output_recovery.py",
-      " M scripts/generate_current_head_identity.py",
-      " M scripts/generate_structured_output_certificate.py",
-      " M scripts/generate_three_arm_identity_evidence.py",
-      " M scripts/validate_and_freeze_canary.py",
-      "?? STRUCTURED_OUTPUT_DESIGN_DECISION.json",
-      "?? STRUCTURED_OUTPUT_DESIGN_DECISION.md",
-      "?? saturated_fixed_work_baseline_v1_3/src/saturated_fixed_work_baseline_v1_3/membind_v6_1/bounded_edge_tasks.py",
-      "?? saturated_fixed_work_baseline_v1_3/tests/test_bounded_edge_tasks.py",
-      "?? saturated_fixed_work_baseline_v1_3/tests/test_finite_pair_runtime.py"
-    ],
-    "working_tree_clean": false
+    "origin_main": "314dde9258f2761dd449daf522439e2d94e6d416",
+    "status_porcelain_sha256": "e3b0c44298fc1c149afbf4c8996fb92427ae41e4649b934ca495991b7852b855",
+    "tracked_diff_sha256": null,
+    "tracked_status": [],
+    "working_tree_clean": true
   },
   "file_level_differences_since_old_evidence": [
     "M\tOLD_PLAN_TO_NEW_PLAN_CHANGELOG.md",
+    "A\tSTRUCTURED_OUTPUT_DESIGN_DECISION.json",
+    "A\tSTRUCTURED_OUTPUT_DESIGN_DECISION.md",
     "M\tmab_quality_v2_final_qa/OFFLINE_IMPLEMENTATION_AND_QUALIFICATION_REPORT_20260819.md",
     "M\tmab_quality_v2_final_qa/evidence/MAB_DATASET_QUALIFICATION_RESULT_20260819.json",
     "A\tmab_quality_v2_final_qa/evidence/OFFICIAL_DATASET_PARITY_REPORT.json",
@@ -84,7 +58,9 @@
     "M\tsaturated_fixed_work_baseline_v1_3/src/saturated_fixed_work_baseline_v1_3/mab_live_runner.py",
     "M\tsaturated_fixed_work_baseline_v1_3/src/saturated_fixed_work_baseline_v1_3/membind_v6_1/__init__.py",
     "M\tsaturated_fixed_work_baseline_v1_3/src/saturated_fixed_work_baseline_v1_3/membind_v6_1/admission.py",
+    "A\tsaturated_fixed_work_baseline_v1_3/src/saturated_fixed_work_baseline_v1_3/membind_v6_1/bounded_edge_tasks.py",
     "M\tsaturated_fixed_work_baseline_v1_3/src/saturated_fixed_work_baseline_v1_3/membind_v6_1/core.py",
+    "M\tsaturated_fixed_work_baseline_v1_3/src/saturated_fixed_work_baseline_v1_3/membind_v6_1/evidence.py",
     "M\tsaturated_fixed_work_baseline_v1_3/src/saturated_fixed_work_baseline_v1_3/membind_v6_1/executor.py",
     "M\tsaturated_fixed_work_baseline_v1_3/src/saturated_fixed_work_baseline_v1_3/membind_v6_1/mab.py",
     "M\tsaturated_fixed_work_baseline_v1_3/src/saturated_fixed_work_baseline_v1_3/membind_v6_1/policy.py",
@@ -156,6 +132,8 @@
     "M\tsaturated_fixed_work_baseline_v1_3/structured_output_recovery/THREE_ARM_METHOD_BOUNDARIES.json",
     "A\tsaturated_fixed_work_baseline_v1_3/structured_output_recovery/V61_PARAMETER_IDENTITY.json",
     "A\tsaturated_fixed_work_baseline_v1_3/structured_output_recovery/V61_PARAMETER_IDENTITY.md",
+    "A\tsaturated_fixed_work_baseline_v1_3/tests/test_bounded_edge_tasks.py",
+    "A\tsaturated_fixed_work_baseline_v1_3/tests/test_finite_pair_runtime.py",
     "A\tsaturated_fixed_work_baseline_v1_3/tests/test_formal_three_arm_harness.py",
     "M\tsaturated_fixed_work_baseline_v1_3/tests/test_mab_live_runner.py",
     "M\tsaturated_fixed_work_baseline_v1_3/tests/test_membind_v6_1_mab.py",
@@ -191,7 +169,7 @@
     "A\tscripts/validate_and_freeze_canary.py",
     "A\tscripts/write_formal_preregistration.py"
   ],
-  "generated_at": "2026-09-03T10:54:47.200138+00:00",
+  "generated_at": "2026-09-03T11:48:04.515233+00:00",
   "known_runtime_changes": [
     "saturated_fixed_work_baseline_v1_3/src/saturated_fixed_work_baseline_v1_3/mab_live_runner.py",
     "saturated_fixed_work_baseline_v1_3/src/saturated_fixed_work_baseline_v1_3/membind_v6_1/mab.py"
@@ -200,7 +178,7 @@
     "base_code_commit": "c62b548d18bbf0da161069be7be86750e977581c",
     "canary_authorized_in_old_epoch": true,
     "current_state": "CODE_READY_FOR_THREE_ARM_ENGINEERING_CANARY",
-    "evaluated_source_bundle_sha256": "8e2e1bc927a4b36aeff3918df2555448da025ba44419a6c075fd42e95b2468da"
+    "evaluated_source_bundle_sha256": "81c52f4ce044c19e726925bbe80b0488ce9bc518b597d78beba79736c5ca309f"
   },
   "provider_calls": 0,
   "recomputed_current_head": [
@@ -217,7 +195,7 @@
     },
     "official_dataset_parity": {
       "reason": "dataset/evaluator identity is independent of the two changed runtime modules only if hashes match",
-      "reusable": true
+      "reusable": false
     }
   },
   "schema_version": "membind.current-head-gap-audit.v1",
