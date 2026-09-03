@@ -390,6 +390,14 @@ def main() -> int:
             "seed": 20260806,
             "thinking": False,
             "structured_outputs_backend": "xgrammar",
+            "structured_outputs_config": {
+                "backend": "xgrammar",
+                "disable_any_whitespace": True,
+            },
+            "json_whitespace_authority": (
+                "authenticated_platform_manifest_process_contract_v1"
+            ),
+            "json_separators": [", ", ": "],
             "max_completion_tokens": 32768,
             "sdk_max_retries": 0,
             "shared_structured_output": (

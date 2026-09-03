@@ -65,6 +65,7 @@ from saturated_fixed_work_baseline_v1_3.membind_v6_1.runtime import (  # noqa: E
     local_prompt_token_count,
 )
 from saturated_fixed_work_baseline_v1_3.membind_v6_1.structured_output_recovery import (  # noqa: E402
+    BOUNDED_JSON_WHITESPACE_MODE,
     build_schema_bound_certificate,
     reliability_identity,
     schema_sha256,
@@ -78,7 +79,7 @@ MAX_TOKENS = int(os.environ.get("CONSTRUCTION_MAX_TOKENS", "32768"))
 EDGE_MAX_TOKENS = 16_384
 SAFETY_MARGIN = int(os.environ.get("CONSTRUCTION_CONTEXT_SAFETY_TOKENS", "32"))
 MODEL_REVISION = os.environ.get(
-    "CONSTRUCTION_MODEL_REVISION", "31c69efc29464b6bb0aee1398b5a7b50a99340c3"
+    "CONSTRUCTION_MODEL_REVISION", "4da05a8edb55c6046cce958586c33b61da07bb79"
 )
 
 
@@ -453,6 +454,8 @@ class CaptureClient:
 
     max_tokens = MAX_TOKENS
     structured_output_recovery_enabled = True
+    structured_output_whitespace_mode = BOUNDED_JSON_WHITESPACE_MODE
+    structured_output_whitespace_authority = "provider_free_schema_proof_assumption_v1"
 
     def __init__(self) -> None:
         self.captures: list[dict[str, Any]] = []
@@ -691,6 +694,7 @@ def main() -> int:
             effective_max_tokens=int(capture["max_tokens"] or MAX_TOKENS),
             safety_margin_tokens=SAFETY_MARGIN,
             output_token_counter=output_counter,
+            whitespace_mode=BOUNDED_JSON_WHITESPACE_MODE,
         )
         callsite_rows.append(
             {
@@ -715,6 +719,20 @@ def main() -> int:
     grouped: dict[str, list[dict[str, Any]]] = {}
     for row in callsite_rows:
         grouped.setdefault(str(row["callsite"]), []).append(row)
+    bound_methods = sorted(
+        {
+            str(row["certificate"]["output_token_bound_method"])
+            for row in callsite_rows
+        }
+    )
+    edge_bound = max(
+        int(row["certificate"]["schema_worst_case_tokens"])
+        for row in grouped["extract_edges.edge"]
+    )
+    timestamp_bound = max(
+        int(row["certificate"]["schema_worst_case_tokens"])
+        for row in grouped["extract_edges.extract_timestamps_batch"]
+    )
     formal_status = "PASS" if callsite_rows and all(row["certificate"]["status"] == "PASS" for row in callsite_rows) else "FAIL"
     source_callsites = _discover_graphiti_callsites()
     actual_probe = _run_actual_entrypoint_probe()
@@ -782,6 +800,26 @@ def main() -> int:
         "mab_live_runner_sha256": _sha256_file(SFWB_SRC / "saturated_fixed_work_baseline_v1_3/mab_live_runner.py"),
         "v61_mab_sha256": _sha256_file(SFWB_SRC / "saturated_fixed_work_baseline_v1_3/membind_v6_1/mab.py"),
         "v61_runtime_sha256": _sha256_file(SFWB_SRC / "saturated_fixed_work_baseline_v1_3/membind_v6_1/runtime.py"),
+        "v61_shared_structured_output_sha256": _sha256_file(
+            SFWB_SRC
+            / "saturated_fixed_work_baseline_v1_3/membind_v6_1/shared_structured_output.py"
+        ),
+        "v61_structured_output_recovery_sha256": _sha256_file(
+            SFWB_SRC
+            / "saturated_fixed_work_baseline_v1_3/membind_v6_1/structured_output_recovery.py"
+        ),
+        "qwen_transport_sha256": _sha256_file(
+            VALIDATION_SRC / "graphiti_native.py"
+        ),
+        "native_server_launcher_sha256": _sha256_file(
+            ROOT / "scripts/local_runtime_8b_dual/start_native_llm.sh"
+        ),
+        "prepare_server_launcher_sha256": _sha256_file(
+            ROOT / "scripts/local_runtime_8b_dual/start_prepare_llm.sh"
+        ),
+        "server_preflight_sha256": _sha256_file(
+            ROOT / "scripts/local_runtime_8b_dual/preflight.py"
+        ),
         "generator_source_sha256": generator_source_sha256,
         "base_code_commit": base_code_commit,
     }
@@ -789,7 +827,7 @@ def main() -> int:
         json.dumps(source_bundle, ensure_ascii=True, sort_keys=True, separators=(",", ":")).encode("utf-8")
     )
     certificate = {
-        "schema_version": "membind.structured-output-recovery.schema-bound-certificate.v2",
+        "schema_version": "membind.structured-output-recovery.schema-bound-certificate.v3",
         "artifact_type": "schema_bound_certificate",
         "status": actual_qualification,
         "qualification_status": actual_qualification,
@@ -831,7 +869,14 @@ def main() -> int:
         "evaluated_source_bundle": source_bundle,
         "runtime_source_sha256": _sha256_file(SFWB_SRC / "saturated_fixed_work_baseline_v1_3/membind_v6_1/runtime.py"),
         "reliability_identity": reliability_identity(),
-        "output_token_bound_method": "one_token_per_compact_ensure_ascii_json_character_v2_with_exact_tokenizer_witness",
+        "output_token_bound_method": (
+            bound_methods[0] if len(bound_methods) == 1 else bound_methods
+        ),
+        "whitespace_mode": BOUNDED_JSON_WHITESPACE_MODE,
+        "whitespace_authority": "provider_free_schema_proof_assumption_v1",
+        "json_separators": [", ", ": "],
+        "max_edge_schema_bound_tokens": edge_bound,
+        "max_timestamp_batch_schema_bound_tokens": timestamp_bound,
     }
     OUT.mkdir(parents=True, exist_ok=True)
     (OUT / "STRUCTURED_OUTPUT_SCHEMA_BOUND_CERTIFICATE.json").write_text(
@@ -840,7 +885,7 @@ def main() -> int:
     (OUT / "STRUCTURED_OUTPUT_CALLSITE_INVENTORY.json").write_text(
         json.dumps(
             {
-                "schema_version": "membind.structured-output-recovery.callsite-inventory.v2",
+                "schema_version": "membind.structured-output-recovery.callsite-inventory.v3",
                 "status": actual_qualification,
                 "provider_calls_used": 0,
                 "callsite_count": len(grouped),
@@ -877,7 +922,7 @@ def main() -> int:
         encoding="utf-8",
     )
     qualification = {
-        "schema_version": "membind.structured-output-recovery.qualification.v2",
+        "schema_version": "membind.structured-output-recovery.qualification.v3",
         "status": actual_qualification,
         "r1_schema_boundedness": synthetic_status,
         "r1_actual_callsite_inventory": actual_qualification,
@@ -910,7 +955,7 @@ def main() -> int:
         "# Structured Output Qualification\n\n"
         f"Status: `{actual_qualification}`; synthetic suite: `{synthetic_status}`.\n\n"
         f"Certified `{len(grouped)}` callsites across `{len(callsite_rows)}` generated variants using the local Qwen tokenizer, a `{LOCAL_CONTEXT_LIMIT}` token context limit, the pinned `extract_edges.edge` `{EDGE_MAX_TOKENS}` token completion budget, the `{MAX_TOKENS}` token default budget for other captured callsites, and a `{SAFETY_MARGIN}` token safety margin. Caller-supplied attribute schemas and candidate-flight capacities are bounded before provider invocation.\n\n"
-        f"The edge certificate's worst-case compact JSON is `15862` tokens with a `1900`-character fact cap, leaving `522` tokens below the pinned edge budget. Timestamp batches are capped at `63` items and certify at `32272` tokens. Certified truncation and context-budget failures have zero automatic resend variants; only transient transport failures receive at most two extra physical attempts under the shared identity contract. Model revision: `{MODEL_REVISION}`.\n\n"
+        f"The largest captured edge schema is bounded by `{edge_bound}` UTF-8 bytes/tokens with a `1900`-character fact cap, leaving `{EDGE_MAX_TOKENS - edge_bound}` tokens below the pinned edge budget. Timestamp batches remain capped at `63` items and certify at `{timestamp_bound}` tokens. The proof uses the server-bound xgrammar whitespace mode and fixed `, ` / `: ` separators; tokenizer counts are diagnostic witnesses only. Certified truncation and context-budget failures have zero automatic resend variants; only transient transport failures receive at most two extra physical attempts under the shared identity contract. Model revision: `{MODEL_REVISION}`.\n\n"
         "R3 is `AT_LEAST_ONCE_WITH_STABLE_IDEMPOTENCY_KEY`; no cross-system durable reconciliation or exactly-once claim is made.\n\n"
         f"Source-discovered callsites: `{len(source_callsites)}`; actual observed: `{len(actual_names)}`; covered names: `{len(covered)}`; uncovered names: `{len(uncovered)}`; covered source rows: `{len(covered_source_callsites)}`; unreachable with proof: `{len(unreachable_with_proof)}`.\n"
         f"Evaluated source bundle SHA-256: `{evaluated_source_bundle_sha256}`; generator source SHA-256: `{generator_source_sha256}`; base code commit: `{base_code_commit}`.\n",

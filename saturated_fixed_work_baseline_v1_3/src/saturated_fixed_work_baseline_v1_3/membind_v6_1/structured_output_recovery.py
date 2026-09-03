@@ -5,16 +5,61 @@ from __future__ import annotations
 import hashlib
 import json
 import math
+import re
 from dataclasses import asdict, dataclass
 from typing import Any, Callable, Mapping, Sequence
 
 
-RUNTIME_RELIABILITY_PROFILE = "shared-structured-output-recovery-v1"
-SCHEMA_REVISION = "finite-edge-schema-v1"
-RECOVERY_POLICY_REVISION = "classified-request-recovery-v1"
+RUNTIME_RELIABILITY_PROFILE = "shared-structured-output-recovery-v3-xgrammar-physical-bound"
+SCHEMA_REVISION = "finite-schema-v3-xgrammar-regex-and-separator-bound"
+RECOVERY_POLICY_REVISION = "classified-request-recovery-v3-server-bound-whitespace"
 RECOVERY_POLICY_MAX_TRANSIENT_RETRIES = 2
 RECOVERY_POLICY_MAX_TRUNCATION_VARIANTS = 0
 RECOVERY_POLICY_MAX_CONTEXT_CORRECTIONS = 0
+BOUNDED_JSON_WHITESPACE_MODE = "disable_any_whitespace_vllm_v1"
+XGRAMMAR_JSON_SEPARATORS = (", ", ": ")
+_BOUNDED_ASCII_PATTERN_PREFIX = (
+    r'^(?:[\x20-\x21\x23-\x5b\x5d-\x7e]|\\["\\/bfnrt]){'
+)
+_BOUNDED_ASCII_PATTERN_SUFFIX = r"}$"
+
+
+def bounded_ascii_pattern(min_length: int, max_length: int) -> str:
+    """Return the only regex shape certified against deployed xgrammar."""
+
+    if (
+        not isinstance(min_length, int)
+        or isinstance(min_length, bool)
+        or not isinstance(max_length, int)
+        or isinstance(max_length, bool)
+        or min_length < 0
+        or max_length < min_length
+    ):
+        raise ValueError("ASCII string bounds are invalid")
+    return (
+        f"{_BOUNDED_ASCII_PATTERN_PREFIX}{min_length},{max_length}"
+        f"{_BOUNDED_ASCII_PATTERN_SUFFIX}"
+    )
+
+
+def _bounded_ascii_pattern_limits(pattern: Any) -> tuple[int, int] | None:
+    if not isinstance(pattern, str):
+        return None
+    if not (
+        pattern.startswith(_BOUNDED_ASCII_PATTERN_PREFIX)
+        and pattern.endswith(_BOUNDED_ASCII_PATTERN_SUFFIX)
+    ):
+        return None
+    body = pattern[
+        len(_BOUNDED_ASCII_PATTERN_PREFIX) : -len(_BOUNDED_ASCII_PATTERN_SUFFIX)
+    ]
+    match = re.fullmatch(r"([0-9]+),([0-9]+)", body)
+    if match is None:
+        return None
+    minimum, maximum = (int(value) for value in match.groups())
+    if maximum < minimum:
+        return None
+    return minimum, maximum
 
 
 @dataclass(frozen=True, slots=True)
@@ -46,7 +91,50 @@ class SchemaBoundednessError(ValueError):
 
 
 class StructuredOutputBudgetError(ValueError):
-    pass
+    """Certified request-budget failure with every rejected proof retained."""
+
+    def __init__(
+        self,
+        message: str,
+        *,
+        rejected_certificates: Sequence["SchemaBoundCertificate"] = (),
+    ) -> None:
+        self.rejected_certificates = tuple(rejected_certificates)
+        self.last_certificate = (
+            self.rejected_certificates[-1] if self.rejected_certificates else None
+        )
+        self.failure_reasons = tuple(
+            dict.fromkeys(
+                reason
+                for certificate in self.rejected_certificates
+                for reason in certificate.failure_reasons
+            )
+        )
+        inequalities: list[str] = []
+        for certificate in self.rejected_certificates:
+            if "completion_budget_below_schema_bound" in certificate.failure_reasons:
+                inequalities.append(
+                    "configured_effective_max_tokens"
+                    f"({certificate.configured_effective_max_tokens}) >= "
+                    "schema_worst_case_tokens"
+                    f"({certificate.schema_worst_case_tokens}) [FAILED]"
+                )
+            if "context_budget_exhausted" in certificate.failure_reasons:
+                inequalities.append(
+                    "exact_prompt_tokens"
+                    f"({certificate.exact_prompt_tokens}) + schema_worst_case_tokens"
+                    f"({certificate.schema_worst_case_tokens}) + context_safety_margin"
+                    f"({certificate.context_safety_margin}) <= context_limit"
+                    f"({certificate.context_limit}) [FAILED]"
+                )
+            if "unbounded_json_whitespace" in certificate.failure_reasons:
+                inequalities.append(
+                    "authenticated_server_whitespace_mode"
+                    f"({certificate.whitespace_mode!r}) == "
+                    f"{BOUNDED_JSON_WHITESPACE_MODE!r} [FAILED]"
+                )
+        self.failed_inequalities = tuple(dict.fromkeys(inequalities))
+        super().__init__(message)
 
 
 class StructuredOutputError(ValueError):
@@ -110,6 +198,9 @@ def recovery_policy_document() -> dict[str, Any]:
         "semantic_validation_retry": "none",
         "unknown_failure": "fail_closed",
         "transcript_capture": "final_valid_response_only",
+        "json_whitespace_mode": BOUNDED_JSON_WHITESPACE_MODE,
+        "physical_serialization_requirement": "server_process_contract_fail_closed",
+        "json_separators": list(XGRAMMAR_JSON_SEPARATORS),
     }
 
 
@@ -319,6 +410,8 @@ class SchemaBoundCertificate:
     context_safety_margin: int
     status: str
     failure_reasons: tuple[str, ...]
+    whitespace_mode: str | None
+    physical_serialization_bound: bool
     output_response_sha256: str | None = None
 
     def to_dict(self) -> dict[str, Any]:
@@ -448,6 +541,19 @@ def validate_schema_boundedness(
                 isinstance(maximum, int) and not isinstance(maximum, bool) and maximum >= 0
             ):
                 issue(path, "string_max_length_missing")
+            pattern = value.get("pattern")
+            if pattern is not None and not _finite_literal(value):
+                limits = _bounded_ascii_pattern_limits(pattern)
+                minimum = value.get("minLength", 0)
+                if (
+                    limits is None
+                    or not isinstance(minimum, int)
+                    or isinstance(minimum, bool)
+                    or not isinstance(maximum, int)
+                    or isinstance(maximum, bool)
+                    or limits != (minimum, maximum)
+                ):
+                    issue(path, "string_pattern_physical_bound_unproven")
             return
         if schema_type == "array":
             maximum = value.get("maxItems")
@@ -492,10 +598,13 @@ def validate_schema_boundedness(
 
 
 def schema_worst_case_characters(schema: Mapping[str, Any]) -> int:
-    """Return a conservative upper bound for compact ensure-ASCII JSON output."""
+    """Bound deployed xgrammar JSON using its fixed default separators."""
 
     validate_schema_boundedness(schema)
     active_references: set[str] = set()
+
+    def string_bound(value: str) -> int:
+        return len(json.dumps(value, ensure_ascii=False).encode("utf-8"))
 
     def bound(value: Mapping[str, Any]) -> int:
         reference = value.get("$ref")
@@ -510,11 +619,15 @@ def schema_worst_case_characters(schema: Mapping[str, Any]) -> int:
             active_references.remove(reference)
             return result
         if "const" in value:
+            if isinstance(value["const"], str):
+                return string_bound(value["const"])
             return len(json.dumps(value["const"], ensure_ascii=True, separators=(",", ":")))
         enum = value.get("enum")
         if isinstance(enum, list) and enum:
             return max(
-                len(json.dumps(item, ensure_ascii=True, separators=(",", ":")))
+                string_bound(item)
+                if isinstance(item, str)
+                else len(json.dumps(item, ensure_ascii=True, separators=(",", ":")))
                 for item in enum
             )
         branches = [
@@ -534,19 +647,29 @@ def schema_worst_case_characters(schema: Mapping[str, Any]) -> int:
         if schema_type == "boolean":
             return 5
         if schema_type == "string":
-            # Every Unicode code point is bounded by a six-character JSON escape.
-            return 2 + 6 * int(value["maxLength"])
+            # xgrammar compiles a pattern as the authoritative string grammar;
+            # its finite quantifier bounds physical characters directly.  For
+            # maxLength-only xgrammar strings exclude JSON escape sequences and
+            # admit raw Unicode code points, each at most four UTF-8 bytes.
+            multiplier = 2 if _bounded_ascii_pattern_limits(value.get("pattern")) else 4
+            return 2 + multiplier * int(value["maxLength"])
         if schema_type == "array":
             count = int(value["maxItems"])
             item = bound(value["items"])
-            return 2 + count * item + max(0, count - 1)
+            return 2 + count * item + len(XGRAMMAR_JSON_SEPARATORS[0]) * max(
+                0, count - 1
+            )
         if schema_type == "object":
             properties = value.get("properties", {})
             members = [
-                len(json.dumps(str(name), ensure_ascii=True)) + 1 + bound(child)
+                string_bound(str(name))
+                + len(XGRAMMAR_JSON_SEPARATORS[1])
+                + bound(child)
                 for name, child in properties.items()
             ]
-            return 2 + sum(members) + max(0, len(members) - 1)
+            return 2 + sum(members) + len(XGRAMMAR_JSON_SEPARATORS[0]) * max(
+                0, len(members) - 1
+            )
         if schema_type in {"integer", "number"}:
             candidates = [
                 value.get("minimum", value.get("exclusiveMinimum")),
@@ -561,7 +684,7 @@ def schema_worst_case_characters(schema: Mapping[str, Any]) -> int:
 
 
 def schema_worst_case_json(schema: Mapping[str, Any]) -> str:
-    """Materialize a compact JSON witness that realizes every schema bound."""
+    """Materialize a witness with deployed xgrammar's fixed separators."""
 
     validate_schema_boundedness(schema)
     active_references: set[str] = set()
@@ -601,9 +724,14 @@ def schema_worst_case_json(schema: Mapping[str, Any]) -> str:
         if schema_type == "null":
             return None
         if schema_type == "boolean":
-            return True
+            return False
         if schema_type == "string":
-            return "\x00" * int(value["maxLength"])
+            character = (
+                '"'
+                if _bounded_ascii_pattern_limits(value.get("pattern"))
+                else "\U0010ffff"
+            )
+            return character * int(value["maxLength"])
         if schema_type == "array":
             return [witness(value["items"]) for _ in range(int(value["maxItems"]))]
         if schema_type == "object":
@@ -619,7 +747,12 @@ def schema_worst_case_json(schema: Mapping[str, Any]) -> str:
             return witness({**value, "type": schema_type[0]})
         raise SchemaBoundednessError([SchemaIssue("$", "schema_type_unsupported")])
 
-    return json.dumps(witness(schema), ensure_ascii=True, sort_keys=True, separators=(",", ":"))
+    return json.dumps(
+        witness(schema),
+        ensure_ascii=False,
+        sort_keys=True,
+        separators=XGRAMMAR_JSON_SEPARATORS,
+    )
 
 
 def build_schema_bound_certificate(
@@ -631,8 +764,9 @@ def build_schema_bound_certificate(
     effective_max_tokens: int,
     safety_margin_tokens: int,
     output_token_counter: Callable[[str], int] | None = None,
+    whitespace_mode: str | None = None,
 ) -> SchemaBoundCertificate:
-    """Bind exact prompt tokens to a conservative finite output-token proof."""
+    """Bind prompt tokens and a physical JSON serialization policy to a proof."""
 
     validate_schema_boundedness(schema)
     prompt_tokens = int(token_counter(messages))
@@ -648,16 +782,24 @@ def build_schema_bound_certificate(
     if tokenizer_witness_tokens is not None and tokenizer_witness_tokens < 0:
         raise ValueError("output token count cannot be negative")
     # The tokenizer witness is diagnostic evidence, not a proof of the maximum
-    # BPE token count: another bounded string can segment into more tokens than
-    # the selected witness.  ``ensure_ascii`` makes every witness byte an ASCII
-    # character, and a byte-level tokenizer cannot emit more tokens than bytes,
-    # so the serialized-character bound is conservative for every admitted
-    # value.  Keep the exact witness count alongside that proof for auditing.
+    # BPE token count. With whitespace disabled in the authenticated vLLM
+    # server process contract, fixed xgrammar separators make the serialization
+    # proof byte-level:
+    # unconstrained code points need at most four UTF-8 bytes, while the
+    # xgrammar-safe ASCII pattern needs at most two bytes for a short JSON
+    # escape. A byte-level tokenizer cannot emit more tokens than bytes.
     output_tokens = characters
-    bound_method = "one_token_per_compact_ensure_ascii_json_character_v2"
+    physical_serialization_bound = whitespace_mode == BOUNDED_JSON_WHITESPACE_MODE
+    bound_method = (
+        "one_token_per_xgrammar_default_separators_utf8_byte_v6_server_whitespace_bound"
+        if physical_serialization_bound
+        else "not_authoritative_unbounded_json_whitespace"
+    )
     context_available = max(0, context_limit - prompt_tokens - safety_margin_tokens)
     completion_budget = min(effective_max_tokens, context_available)
     failures: list[str] = []
+    if not physical_serialization_bound:
+        failures.append("unbounded_json_whitespace")
     if effective_max_tokens < output_tokens:
         failures.append("completion_budget_below_schema_bound")
     if prompt_tokens + output_tokens + safety_margin_tokens > context_limit:
@@ -675,6 +817,8 @@ def build_schema_bound_certificate(
         context_safety_margin=safety_margin_tokens,
         status="PASS" if not failures else "FAIL",
         failure_reasons=tuple(failures),
+        whitespace_mode=whitespace_mode,
+        physical_serialization_bound=physical_serialization_bound,
         output_response_sha256=hashlib.sha256(witness.encode("utf-8")).hexdigest(),
     )
 
@@ -689,12 +833,14 @@ def choose_edge_page_capacity(
     effective_max_tokens: int,
     safety_margin_tokens: int,
     output_token_counter: Callable[[str], int] | None = None,
+    whitespace_mode: str | None = None,
 ) -> EdgePageCapacitySelection:
     """Choose the largest preregistered finite edge page that passes preflight."""
 
     if requested_capacity < 1:
         raise ValueError("requested edge page capacity must be positive")
     rejected: list[int] = []
+    rejected_certificates: list[SchemaBoundCertificate] = []
     for capacity in range(requested_capacity, 0, -1):
         schema = schemas_by_capacity.get(capacity)
         if schema is None:
@@ -708,6 +854,7 @@ def choose_edge_page_capacity(
             effective_max_tokens=effective_max_tokens,
             safety_margin_tokens=safety_margin_tokens,
             output_token_counter=output_token_counter,
+            whitespace_mode=whitespace_mode,
         )
         if certificate.status == "PASS":
             return EdgePageCapacitySelection(
@@ -716,8 +863,10 @@ def choose_edge_page_capacity(
                 rejected_capacities=tuple(rejected),
             )
         rejected.append(capacity)
+        rejected_certificates.append(certificate)
     raise StructuredOutputBudgetError(
-        "no finite edge page capacity fits the certified context and completion budget"
+        "no finite edge page capacity fits the certified context and completion budget",
+        rejected_certificates=rejected_certificates,
     )
 
 
@@ -731,6 +880,7 @@ def choose_node_schema_capacity(
     effective_max_tokens: int,
     safety_margin_tokens: int,
     output_token_counter: Callable[[str], int] | None = None,
+    whitespace_mode: str | None = None,
 ) -> SchemaCapacitySelection:
     """Choose the largest finite node schema that fits the actual request budget.
 
@@ -743,6 +893,7 @@ def choose_node_schema_capacity(
     if requested_capacity < 1:
         raise ValueError("requested node schema capacity must be positive")
     rejected: list[int] = []
+    rejected_certificates: list[SchemaBoundCertificate] = []
     for capacity in range(requested_capacity, 0, -1):
         schema = schemas_by_capacity.get(capacity)
         if schema is None:
@@ -756,6 +907,7 @@ def choose_node_schema_capacity(
             effective_max_tokens=effective_max_tokens,
             safety_margin_tokens=safety_margin_tokens,
             output_token_counter=output_token_counter,
+            whitespace_mode=whitespace_mode,
         )
         if certificate.status == "PASS":
             return SchemaCapacitySelection(
@@ -764,12 +916,17 @@ def choose_node_schema_capacity(
                 rejected_capacities=tuple(rejected),
             )
         rejected.append(capacity)
+        rejected_certificates.append(certificate)
     raise StructuredOutputBudgetError(
-        "no finite node schema capacity fits the certified context and completion budget"
+        "no finite node schema capacity fits the certified context and completion budget",
+        rejected_certificates=rejected_certificates,
     )
 
 
 __all__ = [
+    "BOUNDED_JSON_WHITESPACE_MODE",
+    "XGRAMMAR_JSON_SEPARATORS",
+    "bounded_ascii_pattern",
     "EdgePageCapacitySelection",
     "RECOVERY_POLICY_REVISION",
     "RECOVERY_POLICY_MAX_CONTEXT_CORRECTIONS",

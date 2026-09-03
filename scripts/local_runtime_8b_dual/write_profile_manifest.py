@@ -96,6 +96,11 @@ def endpoint(
             "rope_theta": 1000000,
         },
         "structured_outputs_backend": "xgrammar",
+        "structured_outputs_config": {
+            "backend": "xgrammar",
+            "disable_any_whitespace": True,
+        },
+        "json_separators": [", ", ": "],
         "prefix_caching": True,
         "chunked_prefill": True,
         "thinking": False,

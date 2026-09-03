@@ -1573,7 +1573,7 @@
     "status": "PASS"
   },
   "artifact_type": "schema_bound_certificate",
-  "base_code_commit": "fb7172f113251ca3e2d4b4b66aaa72265178708d",
+  "base_code_commit": "d9cc4f3c25b48e9cb28ba33e0ec43f5993adb277",
   "callsite_completion_budgets": {
     "default": 32768,
     "extract_edges.edge": 16384
@@ -1704,23 +1704,35 @@
     }
   ],
   "evaluated_source_bundle": {
-    "base_code_commit": "fb7172f113251ca3e2d4b4b66aaa72265178708d",
-    "generator_source_sha256": "06dbd73b160e4f5118b71ed2675ac39411dfaae1694d664ba870f2ed96ed6241",
+    "base_code_commit": "d9cc4f3c25b48e9cb28ba33e0ec43f5993adb277",
+    "generator_source_sha256": "bdbb4850f87d91aa8b13e1b418b6cb70aa2b829c6a711cb1266cd25819f2335f",
     "graphiti_source_sha256": "7c65051a62982d8b510ebdbf37bae4d07020e74520e1f6d9bf8a0ffb26beeccb",
     "mab_live_runner_sha256": "630472cf998636ee927bd418c0458e9edc17b82617aafb0112b0566c6ec7ea8c",
-    "v61_mab_sha256": "1ced0974caf618bc8eb30692bfe6e2bb84c6e72756ac1d48433dd805f677b67d",
-    "v61_runtime_sha256": "7732530577abceb444d870b1670ef211035301bb35b02500a98d707ac6b9992f"
+    "native_server_launcher_sha256": "95fb718d1499b8d8a359fda8f2c2a4738a4c7b14d2ab497db4ff17d2c5be55af",
+    "prepare_server_launcher_sha256": "8629271e61f8d2c58c8a5ef891c12aa01c13b5285e14a10ede8a02d012b7a8ee",
+    "qwen_transport_sha256": "0b3c5acb9ca8efd95cf6f8660fd1e07f5cb9310031302298dab041bdb840568c",
+    "server_preflight_sha256": "13b9197dc47365db2979f35c706b65b14517406f9357aaab3b5e00504c7b35de",
+    "v61_mab_sha256": "1f0f24b2b8416cb26c6668f3fac22c59d00715ac02cde850a5bfa666c27a964b",
+    "v61_runtime_sha256": "e4258f65524f9321fd749bc3e930f914443e538612ddc31f0ec7bfb9e4930977",
+    "v61_shared_structured_output_sha256": "d1191a3828e4cec51d425228d2f9f21eabcfc9c741a8451f70dd1a5b4a0ae47e",
+    "v61_structured_output_recovery_sha256": "3bb2fa277355cda696a7a6bdbd1885d26ab1f1f0940f6414e0b61216f3751137"
   },
-  "evaluated_source_bundle_sha256": "5f912d4db5eadf02ab3e5e33a96d13e0c02fb2a7d1f70297f368776f2efecd44",
+  "evaluated_source_bundle_sha256": "0dfad814ea0b43c998d99ede16c107dd988e64278145a525bab14a4a2470124b",
   "formal_certificate_complete": true,
-  "generator_source_sha256": "06dbd73b160e4f5118b71ed2675ac39411dfaae1694d664ba870f2ed96ed6241",
+  "generator_source_sha256": "bdbb4850f87d91aa8b13e1b418b6cb70aa2b829c6a711cb1266cd25819f2335f",
   "graphiti_commit": "021d3a57d511f21b10adaf7fa923bd5c1fce5e9d",
   "graphiti_source_root": "/data/predator/ly/Mem/envs/membind-local/lib/python3.12/site-packages/graphiti_core",
   "graphiti_source_sha256": "7c65051a62982d8b510ebdbf37bae4d07020e74520e1f6d9bf8a0ffb26beeccb",
+  "json_separators": [
+    ", ",
+    ": "
+  ],
+  "max_edge_schema_bound_tokens": 10781,
+  "max_timestamp_batch_schema_bound_tokens": 12364,
   "model_dir": "/data/predator/ly/Mem/models/Qwen3-8B-AWQ",
   "model_id": "Qwen3-8B-AWQ",
   "model_revision": "4da05a8edb55c6046cce958586c33b61da07bb79",
-  "output_token_bound_method": "one_token_per_compact_ensure_ascii_json_character_v2_with_exact_tokenizer_witness",
+  "output_token_bound_method": "one_token_per_xgrammar_default_separators_utf8_byte_v6_server_whitespace_bound",
   "provider_calls_used": 0,
   "qualification_status": "PASS_ACTUAL_RUNTIME_CALLSITE",
   "r2_classification_probe": {
@@ -1796,13 +1808,13 @@
     ]
   },
   "reliability_identity": {
-    "recovery_policy_revision": "classified-request-recovery-v1",
-    "recovery_policy_sha256": "40492aace3206f9355aae403fee578c00e0a9af0ccb5ae59f12de024da617201",
-    "runtime_reliability_profile": "shared-structured-output-recovery-v1",
-    "schema_revision": "finite-edge-schema-v1"
+    "recovery_policy_revision": "classified-request-recovery-v3-server-bound-whitespace",
+    "recovery_policy_sha256": "d5cc1be808044de2df192cc8c230099e7f0ee486efef7479aa2bdd17701b4665",
+    "runtime_reliability_profile": "shared-structured-output-recovery-v3-xgrammar-physical-bound",
+    "schema_revision": "finite-schema-v3-xgrammar-regex-and-separator-bound"
   },
-  "repository_dirty_diff_sha256": "b12774ee7c5c74037234ea294bda80ea1d6f1147f50579f6c7ab9db31e5c5a62",
-  "repository_head": "fb7172f113251ca3e2d4b4b66aaa72265178708d",
+  "repository_dirty_diff_sha256": "644e7eeeaa5868e6c028ee4ebad802b1cfeb9aed018d878887c9231462c3798a",
+  "repository_head": "d9cc4f3c25b48e9cb28ba33e0ec43f5993adb277",
   "runtime_generated_call_count": 47,
   "runtime_generated_callsites": {
     "dedupe_edges.resolve_edge": [
@@ -1816,13 +1828,15 @@
           "effective_completion_budget": 32768,
           "exact_prompt_tokens": 1533,
           "failure_reasons": [],
-          "output_response_sha256": "74bea19660f9cffc7957298a13ff324cbb7bc0a6b1ba7e3e2a56c84f8aac8d97",
-          "output_token_bound_method": "one_token_per_compact_ensure_ascii_json_character_v2",
+          "output_response_sha256": "0c9ababe2292e4b660b44b198a8c1112ff725dc4534564725342c20db21b5aa8",
+          "output_token_bound_method": "one_token_per_xgrammar_default_separators_utf8_byte_v6_server_whitespace_bound",
+          "physical_serialization_bound": true,
           "schema_sha256": "1c93ec647dad67cd5c94fe3398d449fd24a995d25b82706bfc2612de6e16b47e",
-          "schema_worst_case_characters": 332,
-          "schema_worst_case_tokens": 332,
+          "schema_worst_case_characters": 429,
+          "schema_worst_case_tokens": 429,
           "status": "PASS",
-          "tokenizer_witness_tokens": 299
+          "tokenizer_witness_tokens": 396,
+          "whitespace_mode": "disable_any_whitespace_vllm_v1"
         },
         "effective_max_tokens": 32768,
         "message_sha256": "9329fcdd76e7d206e32afd7afde57a34fb295c0e8d0ba393b52213b57dc8f239",
@@ -1840,13 +1854,15 @@
           "effective_completion_budget": 32768,
           "exact_prompt_tokens": 768,
           "failure_reasons": [],
-          "output_response_sha256": "7991bf79e99073ea158c72eb12c7cfabdb9a97c6c86a8e5a0fc4773ef9543ef0",
-          "output_token_bound_method": "one_token_per_compact_ensure_ascii_json_character_v2",
+          "output_response_sha256": "a9688fa9d2a3c6b90faea58fa896c390946a39e91f2b3a1f7849621e2f86c8b7",
+          "output_token_bound_method": "one_token_per_xgrammar_default_separators_utf8_byte_v6_server_whitespace_bound",
+          "physical_serialization_bound": true,
           "schema_sha256": "04e285e02ae836d376c87e1a66a71178700225b6ba6ce47390af01fed5719843",
-          "schema_worst_case_characters": 25368,
-          "schema_worst_case_tokens": 25368,
+          "schema_worst_case_characters": 17272,
+          "schema_worst_case_tokens": 17272,
           "status": "PASS",
-          "tokenizer_witness_tokens": 20726
+          "tokenizer_witness_tokens": 16710,
+          "whitespace_mode": "disable_any_whitespace_vllm_v1"
         },
         "effective_max_tokens": 32768,
         "message_sha256": "7785b9ef112d18b8c69337f1298a7615c3c9582a7ad2b3d9d73db84411fbb827",
@@ -1864,17 +1880,19 @@
           "effective_completion_budget": 16384,
           "exact_prompt_tokens": 1435,
           "failure_reasons": [],
-          "output_response_sha256": "1f4729105367ef7ff269f04619ba2991a181ee7e71c624a49424ebb824987647",
-          "output_token_bound_method": "one_token_per_compact_ensure_ascii_json_character_v2",
-          "schema_sha256": "e341fa82d38fce440a08575516fcd3ec392203338b541bcc8376bb65fe7d8a36",
-          "schema_worst_case_characters": 15862,
-          "schema_worst_case_tokens": 15862,
+          "output_response_sha256": "6a705ee8306ff7bd68f35bb72ed6cb4cbb459fc96c0d702fefc0c4604ee066e9",
+          "output_token_bound_method": "one_token_per_xgrammar_default_separators_utf8_byte_v6_server_whitespace_bound",
+          "physical_serialization_bound": true,
+          "schema_sha256": "7ce6a39161a664d58efba3bba943f77e58f9da1f3e852096619c40635771d42a",
+          "schema_worst_case_characters": 10781,
+          "schema_worst_case_tokens": 10781,
           "status": "PASS",
-          "tokenizer_witness_tokens": 13140
+          "tokenizer_witness_tokens": 5310,
+          "whitespace_mode": "disable_any_whitespace_vllm_v1"
         },
         "effective_max_tokens": 16384,
         "message_sha256": "6e34363e353540a0b283afda2475a53fa5fbe38f1d2dd07b834fa8210ea0953f",
-        "schema_sha256": "e341fa82d38fce440a08575516fcd3ec392203338b541bcc8376bb65fe7d8a36"
+        "schema_sha256": "7ce6a39161a664d58efba3bba943f77e58f9da1f3e852096619c40635771d42a"
       }
     ],
     "extract_edges.extract_attributes": [
@@ -1888,13 +1906,15 @@
           "effective_completion_budget": 32768,
           "exact_prompt_tokens": 532,
           "failure_reasons": [],
-          "output_response_sha256": "925ceb54cfd97fb1999a669d1a0ab89d56eb0a13f9c2fe853ad2844241f14df5",
-          "output_token_bound_method": "one_token_per_compact_ensure_ascii_json_character_v2",
+          "output_response_sha256": "205df5aba74bdee56c47a219d654bff3dc497624a4a4af5edf411885b671c34f",
+          "output_token_bound_method": "one_token_per_xgrammar_default_separators_utf8_byte_v6_server_whitespace_bound",
+          "physical_serialization_bound": true,
           "schema_sha256": "aff29f1d3e15a4fb27583d8c83f44524df6bdea9e825a8475a7730ea7b5db15c",
-          "schema_worst_case_characters": 13577,
-          "schema_worst_case_tokens": 13577,
+          "schema_worst_case_characters": 9089,
+          "schema_worst_case_tokens": 9089,
           "status": "PASS",
-          "tokenizer_witness_tokens": 11288
+          "tokenizer_witness_tokens": 9048,
+          "whitespace_mode": "disable_any_whitespace_vllm_v1"
         },
         "effective_max_tokens": 32768,
         "message_sha256": "d78bc2c2f6867201d7ce1775b6c4967d1da83f3fe29a52a2e416c3824cd567ad",
@@ -1912,17 +1932,19 @@
           "effective_completion_budget": 32768,
           "exact_prompt_tokens": 247,
           "failure_reasons": [],
-          "output_response_sha256": "0a5ec0908a9430c66030687dd1547c9852c9583bd5c94573eddfeca9be265c9b",
-          "output_token_bound_method": "one_token_per_compact_ensure_ascii_json_character_v2",
-          "schema_sha256": "07f272f1ce00f4ff894f28b9689cef474fe3cf9b1cc0d4827c94249c2d6f5294",
-          "schema_worst_case_characters": 511,
-          "schema_worst_case_tokens": 511,
+          "output_response_sha256": "7ec9d535f96409af9ea88bdc27a4447f8ef2f2bd8a03db92391480410b2dff56",
+          "output_token_bound_method": "one_token_per_xgrammar_default_separators_utf8_byte_v6_server_whitespace_bound",
+          "physical_serialization_bound": true,
+          "schema_sha256": "7bbe6a9275cf1fc893b76eb9659a13b37e05f895fc4aef2ad74b53dfe59f2d24",
+          "schema_worst_case_characters": 194,
+          "schema_worst_case_tokens": 194,
           "status": "PASS",
-          "tokenizer_witness_tokens": 411
+          "tokenizer_witness_tokens": 89,
+          "whitespace_mode": "disable_any_whitespace_vllm_v1"
         },
         "effective_max_tokens": 32768,
         "message_sha256": "b7f5daeacbedcf2dd124c70e1a951094bd38167c54dd60fda976eb3b10aabd31",
-        "schema_sha256": "07f272f1ce00f4ff894f28b9689cef474fe3cf9b1cc0d4827c94249c2d6f5294"
+        "schema_sha256": "7bbe6a9275cf1fc893b76eb9659a13b37e05f895fc4aef2ad74b53dfe59f2d24"
       }
     ],
     "extract_edges.extract_timestamps_batch": [
@@ -1936,17 +1958,19 @@
           "effective_completion_budget": 32768,
           "exact_prompt_tokens": 2569,
           "failure_reasons": [],
-          "output_response_sha256": "04e90e1ec62f0079d70152a0753037f52129f6d97427e43cec4df3ac08208c14",
-          "output_token_bound_method": "one_token_per_compact_ensure_ascii_json_character_v2",
-          "schema_sha256": "fa86b872953e3d130eee8ad69e0e4a57af6e762488e96c22bf0b5bee7026d0cb",
-          "schema_worst_case_characters": 32272,
-          "schema_worst_case_tokens": 32272,
+          "output_response_sha256": "c4ca30c1830b72186d8271155a3a6cb428d78c18b5e856cae2b83d88b622d25b",
+          "output_token_bound_method": "one_token_per_xgrammar_default_separators_utf8_byte_v6_server_whitespace_bound",
+          "physical_serialization_bound": true,
+          "schema_sha256": "89f69acf706ffddfac1a871b1ba0b6c0909233dd791fc0cd336393b9e7dd5621",
+          "schema_worst_case_characters": 12364,
+          "schema_worst_case_tokens": 12364,
           "status": "PASS",
-          "tokenizer_witness_tokens": 25834
+          "tokenizer_witness_tokens": 5611,
+          "whitespace_mode": "disable_any_whitespace_vllm_v1"
         },
         "effective_max_tokens": 32768,
         "message_sha256": "ef90bfefa4f70235aa018f3dbe498c3be163d3eb3900d408c562f0f4dcacc75c",
-        "schema_sha256": "fa86b872953e3d130eee8ad69e0e4a57af6e762488e96c22bf0b5bee7026d0cb"
+        "schema_sha256": "89f69acf706ffddfac1a871b1ba0b6c0909233dd791fc0cd336393b9e7dd5621"
       }
     ],
     "extract_nodes.extract_attributes": [
@@ -1960,13 +1984,15 @@
           "effective_completion_budget": 32768,
           "exact_prompt_tokens": 900,
           "failure_reasons": [],
-          "output_response_sha256": "925ceb54cfd97fb1999a669d1a0ab89d56eb0a13f9c2fe853ad2844241f14df5",
-          "output_token_bound_method": "one_token_per_compact_ensure_ascii_json_character_v2",
+          "output_response_sha256": "205df5aba74bdee56c47a219d654bff3dc497624a4a4af5edf411885b671c34f",
+          "output_token_bound_method": "one_token_per_xgrammar_default_separators_utf8_byte_v6_server_whitespace_bound",
+          "physical_serialization_bound": true,
           "schema_sha256": "aff29f1d3e15a4fb27583d8c83f44524df6bdea9e825a8475a7730ea7b5db15c",
-          "schema_worst_case_characters": 13577,
-          "schema_worst_case_tokens": 13577,
+          "schema_worst_case_characters": 9089,
+          "schema_worst_case_tokens": 9089,
           "status": "PASS",
-          "tokenizer_witness_tokens": 11288
+          "tokenizer_witness_tokens": 9048,
+          "whitespace_mode": "disable_any_whitespace_vllm_v1"
         },
         "effective_max_tokens": 32768,
         "message_sha256": "d40eba0d314b632109207de3cd91564c2c78af133f11788661e6e879c5485907",
@@ -1984,17 +2010,19 @@
           "effective_completion_budget": 32768,
           "exact_prompt_tokens": 1217,
           "failure_reasons": [],
-          "output_response_sha256": "0eee4ebb5b7ec382f9c5391d15bea56189e446d2899792df7fa749fd83b0f189",
-          "output_token_bound_method": "one_token_per_compact_ensure_ascii_json_character_v2",
-          "schema_sha256": "bfb84b19fbcf25a7a9ffadda8f5872bac09f5e75bd99e26f88e3293b64ff4506",
-          "schema_worst_case_characters": 7576,
-          "schema_worst_case_tokens": 7576,
+          "output_response_sha256": "db4ef7720dfd83cadedbe54e0617784a7e4178cd2d09161890c995515d8b9865",
+          "output_token_bound_method": "one_token_per_xgrammar_default_separators_utf8_byte_v6_server_whitespace_bound",
+          "physical_serialization_bound": true,
+          "schema_sha256": "9489dfa68ce6027331588ce953ebb6a16906e35503ff84b4ca207f10fb893674",
+          "schema_worst_case_characters": 4556,
+          "schema_worst_case_tokens": 4556,
           "status": "PASS",
-          "tokenizer_witness_tokens": 6293
+          "tokenizer_witness_tokens": 4269,
+          "whitespace_mode": "disable_any_whitespace_vllm_v1"
         },
         "effective_max_tokens": 32768,
         "message_sha256": "87c20ae748f02a8358c6387b2240e004e115a0afcda9462c9765f8d25210ee2b",
-        "schema_sha256": "bfb84b19fbcf25a7a9ffadda8f5872bac09f5e75bd99e26f88e3293b64ff4506"
+        "schema_sha256": "9489dfa68ce6027331588ce953ebb6a16906e35503ff84b4ca207f10fb893674"
       },
       {
         "attribute_extraction": false,
@@ -2006,17 +2034,19 @@
           "effective_completion_budget": 32768,
           "exact_prompt_tokens": 1217,
           "failure_reasons": [],
-          "output_response_sha256": "0eee4ebb5b7ec382f9c5391d15bea56189e446d2899792df7fa749fd83b0f189",
-          "output_token_bound_method": "one_token_per_compact_ensure_ascii_json_character_v2",
-          "schema_sha256": "bfb84b19fbcf25a7a9ffadda8f5872bac09f5e75bd99e26f88e3293b64ff4506",
-          "schema_worst_case_characters": 7576,
-          "schema_worst_case_tokens": 7576,
+          "output_response_sha256": "db4ef7720dfd83cadedbe54e0617784a7e4178cd2d09161890c995515d8b9865",
+          "output_token_bound_method": "one_token_per_xgrammar_default_separators_utf8_byte_v6_server_whitespace_bound",
+          "physical_serialization_bound": true,
+          "schema_sha256": "9489dfa68ce6027331588ce953ebb6a16906e35503ff84b4ca207f10fb893674",
+          "schema_worst_case_characters": 4556,
+          "schema_worst_case_tokens": 4556,
           "status": "PASS",
-          "tokenizer_witness_tokens": 6293
+          "tokenizer_witness_tokens": 4269,
+          "whitespace_mode": "disable_any_whitespace_vllm_v1"
         },
         "effective_max_tokens": 32768,
         "message_sha256": "d51bca31e501805cb40dcf895e36b6b66ba99470da51ccf1ecde4a2b1a075b79",
-        "schema_sha256": "bfb84b19fbcf25a7a9ffadda8f5872bac09f5e75bd99e26f88e3293b64ff4506"
+        "schema_sha256": "9489dfa68ce6027331588ce953ebb6a16906e35503ff84b4ca207f10fb893674"
       },
       {
         "attribute_extraction": false,
@@ -2028,17 +2058,19 @@
           "effective_completion_budget": 32768,
           "exact_prompt_tokens": 1217,
           "failure_reasons": [],
-          "output_response_sha256": "0eee4ebb5b7ec382f9c5391d15bea56189e446d2899792df7fa749fd83b0f189",
-          "output_token_bound_method": "one_token_per_compact_ensure_ascii_json_character_v2",
-          "schema_sha256": "bfb84b19fbcf25a7a9ffadda8f5872bac09f5e75bd99e26f88e3293b64ff4506",
-          "schema_worst_case_characters": 7576,
-          "schema_worst_case_tokens": 7576,
+          "output_response_sha256": "db4ef7720dfd83cadedbe54e0617784a7e4178cd2d09161890c995515d8b9865",
+          "output_token_bound_method": "one_token_per_xgrammar_default_separators_utf8_byte_v6_server_whitespace_bound",
+          "physical_serialization_bound": true,
+          "schema_sha256": "9489dfa68ce6027331588ce953ebb6a16906e35503ff84b4ca207f10fb893674",
+          "schema_worst_case_characters": 4556,
+          "schema_worst_case_tokens": 4556,
           "status": "PASS",
-          "tokenizer_witness_tokens": 6293
+          "tokenizer_witness_tokens": 4269,
+          "whitespace_mode": "disable_any_whitespace_vllm_v1"
         },
         "effective_max_tokens": 32768,
         "message_sha256": "10927da6cff23fa97433d757b87ff1ed5fe62696d3a8db8a3b78298f0d00c731",
-        "schema_sha256": "bfb84b19fbcf25a7a9ffadda8f5872bac09f5e75bd99e26f88e3293b64ff4506"
+        "schema_sha256": "9489dfa68ce6027331588ce953ebb6a16906e35503ff84b4ca207f10fb893674"
       },
       {
         "attribute_extraction": false,
@@ -2050,17 +2082,19 @@
           "effective_completion_budget": 32768,
           "exact_prompt_tokens": 1217,
           "failure_reasons": [],
-          "output_response_sha256": "0eee4ebb5b7ec382f9c5391d15bea56189e446d2899792df7fa749fd83b0f189",
-          "output_token_bound_method": "one_token_per_compact_ensure_ascii_json_character_v2",
-          "schema_sha256": "bfb84b19fbcf25a7a9ffadda8f5872bac09f5e75bd99e26f88e3293b64ff4506",
-          "schema_worst_case_characters": 7576,
-          "schema_worst_case_tokens": 7576,
+          "output_response_sha256": "db4ef7720dfd83cadedbe54e0617784a7e4178cd2d09161890c995515d8b9865",
+          "output_token_bound_method": "one_token_per_xgrammar_default_separators_utf8_byte_v6_server_whitespace_bound",
+          "physical_serialization_bound": true,
+          "schema_sha256": "9489dfa68ce6027331588ce953ebb6a16906e35503ff84b4ca207f10fb893674",
+          "schema_worst_case_characters": 4556,
+          "schema_worst_case_tokens": 4556,
           "status": "PASS",
-          "tokenizer_witness_tokens": 6293
+          "tokenizer_witness_tokens": 4269,
+          "whitespace_mode": "disable_any_whitespace_vllm_v1"
         },
         "effective_max_tokens": 32768,
         "message_sha256": "365324395cfe82a9afa096574869acad1c0e292305bcc6132c655121de9e52bb",
-        "schema_sha256": "bfb84b19fbcf25a7a9ffadda8f5872bac09f5e75bd99e26f88e3293b64ff4506"
+        "schema_sha256": "9489dfa68ce6027331588ce953ebb6a16906e35503ff84b4ca207f10fb893674"
       },
       {
         "attribute_extraction": false,
@@ -2072,17 +2106,19 @@
           "effective_completion_budget": 32768,
           "exact_prompt_tokens": 1217,
           "failure_reasons": [],
-          "output_response_sha256": "0eee4ebb5b7ec382f9c5391d15bea56189e446d2899792df7fa749fd83b0f189",
-          "output_token_bound_method": "one_token_per_compact_ensure_ascii_json_character_v2",
-          "schema_sha256": "bfb84b19fbcf25a7a9ffadda8f5872bac09f5e75bd99e26f88e3293b64ff4506",
-          "schema_worst_case_characters": 7576,
-          "schema_worst_case_tokens": 7576,
+          "output_response_sha256": "db4ef7720dfd83cadedbe54e0617784a7e4178cd2d09161890c995515d8b9865",
+          "output_token_bound_method": "one_token_per_xgrammar_default_separators_utf8_byte_v6_server_whitespace_bound",
+          "physical_serialization_bound": true,
+          "schema_sha256": "9489dfa68ce6027331588ce953ebb6a16906e35503ff84b4ca207f10fb893674",
+          "schema_worst_case_characters": 4556,
+          "schema_worst_case_tokens": 4556,
           "status": "PASS",
-          "tokenizer_witness_tokens": 6293
+          "tokenizer_witness_tokens": 4269,
+          "whitespace_mode": "disable_any_whitespace_vllm_v1"
         },
         "effective_max_tokens": 32768,
         "message_sha256": "059aff2b3f861a364d5e8e0a7f7a2fc1ab4c1203e68b4b4233f04924cb47c963",
-        "schema_sha256": "bfb84b19fbcf25a7a9ffadda8f5872bac09f5e75bd99e26f88e3293b64ff4506"
+        "schema_sha256": "9489dfa68ce6027331588ce953ebb6a16906e35503ff84b4ca207f10fb893674"
       },
       {
         "attribute_extraction": false,
@@ -2094,17 +2130,19 @@
           "effective_completion_budget": 32768,
           "exact_prompt_tokens": 1217,
           "failure_reasons": [],
-          "output_response_sha256": "0eee4ebb5b7ec382f9c5391d15bea56189e446d2899792df7fa749fd83b0f189",
-          "output_token_bound_method": "one_token_per_compact_ensure_ascii_json_character_v2",
-          "schema_sha256": "bfb84b19fbcf25a7a9ffadda8f5872bac09f5e75bd99e26f88e3293b64ff4506",
-          "schema_worst_case_characters": 7576,
-          "schema_worst_case_tokens": 7576,
+          "output_response_sha256": "db4ef7720dfd83cadedbe54e0617784a7e4178cd2d09161890c995515d8b9865",
+          "output_token_bound_method": "one_token_per_xgrammar_default_separators_utf8_byte_v6_server_whitespace_bound",
+          "physical_serialization_bound": true,
+          "schema_sha256": "9489dfa68ce6027331588ce953ebb6a16906e35503ff84b4ca207f10fb893674",
+          "schema_worst_case_characters": 4556,
+          "schema_worst_case_tokens": 4556,
           "status": "PASS",
-          "tokenizer_witness_tokens": 6293
+          "tokenizer_witness_tokens": 4269,
+          "whitespace_mode": "disable_any_whitespace_vllm_v1"
         },
         "effective_max_tokens": 32768,
         "message_sha256": "628f25d28405d6adbfc20c6ab3c1f8fd455db3e24f095cefe9cc41117e7df25f",
-        "schema_sha256": "bfb84b19fbcf25a7a9ffadda8f5872bac09f5e75bd99e26f88e3293b64ff4506"
+        "schema_sha256": "9489dfa68ce6027331588ce953ebb6a16906e35503ff84b4ca207f10fb893674"
       },
       {
         "attribute_extraction": false,
@@ -2116,17 +2154,19 @@
           "effective_completion_budget": 32768,
           "exact_prompt_tokens": 1217,
           "failure_reasons": [],
-          "output_response_sha256": "0eee4ebb5b7ec382f9c5391d15bea56189e446d2899792df7fa749fd83b0f189",
-          "output_token_bound_method": "one_token_per_compact_ensure_ascii_json_character_v2",
-          "schema_sha256": "bfb84b19fbcf25a7a9ffadda8f5872bac09f5e75bd99e26f88e3293b64ff4506",
-          "schema_worst_case_characters": 7576,
-          "schema_worst_case_tokens": 7576,
+          "output_response_sha256": "db4ef7720dfd83cadedbe54e0617784a7e4178cd2d09161890c995515d8b9865",
+          "output_token_bound_method": "one_token_per_xgrammar_default_separators_utf8_byte_v6_server_whitespace_bound",
+          "physical_serialization_bound": true,
+          "schema_sha256": "9489dfa68ce6027331588ce953ebb6a16906e35503ff84b4ca207f10fb893674",
+          "schema_worst_case_characters": 4556,
+          "schema_worst_case_tokens": 4556,
           "status": "PASS",
-          "tokenizer_witness_tokens": 6293
+          "tokenizer_witness_tokens": 4269,
+          "whitespace_mode": "disable_any_whitespace_vllm_v1"
         },
         "effective_max_tokens": 32768,
         "message_sha256": "3da1186673a527dfe9a34cb46d13936ea2bae0e612b84784c3774b40aceb51b7",
-        "schema_sha256": "bfb84b19fbcf25a7a9ffadda8f5872bac09f5e75bd99e26f88e3293b64ff4506"
+        "schema_sha256": "9489dfa68ce6027331588ce953ebb6a16906e35503ff84b4ca207f10fb893674"
       },
       {
         "attribute_extraction": false,
@@ -2138,17 +2178,19 @@
           "effective_completion_budget": 32768,
           "exact_prompt_tokens": 1217,
           "failure_reasons": [],
-          "output_response_sha256": "0eee4ebb5b7ec382f9c5391d15bea56189e446d2899792df7fa749fd83b0f189",
-          "output_token_bound_method": "one_token_per_compact_ensure_ascii_json_character_v2",
-          "schema_sha256": "bfb84b19fbcf25a7a9ffadda8f5872bac09f5e75bd99e26f88e3293b64ff4506",
-          "schema_worst_case_characters": 7576,
-          "schema_worst_case_tokens": 7576,
+          "output_response_sha256": "db4ef7720dfd83cadedbe54e0617784a7e4178cd2d09161890c995515d8b9865",
+          "output_token_bound_method": "one_token_per_xgrammar_default_separators_utf8_byte_v6_server_whitespace_bound",
+          "physical_serialization_bound": true,
+          "schema_sha256": "9489dfa68ce6027331588ce953ebb6a16906e35503ff84b4ca207f10fb893674",
+          "schema_worst_case_characters": 4556,
+          "schema_worst_case_tokens": 4556,
           "status": "PASS",
-          "tokenizer_witness_tokens": 6293
+          "tokenizer_witness_tokens": 4269,
+          "whitespace_mode": "disable_any_whitespace_vllm_v1"
         },
         "effective_max_tokens": 32768,
         "message_sha256": "a9586a72b1eea45e7998dc87399e58962eae3e77b1f3476494845a91228cd761",
-        "schema_sha256": "bfb84b19fbcf25a7a9ffadda8f5872bac09f5e75bd99e26f88e3293b64ff4506"
+        "schema_sha256": "9489dfa68ce6027331588ce953ebb6a16906e35503ff84b4ca207f10fb893674"
       },
       {
         "attribute_extraction": false,
@@ -2160,17 +2202,19 @@
           "effective_completion_budget": 32768,
           "exact_prompt_tokens": 1217,
           "failure_reasons": [],
-          "output_response_sha256": "0eee4ebb5b7ec382f9c5391d15bea56189e446d2899792df7fa749fd83b0f189",
-          "output_token_bound_method": "one_token_per_compact_ensure_ascii_json_character_v2",
-          "schema_sha256": "bfb84b19fbcf25a7a9ffadda8f5872bac09f5e75bd99e26f88e3293b64ff4506",
-          "schema_worst_case_characters": 7576,
-          "schema_worst_case_tokens": 7576,
+          "output_response_sha256": "db4ef7720dfd83cadedbe54e0617784a7e4178cd2d09161890c995515d8b9865",
+          "output_token_bound_method": "one_token_per_xgrammar_default_separators_utf8_byte_v6_server_whitespace_bound",
+          "physical_serialization_bound": true,
+          "schema_sha256": "9489dfa68ce6027331588ce953ebb6a16906e35503ff84b4ca207f10fb893674",
+          "schema_worst_case_characters": 4556,
+          "schema_worst_case_tokens": 4556,
           "status": "PASS",
-          "tokenizer_witness_tokens": 6293
+          "tokenizer_witness_tokens": 4269,
+          "whitespace_mode": "disable_any_whitespace_vllm_v1"
         },
         "effective_max_tokens": 32768,
         "message_sha256": "0430a2e799bb9357e76b56f1a00eb87f95972ec6e49a0bb9fe81103922343d00",
-        "schema_sha256": "bfb84b19fbcf25a7a9ffadda8f5872bac09f5e75bd99e26f88e3293b64ff4506"
+        "schema_sha256": "9489dfa68ce6027331588ce953ebb6a16906e35503ff84b4ca207f10fb893674"
       },
       {
         "attribute_extraction": false,
@@ -2182,17 +2226,19 @@
           "effective_completion_budget": 32768,
           "exact_prompt_tokens": 1217,
           "failure_reasons": [],
-          "output_response_sha256": "0eee4ebb5b7ec382f9c5391d15bea56189e446d2899792df7fa749fd83b0f189",
-          "output_token_bound_method": "one_token_per_compact_ensure_ascii_json_character_v2",
-          "schema_sha256": "bfb84b19fbcf25a7a9ffadda8f5872bac09f5e75bd99e26f88e3293b64ff4506",
-          "schema_worst_case_characters": 7576,
-          "schema_worst_case_tokens": 7576,
+          "output_response_sha256": "db4ef7720dfd83cadedbe54e0617784a7e4178cd2d09161890c995515d8b9865",
+          "output_token_bound_method": "one_token_per_xgrammar_default_separators_utf8_byte_v6_server_whitespace_bound",
+          "physical_serialization_bound": true,
+          "schema_sha256": "9489dfa68ce6027331588ce953ebb6a16906e35503ff84b4ca207f10fb893674",
+          "schema_worst_case_characters": 4556,
+          "schema_worst_case_tokens": 4556,
           "status": "PASS",
-          "tokenizer_witness_tokens": 6293
+          "tokenizer_witness_tokens": 4269,
+          "whitespace_mode": "disable_any_whitespace_vllm_v1"
         },
         "effective_max_tokens": 32768,
         "message_sha256": "2c1e9d1f6cc0de238eb76d3924d80b29e661e0846d4ea7f59979bf24201339e5",
-        "schema_sha256": "bfb84b19fbcf25a7a9ffadda8f5872bac09f5e75bd99e26f88e3293b64ff4506"
+        "schema_sha256": "9489dfa68ce6027331588ce953ebb6a16906e35503ff84b4ca207f10fb893674"
       },
       {
         "attribute_extraction": false,
@@ -2204,17 +2250,19 @@
           "effective_completion_budget": 32768,
           "exact_prompt_tokens": 1217,
           "failure_reasons": [],
-          "output_response_sha256": "0eee4ebb5b7ec382f9c5391d15bea56189e446d2899792df7fa749fd83b0f189",
-          "output_token_bound_method": "one_token_per_compact_ensure_ascii_json_character_v2",
-          "schema_sha256": "bfb84b19fbcf25a7a9ffadda8f5872bac09f5e75bd99e26f88e3293b64ff4506",
-          "schema_worst_case_characters": 7576,
-          "schema_worst_case_tokens": 7576,
+          "output_response_sha256": "db4ef7720dfd83cadedbe54e0617784a7e4178cd2d09161890c995515d8b9865",
+          "output_token_bound_method": "one_token_per_xgrammar_default_separators_utf8_byte_v6_server_whitespace_bound",
+          "physical_serialization_bound": true,
+          "schema_sha256": "9489dfa68ce6027331588ce953ebb6a16906e35503ff84b4ca207f10fb893674",
+          "schema_worst_case_characters": 4556,
+          "schema_worst_case_tokens": 4556,
           "status": "PASS",
-          "tokenizer_witness_tokens": 6293
+          "tokenizer_witness_tokens": 4269,
+          "whitespace_mode": "disable_any_whitespace_vllm_v1"
         },
         "effective_max_tokens": 32768,
         "message_sha256": "a4a70b6ab5b6a031e94bc93cc2a0147f7108cf50d141f08e8c905d9664edce4e",
-        "schema_sha256": "bfb84b19fbcf25a7a9ffadda8f5872bac09f5e75bd99e26f88e3293b64ff4506"
+        "schema_sha256": "9489dfa68ce6027331588ce953ebb6a16906e35503ff84b4ca207f10fb893674"
       },
       {
         "attribute_extraction": false,
@@ -2226,17 +2274,19 @@
           "effective_completion_budget": 32768,
           "exact_prompt_tokens": 1217,
           "failure_reasons": [],
-          "output_response_sha256": "0eee4ebb5b7ec382f9c5391d15bea56189e446d2899792df7fa749fd83b0f189",
-          "output_token_bound_method": "one_token_per_compact_ensure_ascii_json_character_v2",
-          "schema_sha256": "bfb84b19fbcf25a7a9ffadda8f5872bac09f5e75bd99e26f88e3293b64ff4506",
-          "schema_worst_case_characters": 7576,
-          "schema_worst_case_tokens": 7576,
+          "output_response_sha256": "db4ef7720dfd83cadedbe54e0617784a7e4178cd2d09161890c995515d8b9865",
+          "output_token_bound_method": "one_token_per_xgrammar_default_separators_utf8_byte_v6_server_whitespace_bound",
+          "physical_serialization_bound": true,
+          "schema_sha256": "9489dfa68ce6027331588ce953ebb6a16906e35503ff84b4ca207f10fb893674",
+          "schema_worst_case_characters": 4556,
+          "schema_worst_case_tokens": 4556,
           "status": "PASS",
-          "tokenizer_witness_tokens": 6293
+          "tokenizer_witness_tokens": 4269,
+          "whitespace_mode": "disable_any_whitespace_vllm_v1"
         },
         "effective_max_tokens": 32768,
         "message_sha256": "6d80b518ce0cc0729c0a27a8a93b50effff122e07c7c5fef495bf73496039ce6",
-        "schema_sha256": "bfb84b19fbcf25a7a9ffadda8f5872bac09f5e75bd99e26f88e3293b64ff4506"
+        "schema_sha256": "9489dfa68ce6027331588ce953ebb6a16906e35503ff84b4ca207f10fb893674"
       },
       {
         "attribute_extraction": false,
@@ -2248,17 +2298,19 @@
           "effective_completion_budget": 32768,
           "exact_prompt_tokens": 1217,
           "failure_reasons": [],
-          "output_response_sha256": "0eee4ebb5b7ec382f9c5391d15bea56189e446d2899792df7fa749fd83b0f189",
-          "output_token_bound_method": "one_token_per_compact_ensure_ascii_json_character_v2",
-          "schema_sha256": "bfb84b19fbcf25a7a9ffadda8f5872bac09f5e75bd99e26f88e3293b64ff4506",
-          "schema_worst_case_characters": 7576,
-          "schema_worst_case_tokens": 7576,
+          "output_response_sha256": "db4ef7720dfd83cadedbe54e0617784a7e4178cd2d09161890c995515d8b9865",
+          "output_token_bound_method": "one_token_per_xgrammar_default_separators_utf8_byte_v6_server_whitespace_bound",
+          "physical_serialization_bound": true,
+          "schema_sha256": "9489dfa68ce6027331588ce953ebb6a16906e35503ff84b4ca207f10fb893674",
+          "schema_worst_case_characters": 4556,
+          "schema_worst_case_tokens": 4556,
           "status": "PASS",
-          "tokenizer_witness_tokens": 6293
+          "tokenizer_witness_tokens": 4269,
+          "whitespace_mode": "disable_any_whitespace_vllm_v1"
         },
         "effective_max_tokens": 32768,
         "message_sha256": "21d06dff87cbf2e78a83af0fe02f091c7bd2a6046d96d8fbe6dc1872425466bb",
-        "schema_sha256": "bfb84b19fbcf25a7a9ffadda8f5872bac09f5e75bd99e26f88e3293b64ff4506"
+        "schema_sha256": "9489dfa68ce6027331588ce953ebb6a16906e35503ff84b4ca207f10fb893674"
       },
       {
         "attribute_extraction": false,
@@ -2270,17 +2322,19 @@
           "effective_completion_budget": 32768,
           "exact_prompt_tokens": 1217,
           "failure_reasons": [],
-          "output_response_sha256": "0eee4ebb5b7ec382f9c5391d15bea56189e446d2899792df7fa749fd83b0f189",
-          "output_token_bound_method": "one_token_per_compact_ensure_ascii_json_character_v2",
-          "schema_sha256": "bfb84b19fbcf25a7a9ffadda8f5872bac09f5e75bd99e26f88e3293b64ff4506",
-          "schema_worst_case_characters": 7576,
-          "schema_worst_case_tokens": 7576,
+          "output_response_sha256": "db4ef7720dfd83cadedbe54e0617784a7e4178cd2d09161890c995515d8b9865",
+          "output_token_bound_method": "one_token_per_xgrammar_default_separators_utf8_byte_v6_server_whitespace_bound",
+          "physical_serialization_bound": true,
+          "schema_sha256": "9489dfa68ce6027331588ce953ebb6a16906e35503ff84b4ca207f10fb893674",
+          "schema_worst_case_characters": 4556,
+          "schema_worst_case_tokens": 4556,
           "status": "PASS",
-          "tokenizer_witness_tokens": 6293
+          "tokenizer_witness_tokens": 4269,
+          "whitespace_mode": "disable_any_whitespace_vllm_v1"
         },
         "effective_max_tokens": 32768,
         "message_sha256": "f9cbad6bd14ee7810d85442f98b38ca8551f8a98d9d01d0b0b7a2a75ba89042c",
-        "schema_sha256": "bfb84b19fbcf25a7a9ffadda8f5872bac09f5e75bd99e26f88e3293b64ff4506"
+        "schema_sha256": "9489dfa68ce6027331588ce953ebb6a16906e35503ff84b4ca207f10fb893674"
       },
       {
         "attribute_extraction": false,
@@ -2292,17 +2346,19 @@
           "effective_completion_budget": 32768,
           "exact_prompt_tokens": 1217,
           "failure_reasons": [],
-          "output_response_sha256": "0eee4ebb5b7ec382f9c5391d15bea56189e446d2899792df7fa749fd83b0f189",
-          "output_token_bound_method": "one_token_per_compact_ensure_ascii_json_character_v2",
-          "schema_sha256": "bfb84b19fbcf25a7a9ffadda8f5872bac09f5e75bd99e26f88e3293b64ff4506",
-          "schema_worst_case_characters": 7576,
-          "schema_worst_case_tokens": 7576,
+          "output_response_sha256": "db4ef7720dfd83cadedbe54e0617784a7e4178cd2d09161890c995515d8b9865",
+          "output_token_bound_method": "one_token_per_xgrammar_default_separators_utf8_byte_v6_server_whitespace_bound",
+          "physical_serialization_bound": true,
+          "schema_sha256": "9489dfa68ce6027331588ce953ebb6a16906e35503ff84b4ca207f10fb893674",
+          "schema_worst_case_characters": 4556,
+          "schema_worst_case_tokens": 4556,
           "status": "PASS",
-          "tokenizer_witness_tokens": 6293
+          "tokenizer_witness_tokens": 4269,
+          "whitespace_mode": "disable_any_whitespace_vllm_v1"
         },
         "effective_max_tokens": 32768,
         "message_sha256": "8ab2261863ecbe046451f626aab92341033f28fbcf74b6a9d701198085066c62",
-        "schema_sha256": "bfb84b19fbcf25a7a9ffadda8f5872bac09f5e75bd99e26f88e3293b64ff4506"
+        "schema_sha256": "9489dfa68ce6027331588ce953ebb6a16906e35503ff84b4ca207f10fb893674"
       },
       {
         "attribute_extraction": false,
@@ -2314,17 +2370,19 @@
           "effective_completion_budget": 32768,
           "exact_prompt_tokens": 1217,
           "failure_reasons": [],
-          "output_response_sha256": "0eee4ebb5b7ec382f9c5391d15bea56189e446d2899792df7fa749fd83b0f189",
-          "output_token_bound_method": "one_token_per_compact_ensure_ascii_json_character_v2",
-          "schema_sha256": "bfb84b19fbcf25a7a9ffadda8f5872bac09f5e75bd99e26f88e3293b64ff4506",
-          "schema_worst_case_characters": 7576,
-          "schema_worst_case_tokens": 7576,
+          "output_response_sha256": "db4ef7720dfd83cadedbe54e0617784a7e4178cd2d09161890c995515d8b9865",
+          "output_token_bound_method": "one_token_per_xgrammar_default_separators_utf8_byte_v6_server_whitespace_bound",
+          "physical_serialization_bound": true,
+          "schema_sha256": "9489dfa68ce6027331588ce953ebb6a16906e35503ff84b4ca207f10fb893674",
+          "schema_worst_case_characters": 4556,
+          "schema_worst_case_tokens": 4556,
           "status": "PASS",
-          "tokenizer_witness_tokens": 6293
+          "tokenizer_witness_tokens": 4269,
+          "whitespace_mode": "disable_any_whitespace_vllm_v1"
         },
         "effective_max_tokens": 32768,
         "message_sha256": "0d1dc3fa77d645e74e1131141649ff16c2b28eba2879656bb6c98f6c1dd8cc4c",
-        "schema_sha256": "bfb84b19fbcf25a7a9ffadda8f5872bac09f5e75bd99e26f88e3293b64ff4506"
+        "schema_sha256": "9489dfa68ce6027331588ce953ebb6a16906e35503ff84b4ca207f10fb893674"
       }
     ],
     "extract_nodes.extract_json": [
@@ -2338,17 +2396,19 @@
           "effective_completion_budget": 32768,
           "exact_prompt_tokens": 661,
           "failure_reasons": [],
-          "output_response_sha256": "8217142559e5a6fbf9a5da593ec1857bb53c0de9e4f2b856d29855b394cf43b2",
-          "output_token_bound_method": "one_token_per_compact_ensure_ascii_json_character_v2",
-          "schema_sha256": "71579ce6cba4d04c7867f85f18de242e15613e825d182df7cae3620089d1102f",
-          "schema_worst_case_characters": 25496,
-          "schema_worst_case_tokens": 25496,
+          "output_response_sha256": "b33c7493a1185cb057cf9de0ab6d90bc6ebc25fd786624a1102cb55308db0e29",
+          "output_token_bound_method": "one_token_per_xgrammar_default_separators_utf8_byte_v6_server_whitespace_bound",
+          "physical_serialization_bound": true,
+          "schema_sha256": "5779e480b780031654763cbf8149f5244ecd848bf421b823260ac36c1fc8bd71",
+          "schema_worst_case_characters": 9208,
+          "schema_worst_case_tokens": 9208,
           "status": "PASS",
-          "tokenizer_witness_tokens": 20774
+          "tokenizer_witness_tokens": 4454,
+          "whitespace_mode": "disable_any_whitespace_vllm_v1"
         },
         "effective_max_tokens": 32768,
         "message_sha256": "6fe5c13a58812fcb443b0964df01f27e435487a72fbe6396807b3d6c9fc25d56",
-        "schema_sha256": "71579ce6cba4d04c7867f85f18de242e15613e825d182df7cae3620089d1102f"
+        "schema_sha256": "5779e480b780031654763cbf8149f5244ecd848bf421b823260ac36c1fc8bd71"
       }
     ],
     "extract_nodes.extract_message": [
@@ -2362,17 +2422,19 @@
           "effective_completion_budget": 32768,
           "exact_prompt_tokens": 1801,
           "failure_reasons": [],
-          "output_response_sha256": "8217142559e5a6fbf9a5da593ec1857bb53c0de9e4f2b856d29855b394cf43b2",
-          "output_token_bound_method": "one_token_per_compact_ensure_ascii_json_character_v2",
-          "schema_sha256": "71579ce6cba4d04c7867f85f18de242e15613e825d182df7cae3620089d1102f",
-          "schema_worst_case_characters": 25496,
-          "schema_worst_case_tokens": 25496,
+          "output_response_sha256": "b33c7493a1185cb057cf9de0ab6d90bc6ebc25fd786624a1102cb55308db0e29",
+          "output_token_bound_method": "one_token_per_xgrammar_default_separators_utf8_byte_v6_server_whitespace_bound",
+          "physical_serialization_bound": true,
+          "schema_sha256": "5779e480b780031654763cbf8149f5244ecd848bf421b823260ac36c1fc8bd71",
+          "schema_worst_case_characters": 9208,
+          "schema_worst_case_tokens": 9208,
           "status": "PASS",
-          "tokenizer_witness_tokens": 20774
+          "tokenizer_witness_tokens": 4454,
+          "whitespace_mode": "disable_any_whitespace_vllm_v1"
         },
         "effective_max_tokens": 32768,
         "message_sha256": "14e236c33d5ccf24dfb04a7156ba9e6eee771b08a5f8e00317d50cb1e4750316",
-        "schema_sha256": "71579ce6cba4d04c7867f85f18de242e15613e825d182df7cae3620089d1102f"
+        "schema_sha256": "5779e480b780031654763cbf8149f5244ecd848bf421b823260ac36c1fc8bd71"
       }
     ],
     "extract_nodes.extract_summaries_batch": [
@@ -2386,17 +2448,19 @@
           "effective_completion_budget": 32768,
           "exact_prompt_tokens": 569,
           "failure_reasons": [],
-          "output_response_sha256": "0eee4ebb5b7ec382f9c5391d15bea56189e446d2899792df7fa749fd83b0f189",
-          "output_token_bound_method": "one_token_per_compact_ensure_ascii_json_character_v2",
-          "schema_sha256": "bfb84b19fbcf25a7a9ffadda8f5872bac09f5e75bd99e26f88e3293b64ff4506",
-          "schema_worst_case_characters": 7576,
-          "schema_worst_case_tokens": 7576,
+          "output_response_sha256": "db4ef7720dfd83cadedbe54e0617784a7e4178cd2d09161890c995515d8b9865",
+          "output_token_bound_method": "one_token_per_xgrammar_default_separators_utf8_byte_v6_server_whitespace_bound",
+          "physical_serialization_bound": true,
+          "schema_sha256": "9489dfa68ce6027331588ce953ebb6a16906e35503ff84b4ca207f10fb893674",
+          "schema_worst_case_characters": 4556,
+          "schema_worst_case_tokens": 4556,
           "status": "PASS",
-          "tokenizer_witness_tokens": 6293
+          "tokenizer_witness_tokens": 4269,
+          "whitespace_mode": "disable_any_whitespace_vllm_v1"
         },
         "effective_max_tokens": 32768,
         "message_sha256": "9081aceb3fa7a613d642399acb5323e6889007c54dce6ba2ca8fd014a458d475",
-        "schema_sha256": "bfb84b19fbcf25a7a9ffadda8f5872bac09f5e75bd99e26f88e3293b64ff4506"
+        "schema_sha256": "9489dfa68ce6027331588ce953ebb6a16906e35503ff84b4ca207f10fb893674"
       },
       {
         "attribute_extraction": false,
@@ -2408,17 +2472,19 @@
           "effective_completion_budget": 32768,
           "exact_prompt_tokens": 569,
           "failure_reasons": [],
-          "output_response_sha256": "0eee4ebb5b7ec382f9c5391d15bea56189e446d2899792df7fa749fd83b0f189",
-          "output_token_bound_method": "one_token_per_compact_ensure_ascii_json_character_v2",
-          "schema_sha256": "bfb84b19fbcf25a7a9ffadda8f5872bac09f5e75bd99e26f88e3293b64ff4506",
-          "schema_worst_case_characters": 7576,
-          "schema_worst_case_tokens": 7576,
+          "output_response_sha256": "db4ef7720dfd83cadedbe54e0617784a7e4178cd2d09161890c995515d8b9865",
+          "output_token_bound_method": "one_token_per_xgrammar_default_separators_utf8_byte_v6_server_whitespace_bound",
+          "physical_serialization_bound": true,
+          "schema_sha256": "9489dfa68ce6027331588ce953ebb6a16906e35503ff84b4ca207f10fb893674",
+          "schema_worst_case_characters": 4556,
+          "schema_worst_case_tokens": 4556,
           "status": "PASS",
-          "tokenizer_witness_tokens": 6293
+          "tokenizer_witness_tokens": 4269,
+          "whitespace_mode": "disable_any_whitespace_vllm_v1"
         },
         "effective_max_tokens": 32768,
         "message_sha256": "c0686953af7f140f0fbb3b6d62a17f32f03720bfb8e7f18cf67fa99638a32b08",
-        "schema_sha256": "bfb84b19fbcf25a7a9ffadda8f5872bac09f5e75bd99e26f88e3293b64ff4506"
+        "schema_sha256": "9489dfa68ce6027331588ce953ebb6a16906e35503ff84b4ca207f10fb893674"
       },
       {
         "attribute_extraction": false,
@@ -2430,17 +2496,19 @@
           "effective_completion_budget": 32768,
           "exact_prompt_tokens": 569,
           "failure_reasons": [],
-          "output_response_sha256": "0eee4ebb5b7ec382f9c5391d15bea56189e446d2899792df7fa749fd83b0f189",
-          "output_token_bound_method": "one_token_per_compact_ensure_ascii_json_character_v2",
-          "schema_sha256": "bfb84b19fbcf25a7a9ffadda8f5872bac09f5e75bd99e26f88e3293b64ff4506",
-          "schema_worst_case_characters": 7576,
-          "schema_worst_case_tokens": 7576,
+          "output_response_sha256": "db4ef7720dfd83cadedbe54e0617784a7e4178cd2d09161890c995515d8b9865",
+          "output_token_bound_method": "one_token_per_xgrammar_default_separators_utf8_byte_v6_server_whitespace_bound",
+          "physical_serialization_bound": true,
+          "schema_sha256": "9489dfa68ce6027331588ce953ebb6a16906e35503ff84b4ca207f10fb893674",
+          "schema_worst_case_characters": 4556,
+          "schema_worst_case_tokens": 4556,
           "status": "PASS",
-          "tokenizer_witness_tokens": 6293
+          "tokenizer_witness_tokens": 4269,
+          "whitespace_mode": "disable_any_whitespace_vllm_v1"
         },
         "effective_max_tokens": 32768,
         "message_sha256": "646dba238ef10dc0b64273dc8520921cac15fc3fa9b3a1c7dfd334b790334f5a",
-        "schema_sha256": "bfb84b19fbcf25a7a9ffadda8f5872bac09f5e75bd99e26f88e3293b64ff4506"
+        "schema_sha256": "9489dfa68ce6027331588ce953ebb6a16906e35503ff84b4ca207f10fb893674"
       },
       {
         "attribute_extraction": false,
@@ -2452,17 +2520,19 @@
           "effective_completion_budget": 32768,
           "exact_prompt_tokens": 569,
           "failure_reasons": [],
-          "output_response_sha256": "0eee4ebb5b7ec382f9c5391d15bea56189e446d2899792df7fa749fd83b0f189",
-          "output_token_bound_method": "one_token_per_compact_ensure_ascii_json_character_v2",
-          "schema_sha256": "bfb84b19fbcf25a7a9ffadda8f5872bac09f5e75bd99e26f88e3293b64ff4506",
-          "schema_worst_case_characters": 7576,
-          "schema_worst_case_tokens": 7576,
+          "output_response_sha256": "db4ef7720dfd83cadedbe54e0617784a7e4178cd2d09161890c995515d8b9865",
+          "output_token_bound_method": "one_token_per_xgrammar_default_separators_utf8_byte_v6_server_whitespace_bound",
+          "physical_serialization_bound": true,
+          "schema_sha256": "9489dfa68ce6027331588ce953ebb6a16906e35503ff84b4ca207f10fb893674",
+          "schema_worst_case_characters": 4556,
+          "schema_worst_case_tokens": 4556,
           "status": "PASS",
-          "tokenizer_witness_tokens": 6293
+          "tokenizer_witness_tokens": 4269,
+          "whitespace_mode": "disable_any_whitespace_vllm_v1"
         },
         "effective_max_tokens": 32768,
         "message_sha256": "b33bdd5af1c31c62ea3ab7e8aae709b9f753146db048f5ab3fbd986514c625c1",
-        "schema_sha256": "bfb84b19fbcf25a7a9ffadda8f5872bac09f5e75bd99e26f88e3293b64ff4506"
+        "schema_sha256": "9489dfa68ce6027331588ce953ebb6a16906e35503ff84b4ca207f10fb893674"
       },
       {
         "attribute_extraction": false,
@@ -2474,17 +2544,19 @@
           "effective_completion_budget": 32768,
           "exact_prompt_tokens": 569,
           "failure_reasons": [],
-          "output_response_sha256": "0eee4ebb5b7ec382f9c5391d15bea56189e446d2899792df7fa749fd83b0f189",
-          "output_token_bound_method": "one_token_per_compact_ensure_ascii_json_character_v2",
-          "schema_sha256": "bfb84b19fbcf25a7a9ffadda8f5872bac09f5e75bd99e26f88e3293b64ff4506",
-          "schema_worst_case_characters": 7576,
-          "schema_worst_case_tokens": 7576,
+          "output_response_sha256": "db4ef7720dfd83cadedbe54e0617784a7e4178cd2d09161890c995515d8b9865",
+          "output_token_bound_method": "one_token_per_xgrammar_default_separators_utf8_byte_v6_server_whitespace_bound",
+          "physical_serialization_bound": true,
+          "schema_sha256": "9489dfa68ce6027331588ce953ebb6a16906e35503ff84b4ca207f10fb893674",
+          "schema_worst_case_characters": 4556,
+          "schema_worst_case_tokens": 4556,
           "status": "PASS",
-          "tokenizer_witness_tokens": 6293
+          "tokenizer_witness_tokens": 4269,
+          "whitespace_mode": "disable_any_whitespace_vllm_v1"
         },
         "effective_max_tokens": 32768,
         "message_sha256": "62810a9b7b66c4b2460eee96da4d4299648d4eda99ee209f87097fa65b58b600",
-        "schema_sha256": "bfb84b19fbcf25a7a9ffadda8f5872bac09f5e75bd99e26f88e3293b64ff4506"
+        "schema_sha256": "9489dfa68ce6027331588ce953ebb6a16906e35503ff84b4ca207f10fb893674"
       },
       {
         "attribute_extraction": false,
@@ -2496,17 +2568,19 @@
           "effective_completion_budget": 32768,
           "exact_prompt_tokens": 569,
           "failure_reasons": [],
-          "output_response_sha256": "0eee4ebb5b7ec382f9c5391d15bea56189e446d2899792df7fa749fd83b0f189",
-          "output_token_bound_method": "one_token_per_compact_ensure_ascii_json_character_v2",
-          "schema_sha256": "bfb84b19fbcf25a7a9ffadda8f5872bac09f5e75bd99e26f88e3293b64ff4506",
-          "schema_worst_case_characters": 7576,
-          "schema_worst_case_tokens": 7576,
+          "output_response_sha256": "db4ef7720dfd83cadedbe54e0617784a7e4178cd2d09161890c995515d8b9865",
+          "output_token_bound_method": "one_token_per_xgrammar_default_separators_utf8_byte_v6_server_whitespace_bound",
+          "physical_serialization_bound": true,
+          "schema_sha256": "9489dfa68ce6027331588ce953ebb6a16906e35503ff84b4ca207f10fb893674",
+          "schema_worst_case_characters": 4556,
+          "schema_worst_case_tokens": 4556,
           "status": "PASS",
-          "tokenizer_witness_tokens": 6293
+          "tokenizer_witness_tokens": 4269,
+          "whitespace_mode": "disable_any_whitespace_vllm_v1"
         },
         "effective_max_tokens": 32768,
         "message_sha256": "afec26207a5dd4f232218e16085ee917d452d55638326213dc26270391e93e56",
-        "schema_sha256": "bfb84b19fbcf25a7a9ffadda8f5872bac09f5e75bd99e26f88e3293b64ff4506"
+        "schema_sha256": "9489dfa68ce6027331588ce953ebb6a16906e35503ff84b4ca207f10fb893674"
       },
       {
         "attribute_extraction": false,
@@ -2518,17 +2592,19 @@
           "effective_completion_budget": 32768,
           "exact_prompt_tokens": 569,
           "failure_reasons": [],
-          "output_response_sha256": "0eee4ebb5b7ec382f9c5391d15bea56189e446d2899792df7fa749fd83b0f189",
-          "output_token_bound_method": "one_token_per_compact_ensure_ascii_json_character_v2",
-          "schema_sha256": "bfb84b19fbcf25a7a9ffadda8f5872bac09f5e75bd99e26f88e3293b64ff4506",
-          "schema_worst_case_characters": 7576,
-          "schema_worst_case_tokens": 7576,
+          "output_response_sha256": "db4ef7720dfd83cadedbe54e0617784a7e4178cd2d09161890c995515d8b9865",
+          "output_token_bound_method": "one_token_per_xgrammar_default_separators_utf8_byte_v6_server_whitespace_bound",
+          "physical_serialization_bound": true,
+          "schema_sha256": "9489dfa68ce6027331588ce953ebb6a16906e35503ff84b4ca207f10fb893674",
+          "schema_worst_case_characters": 4556,
+          "schema_worst_case_tokens": 4556,
           "status": "PASS",
-          "tokenizer_witness_tokens": 6293
+          "tokenizer_witness_tokens": 4269,
+          "whitespace_mode": "disable_any_whitespace_vllm_v1"
         },
         "effective_max_tokens": 32768,
         "message_sha256": "8025d91d1fb9a5ded77dc2e038b6c7adb280a3c62061149909b7c24174e56856",
-        "schema_sha256": "bfb84b19fbcf25a7a9ffadda8f5872bac09f5e75bd99e26f88e3293b64ff4506"
+        "schema_sha256": "9489dfa68ce6027331588ce953ebb6a16906e35503ff84b4ca207f10fb893674"
       },
       {
         "attribute_extraction": false,
@@ -2540,17 +2616,19 @@
           "effective_completion_budget": 32768,
           "exact_prompt_tokens": 569,
           "failure_reasons": [],
-          "output_response_sha256": "0eee4ebb5b7ec382f9c5391d15bea56189e446d2899792df7fa749fd83b0f189",
-          "output_token_bound_method": "one_token_per_compact_ensure_ascii_json_character_v2",
-          "schema_sha256": "bfb84b19fbcf25a7a9ffadda8f5872bac09f5e75bd99e26f88e3293b64ff4506",
-          "schema_worst_case_characters": 7576,
-          "schema_worst_case_tokens": 7576,
+          "output_response_sha256": "db4ef7720dfd83cadedbe54e0617784a7e4178cd2d09161890c995515d8b9865",
+          "output_token_bound_method": "one_token_per_xgrammar_default_separators_utf8_byte_v6_server_whitespace_bound",
+          "physical_serialization_bound": true,
+          "schema_sha256": "9489dfa68ce6027331588ce953ebb6a16906e35503ff84b4ca207f10fb893674",
+          "schema_worst_case_characters": 4556,
+          "schema_worst_case_tokens": 4556,
           "status": "PASS",
-          "tokenizer_witness_tokens": 6293
+          "tokenizer_witness_tokens": 4269,
+          "whitespace_mode": "disable_any_whitespace_vllm_v1"
         },
         "effective_max_tokens": 32768,
         "message_sha256": "bafffc8dc09563acc9a7bce0e41e17729a529e914a4bcc1d8b3c6b5b926a241f",
-        "schema_sha256": "bfb84b19fbcf25a7a9ffadda8f5872bac09f5e75bd99e26f88e3293b64ff4506"
+        "schema_sha256": "9489dfa68ce6027331588ce953ebb6a16906e35503ff84b4ca207f10fb893674"
       },
       {
         "attribute_extraction": false,
@@ -2562,17 +2640,19 @@
           "effective_completion_budget": 32768,
           "exact_prompt_tokens": 569,
           "failure_reasons": [],
-          "output_response_sha256": "0eee4ebb5b7ec382f9c5391d15bea56189e446d2899792df7fa749fd83b0f189",
-          "output_token_bound_method": "one_token_per_compact_ensure_ascii_json_character_v2",
-          "schema_sha256": "bfb84b19fbcf25a7a9ffadda8f5872bac09f5e75bd99e26f88e3293b64ff4506",
-          "schema_worst_case_characters": 7576,
-          "schema_worst_case_tokens": 7576,
+          "output_response_sha256": "db4ef7720dfd83cadedbe54e0617784a7e4178cd2d09161890c995515d8b9865",
+          "output_token_bound_method": "one_token_per_xgrammar_default_separators_utf8_byte_v6_server_whitespace_bound",
+          "physical_serialization_bound": true,
+          "schema_sha256": "9489dfa68ce6027331588ce953ebb6a16906e35503ff84b4ca207f10fb893674",
+          "schema_worst_case_characters": 4556,
+          "schema_worst_case_tokens": 4556,
           "status": "PASS",
-          "tokenizer_witness_tokens": 6293
+          "tokenizer_witness_tokens": 4269,
+          "whitespace_mode": "disable_any_whitespace_vllm_v1"
         },
         "effective_max_tokens": 32768,
         "message_sha256": "47fce2f113f8e7e3eaf6b5b84ffc80e200e7b83e0cfe44795cb6d196ffe41bcb",
-        "schema_sha256": "bfb84b19fbcf25a7a9ffadda8f5872bac09f5e75bd99e26f88e3293b64ff4506"
+        "schema_sha256": "9489dfa68ce6027331588ce953ebb6a16906e35503ff84b4ca207f10fb893674"
       },
       {
         "attribute_extraction": false,
@@ -2584,17 +2664,19 @@
           "effective_completion_budget": 32768,
           "exact_prompt_tokens": 569,
           "failure_reasons": [],
-          "output_response_sha256": "0eee4ebb5b7ec382f9c5391d15bea56189e446d2899792df7fa749fd83b0f189",
-          "output_token_bound_method": "one_token_per_compact_ensure_ascii_json_character_v2",
-          "schema_sha256": "bfb84b19fbcf25a7a9ffadda8f5872bac09f5e75bd99e26f88e3293b64ff4506",
-          "schema_worst_case_characters": 7576,
-          "schema_worst_case_tokens": 7576,
+          "output_response_sha256": "db4ef7720dfd83cadedbe54e0617784a7e4178cd2d09161890c995515d8b9865",
+          "output_token_bound_method": "one_token_per_xgrammar_default_separators_utf8_byte_v6_server_whitespace_bound",
+          "physical_serialization_bound": true,
+          "schema_sha256": "9489dfa68ce6027331588ce953ebb6a16906e35503ff84b4ca207f10fb893674",
+          "schema_worst_case_characters": 4556,
+          "schema_worst_case_tokens": 4556,
           "status": "PASS",
-          "tokenizer_witness_tokens": 6293
+          "tokenizer_witness_tokens": 4269,
+          "whitespace_mode": "disable_any_whitespace_vllm_v1"
         },
         "effective_max_tokens": 32768,
         "message_sha256": "6d8c2571637938240e2ebd9a7316b1c2376f0fb6c6c616a600aa0dd131da93ff",
-        "schema_sha256": "bfb84b19fbcf25a7a9ffadda8f5872bac09f5e75bd99e26f88e3293b64ff4506"
+        "schema_sha256": "9489dfa68ce6027331588ce953ebb6a16906e35503ff84b4ca207f10fb893674"
       },
       {
         "attribute_extraction": false,
@@ -2606,17 +2688,19 @@
           "effective_completion_budget": 32768,
           "exact_prompt_tokens": 569,
           "failure_reasons": [],
-          "output_response_sha256": "0eee4ebb5b7ec382f9c5391d15bea56189e446d2899792df7fa749fd83b0f189",
-          "output_token_bound_method": "one_token_per_compact_ensure_ascii_json_character_v2",
-          "schema_sha256": "bfb84b19fbcf25a7a9ffadda8f5872bac09f5e75bd99e26f88e3293b64ff4506",
-          "schema_worst_case_characters": 7576,
-          "schema_worst_case_tokens": 7576,
+          "output_response_sha256": "db4ef7720dfd83cadedbe54e0617784a7e4178cd2d09161890c995515d8b9865",
+          "output_token_bound_method": "one_token_per_xgrammar_default_separators_utf8_byte_v6_server_whitespace_bound",
+          "physical_serialization_bound": true,
+          "schema_sha256": "9489dfa68ce6027331588ce953ebb6a16906e35503ff84b4ca207f10fb893674",
+          "schema_worst_case_characters": 4556,
+          "schema_worst_case_tokens": 4556,
           "status": "PASS",
-          "tokenizer_witness_tokens": 6293
+          "tokenizer_witness_tokens": 4269,
+          "whitespace_mode": "disable_any_whitespace_vllm_v1"
         },
         "effective_max_tokens": 32768,
         "message_sha256": "61bf49221aeed6f0d1cf22bbf92fadb81f61f77d8664a2ec349c6af63da8bd38",
-        "schema_sha256": "bfb84b19fbcf25a7a9ffadda8f5872bac09f5e75bd99e26f88e3293b64ff4506"
+        "schema_sha256": "9489dfa68ce6027331588ce953ebb6a16906e35503ff84b4ca207f10fb893674"
       },
       {
         "attribute_extraction": false,
@@ -2628,17 +2712,19 @@
           "effective_completion_budget": 32768,
           "exact_prompt_tokens": 569,
           "failure_reasons": [],
-          "output_response_sha256": "0eee4ebb5b7ec382f9c5391d15bea56189e446d2899792df7fa749fd83b0f189",
-          "output_token_bound_method": "one_token_per_compact_ensure_ascii_json_character_v2",
-          "schema_sha256": "bfb84b19fbcf25a7a9ffadda8f5872bac09f5e75bd99e26f88e3293b64ff4506",
-          "schema_worst_case_characters": 7576,
-          "schema_worst_case_tokens": 7576,
+          "output_response_sha256": "db4ef7720dfd83cadedbe54e0617784a7e4178cd2d09161890c995515d8b9865",
+          "output_token_bound_method": "one_token_per_xgrammar_default_separators_utf8_byte_v6_server_whitespace_bound",
+          "physical_serialization_bound": true,
+          "schema_sha256": "9489dfa68ce6027331588ce953ebb6a16906e35503ff84b4ca207f10fb893674",
+          "schema_worst_case_characters": 4556,
+          "schema_worst_case_tokens": 4556,
           "status": "PASS",
-          "tokenizer_witness_tokens": 6293
+          "tokenizer_witness_tokens": 4269,
+          "whitespace_mode": "disable_any_whitespace_vllm_v1"
         },
         "effective_max_tokens": 32768,
         "message_sha256": "32cc56c9275802b74849ac15935f30566f132d58637849fdd57c48f3ba96d1eb",
-        "schema_sha256": "bfb84b19fbcf25a7a9ffadda8f5872bac09f5e75bd99e26f88e3293b64ff4506"
+        "schema_sha256": "9489dfa68ce6027331588ce953ebb6a16906e35503ff84b4ca207f10fb893674"
       },
       {
         "attribute_extraction": false,
@@ -2650,17 +2736,19 @@
           "effective_completion_budget": 32768,
           "exact_prompt_tokens": 569,
           "failure_reasons": [],
-          "output_response_sha256": "0eee4ebb5b7ec382f9c5391d15bea56189e446d2899792df7fa749fd83b0f189",
-          "output_token_bound_method": "one_token_per_compact_ensure_ascii_json_character_v2",
-          "schema_sha256": "bfb84b19fbcf25a7a9ffadda8f5872bac09f5e75bd99e26f88e3293b64ff4506",
-          "schema_worst_case_characters": 7576,
-          "schema_worst_case_tokens": 7576,
+          "output_response_sha256": "db4ef7720dfd83cadedbe54e0617784a7e4178cd2d09161890c995515d8b9865",
+          "output_token_bound_method": "one_token_per_xgrammar_default_separators_utf8_byte_v6_server_whitespace_bound",
+          "physical_serialization_bound": true,
+          "schema_sha256": "9489dfa68ce6027331588ce953ebb6a16906e35503ff84b4ca207f10fb893674",
+          "schema_worst_case_characters": 4556,
+          "schema_worst_case_tokens": 4556,
           "status": "PASS",
-          "tokenizer_witness_tokens": 6293
+          "tokenizer_witness_tokens": 4269,
+          "whitespace_mode": "disable_any_whitespace_vllm_v1"
         },
         "effective_max_tokens": 32768,
         "message_sha256": "a3238838cced401066352172183cdce5b454d9568670211cc05140e05dd98c42",
-        "schema_sha256": "bfb84b19fbcf25a7a9ffadda8f5872bac09f5e75bd99e26f88e3293b64ff4506"
+        "schema_sha256": "9489dfa68ce6027331588ce953ebb6a16906e35503ff84b4ca207f10fb893674"
       },
       {
         "attribute_extraction": false,
@@ -2672,17 +2760,19 @@
           "effective_completion_budget": 32768,
           "exact_prompt_tokens": 569,
           "failure_reasons": [],
-          "output_response_sha256": "0eee4ebb5b7ec382f9c5391d15bea56189e446d2899792df7fa749fd83b0f189",
-          "output_token_bound_method": "one_token_per_compact_ensure_ascii_json_character_v2",
-          "schema_sha256": "bfb84b19fbcf25a7a9ffadda8f5872bac09f5e75bd99e26f88e3293b64ff4506",
-          "schema_worst_case_characters": 7576,
-          "schema_worst_case_tokens": 7576,
+          "output_response_sha256": "db4ef7720dfd83cadedbe54e0617784a7e4178cd2d09161890c995515d8b9865",
+          "output_token_bound_method": "one_token_per_xgrammar_default_separators_utf8_byte_v6_server_whitespace_bound",
+          "physical_serialization_bound": true,
+          "schema_sha256": "9489dfa68ce6027331588ce953ebb6a16906e35503ff84b4ca207f10fb893674",
+          "schema_worst_case_characters": 4556,
+          "schema_worst_case_tokens": 4556,
           "status": "PASS",
-          "tokenizer_witness_tokens": 6293
+          "tokenizer_witness_tokens": 4269,
+          "whitespace_mode": "disable_any_whitespace_vllm_v1"
         },
         "effective_max_tokens": 32768,
         "message_sha256": "32e89ad2dd413e80cc1c5d6fb00d60f45ab8bc41f2f41cb2cb0a138dffa42b66",
-        "schema_sha256": "bfb84b19fbcf25a7a9ffadda8f5872bac09f5e75bd99e26f88e3293b64ff4506"
+        "schema_sha256": "9489dfa68ce6027331588ce953ebb6a16906e35503ff84b4ca207f10fb893674"
       },
       {
         "attribute_extraction": false,
@@ -2694,17 +2784,19 @@
           "effective_completion_budget": 32768,
           "exact_prompt_tokens": 569,
           "failure_reasons": [],
-          "output_response_sha256": "0eee4ebb5b7ec382f9c5391d15bea56189e446d2899792df7fa749fd83b0f189",
-          "output_token_bound_method": "one_token_per_compact_ensure_ascii_json_character_v2",
-          "schema_sha256": "bfb84b19fbcf25a7a9ffadda8f5872bac09f5e75bd99e26f88e3293b64ff4506",
-          "schema_worst_case_characters": 7576,
-          "schema_worst_case_tokens": 7576,
+          "output_response_sha256": "db4ef7720dfd83cadedbe54e0617784a7e4178cd2d09161890c995515d8b9865",
+          "output_token_bound_method": "one_token_per_xgrammar_default_separators_utf8_byte_v6_server_whitespace_bound",
+          "physical_serialization_bound": true,
+          "schema_sha256": "9489dfa68ce6027331588ce953ebb6a16906e35503ff84b4ca207f10fb893674",
+          "schema_worst_case_characters": 4556,
+          "schema_worst_case_tokens": 4556,
           "status": "PASS",
-          "tokenizer_witness_tokens": 6293
+          "tokenizer_witness_tokens": 4269,
+          "whitespace_mode": "disable_any_whitespace_vllm_v1"
         },
         "effective_max_tokens": 32768,
         "message_sha256": "8c68b57ad01809ad8677827f4232007bfb26b8f601d45214fac20f5f3e2dd2cf",
-        "schema_sha256": "bfb84b19fbcf25a7a9ffadda8f5872bac09f5e75bd99e26f88e3293b64ff4506"
+        "schema_sha256": "9489dfa68ce6027331588ce953ebb6a16906e35503ff84b4ca207f10fb893674"
       },
       {
         "attribute_extraction": false,
@@ -2716,17 +2808,19 @@
           "effective_completion_budget": 32768,
           "exact_prompt_tokens": 569,
           "failure_reasons": [],
-          "output_response_sha256": "0eee4ebb5b7ec382f9c5391d15bea56189e446d2899792df7fa749fd83b0f189",
-          "output_token_bound_method": "one_token_per_compact_ensure_ascii_json_character_v2",
-          "schema_sha256": "bfb84b19fbcf25a7a9ffadda8f5872bac09f5e75bd99e26f88e3293b64ff4506",
-          "schema_worst_case_characters": 7576,
-          "schema_worst_case_tokens": 7576,
+          "output_response_sha256": "db4ef7720dfd83cadedbe54e0617784a7e4178cd2d09161890c995515d8b9865",
+          "output_token_bound_method": "one_token_per_xgrammar_default_separators_utf8_byte_v6_server_whitespace_bound",
+          "physical_serialization_bound": true,
+          "schema_sha256": "9489dfa68ce6027331588ce953ebb6a16906e35503ff84b4ca207f10fb893674",
+          "schema_worst_case_characters": 4556,
+          "schema_worst_case_tokens": 4556,
           "status": "PASS",
-          "tokenizer_witness_tokens": 6293
+          "tokenizer_witness_tokens": 4269,
+          "whitespace_mode": "disable_any_whitespace_vllm_v1"
         },
         "effective_max_tokens": 32768,
         "message_sha256": "14fb3f9ae882f326f07d4cd7948688c790aacb78b83b634c013502dbde96bdec",
-        "schema_sha256": "bfb84b19fbcf25a7a9ffadda8f5872bac09f5e75bd99e26f88e3293b64ff4506"
+        "schema_sha256": "9489dfa68ce6027331588ce953ebb6a16906e35503ff84b4ca207f10fb893674"
       }
     ],
     "extract_nodes.extract_summary": [
@@ -2740,13 +2834,15 @@
           "effective_completion_budget": 32768,
           "exact_prompt_tokens": 521,
           "failure_reasons": [],
-          "output_response_sha256": "c5498b52f606b7f2b010a7f796587a29af47097357bc029e755d86afa86e90a2",
-          "output_token_bound_method": "one_token_per_compact_ensure_ascii_json_character_v2",
+          "output_response_sha256": "97d2716592d8a39d776ad8531fad672d0e0bb6eff50c2b004d46bfac13e40ab0",
+          "output_token_bound_method": "one_token_per_xgrammar_default_separators_utf8_byte_v6_server_whitespace_bound",
+          "physical_serialization_bound": true,
           "schema_sha256": "cd40a92af346e3f8ceb5ea24f8a3338ba4d42a7ee8f368d7416f66cb0129cab8",
-          "schema_worst_case_characters": 6014,
-          "schema_worst_case_tokens": 6014,
+          "schema_worst_case_characters": 4015,
+          "schema_worst_case_tokens": 4015,
           "status": "PASS",
-          "tokenizer_witness_tokens": 5005
+          "tokenizer_witness_tokens": 4005,
+          "whitespace_mode": "disable_any_whitespace_vllm_v1"
         },
         "effective_max_tokens": 32768,
         "message_sha256": "d0e9866200fccfeaab11198f9bb59b62f269b73e9b8ac426712fd646587e22eb",
@@ -2764,17 +2860,19 @@
           "effective_completion_budget": 32768,
           "exact_prompt_tokens": 828,
           "failure_reasons": [],
-          "output_response_sha256": "8217142559e5a6fbf9a5da593ec1857bb53c0de9e4f2b856d29855b394cf43b2",
-          "output_token_bound_method": "one_token_per_compact_ensure_ascii_json_character_v2",
-          "schema_sha256": "71579ce6cba4d04c7867f85f18de242e15613e825d182df7cae3620089d1102f",
-          "schema_worst_case_characters": 25496,
-          "schema_worst_case_tokens": 25496,
+          "output_response_sha256": "b33c7493a1185cb057cf9de0ab6d90bc6ebc25fd786624a1102cb55308db0e29",
+          "output_token_bound_method": "one_token_per_xgrammar_default_separators_utf8_byte_v6_server_whitespace_bound",
+          "physical_serialization_bound": true,
+          "schema_sha256": "5779e480b780031654763cbf8149f5244ecd848bf421b823260ac36c1fc8bd71",
+          "schema_worst_case_characters": 9208,
+          "schema_worst_case_tokens": 9208,
           "status": "PASS",
-          "tokenizer_witness_tokens": 20774
+          "tokenizer_witness_tokens": 4454,
+          "whitespace_mode": "disable_any_whitespace_vllm_v1"
         },
         "effective_max_tokens": 32768,
         "message_sha256": "56943cadf66edbf276da1e695288683bb5b057c9c4101724de845ff7a841fe9f",
-        "schema_sha256": "71579ce6cba4d04c7867f85f18de242e15613e825d182df7cae3620089d1102f"
+        "schema_sha256": "5779e480b780031654763cbf8149f5244ecd848bf421b823260ac36c1fc8bd71"
       }
     ],
     "extract_nodes_and_edges.extract_message": [
@@ -2788,17 +2886,19 @@
           "effective_completion_budget": 32768,
           "exact_prompt_tokens": 3022,
           "failure_reasons": [],
-          "output_response_sha256": "ffe6b6eb12083a2ba49fa4171dda285e4daf636d2967e929a804dda42076d958",
-          "output_token_bound_method": "one_token_per_compact_ensure_ascii_json_character_v2",
-          "schema_sha256": "83409d312335b9996a6107bc0ff53977b8fb356f280c32c0f1af5b77f019d018",
-          "schema_worst_case_characters": 17455,
-          "schema_worst_case_tokens": 17455,
+          "output_response_sha256": "82038f456f03477350b7a1858f221c6851c0819e849a2cca57b2a8655c213672",
+          "output_token_bound_method": "one_token_per_xgrammar_default_separators_utf8_byte_v6_server_whitespace_bound",
+          "physical_serialization_bound": true,
+          "schema_sha256": "2f727d7247ac5db031f45b8fb97a6cf811705828b7e8c2a94e48ea45044e3a85",
+          "schema_worst_case_characters": 6482,
+          "schema_worst_case_tokens": 6482,
           "status": "PASS",
-          "tokenizer_witness_tokens": 14438
+          "tokenizer_witness_tokens": 3703,
+          "whitespace_mode": "disable_any_whitespace_vllm_v1"
         },
         "effective_max_tokens": 32768,
         "message_sha256": "7bb35c8567f2c878e29b25583b880922ff29534264f3425ed63207bc0675c749",
-        "schema_sha256": "83409d312335b9996a6107bc0ff53977b8fb356f280c32c0f1af5b77f019d018"
+        "schema_sha256": "2f727d7247ac5db031f45b8fb97a6cf811705828b7e8c2a94e48ea45044e3a85"
       }
     ],
     "summarize_nodes.summarize_pair": [
@@ -2812,13 +2912,15 @@
           "effective_completion_budget": 32768,
           "exact_prompt_tokens": 230,
           "failure_reasons": [],
-          "output_response_sha256": "c5498b52f606b7f2b010a7f796587a29af47097357bc029e755d86afa86e90a2",
-          "output_token_bound_method": "one_token_per_compact_ensure_ascii_json_character_v2",
+          "output_response_sha256": "97d2716592d8a39d776ad8531fad672d0e0bb6eff50c2b004d46bfac13e40ab0",
+          "output_token_bound_method": "one_token_per_xgrammar_default_separators_utf8_byte_v6_server_whitespace_bound",
+          "physical_serialization_bound": true,
           "schema_sha256": "cd40a92af346e3f8ceb5ea24f8a3338ba4d42a7ee8f368d7416f66cb0129cab8",
-          "schema_worst_case_characters": 6014,
-          "schema_worst_case_tokens": 6014,
+          "schema_worst_case_characters": 4015,
+          "schema_worst_case_tokens": 4015,
           "status": "PASS",
-          "tokenizer_witness_tokens": 5005
+          "tokenizer_witness_tokens": 4005,
+          "whitespace_mode": "disable_any_whitespace_vllm_v1"
         },
         "effective_max_tokens": 32768,
         "message_sha256": "31a4b4026c336b568df29028c1bffd49985f4c8d264b03bd5aa50d1a065c5b2c",
@@ -2836,13 +2938,15 @@
           "effective_completion_budget": 32768,
           "exact_prompt_tokens": 79,
           "failure_reasons": [],
-          "output_response_sha256": "fa38b6111dac530d8bdeeff69253b112f1ceac1b7b7c0d154e2fe04fce978169",
-          "output_token_bound_method": "one_token_per_compact_ensure_ascii_json_character_v2",
+          "output_response_sha256": "ba2915948f65477b8eed1972b64d8c480123c067e4eb454df89a1289be8a2e93",
+          "output_token_bound_method": "one_token_per_xgrammar_default_separators_utf8_byte_v6_server_whitespace_bound",
+          "physical_serialization_bound": true,
           "schema_sha256": "26d8cefd07de36fc3571702fe0f820ca244b46f3e713295b00e63e6f6ed1d70b",
-          "schema_worst_case_characters": 6018,
-          "schema_worst_case_tokens": 6018,
+          "schema_worst_case_characters": 4019,
+          "schema_worst_case_tokens": 4019,
           "status": "PASS",
-          "tokenizer_witness_tokens": 5005
+          "tokenizer_witness_tokens": 4005,
+          "whitespace_mode": "disable_any_whitespace_vllm_v1"
         },
         "effective_max_tokens": 32768,
         "message_sha256": "1b9d96bba274bf7d1cdcf9bb75332c2ac6b3fcfaaa5a6c92975521226e651c9b",
@@ -2860,13 +2964,15 @@
           "effective_completion_budget": 32768,
           "exact_prompt_tokens": 898,
           "failure_reasons": [],
-          "output_response_sha256": "c5498b52f606b7f2b010a7f796587a29af47097357bc029e755d86afa86e90a2",
-          "output_token_bound_method": "one_token_per_compact_ensure_ascii_json_character_v2",
+          "output_response_sha256": "97d2716592d8a39d776ad8531fad672d0e0bb6eff50c2b004d46bfac13e40ab0",
+          "output_token_bound_method": "one_token_per_xgrammar_default_separators_utf8_byte_v6_server_whitespace_bound",
+          "physical_serialization_bound": true,
           "schema_sha256": "cd40a92af346e3f8ceb5ea24f8a3338ba4d42a7ee8f368d7416f66cb0129cab8",
-          "schema_worst_case_characters": 6014,
-          "schema_worst_case_tokens": 6014,
+          "schema_worst_case_characters": 4015,
+          "schema_worst_case_tokens": 4015,
           "status": "PASS",
-          "tokenizer_witness_tokens": 5005
+          "tokenizer_witness_tokens": 4005,
+          "whitespace_mode": "disable_any_whitespace_vllm_v1"
         },
         "effective_max_tokens": 32768,
         "message_sha256": "af0ca65956aa5cc2cee6b7ac6b77e2b877838307ee239fedf2564702755e2158",
@@ -2892,8 +2998,8 @@
     "summarize_nodes.summary_description",
     "summarize_sagas.summarize_saga"
   ],
-  "runtime_source_sha256": "7732530577abceb444d870b1670ef211035301bb35b02500a98d707ac6b9992f",
-  "schema_version": "membind.structured-output-recovery.schema-bound-certificate.v2",
+  "runtime_source_sha256": "e4258f65524f9321fd749bc3e930f914443e538612ddc31f0ec7bfb9e4930977",
+  "schema_version": "membind.structured-output-recovery.schema-bound-certificate.v3",
   "source_discovered_callsites": [
     {
       "line": 538,
@@ -2985,5 +3091,7 @@
       "source_file": "llm_client/gliner2_client.py",
       "source_key": "llm_client/gliner2_client.py:266"
     }
-  ]
+  ],
+  "whitespace_authority": "provider_free_schema_proof_assumption_v1",
+  "whitespace_mode": "disable_any_whitespace_vllm_v1"
 }

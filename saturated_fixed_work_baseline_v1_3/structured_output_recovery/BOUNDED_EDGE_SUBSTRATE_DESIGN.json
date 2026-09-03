@@ -1,0 +1,139 @@
+{
+  "schema_version": "membind.bounded-edge-substrate-design.v1",
+  "artifact_type": "offline_design_comparison",
+  "status": "SELECTED_AND_PROVIDER_FREE_PROVEN",
+  "decision": "CANONICAL_CURSOR_WITH_EVIDENCE_PAIR_COVER",
+  "scope": "shared_by_all_three_construction_arms",
+  "arm_specific_branching": false,
+  "constraints": {
+    "model_unchanged": true,
+    "context_limit_unchanged": 65536,
+    "edge_max_tokens_unchanged": 16384,
+    "fact_max_characters_unchanged": 1900,
+    "silent_source_or_candidate_truncation_allowed": false,
+    "tokenizer_witness_is_mathematical_upper_bound": false
+  },
+  "observed_failure_envelope": {
+    "campaign": "formal-three-arm-resource-credit-20260902T164219Z",
+    "disposition": "EXCLUDED_FROM_MAIN_RESULTS",
+    "edge_structured_output_budget_failures": 11,
+    "missing_node_partition_source_provenance_failures": 6,
+    "infrastructure_transient_failures": 3,
+    "valid_construction_cells": 0,
+    "source": "../../../../Mem/experiments/local-qwen3-8b-awq-dualreplica-v1/formal-three-arm-resource-credit-20260902T164219Z/SYSTEMATIC_QUALIFICATION_FAILURE.json"
+  },
+  "candidates": [
+    {
+      "id": "CUMULATIVE_EXCLUSION_HISTORY",
+      "decision": "REJECTED",
+      "mechanism": "Append every previously returned edge to the next prompt and embed the duplicate edge in a schema exclusion or confirmation branch.",
+      "state_growth": {
+        "prompt": "O(page_count * serialized_edge_size)",
+        "schema": "Request-dependent; duplicate recovery can embed a fact of up to 1900 characters in not/const.",
+        "continuation": "Unbounded in page count because it carries the cumulative returned-edge set."
+      },
+      "rejection_reasons": [
+        "Page capacity bounds the response count but does not bound cumulative prompt state.",
+        "Request-dependent exclusion schemas enlarge the physical grammar surface.",
+        "A hidden duplicate confirmation is an additional model attempt and does not prove coverage or exhaustion.",
+        "The construction context inequality can eventually fail even when every individual edge is within its field bound."
+      ]
+    },
+    {
+      "id": "CANONICAL_CURSOR_WITH_EVIDENCE_PAIR_COVER",
+      "decision": "SELECTED",
+      "mechanism": "Split evidence without loss, enumerate the complete binary endpoint cover per evidence window, and paginate each fixed endpoint domain using one bounded canonical cursor until explicit exhaustion.",
+      "bounded_state": {
+        "prompt": "Fixed templates plus one bounded evidence window, two endpoint records, and one bounded EDGE_CURSOR tuple.",
+        "schema": "Fixed status/edge discriminator schema within each endpoint domain plus one bounded predecessor tuple in a not/const constraint; no cumulative returned-edge history.",
+        "completion": "One bounded edge or an explicit no_additional_edge with edge=null.",
+        "continuation": "Only the immediately preceding canonical edge tuple; size is independent of page count.",
+        "page_epoch": 64,
+        "page_epoch_semantics": "observability_epoch_not_total_cap",
+        "total_page_cap": null
+      },
+      "coverage_argument": [
+        "Oversized speaker turns are divided into contiguous role-preserving chunks whose payload concatenation reconstructs the original body exactly.",
+        "Adjacent evidence windows preserve evidence at chunk boundaries.",
+        "Graphiti facts are binary between two distinct entities, so the complete unordered pair cover of every evidence-local candidate entity domain covers every declared physical endpoint pair.",
+        "A strict successor advances the cursor; an equal or decreasing cursor fails closed instead of retrying the same request.",
+        "Reaching an epoch boundary records EDGE_CURSOR_EPOCH_ADVANCE and continues; only explicit no_additional_edge terminates a domain.",
+        "Results from all domains are merged and deduplicated deterministically."
+      ],
+      "identity": {
+        "adapter_version": "shared-bounded-structured-output-v5-xgrammar-physical-bound",
+        "retry_policy": "single_attempt_cursor_violation_fail_closed_v1",
+        "saturation_policy": "strict_cursor_epoch_continuation_until_explicit_exhaustion_v1"
+      }
+    }
+  ],
+  "provider_free_evidence": {
+    "test": "tests/test_membind_v6_1_scheduler.py::test_shared_runtime_continues_past_page_epoch_with_1900_char_cursor",
+    "endpoint_domains": 3,
+    "progressing_pages_per_domain": 65,
+    "terminal_pages_per_domain": 1,
+    "progressing_pages_total": 195,
+    "terminal_pages_total": 3,
+    "fact_characters_per_progressing_page": 1900,
+    "crosses_old_page_26_boundary": true,
+    "crosses_epoch_64_boundary": true,
+    "schema_hashes_per_domain": 1,
+    "continuation_length_constant_after_first_page": true,
+    "cumulative_returned_edge_block_present": false,
+    "all_structured_output_certificates_pass": true,
+    "epoch_advance_events": 3,
+    "provider_contract": {
+      "vllm_version": "0.26.0",
+      "backend": "xgrammar",
+      "disable_any_whitespace": true,
+      "authority": "server_structured_outputs_config",
+      "json_separators": [", ", ": "],
+      "safe_wire_pattern": "^(?:[\\x20-\\x21\\x23-\\x5b\\x5d-\\x7e]|\\\\[\"\\\\/bfnrt]){MIN,MAX}$",
+      "structural_delimiter_escape_defect_discovered": true,
+      "request_level_disable_any_whitespace_ignored": true
+    },
+    "physical_bounds": {
+      "largest_edge_schema_bytes_or_tokens": 10781,
+      "edge_completion_budget": 16384,
+      "edge_headroom": 5603,
+      "timestamp_batch_items": 63,
+      "timestamp_schema_bytes_or_tokens": 12364,
+      "proof_unit": "UTF-8 bytes; tokenizer witness is diagnostic only"
+    }
+  },
+  "source_evidence": {
+    "graphiti_version": "0.29.3",
+    "graphiti_edge_prompt": "/data/predator/ly/Mem/envs/membind-local/lib/python3.12/site-packages/graphiti_core/prompts/extract_edges.py",
+    "graphiti_edge_prompt_sha256": "df268b68ae4ae3c1e515b4c3b4ee29efd78b7c8902947e91a76767f3c6657582",
+    "graphiti_finding": "ExtractedEdges is an unbounded list, while every accepted fact is defined between two distinct entities and must preserve concrete source details.",
+    "vllm_version": "0.26.0",
+    "vllm_request_sha256": "196b703834d5cb9a48f332b3d55e4923c5af6f76c3c037e084c4561db786c198",
+    "vllm_xgrammar_backend_sha256": "231f6b9d7dab5e8d68aba486fa5912db99f8bdd3f9d8842ee3e0bb12bdb7cb67",
+    "vllm_utils_sha256": "a4d0532c026ca5bba67ac3a45ac1602f9c825767844378fef8dca0ea4a5cdf7e",
+    "vllm_finding": "The request-local schema or grammar is compiled into constrained decoding state and a grammar bitmask is applied during decoding, so schema content is part of the physical request surface."
+  },
+  "design_precedents": [
+    {
+      "reference": "Kwon et al., Efficient Memory Management for Large Language Model Serving with PagedAttention, SOSP 2023",
+      "use": "Precedent for bounded, paged working state; not a proof of the MemBind cursor protocol."
+    },
+    {
+      "reference": "Xiao et al., Efficient Streaming Language Models with Attention Sinks, ICLR 2024",
+      "use": "Precedent for controlling active context state; not a proof of semantic extraction completeness."
+    },
+    {
+      "reference": "Liu et al., Lost in the Middle: How Language Models Use Long Contexts, TACL 2024",
+      "use": "Motivation to avoid relying on an ever-growing context for correctness; not a protocol proof."
+    },
+    {
+      "reference": "Dean and Ghemawat, MapReduce: Simplified Data Processing on Large Clusters, OSDI 2004",
+      "use": "Precedent for deterministic partition and merge; not a proof of model-level recall."
+    }
+  ],
+  "claim_boundary": [
+    "The offline proof establishes bounded physical request state and deterministic declared-domain coverage, not provider semantic recall.",
+    "Completeness still depends on the upstream candidate-entity set; the substrate does not invent entities omitted before edge extraction.",
+    "Tokenizer witness counts are diagnostics. The conservative schema character/token certificate remains the admission authority.",
+    "Live full-history construction and FULL QA qualification remain required before a formal campaign may begin."
+  ]
+}

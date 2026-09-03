@@ -69,12 +69,24 @@ def build_manifest(
     implementation_identity: Mapping[str, Any],
     method_frozen: Mapping[str, Any],
     authority: Mapping[str, Any],
+    platform_identity: Mapping[str, Any],
 ) -> dict[str, Any]:
     """Build and validate the complete 5×3×3 manifest without live calls."""
 
     context_ids = list(authority.get("context_ids", ()))
     if len(context_ids) != 5:
         raise ValueError("formal manifest requires five context ids")
+    frozen_platform = method_frozen.get("platform_manifest")
+    if not isinstance(frozen_platform, Mapping):
+        raise ValueError("frozen method has no authenticated platform identity")
+    platform_payload_sha256 = platform_identity.get("payload_sha256")
+    if (
+        not isinstance(platform_payload_sha256, str)
+        or not platform_payload_sha256
+        or frozen_platform.get("payload_sha256") != platform_payload_sha256
+        or frozen_platform.get("path") != platform_identity.get("path")
+    ):
+        raise ValueError("active and frozen platform identities do not match")
     run_id = f"formal-three-arm-{time.strftime('%Y%m%dT%H%M%SZ', time.gmtime())}"
     cells: list[dict[str, Any]] = []
     for history in range(5):
@@ -102,7 +114,7 @@ def build_manifest(
                     "method_identity": "MEMBIND_RESOURCE_CREDIT_V1",
                     "evaluator_identity_sha256": implementation_identity.get("evaluator_sha256"),
                     "config_identity_sha256": implementation_identity.get("config_sha256"),
-                    "platform_manifest_sha256": "b9ec43b60f91df42ef0002411b298d580e3267159b6fba81f522363a1155905d",
+                    "platform_manifest_sha256": platform_payload_sha256,
                     "cache_warmup_policy": "reset_then_identical_structured_warmup_v1",
                     "expected_construction_artifacts": ["complete.json", "block/construction_seal.json", "block/metrics.json", "block/order_validation.json", "block/lifecycle_validation.json", "block/work_inventory.json", "route_seal.json"],
                     "expected_full_qa": {"scope": "FULL", "question_count": 60, "qa_seal": "qa_seal.json"},
@@ -165,15 +177,44 @@ def validate_manifest(manifest: Mapping[str, Any]) -> None:
                 raise ValueError("manifest fixed order mismatch")
 
 
+def _valid_construction(row: Mapping[str, Any]) -> bool:
+    return (
+        row.get("construction_status") == "PASS"
+        and row.get("construction_complete_status") == "PASS"
+        and row.get("construction_seal_status") == "CONSTRUCTION_SEALED"
+        and row.get("construction_artifacts_complete") is True
+    )
+
+
+def _valid_full_qa(row: Mapping[str, Any]) -> bool:
+    return (
+        row.get("qa_status") == "PASS"
+        and row.get("qa_seal_status") == "QA_SEALED"
+        and row.get("qa_rows") == 60
+        and row.get("qa_result_rows") == 60
+    )
+
+
 def _valid_cell(row: Mapping[str, Any]) -> bool:
-    return row.get("construction_status") == "PASS" and row.get("qa_status") == "PASS" and row.get("qa_rows") == 60
+    return _valid_construction(row) and _valid_full_qa(row)
 
 
 def reduce_formal(rows: Sequence[Mapping[str, Any]]) -> dict[str, Any]:
     rows = [dict(row) for row in rows]
     valid = [row for row in rows if _valid_cell(row)]
     if len(rows) != 45 or len(valid) != 45:
-        return {"schema_version": "membind.formal-three-arm-reduction.v1", "status": "INCOMPLETE", "construction_cell_count": len([r for r in rows if r.get("construction_status") == "PASS"]), "qa_seal_count": len([r for r in rows if r.get("qa_status") == "PASS" and r.get("qa_rows") == 60]), "history_effects": [], "invalid_or_replacements": [r for r in rows if not _valid_cell(r)]}
+        return {
+            "schema_version": "membind.formal-three-arm-reduction.v1",
+            "status": "INCOMPLETE",
+            "processed_cell_count": len(rows),
+            "construction_cell_count": sum(_valid_construction(r) for r in rows),
+            "qa_seal_count": sum(
+                _valid_construction(r) and _valid_full_qa(r) for r in rows
+            ),
+            "selected_valid_cell_count": len(valid),
+            "history_effects": [],
+            "invalid_or_replacements": [r for r in rows if not _valid_cell(r)],
+        }
     effects = []
     for history in range(5):
         hrows = [r for r in valid if r.get("history_index") == history]
@@ -185,7 +226,21 @@ def reduce_formal(rows: Sequence[Mapping[str, Any]]) -> dict[str, Any]:
         ratios = [x["a_vs_c_ratio"] for x in by_rep if isinstance(x["a_vs_c_ratio"], (int, float))]
         effects.append({"history_index": history, "replicate_effects": by_rep, "a_vs_c_geometric_mean": math.exp(sum(math.log(v) for v in ratios) / len(ratios)) if ratios and all(v > 0 for v in ratios) else None})
     vals = [e["a_vs_c_geometric_mean"] for e in effects if isinstance(e["a_vs_c_geometric_mean"], (int, float)) and e["a_vs_c_geometric_mean"] > 0]
-    return {"schema_version": "membind.formal-three-arm-reduction.v1", "status": "PASS", "construction_cell_count": 45, "qa_seal_count": 45, "history_effects": effects, "overall_geometric_mean_a_vs_c": math.exp(sum(math.log(v) for v in vals) / len(vals)) if len(vals) == 5 else None, "invalid_or_replacements": []}
+    return {
+        "schema_version": "membind.formal-three-arm-reduction.v1",
+        "status": "PASS",
+        "processed_cell_count": 45,
+        "construction_cell_count": 45,
+        "qa_seal_count": 45,
+        "selected_valid_cell_count": 45,
+        "history_effects": effects,
+        "overall_geometric_mean_a_vs_c": (
+            math.exp(sum(math.log(v) for v in vals) / len(vals))
+            if len(vals) == 5
+            else None
+        ),
+        "invalid_or_replacements": [],
+    }
 
 
 def _write(path: Path, value: Any) -> None:
@@ -204,7 +259,17 @@ def main() -> int:
     authority = {key: value for key, value in build_authority(ROOT / "mab_quality_v2_final_qa/data/official_5_contexts.json").items() if key != "contexts"}
     identity = _json(EVIDENCE / "EVALUATED_IMPLEMENTATION_IDENTITY.json")
     frozen = _json(EVIDENCE / "FINAL_METHOD_FROZEN.json")
-    manifest = build_manifest(root, implementation_identity=identity, method_frozen=frozen, authority=authority)
+    sys.path.insert(0, str(ROOT / "scripts"))
+    from current_platform_identity import load_current_platform_identity
+
+    platform = load_current_platform_identity()
+    manifest = build_manifest(
+        root,
+        implementation_identity=identity,
+        method_frozen=frozen,
+        authority=authority,
+        platform_identity=platform,
+    )
     _write(root / "FORMAL_CAMPAIGN_MANIFEST_SEAL.json", manifest)
     if args.manifest_only:
         print(json.dumps({"status": "SEALED", "manifest_sha256": manifest["manifest_sha256"], "cells": 45}, sort_keys=True))

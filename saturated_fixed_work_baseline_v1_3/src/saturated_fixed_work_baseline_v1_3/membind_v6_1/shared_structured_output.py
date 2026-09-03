@@ -10,14 +10,19 @@ from __future__ import annotations
 
 import inspect
 import hashlib
+import itertools
 import json
 from dataclasses import dataclass
 from functools import lru_cache
 from pathlib import Path
 from typing import Any, Awaitable, Callable, Mapping, Sequence
 
+from .structured_output_recovery import (
+    BOUNDED_JSON_WHITESPACE_MODE,
+    bounded_ascii_pattern,
+)
 
-SHARED_ADAPTER_VERSION = "shared-bounded-structured-output-v1"
+SHARED_ADAPTER_VERSION = "shared-bounded-structured-output-v6-explicit-terminal-confirmation"
 # Graphiti pins ``extract_edges.edge`` to a 16,384 completion-token request.
 # The local 8B construction client remains configured for 32,768 tokens for
 # non-edge operators; this lower bound is the wire budget of each shared edge
@@ -25,13 +30,62 @@ SHARED_ADAPTER_VERSION = "shared-bounded-structured-output-v1"
 SHARED_MAX_TOKENS = 16_384
 SHARED_CONSTRUCTION_MAX_TOKENS = 32_768
 SHARED_PAGE_CAPACITY = 1
+# This is an observability epoch, not a total-page cap.  A strict canonical
+# cursor advances into the next epoch until the provider explicitly exhausts
+# the finite schema domain.
 SHARED_MAX_PAGES = 64
 SHARED_FACT_MAX_LENGTH = 1_900
-SHARED_RETRY_POLICY = "single_duplicate_recovery_confirmation_abstention_v1"
-SHARED_PROMPT_TEMPLATE = (
-    "graphiti.extract_edges.edge|bounded-json-edge-page-v1|"
-    "ALREADY_RETURNED_EDGES|empty-page-only"
+SHARED_FACT_PATTERN = bounded_ascii_pattern(1, SHARED_FACT_MAX_LENGTH)
+SHARED_RETRY_POLICY = "single_attempt_per_distinct_schema_request_fail_closed_v2"
+SHARED_TERMINAL_CONFIRMATION_POLICY = (
+    "one_distinct_terminal_only_request_after_provider_repeat_not_context_retry_v1"
 )
+SHARED_PROMPT_TEMPLATE = (
+    "graphiti.extract_edges.edge|bounded-json-edge-cursor-v5|"
+    "EDGE_CURSOR|single-rolling-schema-exclusion|strict-canonical-successor|"
+    "explicit-cursor-exhaustion|distinct-terminal-only-confirmation"
+)
+
+
+def bounded_ascii_field(
+    default: Any,
+    *,
+    min_length: int,
+    max_length: int,
+    description: str | None = None,
+) -> Any:
+    """Apply semantic ASCII validation and the xgrammar-safe wire pattern."""
+
+    from pydantic import Field
+
+    return Field(
+        default,
+        min_length=min_length,
+        max_length=max_length,
+        pattern=r"^[\x00-\x7f]*$",
+        description=description,
+        json_schema_extra={
+            "pattern": bounded_ascii_pattern(min_length, max_length),
+        },
+    )
+
+
+def bounded_ascii_type(
+    min_length: int,
+    max_length: int,
+) -> Any:
+    """Return a string annotation whose union branch keeps the wire pattern."""
+
+    from typing import Annotated
+
+    return Annotated[
+        str,
+        bounded_ascii_field(
+            ...,
+            min_length=min_length,
+            max_length=max_length,
+        ),
+    ]
 
 
 class PageCapExhausted(RuntimeError):
@@ -39,7 +93,7 @@ class PageCapExhausted(RuntimeError):
 
 
 def canonical_edge_tuple(edge: Mapping[str, Any]) -> tuple[str, ...]:
-    return tuple(str(edge.get(key, "")) for key in (
+    return tuple("" if edge.get(key) is None else str(edge.get(key)) for key in (
         "source_entity_name", "target_entity_name", "relation_type",
         "fact", "valid_at", "invalid_at",
     ))
@@ -69,7 +123,12 @@ def _finite_schema(
     if page_capacity < 1:
         raise ValueError("page capacity must be positive")
     names = tuple(dict.fromkeys(str(name) for name in endpoint_names if str(name).strip()))
-    endpoint = {"type": "string", "minLength": 1, "maxLength": 256}
+    endpoint = {
+        "type": "string",
+        "minLength": 1,
+        "maxLength": 256,
+        "pattern": bounded_ascii_pattern(1, 256),
+    }
     if names:
         endpoint = {"type": "string", "enum": list(names)}
     edge = {
@@ -78,10 +137,38 @@ def _finite_schema(
         "properties": {
             "source_entity_name": endpoint,
             "target_entity_name": endpoint,
-            "relation_type": {"type": "string", "minLength": 1, "maxLength": 128},
-            "fact": {"type": "string", "minLength": 1, "maxLength": fact_max_length},
-            "valid_at": {"anyOf": [{"type": "string", "maxLength": 40}, {"type": "null"}]},
-            "invalid_at": {"anyOf": [{"type": "string", "maxLength": 40}, {"type": "null"}]},
+            "relation_type": {
+                "type": "string",
+                "minLength": 1,
+                "maxLength": 128,
+                "pattern": bounded_ascii_pattern(1, 128),
+            },
+            "fact": {
+                "type": "string",
+                "minLength": 1,
+                "maxLength": fact_max_length,
+                "pattern": bounded_ascii_pattern(1, fact_max_length),
+            },
+            "valid_at": {
+                "anyOf": [
+                    {
+                        "type": "string",
+                        "maxLength": 40,
+                        "pattern": bounded_ascii_pattern(0, 40),
+                    },
+                    {"type": "null"},
+                ]
+            },
+            "invalid_at": {
+                "anyOf": [
+                    {
+                        "type": "string",
+                        "maxLength": 40,
+                        "pattern": bounded_ascii_pattern(0, 40),
+                    },
+                    {"type": "null"},
+                ]
+            },
             "episode_indices": {
                 "type": "array", "minItems": 1, "maxItems": 1,
                 "items": {"type": "integer", "const": 0},
@@ -140,19 +227,39 @@ class SharedStructuredOutputContract:
 
     @property
     def schema(self) -> dict[str, Any]:
-        return _finite_schema(self.page_capacity)
+        return _finite_schema(self.page_capacity, termination_discriminator=True)
 
     @property
     def termination(self) -> str:
-        return "empty_page_only"
+        return "explicit_cursor_exhaustion"
 
     @property
     def continuation_prefix(self) -> str:
-        return "ALREADY_RETURNED_EDGES"
+        return "EDGE_CURSOR"
 
     def continuation(self, returned: Sequence[Mapping[str, Any]]) -> str:
-        canonical = [dict(edge) for edge in returned]
-        return f"{self.continuation_prefix}: {json.dumps(canonical, ensure_ascii=True, sort_keys=True, separators=(',', ':'))}"
+        if not returned:
+            return f"{self.continuation_prefix}: null"
+        cursor = {
+            field: returned[-1].get(field)
+            for field in (
+                "source_entity_name",
+                "target_entity_name",
+                "relation_type",
+                "fact",
+                "valid_at",
+                "invalid_at",
+            )
+        }
+        return (
+            f"{self.continuation_prefix}: "
+            + json.dumps(
+                cursor,
+                ensure_ascii=True,
+                sort_keys=True,
+                separators=(",", ":"),
+            )
+        )
 
 
 @lru_cache(maxsize=64)
@@ -174,6 +281,7 @@ def finite_edge_page_model(
 
     names = tuple(dict.fromkeys(str(name) for name in endpoint_names if str(name).strip()))
     endpoint_type: Any = Literal.__getitem__(names) if names else str
+    datetime_type = bounded_ascii_type(0, 40)
     edge_name = edge_name or (
         f"{name_prefix}SingleEdge"
         if page_capacity == 1
@@ -203,12 +311,54 @@ def finite_edge_page_model(
         )
     edge_model = create_model(
         edge_name,
-        source_entity_name=(endpoint_type, Field(..., max_length=256)),
-        target_entity_name=(endpoint_type, Field(..., max_length=256)),
-        relation_type=(str, Field(..., min_length=1, max_length=128)),
-        fact=(str, Field(..., min_length=1, max_length=fact_max_length)),
-        valid_at=(str | None, Field(... if excluded_edge else None, max_length=40)),
-        invalid_at=(str | None, Field(... if excluded_edge else None, max_length=40)),
+        source_entity_name=(
+            endpoint_type,
+            (
+                Field(...)
+                if names
+                else bounded_ascii_field(
+                    ...,
+                    min_length=1,
+                    max_length=256,
+                )
+            ),
+        ),
+        target_entity_name=(
+            endpoint_type,
+            (
+                Field(...)
+                if names
+                else bounded_ascii_field(
+                    ...,
+                    min_length=1,
+                    max_length=256,
+                )
+            ),
+        ),
+        relation_type=(
+            str,
+            bounded_ascii_field(
+                ...,
+                min_length=1,
+                max_length=128,
+            ),
+        ),
+        fact=(
+            str,
+            bounded_ascii_field(
+                ...,
+                min_length=1,
+                max_length=fact_max_length,
+            ),
+        ),
+        valid_at=(
+            datetime_type | None,
+            Field(... if excluded_edge else None),
+        ),
+        invalid_at=(
+            datetime_type | None,
+            Field(... if excluded_edge else None),
+        ),
         episode_indices=(list[Literal[0]], Field(... if excluded_edge else [0], min_length=1, max_length=1)),
         __config__=edge_config,
     )
@@ -250,6 +400,7 @@ def adapter_identity(
     recovery: bool = False,
     excluded_edge: tuple[Any, ...] = (),
     no_additional_only: bool = False,
+    cursor_protocol: bool = True,
 ) -> dict[str, Any]:
     """Return source, schema, prompt, and policy identity for the substrate.
 
@@ -266,7 +417,10 @@ def adapter_identity(
         dict.fromkeys(str(name).strip() for name in endpoint_names if str(name).strip())
     )
     source_hash = hashlib.sha256(Path(__file__).read_bytes()).hexdigest()
-    def _identity_schema(names: tuple[str, ...]) -> dict[str, Any]:
+    def _identity_schema(
+        names: tuple[str, ...],
+        active_exclusion: tuple[Any, ...] = (),
+    ) -> dict[str, Any]:
         if names:
             return finite_edge_page_model(
                 contract.page_capacity,
@@ -281,8 +435,8 @@ def adapter_identity(
                     if recovery
                     else f"MemBindEndpointGroundedEdgePage{contract.page_capacity}_{len(names)}"
                 ),
-                termination_discriminator=bool(recovery),
-                excluded_edge=excluded_edge,
+                termination_discriminator=bool(cursor_protocol or recovery),
+                excluded_edge=active_exclusion,
                 no_additional_only=bool(no_additional_only),
             ).model_json_schema()
         return finite_edge_page_model(
@@ -290,8 +444,8 @@ def adapter_identity(
             (),
             contract.fact_max_length,
             name_prefix="MemBind",
-            termination_discriminator=bool(recovery),
-            excluded_edge=excluded_edge,
+            termination_discriminator=bool(cursor_protocol or recovery),
+            excluded_edge=active_exclusion,
             no_additional_only=bool(no_additional_only),
         ).model_json_schema()
 
@@ -299,7 +453,7 @@ def adapter_identity(
     schema_template_hash = hashlib.sha256(
         json.dumps(schema_template, sort_keys=True, separators=(",", ":")).encode()
     ).hexdigest()
-    concrete_schema = _identity_schema(normalized_endpoints)
+    concrete_schema = _identity_schema(normalized_endpoints, excluded_edge)
     schema_hash = hashlib.sha256(
         json.dumps(concrete_schema, sort_keys=True, separators=(",", ":")).encode()
     ).hexdigest()
@@ -315,19 +469,35 @@ def adapter_identity(
         "prompt_template_sha256": prompt_hash,
         "page_capacity": contract.page_capacity,
         "max_pages": contract.max_pages,
+        "max_pages_semantics": "cursor_epoch_size_not_total_cap",
+        "total_page_cap": None,
+        "saturation_policy": "strict_cursor_epoch_continuation_until_explicit_exhaustion_v1",
+        "cursor_exclusion_policy": "single_previous_canonical_tuple_not_const_v1",
+        "cursor_exclusion_history_size": 1,
+        "fact_character_policy": "official_history_ascii_xgrammar_finite_quantifier_v2",
+        "json_whitespace_mode": BOUNDED_JSON_WHITESPACE_MODE,
+        "json_whitespace_authority": (
+            "authenticated_platform_manifest_process_contract_v1"
+        ),
+        "json_separators": [", ", ": "],
+        "physical_serialization_bound": True,
         "wire_max_tokens": SHARED_MAX_TOKENS,
         "construction_request_max_tokens": SHARED_CONSTRUCTION_MAX_TOKENS,
         # ``max_tokens`` is retained as a compatibility alias for consumers
         # that already expect the page-level bound.
         "max_tokens": SHARED_MAX_TOKENS,
         "retry_policy": SHARED_RETRY_POLICY,
+        "terminal_confirmation_policy": SHARED_TERMINAL_CONFIRMATION_POLICY,
+        "terminal_confirmation_is_context_retry": False,
         "termination_policy": contract.termination,
         "endpoint_names": list(normalized_endpoints) if normalized_endpoints else None,
         "response_variant": (
             "duplicate_recovery_final_abstention"
-            if recovery and no_additional_only
+            if recovery and not cursor_protocol and no_additional_only
             else "duplicate_recovery"
-            if recovery
+            if recovery and not cursor_protocol
+            else "schema_enforced_canonical_cursor"
+            if cursor_protocol
             else "page"
         ),
         "arm_identity": None,
@@ -391,8 +561,8 @@ class BoundedStructuredOutputAdapter:
     async def collect(self) -> CollectedEdges:
         accepted: list[Mapping[str, Any]] = []
         seen: set[tuple[str, ...]] = set()
-        duplicate_recovery_used = False
-        for page_index in range(self.contract.max_pages):
+        cursor: tuple[str, ...] | None = None
+        for page_index in itertools.count():
             continuation = self.contract.continuation(accepted)
             page = self.page_fetcher(continuation)
             if inspect.isawaitable(page):
@@ -402,7 +572,11 @@ class BoundedStructuredOutputAdapter:
             if len(page.edges) > self.contract.page_capacity:
                 raise PageCapExhausted("page cardinality exceeds bound")
             if not page.edges:
-                return CollectedEdges(tuple(accepted), "empty_page", page_index + 1)
+                return CollectedEdges(
+                    tuple(accepted),
+                    "explicit_cursor_exhaustion",
+                    page_index + 1,
+                )
             fresh: list[Mapping[str, Any]] = []
             for raw in page.edges:
                 if not isinstance(raw, Mapping):
@@ -417,24 +591,29 @@ class BoundedStructuredOutputAdapter:
                     # the rest of this bounded page for canonical progress.
                     continue
                 identity = canonical_edge_tuple(edge)
+                if cursor is not None and identity <= cursor:
+                    raise PageCapExhausted(
+                        "edge cursor response is not a strict canonical successor"
+                    )
+                cursor = identity
                 if identity in seen:
-                    continue
+                    raise PageCapExhausted(
+                        "edge cursor response is not a strict canonical successor"
+                    )
                 seen.add(identity)
                 fresh.append(edge)
             if not fresh:
-                if duplicate_recovery_used:
-                    raise PageCapExhausted("duplicate-only page after deterministic recovery")
-                duplicate_recovery_used = True
-                continue
-            duplicate_recovery_used = False
+                raise PageCapExhausted(
+                    "edge cursor response made no strict canonical progress"
+                )
             accepted.extend(fresh)
-        raise PageCapExhausted("page bound exhausted before empty-page termination")
 
 
 __all__ = [
     "BoundedStructuredOutputAdapter", "CollectedEdges", "EdgePage", "PageCapExhausted",
     "SharedStructuredOutputContract", "SHARED_ADAPTER_VERSION", "SHARED_MAX_TOKENS",
     "SHARED_PAGE_CAPACITY", "SHARED_MAX_PAGES", "SHARED_FACT_MAX_LENGTH",
+    "SHARED_FACT_PATTERN", "bounded_ascii_field", "bounded_ascii_pattern", "bounded_ascii_type",
     "SHARED_CONSTRUCTION_MAX_TOKENS", "SHARED_PROMPT_TEMPLATE",
     "adapter_identity", "canonical_edge_tuple", "finite_edge_page_model", "validate_edge_page",
 ]

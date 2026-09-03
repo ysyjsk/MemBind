@@ -89,11 +89,16 @@ def _source_sets() -> dict[str, list[Path]]:
     return {
         "runner": [
             sfwb / "scripts/run_mab_v61_8b.py",
+            sfwb / "scripts/formal_three_arm_harness.py",
+            sfwb / "scripts/run_formal_three_arm.py",
             sfwb / "src/saturated_fixed_work_baseline_v1_3/mab_live_runner.py",
             ROOT / "scripts/finalize_preexperiment_state.py",
             ROOT / "scripts/audit_current_four_gates.py",
             ROOT / "scripts/audit_v61_h5.py",
             ROOT / "scripts/freeze_v61_fixed_method.py",
+            ROOT / "scripts/current_platform_identity.py",
+            ROOT / "scripts/validate_and_freeze_canary.py",
+            ROOT / "scripts/materialize_resource_credit_identities.py",
             sfwb / "scripts/run_v61_scheduler_stress.py",
         ],
         "native_boundary": [

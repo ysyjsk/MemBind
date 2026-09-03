@@ -15,7 +15,16 @@ from urllib.request import urlopen
 from pathlib import Path
 from typing import Any
 
-from formal_three_arm_harness import ARMS, _json, _write, reduce_formal, validate_manifest
+from formal_three_arm_harness import (
+    ARMS,
+    _json,
+    _valid_cell,
+    _valid_construction,
+    _valid_full_qa,
+    _write,
+    reduce_formal,
+    validate_manifest,
+)
 
 
 ROOT = Path(__file__).resolve().parents[2]
@@ -77,6 +86,43 @@ def _active_exact_pids(attempt_root: Path, cell: dict[str, Any], pidfile: Path) 
         if entry.name.isdigit():
             candidates.add(int(entry.name))
     return sorted(pid for pid in candidates if pid > 0 and _argv_has_exact_identity(_proc_cmdline(pid), attempt_root=attempt_root, cell=cell))
+
+
+def _qa_argv_has_exact_identity(
+    argv: list[str], *, attempt: Path, qa_root: Path
+) -> bool:
+    required = {
+        str(QA_RUNNER),
+        "--block-root",
+        str(attempt / "block"),
+        "--qa-output-root",
+        str(qa_root),
+        "--scope",
+        "FULL",
+    }
+    return bool(argv) and required.issubset(set(argv))
+
+
+def _active_qa_pids(
+    *, attempt: Path, qa_root: Path, pidfile: Path
+) -> list[int]:
+    candidates: set[int] = set()
+    if pidfile.is_file():
+        try:
+            candidates.add(int(pidfile.read_text(encoding="utf-8").strip()))
+        except (ValueError, OSError):
+            pass
+    for entry in Path("/proc").iterdir():
+        if entry.name.isdigit():
+            candidates.add(int(entry.name))
+    return sorted(
+        pid
+        for pid in candidates
+        if pid > 0
+        and _qa_argv_has_exact_identity(
+            _proc_cmdline(pid), attempt=attempt, qa_root=qa_root
+        )
+    )
 
 
 def _provider_metrics() -> dict[str, float | None]:
@@ -174,8 +220,203 @@ def _formal_env() -> dict[str, str]:
     return env
 
 
+def _attempt_env(env: dict[str, str], cell: dict[str, Any]) -> dict[str, str]:
+    bound = dict(env)
+    run_id = f"{cell['campaign_id']}-{cell['cell_id']}-{cell['attempt_id']}"
+    if not run_id or run_id == "UNBOUND_PROVIDER_FREE":
+        raise ValueError("measured provenance run identity is not bound")
+    bound["MEMBIND_PROVENANCE_RUN_ID"] = run_id
+    return bound
+
+
 def _cell_root(root: Path, cell: dict[str, Any]) -> Path:
     return root / "cells" / cell["cell_id"]
+
+
+def _optional_json(path: Path) -> dict[str, Any]:
+    if not path.is_file():
+        return {}
+    try:
+        return _json(path)
+    except (OSError, ValueError, json.JSONDecodeError):
+        return {}
+
+
+def _jsonl_rows(path: Path) -> list[dict[str, Any]]:
+    if not path.is_file():
+        return []
+    rows: list[dict[str, Any]] = []
+    try:
+        for line in path.read_text(encoding="utf-8").splitlines():
+            if not line.strip():
+                continue
+            value = json.loads(line)
+            if not isinstance(value, dict):
+                return []
+            rows.append(value)
+    except (OSError, json.JSONDecodeError):
+        return []
+    return rows
+
+
+def _construction_contract(
+    attempt: Path, cell: dict[str, Any], *, returncode: int
+) -> dict[str, Any]:
+    complete_path = attempt / "complete.json"
+    seal_path = attempt / "block" / "construction_seal.json"
+    complete = _optional_json(complete_path)
+    seal = _optional_json(seal_path)
+    identity = seal.get("identity") if isinstance(seal.get("identity"), dict) else {}
+    expected = [str(value) for value in cell.get("expected_construction_artifacts", ())]
+    missing = [relative for relative in expected if not (attempt / relative).is_file()]
+    complete_valid = (
+        returncode == 0
+        and complete.get("status") == "PASS"
+        and complete.get("attempt_id") == cell.get("attempt_id")
+        and complete.get("namespace") == cell.get("namespace")
+        and complete.get("method") == cell.get("arm")
+    )
+    seal_valid = (
+        seal.get("status") == "CONSTRUCTION_SEALED"
+        and identity.get("namespace") == cell.get("namespace")
+        and identity.get("method") == cell.get("arm")
+        and identity.get("context_id") == cell.get("history_id")
+    )
+    return {
+        "construction_status": (
+            "PASS" if complete_valid and seal_valid and not missing else "INVALID"
+        ),
+        "construction_complete_status": complete.get("status", "MISSING"),
+        "construction_seal_status": seal.get("status", "MISSING"),
+        "construction_artifacts_complete": not missing,
+        "missing_construction_artifacts": missing,
+        "t_build_ns": complete.get("build_makespan_ns"),
+        "construction_complete": str(complete_path),
+        "construction_seal": str(seal_path),
+    }
+
+
+def _qa_contract(
+    qa_root: Path,
+    *,
+    returncode: int,
+    cell: dict[str, Any],
+) -> dict[str, Any]:
+    summary_path = qa_root / "quality_summary.json"
+    seal_path = qa_root / "qa_seal.json"
+    results_path = qa_root / "qa_results.jsonl"
+    summary = _optional_json(summary_path)
+    seal = _optional_json(seal_path)
+    sealed_summary = seal.get("summary") if isinstance(seal.get("summary"), dict) else {}
+    parent = (
+        seal.get("parent_construction_seal")
+        if isinstance(seal.get("parent_construction_seal"), dict)
+        else {}
+    )
+    results = _jsonl_rows(results_path)
+    expected_identity = (
+        cell.get("history_id"),
+        cell.get("arm"),
+        cell.get("namespace"),
+    )
+
+    def _artifact_identity(value: dict[str, Any]) -> tuple[Any, Any, Any]:
+        return (
+            value.get("context_id"),
+            value.get("method"),
+            value.get("namespace"),
+        )
+
+    result_identities = {
+        (
+            row.get("context_id"),
+            row.get("qa_pair_id"),
+            row.get("question_id"),
+        )
+        for row in results
+    }
+    qa_identity_hashes = {row.get("qa_identity_sha256") for row in results}
+    rows_have_explicit_identity = all(
+        all(isinstance(row.get(key), str) and row[key] for key in (
+            "context_id",
+            "qa_pair_id",
+            "question_id",
+            "qa_identity_sha256",
+        ))
+        and row.get("context_id") == cell.get("history_id")
+        and row.get("status") == "COMPLETE"
+        and row.get("judge_valid") is True
+        for row in results
+    )
+    valid = (
+        returncode == 0
+        and _artifact_identity(summary) == expected_identity
+        and summary.get("quality_status") == "PASS"
+        and summary.get("expected_count") == 60
+        and summary.get("completed_count") == 60
+        and summary.get("invalid_count") == 0
+        and seal.get("status") == "QA_SEALED"
+        and parent.get("status") == "CONSTRUCTION_SEALED"
+        and _artifact_identity(parent) == expected_identity
+        and _artifact_identity(sealed_summary) == expected_identity
+        and sealed_summary.get("quality_status") == "PASS"
+        and sealed_summary.get("expected_count") == 60
+        and sealed_summary.get("completed_count") == 60
+        and sealed_summary.get("invalid_count") == 0
+        and len(results) == 60
+        and len(result_identities) == 60
+        and len(qa_identity_hashes) == 60
+        and rows_have_explicit_identity
+    )
+    return {
+        "qa_status": "PASS" if valid else "INVALID",
+        "qa_seal_status": seal.get("status", "MISSING"),
+        "qa_rows": int(summary.get("completed_count") or 0),
+        "qa_result_rows": len(results),
+        "qa_quality_status": summary.get("quality_status"),
+        "qa_summary": str(summary_path),
+        "qa_seal": str(seal_path),
+        "qa_results": str(results_path),
+    }
+
+
+INFRASTRUCTURE_ERROR_TYPES = frozenset(
+    {
+        "openai.APIConnectionError",
+        "openai.APITimeoutError",
+        "httpx.ConnectError",
+        "httpx.ConnectTimeout",
+        "httpx.ReadTimeout",
+        "httpx.WriteTimeout",
+        "httpx.PoolTimeout",
+        "httpcore.ConnectError",
+        "httpcore.ConnectTimeout",
+        "httpcore.ReadTimeout",
+        "builtins.ConnectionError",
+        "builtins.ConnectionRefusedError",
+        "builtins.TimeoutError",
+        "asyncio.exceptions.TimeoutError",
+    }
+)
+
+
+def _failure_class(row: dict[str, Any]) -> str:
+    evidence = (
+        row.get("construction_failure")
+        if row.get("construction_status") != "PASS"
+        else row.get("qa_failure")
+    )
+    evidence = evidence if isinstance(evidence, dict) else {}
+    if evidence.get("error_type") in INFRASTRUCTURE_ERROR_TYPES:
+        return "INFRASTRUCTURE_TRANSIENT"
+    service_exit = evidence.get("service_exit_evidence")
+    if (
+        evidence.get("reason") == "provider_service_process_exited"
+        and isinstance(service_exit, dict)
+        and service_exit.get("verified") is True
+    ):
+        return "INFRASTRUCTURE_TRANSIENT"
+    return "DETERMINISTIC_SYSTEM_FAILURE"
 
 
 def _execute_cell(root: Path, frozen_root: Path, cell: dict[str, Any], *, env: dict[str, str], ledger: Path) -> dict[str, Any]:
@@ -184,7 +425,26 @@ def _execute_cell(root: Path, frozen_root: Path, cell: dict[str, Any], *, env: d
     attempt_root = cell_root / "construction"
     attempt_root.mkdir(parents=True, exist_ok=True)
     run_id = f"{cell['campaign_id']}-{cell['cell_id']}-{cell['attempt_id']}"
-    cmd = [sys.executable, str(RUNNER), "--output-root", str(attempt_root), "--run-id", run_id, "--contexts", str(cell["history_index"]), "--methods", cell["arm"], "--v61-boundary", "MEMBIND_CORE", "--continue-on-error", "--force-reference-rerun", "--attempt-id", cell["attempt_id"], "--namespace", cell["namespace"]]
+    measured_env = _attempt_env(env, cell)
+    cmd = [
+        sys.executable,
+        str(RUNNER),
+        "--output-root",
+        str(attempt_root),
+        "--run-id",
+        run_id,
+        "--contexts",
+        str(cell["history_index"]),
+        "--methods",
+        cell["arm"],
+        "--v61-boundary",
+        "MEMBIND_CORE",
+        "--force-reference-rerun",
+        "--attempt-id",
+        cell["attempt_id"],
+        "--namespace",
+        cell["namespace"],
+    ]
     attempt = attempt_root / f"context-{cell['history_index']}" / cell["arm"] / cell["attempt_id"]
     complete = attempt / "complete.json"
     failure = attempt / "failure.json"
@@ -210,25 +470,191 @@ def _execute_cell(root: Path, frozen_root: Path, cell: dict[str, Any], *, env: d
     if existing_terminal:
         rc = 0 if complete.is_file() else 2
     else:
-        rc = _run_process(cmd, env=env, log=cell_root / "construction.log", pidfile=cell_root / "construction.pid", heartbeat=root / "heartbeat.jsonl", cell=cell, attempt=attempt)
+        rc = _run_process(
+            cmd,
+            env=measured_env,
+            log=cell_root / "construction.log",
+            pidfile=cell_root / "construction.pid",
+            heartbeat=root / "heartbeat.jsonl",
+            cell=cell,
+            attempt=attempt,
+        )
     if not complete.is_file() and not failure.is_file():
         # A child can exit without materialising its terminal seal (for
         # example, SIGTERM from an external supervisor).  Make that outcome
         # explicit before the replacement policy is considered.
         _write(failure, {"status": "FAIL", "reason": "runner_exit_without_terminal_artifact", "attempt_id": cell["attempt_id"], "namespace": cell["namespace"], "returncode": rc, "created_at": time.time()})
-    construction_status = "PASS" if rc == 0 and complete.is_file() and _json(complete).get("status") == "PASS" else "INVALID"
-    row: dict[str, Any] = {**cell, "actual_attempt_id": cell["attempt_id"], "actual_namespace": cell["namespace"], "construction_status": construction_status, "construction_returncode": rc, "construction_root": str(attempt.resolve()), "qa_status": "MISSING", "qa_rows": 0}
-    if construction_status == "PASS":
-        qa_cmd = [sys.executable, str(QA_RUNNER), "--frozen-root", str(frozen_root), "--block-root", str(attempt / "block"), "--scope", "FULL", "--qa-output-root", str(attempt / "block" / "qa_full")]
-        qa_rc = _run_process(qa_cmd, env=env, log=cell_root / "qa.log", pidfile=cell_root / "qa.pid", heartbeat=root / "heartbeat.jsonl", cell=cell, attempt=attempt)
-        summary_path = attempt / "block" / "qa_full" / "quality_summary.json"
-        summary = _json(summary_path) if summary_path.is_file() else {}
-        row["qa_status"] = "PASS" if qa_rc == 0 and summary.get("quality_status") == "PASS" and summary.get("expected_count") == 60 and summary.get("completed_count") == 60 and summary.get("invalid_count") == 0 else "INVALID"
-        row["qa_rows"] = int(summary.get("completed_count") or 0)
-        row["qa_quality_status"] = summary.get("quality_status")
-        row["qa_summary"] = str(summary_path)
+    construction = _construction_contract(attempt, cell, returncode=rc)
+    row: dict[str, Any] = {
+        **cell,
+        "actual_attempt_id": cell["attempt_id"],
+        "actual_namespace": cell["namespace"],
+        "measured_provenance_run_id": measured_env["MEMBIND_PROVENANCE_RUN_ID"],
+        "construction_returncode": rc,
+        "construction_root": str(attempt.resolve()),
+        **construction,
+        "qa_status": "MISSING",
+        "qa_seal_status": "MISSING",
+        "qa_rows": 0,
+        "qa_result_rows": 0,
+    }
+    if construction["construction_status"] != "PASS":
+        row["construction_failure"] = _optional_json(failure) or {
+            "reason": "construction_contract_invalid",
+            "returncode": rc,
+            "missing_construction_artifacts": construction[
+                "missing_construction_artifacts"
+            ],
+        }
+    else:
+        qa_root = attempt / "block" / "qa_full"
+        qa_seal = qa_root / "qa_seal.json"
+        qa_failure = attempt / "block" / "qa_resume_failure.json"
+        qa_results = qa_root / "qa_results.jsonl"
+        qa_cmd = [
+            sys.executable,
+            str(QA_RUNNER),
+            "--frozen-root",
+            str(frozen_root),
+            "--block-root",
+            str(attempt / "block"),
+            "--scope",
+            "FULL",
+            "--qa-output-root",
+            str(qa_root),
+        ]
+        while not qa_seal.is_file() and not qa_failure.is_file():
+            active = _active_qa_pids(
+                attempt=attempt,
+                qa_root=qa_root,
+                pidfile=cell_root / "qa.pid",
+            )
+            if not active:
+                break
+            _append_heartbeat(
+                root / "heartbeat.jsonl",
+                runner_pid=os.getpid(),
+                child_pid=active[0],
+                cell=cell,
+                attempt=attempt,
+                log=cell_root / "qa.log",
+            )
+            time.sleep(HEARTBEAT_SECONDS)
+        if qa_seal.is_file():
+            qa_rc = 0
+        elif qa_failure.is_file():
+            qa_rc = 2
+        elif qa_results.is_file():
+            # NO_RESUME_FORMAL_ATTEMPT applies to the whole cell.  Partial QA
+            # without a live exact child or terminal seal cannot be resumed.
+            _write(
+                qa_failure,
+                {
+                    "status": "FAILED",
+                    "reason": "qa_partial_without_terminal_seal",
+                    "attempt_id": cell["attempt_id"],
+                    "namespace": cell["namespace"],
+                    "created_at": time.time(),
+                },
+            )
+            qa_rc = 2
+        else:
+            qa_rc = _run_process(
+                qa_cmd,
+                env=measured_env,
+                log=cell_root / "qa.log",
+                pidfile=cell_root / "qa.pid",
+                heartbeat=root / "heartbeat.jsonl",
+                cell=cell,
+                attempt=attempt,
+            )
+        qa = _qa_contract(qa_root, returncode=qa_rc, cell=cell)
+        row.update({"qa_returncode": qa_rc, **qa})
+        if qa["qa_status"] != "PASS":
+            row["qa_failure"] = _optional_json(qa_failure) or {
+                "reason": "qa_contract_invalid",
+                "returncode": qa_rc,
+                "qa_seal_status": qa["qa_seal_status"],
+                "qa_rows": qa["qa_rows"],
+                "qa_result_rows": qa["qa_result_rows"],
+                "qa_quality_status": qa["qa_quality_status"],
+            }
     _append(ledger, {"event": "CELL_COMPLETE", **row, "ended_at": time.time()})
     return row
+
+
+def _progress(
+    rows: list[dict[str, Any]],
+    *,
+    processed_cells: int,
+    attempts_executed: int,
+    history: int,
+    replicate: int,
+    last_cell: str,
+) -> dict[str, Any]:
+    return {
+        "processed_cells": processed_cells,
+        "attempts_executed": attempts_executed,
+        "valid_construction_cells": sum(_valid_construction(row) for row in rows),
+        "valid_full_qa_cells": sum(
+            _valid_construction(row) and _valid_full_qa(row) for row in rows
+        ),
+        "selected_valid_cells": sum(_valid_cell(row) for row in rows),
+        "history": history,
+        "replicate": replicate,
+        "last_cell": last_cell,
+        "updated_at": time.time(),
+    }
+
+
+def _stop_campaign(
+    root: Path,
+    *,
+    rows: list[dict[str, Any]],
+    invalid: list[dict[str, Any]],
+    failure_class: str,
+    failure_row: dict[str, Any],
+    processed_cells: int,
+    attempts_executed: int,
+    history: int,
+    replicate: int,
+) -> dict[str, Any]:
+    progress = _progress(
+        rows,
+        processed_cells=processed_cells,
+        attempts_executed=attempts_executed,
+        history=history,
+        replicate=replicate,
+        last_cell=str(failure_row.get("cell_id")),
+    )
+    _write(root / "FORMAL_PROGRESS.json", progress)
+    reduced = reduce_formal(rows)
+    _write(root / "FORMAL_REDUCTION.json", reduced)
+    _write(
+        root / "INVALID_ATTEMPT_LEDGER.json",
+        {
+            "schema_version": "membind.invalid-attempt-ledger.v2",
+            "entries": invalid,
+        },
+    )
+    seal = {
+        "schema_version": "membind.formal-campaign-failure.v1",
+        "status": failure_class,
+        "failure_class": failure_class,
+        "scheduling_status": "STOPPED",
+        "failed_cell_id": failure_row.get("cell_id"),
+        "failed_attempt_id": failure_row.get("attempt_id"),
+        "failed_namespace": failure_row.get("namespace"),
+        **progress,
+        "created_at": time.time(),
+    }
+    _write(root / "FORMAL_CAMPAIGN_FAILURE.json", seal)
+    return {
+        **reduced,
+        "reduction_status": reduced["status"],
+        "status": failure_class,
+        **progress,
+    }
 
 
 def run(root: Path, frozen_root: Path) -> dict[str, Any]:
@@ -239,36 +665,86 @@ def run(root: Path, frozen_root: Path) -> dict[str, Any]:
     env = _formal_env()
     rows: list[dict[str, Any]] = []
     invalid: list[dict[str, Any]] = []
+    processed_cells = 0
+    attempts_executed = 0
     # History-atomic order is explicit and independent of filesystem order.
     for history in range(5):
         for replicate in range(3):
             for arm in ARMS:
                 cell = next(c for c in manifest["cells"] if c["history_index"] == history and c["replicate_id"] == replicate and c["arm"] == arm)
                 row = _execute_cell(root, frozen_root, cell, env=env, ledger=ledger)
-                if row["construction_status"] != "PASS" or row["qa_status"] != "PASS":
-                    invalid.append({"cell_id": cell["cell_id"], "attempt_id": cell["attempt_id"], "reason": "NO_RESUME_FORMAL_ATTEMPT", "row": row})
-                    # One fresh replacement is allowed without mutating the
-                    # sealed manifest.  The failed attempt remains preserved.
+                processed_cells += 1
+                attempts_executed += 1
+                if not _valid_cell(row):
+                    classification = _failure_class(row)
+                    entry = {
+                        "cell_id": cell["cell_id"],
+                        "attempt_id": cell["attempt_id"],
+                        "namespace": cell["namespace"],
+                        "reason": "NO_RESUME_FORMAL_ATTEMPT",
+                        "failure_class": classification,
+                        "row": row,
+                    }
+                    invalid.append(entry)
+                    if classification == "DETERMINISTIC_SYSTEM_FAILURE":
+                        rows.append(row)
+                        return _stop_campaign(
+                            root,
+                            rows=rows,
+                            invalid=invalid,
+                            failure_class=classification,
+                            failure_row=row,
+                            processed_cells=processed_cells,
+                            attempts_executed=attempts_executed,
+                            history=history,
+                            replicate=replicate,
+                        )
+                    # Only a proven infrastructure transient receives one
+                    # fresh whole-cell replacement.  A second failure stops
+                    # immediately, regardless of its classification.
                     replacement = dict(cell)
                     replacement["attempt_id"] = uuid.uuid4().hex[:12]
                     replacement["namespace"] = f"{cell['namespace']}-replacement-{replacement['attempt_id']}"
                     replacement["replacement_of"] = cell["attempt_id"]
                     replacement_row = _execute_cell(root, frozen_root, replacement, env=env, ledger=ledger)
-                    invalid[-1]["replacement_attempt_id"] = replacement["attempt_id"]
-                    if replacement_row["construction_status"] == "PASS" and replacement_row["qa_status"] == "PASS":
+                    attempts_executed += 1
+                    entry["replacement_attempt_id"] = replacement["attempt_id"]
+                    entry["replacement_namespace"] = replacement["namespace"]
+                    entry["replacement_row"] = replacement_row
+                    if _valid_cell(replacement_row):
                         row = replacement_row
                     else:
-                        invalid[-1]["replacement_status"] = replacement_row
+                        entry["replacement_failure_class"] = _failure_class(
+                            replacement_row
+                        )
+                        rows.append(replacement_row)
+                        return _stop_campaign(
+                            root,
+                            rows=rows,
+                            invalid=invalid,
+                            failure_class="REPLACEMENT_FAILURE",
+                            failure_row=replacement_row,
+                            processed_cells=processed_cells,
+                            attempts_executed=attempts_executed,
+                            history=history,
+                            replicate=replicate,
+                        )
                 rows.append(row)
-                _write(root / "FORMAL_PROGRESS.json", {"completed_cells": len(rows), "valid_cells": sum(int(_valid_cell(r)) for r in rows), "history": history, "replicate": replicate, "last_cell": row.get("cell_id"), "updated_at": time.time()})
+                _write(
+                    root / "FORMAL_PROGRESS.json",
+                    _progress(
+                        rows,
+                        processed_cells=processed_cells,
+                        attempts_executed=attempts_executed,
+                        history=history,
+                        replicate=replicate,
+                        last_cell=str(row.get("cell_id")),
+                    ),
+                )
     reduced = reduce_formal(rows)
     _write(root / "FORMAL_REDUCTION.json", reduced)
-    _write(root / "INVALID_ATTEMPT_LEDGER.json", {"schema_version": "membind.invalid-attempt-ledger.v1", "entries": invalid})
+    _write(root / "INVALID_ATTEMPT_LEDGER.json", {"schema_version": "membind.invalid-attempt-ledger.v2", "entries": invalid})
     return reduced
-
-
-def _valid_cell(row: dict[str, Any]) -> bool:
-    return row.get("construction_status") == "PASS" and row.get("qa_status") == "PASS" and row.get("qa_rows") == 60
 
 
 def main() -> int:

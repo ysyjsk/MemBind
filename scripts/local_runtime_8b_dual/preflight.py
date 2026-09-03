@@ -631,7 +631,7 @@ def run_live(checks: Checks, timeout: float) -> None:
         "--max-num-batched-tokens": required("MEMBIND_LLM_MAX_BATCHED_TOKENS"),
         "--scheduling-policy": "fcfs",
         "--seed": "20260806",
-        "--structured-outputs-config": '{"backend":"xgrammar"}',
+        "--structured-outputs-config": '{"backend":"xgrammar","disable_any_whitespace":true}',
         "--default-chat-template-kwargs": '{"enable_thinking":false}',
         "--hf-overrides": '{"rope_parameters":{"rope_type":"yarn","factor":1.6,"original_max_position_embeddings":40960,"rope_theta":1000000}}',
     }

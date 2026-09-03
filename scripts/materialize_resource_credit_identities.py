@@ -7,6 +7,8 @@ import json
 from datetime import datetime, timezone
 from pathlib import Path
 
+from current_platform_identity import load_current_platform_identity
+
 ROOT = Path(__file__).resolve().parents[1]
 EVIDENCE = ROOT / "saturated_fixed_work_baseline_v1_3/structured_output_recovery"
 
@@ -23,11 +25,20 @@ def main() -> int:
     frozen = json.loads((EVIDENCE / "FINAL_METHOD_FROZEN.json").read_text())
     identity = json.loads((EVIDENCE / "EVALUATED_IMPLEMENTATION_IDENTITY.json").read_text())
     canary = json.loads((EVIDENCE / "ENGINEERING_CANARY_VALIDATION.json").read_text())
+    current_platform = load_current_platform_identity()
+    frozen_platform = frozen.get("platform_manifest", {})
+    if (
+        frozen_platform.get("path") != current_platform["path"]
+        or frozen_platform.get("payload_sha256")
+        != current_platform["payload_sha256"]
+    ):
+        raise RuntimeError("frozen and active platform identities do not match")
     platform = {
         "schema_version": "membind.platform-identity.v1",
         "profile_id": "local-qwen3-8b-awq-dualreplica-v1",
-        "manifest_path": "/data/predator/ly/Mem/profiles/local-qwen3-8b-awq-dualreplica-v1/platform_manifest.20260902T101532Z.b9ec43b60f91.json",
-        "payload_sha256": "b9ec43b60f91df42ef0002411b298d580e3267159b6fba81f522363a1155905d",
+        "manifest_path": current_platform["path"],
+        "manifest_file_sha256": current_platform["file_sha256"],
+        "payload_sha256": current_platform["payload_sha256"],
         "native_endpoint": "127.0.0.1:18200",
         "prepare_endpoint": "127.0.0.1:18201",
         "embedding_endpoint": "127.0.0.1:18202",
@@ -40,9 +51,10 @@ def main() -> int:
         "adapter": "shared-bounded-structured-output-v1",
         "backend": "xgrammar",
         "model": "qwen3-8b-awq",
-        "max_tokens": 32768,
-        "termination": "empty_page_only",
+        "max_tokens": 16384,
+        "termination": "explicit_no_additional_edge",
         "duplicate_recovery": "one_duplicate_confirmation_then_fail_closed",
+        "terminal_confirmation": "one_distinct_terminal_only_request_after_provider_repeat_not_context_retry_v1",
         "arm_branching": False,
         "canary_shared_adapter_identity_sha256": canary.get("shared_adapter_identity_sha256"),
     }

@@ -17,6 +17,8 @@ from datetime import datetime, timezone
 from pathlib import Path
 from typing import Any
 
+from current_platform_identity import load_current_platform_identity
+
 
 ROOT = Path(__file__).resolve().parents[1]
 EVIDENCE = ROOT / "saturated_fixed_work_baseline_v1_3/structured_output_recovery"
@@ -51,6 +53,7 @@ def _git_head() -> str:
 
 def validate(root: Path) -> dict[str, Any]:
     root = root.resolve()
+    platform = load_current_platform_identity()
     manifest_paths = sorted(root.glob("campaign_manifest.*.json"))
     if len(manifest_paths) != 1:
         raise RuntimeError("CANARY_MANIFEST_AMBIGUOUS_OR_MISSING")
@@ -67,6 +70,7 @@ def validate(root: Path) -> dict[str, Any]:
 
     rows: list[dict[str, Any]] = []
     shared_contract_hashes: dict[str, str] = {}
+    shared_contracts: dict[str, dict[str, Any]] = {}
     for method in METHODS:
         parent = root / "context-0" / method
         attempts = sorted(p for p in parent.iterdir() if p.is_dir()) if parent.is_dir() else []
@@ -79,6 +83,7 @@ def validate(root: Path) -> dict[str, Any]:
         route = _json(attempt / "route_proof.json")
         route_seal = _json(attempt / "route_seal.json")
         runtime = _json(attempt / "route_runtime.json")
+        run_contract = _json(attempt / "run_contract.json")
         life = _json(block / "lifecycle_validation.json")
         order = _json(block / "order_validation.json")
         inventory = _json(block / "work_inventory.json")
@@ -92,6 +97,13 @@ def validate(root: Path) -> dict[str, Any]:
         if runtime.get("balanced") is not True or any(runtime.get("outstanding", {}).values()): issues.append("resource_balance")
         if inventory.get("submitted_count") != inventory.get("expected_episode_count") or inventory.get("completed_count") != inventory.get("expected_episode_count"): issues.append("work_coverage")
         if inventory.get("transport_failed_attempts", 0) != 0 or inventory.get("transport_retry_attempts", 0) != 0 or inventory.get("transport_true_retry_attempts", 0) != 0: issues.append("transport_failure_or_retry")
+        run_platform = run_contract.get("platform_manifest", {})
+        if (
+            run_platform.get("path") != platform["path"]
+            or run_platform.get("payload_sha256") != platform["payload_sha256"]
+            or run_platform.get("file_sha256") != platform["file_sha256"]
+        ):
+            issues.append("platform_identity")
         # Policy identity belongs to the MemBind arm explicitly; do not infer
         # it from tuple position because formal execution order is
         # Native -> Ours -> Async and Async is the final element.
@@ -108,18 +120,23 @@ def validate(root: Path) -> dict[str, Any]:
         identity = seal.get("identity", {})
         for key in ("context_id", "namespace", "run_id", "method", "workload_hash"):
             if not identity.get(key): issues.append(f"identity:{key}")
-        adapter_payload = {
-            "schema": "shared-bounded-structured-output-v1",
-            "page_capacity": inventory.get("pagination_page_capacity"),
-            "continuation": "canonical_ALREADY_RETURNED_EDGES",
-            "dedupe": "canonical_tuple",
-            "termination": "empty_page_only",
-            "recovery": "one_duplicate_confirmation_then_fail_closed",
-            "endpoint_grounding": "authoritative_entity_set",
-            "max_tokens": 32768,
-            "backend": "xgrammar",
-            "model": "qwen3-8b-awq",
-        }
+        adapter_payload = run_contract.get("decoding_contract", {}).get(
+            "shared_structured_output"
+        )
+        if not isinstance(adapter_payload, dict):
+            issues.append("shared_adapter_identity")
+            adapter_payload = {}
+        elif (
+            adapter_payload.get("arm_identity") is not None
+            or adapter_payload.get("wire_max_tokens") != 16384
+            or adapter_payload.get("termination_policy")
+            != "explicit_cursor_exhaustion"
+            or adapter_payload.get("terminal_confirmation_policy")
+            != "one_distinct_terminal_only_request_after_provider_repeat_not_context_retry_v1"
+            or adapter_payload.get("terminal_confirmation_is_context_retry") is not False
+        ):
+            issues.append("shared_adapter_contract")
+        shared_contracts[method] = adapter_payload
         shared_contract_hashes[method] = hashlib.sha256(_canonical(adapter_payload).encode()).hexdigest()
         rows.append({
             "method": method,
@@ -148,15 +165,8 @@ def validate(root: Path) -> dict[str, Any]:
         "method_identity": "MEMBIND_RESOURCE_CREDIT_V1",
         "resource_credit_policy": policy,
         "shared_adapter_identity_sha256": next(iter(shared_contract_hashes.values())),
-        "shared_adapter_contract": {
-            "backend": "xgrammar",
-            "model": "qwen3-8b-awq",
-            "max_tokens": 32768,
-            "page_capacity": "construction-observed-and-frozen-by-policy",
-            "arm_branching": False,
-            "termination": "empty_page_only",
-            "duplicate_recovery": "one_duplicate_confirmation_then_fail_closed",
-        },
+        "shared_adapter_contract": next(iter(shared_contracts.values())),
+        "platform_manifest": platform,
         "attempts": rows,
         "generated_at": datetime.now(timezone.utc).isoformat(),
     }
@@ -167,6 +177,7 @@ def freeze(root: Path) -> dict[str, Any]:
     if validation["status"] != "PASS":
         raise RuntimeError("CANARY_VALIDATION_FAILED")
     identity = _json(EVIDENCE / "EVALUATED_IMPLEMENTATION_IDENTITY.json")
+    platform = load_current_platform_identity()
     method_spec = _json(EVIDENCE / "FINAL_METHOD_SPEC.json")
     method_spec["status"] = "FINAL_CANARY_AUTHENTICATED"
     method_spec["canary_validation_sha256"] = hashlib.sha256(_canonical(validation).encode()).hexdigest()
@@ -190,15 +201,17 @@ def freeze(root: Path) -> dict[str, Any]:
             "identity_sha256": validation["shared_adapter_identity_sha256"],
             "backend": "xgrammar",
             "model": "qwen3-8b-awq",
-            "max_tokens": 32768,
+            "max_tokens": 16384,
+            "terminal_confirmation": "one_distinct_terminal_only_request_after_provider_repeat_not_context_retry_v1",
             "arm_branching": False,
             "strict_upstream_characterization": "A0_STRICT_UPSTREAM_COMPATIBILITY_CHARACTERIZATION",
         },
         "implementation_identity_sha256": hashlib.sha256(_canonical(identity).encode()).hexdigest(),
         "source_bundle_sha256": identity.get("source_bundle_sha256"),
         "platform_manifest": {
-            "path": "/data/predator/ly/Mem/profiles/local-qwen3-8b-awq-dualreplica-v1/platform_manifest.20260902T101532Z.b9ec43b60f91.json",
-            "payload_sha256": "b9ec43b60f91df42ef0002411b298d580e3267159b6fba81f522363a1155905d",
+            "path": platform["path"],
+            "file_sha256": platform["file_sha256"],
+            "payload_sha256": platform["payload_sha256"],
         },
         "canary": validation,
         "formal_status": "READY_FOR_45_CELL_MANIFEST",

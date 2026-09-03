@@ -19,7 +19,7 @@ command=(
   --max-num-batched-tokens "$MEMBIND_LLM_MAX_BATCHED_TOKENS"
   --gpu-memory-utilization "$MEMBIND_NATIVE_LLM_GPU_MEMORY_UTILIZATION"
   --hf-overrides '{"rope_parameters":{"rope_type":"yarn","factor":1.6,"original_max_position_embeddings":40960,"rope_theta":1000000}}'
-  --structured-outputs-config '{"backend":"xgrammar"}'
+  --structured-outputs-config '{"backend":"xgrammar","disable_any_whitespace":true}'
   --enable-prefix-caching
   --enable-chunked-prefill
   --scheduling-policy fcfs

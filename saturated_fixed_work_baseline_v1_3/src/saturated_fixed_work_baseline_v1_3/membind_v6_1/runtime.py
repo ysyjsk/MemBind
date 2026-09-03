@@ -7,6 +7,7 @@ import ast
 import heapq
 import hashlib
 import inspect
+import itertools
 import json
 import os
 import re
@@ -22,6 +23,7 @@ from urllib.parse import urlsplit, urlunsplit
 from native_characterization_runtime import U0Config, U0Runtime
 from .structured_output_recovery import (
     SchemaBoundednessError,
+    StructuredOutputBudgetError,
     StructuredOutputLengthTruncation,
     build_schema_bound_certificate,
     choose_edge_page_capacity,
@@ -36,6 +38,10 @@ from .shared_structured_output import (
     SHARED_PAGE_CAPACITY,
     SharedStructuredOutputContract,
     adapter_identity,
+    bounded_ascii_field,
+    bounded_ascii_pattern,
+    bounded_ascii_type,
+    canonical_edge_tuple,
     finite_edge_page_model,
     validate_edge_page,
 )
@@ -60,18 +66,17 @@ LOCAL_EDGE_MAX_PAGES = SHARED_MAX_PAGES
 LOCAL_EDGE_PARTITION_CONCURRENCY = 1
 LOCAL_EDGE_PHYSICAL_CONCURRENCY = 2
 LOCAL_NODE_PARTITION_CONCURRENCY = 1
-# With the 256-character name and bounded type/index fields, 16 entities are
-# the largest node response whose worst-case JSON remains below the frozen
-# 32,768-token completion budget.  Larger evidence flights are partitioned
-# before provider invocation and fail closed if this invariant is violated.
+# Evidence chunks contain at most 16 source-grounded entities. The physical
+# response capacity is selected separately against each request's 8,192-token
+# completion budget; with the deployed xgrammar wire contract it is currently
+# 14 and remains certificate-derived rather than hard-coded.
 LOCAL_NODE_MAX_ENTITIES_PER_CHUNK = 16
 LOCAL_NODE_MAX_NAME_CHARS = 256
 LOCAL_EDGE_RELATION_MAX_CHARS = 128
-# Pinned Graphiti fixes extract_edges.edge at 16,384 completion tokens.  The
-# compact ensure-ASCII character proof admits at most 1,987 fact characters
-# (16,384 total) for a one-edge page.  Keep 522 proof tokens of headroom by
-# capping facts at 1,900; this is still far above Graphiti's ordinary factual
-# edge size, and the method identity records the resulting wire constraint.
+# Pinned Graphiti fixes extract_edges.edge at 16,384 completion tokens. The
+# 1,900-character fact limit is an upstream-compatible semantic cap; the
+# xgrammar-safe finite regex and fixed-separator UTF-8 proof establish the
+# physical wire bound without shrinking that cap.
 LOCAL_EDGE_FACT_MAX_CHARS = SHARED_FACT_MAX_LENGTH
 LOCAL_EDGE_DATETIME_MAX_CHARS = 40
 LOCAL_TIMESTAMP_BATCH_MAX_ITEMS = 63
@@ -1154,6 +1159,7 @@ def _edge_turn_local_partitions(
     actor_domain_cover: bool = False,
     actor_domain_adjacent_domain: bool = True,
     actor_domain_boundary_join: bool = False,
+    pairwise_entity_cover: bool = False,
 ) -> tuple[list[list[Any]], int, int, int] | None:
     """Build evidence-local edge candidate sets from the node extraction cover.
 
@@ -1325,8 +1331,64 @@ def _edge_turn_local_partitions(
         )
     if not unique_groups:
         return None
-    partitions: list[list[Any]] = []
+    refined_groups: list[
+        tuple[
+            tuple[int, ...],
+            list[dict[str, Any]],
+            str,
+            str,
+            set[str],
+            set[str],
+            int,
+        ]
+    ] = []
     for source_ids, candidate, source_text, view_kind, cross_left, cross_right in unique_groups:
+        if not pairwise_entity_cover:
+            refined_groups.append(
+                (
+                    source_ids,
+                    candidate,
+                    source_text,
+                    view_kind,
+                    cross_left,
+                    cross_right,
+                    len(candidate),
+                )
+            )
+            continue
+        for left in range(len(candidate)):
+            for right in range(left + 1, len(candidate)):
+                pair = [candidate[left], candidate[right]]
+                pair_identities = {
+                    " ".join(str(value.get("name", "")).split()).casefold()
+                    for value in pair
+                }
+                if view_kind == "domain_boundary_join" and not (
+                    pair_identities & cross_left and pair_identities & cross_right
+                ):
+                    continue
+                refined_groups.append(
+                    (
+                        source_ids,
+                        pair,
+                        source_text,
+                        view_kind,
+                        cross_left,
+                        cross_right,
+                        len(candidate),
+                    )
+                )
+
+    partitions: list[list[Any]] = []
+    for (
+        source_ids,
+        candidate,
+        source_text,
+        view_kind,
+        cross_left,
+        cross_right,
+        parent_entity_count,
+    ) in refined_groups:
         scope_instruction = (
             "Evaluate only cross-boundary relationships with at least one endpoint "
             "from each of the two adjacent source partitions. Relationships whose "
@@ -1361,13 +1423,20 @@ def _edge_turn_local_partitions(
                         for source_id in source_ids
                     ],
                     "current_message_chars": len(source_text),
+                    "entity_domain_refinement": (
+                        "complete_binary_pair_cover"
+                        if pairwise_entity_cover
+                        else "evidence_local_entity_domain"
+                    ),
+                    "parent_entity_count": parent_entity_count,
+                    "physical_entity_count": len(candidate),
                 }
             )
     return (
         partitions,
         len(entities),
         len(partitions),
-        max(len(candidate) for _, candidate, _, _, _, _ in unique_groups),
+        max(len(candidate) for _, candidate, _, _, _, _, _ in refined_groups),
     )
 
 
@@ -1382,6 +1451,44 @@ def _turn_segments(text: str) -> list[str]:
         end = markers[index + 1].start() if index + 1 < len(markers) else len(text)
         segments.append(text[marker.start() : end])
     return [segment for segment in segments if segment.strip()]
+
+
+def _split_turn_segment(segment: str, *, payload_limit: int) -> list[str]:
+    """Split one speaker turn into contiguous, role-preserving payload chunks."""
+
+    if payload_limit < 1:
+        raise LocalRuntimeConfigurationError("current-message chunk limit must be positive")
+    marker = _TURN_MARKER_RE.match(segment)
+    prefix = ""
+    payload = segment
+    if marker is not None:
+        line_end = segment.find("\n", marker.end())
+        if line_end >= 0:
+            prefix = segment[: line_end + 1]
+            payload = segment[line_end + 1 :]
+        else:
+            prefix = segment
+            payload = ""
+    if len(payload) <= payload_limit:
+        return [segment]
+
+    chunks: list[str] = []
+    offset = 0
+    while offset < len(payload):
+        end = min(len(payload), offset + payload_limit)
+        if end < len(payload):
+            boundary = max(
+                payload.rfind(" ", offset, end + 1),
+                payload.rfind("\n", offset, end + 1),
+                payload.rfind("\t", offset, end + 1),
+            )
+            if boundary >= offset:
+                end = boundary + 1
+        if end <= offset:
+            end = min(len(payload), offset + payload_limit)
+        chunks.append(prefix + payload[offset:end])
+        offset = end
+    return chunks
 
 
 def _partition_current_message(
@@ -1406,7 +1513,44 @@ def _partition_current_message(
     if current_text is None:
         return [list(messages)]
 
-    segments = _turn_segments(current_text)
+    original_segments = _turn_segments(current_text)
+    segments = [
+        chunk
+        for segment in original_segments
+        for chunk in _split_turn_segment(segment, payload_limit=current_char_limit)
+    ]
+    if len(segments) <= 1:
+        # A short atomic current message cannot be refined without changing its
+        # semantics.  The callsite's structured-output preflight remains the
+        # fail-closed authority when fixed prompt context itself is too large.
+        return [list(messages)]
+
+    bounded_segments: list[str] = []
+    pending = list(segments)
+    while pending:
+        segment = pending.pop(0)
+        candidate_messages = _replace_current_message(messages, segment)
+        if candidate_messages is None:
+            return [list(messages)]
+        if token_counter(candidate_messages) <= prompt_limit:
+            bounded_segments.append(segment)
+            continue
+        marker = _TURN_MARKER_RE.match(segment)
+        prefix = ""
+        payload = segment
+        if marker is not None:
+            line_end = segment.find("\n", marker.end())
+            if line_end >= 0:
+                prefix = segment[: line_end + 1]
+                payload = segment[line_end + 1 :]
+        if len(payload) <= 1:
+            raise LocalRuntimeConfigurationError(
+                "one current-message character cannot fit the certified prompt budget"
+            )
+        midpoint = len(payload) // 2
+        pending[:0] = [prefix + payload[:midpoint], prefix + payload[midpoint:]]
+    segments = bounded_segments
+
     if len(segments) <= 1:
         return [list(messages)]
 
@@ -1510,6 +1654,22 @@ def _edge_identity(value: Mapping[str, Any]) -> str:
     )
 
 
+def _edge_cursor_order_key(value: Mapping[str, Any]) -> tuple[str, ...]:
+    """Canonical code-point order used by the bounded continuation cursor."""
+
+    return tuple(
+        "" if value.get(field) is None else str(value.get(field))
+        for field in (
+            "source_entity_name",
+            "target_entity_name",
+            "relation_type",
+            "fact",
+            "valid_at",
+            "invalid_at",
+        )
+    )
+
+
 @lru_cache(maxsize=32)
 def _finite_edge_page_model(
     page_capacity: int = LOCAL_EDGE_PAGE_CAPACITY,
@@ -1578,10 +1738,60 @@ def _edge_page_messages(
     duplicate_recovery_confirmation: bool = False,
     duplicate_recovery_final_abstention: bool = False,
     memory_utility_order: bool = False,
+    bounded_cursor: bool = False,
 ) -> list[Any]:
     """Add continuation state to one edge request without artifact leakage."""
 
     cloned = deepcopy(list(messages))
+    if bounded_cursor:
+        cursor = None
+        if previous_edges:
+            cursor = {
+                field: previous_edges[-1].get(field)
+                for field in (
+                    "source_entity_name",
+                    "target_entity_name",
+                    "relation_type",
+                    "fact",
+                    "valid_at",
+                    "invalid_at",
+                )
+            }
+        instruction = (
+            "\n\n<EDGE_CURSOR_PROTOCOL>\n"
+            "The output is a deterministic canonical cursor step, not an open-ended list. "
+            "Order supported edges lexicographically by the exact tuple "
+            "(source_entity_name, target_entity_name, relation_type, fact, valid_at, invalid_at). "
+            "Return the smallest supported edge strictly greater than EDGE_CURSOR as "
+            '{"status":"new_edge","edge":{...}}. If no greater supported edge exists, '
+            'return exactly {"status":"no_additional_edge","edge":null}. '
+            "Never return an edge equal to or less than the cursor.\n"
+            "<EDGE_CURSOR>\n"
+            + json.dumps(
+                cursor,
+                ensure_ascii=False,
+                sort_keys=True,
+                separators=(",", ":"),
+            )
+            + "\n</EDGE_CURSOR>\n"
+            "</EDGE_CURSOR_PROTOCOL>\n"
+        )
+        for message in cloned:
+            content = _message_content(message)
+            if content is None or "<ENTITIES>" not in content.upper():
+                continue
+            marker = re.search(r"(?m)^# TASK\s*$", content)
+            updated = (
+                content[: marker.start()] + instruction + content[marker.start() :]
+                if marker is not None
+                else content + instruction
+            )
+            if isinstance(message, Mapping):
+                message["content"] = updated
+            else:
+                setattr(message, "content", updated)
+            return cloned
+        raise LocalRuntimeConfigurationError("edge cursor prompt seam is unavailable")
     already_returned = [
         {
             field: edge.get(field)
@@ -1753,6 +1963,38 @@ def _edge_page_messages(
     raise LocalRuntimeConfigurationError("edge pagination prompt seam is unavailable")
 
 
+def _edge_continuation_measurements(
+    edges: Sequence[Mapping[str, Any]],
+    *,
+    token_counter: Callable[[str], int] | None,
+) -> tuple[int, int, int]:
+    """Return content-free size evidence for the continuation carried on wire."""
+
+    if not edges:
+        return 0, 0, 0
+    payload = json.dumps(
+        [
+            {
+                field: edge.get(field)
+                for field in (
+                    "source_entity_name",
+                    "target_entity_name",
+                    "relation_type",
+                    "fact",
+                    "valid_at",
+                    "invalid_at",
+                )
+            }
+            for edge in edges
+        ],
+        ensure_ascii=False,
+        sort_keys=True,
+        separators=(",", ":"),
+    )
+    tokens = int(token_counter(payload)) if token_counter is not None else 0
+    return len(edges), len(payload), tokens
+
+
 def _provider_scope_key() -> tuple[str | None, int | None]:
     """Resolve the active episode scope without imposing it on unit fixtures."""
 
@@ -1778,7 +2020,7 @@ def _bounded_summary_response_model(max_items: int) -> Any:
         "MemBindBoundedSummarizedEntity",
         name=(
             str,
-            Field(
+            bounded_ascii_field(
                 ...,
                 min_length=1,
                 max_length=LOCAL_NODE_MAX_NAME_CHARS,
@@ -1823,7 +2065,7 @@ def _bounded_node_response_model(max_items: int) -> Any:
         "MemBindBoundedExtractedEntity",
         name=(
             str,
-            Field(
+            bounded_ascii_field(
                 ...,
                 min_length=1,
                 max_length=LOCAL_NODE_MAX_NAME_CHARS,
@@ -1905,10 +2147,11 @@ def _bounded_edge_timestamps_model(max_items: int = 1, *, exact: bool = True) ->
 
     if max_items < 1 or max_items > LOCAL_TIMESTAMP_BATCH_MAX_ITEMS:
         raise ValueError("timestamp response capacity is outside the local contract")
+    datetime_type = bounded_ascii_type(0, LOCAL_EDGE_DATETIME_MAX_CHARS)
     item_model = create_model(
         "MemBindBoundedEdgeTimestamp",
-        valid_at=(str | None, Field(default=None, max_length=LOCAL_EDGE_DATETIME_MAX_CHARS)),
-        invalid_at=(str | None, Field(default=None, max_length=LOCAL_EDGE_DATETIME_MAX_CHARS)),
+        valid_at=(datetime_type | None, Field(default=None)),
+        invalid_at=(datetime_type | None, Field(default=None)),
         __config__=ConfigDict(extra="forbid"),
     )
     if max_items == 1:
@@ -2216,6 +2459,23 @@ def install_local_extraction_chunking_policy(
         "_membind_entity_partition_sources",
         entity_partition_sources_by_scope[(None, None)],
     )
+    provenance_run_id = str(
+        os.environ.get("MEMBIND_PROVENANCE_RUN_ID")
+        or getattr(llm_client, "_membind_provenance_run_id", "")
+        or "UNBOUND_PROVIDER_FREE"
+    )
+    node_logical_call_counts: dict[tuple[str | None, int | None], int] = {}
+    node_provenance_by_scope: dict[
+        tuple[str | None, int | None], dict[str, Any]
+    ] = {}
+    setattr(
+        llm_client,
+        "_membind_node_provenance_authority",
+        {
+            "authority_run_id": provenance_run_id,
+            "records_by_scope": node_provenance_by_scope,
+        },
+    )
 
     async def chunked_generate(
         messages: list[Any],
@@ -2228,6 +2488,19 @@ def install_local_extraction_chunking_policy(
         attribute_extraction: bool = False,
     ) -> Any:
         requested = int(max_tokens or getattr(llm_client, "max_tokens", 0) or 0)
+        logical_node_call_id: str | None = None
+        if prompt_name in {
+            "extract_nodes.extract_message",
+            "extract_nodes.extract_text",
+            "extract_nodes.extract_json",
+        }:
+            logical_scope = _provider_scope_key()
+            logical_index = node_logical_call_counts.get(logical_scope, 0)
+            node_logical_call_counts[logical_scope] = logical_index + 1
+            logical_node_call_id = (
+                f"{provenance_run_id}:{logical_scope[0]}:{logical_scope[1]}:"
+                f"node:{logical_index}"
+            )
         # The shared substrate keeps Graphiti's 16,384-token edge budget as a
         # real wire bound.  The client-wide 32,768-token setting remains the
         # construction budget for node/summary operators and is recorded
@@ -2252,7 +2525,11 @@ def install_local_extraction_chunking_policy(
             duplicate_recovery_request: bool = False,
             duplicate_recovery_confirmation: bool = False,
             duplicate_recovery_final_abstention: bool = False,
+            terminal_confirmation_request: bool = False,
             excluded_recovery_edge: tuple[Any, ...] = (),
+            cursor_protocol_request: bool = False,
+            base_request_messages: Sequence[Any] | None = None,
+            continuation_edges: Sequence[Mapping[str, Any]] = (),
         ) -> Any:
             if (
                 shared_bounded_structured_output
@@ -2294,6 +2571,9 @@ def install_local_extraction_chunking_policy(
                         effective_max_tokens=int(request_max_tokens or requested or 0),
                         safety_margin_tokens=safety_margin,
                         output_token_counter=output_token_counter,
+                        whitespace_mode=getattr(
+                            llm_client, "structured_output_whitespace_mode", None
+                        ),
                     )
                 except Exception as exc:
                     # Provider-free scheduler fixtures do not have the live
@@ -2378,11 +2658,18 @@ def install_local_extraction_chunking_policy(
                             capacity,
                             endpoint_names,
                             termination_discriminator=(
-                                duplicate_recovery_request
-                                and shared_bounded_structured_output
+                                cursor_protocol_request
+                                or terminal_confirmation_request
+                                or (
+                                    duplicate_recovery_request
+                                    and shared_bounded_structured_output
+                                )
                             ),
                             excluded_edge=excluded_recovery_edge,
-                            no_additional_only=duplicate_recovery_final_abstention,
+                            no_additional_only=(
+                                terminal_confirmation_request
+                                or duplicate_recovery_final_abstention
+                            ),
                         )
                         if edge_endpoint_schema_grounding and endpoint_names
                         else finite_edge_page_model(
@@ -2391,18 +2678,26 @@ def install_local_extraction_chunking_policy(
                             LOCAL_EDGE_FACT_MAX_CHARS,
                             name_prefix="MemBind",
                             termination_discriminator=(
-                                duplicate_recovery_request
-                                and shared_bounded_structured_output
+                                cursor_protocol_request
+                                or terminal_confirmation_request
+                                or (
+                                    duplicate_recovery_request
+                                    and shared_bounded_structured_output
+                                )
                             ),
                             excluded_edge=excluded_recovery_edge,
+                            no_additional_only=(
+                                terminal_confirmation_request
+                                or duplicate_recovery_final_abstention
+                            ),
                         )
                     ).model_json_schema()
                     for capacity in range(requested_capacity, 0, -1)
                 }
-                output_token_counter = _local_output_token_counter_if_available(
-                    llm_client
-                )
                 try:
+                    output_token_counter = _local_output_token_counter_if_available(
+                        llm_client
+                    )
                     selection = choose_edge_page_capacity(
                         messages=request_messages,
                         schemas_by_capacity=schemas,
@@ -2412,6 +2707,9 @@ def install_local_extraction_chunking_policy(
                         effective_max_tokens=int(request_max_tokens or requested or 0),
                         safety_margin_tokens=safety_margin,
                         output_token_counter=output_token_counter,
+                        whitespace_mode=getattr(
+                            llm_client, "structured_output_whitespace_mode", None
+                        ),
                     )
                 except Exception as exc:
                     # Fake/provider-free clients have no model tokenizer and
@@ -2423,6 +2721,71 @@ def install_local_extraction_chunking_policy(
                         preflight_unverified_reason = type(exc).__name__
                         selected_edge_page_capacity = requested_capacity
                     else:
+                        if isinstance(exc, StructuredOutputBudgetError):
+                            scope = _provider_scope_key()
+                            certificate = exc.last_certificate
+                            continuation_count, continuation_chars, continuation_tokens = (
+                                _edge_continuation_measurements(
+                                    continuation_edges,
+                                    token_counter=output_token_counter,
+                                )
+                            )
+                            try:
+                                base_prompt_tokens = int(
+                                    count_tokens(base_request_messages or request_messages)
+                                )
+                            except Exception:
+                                base_prompt_tokens = None
+                            try:
+                                final_prompt_tokens = int(count_tokens(request_messages))
+                            except Exception:
+                                final_prompt_tokens = None
+                            diagnostics.append(
+                                {
+                                    "schema_version": "membind.v6.1.edge-budget-fatal.v1",
+                                    "event": "EDGE_STRUCTURED_OUTPUT_PREFLIGHT_FATAL",
+                                    "status": "FATAL",
+                                    "scope": {
+                                        "region": scope[0],
+                                        "source_sequence": scope[1],
+                                    },
+                                    "source_sequence": scope[1],
+                                    "partition_id": partition_id,
+                                    "page_index": page_index,
+                                    "entity_count": entity_count,
+                                    "already_returned_edge_count": continuation_count,
+                                    "already_returned_edge_chars": continuation_chars,
+                                    "already_returned_edge_tokens": continuation_tokens,
+                                    "base_prompt_tokens": base_prompt_tokens,
+                                    "final_prompt_tokens": final_prompt_tokens,
+                                    "schema_worst_case_characters": (
+                                        certificate.schema_worst_case_characters
+                                        if certificate is not None
+                                        else None
+                                    ),
+                                    "schema_worst_case_tokens": (
+                                        certificate.schema_worst_case_tokens
+                                        if certificate is not None
+                                        else None
+                                    ),
+                                    "tokenizer_witness_tokens": (
+                                        certificate.tokenizer_witness_tokens
+                                        if certificate is not None
+                                        else None
+                                    ),
+                                    "effective_max_tokens": int(
+                                        request_max_tokens or requested or 0
+                                    ),
+                                    "safety_margin": safety_margin,
+                                    "context_limit": LOCAL_CONTEXT_LIMIT,
+                                    "failure_reasons": list(exc.failure_reasons),
+                                    "failed_inequalities": list(exc.failed_inequalities),
+                                    "rejected_certificates": [
+                                        value.to_dict()
+                                        for value in exc.rejected_certificates
+                                    ],
+                                }
+                            )
                         raise LocalRuntimeConfigurationError(
                             f"edge structured-output preflight failed: {exc}"
                         ) from exc
@@ -2433,11 +2796,18 @@ def install_local_extraction_chunking_policy(
                         int(selected_edge_page_capacity),
                         endpoint_names,
                         termination_discriminator=(
-                            duplicate_recovery_request
-                            and shared_bounded_structured_output
+                            cursor_protocol_request
+                            or terminal_confirmation_request
+                            or (
+                                duplicate_recovery_request
+                                and shared_bounded_structured_output
+                            )
                         ),
                         excluded_edge=excluded_recovery_edge,
-                        no_additional_only=duplicate_recovery_final_abstention,
+                        no_additional_only=(
+                            terminal_confirmation_request
+                            or duplicate_recovery_final_abstention
+                        ),
                     )
                     if edge_endpoint_schema_grounding and endpoint_names
                     else finite_edge_page_model(
@@ -2445,12 +2815,19 @@ def install_local_extraction_chunking_policy(
                         (),
                         LOCAL_EDGE_FACT_MAX_CHARS,
                         name_prefix="MemBind",
-                            termination_discriminator=(
+                        termination_discriminator=(
+                            cursor_protocol_request
+                            or terminal_confirmation_request
+                            or (
                                 duplicate_recovery_request
                                 and shared_bounded_structured_output
-                            ),
-                            excluded_edge=excluded_recovery_edge,
-                            no_additional_only=duplicate_recovery_final_abstention,
+                            )
+                        ),
+                        excluded_edge=excluded_recovery_edge,
+                        no_additional_only=(
+                            terminal_confirmation_request
+                            or duplicate_recovery_final_abstention
+                        ),
                     )
                 )
             shared_request_identity = None
@@ -2464,7 +2841,11 @@ def install_local_extraction_chunking_policy(
                         and shared_bounded_structured_output
                     ),
                     excluded_edge=excluded_recovery_edge,
-                    no_additional_only=duplicate_recovery_final_abstention,
+                    no_additional_only=(
+                        terminal_confirmation_request
+                        or duplicate_recovery_final_abstention
+                    ),
+                    cursor_protocol=cursor_protocol_request,
                 )
             structured_certificate = None
             if node_schema_selection is not None:
@@ -2494,6 +2875,9 @@ def install_local_extraction_chunking_policy(
                             ),
                             safety_margin_tokens=safety_margin,
                             output_token_counter=output_token_counter,
+                            whitespace_mode=getattr(
+                                llm_client, "structured_output_whitespace_mode", None
+                            ),
                         )
                     except Exception as exc:
                         if getattr(llm_client, "structured_output_recovery_enabled", False):
@@ -2533,6 +2917,7 @@ def install_local_extraction_chunking_policy(
                 "page_index": page_index,
                 "duplicate_recovery_request": bool(duplicate_recovery_request),
                 "duplicate_recovery_confirmation": bool(duplicate_recovery_confirmation),
+                "terminal_confirmation_request": bool(terminal_confirmation_request),
                 "status": "started",
             }
             if shared_bounded_structured_output:
@@ -2640,26 +3025,63 @@ def install_local_extraction_chunking_policy(
             if str(prompt_name).startswith("extract_nodes.") and isinstance(result, Mapping):
                 extracted = result.get("extracted_entities")
                 if isinstance(extracted, list):
-                    if isinstance(partition_id, int):
-                        scope = _provider_scope_key()
-                        scoped_hints = entity_partition_hints_by_scope.setdefault(scope, {})
-                        source_text = _current_message_text(request_messages)
-                        if source_text is None:
-                            raise LocalRuntimeConfigurationError(
-                                "partitioned node extraction has no CURRENT MESSAGE source"
+                    scope = _provider_scope_key()
+                    canonical_partition_id = (
+                        int(partition_id) if isinstance(partition_id, int) else 0
+                    )
+                    if logical_node_call_id is None:
+                        raise LocalRuntimeConfigurationError(
+                            "node extraction provenance has no logical call identity"
+                        )
+                    record = node_provenance_by_scope.get(scope)
+                    if record is None or record.get("logical_node_call_id") != logical_node_call_id:
+                        if scope == (None, None):
+                            # Provider-free probes expose these dictionaries as
+                            # public compatibility aliases.  Reuse them so the
+                            # alias and the provenance authority cannot diverge.
+                            scoped_sources = entity_partition_sources_by_scope[scope]
+                            scoped_hints = entity_partition_hints_by_scope[scope]
+                            scoped_sources.clear()
+                            scoped_hints.clear()
+                        else:
+                            scoped_sources = {}
+                            scoped_hints = {}
+                            entity_partition_sources_by_scope[scope] = scoped_sources
+                            entity_partition_hints_by_scope[scope] = scoped_hints
+                        record = {
+                            "authority_run_id": provenance_run_id,
+                            "region": scope[0],
+                            "source_sequence": scope[1],
+                            "logical_node_call_id": logical_node_call_id,
+                            "executed_partition_ids": [],
+                            "sources": scoped_sources,
+                            "entity_hints": scoped_hints,
+                        }
+                        node_provenance_by_scope[scope] = record
+                    scoped_sources = record["sources"]
+                    scoped_hints = record["entity_hints"]
+                    source_text = _current_message_text(request_messages)
+                    if source_text is None:
+                        raise LocalRuntimeConfigurationError(
+                            "node extraction has no CURRENT MESSAGE source provenance"
+                        )
+                    existing_source = scoped_sources.setdefault(
+                        canonical_partition_id, source_text
+                    )
+                    if existing_source != source_text:
+                        raise LocalRuntimeConfigurationError(
+                            "node partition source provenance changed within one logical node call"
+                        )
+                    if canonical_partition_id not in record["executed_partition_ids"]:
+                        record["executed_partition_ids"].append(canonical_partition_id)
+                    for item in extracted:
+                        if not isinstance(item, Mapping):
+                            continue
+                        identity = " ".join(str(item.get("name", "")).split()).casefold()
+                        if identity:
+                            scoped_hints.setdefault(identity, []).append(
+                                canonical_partition_id
                             )
-                        scoped_sources = entity_partition_sources_by_scope.setdefault(scope, {})
-                        existing_source = scoped_sources.setdefault(partition_id, source_text)
-                        if existing_source != source_text:
-                            raise LocalRuntimeConfigurationError(
-                                "node partition source provenance changed within one provider scope"
-                            )
-                        for item in extracted:
-                            if not isinstance(item, Mapping):
-                                continue
-                            identity = " ".join(str(item.get("name", "")).split()).casefold()
-                            if identity:
-                                scoped_hints.setdefault(identity, []).append(partition_id)
             # The Qwen transport records this without prompt/response content.
             call_events = getattr(llm_client, "call_events", ()) or ()
             if call_events:
@@ -2799,22 +3221,40 @@ def install_local_extraction_chunking_policy(
 
         if prompt_name == "extract_edges.edge" and partition_edge_candidates:
             scope = _provider_scope_key()
-            scoped_sources = entity_partition_sources_by_scope.get(scope, {})
-            if scope != (None, None) and not scoped_sources:
+            provenance_record = node_provenance_by_scope.get(scope)
+            scoped_sources = (
+                provenance_record.get("sources", {})
+                if isinstance(provenance_record, Mapping)
+                else {}
+            )
+            scoped_hints = (
+                provenance_record.get("entity_hints", {})
+                if isinstance(provenance_record, Mapping)
+                else {}
+            )
+            if scope == (None, None) and provenance_record is None:
+                scoped_sources = entity_partition_sources_by_scope[(None, None)]
+                scoped_hints = entity_partition_hints_by_scope[(None, None)]
+            if scope != (None, None) and (
+                not scoped_sources
+                or provenance_record is None
+                or provenance_record.get("authority_run_id") != provenance_run_id
+                or provenance_record.get("region") != scope[0]
+                or provenance_record.get("source_sequence") != scope[1]
+            ):
                 raise LocalRuntimeConfigurationError(
                     "live edge extraction is missing node-partition source provenance"
                 )
             evidence_partition_metadata: list[dict[str, Any]] = []
             expanded = _edge_turn_local_partitions(
                 messages,
-                entity_partition_hints=entity_partition_hints_by_scope.get(
-                    scope, {}
-                ),
+                entity_partition_hints=scoped_hints,
                 entity_partition_sources=scoped_sources,
                 partition_metadata=evidence_partition_metadata,
                 actor_domain_cover=actor_domain_cover,
                 actor_domain_adjacent_domain=actor_domain_adjacent_domain,
                 actor_domain_boundary_join=actor_domain_boundary_join,
+                pairwise_entity_cover=shared_bounded_structured_output,
             )
             if expanded is not None:
                 partitions, entity_count, partition_count, max_partition_entities = expanded
@@ -2828,9 +3268,13 @@ def install_local_extraction_chunking_policy(
                     partition_id: int,
                     page_index: int,
                     response_model: Any,
+                    base_request_messages: Sequence[Any],
+                    continuation_edges: Sequence[Mapping[str, Any]],
+                    cursor_protocol_request: bool = False,
                     duplicate_recovery_request: bool = False,
                     duplicate_recovery_confirmation: bool = False,
                     duplicate_recovery_final_abstention: bool = False,
+                    terminal_confirmation_request: bool = False,
                     excluded_recovery_edge: tuple[Any, ...] = (),
                 ) -> tuple[Any, int, int, int | None, dict[str, Any] | None]:
                     nonlocal edge_active_page_requests
@@ -2886,7 +3330,14 @@ def install_local_extraction_chunking_policy(
                                 duplicate_recovery_final_abstention
                                 and shared_bounded_structured_output
                             ),
+                            terminal_confirmation_request=(
+                                terminal_confirmation_request
+                                and shared_bounded_structured_output
+                            ),
                             excluded_recovery_edge=excluded_recovery_edge,
+                            cursor_protocol_request=cursor_protocol_request,
+                            base_request_messages=base_request_messages,
+                            continuation_edges=continuation_edges,
                         )
                         observed_service_ns = time.monotonic_ns() - service_start_ns
                         return (
@@ -2963,7 +3414,35 @@ def install_local_extraction_chunking_policy(
                     cross_right_endpoint_names = set(
                         partition_evidence.get("_cross_right_endpoint_names", set())
                     )
-                    for page_index in range(LOCAL_EDGE_MAX_PAGES):
+                    page_indices = (
+                        itertools.count()
+                        if shared_bounded_structured_output
+                        else range(LOCAL_EDGE_MAX_PAGES)
+                    )
+                    for page_index in page_indices:
+                        if (
+                            shared_bounded_structured_output
+                            and page_index > 0
+                            and page_index % LOCAL_EDGE_MAX_PAGES == 0
+                        ):
+                            diagnostics.append(
+                                {
+                                    "schema_version": "membind.v6.1.edge-cursor.v2",
+                                    "event": "EDGE_CURSOR_EPOCH_ADVANCE",
+                                    "prompt_name": prompt_name,
+                                    "partition_id": partition_id,
+                                    "partition_count": partition_count,
+                                    "page_index": page_index,
+                                    "completed_epoch_count": page_index
+                                    // LOCAL_EDGE_MAX_PAGES,
+                                    "page_epoch_size": LOCAL_EDGE_MAX_PAGES,
+                                    "total_page_cap": None,
+                                    "continuation_policy": (
+                                        "strict_cursor_until_explicit_exhaustion"
+                                    ),
+                                    "status": "continuing",
+                                }
+                            )
                         is_duplicate_recovery = duplicate_recovery_edge is not None
                         is_duplicate_recovery_confirmation = (
                             is_duplicate_recovery
@@ -2978,7 +3457,27 @@ def install_local_extraction_chunking_policy(
                             duplicate_recovery_confirmation=duplicate_recovery_confirmation,
                             duplicate_recovery_final_abstention=duplicate_recovery_final_abstention,
                             memory_utility_order=memory_utility_order,
+                            bounded_cursor=shared_bounded_structured_output,
                         )
+                        # A provider may satisfy the cursor prose while still
+                        # selecting the previous edge from the otherwise-valid
+                        # enum domain.  Bind exactly one predecessor into the
+                        # wire schema so the constrained decoder cannot repeat
+                        # it.  This is a bounded rolling exclusion, never a
+                        # cumulative returned-edge history or a retry variant.
+                        page_response_model = partition_page_model
+                        if (
+                            shared_bounded_structured_output
+                            and pagination_history
+                        ):
+                            page_response_model = _endpoint_grounded_edge_page_model(
+                                edge_page_capacity,
+                                partition_endpoint_names,
+                                termination_discriminator=True,
+                                excluded_edge=canonical_edge_tuple(
+                                    pagination_history[-1]
+                                ),
+                            )
                         (
                             page,
                             queue_wait_ns,
@@ -2989,7 +3488,10 @@ def install_local_extraction_chunking_policy(
                             page_messages,
                             partition_id=partition_id,
                             page_index=page_index,
-                            response_model=partition_page_model,
+                            response_model=page_response_model,
+                            base_request_messages=partition,
+                            continuation_edges=pagination_history,
+                            cursor_protocol_request=shared_bounded_structured_output,
                             duplicate_recovery_request=(
                                 is_duplicate_recovery
                                 and shared_bounded_structured_output
@@ -3003,7 +3505,10 @@ def install_local_extraction_chunking_policy(
                                 and shared_bounded_structured_output
                             ),
                             excluded_recovery_edge=(
-                                tuple(
+                                canonical_edge_tuple(pagination_history[-1])
+                                if shared_bounded_structured_output
+                                and pagination_history
+                                else tuple(
                                     duplicate_recovery_edge.get(field)
                                     for field in (
                                         "source_entity_name",
@@ -3022,14 +3527,19 @@ def install_local_extraction_chunking_policy(
                         if not isinstance(page, Mapping):
                             raise LocalRuntimeConfigurationError("edge page response is not an object")
                         recovery_status: str | None = None
-                        if is_duplicate_recovery and shared_bounded_structured_output:
+                        if shared_bounded_structured_output or (
+                            is_duplicate_recovery and shared_bounded_structured_output
+                        ):
                             status = page.get("status")
                             recovery_status = str(status)
                             if status not in {"new_edge", "no_additional_edge"}:
                                 raise LocalRuntimeConfigurationError(
-                                    "duplicate recovery response is missing a valid status discriminator"
+                                    "edge cursor response is missing a valid status discriminator"
                                 )
-                            if duplicate_recovery_final_abstention and status != "no_additional_edge":
+                            if (
+                                duplicate_recovery_final_abstention
+                                and status != "no_additional_edge"
+                            ):
                                 raise LocalRuntimeConfigurationError(
                                     "final duplicate recovery abstention must return no_additional_edge"
                                 )
@@ -3037,11 +3547,11 @@ def install_local_extraction_chunking_policy(
                                 "edge" not in page or page.get("edge") is not None
                             ):
                                 raise LocalRuntimeConfigurationError(
-                                    "no_additional_edge recovery response must contain edge:null"
+                                    "edge cursor no_additional_edge response must contain edge:null"
                                 )
                             if status == "new_edge" and not isinstance(page.get("edge"), Mapping):
                                 raise LocalRuntimeConfigurationError(
-                                    "new_edge recovery response must contain one edge payload"
+                                    "edge cursor new_edge response must contain one edge payload"
                                 )
                             page = {"edges": []} if status == "no_additional_edge" else {"edges": [page["edge"]]}
                         try:
@@ -3067,6 +3577,124 @@ def install_local_extraction_chunking_policy(
                         duplicate_count = 0
                         invalid_endpoint_count = 0
                         non_boundary_edge_count = 0
+                        if shared_bounded_structured_output and pagination_history:
+                            cursor_key = _edge_cursor_order_key(pagination_history[-1])
+                            non_successors = [
+                                edge
+                                for edge in page_edges
+                                if _edge_cursor_order_key(edge) <= cursor_key
+                            ]
+                            if non_successors:
+                                diagnostics.append(
+                                    {
+                                        "schema_version": "membind.v6.1.edge-cursor.v2",
+                                        "event": "EDGE_CURSOR_NON_MONOTONIC",
+                                        "prompt_name": prompt_name,
+                                        "partition_id": partition_id,
+                                        "page_index": page_index,
+                                        "non_successor_count": len(non_successors),
+                                        "status": "invalid",
+                                    }
+                                )
+                                # vLLM 0.26.0 accepts the bounded ``not``
+                                # branch but xgrammar does not enforce it for
+                                # this nested model.  Make the provider's
+                                # exhaustion claim explicit with one distinct
+                                # terminal-only schema.  This is not a retry
+                                # of the failed edge request and cannot return
+                                # another edge; any non-terminal response
+                                # remains a deterministic contract failure.
+                                diagnostics.append(
+                                    {
+                                        "schema_version": "membind.v6.1.edge-cursor.v2",
+                                        "event": "EDGE_CURSOR_PROVIDER_REPEAT",
+                                        "prompt_name": prompt_name,
+                                        "partition_id": partition_id,
+                                        "page_index": page_index,
+                                        "status": "terminal_confirmation_required",
+                                        "confirmation_policy": "single_explicit_no_additional_edge_v1",
+                                    }
+                                )
+                                terminal_model = _endpoint_grounded_edge_page_model(
+                                    edge_page_capacity,
+                                    partition_endpoint_names,
+                                    termination_discriminator=True,
+                                    no_additional_only=True,
+                                )
+                                terminal_messages = _edge_page_messages(
+                                    partition,
+                                    pagination_history,
+                                    page_capacity=edge_page_capacity,
+                                    memory_utility_order=memory_utility_order,
+                                    bounded_cursor=True,
+                                )
+                                terminal_instruction = (
+                                    "\n<EDGE_CURSOR_TERMINAL_CONFIRMATION>\n"
+                                    "The previous response repeated EDGE_CURSOR. "
+                                    "This explicit terminal confirmation must return "
+                                    'exactly {"status":"no_additional_edge","edge":null}; '
+                                    "do not return an edge.\n"
+                                    "</EDGE_CURSOR_TERMINAL_CONFIRMATION>\n"
+                                )
+                                for terminal_message in terminal_messages:
+                                    terminal_content = _message_content(terminal_message)
+                                    if terminal_content is None:
+                                        continue
+                                    terminal_updated = terminal_content + terminal_instruction
+                                    if isinstance(terminal_message, Mapping):
+                                        terminal_message["content"] = terminal_updated
+                                    else:
+                                        setattr(terminal_message, "content", terminal_updated)
+                                    break
+                                (
+                                    terminal_page,
+                                    terminal_queue_wait_ns,
+                                    terminal_service_ns,
+                                    terminal_priority_ticket,
+                                    terminal_priority_evidence,
+                                ) = await invoke_edge_page(
+                                    terminal_messages,
+                                    partition_id=partition_id,
+                                    page_index=page_index + 1,
+                                    response_model=terminal_model,
+                                    base_request_messages=partition,
+                                    continuation_edges=pagination_history,
+                                    cursor_protocol_request=True,
+                                    terminal_confirmation_request=True,
+                                )
+                                terminal_status = (
+                                    terminal_page.get("status")
+                                    if isinstance(terminal_page, Mapping)
+                                    else None
+                                )
+                                if terminal_status != "no_additional_edge" or (
+                                    not isinstance(terminal_page, Mapping)
+                                    or "edge" not in terminal_page
+                                    or terminal_page.get("edge") is not None
+                                ):
+                                    raise LocalRuntimeConfigurationError(
+                                        "edge cursor response is not a strict canonical successor"
+                                    )
+                                diagnostics.append(
+                                    {
+                                        "schema_version": "membind.v6.1.edge-cursor.v2",
+                                        "event": "EDGE_CURSOR_TERMINAL_CONFIRMATION",
+                                        "prompt_name": prompt_name,
+                                        "partition_id": partition_id,
+                                        "page_index": page_index + 1,
+                                        "cursor_status": "no_additional_edge",
+                                        "queue_wait_ns": terminal_queue_wait_ns,
+                                        "service_ns": terminal_service_ns,
+                                        "priority_ticket": terminal_priority_ticket,
+                                        "priority_evidence": terminal_priority_evidence,
+                                        "status": "confirmed",
+                                    }
+                                )
+                                return (
+                                    partition_responses,
+                                    "explicit_cursor_exhaustion",
+                                    page_index + 2,
+                                )
                         for raw_edge in page_edges:
                             edge = dict(raw_edge)
                             identity = _edge_identity(edge)
@@ -3115,11 +3743,17 @@ def install_local_extraction_chunking_policy(
                                 "raw_unique_progress_edge_count": len(raw_unique_progress),
                                 "delta_edge_count": len(delta),
                                 "duplicate_edge_count": duplicate_count,
+                                "cursor_protocol": shared_bounded_structured_output,
                                 "duplicate_recovery_request": is_duplicate_recovery,
                                 "duplicate_recovery_confirmation": is_duplicate_recovery_confirmation,
                                 "duplicate_recovery_final_abstention": duplicate_recovery_final_abstention,
                                 "duplicate_recovery_succeeded": (
                                     is_duplicate_recovery and bool(raw_unique_progress)
+                                ),
+                                "cursor_status": (
+                                    recovery_status
+                                    if shared_bounded_structured_output
+                                    else None
                                 ),
                                 "recovery_status": (
                                     recovery_status if is_duplicate_recovery else None
@@ -3165,7 +3799,10 @@ def install_local_extraction_chunking_policy(
                         )
                         if not page_edges:
                             explicit_termination = (
-                                "explicit_no_additional_edge"
+                                "explicit_cursor_exhaustion"
+                                if shared_bounded_structured_output
+                                and recovery_status == "no_additional_edge"
+                                else "explicit_no_additional_edge"
                                 if is_duplicate_recovery
                                 and recovery_status == "no_additional_edge"
                                 else "empty_page"
@@ -3184,8 +3821,26 @@ def install_local_extraction_chunking_policy(
                                     "status": "converged",
                                 }
                             )
-                            return partition_responses, "empty_page", page_index + 1
+                            return (
+                                partition_responses,
+                                explicit_termination,
+                                page_index + 1,
+                            )
                         if not raw_unique_progress:
+                            if shared_bounded_structured_output:
+                                diagnostics.append(
+                                    {
+                                        "schema_version": "membind.v6.1.edge-cursor.v2",
+                                        "event": "EDGE_CURSOR_NO_PROGRESS",
+                                        "prompt_name": prompt_name,
+                                        "partition_id": partition_id,
+                                        "page_index": page_index,
+                                        "status": "invalid",
+                                    }
+                                )
+                                raise LocalRuntimeConfigurationError(
+                                    "edge cursor response made no strict canonical progress"
+                                )
                             if (
                                 edge_duplicate_recovery
                                 and not is_duplicate_recovery
@@ -3360,6 +4015,8 @@ def install_local_extraction_chunking_policy(
                         "partition_kind": "edge_turn_local_page",
                         "page_capacity": edge_page_capacity,
                         "max_pages_per_partition": LOCAL_EDGE_MAX_PAGES,
+                        "max_pages_semantics": "cursor_epoch_size_not_total_cap",
+                        "total_page_cap": None,
                         "partition_worker_concurrency": edge_partition_concurrency,
                         "physical_page_concurrency": edge_physical_concurrency,
                         "adaptive_admission_enabled": edge_adaptive_admission,
@@ -3398,6 +4055,18 @@ def install_local_extraction_chunking_policy(
                         ],
                         "current_message_chars": [
                             row["current_message_chars"]
+                            for row in evidence_partition_metadata
+                        ],
+                        "entity_domain_refinements": [
+                            row["entity_domain_refinement"]
+                            for row in evidence_partition_metadata
+                        ],
+                        "parent_entity_counts": [
+                            row["parent_entity_count"]
+                            for row in evidence_partition_metadata
+                        ],
+                        "physical_entity_counts": [
+                            row["physical_entity_count"]
                             for row in evidence_partition_metadata
                         ],
                         "merge_partition_order": list(range(partition_count)),

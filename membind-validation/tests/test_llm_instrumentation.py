@@ -61,6 +61,7 @@ class LLMInstrumentationTests(TestCase):
         self.assertEqual(evidence["response_format_type"], "json_schema")
         self.assertEqual(evidence["json_schema_name"], "Result")
         self.assertEqual(evidence["structured_output_backend_requested"], None)
+        self.assertEqual(evidence["structured_output_whitespace_mode"], None)
         self.assertFalse(evidence["chat_template_kwargs"]["enable_thinking"])
         self.assertNotIn("private system", encoded)
         self.assertNotIn("private user", encoded)
@@ -221,6 +222,74 @@ class QwenFailureCaptureTests(IsolatedAsyncioTestCase):
         self.assertEqual(
             request["extra_body"],
             {"chat_template_kwargs": {"enable_thinking": False}},
+        )
+
+    async def test_recovery_request_binds_server_whitespace_contract_in_evidence(self):
+        class ResponseModel(BaseModel):
+            ok: bool
+
+        response = SimpleNamespace(
+            usage=SimpleNamespace(prompt_tokens=7, completion_tokens=3, total_tokens=10),
+            choices=[
+                SimpleNamespace(
+                    finish_reason="stop",
+                    message=SimpleNamespace(content='{"ok":true}'),
+                )
+            ],
+        )
+        create = AsyncMock(return_value=response)
+        certificates = []
+        client = QwenVLLMClient(
+            config=LLMConfig(
+                api_key="test",
+                model="qwen3-8b-awq",
+                small_model="qwen3-8b-awq",
+                base_url="http://127.0.0.1:1/v1",
+                temperature=0.0,
+                max_tokens=2048,
+            ),
+            client=SimpleNamespace(
+                chat=SimpleNamespace(completions=SimpleNamespace(create=create))
+            ),
+            max_tokens=2048,
+            structured_output_mode="json_schema",
+            structured_output_recovery_enabled=True,
+            structured_output_token_counter=lambda _messages: 1,
+            structured_output_context_limit=65_536,
+            structured_output_safety_margin=32,
+            structured_output_certificate_sink=certificates.append,
+            structured_output_whitespace_mode="disable_any_whitespace_vllm_v1",
+            structured_output_whitespace_authority=(
+                "authenticated_platform_manifest_process_contract_v1"
+            ),
+            managed_recovery_enabled=True,
+        )
+
+        parsed = await client._generate_response(
+            [SimpleNamespace(role="user", content="return json")],
+            response_model=ResponseModel,
+            max_tokens=2048,
+        )
+
+        request = create.await_args.kwargs
+        self.assertEqual(parsed, {"ok": True})
+        self.assertNotIn("structured_outputs", request["extra_body"])
+        self.assertFalse(
+            request["extra_body"]["chat_template_kwargs"]["enable_thinking"]
+        )
+        self.assertEqual(
+            client.call_events[-1]["request_evidence"][
+                "structured_output_whitespace_mode"
+            ],
+            "disable_any_whitespace_vllm_v1",
+        )
+        self.assertEqual(certificates[-1]["whitespace_mode"], "disable_any_whitespace_vllm_v1")
+        self.assertTrue(certificates[-1]["physical_serialization_bound"])
+        self.assertEqual(
+            client.call_events[-1]["request_evidence"][
+                "structured_output_whitespace_authority"
+            ],
+            "authenticated_platform_manifest_process_contract_v1",
         )
 
     async def test_invalid_structured_response_uses_one_upstream_attempt(self):

@@ -88,7 +88,17 @@ def write_platform(profile_root: Path) -> dict[str, object]:
         "profile_id": PROFILE_ID_8B,
         "platform_status": "LIVE_VALIDATED_RESOURCE_MATCHED",
         "platform_formal_eligible": True,
-        "llm_endpoints": ENDPOINTS,
+        "llm_endpoints": [
+            {
+                **endpoint,
+                "structured_outputs_config": {
+                    "backend": "xgrammar",
+                    "disable_any_whitespace": True,
+                },
+                "json_separators": [", ", ": "],
+            }
+            for endpoint in ENDPOINTS
+        ],
         "observed_llm_capacity": {
             "native-replica": {"observed_kv_tokens": 100_000},
             "prepare-replica": {"observed_kv_tokens": 80_000},
@@ -135,6 +145,14 @@ def test_8b_manifest_authenticates_platform_and_endpoint_set(
     assert result["platform_manifest"]["payload_sha256"] == platform["payload_sha256"]
     assert len(result["construction"]["endpoint_set"]) == 2
     assert result["construction"]["routing_policy"] == "semantic_phase_affinity"
+    assert result["construction"]["structured_outputs_config"] == {
+        "backend": "xgrammar",
+        "disable_any_whitespace": True,
+    }
+    assert result["construction"]["json_whitespace_authority"] == (
+        "authenticated_platform_manifest_process_contract_v1"
+    )
+    assert result["construction"]["json_separators"] == [", ", ": "]
     assert result["construction"]["edge_execution_policy"] == (
         "global_cap_preserving_cross_partition_pipeline_v1"
     )
@@ -187,7 +205,15 @@ def test_8b_shared_manifest_exposes_one_adapter_identity_for_all_arms(
     assert identity["arm_identity"] is None
     assert identity["page_capacity"] == 1
     assert identity["max_pages"] == 64
-    assert identity["retry_policy"] == "single_duplicate_recovery_confirmation_abstention_v1"
+    assert identity["retry_policy"] == (
+        "single_attempt_per_distinct_schema_request_fail_closed_v2"
+    )
+    assert identity["terminal_confirmation_is_context_retry"] is False
+    assert identity["max_pages_semantics"] == "cursor_epoch_size_not_total_cap"
+    assert identity["total_page_cap"] is None
+    assert identity["saturation_policy"] == (
+        "strict_cursor_epoch_continuation_until_explicit_exhaustion_v1"
+    )
     assert manifest["construction"]["edge_endpoint_schema_policy"] == (
         "entity_block_literal_endpoint_grounding_v1"
     )

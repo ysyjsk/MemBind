@@ -34,6 +34,7 @@ from .runtime import (
     local_prompt_token_count,
 )
 from .shared_structured_output import adapter_identity
+from .structured_output_recovery import BOUNDED_JSON_WHITESPACE_MODE
 
 
 PROFILE_ID_8B = "local-qwen3-8b-awq-dualreplica-v1"
@@ -115,6 +116,20 @@ def load_8b_platform_manifest() -> tuple[Path, dict[str, Any]]:
         or pointer.get("file_sha256") != _file_hash(manifest_path)
     ):
         raise LocalRuntimeConfigurationError("8B platform manifest authentication failed")
+    expected_structured_outputs = {
+        "backend": "xgrammar",
+        "disable_any_whitespace": True,
+    }
+    endpoints = manifest.get("llm_endpoints")
+    if not isinstance(endpoints, list) or not endpoints or any(
+        not isinstance(endpoint, Mapping)
+        or endpoint.get("structured_outputs_config") != expected_structured_outputs
+        or endpoint.get("json_separators") != [", ", ": "]
+        for endpoint in endpoints
+    ):
+        raise LocalRuntimeConfigurationError(
+            "8B platform manifest lacks the bounded xgrammar process contract"
+        )
     return manifest_path, manifest
 
 
@@ -240,6 +255,15 @@ def runtime_8b_manifest(
             "top_p": 1.0,
             "seed": 20260806,
             "thinking": False,
+            "structured_outputs_config": {
+                "backend": "xgrammar",
+                "disable_any_whitespace": True,
+            },
+            "json_whitespace_mode": BOUNDED_JSON_WHITESPACE_MODE,
+            "json_whitespace_authority": (
+                "authenticated_platform_manifest_process_contract_v1"
+            ),
+            "json_separators": [", ", ": "],
             "sdk_max_retries": 0,
             "http_timeout_seconds": LOCAL_HTTP_TIMEOUT_SECONDS,
             "extraction_chunking_policy": (
@@ -536,6 +560,12 @@ def build_8b_u0_runtime(
                 "structured_output_context_limit": LOCAL_CONTEXT_LIMIT,
                 "structured_output_safety_margin": config.safety_margin_tokens,
                 "structured_output_certificate_sink": structured_certificates.append,
+                "structured_output_whitespace_mode": manifest["construction"][
+                    "json_whitespace_mode"
+                ],
+                "structured_output_whitespace_authority": manifest["construction"][
+                    "json_whitespace_authority"
+                ],
                 "managed_recovery_enabled": True,
             }
         )

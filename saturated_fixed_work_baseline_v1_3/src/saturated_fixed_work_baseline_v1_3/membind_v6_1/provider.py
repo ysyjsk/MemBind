@@ -657,6 +657,17 @@ class V61ProviderClient:
             identity_sink=self._observe_identity,
             certified_callsites=self.certified_callsites,
         )
+        # The structured-output adapter owns node-to-edge provenance.  Capture
+        # and replay facades expose the exact same authority object rather than
+        # copying scope maps that could diverge under concurrent sources.
+        for attribute in (
+            "_membind_node_provenance_authority",
+            "_membind_entity_partition_sources_by_scope",
+            "_membind_entity_partition_hints_by_scope",
+        ):
+            value = getattr(delegate, attribute, None)
+            if value is not None:
+                setattr(self, attribute, value)
 
     def _observe_identity(self, identity: Any) -> None:
         observation = observe_request_identity(identity)

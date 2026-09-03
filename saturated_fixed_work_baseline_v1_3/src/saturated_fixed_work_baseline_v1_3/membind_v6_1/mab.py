@@ -604,6 +604,14 @@ async def run_mab_v61_construction_async(
         multiplex._membind_semantic_shortcuts = getattr(
             original_llm, "_membind_semantic_shortcuts", []
         )
+        for attribute in (
+            "_membind_node_provenance_authority",
+            "_membind_entity_partition_sources_by_scope",
+            "_membind_entity_partition_hints_by_scope",
+        ):
+            value = getattr(original_llm, attribute, None)
+            if value is not None:
+                setattr(multiplex, attribute, value)
         graphiti.llm_client = multiplex
         graphiti.clients.llm_client = multiplex
         # Graphiti's OpenAI reranker calls the shared AsyncOpenAI transport

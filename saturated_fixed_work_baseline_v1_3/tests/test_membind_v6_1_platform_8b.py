@@ -118,3 +118,30 @@ def test_8b_activation_declares_all_experiment_source_roots() -> None:
             encoding="utf-8"
         )
         assert "env -u PYTHONPATH" in source
+
+
+def test_8b_construction_process_contract_disables_unbounded_json_whitespace() -> None:
+    expected = (
+        "--structured-outputs-config "
+        "'{\"backend\":\"xgrammar\",\"disable_any_whitespace\":true}'"
+    )
+    for launcher in ("start_native_llm.sh", "start_prepare_llm.sh"):
+        source = (ROOT / "scripts/local_runtime_8b_dual" / launcher).read_text(
+            encoding="utf-8"
+        )
+        assert expected in source
+
+    preflight = (ROOT / "scripts/local_runtime_8b_dual/preflight.py").read_text(
+        encoding="utf-8"
+    )
+    assert (
+        '"--structured-outputs-config": '
+        "'{\"backend\":\"xgrammar\",\"disable_any_whitespace\":true}'"
+    ) in preflight
+
+    manifest = (
+        ROOT / "scripts/local_runtime_8b_dual/write_profile_manifest.py"
+    ).read_text(encoding="utf-8")
+    assert '"structured_outputs_config": {' in manifest
+    assert '"disable_any_whitespace": True' in manifest
+    assert '"json_separators": [", ", ": "]' in manifest

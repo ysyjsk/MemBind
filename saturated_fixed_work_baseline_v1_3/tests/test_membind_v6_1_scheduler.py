@@ -231,11 +231,15 @@ from saturated_fixed_work_baseline_v1_3.membind_v6_1.runtime import (
     _edge_turn_local_partitions,
     _endpoint_grounded_edge_page_model,
     _merge_extraction_responses,
+    _partition_current_message,
     build_local_openai_transport,
     close_local_u0_runtime,
     install_local_context_budget_adapter,
     install_local_extraction_chunking_policy,
     install_local_single_attempt_policy,
+)
+from saturated_fixed_work_baseline_v1_3.membind_v6_1.structured_output_recovery import (
+    BOUNDED_JSON_WHITESPACE_MODE,
 )
 
 
@@ -2182,7 +2186,7 @@ def test_local_extraction_chunking_merges_turn_partitions(monkeypatch) -> None:
             if "turn-a" in str(messages) and "turn-b" in str(messages)
             else 1_000
         ),
-        chunk_char_limit=8,
+        chunk_char_limit=20,
     )
     result = asyncio.run(
         client.generate_response(
@@ -2202,6 +2206,35 @@ def test_local_extraction_chunking_merges_turn_partitions(monkeypatch) -> None:
         0: "[USER]\nturn-a\n",
         1: "[ASSISTANT]\nturn-b\n",
     }
+
+
+def test_single_oversized_turn_is_partitioned_without_losing_payload() -> None:
+    payload = " ".join(f"token-{index:02d}" for index in range(40))
+    messages = [
+        {
+            "role": "user",
+            "content": f"<CURRENT MESSAGE>[USER]\n{payload}</CURRENT MESSAGE>",
+        }
+    ]
+
+    partitions = _partition_current_message(
+        messages,
+        prompt_limit=1_000,
+        token_counter=lambda values: len(str(values)),
+        current_char_limit=64,
+    )
+
+    current_messages = [
+        partition[0]["content"].split("<CURRENT MESSAGE>", 1)[1].split(
+            "</CURRENT MESSAGE>", 1
+        )[0]
+        for partition in partitions
+    ]
+    assert len(current_messages) > 1
+    assert all(value.startswith("[USER]\n") for value in current_messages)
+    reconstructed = "".join(value.split("\n", 1)[1] for value in current_messages)
+    assert reconstructed == payload
+    assert all(len(value.split("\n", 1)[1]) <= 64 for value in current_messages)
 
 
 def test_node_partition_pipeline_preserves_order_and_shared_physical_cap(monkeypatch) -> None:
@@ -2238,7 +2271,7 @@ def test_node_partition_pipeline_preserves_order_and_shared_physical_cap(monkeyp
     install_local_extraction_chunking_policy(
         client,
         token_counter=lambda _messages: 100,
-        chunk_char_limit=8,
+        chunk_char_limit=32,
         partition_extraction_by_turns=True,
         node_partition_concurrency=2,
     )
@@ -2802,6 +2835,51 @@ def test_actor_domain_boundary_join_is_separate_from_base_domain_cover() -> None
     assert boundary["_cross_right_endpoint_names"] == {"jazz hostel"}
 
 
+def test_shared_pairwise_entity_refinement_covers_every_declared_pair() -> None:
+    names = ("A", "B", "C", "D", "E")
+    source = "[USER]\n" + " ".join(names) + "\n"
+    metadata: list[dict[str, object]] = []
+    expanded = _edge_turn_local_partitions(
+        [
+            {
+                "role": "user",
+                "content": (
+                    f"<CURRENT MESSAGE>{source}</CURRENT MESSAGE>\n<ENTITIES>"
+                    + json.dumps([{"name": name} for name in names])
+                    + "</ENTITIES>\n# TASK"
+                ),
+            }
+        ],
+        entity_partition_hints={name.casefold(): [0] for name in names},
+        entity_partition_sources={0: source},
+        partition_metadata=metadata,
+        pairwise_entity_cover=True,
+    )
+    assert expanded is not None
+    partitions, entity_count, partition_count, max_size = expanded
+    observed = {
+        tuple(
+            value["name"]
+            for value in json.loads(
+                partition[0]["content"].split("<ENTITIES>", 1)[1].split(
+                    "</ENTITIES>", 1
+                )[0]
+            )
+        )
+        for partition in partitions
+    }
+    expected = {
+        (names[left], names[right])
+        for left in range(len(names))
+        for right in range(left + 1, len(names))
+    }
+    assert entity_count == len(names)
+    assert partition_count == len(expected)
+    assert max_size == 2
+    assert observed == expected
+    assert all(row["entity_domain_refinement"] == "complete_binary_pair_cover" for row in metadata)
+
+
 def test_edge_candidate_policy_expands_every_physical_call_and_records_diagnostics(
     monkeypatch,
 ) -> None:
@@ -2955,15 +3033,15 @@ def test_shared_edge_substrate_enforces_wire_budget_when_client_is_32768(
     assert all(row["shared_structured_output_construction_max_tokens"] == 32_768 for row in rows)
 
 
-def test_shared_duplicate_recovery_accepts_explicit_no_additional_edge(
+def test_shared_cursor_accepts_explicit_no_additional_edge(
     monkeypatch,
 ) -> None:
     prompts: list[str] = []
 
-    def edge() -> dict[str, object]:
+    def edge(source: str, target: str) -> dict[str, object]:
         return {
-            "source_entity_name": "A",
-            "target_entity_name": "B",
+            "source_entity_name": source,
+            "target_entity_name": target,
             "relation_type": "KNOWS",
             "fact": "A knows B",
             "valid_at": None,
@@ -2984,16 +3062,25 @@ def test_shared_duplicate_recovery_accepts_explicit_no_additional_edge(
                     "token_usage": {"prompt_tokens": 100, "completion_tokens": 20},
                 }
             )
-            if len(prompts) == 1:
-                assert response_model.model_json_schema()["properties"]["edges"]["maxItems"] == 1
-                return {"edges": [edge()]}
-            if len(prompts) == 2:
-                assert "<DUPLICATE_RECOVERY>" not in content
-                return {"edges": [edge()]}
             schema = response_model.model_json_schema()
             assert schema["properties"]["status"]["enum"] == ["new_edge", "no_additional_edge"]
-            assert "<DUPLICATE_RECOVERY>" in content
-            assert "<FINAL_DUPLICATE_RECOVERY_DIRECTIVE>" in content
+            assert "<EDGE_CURSOR>" in content
+            assert "<DUPLICATE_RECOVERY>" not in content
+            assert "<ALREADY_RETURNED_EDGES>" not in content
+            endpoints = tuple(
+                value["name"]
+                for value in json.loads(
+                    content.split("<ENTITIES>", 1)[1].split("</ENTITIES>", 1)[0]
+                )
+            )
+            cursor = json.loads(
+                content.split("<EDGE_CURSOR>", 1)[1].split("</EDGE_CURSOR>", 1)[0]
+            )
+            if cursor is None:
+                return {
+                    "status": "new_edge",
+                    "edge": edge(endpoints[0], endpoints[1]),
+                }
             return {"status": "no_additional_edge", "edge": None}
 
     monkeypatch.setenv("CONSTRUCTION_CONTEXT_SAFETY_TOKENS", "32")
@@ -3023,19 +3110,24 @@ def test_shared_duplicate_recovery_accepts_explicit_no_additional_edge(
             prompt_name="extract_edges.edge",
         )
     )
-    assert result["edges"][0]["fact"] == "A knows B"
-    assert len(prompts) == 3
-    pages = [
+    assert len(result["edges"]) == 3
+    assert all(row["fact"] == "A knows B" for row in result["edges"])
+    assert len(prompts) == 6
+    cursor_pages = [
         row
         for row in client._membind_extraction_diagnostics
         if row.get("event") == "EDGE_PAGINATION_PAGE"
     ]
-    recovery_pages = [row for row in pages if row["duplicate_recovery_request"]]
-    assert recovery_pages
-    assert recovery_pages[-1]["recovery_status"] == "no_additional_edge"
+    assert [row["cursor_status"] for row in cursor_pages].count("new_edge") == 3
+    assert [row["cursor_status"] for row in cursor_pages].count("no_additional_edge") == 3
+    assert not any(row["duplicate_recovery_request"] for row in cursor_pages)
+    assert not any(
+        row.get("event") == "EDGE_PAGINATION_DUPLICATE_RECOVERY"
+        for row in client._membind_extraction_diagnostics
+    )
 
 
-def test_shared_duplicate_recovery_rejects_missing_null_edge(monkeypatch) -> None:
+def test_shared_cursor_rejects_missing_null_edge(monkeypatch) -> None:
     calls = 0
 
     def edge() -> dict[str, object]:
@@ -3062,8 +3154,8 @@ def test_shared_duplicate_recovery_rejects_missing_null_edge(monkeypatch) -> Non
                     "token_usage": {"prompt_tokens": 100, "completion_tokens": 20},
                 }
             )
-            if calls <= 2:
-                return {"edges": [edge()]}
+            if calls == 1:
+                return {"status": "new_edge", "edge": edge()}
             return {"status": "no_additional_edge"}
 
     monkeypatch.setenv("CONSTRUCTION_CONTEXT_SAFETY_TOKENS", "32")
@@ -3097,15 +3189,17 @@ def test_shared_duplicate_recovery_rejects_missing_null_edge(monkeypatch) -> Non
                 prompt_name="extract_edges.edge",
             )
         )
+    assert calls == 2
 
 
-def test_shared_duplicate_recovery_confirmation_is_bounded_and_audited(monkeypatch) -> None:
+def test_shared_cursor_schema_excludes_equal_successor_without_hidden_recovery(monkeypatch) -> None:
     prompts: list[str] = []
+    calls_by_domain: dict[tuple[str, ...], int] = {}
 
-    def edge() -> dict[str, object]:
+    def edge(source: str, target: str) -> dict[str, object]:
         return {
-            "source_entity_name": "A",
-            "target_entity_name": "B",
+            "source_entity_name": source,
+            "target_entity_name": target,
             "relation_type": "KNOWS",
             "fact": "A knows B",
             "valid_at": None,
@@ -3126,16 +3220,30 @@ def test_shared_duplicate_recovery_confirmation_is_bounded_and_audited(monkeypat
                     "token_usage": {"prompt_tokens": 100, "completion_tokens": 20},
                 }
             )
-            if len(prompts) <= 2:
-                return {"edges": [edge()]}
             schema = response_model.model_json_schema()
             assert schema["properties"]["status"]["enum"] == [
                 "new_edge",
                 "no_additional_edge",
             ]
-            if len(prompts) == 3:
-                return {"status": "new_edge", "edge": edge()}
-            assert "one and only duplicate-recovery confirmation attempt" in content
+            assert "<DUPLICATE_RECOVERY>" not in content
+            endpoints = tuple(
+                value["name"]
+                for value in json.loads(
+                    content.split("<ENTITIES>", 1)[1].split("</ENTITIES>", 1)[0]
+                )
+            )
+            calls_by_domain[endpoints] = calls_by_domain.get(endpoints, 0) + 1
+            excluded = [
+                value for value in schema.get("$defs", {}).values() if "not" in value
+            ]
+            if calls_by_domain[endpoints] == 1:
+                assert not excluded
+                return {
+                    "status": "new_edge",
+                    "edge": edge(endpoints[0], endpoints[1]),
+                }
+            assert len(excluded) == 1
+            assert excluded[0]["not"]["properties"]["fact"]["const"] == "A knows B"
             return {"status": "no_additional_edge", "edge": None}
 
     monkeypatch.setenv("CONSTRUCTION_CONTEXT_SAFETY_TOKENS", "32")
@@ -3165,39 +3273,21 @@ def test_shared_duplicate_recovery_confirmation_is_bounded_and_audited(monkeypat
             prompt_name="extract_edges.edge",
         )
     )
-    assert [row["fact"] for row in result["edges"]] == ["A knows B"]
-    assert len(prompts) == 4
-    assert "one and only duplicate-recovery confirmation attempt" in prompts[3]
-    pages = [
-        row
+    assert len(result["edges"]) == 3
+    assert len(prompts) == 6
+    assert not any(
+        row.get("event") == "EDGE_PAGINATION_DUPLICATE_RECOVERY"
         for row in client._membind_extraction_diagnostics
-        if row.get("event") == "EDGE_PAGINATION_PAGE"
-    ]
-    recovery_pages = [row for row in pages if row["duplicate_recovery_request"]]
-    assert [row["duplicate_recovery_confirmation"] for row in recovery_pages] == [
-        False,
-        True,
-    ]
-    assert recovery_pages[-1]["recovery_status"] == "no_additional_edge"
-    scheduled = [
-        row
-        for row in client._membind_extraction_diagnostics
-        if row.get("event") == "EDGE_PAGINATION_DUPLICATE_RECOVERY"
-    ]
-    assert [row["status"] for row in scheduled] == [
-        "scheduled",
-        "confirmation_scheduled",
-    ]
-    assert [row["confirmation"] for row in scheduled] == [False, True]
+    )
 
 
-def test_duplicate_recovery_budget_resets_after_accepted_progress(monkeypatch) -> None:
+def test_shared_cursor_strict_successors_progress_normally(monkeypatch) -> None:
     prompts: list[str] = []
 
-    def edge(fact: str) -> dict[str, object]:
+    def edge(source: str, target: str, fact: str) -> dict[str, object]:
         return {
-            "source_entity_name": "A",
-            "target_entity_name": "B",
+            "source_entity_name": source,
+            "target_entity_name": target,
             "relation_type": "KNOWS",
             "fact": fact,
             "valid_at": None,
@@ -3218,20 +3308,27 @@ def test_duplicate_recovery_budget_resets_after_accepted_progress(monkeypatch) -
                     "token_usage": {"prompt_tokens": 100, "completion_tokens": 20},
                 }
             )
-            if len(prompts) == 1:
-                return {"edges": [edge("A knows B")]}
-            if len(prompts) == 2:
-                return {"edges": [edge("A knows B")]}
-            if len(prompts) == 3:
-                assert "<DUPLICATE_RECOVERY>" in content
+            assert "<EDGE_CURSOR>" in content
+            assert "<DUPLICATE_RECOVERY>" not in content
+            endpoints = tuple(
+                value["name"]
+                for value in json.loads(
+                    content.split("<ENTITIES>", 1)[1].split("</ENTITIES>", 1)[0]
+                )
+            )
+            cursor = json.loads(
+                content.split("<EDGE_CURSOR>", 1)[1].split("</EDGE_CURSOR>", 1)[0]
+            )
+            if cursor is None:
                 return {
                     "status": "new_edge",
-                    "edge": edge("A trusts B"),
+                    "edge": edge(endpoints[0], endpoints[1], "A knows B"),
                 }
-            if len(prompts) == 4:
-                return {"edges": [edge("A trusts B")]}
-            assert len(prompts) == 5
-            assert "<DUPLICATE_RECOVERY>" in content
+            if cursor["fact"] == "A knows B":
+                return {
+                    "status": "new_edge",
+                    "edge": edge(endpoints[0], endpoints[1], "A trusts B"),
+                }
             return {"status": "no_additional_edge", "edge": None}
 
     monkeypatch.setenv("CONSTRUCTION_CONTEXT_SAFETY_TOKENS", "32")
@@ -3266,19 +3363,15 @@ def test_duplicate_recovery_budget_resets_after_accepted_progress(monkeypatch) -
         "A knows B",
         "A trusts B",
     }
-    scheduled = [
-        row
+    assert len(result["edges"]) == 6
+    assert len(prompts) == 9
+    assert not any(
+        row.get("event") == "EDGE_PAGINATION_DUPLICATE_RECOVERY"
         for row in client._membind_extraction_diagnostics
-        if row.get("event") == "EDGE_PAGINATION_DUPLICATE_RECOVERY"
-    ]
-    assert [row["status"] for row in scheduled] == [
-        "scheduled",
-        "scheduled",
-    ]
-    assert [row["confirmation"] for row in scheduled] == [False, False]
+    )
 
 
-def test_duplicate_recovery_final_abstention_is_fail_closed(monkeypatch) -> None:
+def test_shared_cursor_schema_uses_bounded_rolling_exclusion_and_decreasing_successor_fails_closed(monkeypatch) -> None:
     prompts: list[str] = []
     schemas: list[dict[str, object]] = []
 
@@ -3300,26 +3393,18 @@ def test_duplicate_recovery_final_abstention_is_fail_closed(monkeypatch) -> None
         async def generate_response(self, messages, response_model=None, **_kwargs):
             content = messages[0]["content"]
             prompts.append(content)
-            schemas.append(response_model.model_json_schema()["properties"])
+            schemas.append(response_model.model_json_schema())
             self.call_events.append(
                 {
                     "finish_reason": "stop",
                     "token_usage": {"prompt_tokens": 100, "completion_tokens": 20},
                 }
             )
-            if (
-                "<DUPLICATE_RECOVERY>" not in content
-                and "<DUPLICATE_RECOVERY_CONFIRMATION>" not in content
-                and "<DUPLICATE_RECOVERY_FINAL_ABSTENTION>" not in content
-            ):
-                return {"edges": [edge()]}
-            if "<DUPLICATE_RECOVERY_FINAL_ABSTENTION>" in content:
-                assert "final fail-closed abstention" in content
-                assert schemas[-1]["status"]["const"] == "no_additional_edge"
-                return {"status": "no_additional_edge", "edge": None}
-            if "<DUPLICATE_RECOVERY_CONFIRMATION>" in content:
-                return {"status": "new_edge", "edge": edge()}
-            return {"status": "new_edge", "edge": edge()}
+            assert "<EDGE_CURSOR>" in content
+            assert "<DUPLICATE_RECOVERY>" not in content
+            value = edge()
+            value["fact"] = "z-last" if len(prompts) == 1 else "a-earlier"
+            return {"status": "new_edge", "edge": value}
 
     monkeypatch.setenv("CONSTRUCTION_CONTEXT_SAFETY_TOKENS", "32")
     client = Client()
@@ -3330,6 +3415,97 @@ def test_duplicate_recovery_final_abstention_is_fail_closed(monkeypatch) -> None
         partition_edge_candidates=True,
         edge_duplicate_recovery=True,
         edge_page_capacity=2,
+        shared_bounded_structured_output=True,
+    )
+    client._membind_entity_partition_hints.update({"a": [0], "b": [0], "c": [0]})
+    with pytest.raises(
+        LocalRuntimeConfigurationError,
+        match="not a strict canonical successor",
+    ):
+        asyncio.run(
+            client.generate_response(
+                [
+                    {
+                        "role": "user",
+                        "content": (
+                            "<CURRENT MESSAGE>\n[USER]\nA knows B\n</CURRENT MESSAGE>\n"
+                            '<ENTITIES>[{"name":"A"},{"name":"B"},{"name":"C"}]</ENTITIES>\n# TASK'
+                        ),
+                    }
+                ],
+                max_tokens=32_768,
+                prompt_name="extract_edges.edge",
+            )
+        )
+    assert len(prompts) == 3
+    assert schemas[0] != schemas[1]
+    assert all("not" not in value for value in schemas[0].get("$defs", {}).values())
+    assert any("not" in value for value in schemas[1].get("$defs", {}).values())
+    assert any(
+        (
+            value["properties"]["status"].get("enum") == ["no_additional_edge"]
+            or value["properties"]["status"].get("const") == "no_additional_edge"
+        )
+        for value in schemas
+    )
+    assert any("<EDGE_CURSOR_TERMINAL_CONFIRMATION>" in prompt for prompt in prompts)
+    assert not any(
+        row.get("event") == "EDGE_PAGINATION_DUPLICATE_RECOVERY"
+        for row in client._membind_extraction_diagnostics
+    )
+
+
+def test_shared_cursor_provider_repeat_accepts_one_explicit_terminal_confirmation(monkeypatch) -> None:
+    prompts: list[str] = []
+
+    def edge(source: str, target: str) -> dict[str, object]:
+        return {
+            "source_entity_name": source,
+            "target_entity_name": target,
+            "relation_type": "KNOWS",
+            "fact": "A knows B",
+            "valid_at": None,
+            "invalid_at": None,
+            "episode_indices": [0],
+        }
+
+    class Client:
+        max_tokens = 32_768
+        call_events: list[dict[str, object]] = []
+
+        async def generate_response(self, messages, response_model=None, **_kwargs):
+            del response_model
+            content = messages[0]["content"]
+            prompts.append(content)
+            self.call_events.append(
+                {
+                    "finish_reason": "stop",
+                    "token_usage": {"prompt_tokens": 100, "completion_tokens": 20},
+                }
+            )
+            endpoints = tuple(
+                value["name"]
+                for value in json.loads(
+                    content.split("<ENTITIES>", 1)[1].split("</ENTITIES>", 1)[0]
+                )
+            )
+            if "<EDGE_CURSOR_TERMINAL_CONFIRMATION>" in content:
+                return {"status": "no_additional_edge", "edge": None}
+            cursor = json.loads(
+                content.split("<EDGE_CURSOR>", 1)[1].split("</EDGE_CURSOR>", 1)[0]
+            )
+            # Deliberately repeat the first edge when a cursor is present. The
+            # runtime must switch to the explicit terminal-only contract.
+            return {"status": "new_edge", "edge": edge(endpoints[0], endpoints[1])}
+
+    monkeypatch.setenv("CONSTRUCTION_CONTEXT_SAFETY_TOKENS", "32")
+    client = Client()
+    install_local_extraction_chunking_policy(
+        client,
+        token_counter=lambda _messages: 100,
+        partition_extraction_by_turns=True,
+        partition_edge_candidates=True,
+        edge_endpoint_schema_grounding=True,
         shared_bounded_structured_output=True,
     )
     client._membind_entity_partition_hints.update({"a": [0], "b": [0], "c": [0]})
@@ -3348,35 +3524,14 @@ def test_duplicate_recovery_final_abstention_is_fail_closed(monkeypatch) -> None
             prompt_name="extract_edges.edge",
         )
     )
-    assert [row["fact"] for row in result["edges"]] == ["A knows B"]
-    assert len(prompts) == 5
-    pages = [
+    assert len(result["edges"]) == 3
+    confirmations = [
         row
         for row in client._membind_extraction_diagnostics
-        if row.get("event") == "EDGE_PAGINATION_PAGE"
+        if row.get("event") == "EDGE_CURSOR_TERMINAL_CONFIRMATION"
     ]
-    recovery_pages = [row for row in pages if row["duplicate_recovery_request"]]
-    assert [row["duplicate_recovery_confirmation"] for row in recovery_pages] == [
-        False,
-        True,
-        False,
-    ]
-    assert [row["duplicate_recovery_final_abstention"] for row in recovery_pages] == [
-        False,
-        False,
-        True,
-    ]
-    assert recovery_pages[-1]["recovery_status"] == "no_additional_edge"
-    scheduled = [
-        row
-        for row in client._membind_extraction_diagnostics
-        if row.get("event") == "EDGE_PAGINATION_DUPLICATE_RECOVERY"
-    ]
-    assert [row["status"] for row in scheduled] == [
-        "scheduled",
-        "confirmation_scheduled",
-        "final_abstention_scheduled",
-    ]
+    assert len(confirmations) == 3
+    assert len(prompts) == 9
 
 
 def test_edge_pagination_duplicate_page_is_audited_zero_delta_fixed_point(monkeypatch) -> None:
@@ -3563,6 +3718,264 @@ def test_single_edge_continuation_preserves_frozen_pre_task_prompt_contract() ->
     assert "Explicit USER state" in utility_content
     assert "Do not convert an option or recommendation" in utility_content
     assert utility_content.index("<MEMORY_UTILITY_ORDER>") < utility_content.index("# TASK")
+
+
+def test_shared_cursor_prompt_and_schema_bounds_do_not_grow_with_page_history() -> None:
+    messages = [
+        {
+            "role": "user",
+            "content": (
+                "<PREVIOUS_MESSAGES>" + "p" * 34_000 + "</PREVIOUS_MESSAGES>\n"
+                "<CURRENT MESSAGE>A and B</CURRENT MESSAGE>\n"
+                '<ENTITIES>[{"name":"A"},{"name":"B"}]</ENTITIES>\n# TASK'
+            ),
+        }
+    ]
+    history = [
+        {
+            "source_entity_name": "A",
+            "target_entity_name": "B",
+            "relation_type": "RELATED_TO",
+            "fact": f"fact-{index:04d}-" + "x" * 1_850,
+            "valid_at": None,
+            "invalid_at": None,
+            "episode_indices": [0],
+        }
+        for index in range(128)
+    ]
+
+    prompts = [
+        _edge_page_messages(
+            messages,
+            history[:count],
+            page_capacity=1,
+            bounded_cursor=True,
+        )[0]["content"]
+        for count in range(1, 129)
+    ]
+    assert max(map(len, prompts)) == min(map(len, prompts))
+    assert all("<EDGE_CURSOR>" in prompt for prompt in prompts)
+    assert all("<ALREADY_RETURNED_EDGES>" not in prompt for prompt in prompts)
+    assert "fact-0127" in prompts[-1]
+    assert "fact-0126" not in prompts[-1]
+
+
+def test_shared_runtime_uses_bounded_rolling_schema_and_strict_cursor_successors(monkeypatch) -> None:
+    prompts: list[str] = []
+    schema_hashes: list[tuple[tuple[str, ...], str]] = []
+    schema_lengths: list[tuple[tuple[str, ...], int]] = []
+
+    def make_edge(source: str, target: str, fact: str) -> dict[str, object]:
+        return {
+            "source_entity_name": source,
+            "target_entity_name": target,
+            "relation_type": "RELATED_TO",
+            "fact": fact,
+            "valid_at": None,
+            "invalid_at": None,
+            "episode_indices": [0],
+        }
+
+    class Client:
+        max_tokens = 32_768
+        call_events: list[dict[str, object]] = []
+
+        async def generate_response(self, messages, response_model=None, **_kwargs):
+            content = messages[0]["content"]
+            prompts.append(content)
+            schema = response_model.model_json_schema()
+            endpoint_body = content.split("<ENTITIES>", 1)[1].split("</ENTITIES>", 1)[0]
+            endpoint_names = tuple(value["name"] for value in json.loads(endpoint_body))
+            schema_hashes.append(
+                (
+                    endpoint_names,
+                    hashlib.sha256(
+                    json.dumps(schema, sort_keys=True, separators=(",", ":")).encode()
+                    ).hexdigest(),
+                )
+            )
+            schema_lengths.append(
+                (
+                    endpoint_names,
+                    len(json.dumps(schema, sort_keys=True, separators=(",", ":"))),
+                )
+            )
+            assert schema["properties"]["status"]["enum"] == [
+                "new_edge",
+                "no_additional_edge",
+            ]
+            cursor = json.loads(
+                content.split("<EDGE_CURSOR>", 1)[1].split("</EDGE_CURSOR>", 1)[0]
+            )
+            self.call_events.append(
+                {
+                    "finish_reason": "stop",
+                    "token_usage": {"prompt_tokens": 100, "completion_tokens": 20},
+                }
+            )
+            if cursor is None:
+                return {
+                    "status": "new_edge",
+                    "edge": make_edge(endpoint_names[0], endpoint_names[1], "fact-0001"),
+                }
+            if cursor["fact"] == "fact-0001":
+                return {
+                    "status": "new_edge",
+                    "edge": make_edge(endpoint_names[0], endpoint_names[1], "fact-0002"),
+                }
+            return {"status": "no_additional_edge", "edge": None}
+
+    monkeypatch.setenv("CONSTRUCTION_CONTEXT_SAFETY_TOKENS", "32")
+    client = Client()
+    install_local_extraction_chunking_policy(
+        client,
+        token_counter=lambda _messages: 100,
+        partition_extraction_by_turns=True,
+        partition_edge_candidates=True,
+        shared_bounded_structured_output=True,
+        edge_endpoint_schema_grounding=True,
+    )
+    client._membind_entity_partition_hints.update(
+        {"a": [0], "b": [0], "c": [1]}
+    )
+    result = asyncio.run(
+        client.generate_response(
+            [
+                {
+                    "role": "user",
+                    "content": (
+                        "<CURRENT MESSAGE>[USER]\nA B\n[ASSISTANT]\nC</CURRENT MESSAGE>\n"
+                        '<ENTITIES>[{"name":"A"},{"name":"B"},{"name":"C"}]'
+                        "</ENTITIES>\n# TASK"
+                    ),
+                }
+            ],
+            max_tokens=32_768,
+            prompt_name="extract_edges.edge",
+        )
+    )
+
+    assert {row["fact"] for row in result["edges"]} == {"fact-0001", "fact-0002"}
+    assert len(result["edges"]) == 6
+    for endpoint_names in {value[0] for value in schema_hashes}:
+        assert len({digest for names, digest in schema_hashes if names == endpoint_names}) == 3
+        lengths = [length for names, length in schema_lengths if names == endpoint_names]
+        assert len(set(lengths)) == 2
+        assert lengths.count(max(lengths)) >= 2
+    assert all("<EDGE_CURSOR>" in prompt for prompt in prompts)
+    assert all("<ALREADY_RETURNED_EDGES>" not in prompt for prompt in prompts)
+
+
+def test_shared_runtime_continues_past_page_epoch_with_1900_char_cursor(monkeypatch) -> None:
+    prompts_by_domain: dict[tuple[str, ...], list[str]] = {}
+    schema_hashes_by_domain: dict[tuple[str, ...], set[str]] = {}
+    schema_lengths_by_domain: dict[tuple[str, ...], list[int]] = {}
+
+    class Client:
+        max_tokens = 32_768
+        call_events: list[dict[str, object]] = []
+        structured_output_whitespace_mode = BOUNDED_JSON_WHITESPACE_MODE
+
+        async def generate_response(self, messages, response_model=None, **_kwargs):
+            content = messages[0]["content"]
+            endpoints = tuple(
+                value["name"]
+                for value in json.loads(
+                    content.split("<ENTITIES>", 1)[1].split("</ENTITIES>", 1)[0]
+                )
+            )
+            prompts_by_domain.setdefault(endpoints, []).append(content)
+            schema = response_model.model_json_schema()
+            schema_hashes_by_domain.setdefault(endpoints, set()).add(
+                hashlib.sha256(
+                    json.dumps(schema, sort_keys=True, separators=(",", ":")).encode()
+                ).hexdigest()
+            )
+            schema_lengths_by_domain.setdefault(endpoints, []).append(
+                len(json.dumps(schema, sort_keys=True, separators=(",", ":")))
+            )
+            cursor = json.loads(
+                content.split("<EDGE_CURSOR>", 1)[1].split("</EDGE_CURSOR>", 1)[0]
+            )
+            self.call_events.append(
+                {
+                    "finish_reason": "stop",
+                    "token_usage": {"prompt_tokens": 100, "completion_tokens": 20},
+                }
+            )
+            next_index = 0 if cursor is None else int(str(cursor["fact"])[:4]) + 1
+            if next_index == 65:
+                return {"status": "no_additional_edge", "edge": None}
+            fact = f"{next_index:04d}" + "x" * 1_896
+            return {
+                "status": "new_edge",
+                "edge": {
+                    "source_entity_name": endpoints[0],
+                    "target_entity_name": endpoints[1],
+                    "relation_type": "RELATED_TO",
+                    "fact": fact,
+                    "valid_at": None,
+                    "invalid_at": None,
+                    "episode_indices": [0],
+                },
+            }
+
+    monkeypatch.setenv("CONSTRUCTION_CONTEXT_SAFETY_TOKENS", "32")
+    client = Client()
+    install_local_extraction_chunking_policy(
+        client,
+        token_counter=lambda _messages: 100,
+        partition_extraction_by_turns=True,
+        partition_edge_candidates=True,
+        shared_bounded_structured_output=True,
+        edge_endpoint_schema_grounding=True,
+    )
+    client._membind_entity_partition_hints.update({"a": [0], "b": [0], "c": [0]})
+    result = asyncio.run(
+        client.generate_response(
+            [
+                {
+                    "role": "user",
+                    "content": (
+                        "<CURRENT MESSAGE>[USER]\nA B C</CURRENT MESSAGE>\n"
+                        '<ENTITIES>[{"name":"A"},{"name":"B"},{"name":"C"}]'
+                        "</ENTITIES>\n# TASK"
+                    ),
+                }
+            ],
+            max_tokens=32_768,
+            prompt_name="extract_edges.edge",
+        )
+    )
+
+    assert len(prompts_by_domain) == 3
+    assert len(result["edges"]) == 65 * len(prompts_by_domain)
+    assert all(len(row["fact"]) == 1_900 for row in result["edges"])
+    assert all(len(hashes) == 66 for hashes in schema_hashes_by_domain.values())
+    assert all(
+        len(set(lengths[1:])) == 1
+        for lengths in schema_lengths_by_domain.values()
+    )
+    for prompts in prompts_by_domain.values():
+        assert len(prompts) == 66
+        assert len({len(prompt) for prompt in prompts[1:]}) == 1
+        assert all("<ALREADY_RETURNED_EDGES>" not in prompt for prompt in prompts)
+    certificates = [
+        row["structured_output_certificate"]
+        for row in client._membind_extraction_diagnostics
+        if row.get("event") is None
+        and row.get("prompt_name") == "extract_edges.edge"
+        and isinstance(row.get("structured_output_certificate"), dict)
+    ]
+    assert certificates
+    assert all(row["status"] == "PASS" for row in certificates)
+    epoch_advances = [
+        row
+        for row in client._membind_extraction_diagnostics
+        if row.get("event") == "EDGE_CURSOR_EPOCH_ADVANCE"
+    ]
+    assert len(epoch_advances) == len(prompts_by_domain)
+    assert all(row["page_index"] == 64 for row in epoch_advances)
 
 
 def test_edge_pagination_recovers_once_from_a_duplicate_before_converging(

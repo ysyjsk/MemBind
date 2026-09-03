@@ -264,14 +264,16 @@ def safe_structured_request_evidence(request: dict[str, Any]) -> dict[str, Any]:
     )
     schema = json_schema_wrapper.get("schema")
     schema = schema if isinstance(schema, dict) else {}
+    extra_body = request.get("extra_body")
+    extra_body = extra_body if isinstance(extra_body, dict) else {}
     structured_outputs = request.get("structured_outputs")
+    if not isinstance(structured_outputs, dict):
+        structured_outputs = extra_body.get("structured_outputs")
     backend_requested = (
         structured_outputs.get("backend")
         if isinstance(structured_outputs, dict)
         else None
     )
-    extra_body = request.get("extra_body")
-    extra_body = extra_body if isinstance(extra_body, dict) else {}
     chat_template_kwargs = extra_body.get("chat_template_kwargs")
     chat_template_kwargs = (
         dict(chat_template_kwargs) if isinstance(chat_template_kwargs, dict) else {}
@@ -389,6 +391,19 @@ def safe_structured_request_evidence(request: dict[str, Any]) -> dict[str, Any]:
         "json_schema_name": json_schema_wrapper.get("name"),
         "json_schema_sha256": hashlib.sha256(canonical_schema).hexdigest(),
         "structured_output_backend_requested": backend_requested,
+        # Request-level whitespace fields are parsed by vLLM 0.26.0 but ignored
+        # by XgrammarBackend. Deployment authority is attached by the owner
+        # transport from the authenticated platform process contract instead.
+        "structured_output_whitespace_mode": None,
+        "structured_output_disable_any_whitespace": (
+            structured_outputs.get("disable_any_whitespace")
+            if isinstance(structured_outputs, dict)
+            else None
+        ),
+        "structured_output_whitespace_pattern_present": bool(
+            isinstance(structured_outputs, dict)
+            and structured_outputs.get("whitespace_pattern") is not None
+        ),
         "chat_template_kwargs": chat_template_kwargs,
         "recovery_schema_detected": recovery_schema_detected,
         "recovery_required_keys": root_required if recovery_schema_detected else [],
@@ -580,6 +595,13 @@ class _QwenCompletionsTransport:
 
         self._owner.structured_request_count += 1
         request_evidence = safe_structured_request_evidence(request)
+        if self._owner.structured_output_recovery_enabled:
+            request_evidence["structured_output_whitespace_mode"] = (
+                self._owner.structured_output_whitespace_mode
+            )
+            request_evidence["structured_output_whitespace_authority"] = (
+                self._owner.structured_output_whitespace_authority
+            )
         try:
             response = await self._inner.create(*args, **request)
         except Exception:
@@ -671,6 +693,12 @@ class QwenVLLMClient:
         structured_output_certificate_sink = kwargs.pop(
             "structured_output_certificate_sink", None
         )
+        structured_output_whitespace_mode = kwargs.pop(
+            "structured_output_whitespace_mode", None
+        )
+        structured_output_whitespace_authority = kwargs.pop(
+            "structured_output_whitespace_authority", None
+        )
         native_identity = bool(kwargs.pop("native_identity", False))
         managed_recovery_enabled = bool(kwargs.pop("managed_recovery_enabled", False))
 
@@ -686,6 +714,16 @@ class QwenVLLMClient:
                 self.structured_output_context_limit = structured_output_context_limit
                 self.structured_output_safety_margin = structured_output_safety_margin
                 self.structured_output_certificate_sink = structured_output_certificate_sink
+                self.structured_output_whitespace_mode = (
+                    str(structured_output_whitespace_mode)
+                    if structured_output_whitespace_mode is not None
+                    else None
+                )
+                self.structured_output_whitespace_authority = (
+                    str(structured_output_whitespace_authority)
+                    if structured_output_whitespace_authority is not None
+                    else None
+                )
                 self.native_identity = native_identity
                 self.managed_recovery_enabled = managed_recovery_enabled
                 self.runtime_reliability_profile = reliability_identity()[
@@ -810,6 +848,7 @@ class QwenVLLMClient:
                             if callable(self.structured_output_output_token_counter)
                             else None
                         ),
+                        whitespace_mode=self.structured_output_whitespace_mode,
                     )
                     if callable(self.structured_output_certificate_sink):
                         self.structured_output_certificate_sink(certificate.to_dict())
@@ -818,13 +857,14 @@ class QwenVLLMClient:
                             "structured-output request failed finite budget preflight: "
                             + ",".join(certificate.failure_reasons)
                         )
-                response = await self.client.chat.completions.create(
-                    model=self.model,
-                    messages=openai_messages,
-                    temperature=self.temperature,
-                    max_tokens=max_tokens,
-                    response_format=response_format,
-                )
+                request_kwargs = {
+                    "model": self.model,
+                    "messages": openai_messages,
+                    "temperature": self.temperature,
+                    "max_tokens": max_tokens,
+                    "response_format": response_format,
+                }
+                response = await self.client.chat.completions.create(**request_kwargs)
                 # Keep the last-call evidence available to the outer recorder when
                 # parsing fails; only consume it after a certified successful parse.
                 record = self._last_call_record.get() or {}

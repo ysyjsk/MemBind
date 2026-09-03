@@ -12,12 +12,14 @@ from saturated_fixed_work_baseline_v1_3.membind_v6_1.runtime import (
     _bounded_attribute_response_model,
     _bounded_edge_duplicate_model,
     _bounded_edge_page_model,
+    _bounded_edge_timestamps_model,
     _bounded_node_response_model,
     _edge_candidate_capacities,
     install_local_extraction_chunking_policy,
 )
 
 from saturated_fixed_work_baseline_v1_3.membind_v6_1.structured_output_recovery import (
+    BOUNDED_JSON_WHITESPACE_MODE,
     RecoveryIdentity,
     SchemaBoundednessError,
     StructuredOutputLengthTruncation,
@@ -31,6 +33,7 @@ from saturated_fixed_work_baseline_v1_3.membind_v6_1.structured_output_recovery 
     parse_structured_content,
     recovery_policy_sha256,
     schema_worst_case_characters,
+    schema_worst_case_json,
     validate_schema_boundedness,
     reliability_identity,
 )
@@ -133,6 +136,20 @@ def test_recursive_schema_validator_rejects_unknown_untyped_values() -> None:
     }
 
 
+def test_recursive_schema_validator_rejects_pattern_that_overrides_max_length() -> None:
+    schema = {
+        "type": "string",
+        "minLength": 1,
+        "maxLength": 2,
+        "pattern": r"^[\x00-\x7f]*$",
+    }
+    with pytest.raises(SchemaBoundednessError) as raised:
+        validate_schema_boundedness(schema)
+    assert "string_pattern_physical_bound_unproven" in {
+        issue.reason for issue in raised.value.issues
+    }
+
+
 def test_schema_character_bound_covers_cjk_and_json_escaping() -> None:
     schema = finite_edge_schema(fact_max_length=16)
     report = validate_schema_boundedness(schema)
@@ -144,13 +161,47 @@ def test_schema_character_bound_covers_cjk_and_json_escaping() -> None:
                 "source_entity_name": "甲",
                 "target_entity_name": "B",
                 "relation_type": "R" * 128,
-                "fact": '甲\\"\n' * 4,
+                "fact": "甲乙丙丁" * 4,
                 "valid_at": "2" * 40,
                 "episode_indices": [0],
             }
         ]
     }
-    assert len(json.dumps(payload, ensure_ascii=True, separators=(",", ":"))) <= maximum
+    assert len(
+        json.dumps(payload, ensure_ascii=False, separators=(", ", ": ")).encode(
+            "utf-8"
+        )
+    ) <= maximum
+
+
+def test_schema_character_bound_covers_non_bmp_surrogate_pair_serialization() -> None:
+    schema = {"type": "string", "minLength": 0, "maxLength": 1}
+    serialized = json.dumps(
+        "\U0010ffff", ensure_ascii=False, separators=(", ", ": ")
+    ).encode("utf-8")
+    assert len(serialized) == 6
+    assert schema_worst_case_characters(schema) >= len(serialized)
+
+
+def test_schema_character_bound_matches_xgrammar_fixed_separator_witness() -> None:
+    schema = {
+        "type": "object",
+        "additionalProperties": False,
+        "properties": {
+            "values": {
+                "type": "array",
+                "minItems": 2,
+                "maxItems": 2,
+                "items": {"type": "string", "enum": ["xx"]},
+            },
+            "ok": {"type": "boolean"},
+        },
+        "required": ["values", "ok"],
+    }
+    witness = schema_worst_case_json(schema)
+    assert '", "' in witness
+    assert ": " in witness
+    assert len(witness.encode("utf-8")) == schema_worst_case_characters(schema)
 
 
 def test_certificate_uses_exact_prompt_count_and_fails_closed() -> None:
@@ -169,6 +220,7 @@ def test_certificate_uses_exact_prompt_count_and_fails_closed() -> None:
         context_limit=4096,
         effective_max_tokens=4096,
         safety_margin_tokens=32,
+        whitespace_mode=BOUNDED_JSON_WHITESPACE_MODE,
     )
     assert calls == [messages]
     assert certificate.exact_prompt_tokens == 101
@@ -182,12 +234,40 @@ def test_certificate_uses_exact_prompt_count_and_fails_closed() -> None:
         context_limit=certificate.schema_worst_case_tokens + 100,
         effective_max_tokens=certificate.schema_worst_case_tokens - 1,
         safety_margin_tokens=32,
+        whitespace_mode=BOUNDED_JSON_WHITESPACE_MODE,
     )
     assert rejected.status == "FAIL"
     assert set(rejected.failure_reasons) == {
         "completion_budget_below_schema_bound",
         "context_budget_exhausted",
     }
+
+
+def test_certificate_requires_server_bound_fixed_whitespace_policy() -> None:
+    schema = finite_edge_schema(fact_max_length=64)
+    common = {
+        "messages": [{"role": "user", "content": "fixture"}],
+        "schema": schema,
+        "token_counter": lambda _messages: 100,
+        "context_limit": 4096,
+        "effective_max_tokens": 4096,
+        "safety_margin_tokens": 32,
+    }
+
+    unbound = build_schema_bound_certificate(**common, whitespace_mode=None)
+    bounded = build_schema_bound_certificate(
+        **common,
+        whitespace_mode="disable_any_whitespace_vllm_v1",
+    )
+
+    assert unbound.status == "FAIL"
+    assert "unbounded_json_whitespace" in unbound.failure_reasons
+    assert unbound.physical_serialization_bound is False
+    assert bounded.status == "PASS"
+    assert bounded.failure_reasons == ()
+    assert bounded.whitespace_mode == "disable_any_whitespace_vllm_v1"
+    assert bounded.physical_serialization_bound is True
+    assert "xgrammar_default_separators" in bounded.output_token_bound_method
 
 
 def test_edge_wire_schema_fits_pinned_graphiti_completion_budget() -> None:
@@ -199,6 +279,7 @@ def test_edge_wire_schema_fits_pinned_graphiti_completion_budget() -> None:
         context_limit=65_536,
         effective_max_tokens=16_384,
         safety_margin_tokens=32,
+        whitespace_mode=BOUNDED_JSON_WHITESPACE_MODE,
     )
     assert LOCAL_EDGE_FACT_MAX_CHARS > 0
     assert certificate.schema_worst_case_tokens <= 16_384
@@ -213,7 +294,10 @@ def test_page_capacity_selection_is_deterministic_and_never_calls_provider() -> 
         calls += 1
         return 100
 
-    schemas = {2: finite_edge_schema(max_items=2, fact_max_length=3000), 1: finite_edge_schema(max_items=1, fact_max_length=3000)}
+    schemas = {
+        2: finite_edge_schema(max_items=2, fact_max_length=1_500),
+        1: finite_edge_schema(max_items=1, fact_max_length=1_500),
+    }
     selected = choose_edge_page_capacity(
         messages=[{"role": "user", "content": "fixture"}],
         schemas_by_capacity=schemas,
@@ -222,8 +306,9 @@ def test_page_capacity_selection_is_deterministic_and_never_calls_provider() -> 
         context_limit=65536,
         effective_max_tokens=32768,
         safety_margin_tokens=32,
+        whitespace_mode=BOUNDED_JSON_WHITESPACE_MODE,
     )
-    assert selected.capacity in {1, 2}
+    assert selected.capacity == 2
     assert selected.capacity == choose_edge_page_capacity(
         messages=[{"role": "user", "content": "fixture"}],
         schemas_by_capacity=schemas,
@@ -232,8 +317,414 @@ def test_page_capacity_selection_is_deterministic_and_never_calls_provider() -> 
         context_limit=65536,
         effective_max_tokens=32768,
         safety_margin_tokens=32,
+        whitespace_mode=BOUNDED_JSON_WHITESPACE_MODE,
     ).capacity
-    assert calls == 4
+    assert calls == 2
+
+
+def test_edge_capacity_failure_retains_all_rejected_certificates_and_inequalities() -> None:
+    schemas = {
+        capacity: finite_edge_schema(max_items=capacity, fact_max_length=3_000)
+        for capacity in (3, 2, 1)
+    }
+
+    with pytest.raises(StructuredOutputBudgetError) as raised:
+        choose_edge_page_capacity(
+            messages=[{"role": "user", "content": "content-free failure fixture"}],
+            schemas_by_capacity=schemas,
+            requested_capacity=3,
+            token_counter=lambda _messages: 60_000,
+            context_limit=65_536,
+            effective_max_tokens=16_384,
+            safety_margin_tokens=32,
+            whitespace_mode=BOUNDED_JSON_WHITESPACE_MODE,
+        )
+
+    error = raised.value
+    assert len(error.rejected_certificates) == 3
+    assert error.last_certificate is error.rejected_certificates[-1]
+    assert all(certificate.status == "FAIL" for certificate in error.rejected_certificates)
+    assert set(error.failure_reasons) == {
+        reason
+        for certificate in error.rejected_certificates
+        for reason in certificate.failure_reasons
+    }
+    assert error.failed_inequalities
+    assert any("configured_effective_max_tokens" in value for value in error.failed_inequalities)
+    assert any("context_limit" in value for value in error.failed_inequalities)
+
+
+@pytest.mark.asyncio
+async def test_edge_preflight_materializes_fatal_diagnostic_before_raising(monkeypatch) -> None:
+    class Client:
+        max_tokens = 32_768
+        structured_output_recovery_enabled = True
+
+        async def generate_response(self, _messages, **_kwargs):
+            raise AssertionError("fatal preflight must not call the provider")
+
+    monkeypatch.setattr(
+        "saturated_fixed_work_baseline_v1_3.membind_v6_1.runtime._local_output_token_counter_if_available",
+        lambda _client: lambda value: len(value),
+    )
+
+    client = Client()
+    install_local_extraction_chunking_policy(
+        client,
+        token_counter=lambda _messages: 60_000,
+        edge_page_capacity=2,
+        shared_bounded_structured_output=True,
+    )
+    messages = [
+        {
+            "role": "user",
+            "content": (
+                "<CURRENT MESSAGE>A knows B</CURRENT MESSAGE>\n"
+                '<ENTITIES>[{"name":"A"},{"name":"B"}]</ENTITIES>\n# TASK'
+            ),
+        }
+    ]
+
+    with provider_scope(region="PREPARE", source_sequence=7):
+        with pytest.raises(LocalRuntimeConfigurationError, match="edge structured-output preflight"):
+            await client.generate_response(
+                messages,
+                max_tokens=32_768,
+                prompt_name="extract_edges.edge",
+            )
+
+    fatal = [
+        row
+        for row in client._membind_extraction_diagnostics
+        if row.get("schema_version") == "membind.v6.1.edge-budget-fatal.v1"
+    ]
+    assert len(fatal) == 1
+    row = fatal[0]
+    assert row["status"] == "FATAL"
+    assert row["scope"] == {"region": "PREPARE", "source_sequence": 7}
+    assert row["source_sequence"] == 7
+    assert row["partition_id"] is None
+    assert row["page_index"] is None
+    assert row["entity_count"] == 2
+    assert row["already_returned_edge_count"] == 0
+    assert row["already_returned_edge_chars"] == 0
+    assert row["already_returned_edge_tokens"] == 0
+    assert row["base_prompt_tokens"] == 60_000
+    assert row["final_prompt_tokens"] == 60_000
+    assert row["schema_worst_case_characters"] > 0
+    assert row["schema_worst_case_tokens"] > 0
+    assert row["tokenizer_witness_tokens"] > 0
+    assert row["effective_max_tokens"] == 16_384
+    assert row["safety_margin"] == 32
+    assert row["context_limit"] == 65_536
+    assert row["failed_inequalities"]
+
+
+@pytest.mark.asyncio
+async def test_unpartitioned_live_node_provenance_reaches_edge_phase() -> None:
+    calls: list[str] = []
+
+    class Client:
+        max_tokens = 32_768
+
+        async def generate_response(self, _messages, **kwargs):
+            prompt_name = str(kwargs.get("prompt_name"))
+            calls.append(prompt_name)
+            if prompt_name.startswith("extract_nodes."):
+                return {
+                    "extracted_entities": [
+                        {"name": name, "entity_type_id": 0, "episode_indices": [0]}
+                        for name in ("A", "B", "C")
+                    ]
+                }
+            if prompt_name == "extract_edges.edge":
+                return {"edges": []}
+            raise AssertionError(prompt_name)
+
+    client = Client()
+    install_local_extraction_chunking_policy(
+        client,
+        token_counter=lambda _messages: 100,
+        partition_extraction_by_turns=True,
+        partition_edge_candidates=True,
+        edge_page_capacity=1,
+    )
+    node_messages = [
+        {
+            "role": "user",
+            "content": "<CURRENT MESSAGE>[USER]\nA, B, and C.</CURRENT MESSAGE>",
+        }
+    ]
+    edge_messages = [
+        {
+            "role": "user",
+            "content": (
+                "<CURRENT MESSAGE>[USER]\nA, B, and C.</CURRENT MESSAGE>\n"
+                '<ENTITIES>[{"name":"A"},{"name":"B"},{"name":"C"}]</ENTITIES>\n'
+                "# TASK"
+            ),
+        }
+    ]
+
+    with provider_scope(region="PREPARE", source_sequence=11):
+        await client.generate_response(
+            node_messages,
+            prompt_name="extract_nodes.extract_message",
+            max_tokens=32_768,
+        )
+        result = await client.generate_response(
+            edge_messages,
+            prompt_name="extract_edges.edge",
+            max_tokens=16_384,
+        )
+
+    assert result == {"edges": []}
+    provenance = client._membind_entity_partition_sources_by_scope[("PREPARE", 11)]
+    assert provenance == {0: "[USER]\nA, B, and C."}
+    assert calls.count("extract_nodes.extract_message") == 1
+    assert calls.count("extract_edges.edge") >= 1
+
+
+@pytest.mark.asyncio
+async def test_node_provenance_isolated_across_twenty_concurrent_source_scopes() -> None:
+    class Client:
+        max_tokens = 32_768
+
+        async def generate_response(self, messages, **kwargs):
+            prompt_name = str(kwargs.get("prompt_name"))
+            content = str(messages[0]["content"])
+            if prompt_name.startswith("extract_nodes."):
+                source = int(content.split("source-", 1)[1].split(" ", 1)[0])
+                await __import__("asyncio").sleep((19 - source) * 0.0001)
+                return {
+                    "extracted_entities": [
+                        {"name": name, "entity_type_id": 0, "episode_indices": [0]}
+                        for name in (f"source-{source}", "Shared-A", "Shared-B")
+                    ]
+                }
+            return {"edges": []}
+
+    client = Client()
+    install_local_extraction_chunking_policy(
+        client,
+        token_counter=lambda _messages: 100,
+        partition_extraction_by_turns=True,
+        partition_edge_candidates=True,
+    )
+
+    async def source_flow(source: int) -> None:
+        text = f"[USER]\nsource-{source} Shared-A Shared-B"
+        with provider_scope(region="PREPARE", source_sequence=source):
+            await client.generate_response(
+                [{"role": "user", "content": f"<CURRENT MESSAGE>{text}</CURRENT MESSAGE>"}],
+                prompt_name="extract_nodes.extract_message",
+                max_tokens=32_768,
+            )
+            await client.generate_response(
+                [
+                    {
+                        "role": "user",
+                        "content": (
+                            f"<CURRENT MESSAGE>{text}</CURRENT MESSAGE>\n"
+                            f'<ENTITIES>[{{"name":"source-{source}"}},'
+                            '{"name":"Shared-A"},{"name":"Shared-B"}]</ENTITIES>\n# TASK'
+                        ),
+                    }
+                ],
+                prompt_name="extract_edges.edge",
+                max_tokens=16_384,
+            )
+
+    await __import__("asyncio").gather(*(source_flow(source) for source in range(20)))
+    records = client._membind_node_provenance_authority["records_by_scope"]
+    assert len(records) == 20
+    for source in range(20):
+        record = records[("PREPARE", source)]
+        assert record["source_sequence"] == source
+        assert record["executed_partition_ids"] == [0]
+        assert f"source-{source}" in record["sources"][0]
+
+
+@pytest.mark.asyncio
+async def test_partitioned_node_provenance_survives_out_of_order_completion() -> None:
+    class Client:
+        max_tokens = 32_768
+
+        async def generate_response(self, messages, **kwargs):
+            prompt_name = str(kwargs.get("prompt_name"))
+            content = str(messages[0]["content"])
+            if prompt_name.startswith("extract_nodes."):
+                label = next(value for value in ("Alpha", "Beta", "Gamma") if value in content)
+                delay = {"Alpha": 0.02, "Beta": 0.01, "Gamma": 0.0}[label]
+                await __import__("asyncio").sleep(delay)
+                return {
+                    "extracted_entities": [
+                        {"name": "Shared", "entity_type_id": 0, "episode_indices": [0]},
+                        {"name": label, "entity_type_id": 0, "episode_indices": [0]},
+                    ]
+                }
+            return {"edges": []}
+
+    client = Client()
+    install_local_extraction_chunking_policy(
+        client,
+        token_counter=lambda _messages: 100,
+        chunk_char_limit=32,
+        partition_extraction_by_turns=True,
+        partition_edge_candidates=True,
+        node_partition_concurrency=3,
+    )
+    text = "[USER]\nShared Alpha\n[ASSISTANT]\nShared Beta\n[USER]\nShared Gamma"
+    with provider_scope(region="NATIVE", source_sequence=3):
+        await client.generate_response(
+            [{"role": "user", "content": f"<CURRENT MESSAGE>{text}</CURRENT MESSAGE>"}],
+            prompt_name="extract_nodes.extract_message",
+            max_tokens=32_768,
+        )
+        result = await client.generate_response(
+            [
+                {
+                    "role": "user",
+                    "content": (
+                        f"<CURRENT MESSAGE>{text}</CURRENT MESSAGE>\n"
+                        '<ENTITIES>[{"name":"Shared"},{"name":"Alpha"},'
+                        '{"name":"Beta"},{"name":"Gamma"}]</ENTITIES>\n# TASK'
+                    ),
+                }
+            ],
+            prompt_name="extract_edges.edge",
+            max_tokens=16_384,
+        )
+
+    assert result == {"edges": []}
+    record = client._membind_node_provenance_authority["records_by_scope"][("NATIVE", 3)]
+    assert sorted(record["executed_partition_ids"]) == [0, 1, 2]
+    assert sorted(record["sources"]) == [0, 1, 2]
+    assert record["entity_hints"]["shared"] == [0, 1, 2]
+
+
+@pytest.mark.asyncio
+async def test_empty_node_result_records_executed_source_provenance() -> None:
+    class Client:
+        max_tokens = 32_768
+
+        async def generate_response(self, _messages, **kwargs):
+            if str(kwargs.get("prompt_name")).startswith("extract_nodes."):
+                return {"extracted_entities": []}
+            return {"edges": []}
+
+    client = Client()
+    install_local_extraction_chunking_policy(
+        client,
+        token_counter=lambda _messages: 100,
+        partition_extraction_by_turns=True,
+        partition_edge_candidates=True,
+    )
+    with provider_scope(region="PREPARE", source_sequence=4):
+        await client.generate_response(
+            [
+                {
+                    "role": "user",
+                    "content": "<CURRENT MESSAGE>[USER]\nNo entities.</CURRENT MESSAGE>",
+                }
+            ],
+            prompt_name="extract_nodes.extract_message",
+        )
+
+    record = client._membind_node_provenance_authority["records_by_scope"][("PREPARE", 4)]
+    assert record["executed_partition_ids"] == [0]
+    assert record["sources"] == {0: "[USER]\nNo entities."}
+    assert record["entity_hints"] == {}
+
+
+@pytest.mark.asyncio
+async def test_edge_provenance_rejects_a_real_source_scope_mismatch() -> None:
+    class Client:
+        max_tokens = 32_768
+
+        async def generate_response(self, _messages, **kwargs):
+            if str(kwargs.get("prompt_name")).startswith("extract_nodes."):
+                return {
+                    "extracted_entities": [
+                        {"name": name, "entity_type_id": 0, "episode_indices": [0]}
+                        for name in ("A", "B", "C")
+                    ]
+                }
+            return {"edges": []}
+
+    client = Client()
+    install_local_extraction_chunking_policy(
+        client,
+        token_counter=lambda _messages: 100,
+        partition_extraction_by_turns=True,
+        partition_edge_candidates=True,
+    )
+    with provider_scope(region="PREPARE", source_sequence=1):
+        await client.generate_response(
+            [{"role": "user", "content": "<CURRENT MESSAGE>A B C</CURRENT MESSAGE>"}],
+            prompt_name="extract_nodes.extract_message",
+        )
+    with provider_scope(region="PREPARE", source_sequence=2):
+        with pytest.raises(
+            LocalRuntimeConfigurationError,
+            match="live edge extraction is missing node-partition source provenance",
+        ):
+            await client.generate_response(
+                [
+                    {
+                        "role": "user",
+                        "content": (
+                            "<CURRENT MESSAGE>A B C</CURRENT MESSAGE>\n"
+                            '<ENTITIES>[{"name":"A"},{"name":"B"},{"name":"C"}]'
+                            "</ENTITIES>\n# TASK"
+                        ),
+                    }
+                ],
+                prompt_name="extract_edges.edge",
+            )
+
+
+def test_capture_and_replay_wrappers_share_one_provenance_authority() -> None:
+    class Delegate:
+        max_tokens = 32_768
+
+        async def generate_response(self, _messages, **_kwargs):
+            return {"extracted_entities": []}
+
+    delegate = Delegate()
+    install_local_extraction_chunking_policy(
+        delegate,
+        token_counter=lambda _messages: 100,
+        partition_extraction_by_turns=True,
+        partition_edge_candidates=True,
+    )
+    store = TranscriptStore()
+    arbiter = ForegroundAdmissionArbiter(
+        CapacityAuthority(2),
+        policy=V61Policy(lookahead=1, future_cap=1, native_future_quota=0),
+    )
+    capture = V61ProviderClient(
+        delegate,
+        store=store,
+        arbiter=arbiter,
+        mode="capture",
+        durable_frontier=lambda: -1,
+    )
+    replay = V61ProviderClient(
+        delegate,
+        store=store,
+        arbiter=arbiter,
+        mode="replay",
+        durable_frontier=lambda: 0,
+    )
+
+    authority = delegate._membind_node_provenance_authority
+    assert capture._membind_node_provenance_authority is authority
+    assert replay._membind_node_provenance_authority is authority
+    assert (
+        capture._membind_entity_partition_sources_by_scope
+        is replay._membind_entity_partition_sources_by_scope
+    )
 
 
 def test_node_schema_capacity_binds_to_partition_completion_budget() -> None:
@@ -250,10 +741,11 @@ def test_node_schema_capacity_binds_to_partition_completion_budget() -> None:
         context_limit=65_536,
         effective_max_tokens=8_192,
         safety_margin_tokens=32,
+        whitespace_mode=BOUNDED_JSON_WHITESPACE_MODE,
     )
 
-    assert selected.capacity == 5
-    assert selected.rejected_capacities == (16, 15, 14, 13, 12, 11, 10, 9, 8, 7, 6)
+    assert selected.capacity == 14
+    assert selected.rejected_capacities == (16, 15)
     assert selected.certificate.status == "PASS"
     assert selected.certificate.schema_worst_case_tokens <= 8_192
 
@@ -268,8 +760,9 @@ def test_node_schema_capacity_fails_closed_when_even_one_entity_cannot_fit() -> 
             requested_capacity=1,
             token_counter=lambda _messages: 100,
             context_limit=65_536,
-            effective_max_tokens=1_000,
+            effective_max_tokens=500,
             safety_margin_tokens=32,
+            whitespace_mode=BOUNDED_JSON_WHITESPACE_MODE,
         )
 
 
@@ -351,6 +844,22 @@ async def test_timestamp_batch_over_certificate_limit_fails_before_delegate() ->
             prompt_name="extract_edges.extract_timestamps_batch",
         )
     assert calls == 0
+
+
+def test_timestamp_batch_wire_schema_fits_frozen_completion_budget() -> None:
+    schema = _bounded_edge_timestamps_model(
+        LOCAL_TIMESTAMP_BATCH_MAX_ITEMS
+    ).model_json_schema()
+    assert schema_worst_case_characters(schema) <= 32_768
+    item_schema = next(iter(schema["$defs"].values()))
+    for field in ("valid_at", "invalid_at"):
+        branch = next(
+            value
+            for value in item_schema["properties"][field]["anyOf"]
+            if value.get("type") == "string"
+        )
+        assert branch["pattern"].endswith("{0,40}$")
+        assert "*" not in branch["pattern"]
 
 
 def test_edge_dedupe_schema_binds_existing_and_full_candidate_flights() -> None:
@@ -525,9 +1034,15 @@ def test_v61_structured_failure_is_not_retried_or_captured() -> None:
 
 def test_shared_reliability_identity_is_single_frozen_policy() -> None:
     identity = reliability_identity()
-    assert identity["runtime_reliability_profile"] == "shared-structured-output-recovery-v1"
-    assert identity["schema_revision"] == "finite-edge-schema-v1"
-    assert identity["recovery_policy_revision"] == "classified-request-recovery-v1"
+    assert identity["runtime_reliability_profile"] == (
+        "shared-structured-output-recovery-v3-xgrammar-physical-bound"
+    )
+    assert identity["schema_revision"] == (
+        "finite-schema-v3-xgrammar-regex-and-separator-bound"
+    )
+    assert identity["recovery_policy_revision"] == (
+        "classified-request-recovery-v3-server-bound-whitespace"
+    )
     assert len(identity["recovery_policy_sha256"]) == 64
 
 
