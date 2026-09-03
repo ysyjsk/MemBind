@@ -205,15 +205,13 @@ def test_8b_shared_manifest_exposes_one_adapter_identity_for_all_arms(
     assert identity["arm_identity"] is None
     assert identity["page_capacity"] == 1
     assert identity["max_pages"] == 64
-    assert identity["retry_policy"] == (
-        "single_attempt_per_distinct_schema_request_fail_closed_v2"
-    )
+    assert identity["retry_policy"] == "single_attempt_finite_task_fail_closed_v1"
     assert identity["terminal_confirmation_is_context_retry"] is False
-    assert identity["max_pages_semantics"] == "cursor_epoch_size_not_total_cap"
-    assert identity["total_page_cap"] is None
-    assert identity["saturation_policy"] == (
-        "strict_cursor_epoch_continuation_until_explicit_exhaustion_v1"
-    )
+    assert identity["terminal_only_success_allowed"] is False
+    assert identity["edge_task_protocol"] == "finite_pair_task_v1"
+    assert identity["max_pages_semantics"] == "finite_task_count"
+    assert identity["total_page_cap"] == 1
+    assert identity["saturation_policy"] == "declared_pair_task_completion_or_fail_closed_v1"
     assert manifest["construction"]["edge_endpoint_schema_policy"] == (
         "entity_block_literal_endpoint_grounding_v1"
     )

@@ -46,7 +46,12 @@ from ..membind_v6.proof import (
 )
 from ..membind_v6.request_observation import compare_request_observations
 from .admission import ForegroundAdmissionArbiter
-from .evidence import extraction_work_inventory, provider_proof, span_work_inventory
+from .evidence import (
+    extraction_work_inventory,
+    provider_proof,
+    span_work_inventory,
+    validate_finite_edge_task_ledger,
+)
 from .edge_predicate import install_edge_invalidation_predicate_pushdown
 from .executor import (
     DUAL_STREAMING_EXECUTION_STRATEGY,
@@ -1136,6 +1141,33 @@ async def run_mab_v61_construction_async(
             "compatibility_expansion_attempts": transport_expansion_attempts,
             "expected_transport_attempts_from_provider": expected_transport_attempts,
         }
+        try:
+            finite_task_ledger = validate_finite_edge_task_ledger(
+                extraction_diagnostics
+            )
+        except ValueError as exc:
+            raise V61MABError(str(exc)) from exc
+        if finite_task_ledger["plan_count"]:
+            inventory.update(
+                {
+                    "finite_edge_task_plan_count": finite_task_ledger["plan_count"],
+                    "finite_edge_task_declared_count": finite_task_ledger[
+                        "declared_task_count"
+                    ],
+                    "finite_edge_task_completed_count": finite_task_ledger[
+                        "completed_task_count"
+                    ],
+                    "finite_edge_task_graph_digests": finite_task_ledger[
+                        "task_graph_digests"
+                    ],
+                    "finite_edge_coverage_digests": finite_task_ledger[
+                        "coverage_digests"
+                    ],
+                    "finite_edge_logical_work_digests": finite_task_ledger[
+                        "coverage_digests"
+                    ],
+                }
+            )
         _assert_core_context_integrity(artifact_method, inventory)
         inventory["transport_attempts"] = observed_transport_attempts
         if observed_transport_attempts != expected_transport_attempts:

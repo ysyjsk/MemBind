@@ -1,0 +1,49 @@
+{
+  "schema_version": "membind.structured-output-design-decision.v1",
+  "status": "DESIGN_SELECTED_BEFORE_LIVE_RUN",
+  "stack": {
+    "graphiti_core": "0.29.3",
+    "vllm": "0.26.0",
+    "xgrammar": "0.2.3"
+  },
+  "decision": "FINITE_PAIR_TASK_BATCHES",
+  "shared_by_all_arms": true,
+  "terminal_only_success_allowed": false,
+  "unbounded_cursor_allowed": false,
+  "candidate_designs": [
+    {"id": "GENERATIVE_CUMULATIVE_CURSOR", "decision": "REJECTED", "reason": "continuation and provider call count are not bounded and semantic exhaustion is unprovable"},
+    {"id": "LOSSLESS_EVIDENCE_WINDOWS", "decision": "PARTIAL", "reason": "useful coverage unit but an unbounded edge list still needs finite task decomposition"},
+    {"id": "ONE_TASK_PER_ENTITY_PAIR", "decision": "REJECTED", "reason": "complete but quadratic provider-call overhead is excessive"},
+    {"id": "FINITE_PAIR_TASK_BATCHES", "decision": "SELECTED", "reason": "explicit finite task graph, bounded responses, complete declared pair coverage, and auditable overflow"},
+    {"id": "SCORED_OR_SAMPLED_CANDIDATES", "decision": "REJECTED", "reason": "can silently omit facts and changes Graphiti semantic algorithm"}
+  ],
+  "hard_properties": {
+    "declared_task_count_before_provider": true,
+    "maximum_provider_calls_per_source_before_provider": true,
+    "lossless_contiguous_evidence_windows": true,
+    "adjacent_boundary_coverage": true,
+    "pair_acknowledgement_required": true,
+    "multiple_relation_overflow_fails_closed": true,
+    "malformed_or_non_monotonic_cursor_is_not_success": true,
+    "tokenizer_witness_is_not_mathematical_bound": true
+  },
+  "source_evidence": {
+    "graphiti_edge_extraction": "graphiti_core/utils/maintenance/edge_operations.py:117-210",
+    "graphiti_edge_prompt": "graphiti_core/prompts/extract_edges.py",
+    "vllm_xgrammar_backend": "vllm/v1/structured_output/backend_xgrammar.py:70-90,225-330",
+    "failure_artifacts": "full-history-repair-live-reproducer-20260903T064522Z/p4,p5"
+  },
+  "research_references": [
+    {"name": "PURE", "title": "A Frustratingly Easy Approach for Entity and Relation Extraction", "venue": "NAACL 2021", "url": "https://arxiv.org/abs/2010.12812", "adopt": "explicit candidate-domain reasoning", "not_adopt": "no completeness proof or sampling"},
+    {"name": "Ray", "url": "https://www.usenix.org/conference/osdi18/presentation/moritz", "adopt": "sealed task graph and accounting", "not_adopt": "distributed runtime"},
+    {"name": "Orca", "url": "https://www.usenix.org/conference/osdi22/presentation/yu", "adopt": "iteration-level work/interference accounting", "not_adopt": "semantic extraction claims"},
+    {"name": "SGLang", "url": "https://arxiv.org/abs/2312.07104", "adopt": "explicit structured multi-call program", "not_adopt": "runtime or grammar-as-oracle"}
+  ],
+  "claim_boundary": [
+    "bounded physical requests",
+    "finite declared evidence/entity task coverage",
+    "fail-closed incompleteness",
+    "shared logical work across arms"
+  ],
+  "generated_at": "2026-09-03T00:00:00Z"
+}

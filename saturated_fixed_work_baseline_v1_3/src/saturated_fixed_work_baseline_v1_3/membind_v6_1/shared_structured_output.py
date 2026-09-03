@@ -10,7 +10,6 @@ from __future__ import annotations
 
 import inspect
 import hashlib
-import itertools
 import json
 from dataclasses import dataclass
 from functools import lru_cache
@@ -22,7 +21,8 @@ from .structured_output_recovery import (
     bounded_ascii_pattern,
 )
 
-SHARED_ADAPTER_VERSION = "shared-bounded-structured-output-v6-explicit-terminal-confirmation"
+# The shared formal substrate uses finite pair tasks; the cursor collector
+# below remains only as a bounded provider-free compatibility helper.
 # Graphiti pins ``extract_edges.edge`` to a 16,384 completion-token request.
 # The local 8B construction client remains configured for 32,768 tokens for
 # non-edge operators; this lower bound is the wire budget of each shared edge
@@ -30,20 +30,22 @@ SHARED_ADAPTER_VERSION = "shared-bounded-structured-output-v6-explicit-terminal-
 SHARED_MAX_TOKENS = 16_384
 SHARED_CONSTRUCTION_MAX_TOKENS = 32_768
 SHARED_PAGE_CAPACITY = 1
-# This is an observability epoch, not a total-page cap.  A strict canonical
-# cursor advances into the next epoch until the provider explicitly exhausts
-# the finite schema domain.
 SHARED_MAX_PAGES = 64
 SHARED_FACT_MAX_LENGTH = 1_900
+SHARED_MAX_PAIRS_PER_TASK = 2
+# Keep the finite task's worst-case wire witness below Graphiti's pinned
+# 16,384 completion-token budget. A second relation is rejected explicitly by
+# the semantic task validator rather than silently truncated.
+SHARED_MAX_RELATIONS_PER_PAIR = 1
 SHARED_FACT_PATTERN = bounded_ascii_pattern(1, SHARED_FACT_MAX_LENGTH)
-SHARED_RETRY_POLICY = "single_attempt_per_distinct_schema_request_fail_closed_v2"
+SHARED_ADAPTER_VERSION = "shared-bounded-structured-output-v7-finite-pair-tasks"
+SHARED_RETRY_POLICY = "single_attempt_finite_task_fail_closed_v1"
 SHARED_TERMINAL_CONFIRMATION_POLICY = (
-    "one_distinct_terminal_only_request_after_provider_repeat_not_context_retry_v1"
+    "prohibited_terminal_only_success_v1"
 )
 SHARED_PROMPT_TEMPLATE = (
-    "graphiti.extract_edges.edge|bounded-json-edge-cursor-v5|"
-    "EDGE_CURSOR|single-rolling-schema-exclusion|strict-canonical-successor|"
-    "explicit-cursor-exhaustion|distinct-terminal-only-confirmation"
+    "graphiti.extract_edges.edge|finite-pair-task-v1|"
+    "declared-pairs|pair-acknowledgement|bounded-relations|fail-closed"
 )
 
 
@@ -219,19 +221,30 @@ class SharedStructuredOutputContract:
     page_capacity: int = SHARED_PAGE_CAPACITY
     max_pages: int = SHARED_MAX_PAGES
     fact_max_length: int = SHARED_FACT_MAX_LENGTH
+    max_pairs_per_task: int = SHARED_MAX_PAIRS_PER_TASK
+    max_relations_per_pair: int = SHARED_MAX_RELATIONS_PER_PAIR
     arm_identity: None = None
 
     def __post_init__(self) -> None:
-        if self.page_capacity < 1 or self.max_pages < 1:
+        if (
+            self.page_capacity < 1
+            or self.max_pages < 1
+            or self.max_pairs_per_task < 1
+            or self.max_relations_per_pair < 1
+        ):
             raise ValueError("shared structured-output capacities must be positive")
 
     @property
     def schema(self) -> dict[str, Any]:
-        return _finite_schema(self.page_capacity, termination_discriminator=True)
+        return finite_edge_task_model(
+            max_pairs_per_task=self.max_pairs_per_task,
+            max_relations_per_pair=self.max_relations_per_pair,
+            fact_max_length=self.fact_max_length,
+        ).model_json_schema()
 
     @property
     def termination(self) -> str:
-        return "explicit_cursor_exhaustion"
+        return "declared_pair_task_completion"
 
     @property
     def continuation_prefix(self) -> str:
@@ -277,7 +290,7 @@ def finite_edge_page_model(
     """Build the finite Pydantic wire model used by every formal arm."""
 
     from pydantic import ConfigDict, Field, create_model
-    from typing import Literal
+    from typing import Literal, Union
 
     names = tuple(dict.fromkeys(str(name) for name in endpoint_names if str(name).strip()))
     endpoint_type: Any = Literal.__getitem__(names) if names else str
@@ -392,6 +405,87 @@ def finite_edge_page_model(
     )
 
 
+@lru_cache(maxsize=64)
+def finite_edge_task_model(
+    max_pairs_per_task: int = SHARED_MAX_PAIRS_PER_TASK,
+    max_relations_per_pair: int = SHARED_MAX_RELATIONS_PER_PAIR,
+    endpoint_names: tuple[str, ...] = (),
+    pair_tuples: tuple[tuple[str, str], ...] = (),
+    fact_max_length: int = SHARED_FACT_MAX_LENGTH,
+    name_prefix: str = "MemBind",
+) -> Any:
+    """Build the finite pair-task response model.
+
+    ``pairs_completed`` is intentionally a string list rather than an inferred
+    property of ``edges``: an empty relation set must still acknowledge its
+    declared pair.  The model bounds physical output; semantic cap handling is
+    performed by ``validate_edge_task_result``.
+    """
+
+    if max_pairs_per_task < 1 or max_relations_per_pair < 1:
+        raise ValueError("edge task bounds must be positive")
+    names = tuple(dict.fromkeys(str(name) for name in endpoint_names if str(name).strip()))
+    endpoint_type: Any
+    from typing import Literal, Union
+
+    endpoint_type = Literal.__getitem__(names) if names else str
+    edge_model = finite_edge_page_model(
+        max(1, max_pairs_per_task * max_relations_per_pair),
+        names,
+        fact_max_length,
+        name_prefix=f"{name_prefix}Task",
+        edge_name=f"{name_prefix}TaskEdge{max_pairs_per_task}_{max_relations_per_pair}_{len(names)}",
+        page_name=f"{name_prefix}TaskEdgePage{max_pairs_per_task}_{max_relations_per_pair}_{len(names)}",
+    ).model_fields["edges"].annotation.__args__[0]
+    from pydantic import ConfigDict, Field, create_model
+
+    # Endpoint enums alone still permit a cross-pair combination when a task
+    # batches overlapping pairs (for example A-B and A-C).  Build a compact
+    # union of direction-specific edge models so xgrammar rejects B-C before
+    # the provider can emit it.  Runtime validation remains authoritative.
+    normalized_pairs = tuple(
+        dict.fromkeys(
+            (str(left).strip(), str(right).strip())
+            for left, right in pair_tuples
+            if str(left).strip() and str(right).strip() and str(left).strip() != str(right).strip()
+        )
+    )
+    if normalized_pairs:
+        edge_fields = {
+            field_name: (field.annotation, field)
+            for field_name, field in edge_model.model_fields.items()
+        }
+        direction_models = []
+        for pair_index, (left, right) in enumerate(normalized_pairs):
+            for direction, (source, target) in enumerate(((left, right), (right, left))):
+                direction_fields = dict(edge_fields)
+                direction_fields["source_entity_name"] = (
+                    Literal.__getitem__((source,)),
+                    Field(...),
+                )
+                direction_fields["target_entity_name"] = (
+                    Literal.__getitem__((target,)),
+                    Field(...),
+                )
+                direction_models.append(
+                    create_model(
+                        f"{name_prefix}TaskPair{pair_index}_{direction}",
+                        **direction_fields,
+                        __config__=ConfigDict(extra="forbid"),
+                    )
+                )
+        edge_model = Union.__getitem__(tuple(direction_models))
+
+    pair_id_type = bounded_ascii_type(1, 600)
+    return create_model(
+        f"{name_prefix}FiniteEdgeTask{max_pairs_per_task}_{max_relations_per_pair}_{len(names)}",
+        status=(Literal["complete"], ...),
+        pairs_completed=(list[pair_id_type], Field(..., min_length=1, max_length=max_pairs_per_task)),
+        edges=(list[edge_model], Field(default_factory=list, max_length=max_pairs_per_task * max_relations_per_pair)),
+        __config__=ConfigDict(extra="forbid"),
+    )
+
+
 def adapter_identity(
     endpoint_names: Sequence[str] = (),
     *,
@@ -400,7 +494,7 @@ def adapter_identity(
     recovery: bool = False,
     excluded_edge: tuple[Any, ...] = (),
     no_additional_only: bool = False,
-    cursor_protocol: bool = True,
+    cursor_protocol: bool = False,
 ) -> dict[str, Any]:
     """Return source, schema, prompt, and policy identity for the substrate.
 
@@ -421,6 +515,13 @@ def adapter_identity(
         names: tuple[str, ...],
         active_exclusion: tuple[Any, ...] = (),
     ) -> dict[str, Any]:
+        if not cursor_protocol and not recovery and not no_additional_only:
+            return finite_edge_task_model(
+                max_pairs_per_task=contract.max_pairs_per_task,
+                max_relations_per_pair=contract.max_relations_per_pair,
+                endpoint_names=names,
+                fact_max_length=contract.fact_max_length,
+            ).model_json_schema()
         if names:
             return finite_edge_page_model(
                 contract.page_capacity,
@@ -457,7 +558,13 @@ def adapter_identity(
     schema_hash = hashlib.sha256(
         json.dumps(concrete_schema, sort_keys=True, separators=(",", ":")).encode()
     ).hexdigest()
-    continuation_hash = hashlib.sha256(contract.continuation(()).encode()).hexdigest()
+    continuation_hash = hashlib.sha256(
+        (
+            contract.continuation(())
+            if cursor_protocol or recovery
+            else SHARED_PROMPT_TEMPLATE
+        ).encode("utf-8")
+    ).hexdigest()
     prompt_hash = hashlib.sha256(SHARED_PROMPT_TEMPLATE.encode("utf-8")).hexdigest()
     return {
         "adapter_version": SHARED_ADAPTER_VERSION,
@@ -469,11 +576,13 @@ def adapter_identity(
         "prompt_template_sha256": prompt_hash,
         "page_capacity": contract.page_capacity,
         "max_pages": contract.max_pages,
-        "max_pages_semantics": "cursor_epoch_size_not_total_cap",
-        "total_page_cap": None,
-        "saturation_policy": "strict_cursor_epoch_continuation_until_explicit_exhaustion_v1",
-        "cursor_exclusion_policy": "single_previous_canonical_tuple_not_const_v1",
-        "cursor_exclusion_history_size": 1,
+        "max_pages_semantics": "finite_task_count",
+        "total_page_cap": 1,
+        "max_pairs_per_task": contract.max_pairs_per_task,
+        "max_relations_per_pair": contract.max_relations_per_pair,
+        "saturation_policy": "declared_pair_task_completion_or_fail_closed_v1",
+        "cursor_exclusion_policy": "prohibited_in_formal_path",
+        "cursor_exclusion_history_size": 0,
         "fact_character_policy": "official_history_ascii_xgrammar_finite_quantifier_v2",
         "json_whitespace_mode": BOUNDED_JSON_WHITESPACE_MODE,
         "json_whitespace_authority": (
@@ -489,6 +598,8 @@ def adapter_identity(
         "retry_policy": SHARED_RETRY_POLICY,
         "terminal_confirmation_policy": SHARED_TERMINAL_CONFIRMATION_POLICY,
         "terminal_confirmation_is_context_retry": False,
+        "terminal_only_success_allowed": False,
+        "edge_task_protocol": "finite_pair_task_v1",
         "termination_policy": contract.termination,
         "endpoint_names": list(normalized_endpoints) if normalized_endpoints else None,
         "response_variant": (
@@ -496,9 +607,9 @@ def adapter_identity(
             if recovery and not cursor_protocol and no_additional_only
             else "duplicate_recovery"
             if recovery and not cursor_protocol
-            else "schema_enforced_canonical_cursor"
+            else "legacy_cursor_for_offline_compatibility_only"
             if cursor_protocol
-            else "page"
+            else "finite_pair_task"
         ),
         "arm_identity": None,
     }
@@ -562,7 +673,7 @@ class BoundedStructuredOutputAdapter:
         accepted: list[Mapping[str, Any]] = []
         seen: set[tuple[str, ...]] = set()
         cursor: tuple[str, ...] | None = None
-        for page_index in itertools.count():
+        for page_index in range(self.contract.max_pages):
             continuation = self.contract.continuation(accepted)
             page = self.page_fetcher(continuation)
             if inspect.isawaitable(page):
@@ -607,6 +718,9 @@ class BoundedStructuredOutputAdapter:
                     "edge cursor response made no strict canonical progress"
                 )
             accepted.extend(fresh)
+        raise PageCapExhausted(
+            "bounded edge task exhausted its finite page budget without proof of completion"
+        )
 
 
 __all__ = [
@@ -615,5 +729,6 @@ __all__ = [
     "SHARED_PAGE_CAPACITY", "SHARED_MAX_PAGES", "SHARED_FACT_MAX_LENGTH",
     "SHARED_FACT_PATTERN", "bounded_ascii_field", "bounded_ascii_pattern", "bounded_ascii_type",
     "SHARED_CONSTRUCTION_MAX_TOKENS", "SHARED_PROMPT_TEMPLATE",
-    "adapter_identity", "canonical_edge_tuple", "finite_edge_page_model", "validate_edge_page",
+    "SHARED_MAX_PAIRS_PER_TASK", "SHARED_MAX_RELATIONS_PER_PAIR",
+    "adapter_identity", "canonical_edge_tuple", "finite_edge_page_model", "finite_edge_task_model", "validate_edge_page",
 ]

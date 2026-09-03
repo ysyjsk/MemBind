@@ -38,6 +38,7 @@ from saturated_fixed_work_baseline_v1_3.membind_v6_1.structured_output_recovery 
     reliability_identity,
 )
 from saturated_fixed_work_baseline_v1_3.membind_v6_1.provider import V61ProviderClient
+from saturated_fixed_work_baseline_v1_3.membind_v6_1.shared_structured_output import finite_edge_task_model
 from saturated_fixed_work_baseline_v1_3.membind_v5.runtime.core.admission import (
     CapacityAuthority,
 )
@@ -284,6 +285,21 @@ def test_edge_wire_schema_fits_pinned_graphiti_completion_budget() -> None:
     assert LOCAL_EDGE_FACT_MAX_CHARS > 0
     assert certificate.schema_worst_case_tokens <= 16_384
     assert certificate.status == "PASS"
+
+
+def test_finite_pair_task_schema_fits_pinned_completion_budget() -> None:
+    schema = finite_edge_task_model(endpoint_names=("A", "B", "C")).model_json_schema()
+    certificate = build_schema_bound_certificate(
+        messages=[{"role": "user", "content": "fixture"}],
+        schema=schema,
+        token_counter=lambda _messages: 1,
+        context_limit=65_536,
+        effective_max_tokens=16_384,
+        safety_margin_tokens=32,
+        whitespace_mode=BOUNDED_JSON_WHITESPACE_MODE,
+    )
+    assert certificate.status == "PASS"
+    assert certificate.schema_worst_case_tokens <= 16_384
 
 
 def test_page_capacity_selection_is_deterministic_and_never_calls_provider() -> None:

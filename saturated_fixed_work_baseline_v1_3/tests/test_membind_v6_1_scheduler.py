@@ -1383,6 +1383,10 @@ def test_extraction_inventory_aggregates_bounded_page_progress() -> None:
         "pagination_zero_delta_terminations": 1,
         "pagination_empty_terminations": 1,
         "pagination_page_capacity": 8,
+        "edge_task_plan_count": 0,
+        "edge_task_declared_count": 0,
+        "edge_task_completed_count": 0,
+        "edge_task_incomplete_count": 0,
         "node_response_audits": 0,
         "node_returned_entities": 0,
         "node_accepted_entities": 0,
@@ -2858,15 +2862,9 @@ def test_shared_pairwise_entity_refinement_covers_every_declared_pair() -> None:
     assert expanded is not None
     partitions, entity_count, partition_count, max_size = expanded
     observed = {
-        tuple(
-            value["name"]
-            for value in json.loads(
-                partition[0]["content"].split("<ENTITIES>", 1)[1].split(
-                    "</ENTITIES>", 1
-                )[0]
-            )
-        )
-        for partition in partitions
+        pair_id
+        for row in metadata
+        for pair_id in row["declared_pair_ids"]
     }
     expected = {
         (names[left], names[right])
@@ -2874,10 +2872,38 @@ def test_shared_pairwise_entity_refinement_covers_every_declared_pair() -> None:
         for right in range(left + 1, len(names))
     }
     assert entity_count == len(names)
-    assert partition_count == len(expected)
-    assert max_size == 2
-    assert observed == expected
+    assert partition_count == (len(expected) + 1) // 2
+    assert max_size <= 4
+    assert observed == {f"{left}||{right}" for left, right in expected}
+    assert all(1 <= len(row["declared_pair_ids"]) <= 2 for row in metadata)
     assert all(row["entity_domain_refinement"] == "complete_binary_pair_cover" for row in metadata)
+
+
+def test_pair_task_adjacent_window_covers_cross_evidence_boundary_fact() -> None:
+    source = "[USER]\nA introduced the plan.\n[ASSISTANT]\nB approved it.\n"
+    metadata: list[dict[str, object]] = []
+    expanded = _edge_turn_local_partitions(
+        [
+            {
+                "role": "user",
+                "content": (
+                    f"<CURRENT MESSAGE>{source}</CURRENT MESSAGE>\n<ENTITIES>"
+                    + json.dumps([{"name": "A"}, {"name": "B"}])
+                    + "</ENTITIES>\n# TASK"
+                ),
+            }
+        ],
+        entity_partition_hints={"a": [0], "b": [1]},
+        entity_partition_sources={0: "[USER]\nA introduced the plan.\n", 1: "[ASSISTANT]\nB approved it.\n"},
+        partition_metadata=metadata,
+        pairwise_entity_cover=True,
+    )
+    assert expanded is not None
+    assert any(
+        row["declared_pair_ids"] == ["A||B"]
+        and row["evidence_source_partition_ids"] == [0, 1]
+        for row in metadata
+    )
 
 
 def test_edge_candidate_policy_expands_every_physical_call_and_records_diagnostics(
@@ -2991,7 +3017,7 @@ def test_shared_edge_substrate_enforces_wire_budget_when_client_is_32768(
                     "token_usage": {"prompt_tokens": 10, "completion_tokens": 5},
                 }
             )
-            return {"edges": []}
+            return {"status": "complete", "pairs_completed": ["A||B"], "edges": []}
 
     monkeypatch.setenv("CONSTRUCTION_CONTEXT_SAFETY_TOKENS", "32")
     client = Client()

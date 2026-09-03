@@ -1573,7 +1573,7 @@
     "status": "PASS"
   },
   "artifact_type": "schema_bound_certificate",
-  "base_code_commit": "d9cc4f3c25b48e9cb28ba33e0ec43f5993adb277",
+  "base_code_commit": "5f845852198f649f816d424862df257654cf90c9",
   "callsite_completion_budgets": {
     "default": 32768,
     "extract_edges.edge": 16384
@@ -1704,22 +1704,40 @@
     }
   ],
   "evaluated_source_bundle": {
-    "base_code_commit": "d9cc4f3c25b48e9cb28ba33e0ec43f5993adb277",
-    "generator_source_sha256": "bdbb4850f87d91aa8b13e1b418b6cb70aa2b829c6a711cb1266cd25819f2335f",
+    "base_code_commit": "5f845852198f649f816d424862df257654cf90c9",
+    "generator_source_sha256": "2b23b9e64728b4d07cc2c660991da0c9c06b9d51d4ec44b17724d45d92dd1119",
     "graphiti_source_sha256": "7c65051a62982d8b510ebdbf37bae4d07020e74520e1f6d9bf8a0ffb26beeccb",
     "mab_live_runner_sha256": "630472cf998636ee927bd418c0458e9edc17b82617aafb0112b0566c6ec7ea8c",
     "native_server_launcher_sha256": "95fb718d1499b8d8a359fda8f2c2a4738a4c7b14d2ab497db4ff17d2c5be55af",
     "prepare_server_launcher_sha256": "8629271e61f8d2c58c8a5ef891c12aa01c13b5285e14a10ede8a02d012b7a8ee",
     "qwen_transport_sha256": "0b3c5acb9ca8efd95cf6f8660fd1e07f5cb9310031302298dab041bdb840568c",
     "server_preflight_sha256": "13b9197dc47365db2979f35c706b65b14517406f9357aaab3b5e00504c7b35de",
-    "v61_mab_sha256": "1f0f24b2b8416cb26c6668f3fac22c59d00715ac02cde850a5bfa666c27a964b",
-    "v61_runtime_sha256": "e4258f65524f9321fd749bc3e930f914443e538612ddc31f0ec7bfb9e4930977",
-    "v61_shared_structured_output_sha256": "d1191a3828e4cec51d425228d2f9f21eabcfc9c741a8451f70dd1a5b4a0ae47e",
+    "v61_mab_sha256": "b26eae549959867aff2d33e870432f78cc3c96d8b7b01d4ef2ee77939e0cd652",
+    "v61_runtime_sha256": "82cd2c2e5c27544afb9608c8f243fbdcf46ff8364c1a53f63a2cb7cc77097949",
+    "v61_shared_structured_output_sha256": "872c0160786d139f7eb4f98f67019330773dde305a67ba73dabe8085e590ce2a",
     "v61_structured_output_recovery_sha256": "3bb2fa277355cda696a7a6bdbd1885d26ab1f1f0940f6414e0b61216f3751137"
   },
-  "evaluated_source_bundle_sha256": "0dfad814ea0b43c998d99ede16c107dd988e64278145a525bab14a4a2470124b",
+  "evaluated_source_bundle_sha256": "2fec47b608c0a35a52366d6b5557c90011839fb416cbbcb375cadc7fcdd73248",
+  "finite_pair_task_certificate": {
+    "configured_effective_max_tokens": 16384,
+    "context_limit": 65536,
+    "context_safety_margin": 32,
+    "effective_completion_budget": 16384,
+    "exact_prompt_tokens": 1,
+    "failure_reasons": [],
+    "output_response_sha256": "b625dcf45a121fb341d77c7a09eabaa84df1e62f28fda5ffa3909542cd593a52",
+    "output_token_bound_method": "one_token_per_xgrammar_default_separators_utf8_byte_v6_server_whitespace_bound",
+    "physical_serialization_bound": true,
+    "schema_sha256": "638ba1ac0b98ef1f3c2a3b382c67db2941d62da65eaf6fa961806b4f3e768a34",
+    "schema_worst_case_characters": 11188,
+    "schema_worst_case_tokens": 11188,
+    "status": "PASS",
+    "tokenizer_witness_tokens": 5510,
+    "whitespace_mode": "disable_any_whitespace_vllm_v1"
+  },
+  "finite_pair_task_schema_bound_tokens": 11188,
   "formal_certificate_complete": true,
-  "generator_source_sha256": "bdbb4850f87d91aa8b13e1b418b6cb70aa2b829c6a711cb1266cd25819f2335f",
+  "generator_source_sha256": "2b23b9e64728b4d07cc2c660991da0c9c06b9d51d4ec44b17724d45d92dd1119",
   "graphiti_commit": "021d3a57d511f21b10adaf7fa923bd5c1fce5e9d",
   "graphiti_source_root": "/data/predator/ly/Mem/envs/membind-local/lib/python3.12/site-packages/graphiti_core",
   "graphiti_source_sha256": "7c65051a62982d8b510ebdbf37bae4d07020e74520e1f6d9bf8a0ffb26beeccb",
@@ -1813,8 +1831,8 @@
     "runtime_reliability_profile": "shared-structured-output-recovery-v3-xgrammar-physical-bound",
     "schema_revision": "finite-schema-v3-xgrammar-regex-and-separator-bound"
   },
-  "repository_dirty_diff_sha256": "644e7eeeaa5868e6c028ee4ebad802b1cfeb9aed018d878887c9231462c3798a",
-  "repository_head": "d9cc4f3c25b48e9cb28ba33e0ec43f5993adb277",
+  "repository_dirty_diff_sha256": "619df32308c2df872740852583cd4fb3c63240aba5017037f4295afbb4b21747",
+  "repository_head": "5f845852198f649f816d424862df257654cf90c9",
   "runtime_generated_call_count": 47,
   "runtime_generated_callsites": {
     "dedupe_edges.resolve_edge": [
@@ -2998,7 +3016,7 @@
     "summarize_nodes.summary_description",
     "summarize_sagas.summarize_saga"
   ],
-  "runtime_source_sha256": "e4258f65524f9321fd749bc3e930f914443e538612ddc31f0ec7bfb9e4930977",
+  "runtime_source_sha256": "82cd2c2e5c27544afb9608c8f243fbdcf46ff8364c1a53f63a2cb7cc77097949",
   "schema_version": "membind.structured-output-recovery.schema-bound-certificate.v3",
   "source_discovered_callsites": [
     {

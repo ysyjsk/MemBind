@@ -2,8 +2,8 @@
 
 Status: `CURRENT_HEAD_PROVENANCE_AUDITED_G1_G4_RECOMPUTED_H5_PENDING_CANARY`.
 
-Current HEAD: `d9cc4f3c25b48e9cb28ba33e0ec43f5993adb277`; branch: `dmsv-b1r2-structural-closure`; origin/main: `d9cc4f3c25b48e9cb28ba33e0ec43f5993adb277`.
-Working tree clean: `False`; tracked diff SHA-256: `889dff2ddd33bfe322b331e48de175ab2eaf1dca21d9adb777c844c1a4534f3b`.
+Current HEAD: `5f845852198f649f816d424862df257654cf90c9`; branch: `dmsv-b1r2-structural-closure`; origin/main: `5f845852198f649f816d424862df257654cf90c9`.
+Working tree clean: `False`; tracked diff SHA-256: `29edf21490afabd287403d8f71cf3f7166354c34093889e9057176f3bdb078a3`.
 
 Historical evidence base: `c62b548d18bbf0da161069be7be86750e977581c`. Its `CODE_READY` state is retained as historical evidence only and cannot authorize the current HEAD.
 
@@ -13,4 +13,4 @@ Known runtime changes since that evidence epoch:
 
 Current implementation identity was generated provider-free. G1-G4 and H5 must be recomputed or source-hash matched before canary authorization.
 
-Complete source bundle SHA-256: `a521d34888a3ba6cc6c051209af02ea3636a6857bd89607c50d64c481150e179`.
+Complete source bundle SHA-256: `baf691355bff73a232a126b31c81cf84f325853850a816f28152ba66bc1c753c`.

@@ -14,6 +14,7 @@ from saturated_fixed_work_baseline_v1_3.membind_v6_1.shared_structured_output im
     canonical_edge_tuple,
     adapter_identity,
     bounded_ascii_pattern,
+    finite_edge_task_model,
     finite_edge_page_model,
     SHARED_CONSTRUCTION_MAX_TOKENS,
     SHARED_MAX_TOKENS,
@@ -123,18 +124,47 @@ def test_installed_xgrammar_enforces_edge_schema_physical_bounds() -> None:
                 if branch.get("type") == "string"
             )
         assert selected["pattern"] == bounded_ascii_pattern(*limits)
-        assert "*" not in selected["pattern"]
+    assert "*" not in selected["pattern"]
+
+
+def test_installed_xgrammar_enforces_declared_pair_domain() -> None:
+    model = finite_edge_task_model(
+        max_pairs_per_task=2,
+        max_relations_per_pair=1,
+        endpoint_names=("A", "B", "C"),
+        pair_tuples=(("A", "B"), ("A", "C")),
+    )
+    schema = model.model_json_schema()
+
+    def payload(source: str, target: str) -> dict:
+        return {
+            "status": "complete",
+            "pairs_completed": ["A||B", "A||C"],
+            "edges": [
+                {
+                    "source_entity_name": source,
+                    "target_entity_name": target,
+                    "relation_type": "RELATED_TO",
+                    "fact": "f",
+                    "valid_at": None,
+                    "invalid_at": None,
+                    "episode_indices": [0],
+                }
+            ],
+        }
+
+    for source, target in (("A", "B"), ("B", "A"), ("A", "C"), ("C", "A")):
+        assert _xgrammar_accepts(schema, payload(source, target))
+    assert not _xgrammar_accepts(schema, payload("B", "C"))
 
 
 def test_contract_is_arm_agnostic_and_finite() -> None:
     contract = SharedStructuredOutputContract(page_capacity=2, max_pages=3)
     assert contract.arm_identity is None
-    assert contract.schema["properties"]["status"]["enum"] == [
-        "new_edge",
-        "no_additional_edge",
-    ]
-    assert contract.schema["properties"]["edge"]["properties"]["fact"]["maxLength"] > 0
-    assert contract.termination == "explicit_cursor_exhaustion"
+    assert contract.schema["properties"]["status"]["const"] == "complete"
+    assert contract.schema["properties"]["pairs_completed"]["maxItems"] == 2
+    assert contract.schema["properties"]["edges"]["maxItems"] == 2
+    assert contract.termination == "declared_pair_task_completion"
 
 
 def test_canonical_cursor_continuation_is_constant_size_over_history_growth() -> None:
@@ -157,9 +187,7 @@ def test_canonical_cursor_continuation_is_constant_size_over_history_growth() ->
 
 def test_shared_adapter_identity_is_frozen_and_arm_agnostic() -> None:
     identity = adapter_identity()
-    assert identity["adapter_version"] == (
-        "shared-bounded-structured-output-v6-explicit-terminal-confirmation"
-    )
+    assert identity["adapter_version"] == "shared-bounded-structured-output-v7-finite-pair-tasks"
     assert len(identity["adapter_source_sha256"]) == 64
     assert len(identity["schema_sha256"]) == 64
     assert len(identity["continuation_prompt_sha256"]) == 64
@@ -170,16 +198,13 @@ def test_shared_adapter_identity_is_frozen_and_arm_agnostic() -> None:
     assert identity["schema_scope"] == "template"
     assert identity["schema_template_sha256"] == identity["schema_sha256"]
     assert len(identity["prompt_template_sha256"]) == 64
-    assert identity["retry_policy"] == (
-        "single_attempt_per_distinct_schema_request_fail_closed_v2"
-    )
-    assert identity["terminal_confirmation_policy"] == (
-        "one_distinct_terminal_only_request_after_provider_repeat_not_context_retry_v1"
-    )
+    assert identity["retry_policy"] == "single_attempt_finite_task_fail_closed_v1"
+    assert identity["terminal_confirmation_policy"] == "prohibited_terminal_only_success_v1"
     assert identity["terminal_confirmation_is_context_retry"] is False
     assert identity["json_whitespace_mode"] == "disable_any_whitespace_vllm_v1"
     assert identity["physical_serialization_bound"] is True
-    assert identity["response_variant"] == "schema_enforced_canonical_cursor"
+    assert identity["response_variant"] == "finite_pair_task"
+    assert identity["terminal_only_success_allowed"] is False
 
 
 def test_endpoint_grounded_identity_separates_template_and_concrete_schema() -> None:
@@ -197,7 +222,7 @@ def test_legacy_recovery_identity_uses_explicit_no_additional_edge_discriminator
     normal = adapter_identity(("A", "B"), cursor_protocol=False)
     assert identity["arm_identity"] is None
     assert identity["response_variant"] == "duplicate_recovery"
-    assert normal["response_variant"] == "page"
+    assert normal["response_variant"] == "finite_pair_task"
     assert identity["prompt_template_sha256"] == normal["prompt_template_sha256"]
     assert identity["schema_template_sha256"] != normal["schema_template_sha256"]
     model = finite_edge_page_model(
@@ -293,10 +318,8 @@ def test_rolling_cursor_schema_excludes_one_1900_character_edge_and_stays_admiss
     base_identity = adapter_identity(("A", "B"))
     rolling_identity = adapter_identity(("A", "B"), excluded_edge=repeated)
     assert rolling_identity["schema_template_sha256"] == base_identity["schema_template_sha256"]
-    assert rolling_identity["schema_sha256"] != base_identity["schema_sha256"]
-    assert rolling_identity["cursor_exclusion_policy"] == (
-        "single_previous_canonical_tuple_not_const_v1"
-    )
+    assert rolling_identity["schema_sha256"] == base_identity["schema_sha256"]
+    assert rolling_identity["cursor_exclusion_policy"] == "prohibited_in_formal_path"
 
 
 def test_shared_finite_model_supports_grounded_endpoints() -> None:
@@ -358,10 +381,8 @@ def test_page_epoch_saturation_continues_until_explicit_exhaustion() -> None:
         page_fetcher=lambda _continuation: next(pages),
         authoritative_entities=("a", "b"),
     )
-    result = asyncio.run(adapter.collect())
-    assert len(result.edges) == 65
-    assert result.page_count == 66
-    assert result.termination == "explicit_cursor_exhaustion"
+    with pytest.raises(PageCapExhausted, match="finite page budget"):
+        asyncio.run(adapter.collect())
 
 
 def test_unknown_endpoint_is_rejected() -> None:

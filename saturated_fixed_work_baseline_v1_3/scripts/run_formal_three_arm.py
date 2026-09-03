@@ -17,6 +17,7 @@ from typing import Any
 
 from formal_three_arm_harness import (
     ARMS,
+    HISTORY_UNIT_COUNT,
     _json,
     _valid_cell,
     _valid_construction,
@@ -434,7 +435,7 @@ def _execute_cell(root: Path, frozen_root: Path, cell: dict[str, Any], *, env: d
         "--run-id",
         run_id,
         "--contexts",
-        str(cell["history_index"]),
+        str(cell.get("base_history_index", cell["history_index"])),
         "--methods",
         cell["arm"],
         "--v61-boundary",
@@ -668,9 +669,9 @@ def run(root: Path, frozen_root: Path) -> dict[str, Any]:
     processed_cells = 0
     attempts_executed = 0
     # History-atomic order is explicit and independent of filesystem order.
-    for history in range(5):
-        for replicate in range(3):
-            for arm in ARMS:
+    for history in range(HISTORY_UNIT_COUNT):
+        replicate = 0
+        for arm in ARMS:
                 cell = next(c for c in manifest["cells"] if c["history_index"] == history and c["replicate_id"] == replicate and c["arm"] == arm)
                 row = _execute_cell(root, frozen_root, cell, env=env, ledger=ledger)
                 processed_cells += 1

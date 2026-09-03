@@ -35,6 +35,9 @@ ARMS = (
     "MEMBIND_V6_1_SHARED_BOUNDED_SO",
     "RELAXED_ORDER_SHARED_BOUNDED_SO",
 )
+OFFICIAL_HISTORY_COUNT = 5
+REPLICATE_COUNT = 3
+HISTORY_UNIT_COUNT = OFFICIAL_HISTORY_COUNT * REPLICATE_COUNT
 NATIVE_ARM = "GRAPHITI_SERIAL_SHARED_BOUNDED_SO"
 OURS_ARM = "MEMBIND_V6_1_SHARED_BOUNDED_SO"
 ASYNC_ARM = "RELAXED_ORDER_SHARED_BOUNDED_SO"
@@ -71,10 +74,15 @@ def build_manifest(
     authority: Mapping[str, Any],
     platform_identity: Mapping[str, Any],
 ) -> dict[str, Any]:
-    """Build and validate the complete 5×3×3 manifest without live calls."""
+    """Build and validate 15 history-units × 3 arms without live calls.
+
+    The dataset has five official histories.  Each of the three preregistered
+    replicate slots is represented as a distinct history unit while retaining
+    ``base_history_index`` so no synthetic dataset history is introduced.
+    """
 
     context_ids = list(authority.get("context_ids", ()))
-    if len(context_ids) != 5:
+    if len(context_ids) != OFFICIAL_HISTORY_COUNT:
         raise ValueError("formal manifest requires five context ids")
     frozen_platform = method_frozen.get("platform_manifest")
     if not isinstance(frozen_platform, Mapping):
@@ -89,19 +97,22 @@ def build_manifest(
         raise ValueError("active and frozen platform identities do not match")
     run_id = f"formal-three-arm-{time.strftime('%Y%m%dT%H%M%SZ', time.gmtime())}"
     cells: list[dict[str, Any]] = []
-    for history in range(5):
-        for replicate in range(3):
-            order = ARMS
-            for arm in order:
-                cell_id = f"h{history}-r{replicate}-{arm}"
-                attempt_id = uuid.uuid4().hex[:12]
-                namespace = f"local-qwen3-8b-awq-dualreplica-v1-{run_id}-h{history}-r{replicate}-{arm.casefold().replace('_', '-')}-{attempt_id}"
-                cells.append({
+    for history_unit in range(HISTORY_UNIT_COUNT):
+        base_history_index = history_unit // REPLICATE_COUNT
+        replicate = history_unit % REPLICATE_COUNT
+        order = ARMS
+        for arm in order:
+            cell_id = f"h{history_unit}-r{replicate}-{arm}"
+            attempt_id = uuid.uuid4().hex[:12]
+            namespace = f"local-qwen3-8b-awq-dualreplica-v1-{run_id}-h{history_unit}-r{replicate}-{arm.casefold().replace('_', '-')}-{attempt_id}"
+            cells.append({
                     "cell_id": cell_id,
                     "campaign_id": run_id,
-                    "history_index": history,
-                    "history_id": context_ids[history],
-                    "replicate_id": replicate,
+                    "history_index": history_unit,
+                    "base_history_index": base_history_index,
+                    "history_id": context_ids[base_history_index],
+                    "replicate_id": 0,
+                    "base_replicate_id": replicate,
                     "arm": arm,
                     "attempt_id": attempt_id,
                     "namespace": namespace,
@@ -124,8 +135,10 @@ def build_manifest(
         "status": "SEALED",
         "campaign_id": run_id,
         "scope": "FORMAL",
-        "history_count": 5,
-        "replicate_count": 3,
+        "history_count": HISTORY_UNIT_COUNT,
+        "official_history_count": OFFICIAL_HISTORY_COUNT,
+        "replicate_count": 1,
+        "base_replicate_count": REPLICATE_COUNT,
         "arm_count": 3,
         "construction_cell_count": 45,
         "full_qa_cell_count": 45,
@@ -133,11 +146,22 @@ def build_manifest(
         "arms": list(ARMS),
         "counterbalance": {
             "type": "FIXED_WITHIN_HISTORY",
-            "replicate_0": list(ARMS),
-            "replicate_1": list(ARMS),
-            "replicate_2": list(ARMS),
+            "history_unit_order": list(ARMS),
+            "base_replicate_orders": {
+                str(rep): list(ARMS) for rep in range(REPLICATE_COUNT)
+            },
         },
-        "history_order": list(range(5)),
+        "history_order": list(range(HISTORY_UNIT_COUNT)),
+        "history_unit_mapping": [
+            {
+                "history_index": unit,
+                "base_history_index": unit // REPLICATE_COUNT,
+                "replicate_id": 0,
+                "base_replicate_id": unit % REPLICATE_COUNT,
+                "history_id": context_ids[unit // REPLICATE_COUNT],
+            }
+            for unit in range(HISTORY_UNIT_COUNT)
+        ],
         "cells": cells,
         "identity": {
             "implementation": implementation_identity.get("source_bundle_sha256"),
@@ -166,15 +190,16 @@ def validate_manifest(manifest: Mapping[str, Any]) -> None:
         values = [cell[key] for cell in cells]
         if len(set(values)) != len(values):
             raise ValueError(f"manifest duplicate {key}")
-    expected = {(h, r, arm) for h in range(5) for r in range(3) for arm in ARMS}
+    expected = {(h, 0, arm) for h in range(HISTORY_UNIT_COUNT) for arm in ARMS}
     observed = {(cell.get("history_index"), cell.get("replicate_id"), cell.get("arm")) for cell in cells}
     if observed != expected:
         raise ValueError("manifest cell coverage mismatch")
-    for h in range(5):
-        for r in range(3):
-            rows = [cell for cell in cells if cell["history_index"] == h and cell["replicate_id"] == r]
-            if [cell["arm"] for cell in rows] != list(ARMS):
-                raise ValueError("manifest fixed order mismatch")
+    for h in range(HISTORY_UNIT_COUNT):
+        rows = [cell for cell in cells if cell["history_index"] == h and cell["replicate_id"] == 0]
+        if [cell["arm"] for cell in rows] != list(ARMS):
+            raise ValueError("manifest fixed order mismatch")
+        if rows[0].get("base_history_index") != h // REPLICATE_COUNT:
+            raise ValueError("manifest history-unit mapping mismatch")
 
 
 def _valid_construction(row: Mapping[str, Any]) -> bool:
@@ -216,13 +241,17 @@ def reduce_formal(rows: Sequence[Mapping[str, Any]]) -> dict[str, Any]:
             "invalid_or_replacements": [r for r in rows if not _valid_cell(r)],
         }
     effects = []
-    for history in range(5):
-        hrows = [r for r in valid if r.get("history_index") == history]
+    for history in range(OFFICIAL_HISTORY_COUNT):
+        hrows = [r for r in valid if r.get("base_history_index") == history]
         by_rep: list[dict[str, Any]] = []
-        for rep in range(3):
-            pair = {r.get("arm"): r for r in hrows if r.get("replicate_id") == rep}
+        for rep in range(REPLICATE_COUNT):
+            pair = {
+                r.get("arm"): r
+                for r in hrows
+                if r.get("base_replicate_id", r.get("replicate_id")) == rep
+            }
             native, ours = pair[NATIVE_ARM], pair[OURS_ARM]
-            by_rep.append({"replicate_id": rep, "a_t_build_ns": native.get("t_build_ns"), "c_t_build_ns": ours.get("t_build_ns"), "a_vs_c_ratio": (float(native["t_build_ns"]) / float(ours["t_build_ns"]) if float(ours.get("t_build_ns", 0)) else None)})
+            by_rep.append({"replicate_id": rep, "history_unit": native.get("history_index"), "a_t_build_ns": native.get("t_build_ns"), "c_t_build_ns": ours.get("t_build_ns"), "a_vs_c_ratio": (float(native["t_build_ns"]) / float(ours["t_build_ns"]) if float(ours.get("t_build_ns", 0)) else None)})
         ratios = [x["a_vs_c_ratio"] for x in by_rep if isinstance(x["a_vs_c_ratio"], (int, float))]
         effects.append({"history_index": history, "replicate_effects": by_rep, "a_vs_c_geometric_mean": math.exp(sum(math.log(v) for v in ratios) / len(ratios)) if ratios and all(v > 0 for v in ratios) else None})
     vals = [e["a_vs_c_geometric_mean"] for e in effects if isinstance(e["a_vs_c_geometric_mean"], (int, float)) and e["a_vs_c_geometric_mean"] > 0]

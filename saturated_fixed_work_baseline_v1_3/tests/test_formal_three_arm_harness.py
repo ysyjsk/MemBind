@@ -110,15 +110,13 @@ def test_manifest_has_45_unique_cells_and_fixed_native_ours_async_order(tmp_path
     assert len({cell["cell_id"] for cell in cells}) == 45
     assert len({cell["attempt_id"] for cell in cells}) == 45
     assert len({cell["namespace"] for cell in cells}) == 45
-    for history in range(5):
-        for replicate, expected in enumerate((h.ARMS, h.ARMS, h.ARMS)):
-            observed = [cell["arm"] for cell in cells if cell["history_index"] == history and cell["replicate_id"] == replicate]
-            assert observed == list(expected)
-            assert list(expected) == [
-                "GRAPHITI_SERIAL_SHARED_BOUNDED_SO",
-                "MEMBIND_V6_1_SHARED_BOUNDED_SO",
-                "RELAXED_ORDER_SHARED_BOUNDED_SO",
-            ]
+    assert manifest["history_count"] == 15
+    for history_unit in range(15):
+        observed = [cell["arm"] for cell in cells if cell["history_index"] == history_unit]
+        assert observed == list(h.ARMS)
+        assert all(cell["base_history_index"] == history_unit // 3 for cell in cells if cell["history_index"] == history_unit)
+        assert all(cell["replicate_id"] == 0 for cell in cells if cell["history_index"] == history_unit)
+        assert all(cell["base_replicate_id"] == history_unit % 3 for cell in cells if cell["history_index"] == history_unit)
     assert manifest["identity"]["platform"] == PLATFORM["payload_sha256"]
     assert {cell["platform_manifest_sha256"] for cell in cells} == {
         PLATFORM["payload_sha256"]
@@ -156,8 +154,10 @@ def test_reducer_requires_full_construction_and_qa_before_pass(tmp_path: Path) -
     rows = [
         {
             "cell_id": f"c{i}",
-            "history_index": i // 9,
+            "history_index": i // 3,
+            "base_history_index": (i // 3) // 3,
             "replicate_id": (i // 3) % 3,
+            "base_replicate_id": (i // 3) % 3,
             "arm": h.ARMS[i % 3],
             "construction_status": "PASS",
             "construction_complete_status": "PASS",

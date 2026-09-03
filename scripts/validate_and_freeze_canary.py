@@ -130,10 +130,14 @@ def validate(root: Path) -> dict[str, Any]:
             adapter_payload.get("arm_identity") is not None
             or adapter_payload.get("wire_max_tokens") != 16384
             or adapter_payload.get("termination_policy")
-            != "explicit_cursor_exhaustion"
+            != "declared_pair_task_completion"
             or adapter_payload.get("terminal_confirmation_policy")
-            != "one_distinct_terminal_only_request_after_provider_repeat_not_context_retry_v1"
+            != "prohibited_terminal_only_success_v1"
             or adapter_payload.get("terminal_confirmation_is_context_retry") is not False
+            or adapter_payload.get("terminal_only_success_allowed") is not False
+            or adapter_payload.get("edge_task_protocol") != "finite_pair_task_v1"
+            or adapter_payload.get("max_pages_semantics") != "finite_task_count"
+            or adapter_payload.get("total_page_cap") != 1
         ):
             issues.append("shared_adapter_contract")
         shared_contracts[method] = adapter_payload
@@ -194,15 +198,17 @@ def freeze(root: Path) -> dict[str, Any]:
         "policy": validation.get("resource_credit_policy", {}),
         "arms": {
             "A": "GRAPHITI_SERIAL_SHARED_BOUNDED_SO",
-            "B": "RELAXED_ORDER_SHARED_BOUNDED_SO",
-            "C": "MEMBIND_V6_1_SHARED_BOUNDED_SO",
+            "B": "MEMBIND_V6_1_SHARED_BOUNDED_SO",
+            "C": "RELAXED_ORDER_SHARED_BOUNDED_SO",
         },
         "shared_structured_output_substrate": {
             "identity_sha256": validation["shared_adapter_identity_sha256"],
             "backend": "xgrammar",
             "model": "qwen3-8b-awq",
             "max_tokens": 16384,
-            "terminal_confirmation": "one_distinct_terminal_only_request_after_provider_repeat_not_context_retry_v1",
+            "terminal_confirmation": "prohibited_terminal_only_success_v1",
+            "terminal_only_success_allowed": False,
+            "edge_task_protocol": "finite_pair_task_v1",
             "arm_branching": False,
             "strict_upstream_characterization": "A0_STRICT_UPSTREAM_COMPATIBILITY_CHARACTERIZATION",
         },

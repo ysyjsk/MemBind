@@ -398,12 +398,22 @@ def _runtime_patch_inventory_probe() -> dict[str, Any]:
                 "base_url": "http://127.0.0.1:18200/v1",
                 "served_model": "qwen3-8b-awq",
                 "physical_gpu": 0,
+                "structured_outputs_config": {
+                    "backend": "xgrammar",
+                    "disable_any_whitespace": True,
+                },
+                "json_separators": [", ", ": "],
             },
             {
                 "id": "prepare-replica",
                 "base_url": "http://127.0.0.1:18201/v1",
                 "served_model": "qwen3-8b-awq",
                 "physical_gpu": 1,
+                "structured_outputs_config": {
+                    "backend": "xgrammar",
+                    "disable_any_whitespace": True,
+                },
+                "json_separators": [", ", ": "],
             },
         ]
         base_manifest = {

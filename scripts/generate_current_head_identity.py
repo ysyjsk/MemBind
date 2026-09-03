@@ -110,6 +110,8 @@ def _source_sets() -> dict[str, list[Path]]:
         "method_spec": [
             sfwb / "structured_output_recovery/THREE_ARM_METHOD_BOUNDARIES.json",
             sfwb / "structured_output_recovery/STRUCTURED_OUTPUT_RECOVERY_POLICY.json",
+            ROOT / "STRUCTURED_OUTPUT_DESIGN_DECISION.md",
+            ROOT / "STRUCTURED_OUTPUT_DESIGN_DECISION.json",
         ],
         "dataset": [
             ROOT / "mab_quality_v2_final_qa/data/official_5_contexts.json",

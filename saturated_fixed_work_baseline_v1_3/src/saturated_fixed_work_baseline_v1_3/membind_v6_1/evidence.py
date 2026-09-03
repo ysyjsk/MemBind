@@ -42,6 +42,43 @@ def response_sha256(response: Any) -> str:
     return hashlib.sha256(payload).hexdigest()
 
 
+def validate_finite_edge_task_ledger(
+    diagnostics: Sequence[Mapping[str, Any]],
+) -> dict[str, Any]:
+    """Validate that every declared finite edge task reached acknowledgement.
+
+    This check is intentionally independent of construction artifact writing:
+    an incomplete task ledger is a correctness failure and must prevent a
+    construction seal rather than being represented as an empty graph.
+    """
+
+    plans = [
+        row
+        for row in diagnostics
+        if row.get("schema_version") == "membind.v6.1.edge-task-plan.v1"
+    ]
+    incomplete = [
+        row
+        for row in plans
+        if row.get("status") != "complete"
+        or int(row.get("declared_task_count", 0) or 0)
+        != int(row.get("completed_task_count", 0) or 0)
+    ]
+    if incomplete:
+        raise ValueError("finite edge task ledger is incomplete")
+    return {
+        "plan_count": len(plans),
+        "declared_task_count": sum(
+            int(row.get("declared_task_count", 0) or 0) for row in plans
+        ),
+        "completed_task_count": sum(
+            int(row.get("completed_task_count", 0) or 0) for row in plans
+        ),
+        "task_graph_digests": [row.get("task_graph_digest") for row in plans],
+        "coverage_digests": [row.get("coverage_digest") for row in plans],
+    }
+
+
 def extraction_work_inventory(diagnostics: Sequence[Mapping[str, Any]]) -> dict[str, int]:
     """Aggregate content-free extraction progress into the sealed work schema."""
 
@@ -65,6 +102,18 @@ def extraction_work_inventory(diagnostics: Sequence[Mapping[str, Any]]) -> dict[
     ]
     grounded_summary_nodes = [
         row for row in diagnostics if row.get("event") == "GROUNDED_SUMMARY_NODE"
+    ]
+    edge_task_plans = [
+        row
+        for row in diagnostics
+        if row.get("schema_version") == "membind.v6.1.edge-task-plan.v1"
+    ]
+    incomplete_edge_task_plans = [
+        row
+        for row in edge_task_plans
+        if row.get("status") != "complete"
+        or int(row.get("declared_task_count", 0) or 0)
+        != int(row.get("completed_task_count", 0) or 0)
     ]
     capacities = {int(row.get("page_capacity", 0) or 0) for row in pages}
     capacities.discard(0)
@@ -100,6 +149,14 @@ def extraction_work_inventory(diagnostics: Sequence[Mapping[str, Any]]) -> dict[
             1 for row in diagnostics if row.get("event") == "EDGE_PAGINATION_EMPTY_PAGE"
         ),
         "pagination_page_capacity": next(iter(capacities), 0),
+        "edge_task_plan_count": len(edge_task_plans),
+        "edge_task_declared_count": sum(
+            int(row.get("declared_task_count", 0) or 0) for row in edge_task_plans
+        ),
+        "edge_task_completed_count": sum(
+            int(row.get("completed_task_count", 0) or 0) for row in edge_task_plans
+        ),
+        "edge_task_incomplete_count": len(incomplete_edge_task_plans),
         "node_response_audits": len(node_audits),
         "node_returned_entities": sum(
             int(row.get("returned_entity_count", 0) or 0) for row in node_audits

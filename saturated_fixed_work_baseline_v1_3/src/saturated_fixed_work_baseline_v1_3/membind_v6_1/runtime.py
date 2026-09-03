@@ -7,7 +7,6 @@ import ast
 import heapq
 import hashlib
 import inspect
-import itertools
 import json
 import os
 import re
@@ -43,7 +42,17 @@ from .shared_structured_output import (
     bounded_ascii_type,
     canonical_edge_tuple,
     finite_edge_page_model,
+    finite_edge_task_model,
     validate_edge_page,
+)
+from .bounded_edge_tasks import (
+    MAX_PAIRS_PER_TASK,
+    MAX_RELATIONS_PER_PAIR,
+    MAX_TASKS_PER_SOURCE,
+    EdgeTask,
+    EdgeTaskOverflow,
+    build_edge_task_plan,
+    validate_edge_task_result,
 )
 
 
@@ -1117,7 +1126,7 @@ def _edge_pair_partitions(
         return None
     _, _, values = block
     entities = _distinct_entity_values(values)
-    if len(entities) <= 2:
+    if len(entities) < 2:
         return None
     partitions: list[list[Any]] = []
     for left in range(len(entities)):
@@ -1175,7 +1184,7 @@ def _edge_turn_local_partitions(
         return None
     _, _, values = block
     entities = _distinct_entity_values(values)
-    if len(entities) <= 2:
+    if len(entities) < 2:
         return None
     by_identity = {" ".join(str(value.get("name", "")).split()).casefold(): value for value in entities}
     groups: dict[int, set[str]] = {}
@@ -1340,6 +1349,7 @@ def _edge_turn_local_partitions(
             set[str],
             set[str],
             int,
+            tuple[tuple[str, str], ...],
         ]
     ] = []
     for source_ids, candidate, source_text, view_kind, cross_left, cross_right in unique_groups:
@@ -1353,12 +1363,27 @@ def _edge_turn_local_partitions(
                     cross_left,
                     cross_right,
                     len(candidate),
+                    (),
                 )
             )
             continue
-        for left in range(len(candidate)):
-            for right in range(left + 1, len(candidate)):
-                pair = [candidate[left], candidate[right]]
+        candidate_by_name = {
+            " ".join(str(value.get("name", "")).split()): value
+            for value in candidate
+        }
+        try:
+            candidate_plan = build_edge_task_plan(
+                tuple(candidate_by_name),
+                max_pairs_per_task=MAX_PAIRS_PER_TASK,
+                max_relations_per_pair=MAX_RELATIONS_PER_PAIR,
+                max_tasks=MAX_TASKS_PER_SOURCE,
+            )
+        except EdgeTaskOverflow as exc:
+            raise LocalRuntimeConfigurationError(str(exc)) from exc
+        candidate_pairs: list[tuple[dict[str, Any], dict[str, Any]]] = []
+        for task in candidate_plan.tasks:
+            for left_name, right_name in task.pair_ids:
+                pair = [candidate_by_name[left_name], candidate_by_name[right_name]]
                 pair_identities = {
                     " ".join(str(value.get("name", "")).split()).casefold()
                     for value in pair
@@ -1367,17 +1392,39 @@ def _edge_turn_local_partitions(
                     pair_identities & cross_left and pair_identities & cross_right
                 ):
                     continue
-                refined_groups.append(
-                    (
-                        source_ids,
-                        pair,
-                        source_text,
-                        view_kind,
-                        cross_left,
-                        cross_right,
-                        len(candidate),
-                    )
+                candidate_pairs.append((pair[0], pair[1]))
+        # Pack a fixed number of pairs into each physical request.  The
+        # logical domain remains complete; batching only amortizes transport
+        # overhead and never changes candidate membership.
+        for start in range(0, len(candidate_pairs), MAX_PAIRS_PER_TASK):
+            pair_batch = candidate_pairs[start : start + MAX_PAIRS_PER_TASK]
+            batch_entities: list[dict[str, Any]] = []
+            seen_batch_names: set[str] = set()
+            pair_ids: list[tuple[str, str]] = []
+            for left_value, right_value in pair_batch:
+                left_name = " ".join(str(left_value.get("name", "")).split())
+                right_name = " ".join(str(right_value.get("name", "")).split())
+                pair_ids.append((left_name, right_name))
+                for value in (left_value, right_value):
+                    name_key = " ".join(str(value.get("name", "")).split()).casefold()
+                    if name_key not in seen_batch_names:
+                        seen_batch_names.add(name_key)
+                        batch_entities.append(value)
+            refined_groups.append(
+                (
+                    source_ids,
+                    batch_entities,
+                    source_text,
+                    view_kind,
+                    cross_left,
+                    cross_right,
+                    len(candidate),
+                    tuple(pair_ids),
                 )
+            )
+
+    if not refined_groups:
+        return None
 
     partitions: list[list[Any]] = []
     for (
@@ -1388,6 +1435,7 @@ def _edge_turn_local_partitions(
         cross_left,
         cross_right,
         parent_entity_count,
+        pair_ids,
     ) in refined_groups:
         scope_instruction = (
             "Evaluate only cross-boundary relationships with at least one endpoint "
@@ -1399,6 +1447,16 @@ def _edge_turn_local_partitions(
                 "evidence-local partition. The partition is complete for its source text."
             )
         )
+        if pairwise_entity_cover:
+            pair_text = json.dumps(
+                [f"{left}||{right}" for left, right in pair_ids],
+                ensure_ascii=True,
+            )
+            scope_instruction += (
+                " Return exactly status=complete and acknowledge every declared pair "
+                f"in pairs_completed={pair_text}. An empty relation list is valid; "
+                "do not emit terminal-only status."
+            )
         partition = _replace_entity_block(
             messages,
             entity_values=candidate,
@@ -1430,13 +1488,16 @@ def _edge_turn_local_partitions(
                     ),
                     "parent_entity_count": parent_entity_count,
                     "physical_entity_count": len(candidate),
+                    "declared_pair_ids": [f"{left}||{right}" for left, right in pair_ids],
+                    "_declared_pair_tuples": [tuple(pair) for pair in pair_ids],
+                    "declared_pair_count": len(pair_ids),
                 }
             )
     return (
         partitions,
         len(entities),
         len(partitions),
-        max(len(candidate) for _, candidate, _, _, _, _, _ in refined_groups),
+        max(len(candidate) for _, candidate, _, _, _, _, _, _ in refined_groups),
     )
 
 
@@ -2530,6 +2591,7 @@ def install_local_extraction_chunking_policy(
             cursor_protocol_request: bool = False,
             base_request_messages: Sequence[Any] | None = None,
             continuation_edges: Sequence[Mapping[str, Any]] = (),
+            pair_tuples: Sequence[tuple[str, str]] = (),
         ) -> Any:
             if (
                 shared_bounded_structured_output
@@ -2651,6 +2713,14 @@ def install_local_extraction_chunking_policy(
                             and str(value.get("name", "")).strip()
                         )
                     )
+                declared_pair_tuples = tuple(
+                    (str(pair[0]), str(pair[1]))
+                    for pair in pair_tuples
+                    if isinstance(pair, (tuple, list))
+                    and len(pair) == 2
+                    and str(pair[0]).strip()
+                    and str(pair[1]).strip()
+                )
                 requested_capacity = int(edge_page_capacity)
                 schemas = {
                     capacity: (
@@ -2672,24 +2742,34 @@ def install_local_extraction_chunking_policy(
                             ),
                         )
                         if edge_endpoint_schema_grounding and endpoint_names
-                        else finite_edge_page_model(
-                            capacity,
-                            (),
-                            LOCAL_EDGE_FACT_MAX_CHARS,
-                            name_prefix="MemBind",
-                            termination_discriminator=(
-                                cursor_protocol_request
-                                or terminal_confirmation_request
-                                or (
-                                    duplicate_recovery_request
-                                    and shared_bounded_structured_output
-                                )
-                            ),
-                            excluded_edge=excluded_recovery_edge,
-                            no_additional_only=(
-                                terminal_confirmation_request
-                                or duplicate_recovery_final_abstention
-                            ),
+                        else (
+                            finite_edge_task_model(
+                                max_pairs_per_task=MAX_PAIRS_PER_TASK,
+                                max_relations_per_pair=MAX_RELATIONS_PER_PAIR,
+                                endpoint_names=endpoint_names,
+                                pair_tuples=declared_pair_tuples,
+                                fact_max_length=LOCAL_EDGE_FACT_MAX_CHARS,
+                            )
+                            if shared_bounded_structured_output
+                            else finite_edge_page_model(
+                                capacity,
+                                (),
+                                LOCAL_EDGE_FACT_MAX_CHARS,
+                                name_prefix="MemBind",
+                                termination_discriminator=(
+                                    cursor_protocol_request
+                                    or terminal_confirmation_request
+                                    or (
+                                        duplicate_recovery_request
+                                        and shared_bounded_structured_output
+                                    )
+                                ),
+                                excluded_edge=excluded_recovery_edge,
+                                no_additional_only=(
+                                    terminal_confirmation_request
+                                    or duplicate_recovery_final_abstention
+                                ),
+                            )
                         )
                     ).model_json_schema()
                     for capacity in range(requested_capacity, 0, -1)
@@ -2830,6 +2910,20 @@ def install_local_extraction_chunking_policy(
                         ),
                     )
                 )
+                if shared_bounded_structured_output:
+                    # Formal shared requests use the finite pair-task wire
+                    # contract.  Recompute the certificate from that exact
+                    # model below; the page-capacity chooser above remains a
+                    # compatibility path for legacy non-shared callers.
+                    effective_response_model = finite_edge_task_model(
+                        max_pairs_per_task=MAX_PAIRS_PER_TASK,
+                        max_relations_per_pair=MAX_RELATIONS_PER_PAIR,
+                        endpoint_names=endpoint_names,
+                        pair_tuples=declared_pair_tuples,
+                        fact_max_length=LOCAL_EDGE_FACT_MAX_CHARS,
+                    )
+                    selected_edge_page_capacity = SHARED_PAGE_CAPACITY
+                    selection = None
             shared_request_identity = None
             if shared_bounded_structured_output and prompt_name == "extract_edges.edge":
                 shared_request_identity = adapter_identity(
@@ -3254,10 +3348,100 @@ def install_local_extraction_chunking_policy(
                 actor_domain_cover=actor_domain_cover,
                 actor_domain_adjacent_domain=actor_domain_adjacent_domain,
                 actor_domain_boundary_join=actor_domain_boundary_join,
+                # The shared substrate uses finite pair tasks; legacy callers
+                # retain their evidence-local partition semantics.
                 pairwise_entity_cover=shared_bounded_structured_output,
             )
+            if expanded is None and shared_bounded_structured_output:
+                entity_block = _entity_block(messages)
+                entity_count = (
+                    len(_distinct_entity_values(entity_block[2]))
+                    if entity_block is not None
+                    else 0
+                )
+                diagnostics.append(
+                    {
+                        "schema_version": "membind.v6.1.edge-task-plan.v1",
+                        "prompt_name": prompt_name,
+                        "declared_task_count": 0,
+                        "completed_task_count": 0,
+                        "entity_count": entity_count,
+                        "maximum_provider_calls_per_source": 0,
+                        "termination_reason": "empty_declared_pair_domain",
+                        "status": "complete",
+                    }
+                )
+                return {"edges": []}
             if expanded is not None:
                 partitions, entity_count, partition_count, max_partition_entities = expanded
+                if shared_bounded_structured_output and partition_count > MAX_TASKS_PER_SOURCE:
+                    raise LocalRuntimeConfigurationError(
+                        "declared finite edge task count exceeds source guard"
+                    )
+                if shared_bounded_structured_output:
+                    task_rows = []
+                    for task_index, candidate_partition in enumerate(partitions):
+                        candidate_block = _entity_block(candidate_partition)
+                        names = (
+                            tuple(
+                                sorted(
+                                    " ".join(str(value.get("name", "")).split())
+                                    for value in candidate_block[2]
+                                    if isinstance(value, Mapping)
+                                )
+                            )
+                            if candidate_block is not None
+                            else ()
+                        )
+                        metadata = evidence_partition_metadata[task_index]
+                        task_rows.append(
+                            {
+                                "task_id": task_index,
+                                "entity_names": names,
+                                "pair_ids": list(metadata.get("declared_pair_ids", [])),
+                                "evidence_source_partition_ids": list(
+                                    metadata.get("evidence_source_partition_ids", [])
+                                ),
+                                "evidence_view_kind": metadata.get("evidence_view_kind"),
+                            }
+                        )
+                    task_digest = hashlib.sha256(
+                        json.dumps(
+                            task_rows,
+                            ensure_ascii=True,
+                            sort_keys=True,
+                            separators=(",", ":"),
+                        ).encode("utf-8")
+                    ).hexdigest()
+                    try:
+                        prompt_upper_bound = sum(
+                            int(count_tokens(partition)) for partition in partitions
+                        )
+                    except Exception:
+                        prompt_upper_bound = None
+                    coverage_digest = hashlib.sha256(
+                        json.dumps(task_rows, ensure_ascii=True, sort_keys=True).encode(
+                            "utf-8"
+                        )
+                    ).hexdigest()
+                    diagnostics.append(
+                        {
+                            "schema_version": "membind.v6.1.edge-task-plan.v1",
+                            "prompt_name": prompt_name,
+                            "declared_task_count": partition_count,
+                            "completed_task_count": 0,
+                            "pair_task_digest": task_digest,
+                            "task_graph_digest": task_digest,
+                            "coverage_digest": coverage_digest,
+                            "logical_work_digest": coverage_digest,
+                            "entity_count": entity_count,
+                            "maximum_provider_calls_per_source": partition_count,
+                            "prompt_token_upper_bound": prompt_upper_bound,
+                            "completion_token_upper_bound": partition_count * SHARED_MAX_TOKENS,
+                            "termination_reason": "declared_finite_pair_domain",
+                            "status": "sealed",
+                        }
+                    )
                 edge_page_model = _bounded_edge_page_model(edge_page_capacity)
                 local_active_page_requests = 0
                 local_max_active_page_requests = 0
@@ -3276,6 +3460,7 @@ def install_local_extraction_chunking_policy(
                     duplicate_recovery_final_abstention: bool = False,
                     terminal_confirmation_request: bool = False,
                     excluded_recovery_edge: tuple[Any, ...] = (),
+                    pair_tuples: Sequence[tuple[str, str]] = (),
                 ) -> tuple[Any, int, int, int | None, dict[str, Any] | None]:
                     nonlocal edge_active_page_requests
                     nonlocal edge_shared_max_active_page_requests
@@ -3338,6 +3523,7 @@ def install_local_extraction_chunking_policy(
                             cursor_protocol_request=cursor_protocol_request,
                             base_request_messages=base_request_messages,
                             continuation_edges=continuation_edges,
+                            pair_tuples=pair_tuples,
                         )
                         observed_service_ns = time.monotonic_ns() - service_start_ns
                         return (
@@ -3389,6 +3575,11 @@ def install_local_extraction_chunking_policy(
                         if str(value.get("name", "")).strip()
                     }
                     partition_evidence = evidence_partition_metadata[partition_id]
+                    pair_tuples = tuple(
+                        (str(pair[0]), str(pair[1]))
+                        for pair in partition_evidence.get("_declared_pair_tuples", ())
+                        if isinstance(pair, (tuple, list)) and len(pair) == 2
+                    )
                     partition_endpoint_names = tuple(
                         dict.fromkeys(
                             str(value.get("name", "")).strip()
@@ -3398,12 +3589,22 @@ def install_local_extraction_chunking_policy(
                         )
                     )
                     partition_page_model = (
-                        _endpoint_grounded_edge_page_model(
-                            edge_page_capacity,
-                            partition_endpoint_names,
+                        finite_edge_task_model(
+                            max_pairs_per_task=MAX_PAIRS_PER_TASK,
+                            max_relations_per_pair=MAX_RELATIONS_PER_PAIR,
+                            endpoint_names=partition_endpoint_names,
+                            pair_tuples=pair_tuples,
+                            fact_max_length=LOCAL_EDGE_FACT_MAX_CHARS,
                         )
-                        if edge_endpoint_schema_grounding
-                        else edge_page_model
+                        if shared_bounded_structured_output
+                        else (
+                            _endpoint_grounded_edge_page_model(
+                                edge_page_capacity,
+                                partition_endpoint_names,
+                            )
+                            if edge_endpoint_schema_grounding
+                            else edge_page_model
+                        )
                     )
                     cross_boundary_required = bool(
                         partition_evidence.get("cross_boundary_required")
@@ -3414,10 +3615,8 @@ def install_local_extraction_chunking_policy(
                     cross_right_endpoint_names = set(
                         partition_evidence.get("_cross_right_endpoint_names", set())
                     )
-                    page_indices = (
-                        itertools.count()
-                        if shared_bounded_structured_output
-                        else range(LOCAL_EDGE_MAX_PAGES)
+                    page_indices = range(
+                        1 if shared_bounded_structured_output else LOCAL_EDGE_MAX_PAGES
                     )
                     for page_index in page_indices:
                         if (
@@ -3457,7 +3656,7 @@ def install_local_extraction_chunking_policy(
                             duplicate_recovery_confirmation=duplicate_recovery_confirmation,
                             duplicate_recovery_final_abstention=duplicate_recovery_final_abstention,
                             memory_utility_order=memory_utility_order,
-                            bounded_cursor=shared_bounded_structured_output,
+                            bounded_cursor=False,
                         )
                         # A provider may satisfy the cursor prose while still
                         # selecting the previous edge from the otherwise-valid
@@ -3466,10 +3665,7 @@ def install_local_extraction_chunking_policy(
                         # it.  This is a bounded rolling exclusion, never a
                         # cumulative returned-edge history or a retry variant.
                         page_response_model = partition_page_model
-                        if (
-                            shared_bounded_structured_output
-                            and pagination_history
-                        ):
+                        if not shared_bounded_structured_output and pagination_history:
                             page_response_model = _endpoint_grounded_edge_page_model(
                                 edge_page_capacity,
                                 partition_endpoint_names,
@@ -3491,7 +3687,7 @@ def install_local_extraction_chunking_policy(
                             response_model=page_response_model,
                             base_request_messages=partition,
                             continuation_edges=pagination_history,
-                            cursor_protocol_request=shared_bounded_structured_output,
+                            cursor_protocol_request=False,
                             duplicate_recovery_request=(
                                 is_duplicate_recovery
                                 and shared_bounded_structured_output
@@ -3523,13 +3719,12 @@ def install_local_extraction_chunking_policy(
                                 and duplicate_recovery_edge is not None
                                 else ()
                             ),
+                            pair_tuples=pair_tuples,
                         )
                         if not isinstance(page, Mapping):
                             raise LocalRuntimeConfigurationError("edge page response is not an object")
                         recovery_status: str | None = None
-                        if shared_bounded_structured_output or (
-                            is_duplicate_recovery and shared_bounded_structured_output
-                        ):
+                        if is_duplicate_recovery and not shared_bounded_structured_output:
                             status = page.get("status")
                             recovery_status = str(status)
                             if status not in {"new_edge", "no_additional_edge"}:
@@ -3554,6 +3749,54 @@ def install_local_extraction_chunking_policy(
                                     "edge cursor new_edge response must contain one edge payload"
                                 )
                             page = {"edges": []} if status == "no_additional_edge" else {"edges": [page["edge"]]}
+                        if shared_bounded_structured_output:
+                            raw_pair_tuples = partition_evidence.get(
+                                "_declared_pair_tuples", ()
+                            )
+                            pair_tuples = tuple(
+                                (str(pair[0]), str(pair[1]))
+                                for pair in raw_pair_tuples
+                                if isinstance(pair, (tuple, list)) and len(pair) == 2
+                            )
+                            if not pair_tuples:
+                                raise LocalRuntimeConfigurationError(
+                                    "finite edge task has no declared pair domain"
+                                )
+                            task = EdgeTask(
+                                task_id=f"edge-task-{partition_id:06d}",
+                                pair_ids=pair_tuples,
+                                evidence_hash=hashlib.sha256(
+                                    json.dumps(
+                                        partition_evidence.get("evidence_source_hashes", []),
+                                        ensure_ascii=True,
+                                        sort_keys=True,
+                                    ).encode("utf-8")
+                                ).hexdigest(),
+                                max_relations_per_pair=MAX_RELATIONS_PER_PAIR,
+                            )
+                            try:
+                                page_edges = list(validate_edge_task_result(page, task))
+                            except (TypeError, ValueError) as exc:
+                                raise LocalRuntimeConfigurationError(
+                                    f"edge task violates finite pair contract: {exc}"
+                                ) from exc
+                            # A finite task is complete by acknowledgement, not
+                            # by a provider-generated terminal assertion.
+                            diagnostics.append(
+                                {
+                                    "schema_version": "membind.v6.1.edge-task-result.v1",
+                                    "event": "EDGE_PAIR_TASK_COMPLETE",
+                                    "prompt_name": prompt_name,
+                                    "partition_id": partition_id,
+                                    "partition_count": partition_count,
+                                    "declared_pair_count": len(pair_tuples),
+                                    "acknowledged_pair_count": len(pair_tuples),
+                                    "edge_count": len(page_edges),
+                                    "termination_reason": "declared_pair_task_completion",
+                                    "status": "complete",
+                                }
+                            )
+                            return ([{"edges": page_edges}], "finite_pair_task_complete", 1)
                         try:
                             page_edges = list(
                                 validate_edge_page(
@@ -3564,12 +3807,12 @@ def install_local_extraction_chunking_policy(
                                         fact_max_length=LOCAL_EDGE_FACT_MAX_CHARS,
                                     ),
                                     authoritative_entities=partition_endpoint_names,
-                                    reject_invalid_endpoints=bool(shared_bounded_structured_output),
+                                    reject_invalid_endpoints=False,
                                 )
                             )
                         except (TypeError, ValueError) as exc:
                             raise LocalRuntimeConfigurationError(
-                                f"edge page violates shared bounded contract: {exc}"
+                                f"edge page violates bounded contract: {exc}"
                             ) from exc
                         delta: list[Mapping[str, Any]] = []
                         page_identities: set[str] = set()
@@ -3577,14 +3820,12 @@ def install_local_extraction_chunking_policy(
                         duplicate_count = 0
                         invalid_endpoint_count = 0
                         non_boundary_edge_count = 0
-                        if shared_bounded_structured_output and pagination_history:
+                        if (not shared_bounded_structured_output) and pagination_history:
                             cursor_key = _edge_cursor_order_key(pagination_history[-1])
-                            non_successors = [
-                                edge
+                            if any(
+                                _edge_cursor_order_key(edge) <= cursor_key
                                 for edge in page_edges
-                                if _edge_cursor_order_key(edge) <= cursor_key
-                            ]
-                            if non_successors:
+                            ):
                                 diagnostics.append(
                                     {
                                         "schema_version": "membind.v6.1.edge-cursor.v2",
@@ -3592,108 +3833,11 @@ def install_local_extraction_chunking_policy(
                                         "prompt_name": prompt_name,
                                         "partition_id": partition_id,
                                         "page_index": page_index,
-                                        "non_successor_count": len(non_successors),
                                         "status": "invalid",
                                     }
                                 )
-                                # vLLM 0.26.0 accepts the bounded ``not``
-                                # branch but xgrammar does not enforce it for
-                                # this nested model.  Make the provider's
-                                # exhaustion claim explicit with one distinct
-                                # terminal-only schema.  This is not a retry
-                                # of the failed edge request and cannot return
-                                # another edge; any non-terminal response
-                                # remains a deterministic contract failure.
-                                diagnostics.append(
-                                    {
-                                        "schema_version": "membind.v6.1.edge-cursor.v2",
-                                        "event": "EDGE_CURSOR_PROVIDER_REPEAT",
-                                        "prompt_name": prompt_name,
-                                        "partition_id": partition_id,
-                                        "page_index": page_index,
-                                        "status": "terminal_confirmation_required",
-                                        "confirmation_policy": "single_explicit_no_additional_edge_v1",
-                                    }
-                                )
-                                terminal_model = _endpoint_grounded_edge_page_model(
-                                    edge_page_capacity,
-                                    partition_endpoint_names,
-                                    termination_discriminator=True,
-                                    no_additional_only=True,
-                                )
-                                terminal_messages = _edge_page_messages(
-                                    partition,
-                                    pagination_history,
-                                    page_capacity=edge_page_capacity,
-                                    memory_utility_order=memory_utility_order,
-                                    bounded_cursor=True,
-                                )
-                                terminal_instruction = (
-                                    "\n<EDGE_CURSOR_TERMINAL_CONFIRMATION>\n"
-                                    "The previous response repeated EDGE_CURSOR. "
-                                    "This explicit terminal confirmation must return "
-                                    'exactly {"status":"no_additional_edge","edge":null}; '
-                                    "do not return an edge.\n"
-                                    "</EDGE_CURSOR_TERMINAL_CONFIRMATION>\n"
-                                )
-                                for terminal_message in terminal_messages:
-                                    terminal_content = _message_content(terminal_message)
-                                    if terminal_content is None:
-                                        continue
-                                    terminal_updated = terminal_content + terminal_instruction
-                                    if isinstance(terminal_message, Mapping):
-                                        terminal_message["content"] = terminal_updated
-                                    else:
-                                        setattr(terminal_message, "content", terminal_updated)
-                                    break
-                                (
-                                    terminal_page,
-                                    terminal_queue_wait_ns,
-                                    terminal_service_ns,
-                                    terminal_priority_ticket,
-                                    terminal_priority_evidence,
-                                ) = await invoke_edge_page(
-                                    terminal_messages,
-                                    partition_id=partition_id,
-                                    page_index=page_index + 1,
-                                    response_model=terminal_model,
-                                    base_request_messages=partition,
-                                    continuation_edges=pagination_history,
-                                    cursor_protocol_request=True,
-                                    terminal_confirmation_request=True,
-                                )
-                                terminal_status = (
-                                    terminal_page.get("status")
-                                    if isinstance(terminal_page, Mapping)
-                                    else None
-                                )
-                                if terminal_status != "no_additional_edge" or (
-                                    not isinstance(terminal_page, Mapping)
-                                    or "edge" not in terminal_page
-                                    or terminal_page.get("edge") is not None
-                                ):
-                                    raise LocalRuntimeConfigurationError(
-                                        "edge cursor response is not a strict canonical successor"
-                                    )
-                                diagnostics.append(
-                                    {
-                                        "schema_version": "membind.v6.1.edge-cursor.v2",
-                                        "event": "EDGE_CURSOR_TERMINAL_CONFIRMATION",
-                                        "prompt_name": prompt_name,
-                                        "partition_id": partition_id,
-                                        "page_index": page_index + 1,
-                                        "cursor_status": "no_additional_edge",
-                                        "queue_wait_ns": terminal_queue_wait_ns,
-                                        "service_ns": terminal_service_ns,
-                                        "priority_ticket": terminal_priority_ticket,
-                                        "priority_evidence": terminal_priority_evidence,
-                                        "status": "confirmed",
-                                    }
-                                )
-                                return (
-                                    partition_responses,
-                                    "explicit_cursor_exhaustion",
-                                    page_index + 2,
+                                raise LocalRuntimeConfigurationError(
+                                    "edge cursor response is not a strict canonical successor"
                                 )
                         for raw_edge in page_edges:
                             edge = dict(raw_edge)
@@ -3953,6 +4097,8 @@ def install_local_extraction_chunking_policy(
                         if delta:
                             accepted_partition_edges.extend(delta)
                             partition_responses.append({"edges": list(delta)})
+                    if shared_bounded_structured_output:
+                        return partition_responses, "finite_pair_task_complete", 1
                     raise LocalRuntimeConfigurationError("edge pagination exceeded bounded progress")
 
                 partition_results: list[tuple[list[Any], str, int] | None] = [
@@ -4004,19 +4150,59 @@ def install_local_extraction_chunking_policy(
                     responses.extend(partition_responses)
                     termination_reasons.append(termination_reason)
                     pages_per_partition.append(page_count)
+                if shared_bounded_structured_output:
+                    for row in reversed(diagnostics):
+                        if (
+                            row.get("schema_version") == "membind.v6.1.edge-task-plan.v1"
+                            and row.get("status") == "sealed"
+                            and row.get("prompt_name") == prompt_name
+                        ):
+                            row["completed_task_count"] = len(
+                                [result for result in partition_results if result is not None]
+                            )
+                            row["status"] = "complete"
+                            break
                 # Keep expansion auditable while omitting entity names/content.
+                task_plan = next(
+                    (
+                        row
+                        for row in reversed(diagnostics)
+                        if row.get("schema_version") == "membind.v6.1.edge-task-plan.v1"
+                        and row.get("prompt_name") == prompt_name
+                    ),
+                    {},
+                )
                 diagnostics.append(
                     {
                         "schema_version": "membind.v6.1.extraction-expansion.v1",
                         "prompt_name": prompt_name,
                         "distinct_entity_count": entity_count,
                         "partition_count": partition_count,
+                        "declared_task_count": partition_count,
+                        "completed_task_count": partition_count,
                         "max_partition_entity_count": max_partition_entities,
                         "partition_kind": "edge_turn_local_page",
                         "page_capacity": edge_page_capacity,
                         "max_pages_per_partition": LOCAL_EDGE_MAX_PAGES,
-                        "max_pages_semantics": "cursor_epoch_size_not_total_cap",
-                        "total_page_cap": None,
+                        "max_pages_semantics": (
+                            "finite_task_count"
+                            if shared_bounded_structured_output
+                            else "cursor_epoch_size_not_total_cap"
+                        ),
+                        "total_page_cap": 1 if shared_bounded_structured_output else None,
+                        "maximum_provider_calls_per_source": partition_count,
+                        "task_graph_digest": task_plan.get("task_graph_digest"),
+                        "coverage_digest": task_plan.get("coverage_digest"),
+                        "logical_work_digest": task_plan.get("logical_work_digest"),
+                        "prompt_token_upper_bound": task_plan.get("prompt_token_upper_bound"),
+                        "completion_token_upper_bound": task_plan.get(
+                            "completion_token_upper_bound"
+                        ),
+                        "termination_reason": (
+                            "declared_pair_task_completion"
+                            if shared_bounded_structured_output
+                            else "legacy_partition_fixed_point"
+                        ),
                         "partition_worker_concurrency": edge_partition_concurrency,
                         "physical_page_concurrency": edge_physical_concurrency,
                         "adaptive_admission_enabled": edge_adaptive_admission,
