@@ -67,6 +67,11 @@ from saturated_fixed_work_baseline_v1_3.membind_v6_1.runtime import (  # noqa: E
 from saturated_fixed_work_baseline_v1_3.membind_v6_1.shared_structured_output import (  # noqa: E402
     finite_edge_task_model,
 )
+from saturated_fixed_work_baseline_v1_3.membind_v6_1.bounded_edge_tasks import (  # noqa: E402
+    MAX_PAIRS_PER_TASK,
+    MAX_RELATIONS_PER_PAIR,
+    FACT_MAX_LENGTH,
+)
 from saturated_fixed_work_baseline_v1_3.membind_v6_1.structured_output_recovery import (  # noqa: E402
     BOUNDED_JSON_WHITESPACE_MODE,
     build_schema_bound_certificate,
@@ -738,9 +743,9 @@ def main() -> int:
     )
     finite_pair_schema = finite_edge_task_model(
         endpoint_names=("A", "B", "C"),
-        max_pairs_per_task=2,
-        max_relations_per_pair=1,
-        fact_max_length=1_900,
+        max_pairs_per_task=MAX_PAIRS_PER_TASK,
+        max_relations_per_pair=MAX_RELATIONS_PER_PAIR,
+        fact_max_length=FACT_MAX_LENGTH,
     ).model_json_schema()
     finite_pair_certificate = build_schema_bound_certificate(
         messages=[{"role": "user", "content": "finite pair task proof fixture"}],
@@ -981,7 +986,7 @@ def main() -> int:
     (OUT / "STRUCTURED_OUTPUT_QUALIFICATION_REPORT.md").write_text(
         "# Structured Output Qualification\n\n"
         f"Status: `{actual_qualification}`; synthetic suite: `{synthetic_status}`.\n\n"
-        f"Certified `{len(grouped)}` callsites across `{len(callsite_rows)}` generated variants using the local Qwen tokenizer, a `{LOCAL_CONTEXT_LIMIT}` token context limit, the pinned `extract_edges.edge` `{EDGE_MAX_TOKENS}` token completion budget, the `{MAX_TOKENS}` token default budget for other captured callsites, and a `{SAFETY_MARGIN}` token safety margin. Caller-supplied attribute schemas and candidate-flight capacities are bounded before provider invocation. The formal finite-pair task schema (two pairs, one relation per pair, 1,900-character facts) is independently certified at `{finite_pair_certificate.schema_worst_case_tokens}` tokens with status `{finite_pair_certificate.status}`.\n\n"
+        f"Certified `{len(grouped)}` callsites across `{len(callsite_rows)}` generated variants using the local Qwen tokenizer, a `{LOCAL_CONTEXT_LIMIT}` token context limit, the pinned `extract_edges.edge` `{EDGE_MAX_TOKENS}` token completion budget, the `{MAX_TOKENS}` token default budget for other captured callsites, and a `{SAFETY_MARGIN}` token safety margin. Caller-supplied attribute schemas and candidate-flight capacities are bounded before provider invocation. The formal finite-pair task schema ({MAX_PAIRS_PER_TASK} pair per task, {MAX_RELATIONS_PER_PAIR} relations per pair, {FACT_MAX_LENGTH}-character facts) is independently certified at `{finite_pair_certificate.schema_worst_case_tokens}` tokens with status `{finite_pair_certificate.status}`.\n\n"
         f"The largest captured edge schema is bounded by `{edge_bound}` UTF-8 bytes/tokens with a `1900`-character fact cap, leaving `{EDGE_MAX_TOKENS - edge_bound}` tokens below the pinned edge budget. Timestamp batches remain capped at `63` items and certify at `{timestamp_bound}` tokens. The proof uses the server-bound xgrammar whitespace mode and fixed `, ` / `: ` separators; tokenizer counts are diagnostic witnesses only. Certified truncation and context-budget failures have zero automatic resend variants; only transient transport failures receive at most two extra physical attempts under the shared identity contract. Model revision: `{MODEL_REVISION}`.\n\n"
         "R3 is `AT_LEAST_ONCE_WITH_STABLE_IDEMPOTENCY_KEY`; no cross-system durable reconciliation or exactly-once claim is made.\n\n"
         f"Source-discovered callsites: `{len(source_callsites)}`; actual observed: `{len(actual_names)}`; covered names: `{len(covered)}`; uncovered names: `{len(uncovered)}`; covered source rows: `{len(covered_source_callsites)}`; unreachable with proof: `{len(unreachable_with_proof)}`.\n"

@@ -162,7 +162,7 @@ def test_contract_is_arm_agnostic_and_finite() -> None:
     contract = SharedStructuredOutputContract(page_capacity=2, max_pages=3)
     assert contract.arm_identity is None
     assert contract.schema["properties"]["status"]["const"] == "complete"
-    assert contract.schema["properties"]["pairs_completed"]["maxItems"] == 2
+    assert contract.schema["properties"]["pairs_completed"]["maxItems"] == 1
     assert contract.schema["properties"]["edges"]["maxItems"] == 2
     assert contract.termination == "declared_pair_task_completion"
 

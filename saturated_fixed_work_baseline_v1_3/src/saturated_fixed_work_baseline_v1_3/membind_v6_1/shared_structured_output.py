@@ -32,11 +32,11 @@ SHARED_CONSTRUCTION_MAX_TOKENS = 32_768
 SHARED_PAGE_CAPACITY = 1
 SHARED_MAX_PAGES = 64
 SHARED_FACT_MAX_LENGTH = 1_900
-SHARED_MAX_PAIRS_PER_TASK = 2
+SHARED_MAX_PAIRS_PER_TASK = 1
 # Keep the finite task's worst-case wire witness below Graphiti's pinned
-# 16,384 completion-token budget. A second relation is rejected explicitly by
+# 16,384 completion-token budget. A third relation is rejected explicitly by
 # the semantic task validator rather than silently truncated.
-SHARED_MAX_RELATIONS_PER_PAIR = 1
+SHARED_MAX_RELATIONS_PER_PAIR = 2
 SHARED_FACT_PATTERN = bounded_ascii_pattern(1, SHARED_FACT_MAX_LENGTH)
 SHARED_ADAPTER_VERSION = "shared-bounded-structured-output-v7-finite-pair-tasks"
 SHARED_RETRY_POLICY = "single_attempt_finite_task_fail_closed_v1"

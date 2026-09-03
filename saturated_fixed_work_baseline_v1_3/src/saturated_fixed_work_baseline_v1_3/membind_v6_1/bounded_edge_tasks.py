@@ -14,12 +14,13 @@ from dataclasses import dataclass
 from typing import Any, Mapping, Sequence
 
 
-MAX_PAIRS_PER_TASK = 2
-# A single relation per pair keeps the worst-case finite task schema below
-# Graphiti's pinned 16,384 completion-token wire budget.  A second relation is
-# an explicit overflow/failure, never silent truncation.
-MAX_RELATIONS_PER_PAIR = 1
-MAX_TASKS_PER_SOURCE = 512
+MAX_PAIRS_PER_TASK = 1
+# Two relations for one pair remain below Graphiti's pinned 16,384 completion
+# token wire budget while accommodating the common case where one pair has
+# distinct facts.  A third relation is an explicit overflow/failure, never
+# silent truncation.
+MAX_RELATIONS_PER_PAIR = 2
+MAX_TASKS_PER_SOURCE = 1024
 FACT_MAX_LENGTH = 1900
 
 
@@ -182,8 +183,8 @@ def validate_edge_task_result(
             raise EdgeTaskProtocolError("edge task repeats the same edge")
         seen_edges.add(edge_identity)
         counts[pair] = counts.get(pair, 0) + 1
-        # The configured cap is inclusive: exactly one relation is valid when
-        # max_relations_per_pair=1; reject only the next relation.
+        # The configured cap is inclusive: reject only the first relation
+        # beyond the declared finite capacity.
         if counts[pair] > task.max_relations_per_pair:
             raise EdgeTaskOverflow(
                 f"edge relation cap reached for pair {source}||{target}"

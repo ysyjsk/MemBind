@@ -47,11 +47,17 @@ omits a pair, contains an unlisted endpoint, repeats a pair, or is malformed is
 `FAIL_CLOSED`; it is never treated as an empty result.  Relations in both
 directions are allowed within the declared pair.
 
+The selected packing is one pair per task with at most two relations per pair.
+That keeps the worst-case finite response below the pinned 16,384-token edge
+budget while allowing distinct facts for one pair; a third relation fails
+closed. The preflight task guard is 1,024 tasks per source, so the full task
+count remains explicit before any provider call.
+
 This avoids an unbounded cursor and avoids an unbounded provider-call stream.
 The logical pair domain is still quadratic in the number of entities, which is
 the honest cost of complete arbitrary binary relation coverage.  It is made
 explicit and bounded per source by the preflight task-count certificate and by
-batching several pairs into one small response.  The certificate reports the
+keeping each pair's response small. The certificate reports the
 exact task count and rejects a source whose declared domain exceeds the frozen
 finite task budget; it never samples or truncates the tail.
 

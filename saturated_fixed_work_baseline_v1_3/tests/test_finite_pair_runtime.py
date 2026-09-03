@@ -52,13 +52,13 @@ class _FiniteClient:
         return self.response_factory(pairs)
 
 
-def _edge(pair: str) -> dict[str, object]:
+def _edge(pair: str, fact_suffix: str = "") -> dict[str, object]:
     left, right = pair.split("||")
     return {
         "source_entity_name": left,
         "target_entity_name": right,
         "relation_type": "RELATED_TO",
-        "fact": f"{left} relates to {right}",
+        "fact": f"{left} relates to {right}{fact_suffix}",
         "valid_at": None,
         "invalid_at": None,
         "episode_indices": [0],
@@ -93,18 +93,18 @@ def test_runtime_executes_exact_finite_task_count_and_emits_digests() -> None:
             _messages(), max_tokens=32_768, prompt_name="extract_edges.edge"
         )
     )
-    assert client.calls == 2
+    assert client.calls == 3
     assert len(result["edges"]) == 3
     plan = next(
         row
         for row in client._membind_extraction_diagnostics
         if row.get("schema_version") == "membind.v6.1.edge-task-plan.v1"
     )
-    assert plan["declared_task_count"] == plan["completed_task_count"] == 2
-    assert plan["maximum_provider_calls_per_source"] == 2
+    assert plan["declared_task_count"] == plan["completed_task_count"] == 3
+    assert plan["maximum_provider_calls_per_source"] == 3
     assert plan["task_graph_digest"] and plan["coverage_digest"]
-    assert plan["prompt_token_upper_bound"] == 200
-    assert plan["completion_token_upper_bound"] == 2 * 16_384
+    assert plan["prompt_token_upper_bound"] == 300
+    assert plan["completion_token_upper_bound"] == 3 * 16_384
 
 
 def test_terminal_only_response_fails_closed_without_retry() -> None:
@@ -121,11 +121,15 @@ def test_terminal_only_response_fails_closed_without_retry() -> None:
 
 def test_repeated_edge_in_one_task_fails_closed() -> None:
     def repeated(pairs: list[str]) -> dict[str, object]:
-        assert len(pairs) == 2
+        assert len(pairs) == 1
         return {
             "status": "complete",
             "pairs_completed": pairs,
-            "edges": [_edge(pairs[0]), _edge(pairs[0])],
+            "edges": [
+                _edge(pairs[0]),
+                _edge(pairs[0], " second"),
+                _edge(pairs[0], " third"),
+            ],
         }
 
     client = _FiniteClient(repeated)
