@@ -1,6 +1,7 @@
 from __future__ import annotations
 
 import json
+import os
 import sys
 from pathlib import Path
 
@@ -12,6 +13,17 @@ PLATFORM = {
     "path": "/profiles/platform.current.json",
     "payload_sha256": "platform-current-sha256",
 }
+IMPLEMENTATION = {
+    "source_bundle_sha256": "source-bundle",
+    "evaluator_sha256": "evaluator",
+    "config_sha256": "config",
+}
+ADAPTER = {"adapter_version": "MAB_ROLE_AWARE_LOSSLESS_8192_V1"}
+AUTHORITY = {
+    "authority_sha256": "dataset-authority",
+    "context_ids": [f"h{i}" for i in range(5)],
+}
+WORKLOAD_HASHES = [str(index) * 64 for index in range(1, 6)]
 
 
 def _module():
@@ -43,19 +55,15 @@ def _runner_module():
 
 def _sealed_manifest(root: Path) -> dict:
     h = _module()
+    frozen = _frozen(h)
     manifest = h.build_manifest(
         root,
-        implementation_identity={
-            "source_bundle_sha256": "s",
-            "evaluator_sha256": "e",
-            "config_sha256": "c",
-        },
-        method_frozen={"seal_sha256": "m", "platform_manifest": PLATFORM},
-        authority={
-            "authority_sha256": "a",
-            "context_ids": [f"h{i}" for i in range(5)],
-        },
+        implementation_identity=IMPLEMENTATION,
+        method_frozen=frozen,
+        authority=AUTHORITY,
         platform_identity=PLATFORM,
+        adapter_identity=ADAPTER,
+        workload_manifest_sha256_by_history=WORKLOAD_HASHES,
     )
     root.mkdir(parents=True, exist_ok=True)
     (root / "FORMAL_CAMPAIGN_MANIFEST_SEAL.json").write_text(
@@ -90,8 +98,15 @@ def _artifact_cell() -> dict:
     return {
         "attempt_id": "attempt-1",
         "namespace": "namespace-1",
-        "arm": "GRAPHITI_SERIAL_SHARED_BOUNDED_SO",
+        "arm": "GRAPHITI_SERIAL_UPSTREAM_CORE_MAB8192",
         "history_id": "history-1",
+        "history_index": 0,
+        "replicate_id": 0,
+        "workload_manifest_sha256": "w" * 64,
+        "dataset_authority_sha256": "d" * 64,
+        "implementation_source_bundle_sha256": "s" * 64,
+        "platform_manifest_sha256": "p" * 64,
+        "platform_manifest_path": "/profiles/platform.json",
         "expected_construction_artifacts": [
             "complete.json",
             "block/construction_seal.json",
@@ -101,22 +116,64 @@ def _artifact_cell() -> dict:
     }
 
 
+def _frozen(module) -> dict:
+    return {
+        "status": "FINAL_METHOD_FROZEN",
+        "seal_sha256": "method-freeze",
+        "arms": list(module.ARMS),
+        "source_identity": {
+            "source_bundle_sha256": IMPLEMENTATION["source_bundle_sha256"]
+        },
+        "implementation_identity_sha256": module._identity_hash(IMPLEMENTATION),
+        "adapter_identity_sha256": module._identity_hash(ADAPTER),
+        "dataset_authority_sha256": AUTHORITY["authority_sha256"],
+        "evaluator_identity_sha256": IMPLEMENTATION["evaluator_sha256"],
+        "platform_manifest": PLATFORM,
+    }
+
+
+def _build_manifest(module, root: Path, **overrides) -> dict:
+    values = {
+        "implementation_identity": IMPLEMENTATION,
+        "method_frozen": _frozen(module),
+        "authority": AUTHORITY,
+        "platform_identity": PLATFORM,
+        "adapter_identity": ADAPTER,
+        "workload_manifest_sha256_by_history": WORKLOAD_HASHES,
+    }
+    values.update(overrides)
+    return module.build_manifest(root, **values)
+
+
 def test_manifest_has_45_unique_cells_and_fixed_native_ours_async_order(tmp_path: Path) -> None:
     h = _module()
-    manifest = h.build_manifest(tmp_path, implementation_identity={"source_bundle_sha256": "s", "evaluator_sha256": "e", "config_sha256": "c"}, method_frozen={"seal_sha256": "m", "platform_manifest": PLATFORM}, authority={"authority_sha256": "a", "context_ids": [f"h{i}" for i in range(5)]}, platform_identity=PLATFORM)
+    manifest = _build_manifest(h, tmp_path)
     cells = manifest["cells"]
     assert manifest["status"] == "SEALED"
     assert len(cells) == 45
     assert len({cell["cell_id"] for cell in cells}) == 45
     assert len({cell["attempt_id"] for cell in cells}) == 45
     assert len({cell["namespace"] for cell in cells}) == 45
-    assert manifest["history_count"] == 15
-    for history_unit in range(15):
-        observed = [cell["arm"] for cell in cells if cell["history_index"] == history_unit]
-        assert observed == list(h.ARMS)
-        assert all(cell["base_history_index"] == history_unit // 3 for cell in cells if cell["history_index"] == history_unit)
-        assert all(cell["replicate_id"] == 0 for cell in cells if cell["history_index"] == history_unit)
-        assert all(cell["base_replicate_id"] == history_unit % 3 for cell in cells if cell["history_index"] == history_unit)
+    assert manifest["history_count"] == 5
+    assert manifest["replicate_count"] == 3
+    assert {
+        (cell["history_index"], cell["replicate_id"], cell["arm"])
+        for cell in cells
+    } == {
+        (history, replicate, arm)
+        for history in range(5)
+        for replicate in range(3)
+        for arm in h.ARMS
+    }
+    for history in range(5):
+        for replicate in range(3):
+            observed = [
+                cell["arm"]
+                for cell in cells
+                if cell["history_index"] == history
+                and cell["replicate_id"] == replicate
+            ]
+            assert observed == list(h.ARMS)
     assert manifest["identity"]["platform"] == PLATFORM["payload_sha256"]
     assert {cell["platform_manifest_sha256"] for cell in cells} == {
         PLATFORM["payload_sha256"]
@@ -125,7 +182,7 @@ def test_manifest_has_45_unique_cells_and_fixed_native_ours_async_order(tmp_path
 
 def test_manifest_rejects_duplicate_identity(tmp_path: Path) -> None:
     h = _module()
-    manifest = h.build_manifest(tmp_path, implementation_identity={"source_bundle_sha256": "s", "evaluator_sha256": "e", "config_sha256": "c"}, method_frozen={"seal_sha256": "m", "platform_manifest": PLATFORM}, authority={"authority_sha256": "a", "context_ids": [f"h{i}" for i in range(5)]}, platform_identity=PLATFORM)
+    manifest = _build_manifest(h, tmp_path)
     manifest["cells"][1]["attempt_id"] = manifest["cells"][0]["attempt_id"]
     with pytest.raises(ValueError, match="duplicate"):
         h.validate_manifest(manifest)
@@ -133,20 +190,55 @@ def test_manifest_rejects_duplicate_identity(tmp_path: Path) -> None:
 
 def test_manifest_rejects_platform_identity_drift(tmp_path: Path) -> None:
     h = _module()
+    frozen = _frozen(h)
     with pytest.raises(ValueError, match="platform identities do not match"):
-        h.build_manifest(
+        _build_manifest(
+            h,
             tmp_path,
-            implementation_identity={"source_bundle_sha256": "s"},
-            method_frozen={
-                "seal_sha256": "m",
-                "platform_manifest": PLATFORM,
-            },
-            authority={
-                "authority_sha256": "a",
-                "context_ids": [f"h{i}" for i in range(5)],
-            },
+            method_frozen=frozen,
             platform_identity={**PLATFORM, "payload_sha256": "different"},
         )
+
+
+def test_manifest_rejects_stale_frozen_implementation_identity(tmp_path: Path) -> None:
+    h = _module()
+    frozen = {**_frozen(h), "implementation_identity_sha256": "stale"}
+    with pytest.raises(ValueError, match="measured identities do not match"):
+        _build_manifest(h, tmp_path, method_frozen=frozen)
+
+
+def test_frozen_root_loader_uses_only_post_l2_authority(tmp_path: Path) -> None:
+    h = _module()
+    frozen_root = tmp_path / "independent-freeze"
+    identity = {
+        **IMPLEMENTATION,
+        "status": "QUALIFIED",
+        "platform_manifest": PLATFORM,
+    }
+    adapter = {**ADAPTER, "status": "FROZEN"}
+    for name, value in (
+        ("ACTUAL_FORMAL_ARM_IDENTITY.json", identity),
+        ("MAB_SHARED_ADAPTER_IDENTITY.json", adapter),
+        ("FINAL_METHOD_FROZEN.json", _frozen(h)),
+        ("dataset_authority.json", AUTHORITY),
+    ):
+        _write_json(frozen_root / name, value)
+
+    loaded_identity, loaded_adapter, loaded_frozen, platform = h._load_frozen_inputs(
+        frozen_root,
+        active_authority=AUTHORITY,
+    )
+    assert loaded_identity == identity
+    assert loaded_adapter == adapter
+    assert loaded_frozen == _frozen(h)
+    assert platform == PLATFORM
+
+    _write_json(
+        frozen_root / "dataset_authority.json",
+        {**AUTHORITY, "authority_sha256": "stale"},
+    )
+    with pytest.raises(ValueError, match="dataset authority"):
+        h._load_frozen_inputs(frozen_root, active_authority=AUTHORITY)
 
 
 def test_reducer_requires_full_construction_and_qa_before_pass(tmp_path: Path) -> None:
@@ -154,10 +246,8 @@ def test_reducer_requires_full_construction_and_qa_before_pass(tmp_path: Path) -
     rows = [
         {
             "cell_id": f"c{i}",
-            "history_index": i // 3,
-            "base_history_index": (i // 3) // 3,
+            "history_index": (i // 3) // 3,
             "replicate_id": (i // 3) % 3,
-            "base_replicate_id": (i // 3) % 3,
             "arm": h.ARMS[i % 3],
             "construction_status": "PASS",
             "construction_complete_status": "PASS",
@@ -198,6 +288,25 @@ def test_exact_process_identity_rejects_stale_or_cross_cell_argv(tmp_path: Path)
     assert module._argv_has_exact_identity(argv, attempt_root=attempt_root, cell=cell)
     assert not module._argv_has_exact_identity(argv[:-1] + ["ns-b"], attempt_root=attempt_root, cell=cell)
     assert not module._argv_has_exact_identity(argv, attempt_root=tmp_path / "other", cell=cell)
+
+
+def test_process_launcher_creates_pid_parent_before_dispatch(
+    tmp_path: Path, monkeypatch
+) -> None:
+    module = _runner_module()
+    monkeypatch.setattr(module, "_append_heartbeat", lambda *_args, **_kwargs: None)
+    pidfile = tmp_path / "control" / "pids" / "child.pid"
+    returncode = module._run_process(
+        [sys.executable, "-c", "pass"],
+        env=dict(os.environ),
+        log=tmp_path / "logs" / "child.log",
+        pidfile=pidfile,
+        heartbeat=tmp_path / "heartbeat.jsonl",
+        cell={"cell_id": "cell", "attempt_id": "attempt", "namespace": "namespace"},
+        attempt=tmp_path / "attempt",
+    )
+    assert returncode == 0
+    assert int(pidfile.read_text(encoding="utf-8")) > 0
 
 
 def test_deterministic_failure_does_not_replace_and_stops_campaign(
@@ -382,7 +491,24 @@ def test_construction_contract_requires_terminal_identity_and_manifest_members(
         },
     )
     _write_json(tmp_path / "block" / "metrics.json", {"status": "PASS"})
-    _write_json(tmp_path / "route_seal.json", {"status": "PASS"})
+    _write_json(
+        tmp_path / "run_contract.json",
+        {
+            "attempt_id": cell["attempt_id"],
+            "namespace": cell["namespace"],
+            "arm": cell["arm"],
+            "history_index": cell["history_index"],
+            "history_id": cell["history_id"],
+            "replicate_id": cell["replicate_id"],
+            "chunk_manifest_sha256": cell["workload_manifest_sha256"],
+            "dataset_authority_sha256": cell["dataset_authority_sha256"],
+            "implementation": {
+                "payload_sha256": cell["implementation_source_bundle_sha256"]
+            },
+            "platform": {"payload_sha256": cell["platform_manifest_sha256"]},
+        },
+    )
+    _write_json(tmp_path / "route_seal.json", {"status": "ROUTE_SEALED"})
 
     assert runner._construction_contract(tmp_path, cell, returncode=0)[
         "construction_status"
@@ -393,13 +519,38 @@ def test_construction_contract_requires_terminal_identity_and_manifest_members(
     assert missing["construction_status"] == "INVALID"
     assert missing["missing_construction_artifacts"] == ["route_seal.json"]
 
-    _write_json(tmp_path / "route_seal.json", {"status": "PASS"})
+    _write_json(tmp_path / "route_seal.json", {"status": "ROUTE_SEALED"})
     complete = json.loads((tmp_path / "complete.json").read_text())
     complete["attempt_id"] = "cross-attempt"
     _write_json(tmp_path / "complete.json", complete)
     assert runner._construction_contract(tmp_path, cell, returncode=0)[
         "construction_status"
     ] == "INVALID"
+
+    complete["attempt_id"] = cell["attempt_id"]
+    _write_json(tmp_path / "complete.json", complete)
+    contract = json.loads((tmp_path / "run_contract.json").read_text())
+    contract["replicate_id"] = 2
+    _write_json(tmp_path / "run_contract.json", contract)
+    assert runner._construction_contract(tmp_path, cell, returncode=0)[
+        "construction_status"
+    ] == "INVALID"
+
+
+def test_failure_artifact_never_counts_as_valid_construction(tmp_path: Path) -> None:
+    runner = _runner_module()
+    cell = _artifact_cell()
+    _write_json(
+        tmp_path / "failure.json",
+        {
+            "status": "FAILED",
+            "attempt_id": cell["attempt_id"],
+            "namespace": cell["namespace"],
+        },
+    )
+    result = runner._construction_contract(tmp_path, cell, returncode=2)
+    assert result["construction_status"] == "INVALID"
+    assert result["construction_complete_status"] == "MISSING"
 
 
 def test_qa_contract_requires_exact_cell_and_unique_nonempty_question_identities(

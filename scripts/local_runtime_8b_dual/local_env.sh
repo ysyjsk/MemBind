@@ -6,21 +6,62 @@ set -euo pipefail
 # identities, ports, GPU placement, and resource budgets are fixed below.
 SCRIPT_DIR="$(cd -- "$(dirname -- "${BASH_SOURCE[0]}")" && pwd)"
 export MEMBIND_8B_RUNTIME_DIR="$SCRIPT_DIR"
+export MEMBIND_RUNTIME_DIR="${MEMBIND_RUNTIME_DIR_OVERRIDE:-$SCRIPT_DIR}"
 export MEMBIND_DATA_ROOT="${MEMBIND_8B_DATA_ROOT:-/data/predator/ly/Mem}"
 export MEMBIND_REPO_ROOT="${MEMBIND_8B_REPO_ROOT:-/data/predator/ly/MemBind}"
 export MEMBIND_ENV="${MEMBIND_8B_ENV:-$MEMBIND_DATA_ROOT/envs/membind-local}"
 export MEMBIND_MODEL_ROOT="$MEMBIND_DATA_ROOT/models"
 
-export MEMBIND_PROFILE_ID="local-qwen3-8b-awq-dualreplica-v1"
+export MEMBIND_DEPLOYMENT_POLICY_ID="${MEMBIND_DEPLOYMENT_POLICY_ID:-P0_QWEN3_8B_AWQ}"
+case "$MEMBIND_DEPLOYMENT_POLICY_ID" in
+  P0_QWEN3_8B_AWQ)
+    export MEMBIND_PROFILE_ID="local-qwen3-8b-awq-dualreplica-v1"
+    export MEMBIND_LLM_SOURCE_MODEL="Qwen/Qwen3-8B-AWQ"
+    export MEMBIND_LLM_MODEL_DIR="$MEMBIND_MODEL_ROOT/Qwen3-8B-AWQ"
+    export MEMBIND_LLM_MODEL_NAME="qwen3-8b-awq"
+    export MEMBIND_LLM_MODEL_REVISION="4da05a8edb55c6046cce958586c33b61da07bb79"
+    export MEMBIND_CONSTRUCTION_ENABLE_THINKING="false"
+    export MEMBIND_CONSTRUCTION_TEMPERATURE="0.7"
+    export MEMBIND_CONSTRUCTION_TOP_P="0.8"
+    export MEMBIND_CONSTRUCTION_TOP_K="20"
+    export MEMBIND_CONSTRUCTION_MIN_P="0"
+    export MEMBIND_CONSTRUCTION_PRESENCE_PENALTY="1.5"
+    unset MEMBIND_CONSTRUCTION_REPETITION_PENALTY
+    export MEMBIND_LLM_DEFAULT_CHAT_TEMPLATE_KWARGS='{"enable_thinking":false}'
+    export MEMBIND_NATIVE_LLM_TMUX_SESSION="membind-8b-native"
+    export MEMBIND_PREPARE_LLM_TMUX_SESSION="membind-8b-prepare"
+    export MEMBIND_EMBED_TMUX_SESSION="membind-8b-embedding"
+    ;;
+  P1_QWEN25_7B_AWQ)
+    export MEMBIND_PROFILE_ID="local-qwen25-7b-awq-dualreplica-v1"
+    export MEMBIND_LLM_SOURCE_MODEL="Qwen/Qwen2.5-7B-Instruct-AWQ"
+    export MEMBIND_LLM_MODEL_DIR="$MEMBIND_MODEL_ROOT/Qwen2.5-7B-Instruct-AWQ"
+    export MEMBIND_LLM_MODEL_NAME="qwen2.5-7b-instruct-awq"
+    export MEMBIND_LLM_MODEL_REVISION="b25037543e9394b818fdfca67ab2a00ecc7dd641"
+    unset MEMBIND_CONSTRUCTION_ENABLE_THINKING
+    export MEMBIND_CONSTRUCTION_TEMPERATURE="0.7"
+    export MEMBIND_CONSTRUCTION_TOP_P="0.8"
+    export MEMBIND_CONSTRUCTION_TOP_K="20"
+    unset MEMBIND_CONSTRUCTION_MIN_P
+    unset MEMBIND_CONSTRUCTION_PRESENCE_PENALTY
+    export MEMBIND_CONSTRUCTION_REPETITION_PENALTY="1.05"
+    unset MEMBIND_LLM_DEFAULT_CHAT_TEMPLATE_KWARGS
+    export MEMBIND_NATIVE_LLM_TMUX_SESSION="membind-qwen25-7b-native"
+    export MEMBIND_PREPARE_LLM_TMUX_SESSION="membind-qwen25-7b-prepare"
+    export MEMBIND_EMBED_TMUX_SESSION="membind-qwen25-7b-embedding"
+    ;;
+  *)
+    echo "Unknown MEMBIND_DEPLOYMENT_POLICY_ID: $MEMBIND_DEPLOYMENT_POLICY_ID" >&2
+    return 2 2>/dev/null || exit 2
+    ;;
+esac
+
 export MEMBIND_PROFILE_ROOT="$MEMBIND_DATA_ROOT/profiles/$MEMBIND_PROFILE_ID"
 export MEMBIND_LOG_ROOT="$MEMBIND_DATA_ROOT/logs/$MEMBIND_PROFILE_ID"
 export MEMBIND_RUN_ROOT="$MEMBIND_DATA_ROOT/run/$MEMBIND_PROFILE_ID"
 export MEMBIND_EXPERIMENT_ROOT="$MEMBIND_DATA_ROOT/experiments/$MEMBIND_PROFILE_ID"
 export MEMBIND_NAMESPACE_PREFIX="$MEMBIND_PROFILE_ID-"
 
-export MEMBIND_LLM_MODEL_DIR="$MEMBIND_MODEL_ROOT/Qwen3-8B-AWQ"
-export MEMBIND_LLM_MODEL_NAME="qwen3-8b-awq"
-export MEMBIND_LLM_MODEL_REVISION="4da05a8edb55c6046cce958586c33b61da07bb79"
 export MEMBIND_EMBED_MODEL_DIR="$MEMBIND_MODEL_ROOT/Qwen3-Embedding-0.6B"
 export MEMBIND_EMBED_MODEL_NAME="qwen3-embedding-0.6b"
 
@@ -40,15 +81,6 @@ export MEMBIND_PREPARE_LLM_GPU_MEMORY_UTILIZATION="0.70"
 export MEMBIND_EMBED_GPU_MEMORY_UTILIZATION="0.25"
 export MEMBIND_GPU1_MAX_COMBINED_UTILIZATION="0.95"
 
-# P0 Qwen deployment policy. Per-request logical seeds are added by the
-# transparent transport wrapper.
-export MEMBIND_CONSTRUCTION_ENABLE_THINKING="false"
-export MEMBIND_CONSTRUCTION_TEMPERATURE="0.7"
-export MEMBIND_CONSTRUCTION_TOP_P="0.8"
-export MEMBIND_CONSTRUCTION_TOP_K="20"
-export MEMBIND_CONSTRUCTION_MIN_P="0"
-export MEMBIND_CONSTRUCTION_PRESENCE_PENALTY="1.5"
-
 export MEMBIND_LLM_MAX_MODEL_LEN="65536"
 export MEMBIND_LLM_MAX_NUM_SEQS="8"
 export MEMBIND_LLM_MAX_BATCHED_TOKENS="8192"
@@ -57,18 +89,15 @@ export MEMBIND_EMBED_MAX_NUM_SEQS="128"
 export MEMBIND_EMBED_MAX_BATCHED_TOKENS="32768"
 export MEMBIND_EMBED_DIMENSION="1024"
 
-export MEMBIND_NATIVE_LLM_TMUX_SESSION="membind-8b-native"
-export MEMBIND_PREPARE_LLM_TMUX_SESSION="membind-8b-prepare"
-export MEMBIND_EMBED_TMUX_SESSION="membind-8b-embedding"
 export MEMBIND_NEO4J_URI="${MEMBIND_8B_NEO4J_URI:-bolt://127.0.0.1:7687}"
 
-export MEMBIND_NATIVE_ROUTING_CONFIG="$SCRIPT_DIR/routing/native_dual_resource_matched.json"
-export MEMBIND_STATIC_ROLE_ROUTING_CONFIG="$SCRIPT_DIR/routing/native_dual_static_role.json"
+export MEMBIND_NATIVE_ROUTING_CONFIG="$MEMBIND_RUNTIME_DIR/routing/native_dual_resource_matched.json"
+export MEMBIND_STATIC_ROLE_ROUTING_CONFIG="$MEMBIND_RUNTIME_DIR/routing/native_dual_static_role.json"
 # Frozen MemBind-Core route.  The previously explored critical-path route is
 # retained as an explicit ablation, but is not the paper method after r67/r69
 # showed no stable gain over the fixed work-conserving substrate.
-export MEMBIND_V61_ROUTING_CONFIG="$SCRIPT_DIR/routing/v61_dual_elastic_affinity.json"
-export MEMBIND_SINGLE_GPU_ROUTING_CONFIG="$SCRIPT_DIR/routing/single_gpu_ablation.json"
+export MEMBIND_V61_ROUTING_CONFIG="$MEMBIND_RUNTIME_DIR/routing/v61_dual_elastic_affinity.json"
+export MEMBIND_SINGLE_GPU_ROUTING_CONFIG="$MEMBIND_RUNTIME_DIR/routing/single_gpu_ablation.json"
 
 export HF_HOME="${HF_HOME:-$MEMBIND_DATA_ROOT/cache/huggingface}"
 export HF_HUB_CACHE="${HF_HUB_CACHE:-$HF_HOME/hub}"

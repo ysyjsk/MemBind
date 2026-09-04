@@ -19,9 +19,12 @@ from typing import Any, Callable
 import httpx
 
 
-EXPECTED_PROFILE = "local-qwen3-8b-awq-dualreplica-v1"
-EXPECTED_MODEL = "qwen3-8b-awq"
-EXPECTED_MODEL_REVISION = "4da05a8edb55c6046cce958586c33b61da07bb79"
+EXPECTED_PROFILE = os.environ.get("MEMBIND_PROFILE_ID", "local-qwen3-8b-awq-dualreplica-v1")
+EXPECTED_MODEL = os.environ.get("MEMBIND_LLM_MODEL_NAME", "qwen3-8b-awq")
+EXPECTED_MODEL_SOURCE = os.environ.get("MEMBIND_LLM_SOURCE_MODEL", "Qwen/Qwen3-8B-AWQ")
+EXPECTED_MODEL_REVISION = os.environ.get(
+    "MEMBIND_LLM_MODEL_REVISION", "4da05a8edb55c6046cce958586c33b61da07bb79"
+)
 EXPECTED_MODEL_DIGEST = "9426c790db40e413df2ce871c01d29f773dfffe82cb581c652ecb78f1e975d3a"
 EXPECTED_LLM_WEIGHTS = {
     "model-00001-of-00002.safetensors": (
@@ -98,6 +101,59 @@ def model_manifest_check(*, verify_content: bool) -> dict[str, Any]:
     config_path = root / "config.json"
     tokenizer_path = root / "tokenizer.json"
     manifest = load_json(manifest_path)
+    if manifest.get("schema_version") == "membind.model-snapshot-manifest.v2":
+        declared = manifest.get("files")
+        if not isinstance(declared, list):
+            raise RuntimeError("snapshot manifest file catalog is missing")
+        declared_by_name = {
+            str(row.get("path")): row for row in declared if isinstance(row, dict)
+        }
+        observed_names = sorted(
+            path.name
+            for path in root.iterdir()
+            if path.is_file() and path.name != manifest_path.name
+        )
+        rows = {}
+        for name, row in declared_by_name.items():
+            path = root / name
+            observed_sha = sha256_file(path) if verify_content and path.is_file() else None
+            rows[name] = {
+                "bytes": path.stat().st_size if path.is_file() else None,
+                "expected_bytes": row.get("bytes"),
+                "sha256": observed_sha,
+                "expected_sha256": row.get("sha256"),
+                "content_hash_verified": verify_content,
+                "ok": path.is_file()
+                and path.stat().st_size == row.get("bytes")
+                and (not verify_content or observed_sha == row.get("sha256")),
+            }
+        catalog_payload = dict(manifest)
+        supplied_payload = catalog_payload.pop("payload_sha256", None)
+        catalog_ok = supplied_payload == hashlib.sha256(
+            json.dumps(catalog_payload, sort_keys=True, separators=(",", ":")).encode()
+        ).hexdigest()
+        ok = (
+            manifest.get("source_model") == EXPECTED_MODEL_SOURCE
+            and manifest.get("revision") == EXPECTED_MODEL_REVISION
+            and sorted(declared_by_name) == observed_names
+            and catalog_ok
+            and all(row["ok"] for row in rows.values())
+            and len([name for name in observed_names if name.endswith(".safetensors")]) == 2
+        )
+        return {
+            "ok": ok,
+            "path": str(root),
+            "source_model": manifest.get("source_model"),
+            "revision": manifest.get("revision"),
+            "catalog_sha256": supplied_payload,
+            "config_sha256": sha256_file(config_path),
+            "tokenizer_sha256": sha256_file(tokenizer_path),
+            "metadata_checks": {},
+            "weight_files": [name for name in observed_names if name.endswith(".safetensors")],
+            "weight_checks": {name: rows[name] for name in rows if name.endswith(".safetensors")},
+            "file_checks": rows,
+            "content_hash_verified": verify_content,
+        }
     weights = sorted(root.glob("*.safetensors"))
     metadata_checks = {
         name: {
@@ -122,7 +178,7 @@ def model_manifest_check(*, verify_content: bool) -> dict[str, Any]:
             and (not verify_content or observed_sha256 == expected[1]),
         }
     ok = (
-        manifest.get("source_model") == "Qwen/Qwen3-8B-AWQ"
+        manifest.get("source_model") == EXPECTED_MODEL_SOURCE
         and manifest.get("revision") == EXPECTED_MODEL_REVISION
         and manifest.get("sha256") == EXPECTED_MODEL_DIGEST
         and config_path.is_file()
@@ -443,24 +499,26 @@ def structured_probe(client: httpx.Client, base_url: str) -> dict[str, Any]:
         "required": ["ok", "replica"],
         "additionalProperties": False,
     }
+    payload: dict[str, Any] = {
+        "model": EXPECTED_MODEL,
+        "messages": [{"role": "user", "content": f"Return ok=true and replica='{EXPECTED_MODEL}'."}],
+        "temperature": 0.7,
+        "top_p": 0.8,
+        "top_k": 20,
+        "seed": 2407528123,
+        "max_tokens": 64,
+        "response_format": {
+            "type": "json_schema",
+            "json_schema": {"name": "profile_probe", "schema": schema, "strict": True},
+        },
+    }
+    if os.environ.get("MEMBIND_DEPLOYMENT_POLICY_ID", "P0_QWEN3_8B_AWQ") == "P0_QWEN3_8B_AWQ":
+        payload.update({"min_p": 0, "presence_penalty": 1.5, "chat_template_kwargs": {"enable_thinking": False}})
+    else:
+        payload["repetition_penalty"] = 1.05
     response = client.post(
         f"{base_url.rstrip('/')}/chat/completions",
-        json={
-            "model": EXPECTED_MODEL,
-            "messages": [{"role": "user", "content": "Return ok=true and replica='qwen3-8b-awq'."}],
-            "temperature": 0.7,
-            "top_p": 0.8,
-            "top_k": 20,
-            "min_p": 0,
-            "presence_penalty": 1.5,
-            "seed": 2407528123,
-            "max_tokens": 64,
-            "chat_template_kwargs": {"enable_thinking": False},
-            "response_format": {
-                "type": "json_schema",
-                "json_schema": {"name": "profile_probe", "schema": schema, "strict": True},
-            },
-        },
+        json=payload,
     )
     response.raise_for_status()
     body = response.json()
@@ -635,9 +693,12 @@ def run_live(checks: Checks, timeout: float) -> None:
         "--scheduling-policy": "fcfs",
         "--seed": "20260806",
         "--structured-outputs-config": '{"backend":"xgrammar","disable_any_whitespace":true}',
-        "--default-chat-template-kwargs": '{"enable_thinking":false}',
         "--hf-overrides": '{"rope_parameters":{"rope_type":"yarn","factor":2.0,"original_max_position_embeddings":32768,"rope_theta":1000000}}',
     }
+    if os.environ.get("MEMBIND_LLM_DEFAULT_CHAT_TEMPLATE_KWARGS"):
+        common_llm_options["--default-chat-template-kwargs"] = os.environ[
+            "MEMBIND_LLM_DEFAULT_CHAT_TEMPLATE_KWARGS"
+        ]
     checks.capture(
         "native_process_contract",
         lambda: pid_command_check(
@@ -697,16 +758,16 @@ def run_live(checks: Checks, timeout: float) -> None:
     checks.capture(
         "native_kv_capacity",
         lambda: log_capacity(
-            log_root / "construction/native-qwen3-8b-awq.log",
-            "starting native qwen3-8b-awq",
+            log_root / f"construction/native-{EXPECTED_MODEL}.log",
+            f"starting native {EXPECTED_MODEL}",
             int(required("MEMBIND_LLM_MAX_MODEL_LEN")),
         ),
     )
     checks.capture(
         "prepare_kv_capacity",
         lambda: log_capacity(
-            log_root / "construction/prepare-qwen3-8b-awq.log",
-            "starting prepare qwen3-8b-awq",
+            log_root / f"construction/prepare-{EXPECTED_MODEL}.log",
+            f"starting prepare {EXPECTED_MODEL}",
             int(required("MEMBIND_LLM_MAX_MODEL_LEN")),
         ),
     )

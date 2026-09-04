@@ -12,6 +12,7 @@ import argparse
 import asyncio
 import hashlib
 import json
+import os
 import sys
 import time
 from pathlib import Path
@@ -34,11 +35,18 @@ from mab_quality_v2_final_qa.mab_main_dataset import (  # noqa: E402
     build_episode_inputs,
 )
 from saturated_fixed_work_baseline_v1_3.membind_v6_1.upstream_runtime import (  # noqa: E402
+    deployment_wire_fields,
     P0_MODEL,
     P0_SAMPLING,
     logical_request_seed,
+    resolve_deployment_policy,
     request_hash,
 )
+
+
+DEPLOYMENT_POLICY = resolve_deployment_policy()
+MODEL = DEPLOYMENT_POLICY.served_model
+SAMPLING = dict(DEPLOYMENT_POLICY.sampling)
 from saturated_fixed_work_baseline_v1_3.membind_v7.provider_diagnostics import (  # noqa: E402
     build_structured_edge_extraction_probe,
     build_structured_extraction_probe,
@@ -53,7 +61,7 @@ def _wire_request(
     chunk_ordinal: int,
     prompt_name: str,
 ) -> tuple[dict[str, Any], dict[str, Any]]:
-    """Apply only the shared P0 deployment fields and derive the wire seed."""
+    """Apply only the selected deployment fields and derive the wire seed."""
 
     wire = dict(request)
     messages_hash = request_hash({"messages": wire["messages"]})
@@ -66,17 +74,7 @@ def _wire_request(
         "canonical_messages_hash": messages_hash,
     }
     wire.update(
-        {
-            "temperature": P0_SAMPLING["temperature"],
-            "top_p": P0_SAMPLING["top_p"],
-            "presence_penalty": P0_SAMPLING["presence_penalty"],
-            "seed": logical_request_seed(identity),
-            "extra_body": {
-                "top_k": P0_SAMPLING["top_k"],
-                "min_p": P0_SAMPLING["min_p"],
-                "chat_template_kwargs": {"enable_thinking": False},
-            },
-        }
+        deployment_wire_fields(DEPLOYMENT_POLICY, seed=logical_request_seed(identity))
     )
     return wire, identity
 
@@ -138,8 +136,8 @@ async def run(output_root: Path) -> dict[str, Any]:
     raw_probe = build_structured_edge_extraction_probe(
         episode=full_episode,
         previous_episodes=(),
-        namespace="membind-p0-raw-replay",
-        model=P0_MODEL,
+        namespace=f"membind-{DEPLOYMENT_POLICY.policy_id.casefold()}-raw-replay",
+        model=MODEL,
         max_tokens=16384,
         entity_names=entity_names,
     )
@@ -152,7 +150,12 @@ async def run(output_root: Path) -> dict[str, Any]:
     )
 
     manifest = MAB8192Manifest.from_context(context, dataset_revision=DATASET_REVISION)
-    tokenizer_path = Path("/data/predator/ly/Mem/models/Qwen3-8B-AWQ/tokenizer.json")
+    tokenizer_path = Path(
+        os.environ.get(
+            "MEMBIND_LLM_MODEL_DIR",
+            "/data/predator/ly/Mem/models/Qwen3-8B-AWQ",
+        )
+    ) / "tokenizer.json"
     from tokenizers import Tokenizer
 
     tokenizer = Tokenizer.from_file(str(tokenizer_path))
@@ -167,8 +170,8 @@ async def run(output_root: Path) -> dict[str, Any]:
     node_probe = build_structured_extraction_probe(
         episode=probe_episode,
         previous_episodes=(),
-        namespace="membind-p0-mab8192-replay",
-        model=P0_MODEL,
+        namespace=f"membind-{DEPLOYMENT_POLICY.policy_id.casefold()}-mab8192-replay",
+        model=MODEL,
         max_tokens=16384,
     )
     node_request, node_identity = _wire_request(
@@ -182,7 +185,7 @@ async def run(output_root: Path) -> dict[str, Any]:
     timeout = httpx.Timeout(connect=10.0, read=3600.0, write=3600.0, pool=3600.0)
     client = AsyncOpenAI(
         api_key="membind-local",
-        base_url="http://127.0.0.1:18200/v1",
+        base_url=os.environ.get("NATIVE_LLM_BASE_URL", "http://127.0.0.1:18200/v1"),
         timeout=timeout,
         max_retries=0,
         http_client=httpx.AsyncClient(timeout=timeout, trust_env=False),
@@ -229,8 +232,8 @@ async def run(output_root: Path) -> dict[str, Any]:
             edge_probe = build_structured_edge_extraction_probe(
                 episode=probe_episode,
                 previous_episodes=(),
-                namespace="membind-p0-mab8192-replay",
-                model=P0_MODEL,
+                namespace=f"membind-{DEPLOYMENT_POLICY.policy_id.casefold()}-mab8192-replay",
+                model=MODEL,
                 max_tokens=16384,
                 entity_names=names,
             )
@@ -268,12 +271,22 @@ async def run(output_root: Path) -> dict[str, Any]:
     compatibility_pass = valid(node_result) and valid(compatibility_edge)
     result = {
         "schema_version": "membind.model-compatibility-replay.v1",
-        "status": "PASS" if compatibility_pass else "P0_COMPATIBILITY_FAILED",
+        "decision_context": {
+            "hypothesis": "Qwen2.5-7B-Instruct-AWQ official decoding may avoid the Qwen3-8B deterministic length-stop observed on a formal MAB8192 upstream request.",
+            "why_existing_evidence_is_insufficient": "The prior P0 replay passed a smaller isolated witness, while the formal P0 attempt deterministically truncated a growing-history node request at 16384 completion tokens.",
+            "code_or_config_difference": "Only the pre-registered model deployment and official Qwen2.5 sampling differ; Graphiti messages, JSON schema, max_tokens, adapter and call graph remain unchanged.",
+            "expected_observation": "Both node and edge witness responses stop normally and validate as JSON/Pydantic without provider exception or token-limit truncation.",
+            "pass_criteria": "finish_reason=stop, JSON/Pydantic/schema valid, and reached_token_limit=false for both MAB8192 witness calls.",
+            "fail_criteria": "Any provider exception, malformed response, validation failure, or finish_reason=length on either witness call.",
+            "next_decision": "Only PASS authorizes the selected deployment for full-history qualification; FAIL preserves evidence and does not permit schema/retry/repair changes.",
+        },
+        "status": "PASS" if compatibility_pass else "COMPATIBILITY_FAILED",
         "scope": "DIAGNOSTIC_AND_DEPLOYMENT_GATE_NOT_CONSTRUCTION",
         "provider_request_count": requests_started,
         "provider_retry_count": 0,
-        "model": P0_MODEL,
-        "sampling": P0_SAMPLING,
+        "deployment_policy_id": DEPLOYMENT_POLICY.policy_id,
+        "model": MODEL,
+        "sampling": SAMPLING,
         "adapter": adapter_identity(),
         "historical_raw_failure_replay": raw_result,
         "mab8192_witness": {
@@ -287,7 +300,7 @@ async def run(output_root: Path) -> dict[str, Any]:
             "node": node_result,
             "edge": compatibility_edge,
         },
-        "selection": "P0_QWEN3_8B_AWQ" if compatibility_pass else "P1_REQUIRED",
+        "selection": DEPLOYMENT_POLICY.policy_id if compatibility_pass else "COMPATIBILITY_FAILED",
         "completed_unix": time.time(),
     }
     result["payload_sha256"] = request_hash(result)

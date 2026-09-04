@@ -476,12 +476,23 @@ def finite_edge_task_model(
                 )
         edge_model = Union.__getitem__(tuple(direction_models))
 
-    pair_id_type = bounded_ascii_type(1, 600)
+    # The acknowledgement is part of the finite task domain, not free-form
+    # model text.  Bind it to exact pair IDs whenever this concrete task has
+    # declared pairs; otherwise keep the arm-agnostic template bounded.
+    pair_ids = tuple(f"{left}||{right}" for left, right in normalized_pairs)
+    pair_id_type = (
+        Literal.__getitem__(pair_ids)
+        if pair_ids
+        else bounded_ascii_type(1, 600)
+    )
     return create_model(
         f"{name_prefix}FiniteEdgeTask{max_pairs_per_task}_{max_relations_per_pair}_{len(names)}",
         status=(Literal["complete"], ...),
         pairs_completed=(list[pair_id_type], Field(..., min_length=1, max_length=max_pairs_per_task)),
-        edges=(list[edge_model], Field(default_factory=list, max_length=max_pairs_per_task * max_relations_per_pair)),
+        # The empty relation set is valid, but the field itself must be present.
+        # A default would make xgrammar omit it, leaving pair acknowledgement
+        # ambiguous at the wire boundary.
+        edges=(list[edge_model], Field(..., min_length=0, max_length=max_pairs_per_task * max_relations_per_pair)),
         __config__=ConfigDict(extra="forbid"),
     )
 

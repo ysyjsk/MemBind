@@ -5,7 +5,7 @@ source "$SCRIPT_DIR/local_env.sh"
 source "$SCRIPT_DIR/_common.sh"
 
 require_model "Prepare LLM" "$MEMBIND_LLM_MODEL_DIR"
-log="$MEMBIND_LOG_ROOT/construction/prepare-qwen3-8b-awq.log"
+log="$MEMBIND_LOG_ROOT/construction/prepare-$MEMBIND_LLM_MODEL_NAME.log"
 pidfile="$MEMBIND_RUN_ROOT/prepare-llm.pid"
 command=(
   "$MEMBIND_ENV/bin/vllm" serve "$MEMBIND_LLM_MODEL_DIR"
@@ -18,14 +18,16 @@ command=(
   --max-num-seqs "$MEMBIND_LLM_MAX_NUM_SEQS"
   --max-num-batched-tokens "$MEMBIND_LLM_MAX_BATCHED_TOKENS"
   --gpu-memory-utilization "$MEMBIND_PREPARE_LLM_GPU_MEMORY_UTILIZATION"
-  --hf-overrides '{"rope_parameters":{"rope_type":"yarn","factor":2.0,"original_max_position_embeddings":32768,"rope_theta":1000000}}'
   --structured-outputs-config '{"backend":"xgrammar","disable_any_whitespace":true}'
   --enable-prefix-caching
   --enable-chunked-prefill
   --scheduling-policy fcfs
   --seed 20260806
-  --default-chat-template-kwargs '{"enable_thinking":false}'
 )
+command+=(--hf-overrides '{"rope_parameters":{"rope_type":"yarn","factor":2.0,"original_max_position_embeddings":32768,"rope_theta":1000000}}')
+if [[ -n "${MEMBIND_LLM_DEFAULT_CHAT_TEMPLATE_KWARGS:-}" ]]; then
+  command+=(--default-chat-template-kwargs "$MEMBIND_LLM_DEFAULT_CHAT_TEMPLATE_KWARGS")
+fi
 
 case "${1:-}" in
   --dry-run)

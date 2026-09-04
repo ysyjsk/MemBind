@@ -18,6 +18,7 @@ from typing import Any
 from formal_three_arm_harness import (
     ARMS,
     HISTORY_UNIT_COUNT,
+    REPLICATE_COUNT,
     _json,
     _valid_cell,
     _valid_construction,
@@ -30,7 +31,7 @@ from formal_three_arm_harness import (
 
 ROOT = Path(__file__).resolve().parents[2]
 ENV_SCRIPT = ROOT / "scripts/local_runtime_8b_dual/activate.sh"
-RUNNER = ROOT / "saturated_fixed_work_baseline_v1_3/scripts/run_mab_v61_8b.py"
+RUNNER = ROOT / "saturated_fixed_work_baseline_v1_3/scripts/run_mab_upstream_8b.py"
 QA_RUNNER = ROOT / "saturated_fixed_work_baseline_v1_3/scripts/run_mab_v13_qa_resume.py"
 
 
@@ -185,6 +186,7 @@ def _append_heartbeat(path: Path, *, runner_pid: int, child_pid: int | None, cel
 
 def _run_process(cmd: list[str], *, env: dict[str, str], log: Path, pidfile: Path, heartbeat: Path, cell: dict[str, Any], attempt: Path) -> int:
     log.parent.mkdir(parents=True, exist_ok=True)
+    pidfile.parent.mkdir(parents=True, exist_ok=True)
     with log.open("a", encoding="utf-8") as output:
         proc = subprocess.Popen(cmd, stdout=output, stderr=subprocess.STDOUT, env=env, cwd=ROOT)
         pidfile.write_text(str(proc.pid) + "\n", encoding="utf-8")
@@ -200,17 +202,22 @@ def _run_process(cmd: list[str], *, env: dict[str, str], log: Path, pidfile: Pat
 
 def _formal_env() -> dict[str, str]:
     env = dict(os.environ)
+    model = env.get("MEMBIND_LLM_MODEL_NAME", "qwen3-8b-awq")
+    native_url = env.get("NATIVE_LLM_BASE_URL", "http://127.0.0.1:18200/v1")
+    embedding_url = env.get("EMBEDDING_BASE_URL", "http://127.0.0.1:18202/v1")
+    embedding_model = env.get("MEMBIND_EMBED_MODEL_NAME", "qwen3-embedding-0.6b")
     env.update({
         "MAB_RUNTIME_PROVIDER": "LOCAL_8B",
-        "CONSTRUCTION_LLM_BASE_URL": "http://127.0.0.1:18200/v1",
-        "CONSTRUCTION_LLM_MODEL": "qwen3-8b-awq",
-        "QUALITY_LLM_BASE_URL": "http://127.0.0.1:18200/v1",
-        "QUALITY_LLM_MODEL": "qwen3-8b-awq",
+        "CONSTRUCTION_LLM_BASE_URL": native_url,
+        "CONSTRUCTION_LLM_MODEL": model,
+        "QUALITY_LLM_BASE_URL": native_url,
+        "QUALITY_LLM_MODEL": model,
         "CONSTRUCTION_LLM_API_KEY": env.get("MEMBIND_LOCAL_API_KEY", "membind-local"),
+        "CONSTRUCTION_SEED": "20260806",
         "QUALITY_LLM_API_KEY": env.get("MEMBIND_LOCAL_API_KEY", "membind-local"),
         "VLLM_API_KEY": env.get("MEMBIND_LOCAL_API_KEY", "membind-local"),
-        "EMBEDDING_BASE_URL": "http://127.0.0.1:18202/v1",
-        "EMBEDDING_MODEL": "qwen3-embedding-0.6b",
+        "EMBEDDING_BASE_URL": embedding_url,
+        "EMBEDDING_MODEL": embedding_model,
         "EMBEDDING_API_KEY": env.get("MEMBIND_LOCAL_API_KEY", "membind-local"),
         "EMBEDDING_DIM": "1024",
         "NEO4J_URI": "bolt://127.0.0.1:7687",
@@ -232,6 +239,16 @@ def _attempt_env(env: dict[str, str], cell: dict[str, Any]) -> dict[str, str]:
 
 def _cell_root(root: Path, cell: dict[str, Any]) -> Path:
     return root / "cells" / cell["cell_id"]
+
+
+def _attempt_path(root: Path, cell: dict[str, Any]) -> Path:
+    return (
+        root
+        / f"history-{cell['history_index']}"
+        / f"replicate-{cell['replicate_id']}"
+        / cell["arm"]
+        / cell["attempt_id"]
+    )
 
 
 def _optional_json(path: Path) -> dict[str, Any]:
@@ -265,8 +282,12 @@ def _construction_contract(
 ) -> dict[str, Any]:
     complete_path = attempt / "complete.json"
     seal_path = attempt / "block" / "construction_seal.json"
+    contract_path = attempt / "run_contract.json"
+    route_seal_path = attempt / "route_seal.json"
     complete = _optional_json(complete_path)
     seal = _optional_json(seal_path)
+    contract = _optional_json(contract_path)
+    route_seal = _optional_json(route_seal_path)
     identity = seal.get("identity") if isinstance(seal.get("identity"), dict) else {}
     expected = [str(value) for value in cell.get("expected_construction_artifacts", ())]
     missing = [relative for relative in expected if not (attempt / relative).is_file()]
@@ -283,9 +304,34 @@ def _construction_contract(
         and identity.get("method") == cell.get("arm")
         and identity.get("context_id") == cell.get("history_id")
     )
+    contract_valid = (
+        contract.get("attempt_id") == cell.get("attempt_id")
+        and contract.get("namespace") == cell.get("namespace")
+        and contract.get("arm") == cell.get("arm")
+        and contract.get("history_index") == cell.get("history_index")
+        and contract.get("history_id") == cell.get("history_id")
+        and contract.get("replicate_id") == cell.get("replicate_id")
+        and contract.get("chunk_manifest_sha256")
+        == cell.get("workload_manifest_sha256")
+        and contract.get("dataset_authority_sha256")
+        == cell.get("dataset_authority_sha256")
+        and isinstance(contract.get("implementation"), dict)
+        and contract["implementation"].get("payload_sha256")
+        == cell.get("implementation_source_bundle_sha256")
+        and isinstance(contract.get("platform"), dict)
+        and contract["platform"].get("payload_sha256")
+        == cell.get("platform_manifest_sha256")
+    )
+    route_valid = route_seal.get("status") == "ROUTE_SEALED"
     return {
         "construction_status": (
-            "PASS" if complete_valid and seal_valid and not missing else "INVALID"
+            "PASS"
+            if complete_valid
+            and seal_valid
+            and contract_valid
+            and route_valid
+            and not missing
+            else "INVALID"
         ),
         "construction_complete_status": complete.get("status", "MISSING"),
         "construction_seal_status": seal.get("status", "MISSING"),
@@ -294,6 +340,8 @@ def _construction_contract(
         "t_build_ns": complete.get("build_makespan_ns"),
         "construction_complete": str(complete_path),
         "construction_seal": str(seal_path),
+        "run_contract": str(contract_path),
+        "route_seal": str(route_seal_path),
     }
 
 
@@ -423,8 +471,7 @@ def _failure_class(row: dict[str, Any]) -> str:
 def _execute_cell(root: Path, frozen_root: Path, cell: dict[str, Any], *, env: dict[str, str], ledger: Path) -> dict[str, Any]:
     cell_root = _cell_root(root, cell)
     cell_root.mkdir(parents=True, exist_ok=True)
-    attempt_root = cell_root / "construction"
-    attempt_root.mkdir(parents=True, exist_ok=True)
+    attempt_root = root
     run_id = f"{cell['campaign_id']}-{cell['cell_id']}-{cell['attempt_id']}"
     measured_env = _attempt_env(env, cell)
     cmd = [
@@ -434,19 +481,20 @@ def _execute_cell(root: Path, frozen_root: Path, cell: dict[str, Any], *, env: d
         str(attempt_root),
         "--run-id",
         run_id,
-        "--contexts",
-        str(cell.get("base_history_index", cell["history_index"])),
-        "--methods",
-        cell["arm"],
-        "--v61-boundary",
-        "MEMBIND_CORE",
-        "--force-reference-rerun",
         "--attempt-id",
         cell["attempt_id"],
         "--namespace",
         cell["namespace"],
+        "--context-index",
+        str(cell["history_index"]),
+        "--replicate-id",
+        str(cell["replicate_id"]),
+        "--method",
+        cell["arm"],
+        "--platform-manifest",
+        cell["platform_manifest_path"],
     ]
-    attempt = attempt_root / f"context-{cell['history_index']}" / cell["arm"] / cell["attempt_id"]
+    attempt = _attempt_path(root, cell)
     complete = attempt / "complete.json"
     failure = attempt / "failure.json"
     # If a persistent client was interrupted after dispatch, wait for that
@@ -664,14 +712,15 @@ def run(root: Path, frozen_root: Path) -> dict[str, Any]:
     ledger = root / "formal_ledger.jsonl"
     (root / "formal_runner.pid").write_text(f"{os.getpid()}\n", encoding="utf-8")
     env = _formal_env()
+    env["MEMBIND_EXPERIMENT_ROOT"] = str(root)
     rows: list[dict[str, Any]] = []
     invalid: list[dict[str, Any]] = []
     processed_cells = 0
     attempts_executed = 0
     # History-atomic order is explicit and independent of filesystem order.
     for history in range(HISTORY_UNIT_COUNT):
-        replicate = 0
-        for arm in ARMS:
+        for replicate in range(REPLICATE_COUNT):
+            for arm in ARMS:
                 cell = next(c for c in manifest["cells"] if c["history_index"] == history and c["replicate_id"] == replicate and c["arm"] == arm)
                 row = _execute_cell(root, frozen_root, cell, env=env, ledger=ledger)
                 processed_cells += 1

@@ -1,6 +1,7 @@
 from __future__ import annotations
 
 import hashlib
+from dataclasses import replace
 
 import pytest
 
@@ -8,6 +9,7 @@ from mab_quality_v2_final_qa.mab_main_dataset import DATASET_REVISION, load_main
 from mab_quality_v2_final_qa.mab8192_adapter import (
     MAB8192_ADAPTER_VERSION,
     MAB8192_CHUNK_SIZE,
+    MAB8192AdapterError,
     MAB8192Manifest,
     adapter_identity,
     split_lossless_body,
@@ -84,3 +86,57 @@ def test_adapter_identity_is_stable_and_separate_from_body() -> None:
     assert identity["lossless"] is True
     assert len(identity["adapter_sha256"]) == 64
     assert "adapter_sha256" not in split_lossless_body("[USER]\nhello")[0]
+
+
+@pytest.mark.parametrize(
+    ("mutation", "error"),
+    (
+        ({"dataset_revision": "different-revision"}, "dataset revision mismatch"),
+        ({"context_id": "different-context"}, "context identity mismatch"),
+    ),
+)
+def test_manifest_rejects_chunk_identity_drift(
+    mutation: dict[str, str], error: str
+) -> None:
+    context = load_main_contexts(DATASET)[0]
+    manifest = MAB8192Manifest.from_context(context, dataset_revision=DATASET_REVISION)
+    chunks = (replace(manifest.chunks[0], **mutation), *manifest.chunks[1:])
+    with pytest.raises(MAB8192AdapterError, match=error):
+        MAB8192Manifest(
+            dataset_revision=manifest.dataset_revision,
+            context_id=manifest.context_id,
+            chunks=chunks,
+            canonical_session_sha256=manifest.canonical_session_sha256,
+        )
+
+
+def test_manifest_rejects_duplicate_original_session_sequence() -> None:
+    context = load_main_contexts(DATASET)[0]
+    manifest = MAB8192Manifest.from_context(context, dataset_revision=DATASET_REVISION)
+    first_session = manifest.chunks[0]
+    second_session = next(
+        chunk
+        for chunk in manifest.chunks
+        if chunk.session_id != first_session.session_id and chunk.chunk_ordinal == 0
+    )
+    chunks = (
+        replace(first_session, chunk_count=1, global_sequence=0),
+        replace(
+            second_session,
+            source_sequence=first_session.source_sequence,
+            chunk_count=1,
+            global_sequence=1,
+        ),
+    )
+    canonical = tuple(
+        item
+        for item in manifest.canonical_session_sha256
+        if item[0] in {first_session.session_id, second_session.session_id}
+    )
+    with pytest.raises(MAB8192AdapterError, match="source sequence is not unique"):
+        MAB8192Manifest(
+            dataset_revision=manifest.dataset_revision,
+            context_id=manifest.context_id,
+            chunks=chunks,
+            canonical_session_sha256=canonical,
+        )

@@ -77,6 +77,19 @@ def package_versions() -> dict[str, str | None]:
 def endpoint(
     *, endpoint_id: str, role: str, host: str, port: str, gpu: str, utilization: str
 ) -> dict[str, Any]:
+    policy_id = os.environ.get("MEMBIND_DEPLOYMENT_POLICY_ID", "P0_QWEN3_8B_AWQ")
+    sampling = {
+        "temperature": 0.7,
+        "top_p": 0.8,
+        "top_k": 20,
+        "logical_seed": "request_identity_sha256_uint32",
+    }
+    if policy_id == "P0_QWEN3_8B_AWQ":
+        sampling.update({"min_p": 0, "presence_penalty": 1.5})
+    elif policy_id == "P1_QWEN25_7B_AWQ":
+        sampling["repetition_penalty"] = 1.05
+    else:
+        raise RuntimeError(f"unknown deployment policy: {policy_id}")
     return {
         "id": endpoint_id,
         "role": role,
@@ -104,14 +117,7 @@ def endpoint(
         "prefix_caching": True,
         "chunked_prefill": True,
         "thinking": False,
-        "sampling": {
-            "temperature": 0.7,
-            "top_p": 0.8,
-            "top_k": 20,
-            "min_p": 0,
-            "presence_penalty": 1.5,
-            "logical_seed": "request_identity_sha256_uint32",
-        },
+        "sampling": sampling,
     }
 
 
@@ -155,8 +161,9 @@ def main() -> int:
             "driver": checks["software"].get("driver"),
         },
         "hardware": checks["gpu_inventory"],
+        "deployment_policy_id": os.environ.get("MEMBIND_DEPLOYMENT_POLICY_ID", "P0_QWEN3_8B_AWQ"),
         "llm_model": {
-            "source_model": "Qwen/Qwen3-8B-AWQ",
+            "source_model": required("MEMBIND_LLM_SOURCE_MODEL"),
             "revision": required("MEMBIND_LLM_MODEL_REVISION"),
             "served_model": required("MEMBIND_LLM_MODEL_NAME"),
             "path": str(llm_model_root),
@@ -240,7 +247,7 @@ def main() -> int:
             "fresh_vector_index_and_namespace_required": True,
         },
         "runtime_preflight": preflight,
-        "runtime_file_catalog": file_catalog(runtime_root),
+        "runtime_file_catalog": file_catalog(Path(os.environ.get("MEMBIND_RUNTIME_DIR", str(runtime_root))).resolve()),
         "git": git_identity(repo_root),
         "secrets_omitted": [
             "MEMBIND_LOCAL_API_KEY",

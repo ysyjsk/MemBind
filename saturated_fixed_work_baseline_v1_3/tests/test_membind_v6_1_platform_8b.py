@@ -1,6 +1,7 @@
 from __future__ import annotations
 
 import json
+import importlib.util
 import os
 from pathlib import Path
 import subprocess
@@ -12,6 +13,15 @@ from saturated_fixed_work_baseline_v1_3.membind_v6_1.identity import (
 
 
 ROOT = Path(__file__).resolve().parents[2]
+
+
+def _preparation_module():
+    path = ROOT / "scripts/local_runtime_8b_dual/prepare_measured_attempt.py"
+    spec = importlib.util.spec_from_file_location("prepare_measured_attempt", path)
+    assert spec is not None and spec.loader is not None
+    module = importlib.util.module_from_spec(spec)
+    spec.loader.exec_module(module)
+    return module
 
 
 def test_implementation_bundle_changes_when_runner_dependency_changes(tmp_path: Path) -> None:
@@ -59,6 +69,39 @@ def test_attempt_preparation_failure_is_retained_without_content_or_secrets(
     assert evidence["attempt_id"] == "fixture-attempt"
     assert evidence["content_and_secrets_omitted"] is True
     assert "fixture-secret" not in output.read_text(encoding="utf-8")
+
+
+def test_attempt_warmup_uses_frozen_p0_sampling() -> None:
+    module = _preparation_module()
+    payload = module.warmup_payload(
+        model="qwen3-8b-awq",
+        messages=[{"role": "user", "content": "ready"}],
+        schema={"name": "ready", "schema": {"type": "object"}},
+        seed=7,
+    )
+    assert {
+        key: payload[key]
+        for key in ("temperature", "top_p", "top_k", "min_p", "presence_penalty")
+    } == module.P0_SAMPLING
+    assert payload["chat_template_kwargs"] == {"enable_thinking": False}
+
+
+def test_attempt_warmup_uses_frozen_p1_sampling_without_p0_fields() -> None:
+    module = _preparation_module()
+    payload = module.warmup_payload(
+        model="qwen2.5-7b-instruct-awq",
+        messages=[{"role": "user", "content": "ready"}],
+        schema={"name": "ready", "schema": {"type": "object"}},
+        seed=7,
+        deployment_policy_id="P1_QWEN25_7B_AWQ",
+    )
+    assert payload["temperature"] == 0.7
+    assert payload["top_p"] == 0.8
+    assert payload["top_k"] == 20
+    assert payload["repetition_penalty"] == 1.05
+    assert "presence_penalty" not in payload
+    assert "min_p" not in payload
+    assert "chat_template_kwargs" not in payload
 
 
 def test_8b_startup_recovers_neo4j_before_loading_models() -> None:

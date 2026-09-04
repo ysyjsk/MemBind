@@ -15,6 +15,50 @@ import sys
 from typing import Any
 
 
+P0_SAMPLING = {
+    "temperature": 0.7,
+    "top_p": 0.8,
+    "top_k": 20,
+    "min_p": 0,
+    "presence_penalty": 1.5,
+}
+P1_SAMPLING = {
+    "temperature": 0.7,
+    "top_p": 0.8,
+    "top_k": 20,
+    "repetition_penalty": 1.05,
+}
+
+
+def deployment_sampling(policy_id: str) -> dict[str, Any]:
+    if policy_id == "P0_QWEN3_8B_AWQ":
+        return dict(P0_SAMPLING)
+    if policy_id == "P1_QWEN25_7B_AWQ":
+        return dict(P1_SAMPLING)
+    raise RuntimeError(f"unknown deployment policy: {policy_id}")
+
+
+def warmup_payload(
+    *,
+    model: str,
+    messages: list[dict[str, str]],
+    schema: dict[str, Any],
+    seed: int,
+    deployment_policy_id: str = "P0_QWEN3_8B_AWQ",
+) -> dict[str, Any]:
+    payload = {
+        "model": model,
+        "messages": messages,
+        **deployment_sampling(deployment_policy_id),
+        "seed": seed,
+        "max_tokens": 32,
+        "response_format": {"type": "json_schema", "json_schema": schema},
+    }
+    if deployment_policy_id == "P0_QWEN3_8B_AWQ":
+        payload["chat_template_kwargs"] = {"enable_thinking": False}
+    return payload
+
+
 def request_json(url: str, *, payload: dict[str, Any] | None = None) -> Any:
     body = None if payload is None else json.dumps(payload).encode("utf-8")
     request = urllib.request.Request(
@@ -51,6 +95,10 @@ def main() -> int:
     parser.add_argument("--output", type=Path, required=True)
     args = parser.parse_args()
     try:
+        policy_id = os.environ.get(
+            "MEMBIND_DEPLOYMENT_POLICY_ID", "P0_QWEN3_8B_AWQ"
+        )
+        sampling = deployment_sampling(policy_id)
         endpoints = [
             ("native-replica", os.environ["NATIVE_LLM_BASE_URL"].removesuffix("/v1")),
             ("prepare-replica", os.environ["PREPARE_LLM_BASE_URL"].removesuffix("/v1")),
@@ -76,16 +124,13 @@ def main() -> int:
             started = time.monotonic_ns()
             warmup = request_json(
                 f"{root}/v1/chat/completions",
-                payload={
-                    "model": os.environ["CONSTRUCTION_LLM_MODEL"],
-                    "messages": prompt,
-                    "temperature": 0,
-                    "top_p": 1,
-                    "seed": int(os.environ["CONSTRUCTION_SEED"]),
-                    "max_tokens": 32,
-                    "response_format": {"type": "json_schema", "json_schema": schema},
-                    "chat_template_kwargs": {"enable_thinking": False},
-                },
+                payload=warmup_payload(
+                    model=os.environ["CONSTRUCTION_LLM_MODEL"],
+                    messages=prompt,
+                    schema=schema,
+                    seed=int(os.environ["CONSTRUCTION_SEED"]),
+                    deployment_policy_id=policy_id,
+                ),
             )
             duration = time.monotonic_ns() - started
             content = warmup["choices"][0]["message"]["content"]
@@ -105,6 +150,8 @@ def main() -> int:
             "status": "PASS",
             "attempt_id": args.attempt_id,
             "cache_policy": "reset_then_identical_structured_warmup_v1",
+            "deployment_policy_id": policy_id,
+            "warmup_sampling": sampling,
             "endpoints": rows,
             "completed_unix": time.time(),
         }

@@ -67,6 +67,56 @@ def implementation_bundle(runner: str | Path) -> dict[str, Any]:
         _component("membind_v6_1", package_root),
         _component("runner", Path(runner)),
         _component(
+            "mab8192_adapter",
+            project_root
+            / "mab_quality_v2_final_qa/src/"
+            "mab_quality_v2_final_qa/mab8192_adapter.py",
+        ),
+        _component(
+            "attempt_preparation",
+            project_root / "scripts/local_runtime_8b_dual/prepare_measured_attempt.py",
+        ),
+        _component(
+            "qa_resume",
+            project_root
+            / "saturated_fixed_work_baseline_v1_3/scripts/"
+            "run_mab_v13_qa_resume.py",
+        ),
+        _component(
+            "qa_core",
+            project_root
+            / "saturated_fixed_work_baseline_v1_3/scripts/run_mab_v13_live.py",
+        ),
+        _component(
+            "formal_manifest",
+            project_root
+            / "saturated_fixed_work_baseline_v1_3/scripts/"
+            "formal_three_arm_harness.py",
+        ),
+        _component(
+            "formal_runner",
+            project_root
+            / "saturated_fixed_work_baseline_v1_3/scripts/run_formal_three_arm.py",
+        ),
+        _component(
+            "formal_finalizer",
+            project_root
+            / "saturated_fixed_work_baseline_v1_3/scripts/"
+            "finalize_formal_three_arm.py",
+        ),
+        _component(
+            "qualification_runner",
+            project_root
+            / "saturated_fixed_work_baseline_v1_3/scripts/"
+            "run_upstream_l2_qualification.py",
+        ),
+        _component(
+            "qualification_finalizer",
+            project_root
+            / "saturated_fixed_work_baseline_v1_3/scripts/"
+            "finalize_upstream_qualification.py",
+        ),
+        _component(
             "mab_live_runner",
             project_root
             / "saturated_fixed_work_baseline_v1_3/src/"
@@ -85,6 +135,8 @@ def implementation_bundle(runner: str | Path) -> dict[str, Any]:
         "native_characterization_instrumentation",
         "native_characterization_tracing",
         "live_outputs",
+        "mab_quality_v2_final_qa",
+        "paper_eval",
     ):
         components.append(_component(module_name, _module_source(module_name)))
     versions = {}

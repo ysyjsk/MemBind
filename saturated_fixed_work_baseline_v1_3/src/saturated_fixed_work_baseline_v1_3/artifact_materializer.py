@@ -104,7 +104,12 @@ def materialize_construction_block(
     _write_jsonl(block_root / "native_trace.jsonl", result.get("native_trace", events))
     _write_jsonl(block_root / "transport_trace.jsonl", result.get("transport_trace", []))
     _write_jsonl(block_root / "request_identity.jsonl", result.get("request_identity", []))
-    if method in {"V6", "MEMBIND_V6_1"}:
+    if method in {
+        "V6",
+        "MEMBIND_V6_1",
+        "MEMBIND_V6_1_SHARED_BOUNDED_SO",
+        "MEMBIND_V6_1_UPSTREAM_CORE_MAB8192",
+    }:
         _write_jsonl(block_root / "replay_binding.jsonl", result.get("bindings", []))
     else:
         _write_jsonl(block_root / "replay_binding.jsonl", [{"status": "N/A", "reason": "replay refinement is not applicable to this method"}])

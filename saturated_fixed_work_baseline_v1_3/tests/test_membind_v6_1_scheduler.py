@@ -47,6 +47,7 @@ from saturated_fixed_work_baseline_v1_3.membind_v6_1.executor import (
     DUAL_STREAMING_EXECUTION_STRATEGY,
     STAGED_EXECUTION_STRATEGY,
     run_jit_frontier_history_async,
+    run_resource_credit_frontier_history_async,
     run_staged_frontier_history_async,
 )
 from saturated_fixed_work_baseline_v1_3.membind_v6_1.mab import (
@@ -54,6 +55,9 @@ from saturated_fixed_work_baseline_v1_3.membind_v6_1.mab import (
     _resolve_routed_client,
 )
 from saturated_fixed_work_baseline_v1_3.membind_v6_1.policy import V61Policy
+from saturated_fixed_work_baseline_v1_3.membind_v6_1.resource_credit import (
+    ResourceCreditPolicy,
+)
 from saturated_fixed_work_baseline_v1_3.membind_v6_1.provider import (
     V61ProviderClient,
     V61ProviderError,
@@ -87,6 +91,47 @@ def test_provider_free_stress_oracle_covers_required_state_transitions() -> None
         "ordered_publication",
     }
     assert all(row["oracle"].get("conservation", True) for row in result["scenarios"].values())
+
+
+def test_resource_credit_executor_only_starts_dependency_ready_future_chunks() -> None:
+    async def scenario() -> None:
+        policy = ResourceCreditPolicy()
+        authority = CapacityAuthority(3)
+        arbiter = ForegroundAdmissionArbiter(authority, policy=policy)
+        timeline: list[tuple[str, int]] = []
+        chunk_ordinals = (0, 1, 0, 1)
+        predecessors = (None, 0, None, 2)
+
+        async def prepare(sequence: int) -> int:
+            timeline.append(("prepare", sequence))
+            await asyncio.sleep(0)
+            return sequence
+
+        async def publish(sequence: int, value: int) -> None:
+            assert value == sequence
+            timeline.append(("publish", sequence))
+            await asyncio.sleep(0)
+
+        result = await run_resource_credit_frontier_history_async(
+            4,
+            prepare,
+            publish,
+            authority=authority,
+            policy=policy,
+            admission=arbiter,
+            dependency_ready=lambda sequence, durable_frontier: (
+                chunk_ordinals[sequence] == 0
+                or predecessors[sequence] is not None
+                and int(predecessors[sequence]) <= durable_frontier
+            ),
+        )
+        positions = {event: index for index, event in enumerate(timeline)}
+        assert positions[("prepare", 2)] < positions[("publish", 0)]
+        assert positions[("publish", 0)] < positions[("prepare", 1)]
+        assert positions[("publish", 2)] < positions[("prepare", 3)]
+        assert result.durable_frontier == 3
+
+    asyncio.run(scenario())
 
 
 def test_critical_scheduler_prefers_frontier_then_earliest_resource_finish() -> None:

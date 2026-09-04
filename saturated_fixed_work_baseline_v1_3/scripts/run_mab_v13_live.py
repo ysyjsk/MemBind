@@ -116,6 +116,7 @@ async def _run_qa(
     runtime_builder: Any,
     qa_runtime: Any | None = None,
     qa_output_root: Path | None = None,
+    episode_provenance: tuple[Any, ...] | None = None,
 ) -> dict[str, Any]:
     """Run smoke/full QA against one sealed namespace without construction writes."""
 
@@ -141,7 +142,13 @@ async def _run_qa(
     runtime = qa_runtime if qa_runtime is not None else await resolve_runtime_builder(runtime_builder)
     graph = runtime.graphiti
     try:
-        episodes = tuple(SimpleNamespace(source_sequence=session.source_sequence, session_id=session.session_id) for session in context.sessions)
+        episodes = episode_provenance or tuple(
+            SimpleNamespace(
+                source_sequence=session.source_sequence,
+                session_id=session.session_id,
+            )
+            for session in context.sessions
+        )
         mapping = await _episode_mapping(graph, str(construction_seal["namespace"]), episodes)
         readonly = ReadOnlyNamespace(graph, str(construction_seal["namespace"]))
         qa_by_pair = {qa.qa_pair_id: qa for qa in context.qa_items}

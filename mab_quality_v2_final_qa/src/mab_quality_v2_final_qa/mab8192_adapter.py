@@ -181,6 +181,8 @@ class MAB8192Manifest:
         chunks = tuple(self.chunks)
         if not chunks or any(not isinstance(chunk, MAB8192Chunk) for chunk in chunks):
             raise MAB8192AdapterError("manifest must contain chunks")
+        if any(chunk.dataset_revision != self.dataset_revision for chunk in chunks):
+            raise MAB8192AdapterError("chunk dataset revision mismatch")
         if any(chunk.context_id != self.context_id for chunk in chunks):
             raise MAB8192AdapterError("chunk context identity mismatch")
         expected_sequence = list(range(len(chunks)))
@@ -197,6 +199,19 @@ class MAB8192Manifest:
                 if chunk.previous_chunk_id != predecessor.chunk_id:
                     raise MAB8192AdapterError("session dependency chain is not adjacent")
         session_ids = {chunk.session_id for chunk in chunks}
+        source_sequence_by_session = {
+            session_id: {
+                chunk.source_sequence
+                for chunk in chunks
+                if chunk.session_id == session_id
+            }
+            for session_id in session_ids
+        }
+        if any(len(values) != 1 for values in source_sequence_by_session.values()):
+            raise MAB8192AdapterError("session source sequence mismatch")
+        source_sequences = [next(iter(values)) for values in source_sequence_by_session.values()]
+        if len(source_sequences) != len(set(source_sequences)):
+            raise MAB8192AdapterError("session source sequence is not unique")
         supplied = dict(self.canonical_session_sha256)
         if session_ids != set(supplied):
             raise MAB8192AdapterError("canonical session inventory does not match chunks")

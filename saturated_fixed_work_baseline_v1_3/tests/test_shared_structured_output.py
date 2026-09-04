@@ -158,12 +158,39 @@ def test_installed_xgrammar_enforces_declared_pair_domain() -> None:
     assert not _xgrammar_accepts(schema, payload("B", "C"))
 
 
+def test_installed_xgrammar_enforces_exact_declared_pair_acknowledgements() -> None:
+    model = finite_edge_task_model(
+        max_pairs_per_task=1,
+        max_relations_per_pair=2,
+        endpoint_names=("Pasmu card", "Tokyo city center"),
+        pair_tuples=(("Pasmu card", "Tokyo city center"),),
+    )
+    schema = model.model_json_schema()
+    pair_schema = schema["properties"]["pairs_completed"]["items"]
+    # Pydantic emits a singleton Literal as ``const`` (and a multi-value
+    # Literal as ``enum``); both are exact wire-domain constraints.
+    assert pair_schema.get("const") == "Pasmu card||Tokyo city center"
+
+    def payload(pair_id: str) -> dict:
+        return {
+            "status": "complete",
+            "pairs_completed": [pair_id],
+            "edges": [],
+        }
+
+    assert _xgrammar_accepts(schema, payload("Pasmu card||Tokyo city center"))
+    assert not _xgrammar_accepts(
+        schema, payload("Pasmu Card||Tokyo city center")
+    )
+
+
 def test_contract_is_arm_agnostic_and_finite() -> None:
     contract = SharedStructuredOutputContract(page_capacity=2, max_pages=3)
     assert contract.arm_identity is None
     assert contract.schema["properties"]["status"]["const"] == "complete"
     assert contract.schema["properties"]["pairs_completed"]["maxItems"] == 1
     assert contract.schema["properties"]["edges"]["maxItems"] == 2
+    assert "edges" in contract.schema["required"]
     assert contract.termination == "declared_pair_task_completion"
 
 

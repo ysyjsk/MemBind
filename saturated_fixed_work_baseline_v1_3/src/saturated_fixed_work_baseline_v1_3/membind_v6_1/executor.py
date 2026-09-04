@@ -48,6 +48,7 @@ async def run_resource_credit_frontier_history_async(
     interval_sink: Callable[[dict[str, Any]], None] | None = None,
     lifecycle_sink: Callable[[dict[str, Any]], None] | None = None,
     execution_strategy: str = DUAL_STREAMING_EXECUTION_STRATEGY,
+    dependency_ready: Callable[[int, int], bool] | None = None,
 ) -> V61ExecutionResult:
     """Execute with a lazy dependency-ready queue and derived future credit.
 
@@ -117,14 +118,30 @@ async def run_resource_credit_frontier_history_async(
             if interval_sink is not None:
                 interval_sink({"event": "PREPARE_INTERVAL", **row})
 
+    def is_dependency_ready(sequence: int) -> bool:
+        if dependency_ready is None:
+            return True
+        ready = dependency_ready(int(sequence), int(durable_frontier))
+        if not isinstance(ready, bool):
+            raise TypeError("dependency_ready must return bool")
+        return ready
+
     def start_ready(current: int) -> None:
         nonlocal max_started_ahead
         if current >= source_count:
             return
+        if not is_dependency_ready(current):
+            raise RuntimeError(
+                f"frontier source is not dependency-ready: {current}"
+            )
         if current not in tasks:
             tasks[current] = asyncio.create_task(do_prepare(current))
             emit("PREPARE_SUBMITTED", current, admission_class="FRONTIER_PREPARE")
-        future = [seq for seq in range(current + 1, source_count) if seq not in tasks]
+        future = [
+            seq
+            for seq in range(current + 1, source_count)
+            if seq not in tasks and is_dependency_ready(seq)
+        ]
         credit = admission.future_credit(dependency_ready_future_count=len(future))
         for sequence in future[:credit]:
             tasks[sequence] = asyncio.create_task(do_prepare(sequence))

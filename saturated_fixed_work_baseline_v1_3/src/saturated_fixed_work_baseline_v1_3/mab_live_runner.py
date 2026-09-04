@@ -57,6 +57,19 @@ class MABLiveRunnerError(RuntimeError):
     """The live MAB block cannot satisfy the fixed-work contract."""
 
 
+MAB8192_ADAPTER_VERSION = "MAB_ROLE_AWARE_LOSSLESS_8192_V1"
+_MAB8192_FORMAL_ARMS = frozenset(
+    {
+        "GRAPHITI_SERIAL_SHARED_BOUNDED_SO",
+        "RELAXED_ORDER_SHARED_BOUNDED_SO",
+        "MEMBIND_V6_1_SHARED_BOUNDED_SO",
+        "GRAPHITI_SERIAL_UPSTREAM_CORE_MAB8192",
+        "GRAPHITI_ASYNC_UPSTREAM_CORE_MAB8192",
+        "MEMBIND_V6_1_UPSTREAM_CORE_MAB8192",
+    }
+)
+
+
 def _reliability_identity() -> dict[str, str]:
     """Load the shared structured-output identity after package initialization."""
 
@@ -195,29 +208,84 @@ def _logical_identity(episode: MABLiveEpisode) -> dict[str, Any]:
     }
 
 
-def _adapter_coverage(episodes: Sequence[MABLiveEpisode]) -> dict[str, Any]:
+def _adapter_coverage(
+    episodes: Sequence[MABLiveEpisode], *, require_mab8192: bool = False
+) -> dict[str, Any]:
     by_session: dict[str, list[MABLiveEpisode]] = {}
     for episode in episodes:
         by_session.setdefault(episode.session_id, []).append(episode)
     violations: list[dict[str, Any]] = []
+    source_sequence_owners: dict[int, str] = {}
     for session_id, values in by_session.items():
         values.sort(key=lambda item: item.source_sequence)
+        global_sequences = [item.source_sequence for item in values]
+        if global_sequences != list(
+            range(global_sequences[0], global_sequences[0] + len(global_sequences))
+        ):
+            violations.append(
+                {"session_id": session_id, "reason": "session_chunks_not_adjacent"}
+            )
         if [item.chunk_ordinal for item in values] != list(range(len(values))):
             violations.append({"session_id": session_id, "reason": "chunk_ordinal_gap"})
             continue
         if any(item.chunk_count != len(values) for item in values):
             violations.append({"session_id": session_id, "reason": "chunk_count_mismatch"})
+        if len({item.original_source_sequence for item in values}) != 1:
+            violations.append(
+                {"session_id": session_id, "reason": "session_source_sequence_mismatch"}
+            )
+        else:
+            original_sequence = values[0].original_source_sequence
+            owner = source_sequence_owners.setdefault(original_sequence, session_id)
+            if owner != session_id:
+                violations.append(
+                    {
+                        "session_id": session_id,
+                        "reason": "original_source_sequence_not_unique",
+                        "original_source_sequence": original_sequence,
+                        "other_session_id": owner,
+                    }
+                )
         for index, item in enumerate(values):
             expected = None if index == 0 else values[index - 1].chunk_id
             if item.previous_chunk_id != expected:
                 violations.append({"session_id": session_id, "reason": "predecessor_mismatch"})
     versions = {item.adapter_version for item in episodes if item.adapter_version is not None}
+    dataset_revisions = {item.dataset_revision for item in episodes}
+    context_ids = {item.context_id for item in episodes}
+    all_bounded = all(len(item.body) <= 8192 for item in episodes)
+    if len(versions) > 1:
+        violations.append({"reason": "adapter_version_not_unique"})
+    if require_mab8192 and versions != {MAB8192_ADAPTER_VERSION}:
+        violations.append(
+            {
+                "reason": "formal_adapter_version_mismatch",
+                "expected": MAB8192_ADAPTER_VERSION,
+                "observed": sorted(versions),
+            }
+        )
+    if len(dataset_revisions) != 1:
+        violations.append({"reason": "dataset_revision_not_unique"})
+    if len(context_ids) != 1:
+        violations.append({"reason": "context_identity_not_unique"})
+    if (require_mab8192 or MAB8192_ADAPTER_VERSION in versions) and not all_bounded:
+        violations.append({"reason": "chunk_body_exceeds_8192"})
+    chunk_ids = [item.chunk_id for item in episodes]
+    if require_mab8192 and (
+        any(not chunk_id for chunk_id in chunk_ids)
+        or len(set(chunk_ids)) != len(chunk_ids)
+    ):
+        violations.append({"reason": "chunk_id_inventory_invalid"})
     return {
         "status": "PASS" if not violations else "FAIL",
         "adapter_version": next(iter(versions)) if len(versions) == 1 else None,
+        "dataset_revision": (
+            next(iter(dataset_revisions)) if len(dataset_revisions) == 1 else None
+        ),
+        "context_id": next(iter(context_ids)) if len(context_ids) == 1 else None,
         "chunk_count": len(episodes),
         "session_count": len(by_session),
-        "all_chunk_bodies_bounded": all(len(item.body) <= 8192 for item in episodes),
+        "all_chunk_bodies_bounded": all_bounded,
         "dependency_violation_count": len(violations),
         "violations": violations,
     }
@@ -349,6 +417,16 @@ async def run_mab_construction_async(
     selected = tuple(episode_from_input(item) for item in episodes)
     if not selected or [item.source_sequence for item in selected] != list(range(len(selected))):
         raise MABLiveRunnerError("MAB_EPISODE_SEQUENCE_INVALID")
+    adapter_coverage = _adapter_coverage(
+        selected, require_mab8192=method in _MAB8192_FORMAL_ARMS
+    )
+    if adapter_coverage["status"] != "PASS":
+        reasons = ",".join(
+            str(row.get("reason", "unknown")) for row in adapter_coverage["violations"]
+        )
+        raise MABLiveRunnerError(
+            f"MAB8192_ADAPTER_COVERAGE_INVALID:{reasons}"
+        )
     root = Path(output_root).resolve()
     if root.exists() and any(root.iterdir()):
         raise MABLiveRunnerError("BLOCK_ROOT_NOT_FRESH")
@@ -679,22 +757,30 @@ async def run_mab_construction_async(
                 if strict_native
                 else "AT_LEAST_ONCE_WITH_STABLE_IDEMPOTENCY_KEY"
             ),
-            "adapter_coverage": _adapter_coverage(selected),
+            "adapter_coverage": adapter_coverage,
             **(
                 {
-                    "structured_output_policy": "UPSTREAM_GRAPHITI_PYDANTIC_JSON_SCHEMA",
+                    "structured_output_policy": (
+                        "SHARED_BOUNDED_STRUCTURED_OUTPUT_V1"
+                        if method
+                        in {
+                            "GRAPHITI_SERIAL_SHARED_BOUNDED_SO",
+                            "RELAXED_ORDER_SHARED_BOUNDED_SO",
+                        }
+                        else "UPSTREAM_GRAPHITI_PYDANTIC_JSON_SCHEMA"
+                    ),
                     "response_repair_enabled": False,
                     "finite_pair_tasks_enabled": False,
                 }
                 if method in {
                     "GRAPHITI_SERIAL_UPSTREAM_CORE_MAB8192",
                     "GRAPHITI_ASYNC_UPSTREAM_CORE_MAB8192",
+                    "GRAPHITI_SERIAL_SHARED_BOUNDED_SO",
+                    "RELAXED_ORDER_SHARED_BOUNDED_SO",
                 }
                 else _reliability_identity()
             ),
         }
-        if result["adapter_coverage"]["status"] != "PASS":
-            raise MABLiveRunnerError("MAB8192_ADAPTER_COVERAGE_INVALID")
         if method == "V6":
             result["refinement_validation"] = {**result["refinement_validation"], "proof": {"request": validate_request_comparisons(comparisons), "replay": validate_replay_accounting(store.summary()), "provider": validate_provider_events([], capacity=capacity.value)}}
         journals["raw"].close()

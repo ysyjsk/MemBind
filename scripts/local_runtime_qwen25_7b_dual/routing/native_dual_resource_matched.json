@@ -1,0 +1,12 @@
+{
+  "schema_version": "membind.routing-policy.v1",
+  "profile_id": "local-qwen25-7b-awq-dualreplica-v1",
+  "arm": "NATIVE_QWEN25_7B_DUAL_B0_SERIAL_RESOURCE_MATCHED",
+  "formal_role": "headline_baseline_b0",
+  "endpoint_set": [
+    {"id": "native-replica", "base_url": "http://127.0.0.1:18200/v1", "served_model": "qwen2.5-7b-instruct-awq", "physical_gpu": 0},
+    {"id": "prepare-replica", "base_url": "http://127.0.0.1:18201/v1", "served_model": "qwen2.5-7b-instruct-awq", "physical_gpu": 1}
+  ],
+  "router": {"policy": "capacity_weighted_least_outstanding", "capacity_source": "observed_kv_tokens_in_platform_manifest", "phase_labels_visible": false, "work_conserving": true, "spillover": true},
+  "constraints": {"same_prompt_and_decoding_contract": true, "same_endpoint_set_as_v61": true, "same_embedding_endpoint_as_v61": true, "request_reordering_beyond_arrival_order": false, "episode_concurrency": 1, "strict_source_order_stateful_update": true, "durable_publication_order": "source_sequence_ascending", "relaxed_order": false, "state_evolution_contract": "B0_SERIAL_STATEFUL_ORDERED_PUBLICATION"}
+}

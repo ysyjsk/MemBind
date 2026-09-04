@@ -1,9 +1,9 @@
 """Formal Graphiti runtime with a transparent Qwen deployment facade.
 
-This module deliberately does not import the finite-pair or structured-output
-recovery implementations.  The only object graph mutation is construction of
-the upstream Graphiti 0.29.3 objects; the transport facade adds deployment
-fields and read-only telemetry at the OpenAI completion boundary.
+This module constructs the upstream Graphiti 0.29.3 object graph and installs
+the same arm-agnostic bounded structured-output compatibility seam for every
+formal arm.  The seam is an explicit shared substrate; it does not inspect an
+arm identity or change Graphiti's episode/state/publication semantics.
 """
 
 from __future__ import annotations
@@ -24,6 +24,7 @@ from .routing import (
     RoutedOpenAIClient,
     install_routing_prompt_context,
 )
+from .shared_structured_output import adapter_identity
 from .runtime import (
     LOCAL_HTTP_TIMEOUT_SECONDS,
     LOCAL_MAX_COROUTINES,
@@ -32,16 +33,22 @@ from .runtime import (
     _normalized_url,
     build_local_openai_transport,
     close_local_u0_runtime,
+    install_local_extraction_chunking_policy,
     install_local_single_attempt_policy,
 )
 
 
-FORMAL_ARM_A = "GRAPHITI_SERIAL_UPSTREAM_CORE_MAB8192"
-FORMAL_ARM_B = "GRAPHITI_ASYNC_UPSTREAM_CORE_MAB8192"
-FORMAL_ARM_C = "MEMBIND_V6_1_UPSTREAM_CORE_MAB8192"
+# The strict unbounded upstream path is retained only as an A0 compatibility
+# characterization.  The executable formal arms share the bounded substrate
+# because the pinned ExtractedEdges schema has an unbounded array.
+FORMAL_ARM_A = "GRAPHITI_SERIAL_SHARED_BOUNDED_SO"
+FORMAL_ARM_B = "RELAXED_ORDER_SHARED_BOUNDED_SO"
+FORMAL_ARM_C = "MEMBIND_V6_1_SHARED_BOUNDED_SO"
 FORMAL_ARM_NAMES = (FORMAL_ARM_A, FORMAL_ARM_B, FORMAL_ARM_C)
 GRAPHITI_COMMIT = "021d3a57d511f21b10adaf7fa923bd5c1fce5e9d"
 GRAPHITI_VERSION = "0.29.3"
+P0_DEPLOYMENT_POLICY_ID = "P0_QWEN3_8B_AWQ"
+P1_DEPLOYMENT_POLICY_ID = "P1_QWEN25_7B_AWQ"
 P0_MODEL = "qwen3-8b-awq"
 P0_SAMPLING: dict[str, Any] = {
     "enable_thinking": False,
@@ -52,6 +59,118 @@ P0_SAMPLING: dict[str, Any] = {
     "presence_penalty": 1.5,
     "structured_output_backend": "xgrammar",
 }
+P1_MODEL = "qwen2.5-7b-instruct-awq"
+P1_SAMPLING: dict[str, Any] = {
+    "temperature": 0.7,
+    "top_p": 0.8,
+    "top_k": 20,
+    "repetition_penalty": 1.05,
+    "structured_output_backend": "xgrammar",
+}
+
+
+@dataclass(frozen=True)
+class DeploymentPolicy:
+    policy_id: str
+    profile_id: str
+    source_model: str
+    served_model: str
+    revision: str
+    sampling: Mapping[str, Any]
+    transport_only_fields: tuple[str, ...]
+
+
+P0_DEPLOYMENT_POLICY = DeploymentPolicy(
+    policy_id=P0_DEPLOYMENT_POLICY_ID,
+    profile_id="local-qwen3-8b-awq-dualreplica-v1",
+    source_model="Qwen/Qwen3-8B-AWQ",
+    served_model=P0_MODEL,
+    revision="4da05a8edb55c6046cce958586c33b61da07bb79",
+    sampling=P0_SAMPLING,
+    transport_only_fields=(
+        "temperature",
+        "top_p",
+        "presence_penalty",
+        "seed",
+        "extra_body.top_k",
+        "extra_body.min_p",
+        "extra_body.chat_template_kwargs.enable_thinking",
+    ),
+)
+P1_DEPLOYMENT_POLICY = DeploymentPolicy(
+    policy_id=P1_DEPLOYMENT_POLICY_ID,
+    profile_id="local-qwen25-7b-awq-dualreplica-v1",
+    source_model="Qwen/Qwen2.5-7B-Instruct-AWQ",
+    served_model=P1_MODEL,
+    revision="b25037543e9394b818fdfca67ab2a00ecc7dd641",
+    sampling=P1_SAMPLING,
+    transport_only_fields=(
+        "temperature",
+        "top_p",
+        "seed",
+        "extra_body.top_k",
+        "extra_body.repetition_penalty",
+    ),
+)
+DEPLOYMENT_POLICIES = {
+    policy.policy_id: policy
+    for policy in (P0_DEPLOYMENT_POLICY, P1_DEPLOYMENT_POLICY)
+}
+
+
+def resolve_deployment_policy(
+    environment: Mapping[str, str] | None = None,
+) -> DeploymentPolicy:
+    env = os.environ if environment is None else environment
+    policy_id = env.get("MEMBIND_DEPLOYMENT_POLICY_ID", P0_DEPLOYMENT_POLICY_ID)
+    try:
+        policy = DEPLOYMENT_POLICIES[policy_id]
+    except KeyError as exc:
+        raise LocalRuntimeConfigurationError(
+            f"unknown deployment policy: {policy_id}"
+        ) from exc
+    profile_id = env.get("MEMBIND_PROFILE_ID")
+    if profile_id is not None and profile_id != policy.profile_id:
+        raise LocalRuntimeConfigurationError(
+            "deployment profile identity does not match the frozen policy"
+        )
+    served_model = env.get("MEMBIND_LLM_MODEL_NAME")
+    if served_model is not None and served_model != policy.served_model:
+        raise LocalRuntimeConfigurationError(
+            "deployment model identity does not match the frozen policy"
+        )
+    revision = env.get("MEMBIND_LLM_MODEL_REVISION")
+    if revision is not None and revision != policy.revision:
+        raise LocalRuntimeConfigurationError(
+            "deployment model revision does not match the frozen policy"
+        )
+    return policy
+
+
+def deployment_wire_fields(policy: DeploymentPolicy, *, seed: int) -> dict[str, Any]:
+    sampling = policy.sampling
+    fields: dict[str, Any] = {
+        "temperature": sampling["temperature"],
+        "top_p": sampling["top_p"],
+        "seed": seed,
+    }
+    if policy.policy_id == P0_DEPLOYMENT_POLICY_ID:
+        fields["presence_penalty"] = sampling["presence_penalty"]
+        fields["extra_body"] = {
+            "top_k": sampling["top_k"],
+            "min_p": sampling["min_p"],
+            "chat_template_kwargs": {"enable_thinking": False},
+        }
+    elif policy.policy_id == P1_DEPLOYMENT_POLICY_ID:
+        fields["extra_body"] = {
+            "top_k": sampling["top_k"],
+            "repetition_penalty": sampling["repetition_penalty"],
+        }
+    else:  # pragma: no cover - DeploymentPolicy construction is internal.
+        raise LocalRuntimeConfigurationError(
+            f"unsupported deployment policy: {policy.policy_id}"
+        )
+    return fields
 
 
 _LOGICAL_IDENTITY: contextvars.ContextVar[dict[str, Any] | None] = contextvars.ContextVar(
@@ -181,10 +300,18 @@ class _TransparentCompletions:
 class _TransparentEndpointClient:
     """Endpoint client that only adds documented deployment fields."""
 
-    def __init__(self, client: Any, *, endpoint_id: str, telemetry: _TransportTelemetry):
+    def __init__(
+        self,
+        client: Any,
+        *,
+        endpoint_id: str,
+        telemetry: _TransportTelemetry,
+        deployment_policy: DeploymentPolicy = P0_DEPLOYMENT_POLICY,
+    ):
         self._client = client
         self.endpoint_id = endpoint_id
         self.telemetry = telemetry
+        self.deployment_policy = deployment_policy
         self.chat = SimpleNamespace(completions=_TransparentCompletions(self))
 
     async def create(self, *args: Any, **kwargs: Any) -> Any:
@@ -206,30 +333,21 @@ class _TransparentEndpointClient:
         }
         seed = logical_request_seed(identity)
         after = dict(kwargs)
-        if "temperature" in after and after["temperature"] != P0_SAMPLING["temperature"]:
-            raise LocalRuntimeConfigurationError("wire temperature differs from frozen P0")
-        if "top_p" in after and after["top_p"] != P0_SAMPLING["top_p"]:
-            raise LocalRuntimeConfigurationError("wire top_p differs from frozen P0")
-        if "presence_penalty" in after and after["presence_penalty"] != P0_SAMPLING["presence_penalty"]:
-            raise LocalRuntimeConfigurationError(
-                "wire presence_penalty differs from frozen P0"
-            )
-        if "seed" in after and after["seed"] != seed:
-            raise LocalRuntimeConfigurationError("wire seed differs from logical identity")
-        after.setdefault("temperature", P0_SAMPLING["temperature"])
-        after.setdefault("top_p", P0_SAMPLING["top_p"])
-        after.setdefault("presence_penalty", P0_SAMPLING["presence_penalty"])
-        after.setdefault("seed", seed)
+        expected_fields = deployment_wire_fields(self.deployment_policy, seed=seed)
+        expected_extra = dict(expected_fields.pop("extra_body"))
+        for field, expected in expected_fields.items():
+            if field in after and after[field] != expected:
+                raise LocalRuntimeConfigurationError(
+                    f"wire {field} differs from frozen {self.deployment_policy.policy_id}"
+                )
+            after.setdefault(field, expected)
         extra_body = dict(after.get("extra_body") or {})
-        required_extra = {
-            "top_k": P0_SAMPLING["top_k"],
-            "min_p": P0_SAMPLING["min_p"],
-            "chat_template_kwargs": {"enable_thinking": False},
-        }
+        required_extra = expected_extra
         for field, expected in required_extra.items():
             if field in extra_body and extra_body[field] != expected:
                 raise LocalRuntimeConfigurationError(
-                    f"wire extra_body.{field} differs from frozen P0"
+                    f"wire extra_body.{field} differs from frozen "
+                    f"{self.deployment_policy.policy_id}"
                 )
             extra_body.setdefault(field, expected)
         after["extra_body"] = extra_body
@@ -247,16 +365,12 @@ class _TransparentEndpointClient:
                 "semantic_request_sha256": request_hash(before_semantic),
                 "wire_messages_sha256": identity["canonical_messages_hash"],
                 "seed": seed,
+                "deployment_policy_id": self.deployment_policy.policy_id,
+                "served_model": self.deployment_policy.served_model,
                 "logical_identity": dict(identity),
-                "allowed_added_fields": [
-                    "temperature",
-                    "top_p",
-                    "presence_penalty",
-                    "seed",
-                    "extra_body.top_k",
-                    "extra_body.min_p",
-                    "extra_body.chat_template_kwargs.enable_thinking",
-                ],
+                "allowed_added_fields": list(
+                    self.deployment_policy.transport_only_fields
+                ),
                 "status": "started",
             }
         self.telemetry.rows.append(row)
@@ -272,6 +386,31 @@ class _TransparentEndpointClient:
         row["finish_reason"] = (
             getattr(choices[0], "finish_reason", None) if choices else None
         )
+        message = getattr(choices[0], "message", None) if choices else None
+        content = getattr(message, "content", None)
+        if isinstance(content, str):
+            row["response_characters"] = len(content)
+            row["response_bytes"] = len(content.encode("utf-8"))
+            row["response_content_sha256"] = hashlib.sha256(
+                content.encode("utf-8")
+            ).hexdigest()
+            try:
+                json.loads(content)
+            except (TypeError, ValueError) as exc:
+                row["response_json_valid"] = False
+                row["response_json_error"] = str(exc)[:500]
+            else:
+                row["response_json_valid"] = True
+        usage = getattr(response, "usage", None)
+        if usage is not None:
+            row["usage"] = {
+                field: getattr(usage, field, None)
+                for field in (
+                    "prompt_tokens",
+                    "completion_tokens",
+                    "total_tokens",
+                )
+            }
         return response
 
     async def close(self) -> None:
@@ -299,6 +438,7 @@ def build_formal_upstream_runtime(
 
     if arm not in FORMAL_ARM_NAMES:
         raise LocalRuntimeConfigurationError(f"unknown formal arm: {arm}")
+    deployment = resolve_deployment_policy()
     policy = str(routing_contract.get("router", {}).get("policy", ""))
     if not policy:
         raise LocalRuntimeConfigurationError("formal routing policy is missing")
@@ -306,6 +446,10 @@ def build_formal_upstream_runtime(
     if not isinstance(endpoint_values, list) or not endpoint_values:
         raise LocalRuntimeConfigurationError("formal endpoint set is missing")
     specs = tuple(EndpointSpec.from_mapping(value) for value in endpoint_values)
+    if any(spec.served_model != deployment.served_model for spec in specs):
+        raise LocalRuntimeConfigurationError(
+            "routing endpoint model differs from frozen deployment policy"
+        )
     key = _required("CONSTRUCTION_LLM_API_KEY")
     telemetry = _TransportTelemetry([])
     clients = {
@@ -318,6 +462,7 @@ def build_formal_upstream_runtime(
             ),
             endpoint_id=spec.endpoint_id,
             telemetry=telemetry,
+            deployment_policy=deployment,
         )
         for spec in specs
     }
@@ -336,10 +481,10 @@ def build_formal_upstream_runtime(
 
     llm_config = LLMConfig(
         api_key=key,
-        model=P0_MODEL,
-        small_model=P0_MODEL,
+        model=deployment.served_model,
+        small_model=deployment.served_model,
         base_url=native_url,
-        temperature=P0_SAMPLING["temperature"],
+        temperature=float(deployment.sampling["temperature"]),
         max_tokens=int(os.environ.get("CONSTRUCTION_MAX_TOKENS", "16384")),
     )
     llm_client = OpenAIGenericClient(
@@ -353,6 +498,23 @@ def build_formal_upstream_runtime(
     install_local_single_attempt_policy(llm_client)
     logical_context_restore = install_logical_llm_context(llm_client)
     routing_context_restore = install_routing_prompt_context(llm_client)
+    # The executable formal arms share one disclosed local-LLM compatibility
+    # substrate.  It bounds evidence/edge extraction without changing the
+    # Graphiti episode/state/publication call graph or database semantics.
+    install_local_extraction_chunking_policy(
+        llm_client,
+        partition_extraction_by_turns=True,
+        partition_edge_candidates=True,
+        summary_entity_page_capacity=1,
+        dedupe_candidate_page_capacity=1,
+        node_partition_concurrency=2,
+        edge_partition_concurrency=2,
+        edge_physical_concurrency=2,
+        edge_frontier_priority=True,
+        edge_duplicate_recovery=True,
+        edge_endpoint_schema_grounding=True,
+        shared_bounded_structured_output=True,
+    )
     embedder = OpenAIEmbedder(
         OpenAIEmbedderConfig(
             api_key=_required("EMBEDDING_API_KEY"),
@@ -384,7 +546,7 @@ def build_formal_upstream_runtime(
         reranker=reranker,
         config=U0Config(
             construction_base_url=native_url,
-            construction_model=P0_MODEL,
+            construction_model=deployment.served_model,
             construction_model_revision=os.environ.get("CONSTRUCTION_MODEL_REVISION", "UNPINNED"),
             embedding_base_url=_normalized_url(_required("EMBEDDING_BASE_URL")),
             embedding_model=_required("EMBEDDING_MODEL"),
@@ -401,17 +563,26 @@ def build_formal_upstream_runtime(
     runtime._membind_formal_arm = arm
     runtime._membind_graphiti_version = GRAPHITI_VERSION
     runtime._membind_graphiti_commit = GRAPHITI_COMMIT
+    runtime._membind_deployment_policy = deployment
     runtime._membind_transport_telemetry = telemetry.rows
     runtime._membind_logical_context_restore = logical_context_restore
     runtime._membind_routing_context_restore = routing_context_restore
     runtime._membind_route_client = router
+    runtime._membind_shared_bounded_structured_output = True
+    runtime._membind_shared_structured_output_identity = adapter_identity()
     runtime._membind_patch_inventory = {
-        "strict_upstream_core": True,
+        "strict_upstream_core": False,
         "graphiti_algorithm_mutated": False,
+        "shared_compatibility_substrate": True,
+        "compatibility_patches": [
+            "lossless_evidence_partitioning",
+            "bounded_edge_page_schema",
+            "endpoint_grounding",
+            "single_deterministic_duplicate_recovery",
+        ],
         "prohibited_algorithm_patches": [],
-        "transport_only_fields": sorted(
-            ["temperature", "top_p", "presence_penalty", "seed", "extra_body.top_k", "extra_body.min_p", "extra_body.chat_template_kwargs.enable_thinking"]
-        ),
+        "deployment_policy_id": deployment.policy_id,
+        "transport_only_fields": sorted(deployment.transport_only_fields),
     }
     runtime._membind_owned_transports = (router, embedder.client)
     runtime._membind_runtime_closed = False
@@ -437,8 +608,15 @@ __all__ = [
     "FORMAL_ARM_NAMES",
     "GRAPHITI_COMMIT",
     "GRAPHITI_VERSION",
+    "DeploymentPolicy",
+    "P0_DEPLOYMENT_POLICY_ID",
+    "P1_DEPLOYMENT_POLICY_ID",
+    "P0_DEPLOYMENT_POLICY",
+    "P1_DEPLOYMENT_POLICY",
     "P0_MODEL",
     "P0_SAMPLING",
+    "P1_MODEL",
+    "P1_SAMPLING",
     "build_formal_upstream_runtime",
     "close_formal_upstream_runtime",
     "current_logical_request_identity",
@@ -446,4 +624,6 @@ __all__ = [
     "logical_request_seed",
     "install_logical_llm_context",
     "request_hash",
+    "deployment_wire_fields",
+    "resolve_deployment_policy",
 ]

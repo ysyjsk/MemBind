@@ -9,6 +9,7 @@ from types import SimpleNamespace
 import pytest
 
 from saturated_fixed_work_baseline_v1_3.mab_live_runner import (
+    _adapter_coverage,
     _mab_graphiti_kwargs,
     _mab_publication_idempotency_key,
     episode_from_input,
@@ -17,6 +18,9 @@ from saturated_fixed_work_baseline_v1_3.mab_live_runner import (
 )
 from saturated_fixed_work_baseline_v1_3.workload_contract import EpisodeInput, WorkloadManifest
 from saturated_fixed_work_baseline_v1_3.membind_v6_1.structured_output_recovery import reliability_identity
+
+
+MAB8192_ADAPTER_VERSION = "MAB_ROLE_AWARE_LOSSLESS_8192_V1"
 
 
 @dataclass
@@ -111,6 +115,47 @@ def _run(tmp_path: Path, method: str):
     return result, graph
 
 
+def _chunk_episode(
+    *,
+    global_sequence: int,
+    session_id: str,
+    original_source_sequence: int,
+    chunk_ordinal: int,
+    chunk_count: int,
+    body: str = "bounded chunk",
+    adapter_version: str = MAB8192_ADAPTER_VERSION,
+    context_id: str = "ctx-0",
+    dataset_revision: str = "dataset@r1",
+) -> SimpleNamespace:
+    chunk_id = f"{session_id}-chunk-{chunk_ordinal}"
+    return SimpleNamespace(
+        context_id=context_id,
+        source_sequence=global_sequence,
+        original_source_sequence=original_source_sequence,
+        episode_id=chunk_id,
+        session_id=session_id,
+        reference_time="2026-01-01T00:00:00Z",
+        body=body,
+        dataset_revision=dataset_revision,
+        chunk_ordinal=chunk_ordinal,
+        chunk_count=chunk_count,
+        chunk_id=chunk_id,
+        previous_chunk_id=(
+            None if chunk_ordinal == 0 else f"{session_id}-chunk-{chunk_ordinal - 1}"
+        ),
+        adapter_version=adapter_version,
+    )
+
+
+def _chunk_manifest(episodes: tuple[SimpleNamespace, ...]) -> SimpleNamespace:
+    return SimpleNamespace(
+        manifest_sha256="e" * 64,
+        jsonl=lambda: "".join(
+            json.dumps(vars(item), sort_keys=True) + "\n" for item in episodes
+        ),
+    )
+
+
 def test_live_runner_b0_and_b1_emit_complete_shared_contract(tmp_path: Path) -> None:
     b0, b0_graph = _run(tmp_path, "B0")
     b1, b1_graph = _run(tmp_path, "B1")
@@ -128,6 +173,268 @@ def test_live_runner_b0_and_b1_emit_complete_shared_contract(tmp_path: Path) -> 
     assert {
         key: b1[key] for key in reliability_identity()
     } == reliability_identity()
+
+
+def test_upstream_async_overlaps_sessions_but_serializes_each_chunk_chain(
+    tmp_path: Path,
+) -> None:
+    episodes = (
+        _chunk_episode(
+            global_sequence=0,
+            session_id="session-0",
+            original_source_sequence=0,
+            chunk_ordinal=0,
+            chunk_count=2,
+        ),
+        _chunk_episode(
+            global_sequence=1,
+            session_id="session-0",
+            original_source_sequence=0,
+            chunk_ordinal=1,
+            chunk_count=2,
+        ),
+        _chunk_episode(
+            global_sequence=2,
+            session_id="session-1",
+            original_source_sequence=1,
+            chunk_ordinal=0,
+            chunk_count=2,
+        ),
+        _chunk_episode(
+            global_sequence=3,
+            session_id="session-1",
+            original_source_sequence=1,
+            chunk_ordinal=1,
+            chunk_count=2,
+        ),
+    )
+
+    class DependencyGraph(_FakeGraph):
+        def __init__(self) -> None:
+            super().__init__()
+            self.timeline: list[tuple[str, int]] = []
+
+        async def add_episode(self, **kwargs):
+            sequence = int(kwargs["name"].split("::")[-1])
+            self.timeline.append(("start", sequence))
+            await asyncio.sleep(0.02 if sequence == 0 else 0.001)
+            self.timeline.append(("end", sequence))
+            self.calls.append(sequence)
+            return {"sequence": sequence}
+
+    graph = DependencyGraph()
+    result = asyncio.run(
+        run_mab_construction_async(
+            method="GRAPHITI_ASYNC_UPSTREAM_CORE_MAB8192",
+            run_id="async-dependency-proof",
+            context_id="ctx-0",
+            namespace="async-dependency-proof",
+            episodes=episodes,
+            runtime_builder=lambda: SimpleNamespace(graphiti=graph, llm_client=object()),
+            instrumentation_installer=lambda *_args: _FakeRecorder._Scope(),
+            recorder_factory=_FakeRecorder,
+            graph_exporter=lambda *_args: {
+                "status": "PASS",
+                "canonical_graph_hash": "d" * 64,
+            },
+            output_root=tmp_path / "async-dependency-proof",
+            authority={"authority_sha256": "b" * 64},
+            workload_manifest=_chunk_manifest(episodes),
+            frozen_config={"config_sha256": "c" * 64},
+        )
+    )
+    positions = {event: index for index, event in enumerate(graph.timeline)}
+    assert positions[("start", 2)] < positions[("end", 0)]
+    assert positions[("end", 0)] < positions[("start", 1)]
+    assert positions[("end", 2)] < positions[("start", 3)]
+    assert result["adapter_coverage"]["status"] == "PASS"
+    assert result["adapter_coverage"]["adapter_version"] == MAB8192_ADAPTER_VERSION
+
+
+@pytest.mark.parametrize(
+    ("episodes", "reason"),
+    (
+        (
+            (
+                _chunk_episode(
+                    global_sequence=0,
+                    session_id="oversized",
+                    original_source_sequence=0,
+                    chunk_ordinal=0,
+                    chunk_count=1,
+                    body="x" * 8193,
+                ),
+            ),
+            "chunk_body_exceeds_8192",
+        ),
+        (
+            (
+                _chunk_episode(
+                    global_sequence=0,
+                    session_id="session-0",
+                    original_source_sequence=0,
+                    chunk_ordinal=0,
+                    chunk_count=1,
+                ),
+                _chunk_episode(
+                    global_sequence=1,
+                    session_id="session-1",
+                    original_source_sequence=1,
+                    chunk_ordinal=0,
+                    chunk_count=1,
+                    adapter_version="MAB_ROLE_AWARE_LOSSLESS_8192_V2",
+                ),
+            ),
+            "adapter_version_not_unique",
+        ),
+        (
+            (
+                _chunk_episode(
+                    global_sequence=0,
+                    session_id="source-drift",
+                    original_source_sequence=0,
+                    chunk_ordinal=0,
+                    chunk_count=2,
+                ),
+                _chunk_episode(
+                    global_sequence=1,
+                    session_id="source-drift",
+                    original_source_sequence=1,
+                    chunk_ordinal=1,
+                    chunk_count=2,
+                ),
+            ),
+            "session_source_sequence_mismatch",
+        ),
+    ),
+)
+def test_upstream_mab8192_adapter_contract_fails_closed(
+    tmp_path: Path,
+    episodes: tuple[SimpleNamespace, ...],
+    reason: str,
+) -> None:
+    graph = _FakeGraph()
+    with pytest.raises(Exception, match="MAB8192_ADAPTER_COVERAGE_INVALID"):
+        asyncio.run(
+            run_mab_construction_async(
+                method="GRAPHITI_SERIAL_UPSTREAM_CORE_MAB8192",
+                run_id=f"invalid-{reason}",
+                context_id="ctx-0",
+                namespace=f"invalid-{reason}",
+                episodes=episodes,
+                runtime_builder=lambda: SimpleNamespace(graphiti=graph, llm_client=object()),
+                instrumentation_installer=lambda *_args: _FakeRecorder._Scope(),
+                recorder_factory=_FakeRecorder,
+                graph_exporter=lambda *_args: {
+                    "status": "PASS",
+                    "canonical_graph_hash": "d" * 64,
+                },
+                output_root=tmp_path / reason,
+                authority={"authority_sha256": "b" * 64},
+                workload_manifest=_chunk_manifest(episodes),
+                frozen_config={"config_sha256": "c" * 64},
+            )
+        )
+    assert graph.calls == []
+
+
+@pytest.mark.parametrize(
+    ("episodes", "reason"),
+    (
+        (
+            (
+                _chunk_episode(
+                    global_sequence=0,
+                    session_id="session-0",
+                    original_source_sequence=0,
+                    chunk_ordinal=0,
+                    chunk_count=2,
+                ),
+                _chunk_episode(
+                    global_sequence=1,
+                    session_id="session-1",
+                    original_source_sequence=1,
+                    chunk_ordinal=0,
+                    chunk_count=1,
+                ),
+                _chunk_episode(
+                    global_sequence=2,
+                    session_id="session-0",
+                    original_source_sequence=0,
+                    chunk_ordinal=1,
+                    chunk_count=2,
+                ),
+            ),
+            "session_chunks_not_adjacent",
+        ),
+        (
+            (
+                _chunk_episode(
+                    global_sequence=0,
+                    session_id="session-0",
+                    original_source_sequence=0,
+                    chunk_ordinal=0,
+                    chunk_count=1,
+                ),
+                _chunk_episode(
+                    global_sequence=1,
+                    session_id="session-1",
+                    original_source_sequence=1,
+                    chunk_ordinal=0,
+                    chunk_count=1,
+                    dataset_revision="dataset@r2",
+                ),
+            ),
+            "dataset_revision_not_unique",
+        ),
+        (
+            (
+                _chunk_episode(
+                    global_sequence=0,
+                    session_id="session-0",
+                    original_source_sequence=0,
+                    chunk_ordinal=0,
+                    chunk_count=1,
+                ),
+                _chunk_episode(
+                    global_sequence=1,
+                    session_id="session-1",
+                    original_source_sequence=1,
+                    chunk_ordinal=0,
+                    chunk_count=1,
+                    context_id="ctx-1",
+                ),
+            ),
+            "context_identity_not_unique",
+        ),
+        (
+            (
+                _chunk_episode(
+                    global_sequence=0,
+                    session_id="session-0",
+                    original_source_sequence=0,
+                    chunk_ordinal=0,
+                    chunk_count=1,
+                ),
+                _chunk_episode(
+                    global_sequence=1,
+                    session_id="session-1",
+                    original_source_sequence=0,
+                    chunk_ordinal=0,
+                    chunk_count=1,
+                ),
+            ),
+            "original_source_sequence_not_unique",
+        ),
+    ),
+)
+def test_adapter_coverage_rejects_cross_identity_and_interleaving(
+    episodes: tuple[SimpleNamespace, ...], reason: str
+) -> None:
+    selected = tuple(episode_from_input(item) for item in episodes)
+    coverage = _adapter_coverage(selected, require_mab8192=True)
+    assert coverage["status"] == "FAIL"
+    assert reason in {row["reason"] for row in coverage["violations"]}
 
 
 def test_fresh_graphiti_uuid_lookup_and_v61_publication_identity_are_separate() -> None:

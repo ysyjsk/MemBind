@@ -1,0 +1,12 @@
+{
+  "schema_version": "membind.routing-policy.v1",
+  "profile_id": "local-qwen25-7b-awq-dualreplica-v1",
+  "arm": "NATIVE_QWEN25_7B_DUAL_STATIC_REQUEST_ROLE",
+  "formal_role": "strong_system_baseline",
+  "endpoint_set": [
+    {"id": "native-replica", "base_url": "http://127.0.0.1:18200/v1", "served_model": "qwen2.5-7b-instruct-awq", "physical_gpu": 0},
+    {"id": "prepare-replica", "base_url": "http://127.0.0.1:18201/v1", "served_model": "qwen2.5-7b-instruct-awq", "physical_gpu": 1}
+  ],
+  "router": {"policy": "graphiti_request_class_affinity", "phase_labels_visible": false, "request_class_visible": true, "work_conserving": false, "bindings": {"extract_nodes": "prepare-replica", "extract_edges": "prepare-replica", "default": "native-replica"}},
+  "constraints": {"same_prompt_and_decoding_contract": true, "same_endpoint_set_as_v61": true, "same_embedding_endpoint_as_v61": true, "shadow_prepare": false, "certified_capture_replay": false, "authoritative_graphiti_path_unchanged": true}
+}

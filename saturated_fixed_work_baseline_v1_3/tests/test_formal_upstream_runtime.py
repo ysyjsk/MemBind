@@ -6,9 +6,13 @@ import pytest
 
 from saturated_fixed_work_baseline_v1_3.membind_v6_1.upstream_runtime import (
     FORMAL_ARM_A,
+    FORMAL_ARM_B,
+    FORMAL_ARM_C,
+    P1_DEPLOYMENT_POLICY,
     P0_SAMPLING,
     _TransportTelemetry,
     _TransparentEndpointClient,
+    resolve_deployment_policy,
     install_logical_llm_context,
     logical_request_context,
     logical_request_seed,
@@ -92,6 +96,55 @@ async def test_transparent_transport_adds_only_sampling_and_seed() -> None:
 
 
 @pytest.mark.asyncio
+async def test_transport_telemetry_classifies_malformed_success_without_repair() -> None:
+    malformed = '{"edges":[{"fact":"truncated"}'
+
+    class Completions:
+        async def create(self, **_kwargs: object) -> object:
+            return SimpleNamespace(
+                choices=[
+                    SimpleNamespace(
+                        finish_reason="stop",
+                        message=SimpleNamespace(content=malformed),
+                    )
+                ],
+                usage=SimpleNamespace(
+                    prompt_tokens=321,
+                    completion_tokens=123,
+                    total_tokens=444,
+                ),
+            )
+
+    telemetry = _TransportTelemetry([])
+    endpoint = _TransparentEndpointClient(
+        SimpleNamespace(chat=SimpleNamespace(completions=Completions())),
+        endpoint_id="prepare-replica",
+        telemetry=telemetry,
+    )
+    with logical_request_context(
+        _chunk_identity() | {"prompt_name": "extract_edges.edge"}
+    ):
+        response = await endpoint.create(
+            model="qwen3-8b-awq",
+            messages=[{"role": "user", "content": "edge request"}],
+            max_tokens=16384,
+            response_format={"type": "json_schema"},
+        )
+
+    assert response.choices[0].message.content == malformed
+    row = telemetry.rows[0]
+    assert row["finish_reason"] == "stop"
+    assert row["response_characters"] == len(malformed)
+    assert row["response_json_valid"] is False
+    assert row["response_json_error"].startswith("Expecting ',' delimiter")
+    assert row["usage"] == {
+        "prompt_tokens": 321,
+        "completion_tokens": 123,
+        "total_tokens": 444,
+    }
+
+
+@pytest.mark.asyncio
 async def test_transparent_transport_fails_closed_without_task_identity() -> None:
     class Completions:
         async def create(self, **_kwargs: object) -> object:
@@ -123,6 +176,53 @@ async def test_transparent_transport_rejects_conflicting_sampling() -> None:
 
 
 @pytest.mark.asyncio
+async def test_p1_transport_uses_only_official_qwen25_sampling_fields() -> None:
+    calls: list[dict[str, object]] = []
+
+    class Completions:
+        async def create(self, **kwargs: object) -> object:
+            calls.append(kwargs)
+            return SimpleNamespace(ok=True)
+
+    endpoint = _TransparentEndpointClient(
+        SimpleNamespace(chat=SimpleNamespace(completions=Completions())),
+        endpoint_id="native-replica",
+        telemetry=_TransportTelemetry([]),
+        deployment_policy=P1_DEPLOYMENT_POLICY,
+    )
+    with logical_request_context(
+        _chunk_identity() | {"prompt_name": "extract_nodes.extract_message"}
+    ):
+        await endpoint.create(
+            model="qwen2.5-7b-instruct-awq",
+            messages=[{"role": "user", "content": "extract"}],
+            response_format={"type": "json_schema"},
+        )
+
+    wire = calls[0]
+    assert wire["temperature"] == 0.7
+    assert wire["top_p"] == 0.8
+    assert wire["extra_body"] == {
+        "top_k": 20,
+        "repetition_penalty": 1.05,
+    }
+    assert "presence_penalty" not in wire
+    assert "min_p" not in wire["extra_body"]
+    assert "chat_template_kwargs" not in wire["extra_body"]
+
+
+def test_deployment_policy_rejects_profile_model_mismatch() -> None:
+    with pytest.raises(RuntimeError, match="model identity"):
+        resolve_deployment_policy(
+            {
+                "MEMBIND_DEPLOYMENT_POLICY_ID": "P1_QWEN25_7B_AWQ",
+                "MEMBIND_PROFILE_ID": "local-qwen25-7b-awq-dualreplica-v1",
+                "MEMBIND_LLM_MODEL_NAME": "qwen3-8b-awq",
+            }
+        )
+
+
+@pytest.mark.asyncio
 async def test_llm_context_completes_prompt_identity_from_task_creation() -> None:
     observed: list[dict[str, object] | None] = []
 
@@ -147,4 +247,56 @@ async def test_llm_context_completes_prompt_identity_from_task_creation() -> Non
 
 
 def test_formal_arm_name_is_explicit() -> None:
-    assert FORMAL_ARM_A == "GRAPHITI_SERIAL_UPSTREAM_CORE_MAB8192"
+    assert FORMAL_ARM_A == "GRAPHITI_SERIAL_SHARED_BOUNDED_SO"
+
+
+def test_all_arms_share_logical_seed_identity() -> None:
+    seeds = {
+        logical_request_seed({**_identity(), "arm": arm})
+        for arm in (FORMAL_ARM_A, FORMAL_ARM_C, FORMAL_ARM_B)
+    }
+    assert len(seeds) == 1
+
+
+def test_upstream_extracted_edges_has_no_pair_or_relation_cap() -> None:
+    from graphiti_core.prompts.extract_edges import ExtractedEdges
+
+    edges = [
+        {
+            "source_entity_name": "Alice",
+            "target_entity_name": "Bob",
+            "relation_type": relation,
+            "fact": fact,
+            "episode_indices": [0],
+        }
+        for relation, fact in (
+            ("WORKS_WITH", "Alice works with Bob"),
+            ("LIVES_NEAR", "Alice lives near Bob"),
+            ("MENTORS", "Alice mentors Bob"),
+        )
+    ]
+    parsed = ExtractedEdges(edges=edges)
+    assert len(parsed.edges) == 3
+    edge_array = ExtractedEdges.model_json_schema()["properties"]["edges"]
+    assert "maxItems" not in edge_array
+
+
+def test_upstream_prompt_accepts_46_entities_without_pair_enumeration() -> None:
+    from graphiti_core.prompts.extract_edges import edge
+
+    nodes = [{"name": f"Entity-{index:02d}"} for index in range(46)]
+    messages = edge(
+        {
+            "previous_episodes": [],
+            "episode_content": "Entity-00 works with Entity-45.",
+            "nodes": nodes,
+            "reference_time": "2026-01-01T00:00:00Z",
+            "edge_types": {},
+            "custom_extraction_instructions": "",
+        }
+    )
+    rendered = "\n".join(message.content for message in messages)
+    assert "Entity-00" in rendered
+    assert "Entity-45" in rendered
+    assert "pairs_completed" not in rendered
+    assert "pair-task" not in rendered.casefold()
