@@ -6,8 +6,9 @@ import hashlib
 import importlib.metadata
 import importlib.util
 import json
+import subprocess
 from pathlib import Path
-from typing import Any
+from typing import Any, Mapping
 
 
 def _sha256(path: Path) -> str:
@@ -37,15 +38,21 @@ def _component(name: str, path: Path) -> dict[str, Any]:
         str(member.relative_to(resolved) if resolved.is_dir() else member.name): _sha256(member)
         for member in members
     }
-    payload = {
+    # Hash only logical component identity and relative file content.  The
+    # absolute checkout path is retained below as locator metadata, because it
+    # must not make identical source trees hash differently across worktrees.
+    hashed_payload = {
         "name": name,
-        "path": str(resolved),
         "files": files,
     }
-    payload["payload_sha256"] = hashlib.sha256(
-        json.dumps(payload, sort_keys=True, separators=(",", ":")).encode("utf-8")
+    payload_sha256 = hashlib.sha256(
+        json.dumps(hashed_payload, sort_keys=True, separators=(",", ":")).encode("utf-8")
     ).hexdigest()
-    return payload
+    return {
+        **hashed_payload,
+        "path": str(resolved),
+        "payload_sha256": payload_sha256,
+    }
 
 
 def _module_source(name: str) -> Path:
@@ -150,10 +157,92 @@ def implementation_bundle(runner: str | Path) -> dict[str, Any]:
         "components": components,
         "distribution_versions": versions,
     }
+    hashed_payload = {
+        **payload,
+        "components": [
+            {key: value for key, value in component.items() if key != "path"}
+            for component in components
+        ],
+    }
     payload["payload_sha256"] = hashlib.sha256(
-        json.dumps(payload, sort_keys=True, separators=(",", ":")).encode("utf-8")
+        json.dumps(hashed_payload, sort_keys=True, separators=(",", ":")).encode("utf-8")
     ).hexdigest()
     return payload
 
 
-__all__ = ["implementation_bundle"]
+def source_epoch_errors(
+    *,
+    expected_head: str | None,
+    expected_source_bundle_sha256: str | None,
+    observed: Mapping[str, Any],
+) -> list[str]:
+    """Return fail-closed violations for an immutable measured source epoch."""
+
+    errors: list[str] = []
+    observed_head = observed.get("git_head")
+    dirty_paths = observed.get("dirty_paths")
+    observed_bundle = observed.get("source_bundle_sha256")
+    if expected_head and observed_head != expected_head:
+        errors.append(f"HEAD drift: expected {expected_head}, observed {observed_head}")
+    if dirty_paths:
+        errors.append(f"source tree is dirty: {dirty_paths}")
+    if expected_source_bundle_sha256 and observed_bundle != expected_source_bundle_sha256:
+        errors.append(
+            "source bundle drift: "
+            f"expected {expected_source_bundle_sha256}, observed {observed_bundle}"
+        )
+    return errors
+
+
+def current_source_epoch(runner: str | Path, *, root: str | Path | None = None) -> dict[str, Any]:
+    """Capture the current git and implementation identity for a checkout."""
+
+    cwd = Path(root).resolve() if root is not None else None
+    head = subprocess.run(
+        ["git", "rev-parse", "HEAD"],
+        cwd=cwd,
+        check=True,
+        capture_output=True,
+        text=True,
+    ).stdout.strip()
+    dirty_paths = subprocess.run(
+        ["git", "status", "--short"],
+        cwd=cwd,
+        check=True,
+        capture_output=True,
+        text=True,
+    ).stdout.splitlines()
+    bundle = implementation_bundle(runner)
+    return {
+        "git_head": head,
+        "dirty_paths": dirty_paths,
+        "source_bundle_sha256": bundle["payload_sha256"],
+    }
+
+
+def require_source_epoch(
+    runner: str | Path,
+    *,
+    expected_head: str,
+    expected_source_bundle_sha256: str,
+    root: str | Path | None = None,
+) -> dict[str, Any]:
+    """Require clean checkout and exact HEAD/source bundle before measurement."""
+
+    observed = current_source_epoch(runner, root=root)
+    errors = source_epoch_errors(
+        expected_head=expected_head,
+        expected_source_bundle_sha256=expected_source_bundle_sha256,
+        observed=observed,
+    )
+    if errors:
+        raise RuntimeError("source epoch invalid: " + "; ".join(errors))
+    return observed
+
+
+__all__ = [
+    "implementation_bundle",
+    "source_epoch_errors",
+    "current_source_epoch",
+    "require_source_epoch",
+]

@@ -36,6 +36,8 @@ from run_formal_three_arm import (  # noqa: E402
 )
 from saturated_fixed_work_baseline_v1_3.artifact_seals import verify_seal  # noqa: E402
 from saturated_fixed_work_baseline_v1_3.membind_v6_1.identity import (  # noqa: E402
+    current_source_epoch,
+    require_source_epoch,
     implementation_bundle,
 )
 from saturated_fixed_work_baseline_v1_3.membind_v6_1.upstream_runtime import (  # noqa: E402
@@ -127,6 +129,7 @@ def build_manifest(root: Path, platform_manifest: Path) -> dict[str, Any]:
     ):
         raise RuntimeError("qualification platform deployment identity mismatch")
     source_bundle = implementation_bundle(RUNNER)
+    source_epoch = current_source_epoch(RUNNER, root=ROOT)
     run_id = f"upstream-l2-h0-{time.strftime('%Y%m%dT%H%M%SZ', time.gmtime())}"
     cells = []
     for arm in ARMS:
@@ -147,6 +150,7 @@ def build_manifest(root: Path, platform_manifest: Path) -> dict[str, Any]:
                 "workload_manifest_sha256": workload.manifest_sha256,
                 "dataset_authority_sha256": authority["authority_sha256"],
                 "implementation_source_bundle_sha256": source_bundle["payload_sha256"],
+                "implementation_git_head": source_epoch["git_head"],
                 "platform_manifest_sha256": platform["payload_sha256"],
                 "platform_manifest_path": str(platform_manifest),
                 "expected_construction_artifacts": list(EXPECTED_ARTIFACTS),
@@ -164,6 +168,8 @@ def build_manifest(root: Path, platform_manifest: Path) -> dict[str, Any]:
         "cells": cells,
         "identity": {
             "source_bundle_sha256": source_bundle["payload_sha256"],
+            "git_head": source_epoch["git_head"],
+            "git_dirty_paths": list(source_epoch["dirty_paths"]),
             "dataset_authority_sha256": authority["authority_sha256"],
             "workload_manifest_sha256": workload.manifest_sha256,
             "platform_manifest_sha256": platform["payload_sha256"],
@@ -211,6 +217,10 @@ def validate_manifest(manifest: Mapping[str, Any]) -> None:
     for key, expected in bindings.items():
         if {cell.get(key) for cell in cells} != {expected}:
             raise RuntimeError(f"qualification cell identity drift: {key}")
+    if identity.get("git_head") is not None and {
+        cell.get("implementation_git_head") for cell in cells
+    } != {identity.get("git_head")}:
+        raise RuntimeError("qualification cell identity drift: git_head")
     supplied = manifest.get("manifest_sha256")
     if supplied is not None:
         payload = dict(manifest)
@@ -232,6 +242,10 @@ def _cell_result(root: Path, cell: dict[str, Any], returncode: int) -> dict[str,
     order = _read(attempt / "block/order_validation.json")
     refinement = _read(attempt / "block/refinement_validation.json")
     graph = _read(attempt / "block/graph_diagnostics.json")
+    # Bind the expected workload count before constructing any graph sanity
+    # predicates that consume it.  A missing/invalid count is handled by the
+    # downstream validity checks rather than leaking an UnboundLocalError.
+    expected = adapter.get("chunk_count")
     episodes = graph.get("episodes") if isinstance(graph.get("episodes"), list) else []
     entities = graph.get("entities") if isinstance(graph.get("entities"), list) else []
     edges = graph.get("edges") if isinstance(graph.get("edges"), list) else []
@@ -263,7 +277,6 @@ def _cell_result(root: Path, cell: dict[str, Any], returncode: int) -> dict[str,
         and not graph_sanity["namespace_contamination"]
     ):
         graph_sanity["status"] = "FAIL"
-    expected = adapter.get("chunk_count")
     runtime_identity_errors = strict_formal_runtime_identity_errors(
         runtime_identity,
         expected_arm=str(cell["arm"]),
@@ -321,12 +334,31 @@ def run(
         root.mkdir(parents=True, exist_ok=True)
         manifest = build_manifest(root, platform_manifest)
         _write_new(manifest_path, manifest)
+    source_identity = manifest.get("identity", {})
+    expected_head = source_identity.get("git_head")
+    expected_bundle = source_identity.get("source_bundle_sha256")
+    if expected_head and expected_bundle:
+        require_source_epoch(
+            RUNNER,
+            expected_head=str(expected_head),
+            expected_source_bundle_sha256=str(expected_bundle),
+            root=ROOT,
+        )
     env = _formal_env()
     env["MEMBIND_EXPERIMENT_ROOT"] = str(root)
     results = []
     for raw_cell in manifest["cells"]:
         cell = dict(raw_cell)
         measured_env = _qualification_env(env, cell)
+        if expected_head and expected_bundle:
+            measured_env["MEMBIND_EXPECTED_GIT_HEAD"] = str(expected_head)
+            measured_env["MEMBIND_EXPECTED_SOURCE_BUNDLE"] = str(expected_bundle)
+            require_source_epoch(
+                RUNNER,
+                expected_head=str(expected_head),
+                expected_source_bundle_sha256=str(expected_bundle),
+                root=ROOT,
+            )
         attempt = _attempt_path(root, cell)
         complete = attempt / "complete.json"
         failure = attempt / "failure.json"
@@ -372,6 +404,13 @@ def run(
                 returncode = 0 if complete.exists() else 2
         else:
             returncode = 0 if complete.exists() and not failure.exists() else 2
+        if expected_head and expected_bundle:
+            require_source_epoch(
+                RUNNER,
+                expected_head=str(expected_head),
+                expected_source_bundle_sha256=str(expected_bundle),
+                root=ROOT,
+            )
         result = _cell_result(root, cell, returncode)
         results.append(result)
         if result["status"] != "PASS":

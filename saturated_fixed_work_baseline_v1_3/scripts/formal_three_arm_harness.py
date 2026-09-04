@@ -117,6 +117,11 @@ def build_manifest(
         raise ValueError("formal manifest requires five MAB8192 workload hashes")
     implementation_sha256 = _identity_hash(implementation_identity)
     adapter_sha256 = _identity_hash(adapter_identity)
+    source_epoch = implementation_identity.get("git")
+    if not isinstance(source_epoch, Mapping):
+        source_epoch = {}
+    if source_epoch.get("dirty_paths"):
+        raise ValueError("formal source epoch is dirty")
     source_identity = method_frozen.get("source_identity")
     if method_frozen.get("status") != "FINAL_METHOD_FROZEN":
         raise ValueError("method freeze is not final")
@@ -187,6 +192,7 @@ def build_manifest(
                     "dataset_authority_sha256": authority.get("authority_sha256"),
                     "implementation_identity_sha256": implementation_sha256,
                     "implementation_source_bundle_sha256": implementation_identity.get("source_bundle_sha256"),
+                    "implementation_git_head": source_epoch.get("head"),
                     "method_frozen_seal_sha256": method_frozen.get("seal_sha256"),
                     "method_identity": "MEMBIND_RESOURCE_CREDIT_V1",
                     "profile_id": profile_id,
@@ -235,6 +241,8 @@ def build_manifest(
         "identity": {
             "implementation": implementation_sha256,
             "source_bundle": implementation_identity.get("source_bundle_sha256"),
+            "git_head": source_epoch.get("head"),
+            "git_dirty_paths": list(source_epoch.get("dirty_paths", ())),
             "method_frozen": method_frozen.get("seal_sha256"),
             "dataset": authority.get("authority_sha256"),
             "adapter": adapter_sha256,
@@ -300,6 +308,12 @@ def validate_manifest(manifest: Mapping[str, Any]) -> None:
     for cell_key, identity_key in bindings.items():
         if {cell[cell_key] for cell in cells} != {identity.get(identity_key)}:
             raise ValueError(f"manifest cell identity drift: {cell_key}")
+    if identity.get("git_dirty_paths"):
+        raise ValueError("formal source epoch is dirty")
+    if identity.get("git_head") is not None and {
+        cell.get("implementation_git_head") for cell in cells
+    } != {identity.get("git_head")}:
+        raise ValueError("manifest cell identity drift: git_head")
     supplied_sha256 = manifest.get("manifest_sha256")
     if supplied_sha256 is not None:
         payload = dict(manifest)

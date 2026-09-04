@@ -27,6 +27,7 @@ from mab_quality_v2_final_qa.mab8192_adapter import (  # noqa: E402
 )
 from mab_quality_v2_final_qa.mab_main_dataset import build_authority  # noqa: E402
 from saturated_fixed_work_baseline_v1_3.membind_v6_1.identity import (  # noqa: E402
+    require_source_epoch,
     implementation_bundle,
 )
 from saturated_fixed_work_baseline_v1_3.artifact_seals import verify_seal  # noqa: E402
@@ -249,6 +250,10 @@ def _validate_qualification_artifacts(
         inventory = _read(attempt / "block/work_inventory.json")
         graph = _read(attempt / "block/graph_diagnostics.json")
         runtime_identity = _read(attempt / "block/runtime_identity.json")
+        resource = _read(attempt / "block/resource_evidence.json") if (
+            "block/resource_evidence.json"
+            in cell.get("expected_construction_artifacts", ())
+        ) else {}
         runtime_identity_errors = strict_formal_runtime_identity_errors(
             runtime_identity,
             expected_arm=str(cell.get("arm")),
@@ -287,6 +292,15 @@ def _validate_qualification_artifacts(
             and contract.get("arm") == cell.get("arm")
             and contract.get("history_index") == 0
             and contract.get("replicate_id") == 0
+            and (
+                not cell.get("implementation_git_head")
+                or (
+                    isinstance(contract.get("git"), Mapping)
+                    and contract["git"].get("head")
+                    == cell.get("implementation_git_head")
+                    and not contract["git"].get("dirty_paths")
+                )
+            )
             and contract.get("dataset_authority_sha256") == dataset_authority_sha256
             and contract.get("chunk_manifest_sha256") == workload_manifest_sha256
             and isinstance(contract.get("implementation"), Mapping)
@@ -298,6 +312,18 @@ def _validate_qualification_artifacts(
             and identity.get("namespace") == cell.get("namespace")
             and identity.get("workload_hash") == workload_manifest_sha256
             and route_seal.get("status") == "ROUTE_SEALED"
+            and (
+                not resource
+                or (
+                    resource.get("status") == "PASS"
+                    and resource.get("schema_version")
+                    == "membind.resource-evidence.v2"
+                    and resource.get("cell_id") == cell.get("cell_id")
+                    and resource.get("attempt_id") == cell.get("attempt_id")
+                    and resource.get("namespace") == cell.get("namespace")
+                    and len(resource.get("samples", [])) >= 2
+                )
+            )
             and adapter.get("status") == "PASS"
             and adapter.get("adapter_version") == "MAB_ROLE_AWARE_LOSSLESS_8192_V1"
             and isinstance(expected_chunks, int)
@@ -321,6 +347,19 @@ def finalize(
     output_root = output_root.resolve()
     if output_root.exists():
         raise RuntimeError("identity output root must be fresh")
+    qualification_manifest = _read(
+        qualification_root / "L2_QUALIFICATION_MANIFEST_SEAL.json"
+    )
+    qualification_identity = qualification_manifest.get("identity", {})
+    expected_head = qualification_identity.get("git_head")
+    expected_bundle = qualification_identity.get("source_bundle_sha256")
+    if expected_head and expected_bundle:
+        require_source_epoch(
+            RUNNER,
+            expected_head=str(expected_head),
+            expected_source_bundle_sha256=str(expected_bundle),
+            root=ROOT,
+        )
     builder_audit = formal_builder_source_audit()
     qualification = _read(qualification_root / "L2_QUALIFICATION_RESULT.json")
     if (

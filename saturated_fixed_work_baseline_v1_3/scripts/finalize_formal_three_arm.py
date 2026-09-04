@@ -32,6 +32,7 @@ from formal_three_arm_harness import (  # noqa: E402
     validate_manifest,
 )
 from run_formal_three_arm import _construction_contract, _qa_contract  # noqa: E402
+from saturated_fixed_work_baseline_v1_3.membind_v6_1.identity import require_source_epoch  # noqa: E402
 from saturated_fixed_work_baseline_v1_3.artifact_seals import verify_seal  # noqa: E402
 from saturated_fixed_work_baseline_v1_3.membind_v6_1.upstream_runtime import (  # noqa: E402
     strict_formal_runtime_identity_errors,
@@ -454,6 +455,15 @@ def finalize(root: Path) -> dict[str, Any]:
     root = root.resolve()
     manifest = _json(root / "FORMAL_CAMPAIGN_MANIFEST_SEAL.json")
     validate_manifest(manifest)
+    expected_head = manifest.get("identity", {}).get("git_head")
+    expected_bundle = manifest.get("identity", {}).get("source_bundle")
+    if expected_head and expected_bundle:
+        require_source_epoch(
+            ROOT / "saturated_fixed_work_baseline_v1_3/scripts/run_mab_upstream_8b.py",
+            expected_head=str(expected_head),
+            expected_source_bundle_sha256=str(expected_bundle),
+            root=ROOT,
+        )
     selected = _selected_rows(root, manifest)
     manifest_cells = {cell["cell_id"]: cell for cell in manifest["cells"]}
     for row in selected:

@@ -27,6 +27,7 @@ from formal_three_arm_harness import (
     reduce_formal,
     validate_manifest,
 )
+from saturated_fixed_work_baseline_v1_3.membind_v6_1.identity import require_source_epoch
 
 
 ROOT = Path(__file__).resolve().parents[2]
@@ -341,7 +342,36 @@ def _construction_contract(
         and contract["platform"].get("payload_sha256")
         == cell.get("platform_manifest_sha256")
     )
+    contract_epoch = contract.get("source_epoch")
+    if not isinstance(contract_epoch, dict):
+        contract_epoch = contract.get("git") if isinstance(contract.get("git"), dict) else {}
+    expected_head = cell.get("implementation_git_head")
+    if expected_head:
+        contract_valid = contract_valid and (
+            contract_epoch.get("git_head", contract_epoch.get("head")) == expected_head
+            and not contract_epoch.get("dirty_paths")
+        )
     route_valid = route_seal.get("status") == "ROUTE_SEALED"
+    resource_path = attempt / "block" / "resource_evidence.json"
+    resource = _optional_json(resource_path)
+    resource_required = "block/resource_evidence.json" in expected
+    resource_valid = (
+        not resource_required
+        or (
+            resource.get("status") == "PASS"
+            and resource.get("schema_version") == "membind.resource-evidence.v2"
+            and resource.get("cell_id") == cell.get("cell_id")
+            and resource.get("attempt_id") == cell.get("attempt_id")
+            and resource.get("namespace") == cell.get("namespace")
+            and isinstance(resource.get("construction_start"), dict)
+            and isinstance(resource.get("construction_end"), dict)
+            and isinstance(resource.get("samples"), list)
+            and len(resource["samples"]) >= 2
+            and isinstance(resource.get("counter_delta"), dict)
+            and isinstance(resource.get("statistics"), dict)
+            and isinstance(resource.get("sampling_missingness_rate"), (int, float))
+        )
+    )
     return {
         "construction_status": (
             "PASS"
@@ -350,6 +380,7 @@ def _construction_contract(
             and contract_valid
             and route_valid
             and not missing
+            and resource_valid
             else "INVALID"
         ),
         "construction_complete_status": complete.get("status", "MISSING"),
@@ -361,6 +392,7 @@ def _construction_contract(
         "construction_seal": str(seal_path),
         "run_contract": str(contract_path),
         "route_seal": str(route_seal_path),
+        "resource_evidence_status": "PASS" if resource_valid else "INVALID",
     }
 
 
@@ -493,6 +525,17 @@ def _execute_cell(root: Path, frozen_root: Path, cell: dict[str, Any], *, env: d
     attempt_root = root
     run_id = f"{cell['campaign_id']}-{cell['cell_id']}-{cell['attempt_id']}"
     measured_env = _attempt_env(env, cell)
+    expected_head = cell.get("implementation_git_head") or env.get("MEMBIND_EXPECTED_GIT_HEAD")
+    expected_bundle = cell.get("implementation_source_bundle_sha256") or env.get("MEMBIND_EXPECTED_SOURCE_BUNDLE")
+    if expected_head and expected_bundle:
+        measured_env["MEMBIND_EXPECTED_GIT_HEAD"] = str(expected_head)
+        measured_env["MEMBIND_EXPECTED_SOURCE_BUNDLE"] = str(expected_bundle)
+        require_source_epoch(
+            RUNNER,
+            expected_head=str(expected_head),
+            expected_source_bundle_sha256=str(expected_bundle),
+            root=ROOT,
+        )
     cmd = [
         sys.executable,
         str(RUNNER),
@@ -575,6 +618,13 @@ def _execute_cell(root: Path, frozen_root: Path, cell: dict[str, Any], *, env: d
             ],
         }
     else:
+        if expected_head and expected_bundle:
+            require_source_epoch(
+                RUNNER,
+                expected_head=str(expected_head),
+                expected_source_bundle_sha256=str(expected_bundle),
+                root=ROOT,
+            )
         qa_root = attempt / "block" / "qa_full"
         qa_seal = qa_root / "qa_seal.json"
         qa_failure = attempt / "block" / "qa_resume_failure.json"
@@ -728,10 +778,22 @@ def _stop_campaign(
 def run(root: Path, frozen_root: Path) -> dict[str, Any]:
     manifest = _json(root / "FORMAL_CAMPAIGN_MANIFEST_SEAL.json")
     validate_manifest(manifest)
+    expected_head = manifest.get("identity", {}).get("git_head")
+    expected_bundle = manifest.get("identity", {}).get("source_bundle")
+    if expected_head and expected_bundle:
+        require_source_epoch(
+            RUNNER,
+            expected_head=str(expected_head),
+            expected_source_bundle_sha256=str(expected_bundle),
+            root=ROOT,
+        )
     ledger = root / "formal_ledger.jsonl"
     (root / "formal_runner.pid").write_text(f"{os.getpid()}\n", encoding="utf-8")
     env = _formal_env()
     env["MEMBIND_EXPERIMENT_ROOT"] = str(root)
+    if expected_head and expected_bundle:
+        env["MEMBIND_EXPECTED_GIT_HEAD"] = str(expected_head)
+        env["MEMBIND_EXPECTED_SOURCE_BUNDLE"] = str(expected_bundle)
     rows: list[dict[str, Any]] = []
     invalid: list[dict[str, Any]] = []
     processed_cells = 0

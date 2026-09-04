@@ -38,6 +38,7 @@ from saturated_fixed_work_baseline_v1_3.mab_live_runner import (  # noqa: E402
     run_mab_construction_async,
 )
 from saturated_fixed_work_baseline_v1_3.membind_v6_1.identity import (  # noqa: E402
+    require_source_epoch,
     implementation_bundle,
 )
 from saturated_fixed_work_baseline_v1_3.membind_v6_1.resource_credit import (  # noqa: E402
@@ -127,9 +128,14 @@ def _append(path: Path, row: Mapping[str, Any]) -> None:
         os.fsync(stream.fileno())
 
 
-def _capture_resource_evidence() -> dict[str, Any]:
-    """Capture read-only endpoint/GPU evidence into the measured attempt."""
-    sample = re.compile(r"^([a-zA-Z_:][a-zA-Z0-9_:]*)(?:\{[^\n]*\})?\s+([-+]?(?:\d+(?:\.\d*)?|\.\d+)(?:[eE][-+]?\d+)?)")
+def _capture_resource_evidence(
+    endpoint_identity: Mapping[str, Any] | None = None,
+) -> dict[str, Any]:
+    """Capture one read-only, label-aware endpoint/GPU resource snapshot."""
+    sample = re.compile(
+        r"^([a-zA-Z_:][a-zA-Z0-9_:]*)(\{[^\n]*\})?\s+"
+        r"([-+]?(?:\d+(?:\.\d*)?|\.\d+)(?:[eE][-+]?\d+)?|NaN|Inf|-Inf)"
+    )
     aliases = {
         "running": ("vllm:num_requests_running", "num_requests_running"),
         "waiting": ("vllm:num_requests_waiting", "num_requests_waiting"),
@@ -145,15 +151,39 @@ def _capture_resource_evidence() -> dict[str, Any]:
                     match = sample.match(line.strip())
                     if match:
                         try:
-                            values.setdefault(match.group(1), float(match.group(2)))
+                            metric_name = match.group(1) + (match.group(2) or "")
+                            values.setdefault(metric_name, float(match.group(3)))
                         except ValueError:
                             pass
-            endpoints[endpoint_id] = {"port": port, "status": "PASS", **{
-                key: next((values[name] for name in names if name in values), None)
-                for key, names in aliases.items()
-            }}
+            def resolve(names: tuple[str, ...]) -> float | None:
+                for name in names:
+                    if name in values:
+                        return values[name]
+                    for key, value in values.items():
+                        if key.startswith(name + "{"):
+                            return value
+                return None
+
+            endpoint = dict((endpoint_identity or {}).get(endpoint_id, {}))
+            endpoints[endpoint_id] = {
+                "endpoint_id": endpoint_id,
+                **endpoint,
+                "port": port,
+                "status": "PASS",
+                "metrics": values,
+                **{key: resolve(names) for key, names in aliases.items()},
+            }
         except Exception as exc:
-            endpoints[endpoint_id] = {"port": port, "status": "UNAVAILABLE", "error": str(exc)[:300]}
+            endpoint = dict((endpoint_identity or {}).get(endpoint_id, {}))
+            endpoints[endpoint_id] = {
+                "endpoint_id": endpoint_id,
+                **endpoint,
+                "port": port,
+                "status": "UNAVAILABLE",
+                "metrics": {},
+                **{key: None for key in aliases},
+                "error": str(exc)[:300],
+            }
     gpu: list[dict[str, Any]] = []
     try:
         completed = subprocess.run(
@@ -165,7 +195,92 @@ def _capture_resource_evidence() -> dict[str, Any]:
             gpu.append({"index": int(index), "uuid": uuid_value, "memory_used_mib": int(used), "memory_total_mib": int(total), "utilization_gpu_pct": float(utilization)})
     except Exception as exc:
         gpu = [{"status": "UNAVAILABLE", "error": str(exc)[:300]}]
-    return {"schema_version": "membind.resource-evidence.v1", "captured_unix": time.time(), "endpoints": endpoints, "gpu": gpu}
+    return {
+        "schema_version": "membind.resource-snapshot.v2",
+        "captured_unix": time.time(),
+        "endpoints": endpoints,
+        "gpu": gpu,
+    }
+
+
+def _build_resource_evidence(
+    *,
+    cell_id: str,
+    attempt_id: str,
+    namespace: str,
+    endpoint_identity: Mapping[str, Any],
+    construction_start: Mapping[str, Any],
+    periodic_samples: list[Mapping[str, Any]],
+    construction_end: Mapping[str, Any],
+) -> dict[str, Any]:
+    """Seal a common start/periodic/end resource trace for every measured cell."""
+
+    snapshots = [dict(construction_start), *(dict(row) for row in periodic_samples), dict(construction_end)]
+    endpoint_ids = set(endpoint_identity)
+    for snapshot in snapshots:
+        endpoint_ids.update(snapshot.get("endpoints", {}))
+    metric_names = ("running", "waiting", "kv_cache_usage_perc", "generation_tokens")
+    statistics: dict[str, Any] = {}
+    counter_delta: dict[str, Any] = {}
+    missing = 0
+    total = 0
+    for endpoint_id in sorted(endpoint_ids):
+        endpoint_stats: dict[str, Any] = {}
+        endpoint_values: dict[str, list[float]] = {name: [] for name in metric_names}
+        for snapshot in snapshots:
+            endpoint = snapshot.get("endpoints", {}).get(endpoint_id, {})
+            for name in metric_names:
+                total += 1
+                value = endpoint.get(name)
+                if isinstance(value, (int, float)) and not isinstance(value, bool):
+                    endpoint_values[name].append(float(value))
+                else:
+                    missing += 1
+        for name, values in endpoint_values.items():
+            endpoint_stats[name] = {
+                "count": len(values),
+                "peak": max(values) if values else None,
+                "mean": sum(values) / len(values) if values else None,
+            }
+        statistics[endpoint_id] = endpoint_stats
+        first = snapshots[0].get("endpoints", {}).get(endpoint_id, {}).get("generation_tokens")
+        last = snapshots[-1].get("endpoints", {}).get(endpoint_id, {}).get("generation_tokens")
+        counter_delta[endpoint_id] = {
+            "generation_tokens": (
+                float(last) - float(first)
+                if isinstance(first, (int, float)) and isinstance(last, (int, float))
+                else None
+            ),
+        }
+    return {
+        "schema_version": "membind.resource-evidence.v2",
+        "status": "PASS",
+        "cell_id": cell_id,
+        "attempt_id": attempt_id,
+        "namespace": namespace,
+        "endpoint_identity": {str(key): dict(value) for key, value in endpoint_identity.items()},
+        "construction_start": dict(construction_start),
+        "samples": snapshots,
+        "construction_end": dict(construction_end),
+        "counter_delta": counter_delta,
+        "statistics": statistics,
+        "sampling_missingness_rate": missing / total if total else 1.0,
+        "sample_count": len(snapshots),
+        "created_unix": time.time(),
+    }
+
+
+async def _resource_sampler(
+    stop: asyncio.Event,
+    samples: list[dict[str, Any]],
+    endpoint_identity: Mapping[str, Any],
+) -> None:
+    while not stop.is_set():
+        samples.append(await asyncio.to_thread(_capture_resource_evidence, endpoint_identity))
+        try:
+            await asyncio.wait_for(stop.wait(), timeout=30.0)
+        except TimeoutError:
+            pass
 
 
 def _persist_failure_transport_evidence(
@@ -274,6 +389,7 @@ def _run_contract(
     route_path: Path,
     route: Mapping[str, Any],
     namespace_counts: Mapping[str, int],
+    source_epoch: Mapping[str, Any],
 ) -> dict[str, Any]:
     runner = Path(__file__).resolve()
     adapter_source = Path(inspect_path(MAB8192Manifest)).resolve()
@@ -310,6 +426,7 @@ def _run_contract(
             "contract": dict(route),
         },
         "implementation": implementation_bundle(runner),
+        "source_epoch": dict(source_epoch),
         "runner_sha256": _file_sha256(runner),
         "git": _git_identity(),
         "freshness": {"namespace_initial_counts": dict(namespace_counts)},
@@ -400,6 +517,16 @@ async def _main(args: argparse.Namespace) -> int:
         or platform.get("platform_status") != "LIVE_VALIDATED_RESOURCE_MATCHED"
     ):
         raise RuntimeError("platform manifest is not formal eligible")
+    expected_head = os.environ.get("MEMBIND_EXPECTED_GIT_HEAD")
+    expected_bundle = os.environ.get("MEMBIND_EXPECTED_SOURCE_BUNDLE")
+    if not expected_head or not expected_bundle:
+        raise RuntimeError("measured source epoch binding is missing")
+    source_epoch = require_source_epoch(
+        Path(__file__).resolve(),
+        expected_head=expected_head,
+        expected_source_bundle_sha256=expected_bundle,
+        root=ROOT,
+    )
     output_root = args.output_root.resolve()
     experiment_root = Path(os.environ["MEMBIND_EXPERIMENT_ROOT"]).resolve()
     if experiment_root != output_root and experiment_root not in output_root.parents:
@@ -422,6 +549,14 @@ async def _main(args: argparse.Namespace) -> int:
     }
     if platform_endpoints != route_endpoints:
         raise RuntimeError("routing endpoint set differs from platform")
+    endpoint_identity = {
+        str(row["id"]): {
+            key: row.get(key)
+            for key in ("id", "base_url", "served_model", "physical_gpu", "role")
+            if key in row
+        }
+        for row in platform["llm_endpoints"]
+    }
     counts = _namespace_counts(args.namespace)
     if counts != {"node_count": 0, "relationship_count": 0}:
         raise RuntimeError(f"namespace is not fresh: {counts}")
@@ -459,6 +594,11 @@ async def _main(args: argparse.Namespace) -> int:
     stop = asyncio.Event()
     heartbeat = asyncio.create_task(_heartbeat(heartbeat_path, identity, stop))
     runtime_holder: dict[str, Any] = {}
+    resource_start: dict[str, Any] | None = None
+    resource_samples: list[dict[str, Any]] = []
+    resource_stop = asyncio.Event()
+    resource_task: asyncio.Task[None] | None = None
+    resource_path = block_root / "resource_evidence.json"
     try:
         preparation_path = attempt_root / "attempt_preparation.json"
         preparation = await _prepare_attempt(args.attempt_id, preparation_path)
@@ -472,6 +612,7 @@ async def _main(args: argparse.Namespace) -> int:
             route_path=route_path,
             route=route,
             namespace_counts=counts,
+            source_epoch=source_epoch,
         )
         contract_path = attempt_root / "run_contract.json"
         _write_new(contract_path, contract)
@@ -528,18 +669,45 @@ async def _main(args: argparse.Namespace) -> int:
                 "attempt_preparation_status": preparation["status"],
             },
         }
-        if args.method == FORMAL_ARM_C:
-            result = await run_upstream_membind_construction_async(
-                policy=ResourceCreditPolicy(), **common
-            )
-        else:
-            result = await run_mab_construction_async(method=args.method, **common)
+        # Resource collection is observational and identical across arms.  It
+        # starts immediately before construction, samples while requests run,
+        # and stops only after construction returns.
+        resource_start = await asyncio.to_thread(
+            _capture_resource_evidence, endpoint_identity
+        )
+        resource_task = asyncio.create_task(
+            _resource_sampler(resource_stop, resource_samples, endpoint_identity)
+        )
+        try:
+            if args.method == FORMAL_ARM_C:
+                result = await run_upstream_membind_construction_async(
+                    policy=ResourceCreditPolicy(), **common
+                )
+            else:
+                result = await run_mab_construction_async(method=args.method, **common)
+        finally:
+            resource_stop.set()
+            if resource_task is not None:
+                await asyncio.gather(resource_task, return_exceptions=True)
+        resource_end = await asyncio.to_thread(
+            _capture_resource_evidence, endpoint_identity
+        )
         runtime = runtime_holder.get("runtime")
         if runtime is None:
             raise RuntimeError("measured attempt did not construct a runtime")
         verify_seal(block_root)
-        resource_path = block_root / "resource_evidence.json"
-        _write_new(resource_path, _capture_resource_evidence())
+        _write_new(
+            resource_path,
+            _build_resource_evidence(
+                cell_id=f"h{args.context_index}-r{args.replicate_id}-{args.method}",
+                attempt_id=args.attempt_id,
+                namespace=args.namespace,
+                endpoint_identity=endpoint_identity,
+                construction_start=resource_start,
+                periodic_samples=resource_samples,
+                construction_end=resource_end,
+            ),
+        )
         route_runtime = runtime._membind_route_client.route_evidence()
         transport_count = len(runtime._membind_transport_telemetry)
         if transport_count != len(route_events):
@@ -594,6 +762,25 @@ async def _main(args: argparse.Namespace) -> int:
         _write_atomic(heartbeat_path, {**identity, "status": "COMPLETE", "updated_unix": time.time()})
         return 0
     except BaseException as exc:
+        if resource_start is not None and not resource_path.exists():
+            try:
+                resource_end = await asyncio.to_thread(
+                    _capture_resource_evidence, endpoint_identity
+                )
+                _write_new(
+                    resource_path,
+                    _build_resource_evidence(
+                        cell_id=f"h{args.context_index}-r{args.replicate_id}-{args.method}",
+                        attempt_id=args.attempt_id,
+                        namespace=args.namespace,
+                        endpoint_identity=endpoint_identity,
+                        construction_start=resource_start,
+                        periodic_samples=resource_samples,
+                        construction_end=resource_end,
+                    ),
+                )
+            except BaseException:
+                pass
         transport_failure_evidence: dict[str, Any] | None = None
         failed_runtime = runtime_holder.get("runtime")
         if failed_runtime is not None:

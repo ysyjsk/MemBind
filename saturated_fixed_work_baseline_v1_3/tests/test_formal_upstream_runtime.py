@@ -260,6 +260,30 @@ def test_p2_deployment_policy_uses_only_official_qwen3_14b_sampling() -> None:
     }
 
 
+def test_p2_declared_transport_fields_match_wire_fields_exactly() -> None:
+    wire = deployment_wire_fields(P2_DEPLOYMENT_POLICY, seed=123)
+    actual = {
+        "temperature",
+        "top_p",
+        "seed",
+        "presence_penalty",
+        "extra_body.top_k",
+        "extra_body.min_p",
+        "extra_body.chat_template_kwargs.enable_thinking",
+    }
+    assert set(P2_DEPLOYMENT_POLICY.transport_only_fields) == actual
+    assert set(P2_DEPLOYMENT_POLICY.transport_only_fields) == {
+        "temperature",
+        "top_p",
+        "seed",
+        "presence_penalty",
+        "extra_body.top_k",
+        "extra_body.min_p",
+        "extra_body.chat_template_kwargs.enable_thinking",
+    }
+    assert wire["extra_body"]["chat_template_kwargs"]["enable_thinking"] is False
+
+
 @pytest.mark.asyncio
 async def test_llm_context_completes_prompt_identity_from_task_creation() -> None:
     observed: list[dict[str, object] | None] = []

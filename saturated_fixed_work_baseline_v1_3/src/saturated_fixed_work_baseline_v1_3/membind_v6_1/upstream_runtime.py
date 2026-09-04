@@ -141,8 +141,10 @@ P2_DEPLOYMENT_POLICY = DeploymentPolicy(
     transport_only_fields=(
         "temperature",
         "top_p",
+        "presence_penalty",
         "seed",
         "extra_body.top_k",
+        "extra_body.min_p",
         "extra_body.chat_template_kwargs.enable_thinking",
     ),
 )
