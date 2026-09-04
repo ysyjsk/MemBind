@@ -581,6 +581,10 @@ async def _main(args: argparse.Namespace) -> int:
         "replicate_id": args.replicate_id,
         "method": args.method,
     }
+    cell_id = os.environ.get(
+        "MEMBIND_CELL_ID",
+        f"h{args.context_index}-r{args.replicate_id}-{args.method}",
+    )
     start = {
         **identity,
         "event": "ATTEMPT_START",
@@ -699,7 +703,7 @@ async def _main(args: argparse.Namespace) -> int:
         _write_new(
             resource_path,
             _build_resource_evidence(
-                cell_id=f"h{args.context_index}-r{args.replicate_id}-{args.method}",
+                cell_id=cell_id,
                 attempt_id=args.attempt_id,
                 namespace=args.namespace,
                 endpoint_identity=endpoint_identity,
@@ -770,7 +774,7 @@ async def _main(args: argparse.Namespace) -> int:
                 _write_new(
                     resource_path,
                     _build_resource_evidence(
-                        cell_id=f"h{args.context_index}-r{args.replicate_id}-{args.method}",
+                        cell_id=cell_id,
                         attempt_id=args.attempt_id,
                         namespace=args.namespace,
                         endpoint_identity=endpoint_identity,

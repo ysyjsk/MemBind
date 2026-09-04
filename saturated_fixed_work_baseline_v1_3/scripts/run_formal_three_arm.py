@@ -525,6 +525,7 @@ def _execute_cell(root: Path, frozen_root: Path, cell: dict[str, Any], *, env: d
     attempt_root = root
     run_id = f"{cell['campaign_id']}-{cell['cell_id']}-{cell['attempt_id']}"
     measured_env = _attempt_env(env, cell)
+    measured_env["MEMBIND_CELL_ID"] = str(cell["cell_id"])
     expected_head = cell.get("implementation_git_head") or env.get("MEMBIND_EXPECTED_GIT_HEAD")
     expected_bundle = cell.get("implementation_source_bundle_sha256") or env.get("MEMBIND_EXPECTED_SOURCE_BUNDLE")
     if expected_head and expected_bundle:

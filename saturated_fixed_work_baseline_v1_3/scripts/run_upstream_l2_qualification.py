@@ -350,6 +350,7 @@ def run(
     for raw_cell in manifest["cells"]:
         cell = dict(raw_cell)
         measured_env = _qualification_env(env, cell)
+        measured_env["MEMBIND_CELL_ID"] = str(cell["cell_id"])
         if expected_head and expected_bundle:
             measured_env["MEMBIND_EXPECTED_GIT_HEAD"] = str(expected_head)
             measured_env["MEMBIND_EXPECTED_SOURCE_BUNDLE"] = str(expected_bundle)
