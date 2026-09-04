@@ -325,6 +325,60 @@ def test_finalizer_accepts_authenticated_strict_l1_as_compatibility_authority(
     assert authority_type == "EXACT_STRICT_L1"
 
 
+def test_finalizer_accepts_authenticated_content_witness_strict_l1(
+    tmp_path: Path,
+) -> None:
+    module = _module()
+    qualification = _qualified_fixture(module, tmp_path)
+    first = qualification["cells"][0]
+    runtime_identity = json.loads(
+        (
+            tmp_path
+            / "history-0"
+            / "replicate-0"
+            / first["arm"]
+            / first["attempt_id"]
+            / "block/runtime_identity.json"
+        ).read_text(encoding="utf-8")
+    )
+    strict_l1 = {
+        "schema_version": "membind.strict-upstream-l1.v1",
+        "status": "PASS",
+        "scope": "EXACT_GROWING_HISTORY_REQUEST_QUALIFICATION",
+        "request_checks": {"all": True, "observed_witness_edge": True},
+        "response": {
+            "status": "PASS",
+            "finish_reason": "stop",
+            "json_valid": True,
+            "pydantic_valid": True,
+            "schema_valid": True,
+            "reached_token_limit": False,
+            "response_repair_enabled": False,
+            "edge_count": 1,
+            "content_bearing_witness": True,
+        },
+        "runtime_identity": runtime_identity,
+        "provider_retry_count": 0,
+        "target_provider_request_count": 1,
+        "request_identity": {"source_capture": "official_mab8192_witness"},
+        "witness_selection": {
+            "distinct_entity_count": 2,
+            "current_message_contains_all_entities": True,
+        },
+        "witness_provenance": {
+            "status": "PASS",
+            "expected_edge": {"source_entity_key": "jetblue"},
+        },
+        "namespace_unchanged_before_replay": True,
+        "namespace_unchanged_after_provider_request": True,
+    }
+
+    selection, authority_type = module._validate_compatibility_authority(strict_l1)
+
+    assert selection == module.DEPLOYMENT_POLICY.policy_id
+    assert authority_type == "EXACT_STRICT_L1_CONTENT_WITNESS"
+
+
 def test_finalizer_rejects_strict_l1_with_more_than_one_target_call(
     tmp_path: Path,
 ) -> None:

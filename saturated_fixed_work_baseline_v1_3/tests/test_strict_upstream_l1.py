@@ -42,6 +42,31 @@ def test_l1_selects_the_preserved_real_growing_history_failure() -> None:
     assert target.chunk_id == "chunk-629c22ceea0b38f1137fb847aa36c4c7"
 
 
+def test_l1_witness_is_official_and_has_two_distinct_entities() -> None:
+    module = _module()
+    target, manifest = module._load_witness_episode()
+    selection = module.validate_witness_selection(target)
+
+    assert manifest.manifest_sha256 == module.EXPECTED_MANIFEST_SHA256
+    assert target.source_sequence == module.WITNESS_GLOBAL_SEQUENCE == 0
+    assert target.chunk_id == module.WITNESS_CHUNK_ID
+    assert selection["distinct_entity_count"] >= 2
+    assert selection["current_message_contains_all_entities"] is True
+    assert selection["entity_names"] == ["JetBlue", "San Francisco"]
+
+
+def test_l1_witness_rejects_a_single_or_missing_endpoint() -> None:
+    module = _module()
+    target, _ = module._load_witness_episode()
+    original = module.WITNESS_ENTITY_NAMES
+    try:
+        module.WITNESS_ENTITY_NAMES = ("JetBlue",)
+        with pytest.raises(RuntimeError, match="at least two distinct"):
+            module.validate_witness_selection(target)
+    finally:
+        module.WITNESS_ENTITY_NAMES = original
+
+
 @pytest.mark.asyncio
 async def test_l1_interceptor_aborts_only_on_exact_target_wire_messages() -> None:
     module = _module()
@@ -189,4 +214,5 @@ def test_p2_l1_does_not_regenerate_the_authenticated_prompt() -> None:
     assert ".add_episode(" not in source
     assert "_install_target_capture" not in source
     assert "RECONSTRUCTING_EXACT_REQUEST" not in source
-    assert "SUBMITTING_AUTHENTICATED_CAPTURE" in source
+    assert "SUBMITTING_NATIVE_EDGE_WITNESS" in source
+    assert "prompt_library.extract_edges.edge" in source

@@ -29,6 +29,7 @@ from mab_quality_v2_final_qa.mab8192_adapter import (  # noqa: E402
 )
 from mab_quality_v2_final_qa.mab_main_dataset import build_authority  # noqa: E402
 from saturated_fixed_work_baseline_v1_3.mab_live_runner import (  # noqa: E402
+    _episode_node,
     _logical_identity,
     _mab_graphiti_kwargs,
     episode_from_input,
@@ -44,6 +45,7 @@ from saturated_fixed_work_baseline_v1_3.membind_v6_1.upstream_runtime import (  
     deployment_wire_fields,
     formal_runtime_identity,
     logical_request_context,
+    logical_request_seed,
     request_hash,
 )
 
@@ -78,6 +80,29 @@ EXPECTED_INITIAL_STATE = {
     "relationship_count": 59,
     "episodic_count": 13,
 }
+
+# The historical growing-history target above is retained as a diagnostic
+# artifact, but its current message yields only the mandatory ``Assistant``
+# speaker node.  It cannot prove that the edge model accepts content-bearing
+# output.  This preregistered witness is an official H0 chunk whose text names
+# both endpoints and whose relation was independently observed in the sealed
+# canary graph artifact below.
+WITNESS_GLOBAL_SEQUENCE = 0
+WITNESS_ORIGINAL_SOURCE = 0
+WITNESS_CHUNK_ORDINAL = 0
+WITNESS_CHUNK_ID = "chunk-e3555fef8015377fdcee3936c1528831"
+WITNESS_ENTITY_NAMES = ("JetBlue", "San Francisco")
+WITNESS_EXPECTED_EDGE = {
+    "source_entity_key": "jetblue",
+    "target_entity_key": "san francisco",
+    "relation_type": "FLY_OUT_OF",
+    "source_episode_sequence": 0,
+}
+WITNESS_PROVENANCE_ARTIFACT = Path(
+    "/data/predator/ly/Mem/experiments/local-qwen3-8b-awq-dualreplica-v1/"
+    "engineering-canary-resource-credit-20260902T162519Z/context-0/"
+    "GRAPHITI_SERIAL_SHARED_BOUNDED_SO/9918e7ffdd7a/block/graph_diagnostics.json"
+)
 
 
 class TargetRequestCaptured(RuntimeError):
@@ -203,6 +228,118 @@ def _load_target_episode() -> tuple[Any, MAB8192Manifest]:
     return episode, manifest
 
 
+def _load_witness_episode() -> tuple[Any, MAB8192Manifest]:
+    """Load the fixed official chunk used for the content-bearing L1 witness."""
+
+    authority = build_authority(MAB / "data/official_5_contexts.json")
+    context = tuple(authority["contexts"])[0]
+    manifest = MAB8192Manifest.from_context(
+        context, dataset_revision=str(authority["revision"])
+    )
+    if manifest.manifest_sha256 != EXPECTED_MANIFEST_SHA256:
+        raise RuntimeError("official H0 MAB8192 manifest identity drift")
+    chunk = manifest.chunks[WITNESS_GLOBAL_SEQUENCE]
+    raw = SimpleNamespace(
+        context_id=chunk.context_id,
+        source_sequence=chunk.global_sequence,
+        original_source_sequence=chunk.source_sequence,
+        episode_id=chunk.chunk_id,
+        session_id=chunk.session_id,
+        reference_time=chunk.reference_time,
+        body=chunk.body,
+        dataset_revision=chunk.dataset_revision,
+        chunk_ordinal=chunk.chunk_ordinal,
+        chunk_count=chunk.chunk_count,
+        chunk_id=chunk.chunk_id,
+        previous_chunk_id=chunk.previous_chunk_id,
+        adapter_version=MAB8192_ADAPTER_VERSION,
+    )
+    episode = episode_from_input(raw)
+    observed = (
+        episode.source_sequence,
+        episode.original_source_sequence,
+        episode.chunk_ordinal,
+        episode.chunk_id,
+    )
+    expected = (
+        WITNESS_GLOBAL_SEQUENCE,
+        WITNESS_ORIGINAL_SOURCE,
+        WITNESS_CHUNK_ORDINAL,
+        WITNESS_CHUNK_ID,
+    )
+    if observed != expected:
+        raise RuntimeError("strict L1 witness chunk identity drift")
+    return episode, manifest
+
+
+def validate_witness_selection(episode: Any) -> dict[str, Any]:
+    """Fail closed unless the preregistered witness has two eligible endpoints."""
+
+    names = tuple(WITNESS_ENTITY_NAMES)
+    normalized = tuple(" ".join(name.split()).casefold() for name in names)
+    if len(names) < 2 or len(set(normalized)) != len(normalized):
+        raise RuntimeError("L1 witness requires at least two distinct entities")
+    body = str(getattr(episode, "body", "")).casefold()
+    missing = [name for name in names if name.casefold() not in body]
+    if missing:
+        raise RuntimeError(
+            "L1 witness entities are not explicitly present in CURRENT_MESSAGE: "
+            + ", ".join(missing)
+        )
+    if WITNESS_EXPECTED_EDGE["source_entity_key"] not in normalized:
+        raise RuntimeError("witness source endpoint is not registered")
+    if WITNESS_EXPECTED_EDGE["target_entity_key"] not in normalized:
+        raise RuntimeError("witness target endpoint is not registered")
+    return {
+        "entity_names": list(names),
+        "distinct_entity_count": len(normalized),
+        "current_message_contains_all_entities": True,
+        "expected_edge": dict(WITNESS_EXPECTED_EDGE),
+        "provenance_artifact": str(WITNESS_PROVENANCE_ARTIFACT),
+    }
+
+
+def load_witness_provenance() -> dict[str, Any]:
+    """Verify the fixed pair against a preserved, sealed semantic graph."""
+
+    if not WITNESS_PROVENANCE_ARTIFACT.is_file():
+        raise RuntimeError("preserved witness provenance artifact is missing")
+    payload = _read_json(WITNESS_PROVENANCE_ARTIFACT)
+    edges = payload.get("edges")
+    if not isinstance(edges, list):
+        raise RuntimeError("witness provenance graph has no edge list")
+    for edge in edges:
+        if not isinstance(edge, Mapping):
+            continue
+        if all(edge.get(key) == value for key, value in WITNESS_EXPECTED_EDGE.items()):
+            return {
+                "artifact": str(WITNESS_PROVENANCE_ARTIFACT),
+                "artifact_graph_hash": payload.get("canonical_graph_hash"),
+                "expected_edge": dict(WITNESS_EXPECTED_EDGE),
+                "status": "PASS",
+            }
+    raise RuntimeError("witness provenance artifact does not contain expected edge")
+
+
+def _witness_edge_context(episode: Any, *, namespace: str) -> dict[str, Any]:
+    """Build the unmodified upstream extract_edges.edge prompt context."""
+
+    current = _episode_node(episode, namespace=namespace)
+    from graphiti_core.utils.text_utils import concatenate_episodes
+
+    return {
+        "episode_content": concatenate_episodes([current]),
+        "nodes": [
+            {"name": name, "entity_types": ["Entity"]}
+            for name in WITNESS_ENTITY_NAMES
+        ],
+        "previous_episodes": [],
+        "reference_time": current.valid_at,
+        "edge_types": [],
+        "custom_extraction_instructions": "",
+    }
+
+
 def _namespace_state(namespace: str) -> dict[str, Any]:
     from neo4j import GraphDatabase
 
@@ -316,6 +453,67 @@ def _install_target_capture(runtime: Any, capture: dict[str, Any]) -> None:
     router = runtime._membind_route_client
     for endpoint_id, transparent in router.endpoint_clients.items():
         transparent._client = _CaptureClient(
+            transparent._client,
+            endpoint_id=endpoint_id,
+            capture=capture,
+        )
+
+
+class _RecordingCompletions:
+    """Observe one native edge request while delegating it unchanged."""
+
+    def __init__(self, delegate: Any, *, endpoint_id: str, capture: dict[str, Any]):
+        self._delegate = delegate
+        self._endpoint_id = endpoint_id
+        self._capture = capture
+
+    async def create(self, *args: Any, **kwargs: Any) -> Any:
+        logical = current_logical_request_identity() or {}
+        is_edge_request = logical.get("prompt_name") == "extract_edges.edge"
+        if is_edge_request:
+            count = int(self._capture.get("provider_request_count", 0)) + 1
+            self._capture["provider_request_count"] = count
+            if count > 1:
+                raise RuntimeError("L1 witness edge request was observed more than once")
+            self._capture.update(
+                {
+                    "endpoint_id": self._endpoint_id,
+                    "wire_messages_sha256": _wire_messages_sha256(
+                        kwargs.get("messages", ())
+                    ),
+                    "semantic_request_sha256": _semantic_request_sha256(kwargs),
+                    "after_request_sha256": request_hash(kwargs),
+                    "logical_identity": dict(logical),
+                    "wire_request": _canonical(kwargs),
+                }
+            )
+        response = await self._delegate.create(*args, **kwargs)
+        if is_edge_request:
+            self._capture["_response"] = response
+        return response
+
+
+class _RecordingClient:
+    def __init__(self, delegate: Any, *, endpoint_id: str, capture: dict[str, Any]):
+        self._delegate = delegate
+        self.chat = SimpleNamespace(
+            completions=_RecordingCompletions(
+                delegate.chat.completions,
+                endpoint_id=endpoint_id,
+                capture=capture,
+            )
+        )
+
+    async def close(self) -> None:
+        result = self._delegate.close()
+        if asyncio.iscoroutine(result):
+            await result
+
+
+def _install_recording_capture(runtime: Any, capture: dict[str, Any]) -> None:
+    router = runtime._membind_route_client
+    for endpoint_id, transparent in router.endpoint_clients.items():
+        transparent._client = _RecordingClient(
             transparent._client,
             endpoint_id=endpoint_id,
             capture=capture,
@@ -466,14 +664,16 @@ async def run(
         ):
             raise RuntimeError("strict L1 platform identity mismatch")
         route = _read_json(route_path.resolve())
-        target, manifest = _load_target_episode()
+        target, manifest = _load_witness_episode()
+        witness_selection = validate_witness_selection(target)
+        witness_provenance = load_witness_provenance()
         before = _namespace_state(namespace)
         if {
             key: before[key] for key in EXPECTED_INITIAL_STATE
         } != EXPECTED_INITIAL_STATE:
             raise RuntimeError(f"preserved namespace state drift: {before}")
         _write_new(root / "namespace_before.json", before)
-        phase["value"] = "AUTHENTICATING_HISTORICAL_CAPTURE"
+        phase["value"] = "AUTHENTICATING_WITNESS_SELECTION"
         runtime = build_formal_upstream_runtime(
             routing_contract=route,
             arm=FORMAL_ARM_A,
@@ -483,103 +683,148 @@ async def run(
             mab8192_manifest_sha256=manifest.manifest_sha256,
         )
         _write_new(root / "runtime_identity.json", runtime_identity)
-        historical_capture = _read_json(HISTORICAL_CAPTURE)
-        expected_wire, deployment_changed_paths = _expected_candidate_wire_request(
-            historical_capture["wire_request"], deployment
-        )
-        expected_semantic_sha256 = _semantic_request_sha256(expected_wire)
-        expected_after_sha256 = request_hash(expected_wire)
+        from graphiti_core.prompts import prompt_library
         from graphiti_core.prompts.extract_edges import ExtractedEdges
+        from saturated_fixed_work_baseline_v1_3.membind_v5.runtime.core.provider_admission import (
+            provider_scope,
+        )
 
         schema = ExtractedEdges.model_json_schema()
         schema_text = json.dumps(
             schema, ensure_ascii=False, sort_keys=True, separators=(",", ":")
         )
-        logical_identity = historical_capture.get("logical_identity")
-        historical_wire = historical_capture.get("wire_request")
+        _write_new(root / "witness_selection.json", {
+            "status": "PASS",
+            **witness_selection,
+            "provenance": witness_provenance,
+            "target": {
+                "global_sequence": target.source_sequence,
+                "source_sequence": target.original_source_sequence,
+                "chunk_ordinal": target.chunk_ordinal,
+                "chunk_id": target.chunk_id,
+            },
+        })
+        capture: dict[str, Any] = {}
+        _install_recording_capture(runtime, capture)
+        context = _witness_edge_context(target, namespace=namespace)
+        messages = prompt_library.extract_edges.edge(context)
+        phase["value"] = "SUBMITTING_NATIVE_EDGE_WITNESS"
+        response_error: BaseException | None = None
+        response_payload: Any = None
+        with logical_request_context(_logical_identity(target)):
+            with provider_scope(region="PREPARE", source_sequence=target.source_sequence):
+                try:
+                    response_payload = await runtime.llm_client.generate_response(
+                        messages,
+                        response_model=ExtractedEdges,
+                        max_tokens=16384,
+                        group_id=namespace,
+                        prompt_name="extract_edges.edge",
+                    )
+                except BaseException as exc:
+                    response_error = exc
+        raw_response = capture.pop("_response", None)
+        if raw_response is None:
+            if response_error is not None:
+                raise response_error
+            raise RuntimeError("native edge witness produced no provider response")
+        _write_new(root / "provider_response.json", _canonical(raw_response))
+        evaluation = _evaluate_target_response(raw_response)
+        wire_request = capture.get("wire_request")
+        if not isinstance(wire_request, Mapping):
+            raise RuntimeError("native edge witness request was not captured")
+        wire_messages_sha256 = _wire_messages_sha256(wire_request.get("messages", ()))
+        logical_identity = capture.get("logical_identity")
         response_schema = (
-            expected_wire.get("response_format", {})
+            wire_request.get("response_format", {})
             .get("json_schema", {})
             .get("schema")
+            if isinstance(wire_request.get("response_format"), Mapping)
+            else None
         )
+        expected_seed = logical_request_seed({
+            **_logical_identity(target),
+            "prompt_name": "extract_edges.edge",
+            "canonical_messages_hash": wire_messages_sha256,
+        })
+        telemetry = [
+            row
+            for row in getattr(runtime, "_membind_transport_telemetry", [])
+            if isinstance(row, Mapping)
+            and row.get("logical_identity", {}).get("prompt_name")
+            == "extract_edges.edge"
+        ]
+        extra_body = wire_request.get("extra_body")
+        extra_body = extra_body if isinstance(extra_body, Mapping) else {}
+        observed_witness_edge = False
+        try:
+            parsed = json.loads(str(getattr(raw_response.choices[0].message, "content", "")))
+            for edge in parsed.get("edges", []) if isinstance(parsed, Mapping) else []:
+                if not isinstance(edge, Mapping):
+                    continue
+                source = str(edge.get("source_entity_name", "")).casefold()
+                target_name = str(edge.get("target_entity_name", "")).casefold()
+                if source in {name.casefold() for name in WITNESS_ENTITY_NAMES} and target_name in {
+                    name.casefold() for name in WITNESS_ENTITY_NAMES
+                } and source != target_name:
+                    observed_witness_edge = True
+                    break
+        except (AttributeError, IndexError, TypeError, ValueError):
+            observed_witness_edge = False
         request_checks = {
-            "historical_capture_wire_messages_sha256": (
-                historical_capture.get("wire_messages_sha256")
-                == EXPECTED_MESSAGES_SHA256
-            ),
-            "wire_messages_sha256": (
-                _wire_messages_sha256(expected_wire.get("messages", ()))
-                == EXPECTED_MESSAGES_SHA256
-            ),
-            "historical_semantic_request_sha256": (
-                historical_capture.get("semantic_request_sha256")
-                == EXPECTED_SEMANTIC_REQUEST_SHA256
-            ),
-            "historical_after_request_sha256": (
-                historical_capture.get("after_request_sha256")
-                == EXPECTED_AFTER_REQUEST_SHA256
-            ),
-            "candidate_semantic_request_sha256": (
-                _semantic_request_sha256(expected_wire) == expected_semantic_sha256
-            ),
-            "candidate_after_request_sha256": (
-                request_hash(expected_wire) == expected_after_sha256
-            ),
-            "messages_unchanged": (
-                isinstance(historical_wire, Mapping)
-                and expected_wire.get("messages") == historical_wire.get("messages")
-            ),
-            "response_format_unchanged": (
-                isinstance(historical_wire, Mapping)
-                and expected_wire.get("response_format")
-                == historical_wire.get("response_format")
-            ),
-            "actual_upstream_schema": response_schema == schema,
-            "declared_deployment_delta_only": deployment_changed_paths
-            == [
-                "extra_body.chat_template_kwargs",
-                "extra_body.min_p",
-                "extra_body.repetition_penalty",
-                "model",
-                "presence_penalty",
+            "witness_entities_distinct": witness_selection["distinct_entity_count"] >= 2,
+            "witness_entities_in_current_message": witness_selection[
+                "current_message_contains_all_entities"
             ],
+            "witness_provenance_authenticated": witness_provenance.get("status") == "PASS",
+            "actual_upstream_schema": response_schema == schema,
+            "model": wire_request.get("model") == deployment.served_model,
+            "max_tokens": wire_request.get("max_tokens") == 16384,
+            "structured_output_json_schema": wire_request.get("response_format", {}).get(
+                "type"
+            ) == "json_schema",
+            "p2_temperature": wire_request.get("temperature") == deployment.sampling["temperature"],
+            "p2_top_p": wire_request.get("top_p") == deployment.sampling["top_p"],
+            "p2_presence_penalty": wire_request.get("presence_penalty")
+            == deployment.sampling["presence_penalty"],
+            "p2_extra_body": dict(extra_body) == {
+                "chat_template_kwargs": {"enable_thinking": False},
+                "min_p": 0,
+                "top_k": deployment.sampling["top_k"],
+            },
             "logical_identity": logical_identity
             == {
-                "chunk_id": TARGET_CHUNK_ID,
-                "chunk_ordinal": TARGET_CHUNK_ORDINAL,
-                "context_id": target.context_id,
-                "dataset_revision": target.dataset_revision,
+                **_logical_identity(target),
                 "prompt_name": "extract_edges.edge",
-                "session_id": target.session_id,
-                "source_sequence": TARGET_ORIGINAL_SOURCE,
             },
-            "stable_seed": expected_wire.get("seed") == EXPECTED_STABLE_SEED,
-            "max_tokens": expected_wire.get("max_tokens") == 16384,
-            "model": expected_wire.get("model") == deployment.served_model,
+            "stable_seed": wire_request.get("seed") == expected_seed
+            and (not telemetry or telemetry[0].get("seed") == expected_seed),
+            "one_transport_attempt": len(telemetry) == 1,
+            "observed_witness_edge": observed_witness_edge,
         }
-        if not all(request_checks.values()):
-            raise RuntimeError(
-                f"candidate request differs from authenticated target: {request_checks}"
-            )
-        endpoint_id = str(historical_capture.get("endpoint_id"))
-        endpoint = runtime._membind_route_client.endpoint_clients.get(endpoint_id)
-        if endpoint is None:
-            raise RuntimeError("historical target endpoint is absent from P2 route")
         public_capture = {
-            "source_capture": str(HISTORICAL_CAPTURE),
-            "endpoint_id": endpoint_id,
-            "wire_messages_sha256": EXPECTED_MESSAGES_SHA256,
-            "semantic_request_sha256": expected_semantic_sha256,
-            "after_request_sha256": expected_after_sha256,
+            "source_capture": "official_mab8192_witness",
+            "endpoint_id": capture.get("endpoint_id"),
+            "wire_messages_sha256": wire_messages_sha256,
+            "semantic_request_sha256": _semantic_request_sha256(wire_request),
+            "after_request_sha256": request_hash(wire_request),
             "logical_identity": logical_identity,
-            "wire_request": expected_wire,
-            "deployment_changed_paths": deployment_changed_paths,
+            "wire_request": wire_request,
+            "witness_selection": witness_selection,
+            "witness_provenance": witness_provenance,
+            "provider_request_count": capture.get("provider_request_count", 0),
         }
         _write_new(root / "captured_request.json", public_capture)
-        phase["value"] = "SUBMITTING_AUTHENTICATED_CAPTURE"
-        response = await endpoint._client.chat.completions.create(**expected_wire)
-        evaluation = _evaluate_target_response(response)
-        _write_new(root / "provider_response.json", _canonical(response))
+        if response_error is not None:
+            evaluation["errors"].append(
+                f"provider_parse:{type(response_error).__module__}.{type(response_error).__qualname__}"
+            )
+            evaluation["status"] = "FAIL"
+        if not all(request_checks.values()):
+            evaluation["status"] = "FAIL"
+            evaluation["errors"].append(
+                "witness_request_checks=" + json.dumps(request_checks, sort_keys=True)
+            )
         phase["value"] = "VERIFYING_NO_MUTATION"
         after = _namespace_state(namespace)
         _write_new(root / "namespace_after_capture.json", after)
@@ -603,24 +848,11 @@ async def run(
                     schema_text.encode("utf-8")
                 ).hexdigest(),
                 "runtime_identity": runtime_identity,
-                "provider_retry_count": 0,
-                "target_provider_request_count": 1,
-                "historical_comparison": {
-                    "attempt_id": "1107077ed04e",
-                    "p1_exact_l1_capture": str(HISTORICAL_CAPTURE),
-                    "request_identity_exact_match": all(request_checks.values()),
-                    "upstream_identity_exact_except_declared_deployment": all(
-                        request_checks.values()
-                    ),
-                    "wire_messages_exact_match": True,
-                    "deployment_changed_paths": deployment_changed_paths,
-                    "expected_candidate_semantic_request_sha256": expected_semantic_sha256,
-                    "expected_candidate_after_request_sha256": expected_after_sha256,
-                    "historical_finish_reason": "length",
-                    "historical_response_content_sha256": (
-                        "5da6bb84f5a7d7486757e4cc60f450a3018645cd0088c76117aa244976d64174"
-                    ),
-                },
+                "provider_retry_count": max(
+                    0, int(capture.get("provider_request_count", 0)) - 1
+                ),
+                "target_provider_request_count": capture.get("provider_request_count", 0),
+                "witness_provenance": witness_provenance,
                 "namespace_unchanged_before_replay": True,
                 "namespace_unchanged_after_provider_request": after == before,
                 "ended_unix": time.time(),

@@ -1,6 +1,6 @@
 {
   "schema_version": "membind.native-platform-adapter-decision.v2",
-  "status": "P2_DEPLOYMENT_CORRECTION_PENDING_L1",
+  "status": "P2_DEPLOYMENT_CORRECTED_L1_PASS_FULL_HISTORY_L2_PENDING",
   "formal_qualification_authorized": false,
   "sources": [
     {
@@ -39,7 +39,7 @@
       "project": "Qwen",
       "model": "Qwen/Qwen3-14B-AWQ",
       "revision": "31c69efc29464b6bb0aee1398b5a7b50a99340c3",
-      "role": "P2_DEPLOYMENT_CORRECTED_L1_PENDING",
+      "role": "P2_DEPLOYMENT_CORRECTED_L1_PASS",
       "directly_adopted": [
         "temperature=0.7",
         "top_p=0.8",
@@ -80,7 +80,7 @@
   },
   "selected_platform": {
     "deployment_policy_id": "P2_QWEN3_14B_AWQ",
-    "qualification_status": "CORRECTED_DEPLOYMENT_L1_PENDING",
+    "qualification_status": "CORRECTED_DEPLOYMENT_L1_PASS_FULL_HISTORY_L2_PENDING",
     "profile_id": "local-qwen3-14b-awq-dualreplica-v1",
     "source_model": "Qwen/Qwen3-14B-AWQ",
     "served_model": "qwen3-14b-awq",
@@ -107,10 +107,34 @@
     },
     "sdk_retries": 0,
     "logical_seed": "uint32(SHA256(dataset_revision,context_id,source_sequence,chunk_ordinal,prompt_name,canonical_messages_hash))",
-    "platform_manifest": "/data/predator/ly/Mem/profiles/local-qwen3-14b-awq-dualreplica-v1/platform_manifest.20260904T095114Z.25205c46578a.json",
-    "platform_manifest_payload_sha256": "25205c46578ac0954e121b909030aa07ede9871d8f8fc6818da21414e51ecaa0",
-    "strict_l1_result": null,
-    "strict_l1_result_file_sha256": null,
+    "platform_manifest": "/data/predator/ly/Mem/profiles/local-qwen3-14b-awq-dualreplica-v1/platform_manifest.20260904T132506Z.4df3cd429a9e.json",
+    "platform_manifest_payload_sha256": "4df3cd429a9ebba2689df7ec75856efb6a128e783413aa93f52847a76f4f960b",
+    "strict_l1_result": {
+      "status": "PASS",
+      "evidence_root": "/data/predator/ly/Mem/experiments/local-qwen3-14b-awq-dualreplica-v1/strict-upstream-l1-witness-20260904T135028Z",
+      "terminal_artifact": "/data/predator/ly/Mem/experiments/local-qwen3-14b-awq-dualreplica-v1/strict-upstream-l1-witness-20260904T135028Z/L1_RESULT.json",
+      "terminal_artifact_file_sha256": "3027578a3e8869a99d12b89ed45a90ebcc52bdff6c860bb5a4311ab9bb8af553",
+      "target": {
+        "global_sequence": 0,
+        "source_sequence": 0,
+        "chunk_ordinal": 0,
+        "chunk_id": "chunk-e3555fef8015377fdcee3936c1528831",
+        "prompt_name": "extract_edges.edge"
+      },
+      "endpoint_id": "native-replica",
+      "target_provider_calls": 1,
+      "provider_retries": 0,
+      "finish_reason": "stop",
+      "prompt_tokens": 3078,
+      "completion_tokens": 80,
+      "edge_count": 1,
+      "content_bearing_witness": true,
+      "json_valid": true,
+      "pydantic_valid": true,
+      "schema_valid": true,
+      "namespace_unchanged": true
+    },
+    "strict_l1_result_file_sha256": "3027578a3e8869a99d12b89ed45a90ebcc52bdff6c860bb5a4311ab9bb8af553",
     "historical_l1_status": "NON_AUTHORITATIVE_SUPERSEDED_SAMPLING",
     "content_bearing_witness_required": true
   },
@@ -174,7 +198,7 @@
     },
     "p2": {
       "deployment_policy_id": "P2_QWEN3_14B_AWQ",
-      "decision": "CORRECTED_DEPLOYMENT_PENDING_FRESH_EXACT_STRICT_L1",
+      "decision": "QUALIFIED_BY_FRESH_CONTENT_BEARING_STRICT_L1",
       "source_model": "Qwen/Qwen3-14B-AWQ",
       "served_model": "qwen3-14b-awq",
       "revision": "31c69efc29464b6bb0aee1398b5a7b50a99340c3",
@@ -198,8 +222,8 @@
         "estimated_supported_tokens_before_fix": 38800,
         "change": "Increase only the P2 prepare-replica gpu_memory_utilization from 0.70 to 0.72; retain embedding at 0.25 and declare the P2 GPU1 combined budget as 0.97.",
         "scope": "Shared by all arms, before any measured P2 attempt, with no prompt/schema/call-graph/sampling/model/data/evaluator change.",
-        "platform_manifest": "/data/predator/ly/Mem/profiles/local-qwen3-14b-awq-dualreplica-v1/platform_manifest.20260904T095114Z.25205c46578a.json",
-        "platform_manifest_payload_sha256": "25205c46578ac0954e121b909030aa07ede9871d8f8fc6818da21414e51ecaa0",
+        "platform_manifest": "/data/predator/ly/Mem/profiles/local-qwen3-14b-awq-dualreplica-v1/platform_manifest.20260904T132506Z.4df3cd429a9e.json",
+        "platform_manifest_payload_sha256": "4df3cd429a9ebba2689df7ec75856efb6a128e783413aa93f52847a76f4f960b",
         "observed_native_kv_tokens": 69760,
         "observed_prepare_kv_tokens": 41888,
         "observed_embedding_kv_tokens": 33760,
@@ -223,7 +247,19 @@
         "namespace_unchanged": true,
         "content_bearing_witness": false
       },
-      "fresh_exact_strict_l1": {"status": "PENDING_CORRECTED_DEPLOYMENT", "content_bearing_witness_required": true},
+      "fresh_exact_strict_l1": {
+        "status": "PASS",
+        "content_bearing_witness_required": true,
+        "evidence_root": "/data/predator/ly/Mem/experiments/local-qwen3-14b-awq-dualreplica-v1/strict-upstream-l1-witness-20260904T135028Z",
+        "terminal_artifact": "/data/predator/ly/Mem/experiments/local-qwen3-14b-awq-dualreplica-v1/strict-upstream-l1-witness-20260904T135028Z/L1_RESULT.json",
+        "terminal_artifact_file_sha256": "3027578a3e8869a99d12b89ed45a90ebcc52bdff6c860bb5a4311ab9bb8af553",
+        "target_provider_calls": 1,
+        "provider_retries": 0,
+        "finish_reason": "stop",
+        "edge_count": 1,
+        "content_bearing_witness": true,
+        "namespace_unchanged": true
+      },
       "selection_boundary": "Only the deployment/model and its official sampling may change. Graphiti prompt, upstream schema, call graph, MAB8192 adapter, stable seed policy, max_tokens, SDK retry count, routing semantics, dataset, and evaluator remain unchanged.",
       "next_gate": "Run fresh full-H0 L2 once in fixed A-to-C-to-B order. Formal execution remains unauthorized until all three L2 cells and the finalizer pass."
     }

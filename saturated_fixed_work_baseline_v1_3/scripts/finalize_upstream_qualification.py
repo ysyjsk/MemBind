@@ -89,7 +89,7 @@ def _validate_compatibility_authority(
             expected_arm=FORMAL_ARM_A,
             expected_deployment_policy=DEPLOYMENT_POLICY,
         )
-        valid = (
+        common_valid = (
             compatibility.get("status") == "PASS"
             and compatibility.get("scope")
             == "EXACT_GROWING_HISTORY_REQUEST_QUALIFICATION"
@@ -106,16 +106,46 @@ def _validate_compatibility_authority(
             and response.get("response_repair_enabled") is False
             and compatibility.get("provider_retry_count") == 0
             and compatibility.get("target_provider_request_count") == 1
-            and isinstance(historical, Mapping)
-            and historical.get(
-                "upstream_identity_exact_except_declared_deployment"
-            )
-            is True
             and compatibility.get("namespace_unchanged_before_replay") is True
             and compatibility.get("namespace_unchanged_after_provider_request")
             is True
             and not runtime_errors
         )
+        request_identity = compatibility.get("request_identity")
+        witness_selection = compatibility.get("witness_selection")
+        witness_provenance = compatibility.get("witness_provenance")
+        if isinstance(request_identity, Mapping):
+            if not isinstance(witness_selection, Mapping):
+                witness_selection = request_identity.get("witness_selection")
+            if not isinstance(witness_provenance, Mapping):
+                witness_provenance = request_identity.get("witness_provenance")
+        witness_authority = (
+            isinstance(request_identity, Mapping)
+            and request_identity.get("source_capture") == "official_mab8192_witness"
+        )
+        if witness_authority:
+            witness_valid = (
+                common_valid
+                and isinstance(witness_selection, Mapping)
+                and witness_selection.get("current_message_contains_all_entities")
+                is True
+                and witness_selection.get("distinct_entity_count", 0) >= 2
+                and isinstance(witness_provenance, Mapping)
+                and witness_provenance.get("status") == "PASS"
+                and isinstance(witness_provenance.get("expected_edge"), Mapping)
+                and response.get("content_bearing_witness") is True
+                and response.get("edge_count", 0) > 0
+                and request_checks.get("observed_witness_edge") is True
+            )
+            if witness_valid:
+                return DEPLOYMENT_POLICY.policy_id, "EXACT_STRICT_L1_CONTENT_WITNESS"
+            details = "; ".join(runtime_errors) if runtime_errors else "content witness gate mismatch"
+            raise RuntimeError(
+                f"exact strict L1 content witness authority is invalid: {details}"
+            )
+        valid = common_valid and isinstance(historical, Mapping) and historical.get(
+            "upstream_identity_exact_except_declared_deployment"
+        ) is True
         if not valid:
             details = "; ".join(runtime_errors) if runtime_errors else "gate mismatch"
             raise RuntimeError(f"exact strict L1 authority is invalid: {details}")
