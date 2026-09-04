@@ -1,5 +1,5 @@
 #!/usr/bin/env python3
-"""Fail-closed validation for the isolated MemBind 8B dual-replica profile."""
+"""Fail-closed validation for isolated MemBind dual-replica profiles."""
 
 from __future__ import annotations
 
@@ -97,7 +97,12 @@ def load_json(path: Path) -> dict[str, Any]:
 
 def model_manifest_check(*, verify_content: bool) -> dict[str, Any]:
     root = Path(required("MEMBIND_LLM_MODEL_DIR")).resolve()
-    manifest_path = root / ".membind-model-manifest.json"
+    manifest_path = Path(
+        os.environ.get(
+            "MEMBIND_LLM_MODEL_MANIFEST",
+            str(root / ".membind-model-manifest.json"),
+        )
+    ).resolve()
     config_path = root / "config.json"
     tokenizer_path = root / "tokenizer.json"
     manifest = load_json(manifest_path)
@@ -108,11 +113,9 @@ def model_manifest_check(*, verify_content: bool) -> dict[str, Any]:
         declared_by_name = {
             str(row.get("path")): row for row in declared if isinstance(row, dict)
         }
-        observed_names = sorted(
-            path.name
-            for path in root.iterdir()
-            if path.is_file() and path.name != manifest_path.name
-        )
+        observed_names = sorted(path.name for path in root.iterdir() if path.is_file())
+        if manifest_path.parent == root and manifest_path.name in observed_names:
+            observed_names.remove(manifest_path.name)
         rows = {}
         for name, row in declared_by_name.items():
             path = root / name
@@ -135,6 +138,7 @@ def model_manifest_check(*, verify_content: bool) -> dict[str, Any]:
         ok = (
             manifest.get("source_model") == EXPECTED_MODEL_SOURCE
             and manifest.get("revision") == EXPECTED_MODEL_REVISION
+            and Path(str(manifest.get("path", ""))).resolve() == root
             and sorted(declared_by_name) == observed_names
             and catalog_ok
             and all(row["ok"] for row in rows.values())
@@ -143,6 +147,7 @@ def model_manifest_check(*, verify_content: bool) -> dict[str, Any]:
         return {
             "ok": ok,
             "path": str(root),
+            "manifest_path": str(manifest_path),
             "source_model": manifest.get("source_model"),
             "revision": manifest.get("revision"),
             "catalog_sha256": supplied_payload,
@@ -371,7 +376,12 @@ def identity_check() -> dict[str, Any]:
     experiment_root = Path(required("MEMBIND_EXPERIMENT_ROOT")).resolve()
     namespace_prefix = required("MEMBIND_NAMESPACE_PREFIX")
     legacy_profile = Path(required("MEMBIND_DATA_ROOT")) / "profiles/local-qwen3-14b-awq-v1"
-    forbidden_fragments = ("qwen3-14b", "32b", "fp8")
+    policy_id = os.environ.get("MEMBIND_DEPLOYMENT_POLICY_ID", "P0_QWEN3_8B_AWQ")
+    forbidden_fragments = (
+        ("32b", "fp8")
+        if policy_id == "P2_QWEN3_14B_AWQ"
+        else ("qwen3-14b", "32b", "fp8")
+    )
     identity_text = " ".join(
         [profile, str(profile_root), str(experiment_root), namespace_prefix]
     ).casefold()
@@ -403,6 +413,8 @@ def ports_and_budget_check() -> dict[str, Any]:
     embedding = float(required("MEMBIND_EMBED_GPU_MEMORY_UTILIZATION"))
     maximum = float(required("MEMBIND_GPU1_MAX_COMBINED_UTILIZATION"))
     total = prepare + embedding
+    policy_id = os.environ.get("MEMBIND_DEPLOYMENT_POLICY_ID", "P0_QWEN3_8B_AWQ")
+    policy_maximum = 0.97 if policy_id == "P2_QWEN3_14B_AWQ" else 0.95
     ok = (
         len(set(ports.values())) == len(ports)
         and not (set(ports.values()) & LEGACY_PORTS)
@@ -410,7 +422,8 @@ def ports_and_budget_check() -> dict[str, Any]:
         and required("MEMBIND_PREPARE_LLM_GPU") == "1"
         and required("MEMBIND_EMBED_GPU") == "1"
         and abs(total - maximum) < 1e-9
-        and total <= 0.95
+        and abs(maximum - policy_maximum) < 1e-9
+        and total <= policy_maximum
     )
     return {
         "ok": ok,
@@ -420,6 +433,7 @@ def ports_and_budget_check() -> dict[str, Any]:
         "gpu1_embedding_utilization": embedding,
         "gpu1_combined_utilization": total,
         "gpu1_max_combined_utilization": maximum,
+        "policy_max_combined_utilization": policy_maximum,
     }
 
 
@@ -502,9 +516,9 @@ def structured_probe(client: httpx.Client, base_url: str) -> dict[str, Any]:
     payload: dict[str, Any] = {
         "model": EXPECTED_MODEL,
         "messages": [{"role": "user", "content": f"Return ok=true and replica='{EXPECTED_MODEL}'."}],
-        "temperature": 0.7,
-        "top_p": 0.8,
-        "top_k": 20,
+        "temperature": float(required("MEMBIND_CONSTRUCTION_TEMPERATURE")),
+        "top_p": float(required("MEMBIND_CONSTRUCTION_TOP_P")),
+        "top_k": int(required("MEMBIND_CONSTRUCTION_TOP_K")),
         "seed": 2407528123,
         "max_tokens": 64,
         "response_format": {
@@ -512,10 +526,15 @@ def structured_probe(client: httpx.Client, base_url: str) -> dict[str, Any]:
             "json_schema": {"name": "profile_probe", "schema": schema, "strict": True},
         },
     }
-    if os.environ.get("MEMBIND_DEPLOYMENT_POLICY_ID", "P0_QWEN3_8B_AWQ") == "P0_QWEN3_8B_AWQ":
+    policy_id = os.environ.get("MEMBIND_DEPLOYMENT_POLICY_ID", "P0_QWEN3_8B_AWQ")
+    if policy_id == "P0_QWEN3_8B_AWQ":
         payload.update({"min_p": 0, "presence_penalty": 1.5, "chat_template_kwargs": {"enable_thinking": False}})
-    else:
+    elif policy_id == "P1_QWEN25_7B_AWQ":
         payload["repetition_penalty"] = 1.05
+    elif policy_id == "P2_QWEN3_14B_AWQ":
+        payload["chat_template_kwargs"] = {"enable_thinking": False}
+    else:
+        raise RuntimeError(f"unknown deployment policy: {policy_id}")
     response = client.post(
         f"{base_url.rstrip('/')}/chat/completions",
         json=payload,
@@ -693,8 +712,9 @@ def run_live(checks: Checks, timeout: float) -> None:
         "--scheduling-policy": "fcfs",
         "--seed": "20260806",
         "--structured-outputs-config": '{"backend":"xgrammar","disable_any_whitespace":true}',
-        "--hf-overrides": '{"rope_parameters":{"rope_type":"yarn","factor":2.0,"original_max_position_embeddings":32768,"rope_theta":1000000}}',
     }
+    if os.environ.get("MEMBIND_LLM_HF_OVERRIDES"):
+        common_llm_options["--hf-overrides"] = os.environ["MEMBIND_LLM_HF_OVERRIDES"]
     if os.environ.get("MEMBIND_LLM_DEFAULT_CHAT_TEMPLATE_KWARGS"):
         common_llm_options["--default-chat-template-kwargs"] = os.environ[
             "MEMBIND_LLM_DEFAULT_CHAT_TEMPLATE_KWARGS"
@@ -797,7 +817,7 @@ def main() -> int:
     elif args.mode == "live":
         run_live(checks, args.timeout)
     result = {
-        "schema_version": "membind.8b-dual.preflight.v1",
+        "schema_version": "membind.dual-replica.preflight.v2",
         "profile_id": os.environ.get("MEMBIND_PROFILE_ID"),
         "mode": args.mode,
         "ok": checks.ok,

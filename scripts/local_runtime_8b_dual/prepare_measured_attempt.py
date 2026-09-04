@@ -28,6 +28,11 @@ P1_SAMPLING = {
     "top_k": 20,
     "repetition_penalty": 1.05,
 }
+P2_SAMPLING = {
+    "temperature": 0.6,
+    "top_p": 0.95,
+    "top_k": 20,
+}
 
 
 def deployment_sampling(policy_id: str) -> dict[str, Any]:
@@ -35,6 +40,8 @@ def deployment_sampling(policy_id: str) -> dict[str, Any]:
         return dict(P0_SAMPLING)
     if policy_id == "P1_QWEN25_7B_AWQ":
         return dict(P1_SAMPLING)
+    if policy_id == "P2_QWEN3_14B_AWQ":
+        return dict(P2_SAMPLING)
     raise RuntimeError(f"unknown deployment policy: {policy_id}")
 
 
@@ -54,7 +61,7 @@ def warmup_payload(
         "max_tokens": 32,
         "response_format": {"type": "json_schema", "json_schema": schema},
     }
-    if deployment_policy_id == "P0_QWEN3_8B_AWQ":
+    if deployment_policy_id in {"P0_QWEN3_8B_AWQ", "P2_QWEN3_14B_AWQ"}:
         payload["chat_template_kwargs"] = {"enable_thinking": False}
     return payload
 
@@ -146,7 +153,7 @@ def main() -> int:
                 }
             )
         evidence = {
-            "schema_version": "membind.8b-attempt-preparation.v1",
+            "schema_version": "membind.dual-replica-attempt-preparation.v1",
             "status": "PASS",
             "attempt_id": args.attempt_id,
             "cache_policy": "reset_then_identical_structured_warmup_v1",
@@ -160,7 +167,7 @@ def main() -> int:
         return 0
     except BaseException as exc:
         evidence = {
-            "schema_version": "membind.8b-attempt-preparation.v1",
+            "schema_version": "membind.dual-replica-attempt-preparation.v1",
             "status": "FAILED",
             "attempt_id": args.attempt_id,
             "cache_policy": "reset_then_identical_structured_warmup_v1",

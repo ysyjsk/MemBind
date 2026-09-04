@@ -1,6 +1,7 @@
 {
-  "schema_version": "membind.native-platform-adapter-decision.v1",
-  "status": "FROZEN_FOR_L0",
+  "schema_version": "membind.native-platform-adapter-decision.v2",
+  "status": "P2_STRICT_L1_PASSED_L2_PENDING",
+  "formal_qualification_authorized": false,
   "sources": [
     {
       "project": "Graphiti",
@@ -10,42 +11,60 @@
         "Graphiti.add_episode",
         "OpenAIGenericClient",
         "extract_nodes/extract_edges prompts",
-        "ExtractedEdges response model",
-        "upstream node/edge resolution and mutation semantics",
+        "upstream Pydantic response models including ExtractedEdges",
+        "upstream extraction, resolution, deduplication, timestamp, and database mutation semantics",
         "extract_edges edge max_tokens=16384"
       ],
       "reference": "https://github.com/getzep/graphiti/tree/021d3a57d511f21b10adaf7fa923bd5c1fce5e9d"
     },
     {
       "project": "Qwen",
-      "model": "Qwen3-8B-AWQ",
+      "model": "Qwen/Qwen2.5-7B-Instruct-AWQ",
+      "revision": "b25037543e9394b818fdfca67ab2a00ecc7dd641",
       "directly_adopted": [
-        "enable_thinking=false",
         "temperature=0.7",
         "top_p=0.8",
         "top_k=20",
-        "min_p=0",
-        "presence_penalty=1.5",
-        "structured output backend=xgrammar"
+        "repetition_penalty=1.05"
       ],
+      "reference": "https://huggingface.co/Qwen/Qwen2.5-7B-Instruct-AWQ/blob/refs%2Fpr%2F4/generation_config.json"
+    },
+    {
+      "project": "Qwen",
+      "model": "Qwen/Qwen3-8B-AWQ",
+      "role": "DISPLACED_P0_DEPLOYMENT",
       "reference": "https://qwen.readthedocs.io/en/stable/deployment/vllm.html"
     },
     {
       "project": "Qwen",
-      "model": "Qwen2.5-7B-Instruct-AWQ",
-      "directly_adopted": ["fallback generation temperature=0.7", "fallback top_p=0.8", "fallback top_k=20", "fallback repetition_penalty=1.05"],
-      "reference": "https://huggingface.co/Qwen/Qwen2.5-7B-Instruct-AWQ/blob/refs%2Fpr%2F4/generation_config.json"
+      "model": "Qwen/Qwen3-14B-AWQ",
+      "revision": "31c69efc29464b6bb0aee1398b5a7b50a99340c3",
+      "role": "P2_STRICT_L1_PASSED_L2_CANDIDATE",
+      "directly_adopted": [
+        "temperature=0.6",
+        "top_p=0.95",
+        "top_k=20",
+        "thinking disabled"
+      ],
+      "reference": "https://huggingface.co/Qwen/Qwen3-14B-AWQ/blob/31c69efc29464b6bb0aee1398b5a7b50a99340c3/generation_config.json"
     },
     {
       "project": "AutoSchemaKG",
       "commit": "d0a1666ae6621806faf814504c73678de4e809f2",
-      "directly_adopted": ["Qwen2.5-7B-Instruct extraction precedent", "chunk_size=8192 characters", "chunk_overlap=0", "full chunk processing"],
+      "directly_adopted": [
+        "Qwen2.5-7B-Instruct extraction precedent",
+        "chunk_size=8192 characters",
+        "chunk_overlap=0",
+        "full chunk processing"
+      ],
       "reference": "https://github.com/HKUST-KnowComp/AutoSchemaKG/tree/d0a1666ae6621806faf814504c73678de4e809f2"
     },
     {
       "project": "MemoryAgentBench",
       "commit": "fe1735de8cf8b9908e1e3d3b5612afc815698062",
-      "directly_adopted": ["official 5-context dataset and QA authority"],
+      "directly_adopted": [
+        "official five-context dataset and QA authority"
+      ],
       "reference": "https://github.com/HUST-AI-HYZ/MemoryAgentBench/tree/fe1735de8cf8b9908e1e3d3b5612afc815698062"
     }
   ],
@@ -57,29 +76,153 @@
     "identity_fields_outside_body": true,
     "session_dependency": "strict_chunk_ordinal_chain"
   },
-  "platform": {
-    "model": "Qwen3-8B-AWQ",
+  "selected_platform": {
+    "deployment_policy_id": "P2_QWEN3_14B_AWQ",
+    "qualification_status": "STRICT_L1_PASS_L2_PENDING",
+    "profile_id": "local-qwen3-14b-awq-dualreplica-v1",
+    "source_model": "Qwen/Qwen3-14B-AWQ",
+    "served_model": "qwen3-14b-awq",
+    "revision": "31c69efc29464b6bb0aee1398b5a7b50a99340c3",
     "topology": "two identical single-GPU replicas on RTX 3090 Ti; tensor_parallel_size=1",
-    "structured_output": {"mode": "json_schema", "backend": "xgrammar"},
+    "sampling": {
+      "enable_thinking": false,
+      "temperature": 0.6,
+      "top_p": 0.95,
+      "top_k": 20
+    },
+    "structured_output": {
+      "mode": "json_schema",
+      "backend": "xgrammar"
+    },
+    "max_tokens": 16384,
+    "max_model_len": 40960,
+    "context_policy": {
+      "rope_type": null,
+      "native_max_position_embeddings": 40960,
+      "safety_margin_tokens": 256
+    },
     "sdk_retries": 0,
-    "logical_seed": "uint32(SHA256(dataset_revision,context_id,source_sequence,chunk_ordinal,prompt_name,canonical_messages_hash))"
+    "logical_seed": "uint32(SHA256(dataset_revision,context_id,source_sequence,chunk_ordinal,prompt_name,canonical_messages_hash))",
+    "platform_manifest": "/data/predator/ly/Mem/profiles/local-qwen3-14b-awq-dualreplica-v1/platform_manifest.20260904T095114Z.25205c46578a.json",
+    "platform_manifest_payload_sha256": "25205c46578ac0954e121b909030aa07ede9871d8f8fc6818da21414e51ecaa0",
+    "strict_l1_result": "/data/predator/ly/Mem/experiments/local-qwen3-14b-awq-dualreplica-v1/strict-upstream-l1-exact-20260904T095439Z/L1_RESULT.json",
+    "strict_l1_result_file_sha256": "7b80d8b8e9e887693a9ffb8c73967573d58dbceedd5def27687974c27986c24c"
   },
-  "context_budget_decision": {
-    "method": "L0_static_tokenizer_budget",
-    "safety_margin_tokens": 256,
-    "selected_profile": "YARN_2X_65536",
-    "max_model_len": 65536,
-    "yarn": {"factor": 2.0, "original_max_position_embeddings": 32768},
-    "max_request_witness": {
-      "historical_max_prompt_tokens": 39832,
-      "upstream_max_output_tokens": 16384,
-      "sum_tokens": 56472,
-      "l0_artifact": "/data/predator/ly/Mem/experiments/local-qwen3-8b-awq-dualreplica-v1/l0-mab8192-20260903T000100Z/L0_BUDGET_DECISION.json"
+  "deployment_decision": {
+    "p0": {
+      "deployment_policy_id": "P0_QWEN3_8B_AWQ",
+      "decision": "DISPLACED_BY_DETERMINISTIC_STRICT_FULL_HISTORY_FAILURE",
+      "evidence": "/data/predator/ly/Mem/experiments/local-qwen3-8b-awq-dualreplica-v1/upstream-l2-full-h0-20260903T160145Z/history-0/replicate-0/GRAPHITI_SERIAL_UPSTREAM_CORE_MAB8192/3758663d769a/failure.json",
+      "failure": {
+        "source_sequence": 2,
+        "chunk_ordinal": 3,
+        "prompt_name": "extract_nodes.extract_message",
+        "finish_reason": "length",
+        "completion_tokens": 16384,
+        "response_json_valid": false,
+        "wire_messages_sha256": "f2f46a4a11a351c7d9292ca4f3676444e2f5ad78aa185026abe2d812add4d03a"
+      }
+    },
+    "p1": {
+      "deployment_policy_id": "P1_QWEN25_7B_AWQ",
+      "decision": "REJECTED_BY_DETERMINISTIC_EXACT_STRICT_L1_FAILURE",
+      "selection_basis": "The preregistered compatibility replay passed after P0's deterministic strict full-history length-stop; selection was not based on speed or QA.",
+      "compatibility_replay": "/data/predator/ly/Mem/experiments/local-qwen25-7b-awq-dualreplica-v1/p1-qwen25-compatibility-20260903T163742Z/MODEL_COMPATIBILITY_REPLAY.json",
+      "compatibility_replay_file_sha256": "139b5bad3925d0531384235004cc2a004ef3654052b43c7e69344433cc09f020",
+      "compatibility_replay_payload_sha256": "91e04d1312eef0cdcd354bd6894c589be21cec1f1dcd0d0328f7f82012c665da",
+      "compatibility_limitation": "The replay used isolated witnesses and did not reproduce the growing previous-episode context reached by strict full-history source 3 chunk 2.",
+      "strict_failure_evidence": "/data/predator/ly/Mem/experiments/local-qwen25-7b-awq-dualreplica-v1/upstream-l2-full-h0-p1-20260903T164110Z/history-0/replicate-0/GRAPHITI_SERIAL_UPSTREAM_CORE_MAB8192/1107077ed04e/failure.json",
+      "strict_failure": {
+        "source_sequence": 3,
+        "chunk_ordinal": 2,
+        "chunk_id": "chunk-629c22ceea0b38f1137fb847aa36c4c7",
+        "prompt_name": "extract_edges.edge",
+        "wire_messages_sha256": "5e2cbd3409655c7cc93dcb86c2a1b4819c5e5b6145898d21111078b252b49690",
+        "semantic_request_sha256": "2a8e39d8b371ddea49391ddf99d0841c5ed5d4f7449ff90b5c37508dda66e29c",
+        "stable_seed": 3248099774,
+        "prompt_tokens": 12979,
+        "completion_tokens": 16384,
+        "finish_reason": "length",
+        "response_json_valid": false
+      },
+      "exact_strict_l1": {
+        "status": "FAIL",
+        "evidence_root": "/data/predator/ly/Mem/experiments/local-qwen25-7b-awq-dualreplica-v1/strict-upstream-l1-exact-20260904T092622Z",
+        "terminal_artifact": "/data/predator/ly/Mem/experiments/local-qwen25-7b-awq-dualreplica-v1/strict-upstream-l1-exact-20260904T092622Z/L1_RESULT.json",
+        "request_identity_exact_match": true,
+        "namespace_unchanged": true,
+        "target_provider_calls": 1,
+        "provider_retries": 0,
+        "finish_reason": "length",
+        "prompt_tokens": 12979,
+        "completion_tokens": 16384,
+        "response_characters": 16532,
+        "response_content_sha256": "5da6bb84f5a7d7486757e4cc60f450a3018645cd0088c76117aa244976d64174",
+        "historical_response_hash_match": true,
+        "json_valid": false,
+        "pydantic_valid": false,
+        "schema_valid": false,
+        "response_repair_enabled": false
+      },
+      "next_gate": "P1 is terminally rejected; do not rerun P1 L1 or start P1 L2."
+    },
+    "p2": {
+      "deployment_policy_id": "P2_QWEN3_14B_AWQ",
+      "decision": "SELECTED_FOR_FULL_HISTORY_L2_AFTER_EXACT_STRICT_L1_PASS",
+      "source_model": "Qwen/Qwen3-14B-AWQ",
+      "served_model": "qwen3-14b-awq",
+      "revision": "31c69efc29464b6bb0aee1398b5a7b50a99340c3",
+      "sampling": {
+        "enable_thinking": false,
+        "temperature": 0.6,
+        "top_p": 0.95,
+        "top_k": 20
+      },
+      "max_tokens": 16384,
+      "native_max_position_embeddings": 40960,
+      "deployment_recovery": {
+        "status": "LIVE_REVALIDATED",
+        "failed_start_unix": 1788515286,
+        "failed_prepare_pid": 3082829,
+        "failed_engine_pid": 3083183,
+        "observed_available_kv_gib": 5.92,
+        "required_kv_gib_for_40960": 6.25,
+        "estimated_supported_tokens_before_fix": 38800,
+        "change": "Increase only the P2 prepare-replica gpu_memory_utilization from 0.70 to 0.72; retain embedding at 0.25 and declare the P2 GPU1 combined budget as 0.97.",
+        "scope": "Shared by all arms, before any measured P2 attempt, with no prompt/schema/call-graph/sampling/model/data/evaluator change.",
+        "platform_manifest": "/data/predator/ly/Mem/profiles/local-qwen3-14b-awq-dualreplica-v1/platform_manifest.20260904T095114Z.25205c46578a.json",
+        "platform_manifest_payload_sha256": "25205c46578ac0954e121b909030aa07ede9871d8f8fc6818da21414e51ecaa0",
+        "observed_native_kv_tokens": 69760,
+        "observed_prepare_kv_tokens": 41888,
+        "observed_embedding_kv_tokens": 33760,
+        "live_preflight_pass": true
+      },
+      "exact_strict_l1": {
+        "status": "PASS",
+        "terminal_artifact": "/data/predator/ly/Mem/experiments/local-qwen3-14b-awq-dualreplica-v1/strict-upstream-l1-exact-20260904T095439Z/L1_RESULT.json",
+        "terminal_artifact_file_sha256": "7b80d8b8e9e887693a9ffb8c73967573d58dbceedd5def27687974c27986c24c",
+        "upstream_identity_exact_except_declared_deployment": true,
+        "target_provider_calls": 1,
+        "provider_retries": 0,
+        "finish_reason": "stop",
+        "prompt_tokens": 12983,
+        "completion_tokens": 6,
+        "json_valid": true,
+        "pydantic_valid": true,
+        "schema_valid": true,
+        "reached_token_limit": false,
+        "response_repair_enabled": false,
+        "namespace_unchanged": true
+      },
+      "selection_boundary": "Only the deployment/model and its official sampling may change. Graphiti prompt, upstream schema, call graph, MAB8192 adapter, stable seed policy, max_tokens, SDK retry count, routing semantics, dataset, and evaluator remain unchanged.",
+      "next_gate": "Run fresh full-H0 L2 once in fixed A-to-C-to-B order. Formal execution remains unauthorized until all three L2 cells and the finalizer pass."
     }
   },
-  "non_extrapolation": [
-    "No single cited source simultaneously evaluates Graphiti 0.29.3, Qwen3-8B-AWQ, the complete MAB workload, and dual 3090 Ti hardware.",
-    "The cited Qwen and AutoSchemaKG settings are compatibility evidence, not a guarantee of Graphiti success.",
-    "The official Zep 9998-character truncation is retained only as a reference and is not the primary workload adapter."
+  "evidence_boundary": [
+    "Literature and official code support deployment and adapter choices only; they do not establish MemBind experimental success.",
+    "The P1 compatibility replay was deployment evidence only and has been superseded by a deterministic exact strict L1 failure.",
+    "P2 passed exact strict L1 and is selected only for full-history L2; it is not yet formal-qualified.",
+    "No formal method freeze, formal authorization, performance claim, or quality claim exists until full-history L2 and all subsequent gates pass.",
+    "MAB_ROLE_AWARE_LOSSLESS_8192_V1 is a shared project input adapter, not an upstream Graphiti or MemoryAgentBench interface."
   ]
 }

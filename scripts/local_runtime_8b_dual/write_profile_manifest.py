@@ -79,15 +79,17 @@ def endpoint(
 ) -> dict[str, Any]:
     policy_id = os.environ.get("MEMBIND_DEPLOYMENT_POLICY_ID", "P0_QWEN3_8B_AWQ")
     sampling = {
-        "temperature": 0.7,
-        "top_p": 0.8,
-        "top_k": 20,
+        "temperature": float(required("MEMBIND_CONSTRUCTION_TEMPERATURE")),
+        "top_p": float(required("MEMBIND_CONSTRUCTION_TOP_P")),
+        "top_k": int(required("MEMBIND_CONSTRUCTION_TOP_K")),
         "logical_seed": "request_identity_sha256_uint32",
     }
     if policy_id == "P0_QWEN3_8B_AWQ":
         sampling.update({"min_p": 0, "presence_penalty": 1.5})
     elif policy_id == "P1_QWEN25_7B_AWQ":
         sampling["repetition_penalty"] = 1.05
+    elif policy_id == "P2_QWEN3_14B_AWQ":
+        pass
     else:
         raise RuntimeError(f"unknown deployment policy: {policy_id}")
     return {
@@ -102,12 +104,11 @@ def endpoint(
         "gpu_memory_utilization": float(utilization),
         "tensor_parallel_size": 1,
         "scheduling_policy": "fcfs",
-        "rope": {
-            "type": "yarn",
-            "factor": 2.0,
-            "original_max_position_embeddings": 32768,
-            "rope_theta": 1000000,
-        },
+        "rope": (
+            json.loads(required("MEMBIND_LLM_HF_OVERRIDES")).get("rope_parameters")
+            if os.environ.get("MEMBIND_LLM_HF_OVERRIDES")
+            else None
+        ),
         "structured_outputs_backend": "xgrammar",
         "structured_outputs_config": {
             "backend": "xgrammar",
@@ -138,7 +139,7 @@ def main() -> int:
     profile_root = Path(required("MEMBIND_PROFILE_ROOT")).resolve()
     llm_model_root = Path(required("MEMBIND_LLM_MODEL_DIR")).resolve()
     embed_model_root = Path(required("MEMBIND_EMBED_MODEL_DIR")).resolve()
-    llm_model_manifest = load_json(llm_model_root / ".membind-model-manifest.json")
+    llm_model_manifest = load_json(Path(required("MEMBIND_LLM_MODEL_MANIFEST")).resolve())
     embed_model_manifest = load_json(embed_model_root / ".membind-model-manifest.json")
     native_route = load_json(Path(required("MEMBIND_NATIVE_ROUTING_CONFIG")))
     static_role_route = load_json(Path(required("MEMBIND_STATIC_ROLE_ROUTING_CONFIG")))
@@ -243,7 +244,7 @@ def main() -> int:
             ),
             "tensor_parallel_2_not_used": True,
             "legacy_14b_results_cross_profile_only": True,
-            "fresh_native_8b_required": True,
+            "fresh_native_deployment_required": True,
             "fresh_vector_index_and_namespace_required": True,
         },
         "runtime_preflight": preflight,

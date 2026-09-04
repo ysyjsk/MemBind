@@ -473,6 +473,19 @@ async def run_mab_construction_async(
     try:
         runtime = await _maybe_await(runtime_builder())
         graphiti = runtime.graphiti
+        formal_runtime = None
+        if method in {
+            "GRAPHITI_SERIAL_UPSTREAM_CORE_MAB8192",
+            "GRAPHITI_ASYNC_UPSTREAM_CORE_MAB8192",
+        }:
+            from .membind_v6_1.upstream_runtime import formal_runtime_identity
+
+            formal_runtime = formal_runtime_identity(
+                runtime,
+                mab8192_manifest_sha256=str(
+                    getattr(workload_manifest, "manifest_sha256", "")
+                ),
+            )
         recorder = recorder_factory()
         instrumentation = instrumentation_installer(graphiti, recorder)
         formal_start = time.monotonic_ns()
@@ -738,6 +751,7 @@ async def run_mab_construction_async(
             "native_trace": envelopes,
             "transport_trace": transport_rows,
             "request_identity": [row.public_summary for row in observations],
+            "runtime_identity": formal_runtime,
             "bindings": bindings,
             "lifecycle": lifecycle,
             "lifecycle_validation": validate_block_trace(events, expected_source_count=len(selected), method=method, context_id=context_id),
@@ -760,17 +774,13 @@ async def run_mab_construction_async(
             "adapter_coverage": adapter_coverage,
             **(
                 {
-                    "structured_output_policy": (
-                        "SHARED_BOUNDED_STRUCTURED_OUTPUT_V1"
-                        if method
-                        in {
-                            "GRAPHITI_SERIAL_SHARED_BOUNDED_SO",
-                            "RELAXED_ORDER_SHARED_BOUNDED_SO",
-                        }
-                        else "UPSTREAM_GRAPHITI_PYDANTIC_JSON_SCHEMA"
-                    ),
-                    "response_repair_enabled": False,
-                    "finite_pair_tasks_enabled": False,
+                    "structured_output_policy": "UPSTREAM_GRAPHITI_PYDANTIC_JSON_SCHEMA",
+                    "response_repair_enabled": formal_runtime[
+                        "response_repair_enabled"
+                    ],
+                    "finite_pair_tasks_enabled": formal_runtime[
+                        "finite_pair_tasks_enabled"
+                    ],
                 }
                 if method in {
                     "GRAPHITI_SERIAL_UPSTREAM_CORE_MAB8192",

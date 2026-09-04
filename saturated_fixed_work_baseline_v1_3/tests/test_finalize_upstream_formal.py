@@ -98,8 +98,8 @@ def test_formal_finalizer_names_only_upstream_arms() -> None:
     module = _module()
     source = SCRIPT.read_text(encoding="utf-8")
     assert tuple(module.ARMS) == (
-        "GRAPHITI_SERIAL_SHARED_BOUNDED_SO",
-        "MEMBIND_V6_1_SHARED_BOUNDED_SO",
-        "RELAXED_ORDER_SHARED_BOUNDED_SO",
+        "GRAPHITI_SERIAL_UPSTREAM_CORE_MAB8192",
+        "MEMBIND_V6_1_UPSTREAM_CORE_MAB8192",
+        "GRAPHITI_ASYNC_UPSTREAM_CORE_MAB8192",
     )
     assert "SHARED_BOUNDED_SO" not in source

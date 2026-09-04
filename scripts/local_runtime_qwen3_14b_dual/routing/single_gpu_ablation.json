@@ -1,0 +1,11 @@
+{
+  "schema_version": "membind.routing-policy.v1",
+  "profile_id": "local-qwen3-14b-awq-dualreplica-v1",
+  "arm": "SINGLE_GPU_ALGORITHM_ABLATION",
+  "formal_role": "ablation_only",
+  "endpoint_set": [
+    {"id": "native-replica", "base_url": "http://127.0.0.1:18200/v1", "served_model": "qwen3-14b-awq", "physical_gpu": 0}
+  ],
+  "router": {"policy": "single_endpoint_fcfs", "phase_labels_visible": false, "work_conserving": true},
+  "constraints": {"native_and_v61_must_both_use_this_endpoint_set": true, "not_eligible_as_dual_replica_headline": true}
+}

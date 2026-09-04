@@ -11,6 +11,12 @@ from saturated_fixed_work_baseline_v1_3.membind_v6_1.resource_credit import (
 from saturated_fixed_work_baseline_v1_3.membind_v6_1.upstream_campaign import (
     run_upstream_membind_construction_async,
 )
+from saturated_fixed_work_baseline_v1_3.membind_v6_1.upstream_runtime import (
+    FORMAL_ARM_C,
+    GRAPHITI_COMMIT,
+    GRAPHITI_VERSION,
+    P1_DEPLOYMENT_POLICY,
+)
 
 
 MAB8192_ADAPTER_VERSION = "MAB_ROLE_AWARE_LOSSLESS_8192_V1"
@@ -93,6 +99,9 @@ def test_upstream_campaign_replays_exact_extraction_and_seals(tmp_path: Path) ->
             self.calls.append((str(prompt_name), content))
             return {"prompt_name": prompt_name, "content": content}
 
+    Delegate.__module__ = "graphiti_core.llm_client.openai_generic_client"
+    Delegate.__qualname__ = "OpenAIGenericClient"
+
     delegate = Delegate()
 
     class Graph:
@@ -133,12 +142,35 @@ def test_upstream_campaign_replays_exact_extraction_and_seals(tmp_path: Path) ->
         async def close(self) -> None:
             return None
 
+    Graph.__module__ = "graphiti_core.graphiti"
+    Graph.__qualname__ = "Graphiti"
+    Graph.add_episode.__module__ = "graphiti_core.graphiti"
+    Graph.add_episode.__qualname__ = "Graphiti.add_episode"
+
     graph = Graph()
     runtime = SimpleNamespace(
         graphiti=graph,
         llm_client=delegate,
-        config=SimpleNamespace(max_coroutines=3),
+        config=SimpleNamespace(
+            max_coroutines=3,
+            construction_model=P1_DEPLOYMENT_POLICY.served_model,
+            construction_model_revision=P1_DEPLOYMENT_POLICY.revision,
+            requested_max_tokens=16384,
+            structured_output_mode="json_schema",
+        ),
         _membind_transport_telemetry=[],
+        _membind_formal_arm=FORMAL_ARM_C,
+        _membind_graphiti_version=GRAPHITI_VERSION,
+        _membind_graphiti_commit=GRAPHITI_COMMIT,
+        _membind_deployment_policy=P1_DEPLOYMENT_POLICY,
+        _membind_patch_inventory={
+            "strict_upstream_core": True,
+            "graphiti_algorithm_mutated": False,
+            "shared_compatibility_substrate": False,
+            "algorithm_patches": [],
+            "prohibited_algorithm_patches": [],
+            "deployment_policy_id": P1_DEPLOYMENT_POLICY.policy_id,
+        },
     )
 
     async def extract_nodes(clients, episode, _previous, *_args):
@@ -190,7 +222,7 @@ def test_upstream_campaign_replays_exact_extraction_and_seals(tmp_path: Path) ->
         )
     )
     assert result["status"] == "PASS"
-    assert result["method"] == "MEMBIND_V6_1_SHARED_BOUNDED_SO"
+    assert result["method"] == "MEMBIND_V6_1_UPSTREAM_CORE_MAB8192"
     assert result["adapter_coverage"]["status"] == "PASS"
     assert result["publication_guarantee"] == "ORDERED_DURABLE_FRONTIER_NO_ATTEMPT_RESUME"
     assert graph.published == [0, 1]

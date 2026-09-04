@@ -65,6 +65,10 @@ def test_attempt_preparation_failure_is_retained_without_content_or_secrets(
 
     assert result.returncode == 2
     evidence = json.loads(output.read_text(encoding="utf-8"))
+    assert (
+        evidence["schema_version"]
+        == "membind.dual-replica-attempt-preparation.v1"
+    )
     assert evidence["status"] == "FAILED"
     assert evidence["attempt_id"] == "fixture-attempt"
     assert evidence["content_and_secrets_omitted"] is True
@@ -102,6 +106,24 @@ def test_attempt_warmup_uses_frozen_p1_sampling_without_p0_fields() -> None:
     assert "presence_penalty" not in payload
     assert "min_p" not in payload
     assert "chat_template_kwargs" not in payload
+
+
+def test_attempt_warmup_uses_frozen_p2_official_sampling() -> None:
+    module = _preparation_module()
+    payload = module.warmup_payload(
+        model="qwen3-14b-awq",
+        messages=[{"role": "user", "content": "ready"}],
+        schema={"name": "ready", "schema": {"type": "object"}},
+        seed=7,
+        deployment_policy_id="P2_QWEN3_14B_AWQ",
+    )
+    assert payload["temperature"] == 0.6
+    assert payload["top_p"] == 0.95
+    assert payload["top_k"] == 20
+    assert payload["chat_template_kwargs"] == {"enable_thinking": False}
+    assert "repetition_penalty" not in payload
+    assert "presence_penalty" not in payload
+    assert "min_p" not in payload
 
 
 def test_8b_startup_recovers_neo4j_before_loading_models() -> None:

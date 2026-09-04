@@ -25,6 +25,7 @@ _MEMBERS = (
     "native_trace.jsonl",
     "transport_trace.jsonl",
     "request_identity.jsonl",
+    "runtime_identity.json",
     "replay_binding.jsonl",
     "work_inventory.json",
     "lifecycle_validation.json",
@@ -104,6 +105,33 @@ def materialize_construction_block(
     _write_jsonl(block_root / "native_trace.jsonl", result.get("native_trace", events))
     _write_jsonl(block_root / "transport_trace.jsonl", result.get("transport_trace", []))
     _write_jsonl(block_root / "request_identity.jsonl", result.get("request_identity", []))
+    runtime_identity = result.get("runtime_identity")
+    strict_formal_methods = {
+        "GRAPHITI_SERIAL_UPSTREAM_CORE_MAB8192",
+        "GRAPHITI_ASYNC_UPSTREAM_CORE_MAB8192",
+        "MEMBIND_V6_1_UPSTREAM_CORE_MAB8192",
+    }
+    if method in strict_formal_methods:
+        from .membind_v6_1.upstream_runtime import (
+            strict_formal_runtime_identity_errors,
+        )
+
+        runtime_errors = strict_formal_runtime_identity_errors(
+            runtime_identity,
+            expected_arm=method,
+            expected_manifest_sha256=manifest_hash,
+        )
+        if runtime_errors:
+            raise ArtifactMaterializationError(
+                "strict formal runtime identity is invalid: "
+                + "; ".join(runtime_errors)
+            )
+    _write_json(
+        block_root / "runtime_identity.json",
+        runtime_identity
+        if isinstance(runtime_identity, Mapping)
+        else {"status": "NOT_APPLICABLE", "method": method},
+    )
     if method in {
         "V6",
         "MEMBIND_V6_1",

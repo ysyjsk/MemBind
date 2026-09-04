@@ -110,9 +110,18 @@ def test_l2_measured_environment_binds_exact_cell_provenance() -> None:
     )
 
 
-def test_formal_environment_binds_deterministic_preparation_seed() -> None:
+def test_formal_environment_binds_dual_replica_provider_and_seed(
+    monkeypatch,
+) -> None:
+    monkeypatch.setenv("MEMBIND_DEPLOYMENT_POLICY_ID", "P2_QWEN3_14B_AWQ")
+    monkeypatch.setenv(
+        "MEMBIND_PROFILE_ID", "local-qwen3-14b-awq-dualreplica-v1"
+    )
+    monkeypatch.setenv("MEMBIND_LLM_MODEL_NAME", "qwen3-14b-awq")
     module = _module()
     env = module._formal_env()
+    assert env["MAB_RUNTIME_PROVIDER"] == "LOCAL_DUAL_REPLICA"
+    assert env["CONSTRUCTION_LLM_MODEL"] == "qwen3-14b-awq"
     assert env["CONSTRUCTION_SEED"] == "20260806"
 
 

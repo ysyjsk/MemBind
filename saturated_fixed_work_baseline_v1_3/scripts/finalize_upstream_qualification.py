@@ -6,6 +6,7 @@ from __future__ import annotations
 import argparse
 import hashlib
 import json
+import os
 import subprocess
 import sys
 import time
@@ -38,7 +39,9 @@ from saturated_fixed_work_baseline_v1_3.membind_v6_1.upstream_runtime import (  
     FORMAL_ARM_C,
     GRAPHITI_COMMIT,
     GRAPHITI_VERSION,
+    formal_builder_source_audit,
     resolve_deployment_policy,
+    strict_formal_runtime_identity_errors,
 )
 
 
@@ -69,6 +72,89 @@ def _read(path: Path) -> dict[str, Any]:
     if not isinstance(value, dict):
         raise TypeError(f"JSON object required: {path}")
     return value
+
+
+def _validate_compatibility_authority(
+    compatibility: Mapping[str, Any],
+) -> tuple[str, str]:
+    """Accept either the historical replay seal or the stronger exact L1 seal."""
+
+    if compatibility.get("schema_version") == "membind.strict-upstream-l1.v1":
+        request_checks = compatibility.get("request_checks")
+        response = compatibility.get("response")
+        historical = compatibility.get("historical_comparison")
+        runtime_identity = compatibility.get("runtime_identity")
+        runtime_errors = strict_formal_runtime_identity_errors(
+            runtime_identity,
+            expected_arm=FORMAL_ARM_A,
+            expected_deployment_policy=DEPLOYMENT_POLICY,
+        )
+        valid = (
+            compatibility.get("status") == "PASS"
+            and compatibility.get("scope")
+            == "EXACT_GROWING_HISTORY_REQUEST_QUALIFICATION"
+            and isinstance(request_checks, Mapping)
+            and bool(request_checks)
+            and all(value is True for value in request_checks.values())
+            and isinstance(response, Mapping)
+            and response.get("status") == "PASS"
+            and response.get("finish_reason") == "stop"
+            and response.get("json_valid") is True
+            and response.get("pydantic_valid") is True
+            and response.get("schema_valid") is True
+            and response.get("reached_token_limit") is False
+            and response.get("response_repair_enabled") is False
+            and compatibility.get("provider_retry_count") == 0
+            and compatibility.get("target_provider_request_count") == 1
+            and isinstance(historical, Mapping)
+            and historical.get(
+                "upstream_identity_exact_except_declared_deployment"
+            )
+            is True
+            and compatibility.get("namespace_unchanged_before_replay") is True
+            and compatibility.get("namespace_unchanged_after_provider_request")
+            is True
+            and not runtime_errors
+        )
+        if not valid:
+            details = "; ".join(runtime_errors) if runtime_errors else "gate mismatch"
+            raise RuntimeError(f"exact strict L1 authority is invalid: {details}")
+        return DEPLOYMENT_POLICY.policy_id, "EXACT_STRICT_L1"
+
+    if (
+        compatibility.get("status") == "PASS"
+        and compatibility.get("selection") == DEPLOYMENT_POLICY.policy_id
+        and compatibility.get("deployment_policy_id")
+        == DEPLOYMENT_POLICY.policy_id
+    ):
+        return DEPLOYMENT_POLICY.policy_id, "LEGACY_COMPATIBILITY_REPLAY"
+    raise RuntimeError("selected deployment compatibility authority is not PASS")
+
+
+def _active_route_paths(platform: Mapping[str, Any]) -> dict[str, Path]:
+    contracts = platform.get("routing_contracts")
+    if not isinstance(contracts, Mapping):
+        raise RuntimeError("platform routing contracts are missing")
+    bindings = {
+        "native": (
+            "MEMBIND_NATIVE_ROUTING_CONFIG",
+            "native_dual_resource_matched",
+        ),
+        "membind": (
+            "MEMBIND_V61_ROUTING_CONFIG",
+            "v61_dual_elastic_affinity",
+        ),
+    }
+    paths: dict[str, Path] = {}
+    for name, (environment_key, contract_key) in bindings.items():
+        raw_path = os.environ.get(environment_key)
+        if not raw_path:
+            raise RuntimeError(f"active route path is missing: {environment_key}")
+        path = Path(raw_path).resolve()
+        if _read(path) != contracts.get(contract_key):
+            raise RuntimeError(f"active {name} route differs from sealed platform")
+        paths[name] = path
+    return paths
 
 
 def _write_new(path: Path, value: Mapping[str, Any]) -> None:
@@ -131,6 +217,18 @@ def _validate_qualification_artifacts(
         route_seal = _read(attempt / "route_seal.json")
         adapter = _read(attempt / "block/adapter_coverage.json")
         inventory = _read(attempt / "block/work_inventory.json")
+        runtime_identity = _read(attempt / "block/runtime_identity.json")
+        runtime_identity_errors = strict_formal_runtime_identity_errors(
+            runtime_identity,
+            expected_arm=str(cell.get("arm")),
+            expected_manifest_sha256=workload_manifest_sha256,
+            expected_deployment_policy=DEPLOYMENT_POLICY,
+        )
+        if runtime_identity_errors:
+            raise RuntimeError(
+                "qualification runtime identity is invalid: "
+                + "; ".join(runtime_identity_errors)
+            )
         verify_seal(attempt / "block")
         identity = seal.get("identity") if isinstance(seal.get("identity"), Mapping) else {}
         expected_chunks = adapter.get("chunk_count")
@@ -177,6 +275,7 @@ def finalize(
     output_root = output_root.resolve()
     if output_root.exists():
         raise RuntimeError("identity output root must be fresh")
+    builder_audit = formal_builder_source_audit()
     qualification = _read(qualification_root / "L2_QUALIFICATION_RESULT.json")
     if (
         qualification.get("status") != "PASS"
@@ -192,12 +291,9 @@ def finalize(
     ):
         raise RuntimeError("platform is not formal eligible")
     compatibility = _read(compatibility_replay.resolve())
-    if (
-        compatibility.get("status") != "PASS"
-        or compatibility.get("selection") != DEPLOYMENT_POLICY.policy_id
-        or compatibility.get("deployment_policy_id") != DEPLOYMENT_POLICY.policy_id
-    ):
-        raise RuntimeError("selected deployment compatibility replay is not authoritative PASS")
+    compatibility_selection, compatibility_authority_type = (
+        _validate_compatibility_authority(compatibility)
+    )
 
     authority_full = build_authority(MAB / "data/official_5_contexts.json")
     authority = {
@@ -240,14 +336,7 @@ def finalize(
         dataset_authority_sha256=authority["authority_sha256"],
         workload_manifest_sha256=manifests[0].manifest_sha256,
     )
-    route_paths = {
-        "native": Path(
-            ROOT / "scripts/local_runtime_8b_dual/routing/native_dual_resource_matched.json"
-        ),
-        "membind": Path(
-            ROOT / "scripts/local_runtime_8b_dual/routing/v61_dual_elastic_affinity.json"
-        ),
-    }
+    route_paths = _active_route_paths(platform)
     config_payload = {
         "platform_payload_sha256": platform["payload_sha256"],
         "platform_file_sha256": _file_sha256(platform_manifest.resolve()),
@@ -288,12 +377,14 @@ def finalize(
             "deployment_policy_id": platform.get("deployment_policy_id"),
         },
         "git": _git_identity(),
+        "formal_builder_source_audit": builder_audit,
     }
     actual_sha256 = _canonical_sha256(actual)
     rebound_compatibility = {
         "schema_version": "membind.model-compatibility-replay-rebound.v1",
         "status": "PASS",
-        "selection": compatibility["selection"],
+        "selection": compatibility_selection,
+        "authority_type": compatibility_authority_type,
         "authority_path": str(compatibility_replay.resolve()),
         "authority_file_sha256": _file_sha256(compatibility_replay.resolve()),
         "authority_payload": compatibility,
@@ -314,7 +405,7 @@ def finalize(
     frozen = {
         "schema_version": "membind.final-upstream-method-freeze.v1",
         "status": "FINAL_METHOD_FROZEN",
-        "method_identity": "MEMBIND_V6_1_SHARED_BOUNDED_SO_FIXED_RESOURCE_CREDIT",
+        "method_identity": "MEMBIND_V6_1_UPSTREAM_CORE_MAB8192_RESOURCE_CREDIT",
         "arms": list(ARMS),
         "arm_order": list(ARMS),
         "source_identity": {
@@ -357,8 +448,9 @@ def finalize(
     ):
         _write_new(output_root / name, value)
     (output_root / "MODEL_COMPATIBILITY_REPLAY.md").write_text(
-        "# Model Compatibility Replay\n\n"
-        f"{DEPLOYMENT_POLICY.policy_id} {DEPLOYMENT_POLICY.source_model} was selected from its single-attempt MAB8192 compatibility replay after the prior P0 deterministic failure.\n",
+        "# Model Compatibility Authority\n\n"
+        f"{DEPLOYMENT_POLICY.policy_id} {DEPLOYMENT_POLICY.source_model} passed "
+        f"{compatibility_authority_type} before full-history L2.\n",
         encoding="utf-8",
     )
     (output_root / "FULL_HISTORY_THREE_ARM_QUALIFICATION.md").write_text(

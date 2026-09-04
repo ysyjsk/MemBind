@@ -40,6 +40,7 @@ from saturated_fixed_work_baseline_v1_3.membind_v6_1.identity import (  # noqa: 
 )
 from saturated_fixed_work_baseline_v1_3.membind_v6_1.upstream_runtime import (  # noqa: E402
     resolve_deployment_policy,
+    strict_formal_runtime_identity_errors,
 )
 
 
@@ -51,6 +52,7 @@ EXPECTED_ARTIFACTS = [
     "complete.json",
     "block/construction_seal.json",
     "block/metrics.json",
+    "block/runtime_identity.json",
     "block/adapter_coverage.json",
     "block/order_validation.json",
     "block/lifecycle_validation.json",
@@ -223,10 +225,17 @@ def _cell_result(root: Path, cell: dict[str, Any], returncode: int) -> dict[str,
     verify_seal(attempt / "block")
     adapter = _read(attempt / "block/adapter_coverage.json")
     inventory = _read(attempt / "block/work_inventory.json")
+    runtime_identity = _read(attempt / "block/runtime_identity.json")
     lifecycle = _read(attempt / "block/lifecycle_validation.json")
     order = _read(attempt / "block/order_validation.json")
     refinement = _read(attempt / "block/refinement_validation.json")
     expected = adapter.get("chunk_count")
+    runtime_identity_errors = strict_formal_runtime_identity_errors(
+        runtime_identity,
+        expected_arm=str(cell["arm"]),
+        expected_manifest_sha256=str(cell["workload_manifest_sha256"]),
+        expected_deployment_policy=DEPLOYMENT_POLICY,
+    )
     valid = (
         adapter.get("status") == "PASS"
         and adapter.get("adapter_version") == "MAB_ROLE_AWARE_LOSSLESS_8192_V1"
@@ -235,6 +244,7 @@ def _cell_result(root: Path, cell: dict[str, Any], returncode: int) -> dict[str,
         and inventory.get("expected_episode_count") == expected
         and inventory.get("submitted_count") == expected
         and inventory.get("completed_count") == expected
+        and not runtime_identity_errors
         and lifecycle.get("contract_status") == "PASS"
         and order.get("order_contract_status") in {"PASS", "NOT_REQUIRED"}
         and (
@@ -248,6 +258,8 @@ def _cell_result(root: Path, cell: dict[str, Any], returncode: int) -> dict[str,
         "status": "PASS" if valid else "FAIL",
         "adapter_coverage": adapter,
         "work_inventory": inventory,
+        "runtime_identity": runtime_identity,
+        "runtime_identity_errors": runtime_identity_errors,
         "lifecycle_validation": lifecycle,
         "order_validation": order,
         "refinement_validation": refinement,

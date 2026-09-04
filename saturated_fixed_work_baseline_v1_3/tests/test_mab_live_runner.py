@@ -18,6 +18,11 @@ from saturated_fixed_work_baseline_v1_3.mab_live_runner import (
 )
 from saturated_fixed_work_baseline_v1_3.workload_contract import EpisodeInput, WorkloadManifest
 from saturated_fixed_work_baseline_v1_3.membind_v6_1.structured_output_recovery import reliability_identity
+from saturated_fixed_work_baseline_v1_3.membind_v6_1.upstream_runtime import (
+    GRAPHITI_COMMIT,
+    GRAPHITI_VERSION,
+    P1_DEPLOYMENT_POLICY,
+)
 
 
 MAB8192_ADAPTER_VERSION = "MAB_ROLE_AWARE_LOSSLESS_8192_V1"
@@ -65,6 +70,14 @@ class _FakeGraph:
 
     async def close(self):
         return None
+
+
+class _PinnedFakeLLM:
+    pass
+
+
+_PinnedFakeLLM.__module__ = "graphiti_core.llm_client.openai_generic_client"
+_PinnedFakeLLM.__qualname__ = "OpenAIGenericClient"
 
 
 def _workload(tmp_path: Path, count: int = 3):
@@ -156,6 +169,32 @@ def _chunk_manifest(episodes: tuple[SimpleNamespace, ...]) -> SimpleNamespace:
     )
 
 
+def _strict_runtime(graph: _FakeGraph, arm: str) -> SimpleNamespace:
+    return SimpleNamespace(
+        graphiti=graph,
+        llm_client=graph.llm_client,
+        config=SimpleNamespace(
+            max_coroutines=3,
+            construction_model=P1_DEPLOYMENT_POLICY.served_model,
+            construction_model_revision=P1_DEPLOYMENT_POLICY.revision,
+            requested_max_tokens=16384,
+            structured_output_mode="json_schema",
+        ),
+        _membind_formal_arm=arm,
+        _membind_graphiti_version=GRAPHITI_VERSION,
+        _membind_graphiti_commit=GRAPHITI_COMMIT,
+        _membind_deployment_policy=P1_DEPLOYMENT_POLICY,
+        _membind_patch_inventory={
+            "strict_upstream_core": True,
+            "graphiti_algorithm_mutated": False,
+            "shared_compatibility_substrate": False,
+            "algorithm_patches": [],
+            "prohibited_algorithm_patches": [],
+            "deployment_policy_id": P1_DEPLOYMENT_POLICY.policy_id,
+        },
+    )
+
+
 def test_live_runner_b0_and_b1_emit_complete_shared_contract(tmp_path: Path) -> None:
     b0, b0_graph = _run(tmp_path, "B0")
     b1, b1_graph = _run(tmp_path, "B1")
@@ -212,6 +251,8 @@ def test_upstream_async_overlaps_sessions_but_serializes_each_chunk_chain(
     class DependencyGraph(_FakeGraph):
         def __init__(self) -> None:
             super().__init__()
+            self.llm_client = _PinnedFakeLLM()
+            self.clients = SimpleNamespace(llm_client=self.llm_client)
             self.timeline: list[tuple[str, int]] = []
 
         async def add_episode(self, **kwargs):
@@ -222,6 +263,11 @@ def test_upstream_async_overlaps_sessions_but_serializes_each_chunk_chain(
             self.calls.append(sequence)
             return {"sequence": sequence}
 
+    DependencyGraph.__module__ = "graphiti_core.graphiti"
+    DependencyGraph.__qualname__ = "Graphiti"
+    DependencyGraph.add_episode.__module__ = "graphiti_core.graphiti"
+    DependencyGraph.add_episode.__qualname__ = "Graphiti.add_episode"
+
     graph = DependencyGraph()
     result = asyncio.run(
         run_mab_construction_async(
@@ -230,7 +276,9 @@ def test_upstream_async_overlaps_sessions_but_serializes_each_chunk_chain(
             context_id="ctx-0",
             namespace="async-dependency-proof",
             episodes=episodes,
-            runtime_builder=lambda: SimpleNamespace(graphiti=graph, llm_client=object()),
+            runtime_builder=lambda: _strict_runtime(
+                graph, "GRAPHITI_ASYNC_UPSTREAM_CORE_MAB8192"
+            ),
             instrumentation_installer=lambda *_args: _FakeRecorder._Scope(),
             recorder_factory=_FakeRecorder,
             graph_exporter=lambda *_args: {

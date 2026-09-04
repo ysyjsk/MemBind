@@ -40,3 +40,46 @@ def test_probe_failure_class_distinguishes_sandbox_from_connection_refused() -> 
         classify_probe_error(ConnectionRefusedError(111, "Connection refused"))
         == "ENDPOINT_CONNECTION_REFUSED"
     )
+
+
+def test_local_dual_replica_topology_is_model_neutral_but_route_strict() -> None:
+    topology = RuntimeTopology.from_env(
+        {
+            "MAB_RUNTIME_PROVIDER": "LOCAL_DUAL_REPLICA",
+            "CONSTRUCTION_LLM_BASE_URL": "http://127.0.0.1:18200/v1",
+            "CONSTRUCTION_LLM_MODEL": "qwen3-14b-awq",
+            "QUALITY_LLM_BASE_URL": "http://127.0.0.1:18200/v1",
+            "QUALITY_LLM_MODEL": "qwen3-14b-awq",
+            "EMBEDDING_BASE_URL": "http://127.0.0.1:18202/v1",
+            "EMBEDDING_MODEL": "qwen3-embedding-0.6b",
+            "EMBEDDING_DIM": "1024",
+            "NEO4J_URI": "bolt://127.0.0.1:7687",
+        }
+    )
+
+    assert topology.provider == "LOCAL_DUAL_REPLICA"
+    assert topology.construction.model == "qwen3-14b-awq"
+    assert topology.quality == topology.construction.__class__(
+        "quality", "http://127.0.0.1:18200/v1", "qwen3-14b-awq"
+    )
+
+
+def test_local_dual_replica_topology_rejects_quality_model_drift() -> None:
+    env = {
+        "MAB_RUNTIME_PROVIDER": "LOCAL_DUAL_REPLICA",
+        "CONSTRUCTION_LLM_BASE_URL": "http://127.0.0.1:18200/v1",
+        "CONSTRUCTION_LLM_MODEL": "qwen3-14b-awq",
+        "QUALITY_LLM_BASE_URL": "http://127.0.0.1:18200/v1",
+        "QUALITY_LLM_MODEL": "qwen3-8b-awq",
+        "EMBEDDING_BASE_URL": "http://127.0.0.1:18202/v1",
+        "EMBEDDING_MODEL": "qwen3-embedding-0.6b",
+        "EMBEDDING_DIM": "1024",
+        "NEO4J_URI": "bolt://127.0.0.1:7687",
+    }
+
+    try:
+        RuntimeTopology.from_env(env)
+    except ValueError as exc:
+        assert str(exc) == "LOCAL_DUAL_REPLICA_QUALITY_ENDPOINT_DRIFT"
+    else:
+        raise AssertionError("quality model drift was accepted")

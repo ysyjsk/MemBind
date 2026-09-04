@@ -207,7 +207,7 @@ def _formal_env() -> dict[str, str]:
     embedding_url = env.get("EMBEDDING_BASE_URL", "http://127.0.0.1:18202/v1")
     embedding_model = env.get("MEMBIND_EMBED_MODEL_NAME", "qwen3-embedding-0.6b")
     env.update({
-        "MAB_RUNTIME_PROVIDER": "LOCAL_8B",
+        "MAB_RUNTIME_PROVIDER": "LOCAL_DUAL_REPLICA",
         "CONSTRUCTION_LLM_BASE_URL": native_url,
         "CONSTRUCTION_LLM_MODEL": model,
         "QUALITY_LLM_BASE_URL": native_url,

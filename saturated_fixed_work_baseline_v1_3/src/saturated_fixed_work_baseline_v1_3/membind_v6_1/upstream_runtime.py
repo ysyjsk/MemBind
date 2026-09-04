@@ -1,9 +1,10 @@
 """Formal Graphiti runtime with a transparent Qwen deployment facade.
 
-This module constructs the upstream Graphiti 0.29.3 object graph and installs
-the same arm-agnostic bounded structured-output compatibility seam for every
-formal arm.  The seam is an explicit shared substrate; it does not inspect an
-arm identity or change Graphiti's episode/state/publication semantics.
+The formal builder constructs the upstream Graphiti 0.29.3 object graph.  Its
+only wrappers provide endpoint routing, telemetry, a stable logical seed, and
+the frozen single-attempt transport policy.  Historical bounded-output and
+finite-pair compatibility code remains available elsewhere for ablations, but
+is deliberately absent from this builder.
 """
 
 from __future__ import annotations
@@ -14,6 +15,7 @@ import inspect
 import json
 import os
 from dataclasses import dataclass
+from importlib.metadata import version as distribution_version
 from types import SimpleNamespace
 from typing import Any, Callable, Mapping
 
@@ -24,7 +26,6 @@ from .routing import (
     RoutedOpenAIClient,
     install_routing_prompt_context,
 )
-from .shared_structured_output import adapter_identity
 from .runtime import (
     LOCAL_HTTP_TIMEOUT_SECONDS,
     LOCAL_MAX_COROUTINES,
@@ -33,22 +34,30 @@ from .runtime import (
     _normalized_url,
     build_local_openai_transport,
     close_local_u0_runtime,
-    install_local_extraction_chunking_policy,
     install_local_single_attempt_policy,
 )
 
 
-# The strict unbounded upstream path is retained only as an A0 compatibility
-# characterization.  The executable formal arms share the bounded substrate
-# because the pinned ExtractedEdges schema has an unbounded array.
-FORMAL_ARM_A = "GRAPHITI_SERIAL_SHARED_BOUNDED_SO"
-FORMAL_ARM_B = "RELAXED_ORDER_SHARED_BOUNDED_SO"
-FORMAL_ARM_C = "MEMBIND_V6_1_SHARED_BOUNDED_SO"
+# Public formal identities. All three share the strict upstream Graphiti core;
+# B changes only session scheduling and C changes only prepare/replay routing
+# and authoritative publication scheduling.
+FORMAL_ARM_A = "GRAPHITI_SERIAL_UPSTREAM_CORE_MAB8192"
+FORMAL_ARM_B = "GRAPHITI_ASYNC_UPSTREAM_CORE_MAB8192"
+FORMAL_ARM_C = "MEMBIND_V6_1_UPSTREAM_CORE_MAB8192"
 FORMAL_ARM_NAMES = (FORMAL_ARM_A, FORMAL_ARM_B, FORMAL_ARM_C)
 GRAPHITI_COMMIT = "021d3a57d511f21b10adaf7fa923bd5c1fce5e9d"
 GRAPHITI_VERSION = "0.29.3"
+GRAPHITI_CLASS_IDENTITY = "graphiti_core.graphiti.Graphiti"
+GRAPHITI_ADD_EPISODE_MODULE = "graphiti_core.graphiti"
+GRAPHITI_ADD_EPISODE_QUALNAME = "Graphiti.add_episode"
+OPENAI_GENERIC_CLIENT_IDENTITY = (
+    "graphiti_core.llm_client.openai_generic_client.OpenAIGenericClient"
+)
+EXTRACTED_EDGES_MODULE = "graphiti_core.prompts.extract_edges"
+EXTRACTED_EDGES_QUALNAME = "ExtractedEdges"
 P0_DEPLOYMENT_POLICY_ID = "P0_QWEN3_8B_AWQ"
 P1_DEPLOYMENT_POLICY_ID = "P1_QWEN25_7B_AWQ"
+P2_DEPLOYMENT_POLICY_ID = "P2_QWEN3_14B_AWQ"
 P0_MODEL = "qwen3-8b-awq"
 P0_SAMPLING: dict[str, Any] = {
     "enable_thinking": False,
@@ -65,6 +74,14 @@ P1_SAMPLING: dict[str, Any] = {
     "top_p": 0.8,
     "top_k": 20,
     "repetition_penalty": 1.05,
+    "structured_output_backend": "xgrammar",
+}
+P2_MODEL = "qwen3-14b-awq"
+P2_SAMPLING: dict[str, Any] = {
+    "enable_thinking": False,
+    "temperature": 0.6,
+    "top_p": 0.95,
+    "top_k": 20,
     "structured_output_backend": "xgrammar",
 }
 
@@ -112,9 +129,24 @@ P1_DEPLOYMENT_POLICY = DeploymentPolicy(
         "extra_body.repetition_penalty",
     ),
 )
+P2_DEPLOYMENT_POLICY = DeploymentPolicy(
+    policy_id=P2_DEPLOYMENT_POLICY_ID,
+    profile_id="local-qwen3-14b-awq-dualreplica-v1",
+    source_model="Qwen/Qwen3-14B-AWQ",
+    served_model=P2_MODEL,
+    revision="31c69efc29464b6bb0aee1398b5a7b50a99340c3",
+    sampling=P2_SAMPLING,
+    transport_only_fields=(
+        "temperature",
+        "top_p",
+        "seed",
+        "extra_body.top_k",
+        "extra_body.chat_template_kwargs.enable_thinking",
+    ),
+)
 DEPLOYMENT_POLICIES = {
     policy.policy_id: policy
-    for policy in (P0_DEPLOYMENT_POLICY, P1_DEPLOYMENT_POLICY)
+    for policy in (P0_DEPLOYMENT_POLICY, P1_DEPLOYMENT_POLICY, P2_DEPLOYMENT_POLICY)
 }
 
 
@@ -166,6 +198,11 @@ def deployment_wire_fields(policy: DeploymentPolicy, *, seed: int) -> dict[str, 
             "top_k": sampling["top_k"],
             "repetition_penalty": sampling["repetition_penalty"],
         }
+    elif policy.policy_id == P2_DEPLOYMENT_POLICY_ID:
+        fields["extra_body"] = {
+            "top_k": sampling["top_k"],
+            "chat_template_kwargs": {"enable_thinking": False},
+        }
     else:  # pragma: no cover - DeploymentPolicy construction is internal.
         raise LocalRuntimeConfigurationError(
             f"unsupported deployment policy: {policy.policy_id}"
@@ -194,6 +231,146 @@ def request_hash(value: Mapping[str, Any]) -> str:
     return hashlib.sha256(
         json.dumps(_canonical(value), ensure_ascii=False, sort_keys=True, separators=(",", ":")).encode("utf-8")
     ).hexdigest()
+
+
+def strict_formal_runtime_identity_errors(
+    identity: Mapping[str, Any] | Any,
+    *,
+    expected_arm: str | None = None,
+    expected_manifest_sha256: str | None = None,
+    expected_deployment_policy: DeploymentPolicy | None = None,
+) -> list[str]:
+    """Return every fail-closed violation in a sealed formal runtime identity."""
+
+    from graphiti_core.prompts import extract_edges, extract_nodes
+    from graphiti_core.prompts.extract_edges import ExtractedEdges
+
+    if not isinstance(identity, Mapping):
+        return ["runtime identity is not a mapping"]
+    errors: list[str] = []
+    graphiti = identity.get("graphiti")
+    graphiti = graphiti if isinstance(graphiti, Mapping) else {}
+    edge_model = identity.get("edge_response_model")
+    edge_model = edge_model if isinstance(edge_model, Mapping) else {}
+    patch_inventory = identity.get("patch_inventory")
+    patch_inventory = patch_inventory if isinstance(patch_inventory, Mapping) else {}
+    edge_schema = edge_model.get("schema")
+    edge_schema = edge_schema if isinstance(edge_schema, Mapping) else {}
+    edge_array = edge_schema.get("properties", {})
+    edge_array = edge_array if isinstance(edge_array, Mapping) else {}
+    edge_array = edge_array.get("edges", {})
+    edge_array = edge_array if isinstance(edge_array, Mapping) else {}
+    schema_text = json.dumps(
+        edge_schema, ensure_ascii=False, sort_keys=True, separators=(",", ":")
+    )
+    actual_schema = ExtractedEdges.model_json_schema()
+    actual_schema_text = json.dumps(
+        actual_schema, ensure_ascii=False, sort_keys=True, separators=(",", ":")
+    )
+    installed_version = distribution_version("graphiti-core")
+
+    if identity.get("schema_version") != "membind.formal-runtime-identity.v1":
+        errors.append("runtime identity schema mismatch")
+    if identity.get("status") != "PASS" or identity.get("strict_upstream_core") is not True:
+        errors.append("runtime identity is not strict PASS")
+    if expected_arm is not None and identity.get("arm") != expected_arm:
+        errors.append("formal arm identity mismatch")
+    if graphiti.get("version") != GRAPHITI_VERSION:
+        errors.append("Graphiti declared version mismatch")
+    if graphiti.get("installed_version") != installed_version or installed_version != GRAPHITI_VERSION:
+        errors.append("Graphiti installed version mismatch")
+    if graphiti.get("commit") != GRAPHITI_COMMIT:
+        errors.append("Graphiti commit identity mismatch")
+    if (
+        f"{graphiti.get('class_module')}.{graphiti.get('class_qualname')}"
+        != GRAPHITI_CLASS_IDENTITY
+    ):
+        errors.append("Graphiti class identity mismatch")
+    if (
+        graphiti.get("add_episode_module") != GRAPHITI_ADD_EPISODE_MODULE
+        or graphiti.get("add_episode_qualname") != GRAPHITI_ADD_EPISODE_QUALNAME
+    ):
+        errors.append("graphiti.add_episode identity mismatch")
+    if identity.get("llm_client_class") != OPENAI_GENERIC_CLIENT_IDENTITY:
+        errors.append("OpenAIGenericClient identity mismatch")
+    if (
+        edge_model.get("module") != EXTRACTED_EDGES_MODULE
+        or edge_model.get("qualname") != EXTRACTED_EDGES_QUALNAME
+    ):
+        errors.append("ExtractedEdges identity mismatch")
+    expected_schema_sha256 = hashlib.sha256(actual_schema_text.encode("utf-8")).hexdigest()
+    if (
+        edge_schema != actual_schema
+        or edge_model.get("schema_sha256") != expected_schema_sha256
+        or hashlib.sha256(schema_text.encode("utf-8")).hexdigest()
+        != expected_schema_sha256
+    ):
+        errors.append("ExtractedEdges schema mismatch")
+    lowered_schema = schema_text.casefold()
+    if edge_model.get("edges_has_max_items") is not False or "maxItems" in edge_array:
+        errors.append("ExtractedEdges contains maxItems")
+    if any(
+        marker in lowered_schema
+        for marker in ("pairs_completed", "finite-pair-task", "finite_pair_task")
+    ):
+        errors.append("finite-pair field present in edge schema")
+    expected_prompt_hashes = {
+        "extract_nodes": _source_sha256(extract_nodes.extract_message),
+        "extract_edges": _source_sha256(extract_edges.edge),
+    }
+    if identity.get("upstream_prompt_source_sha256") != expected_prompt_hashes:
+        errors.append("upstream prompt source identity mismatch")
+
+    policy = expected_deployment_policy
+    if policy is None:
+        policy = DEPLOYMENT_POLICIES.get(str(identity.get("deployment_policy_id")))
+    if policy is None:
+        errors.append("deployment policy identity is unknown")
+    else:
+        if identity.get("deployment_policy_id") != policy.policy_id:
+            errors.append("deployment policy identity mismatch")
+        if identity.get("model") != policy.served_model:
+            errors.append("served model identity mismatch")
+        if identity.get("model_revision") != policy.revision:
+            errors.append("model revision identity mismatch")
+        if identity.get("sampling") != dict(policy.sampling):
+            errors.append("sampling identity mismatch")
+        if patch_inventory.get("deployment_policy_id") != policy.policy_id:
+            errors.append("patch inventory deployment policy mismatch")
+    if identity.get("max_tokens") != 16384:
+        errors.append("formal max_tokens mismatch")
+    if identity.get("structured_output_mode") != "json_schema":
+        errors.append("structured output mode mismatch")
+    if identity.get("sdk_retries") != 0:
+        errors.append("SDK retry policy mismatch")
+    if identity.get("logical_seed_policy") != (
+        "uint32_sha256_dataset_context_source_chunk_prompt_messages"
+    ):
+        errors.append("logical seed policy mismatch")
+    if expected_manifest_sha256 is not None and (
+        identity.get("mab8192_manifest_sha256") != expected_manifest_sha256
+    ):
+        errors.append("MAB8192 manifest identity mismatch")
+    if identity.get("extraction_chunking_installed") is not False:
+        errors.append("extraction chunking is installed")
+    if identity.get("finite_pair_tasks_enabled") is not False:
+        errors.append("finite-pair tasks are enabled")
+    if identity.get("response_repair_enabled") is not False:
+        errors.append("response repair is enabled")
+    expected_patch_fields = {
+        "strict_upstream_core": True,
+        "graphiti_algorithm_mutated": False,
+        "shared_compatibility_substrate": False,
+        "algorithm_patches": [],
+        "prohibited_algorithm_patches": [],
+    }
+    if any(patch_inventory.get(key) != value for key, value in expected_patch_fields.items()):
+        errors.append("formal patch inventory mismatch")
+    supplied_hash = identity.get("runtime_identity_sha256")
+    unhashed = {key: value for key, value in identity.items() if key != "runtime_identity_sha256"}
+    if supplied_hash != request_hash(unhashed):
+        errors.append("runtime identity checksum mismatch")
+    return errors
 
 
 def logical_request_seed(identity: Mapping[str, Any]) -> int:
@@ -428,6 +605,183 @@ def _required(name: str) -> str:
     return value
 
 
+def _source_sha256(value: Any) -> str:
+    return hashlib.sha256(inspect.getsource(value).encode("utf-8")).hexdigest()
+
+
+def formal_runtime_identity(
+    runtime: Any,
+    *,
+    mab8192_manifest_sha256: str,
+) -> dict[str, Any]:
+    """Derive formal identity from the instantiated runtime and pinned source.
+
+    This intentionally does not trust runner booleans.  Compatibility features
+    are detected on the live client, and the edge schema is read from the exact
+    upstream Pydantic model used by Graphiti 0.29.3.
+    """
+
+    from graphiti_core.prompts import extract_edges, extract_nodes
+    from graphiti_core.prompts.extract_edges import ExtractedEdges
+
+    if (
+        not isinstance(mab8192_manifest_sha256, str)
+        or len(mab8192_manifest_sha256) != 64
+    ):
+        raise LocalRuntimeConfigurationError("MAB8192 manifest identity is invalid")
+    arm = getattr(runtime, "_membind_formal_arm", None)
+    if arm not in FORMAL_ARM_NAMES:
+        raise LocalRuntimeConfigurationError("runtime has no formal arm identity")
+    llm_client = getattr(runtime, "llm_client", None)
+    graphiti = getattr(runtime, "graphiti", None)
+    config = getattr(runtime, "config", None)
+    deployment = getattr(runtime, "_membind_deployment_policy", None)
+    patch_inventory = getattr(runtime, "_membind_patch_inventory", None)
+    if (
+        llm_client is None
+        or graphiti is None
+        or config is None
+        or not isinstance(deployment, DeploymentPolicy)
+        or not isinstance(patch_inventory, Mapping)
+    ):
+        raise LocalRuntimeConfigurationError("formal runtime object graph is incomplete")
+
+    edge_schema = ExtractedEdges.model_json_schema()
+    schema_text = json.dumps(
+        edge_schema, ensure_ascii=False, sort_keys=True, separators=(",", ":")
+    )
+    lowered_schema = schema_text.casefold()
+    extraction_chunking_installed = any(
+        hasattr(llm_client, name)
+        for name in (
+            "_membind_extraction_diagnostics",
+            "_membind_entity_partition_hints",
+            "_membind_entity_partition_hints_by_scope",
+            "_membind_shared_structured_output",
+        )
+    )
+    finite_pair_tasks_enabled = bool(
+        getattr(llm_client, "_membind_shared_bounded_structured_output", False)
+    ) or any(
+        marker in lowered_schema
+        for marker in ("pairs_completed", "finite-pair-task", "finite_pair_task")
+    )
+    response_repair_enabled = any(
+        bool(getattr(llm_client, name, False))
+        for name in (
+            "structured_output_recovery_enabled",
+            "managed_recovery_enabled",
+            "_membind_response_repair_enabled",
+        )
+    )
+    edge_array = edge_schema.get("properties", {}).get("edges", {})
+    graphiti_class_identity = f"{type(graphiti).__module__}.{type(graphiti).__qualname__}"
+    add_episode = getattr(graphiti, "add_episode", None)
+    add_episode_module = getattr(add_episode, "__module__", None)
+    add_episode_qualname = getattr(add_episode, "__qualname__", None)
+    llm_client_class = f"{type(llm_client).__module__}.{type(llm_client).__qualname__}"
+    installed_graphiti_version = distribution_version("graphiti-core")
+    strict_upstream_core = (
+        patch_inventory.get("strict_upstream_core") is True
+        and patch_inventory.get("shared_compatibility_substrate") is False
+        and patch_inventory.get("algorithm_patches") == []
+        and patch_inventory.get("prohibited_algorithm_patches") == []
+        and graphiti_class_identity == GRAPHITI_CLASS_IDENTITY
+        and add_episode_module == GRAPHITI_ADD_EPISODE_MODULE
+        and add_episode_qualname == GRAPHITI_ADD_EPISODE_QUALNAME
+        and llm_client_class == OPENAI_GENERIC_CLIENT_IDENTITY
+        and installed_graphiti_version == GRAPHITI_VERSION
+        and getattr(runtime, "_membind_graphiti_commit", None) == GRAPHITI_COMMIT
+        and not extraction_chunking_installed
+        and not finite_pair_tasks_enabled
+        and not response_repair_enabled
+        and isinstance(edge_array, Mapping)
+        and "maxItems" not in edge_array
+    )
+    identity: dict[str, Any] = {
+        "schema_version": "membind.formal-runtime-identity.v1",
+        "status": "PASS" if strict_upstream_core else "FAIL",
+        "arm": arm,
+        "strict_upstream_core": strict_upstream_core,
+        "graphiti": {
+            "version": getattr(runtime, "_membind_graphiti_version", None),
+            "installed_version": installed_graphiti_version,
+            "commit": getattr(runtime, "_membind_graphiti_commit", None),
+            "class_module": type(graphiti).__module__,
+            "class_qualname": type(graphiti).__qualname__,
+            "add_episode_module": add_episode_module,
+            "add_episode_qualname": add_episode_qualname,
+        },
+        "llm_client_class": llm_client_class,
+        "edge_response_model": {
+            "module": ExtractedEdges.__module__,
+            "qualname": ExtractedEdges.__qualname__,
+            "schema_sha256": hashlib.sha256(schema_text.encode("utf-8")).hexdigest(),
+            "schema": edge_schema,
+            "edges_has_max_items": "maxItems" in edge_array,
+        },
+        "upstream_prompt_source_sha256": {
+            "extract_nodes": _source_sha256(extract_nodes.extract_message),
+            "extract_edges": _source_sha256(extract_edges.edge),
+        },
+        "deployment_policy_id": deployment.policy_id,
+        "model": getattr(config, "construction_model", None),
+        "model_revision": getattr(config, "construction_model_revision", None),
+        "sampling": dict(deployment.sampling),
+        "max_tokens": getattr(config, "requested_max_tokens", None),
+        "structured_output_mode": getattr(config, "structured_output_mode", None),
+        "logical_seed_policy": (
+            "uint32_sha256_dataset_context_source_chunk_prompt_messages"
+        ),
+        "sdk_retries": LOCAL_SDK_MAX_RETRIES,
+        "mab8192_manifest_sha256": mab8192_manifest_sha256,
+        "extraction_chunking_installed": extraction_chunking_installed,
+        "finite_pair_tasks_enabled": finite_pair_tasks_enabled,
+        "response_repair_enabled": response_repair_enabled,
+        "patch_inventory": dict(patch_inventory),
+    }
+    identity["runtime_identity_sha256"] = request_hash(identity)
+    errors = strict_formal_runtime_identity_errors(
+        identity,
+        expected_arm=arm,
+        expected_manifest_sha256=mab8192_manifest_sha256,
+        expected_deployment_policy=deployment,
+    )
+    if errors:
+        raise LocalRuntimeConfigurationError(
+            "formal runtime identity is invalid: " + "; ".join(errors)
+        )
+    return identity
+
+
+def formal_builder_source_audit() -> dict[str, Any]:
+    """Revalidate that the executable formal builder has no old algorithm seam."""
+
+    source = inspect.getsource(build_formal_upstream_runtime)
+    prohibited = (
+        "install_local_extraction_chunking_policy",
+        "partition_extraction_by_turns",
+        "partition_edge_candidates",
+        "edge_duplicate_recovery",
+        "edge_endpoint_schema_grounding",
+    )
+    observed = [marker for marker in prohibited if marker in source]
+    result = {
+        "schema_version": "membind.formal-builder-source-audit.v1",
+        "status": "PASS" if not observed else "FAIL",
+        "builder_module": build_formal_upstream_runtime.__module__,
+        "builder_qualname": build_formal_upstream_runtime.__qualname__,
+        "builder_source_sha256": hashlib.sha256(source.encode("utf-8")).hexdigest(),
+        "prohibited_markers": list(prohibited),
+        "observed_prohibited_markers": observed,
+    }
+    if observed:
+        raise LocalRuntimeConfigurationError(
+            "formal builder references a prohibited compatibility algorithm"
+        )
+    return result
+
+
 def build_formal_upstream_runtime(
     *,
     routing_contract: Mapping[str, Any],
@@ -498,23 +852,6 @@ def build_formal_upstream_runtime(
     install_local_single_attempt_policy(llm_client)
     logical_context_restore = install_logical_llm_context(llm_client)
     routing_context_restore = install_routing_prompt_context(llm_client)
-    # The executable formal arms share one disclosed local-LLM compatibility
-    # substrate.  It bounds evidence/edge extraction without changing the
-    # Graphiti episode/state/publication call graph or database semantics.
-    install_local_extraction_chunking_policy(
-        llm_client,
-        partition_extraction_by_turns=True,
-        partition_edge_candidates=True,
-        summary_entity_page_capacity=1,
-        dedupe_candidate_page_capacity=1,
-        node_partition_concurrency=2,
-        edge_partition_concurrency=2,
-        edge_physical_concurrency=2,
-        edge_frontier_priority=True,
-        edge_duplicate_recovery=True,
-        edge_endpoint_schema_grounding=True,
-        shared_bounded_structured_output=True,
-    )
     embedder = OpenAIEmbedder(
         OpenAIEmbedderConfig(
             api_key=_required("EMBEDDING_API_KEY"),
@@ -568,17 +905,17 @@ def build_formal_upstream_runtime(
     runtime._membind_logical_context_restore = logical_context_restore
     runtime._membind_routing_context_restore = routing_context_restore
     runtime._membind_route_client = router
-    runtime._membind_shared_bounded_structured_output = True
-    runtime._membind_shared_structured_output_identity = adapter_identity()
+    runtime._membind_shared_bounded_structured_output = False
+    runtime._membind_shared_structured_output_identity = None
     runtime._membind_patch_inventory = {
-        "strict_upstream_core": False,
+        "strict_upstream_core": True,
         "graphiti_algorithm_mutated": False,
-        "shared_compatibility_substrate": True,
-        "compatibility_patches": [
-            "lossless_evidence_partitioning",
-            "bounded_edge_page_schema",
-            "endpoint_grounding",
-            "single_deterministic_duplicate_recovery",
+        "shared_compatibility_substrate": False,
+        "algorithm_patches": [],
+        "transport_adapters": [
+            "single_attempt_policy",
+            "logical_request_seed_and_telemetry",
+            "endpoint_routing",
         ],
         "prohibited_algorithm_patches": [],
         "deployment_policy_id": deployment.policy_id,
@@ -608,15 +945,25 @@ __all__ = [
     "FORMAL_ARM_NAMES",
     "GRAPHITI_COMMIT",
     "GRAPHITI_VERSION",
+    "GRAPHITI_CLASS_IDENTITY",
+    "GRAPHITI_ADD_EPISODE_MODULE",
+    "GRAPHITI_ADD_EPISODE_QUALNAME",
+    "OPENAI_GENERIC_CLIENT_IDENTITY",
+    "EXTRACTED_EDGES_MODULE",
+    "EXTRACTED_EDGES_QUALNAME",
     "DeploymentPolicy",
     "P0_DEPLOYMENT_POLICY_ID",
     "P1_DEPLOYMENT_POLICY_ID",
+    "P2_DEPLOYMENT_POLICY_ID",
     "P0_DEPLOYMENT_POLICY",
     "P1_DEPLOYMENT_POLICY",
+    "P2_DEPLOYMENT_POLICY",
     "P0_MODEL",
     "P0_SAMPLING",
     "P1_MODEL",
     "P1_SAMPLING",
+    "P2_MODEL",
+    "P2_SAMPLING",
     "build_formal_upstream_runtime",
     "close_formal_upstream_runtime",
     "current_logical_request_identity",
@@ -625,5 +972,8 @@ __all__ = [
     "install_logical_llm_context",
     "request_hash",
     "deployment_wire_fields",
+    "formal_runtime_identity",
+    "strict_formal_runtime_identity_errors",
+    "formal_builder_source_audit",
     "resolve_deployment_policy",
 ]

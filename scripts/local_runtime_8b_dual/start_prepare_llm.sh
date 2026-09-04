@@ -24,7 +24,9 @@ command=(
   --scheduling-policy fcfs
   --seed 20260806
 )
-command+=(--hf-overrides '{"rope_parameters":{"rope_type":"yarn","factor":2.0,"original_max_position_embeddings":32768,"rope_theta":1000000}}')
+if [[ -n "${MEMBIND_LLM_HF_OVERRIDES:-}" ]]; then
+  command+=(--hf-overrides "$MEMBIND_LLM_HF_OVERRIDES")
+fi
 if [[ -n "${MEMBIND_LLM_DEFAULT_CHAT_TEMPLATE_KWARGS:-}" ]]; then
   command+=(--default-chat-template-kwargs "$MEMBIND_LLM_DEFAULT_CHAT_TEMPLATE_KWARGS")
 fi

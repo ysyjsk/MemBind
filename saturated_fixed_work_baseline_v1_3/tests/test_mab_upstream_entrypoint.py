@@ -66,9 +66,9 @@ def test_entrypoint_projects_one_immutable_mab8192_manifest() -> None:
 def test_entrypoint_exposes_only_new_arm_names() -> None:
     module = _module()
     assert tuple(module.METHODS) == (
-        "GRAPHITI_SERIAL_SHARED_BOUNDED_SO",
-        "MEMBIND_V6_1_SHARED_BOUNDED_SO",
-        "RELAXED_ORDER_SHARED_BOUNDED_SO",
+        "GRAPHITI_SERIAL_UPSTREAM_CORE_MAB8192",
+        "MEMBIND_V6_1_UPSTREAM_CORE_MAB8192",
+        "GRAPHITI_ASYNC_UPSTREAM_CORE_MAB8192",
     )
 
 
@@ -122,7 +122,7 @@ def test_entrypoint_returns_nonzero_on_deterministic_failure(
             "--replicate-id",
             "0",
             "--method",
-            "GRAPHITI_SERIAL_SHARED_BOUNDED_SO",
+            "GRAPHITI_SERIAL_UPSTREAM_CORE_MAB8192",
             "--platform-manifest",
             str(tmp_path / "platform.json"),
         ],

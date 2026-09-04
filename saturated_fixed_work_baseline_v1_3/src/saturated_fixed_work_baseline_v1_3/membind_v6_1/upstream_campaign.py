@@ -42,6 +42,7 @@ from .resource_credit import ResourceCreditPolicy
 from .upstream_replay import UpstreamReplayClient
 from .upstream_runtime import (
     FORMAL_ARM_C,
+    formal_runtime_identity,
     logical_request_context,
     resolve_deployment_policy,
 )
@@ -229,6 +230,10 @@ async def run_upstream_membind_construction_async(
     try:
         runtime = await _maybe_await(runtime_builder())
         graphiti = runtime.graphiti
+        runtime_identity = formal_runtime_identity(
+            runtime,
+            mab8192_manifest_sha256=str(workload_manifest.manifest_sha256),
+        )
         capacity = CapacityAuthority.from_protocol_runtime(runtime)
         admission = ForegroundAdmissionArbiter(
             capacity,
@@ -408,6 +413,7 @@ async def run_upstream_membind_construction_async(
                 *capture.request_identities,
                 *replay.request_identities,
             ],
+            "runtime_identity": runtime_identity,
             "bindings": bindings,
             "transcript_summary": transcript_summary,
             "adapter_coverage": coverage,
@@ -436,8 +442,8 @@ async def run_upstream_membind_construction_async(
             "t_build_ns": seal_time - formal_start,
             "publication_guarantee": "ORDERED_DURABLE_FRONTIER_NO_ATTEMPT_RESUME",
             "structured_output_policy": "UPSTREAM_GRAPHITI_PYDANTIC_JSON_SCHEMA",
-            "response_repair_enabled": False,
-            "finite_pair_tasks_enabled": False,
+            "response_repair_enabled": runtime_identity["response_repair_enabled"],
+            "finite_pair_tasks_enabled": runtime_identity["finite_pair_tasks_enabled"],
             "llm_logical_requests": len(provider_calls),
             "transport_attempts": sum(
                 int(row["physical_attempt_count"]) for row in provider_calls

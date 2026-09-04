@@ -30,16 +30,16 @@ SFWB = ROOT / "saturated_fixed_work_baseline_v1_3"
 # ceiling).  This is intentionally *not* cyclic counterbalancing; the user
 # requested one history at a time in this exact order for every replicate.
 ARMS = (
-    "GRAPHITI_SERIAL_SHARED_BOUNDED_SO",
-    "MEMBIND_V6_1_SHARED_BOUNDED_SO",
-    "RELAXED_ORDER_SHARED_BOUNDED_SO",
+    "GRAPHITI_SERIAL_UPSTREAM_CORE_MAB8192",
+    "MEMBIND_V6_1_UPSTREAM_CORE_MAB8192",
+    "GRAPHITI_ASYNC_UPSTREAM_CORE_MAB8192",
 )
 OFFICIAL_HISTORY_COUNT = 5
 REPLICATE_COUNT = 3
 HISTORY_UNIT_COUNT = OFFICIAL_HISTORY_COUNT
-NATIVE_ARM = "GRAPHITI_SERIAL_SHARED_BOUNDED_SO"
-OURS_ARM = "MEMBIND_V6_1_SHARED_BOUNDED_SO"
-ASYNC_ARM = "RELAXED_ORDER_SHARED_BOUNDED_SO"
+NATIVE_ARM = "GRAPHITI_SERIAL_UPSTREAM_CORE_MAB8192"
+OURS_ARM = "MEMBIND_V6_1_UPSTREAM_CORE_MAB8192"
+ASYNC_ARM = "GRAPHITI_ASYNC_UPSTREAM_CORE_MAB8192"
 
 
 def _canonical(value: Any) -> str:
@@ -198,7 +198,7 @@ def build_manifest(
                     "platform_manifest_sha256": platform_payload_sha256,
                     "platform_manifest_path": platform_identity.get("path"),
                     "cache_warmup_policy": "reset_then_identical_structured_warmup_v1",
-                    "expected_construction_artifacts": ["attempt_preparation.json", "run_contract.json", "complete.json", "block/construction_seal.json", "block/metrics.json", "block/order_validation.json", "block/lifecycle_validation.json", "block/work_inventory.json", "route_events.jsonl", "route_runtime.json", "route_proof.json", "route_seal.json"],
+                    "expected_construction_artifacts": ["attempt_preparation.json", "run_contract.json", "complete.json", "block/construction_seal.json", "block/metrics.json", "block/runtime_identity.json", "block/order_validation.json", "block/lifecycle_validation.json", "block/work_inventory.json", "route_events.jsonl", "route_runtime.json", "route_proof.json", "route_seal.json"],
                     "expected_full_qa": {"scope": "FULL", "question_count": 60, "qa_seal": "qa_seal.json"},
                 })
     manifest = {

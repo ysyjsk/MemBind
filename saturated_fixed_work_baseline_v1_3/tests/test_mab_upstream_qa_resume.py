@@ -39,15 +39,20 @@ def test_qa_resume_has_no_runtime_construction_import() -> None:
     assert all(value not in source for value in prohibited)
 
 
-def test_qa_resume_accepts_shared_bounded_formal_arm_names() -> None:
+def test_qa_resume_accepts_strict_upstream_formal_arm_names() -> None:
     module = _module()
     assert module.FORMAL_UPSTREAM_ARMS == frozenset(
         {
-            "GRAPHITI_SERIAL_SHARED_BOUNDED_SO",
-            "MEMBIND_V6_1_SHARED_BOUNDED_SO",
-            "RELAXED_ORDER_SHARED_BOUNDED_SO",
+            "GRAPHITI_SERIAL_UPSTREAM_CORE_MAB8192",
+            "MEMBIND_V6_1_UPSTREAM_CORE_MAB8192",
+            "GRAPHITI_ASYNC_UPSTREAM_CORE_MAB8192",
         }
     )
+
+
+def test_qa_resume_enables_local_binding_for_dual_replica_provider() -> None:
+    source = SCRIPT.read_text(encoding="utf-8")
+    assert '== "LOCAL_DUAL_REPLICA"' in source
 
 
 def test_qa_target_rebuilds_chunk_manifest_and_original_session_provenance(
@@ -69,7 +74,7 @@ def test_qa_target_rebuilds_chunk_manifest_and_original_session_provenance(
             {
                 "identity": {
                     "dataset_authority_sha256": public["authority_sha256"],
-                    "method": "GRAPHITI_SERIAL_SHARED_BOUNDED_SO",
+                    "method": "GRAPHITI_SERIAL_UPSTREAM_CORE_MAB8192",
                     "namespace": "qa-test-namespace",
                     "context_id": context.context_id,
                     "workload_hash": manifest.manifest_sha256,

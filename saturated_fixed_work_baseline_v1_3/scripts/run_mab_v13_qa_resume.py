@@ -40,9 +40,9 @@ from run_mab_v13_live import _run_qa  # noqa: E402
 
 FORMAL_UPSTREAM_ARMS = frozenset(
     {
-        "GRAPHITI_SERIAL_SHARED_BOUNDED_SO",
-        "MEMBIND_V6_1_SHARED_BOUNDED_SO",
-        "RELAXED_ORDER_SHARED_BOUNDED_SO",
+        "GRAPHITI_SERIAL_UPSTREAM_CORE_MAB8192",
+        "MEMBIND_V6_1_UPSTREAM_CORE_MAB8192",
+        "GRAPHITI_ASYNC_UPSTREAM_CORE_MAB8192",
     }
 )
 
@@ -215,10 +215,10 @@ def main() -> int:
     args = parser.parse_args()
     args.qa_runtime = None
     try:
-        if os.environ.get("MAB_RUNTIME_PROVIDER") == "LOCAL_8B":
+        if os.environ.get("MAB_RUNTIME_PROVIDER") == "LOCAL_DUAL_REPLICA":
             # The generic quality runtime defaults to the historical 32B
-            # deployment.  Formal 8B QA binds the same read-only graph-quality
-            # implementation to the authenticated local embedding endpoint.
+            # deployment. Formal local QA binds the same read-only graph-quality
+            # implementation to the authenticated dual-replica profile.
             from paper_eval import graph_quality_live
             graph_quality_live.NEO4J_URI = os.environ.get("NEO4J_URI", "bolt://127.0.0.1:7687")
             graph_quality_live.EMBEDDING_BASE_URL = os.environ.get("EMBEDDING_BASE_URL", "http://127.0.0.1:18202/v1").rstrip("/")

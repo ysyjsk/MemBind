@@ -33,6 +33,9 @@ from formal_three_arm_harness import (  # noqa: E402
 )
 from run_formal_three_arm import _construction_contract, _qa_contract  # noqa: E402
 from saturated_fixed_work_baseline_v1_3.artifact_seals import verify_seal  # noqa: E402
+from saturated_fixed_work_baseline_v1_3.membind_v6_1.upstream_runtime import (  # noqa: E402
+    strict_formal_runtime_identity_errors,
+)
 
 
 ARM_ORDER = {arm: index for index, arm in enumerate(ARMS)}
@@ -139,6 +142,17 @@ def _validate_selected_cell(row: dict[str, Any], manifest_cell: Mapping[str, Any
     qa = _qa_contract(attempt / "block/qa_full", returncode=0, cell=row)
     if construction["construction_status"] != "PASS" or qa["qa_status"] != "PASS":
         raise RuntimeError("selected cell terminal contract is invalid")
+    runtime_identity = _json(attempt / "block/runtime_identity.json")
+    runtime_identity_errors = strict_formal_runtime_identity_errors(
+        runtime_identity,
+        expected_arm=str(row["arm"]),
+        expected_manifest_sha256=str(row["workload_manifest_sha256"]),
+    )
+    if runtime_identity_errors:
+        raise RuntimeError(
+            "selected cell runtime identity is invalid: "
+            + "; ".join(runtime_identity_errors)
+        )
     verify_seal(attempt / "block")
 
 
