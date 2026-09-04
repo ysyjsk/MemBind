@@ -89,7 +89,7 @@ def endpoint(
     elif policy_id == "P1_QWEN25_7B_AWQ":
         sampling["repetition_penalty"] = 1.05
     elif policy_id == "P2_QWEN3_14B_AWQ":
-        pass
+        sampling.update({"min_p": 0, "presence_penalty": 1.5})
     else:
         raise RuntimeError(f"unknown deployment policy: {policy_id}")
     return {

@@ -29,9 +29,11 @@ P1_SAMPLING = {
     "repetition_penalty": 1.05,
 }
 P2_SAMPLING = {
-    "temperature": 0.6,
-    "top_p": 0.95,
+    "temperature": 0.7,
+    "top_p": 0.8,
     "top_k": 20,
+    "min_p": 0,
+    "presence_penalty": 1.5,
 }
 
 

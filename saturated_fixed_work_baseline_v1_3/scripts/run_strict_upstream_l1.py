@@ -155,9 +155,8 @@ def _expected_candidate_wire_request(
         raise RuntimeError("historical wire request has no stable seed")
     fields = deployment_wire_fields(deployment, seed=seed)
     expected["model"] = deployment.served_model
-    for name in ("temperature", "top_p", "seed"):
+    for name in ("temperature", "top_p", "seed", "presence_penalty"):
         expected[name] = fields[name]
-    expected.pop("presence_penalty", None)
     expected["extra_body"] = fields.get("extra_body", {})
     return expected, _changed_paths(historical, expected)
 
@@ -344,6 +343,7 @@ def _evaluate_target_response(response: Any) -> dict[str, Any]:
     json_valid = False
     pydantic_valid = False
     schema_valid = False
+    edge_count = 0
     errors: list[str] = []
     if isinstance(content, str):
         try:
@@ -354,6 +354,8 @@ def _evaluate_target_response(response: Any) -> dict[str, Any]:
     else:
         errors.append("response content is not text")
     if json_valid:
+        if isinstance(parsed, Mapping) and isinstance(parsed.get("edges"), list):
+            edge_count = len(parsed["edges"])
         try:
             ExtractedEdges.model_validate(parsed)
             pydantic_valid = True
@@ -373,6 +375,7 @@ def _evaluate_target_response(response: Any) -> dict[str, Any]:
         and json_valid
         and pydantic_valid
         and schema_valid
+        and edge_count > 0
         and not reached_token_limit
     )
     return {
@@ -381,6 +384,9 @@ def _evaluate_target_response(response: Any) -> dict[str, Any]:
         "json_valid": json_valid,
         "pydantic_valid": pydantic_valid,
         "schema_valid": schema_valid,
+        "edge_count": edge_count,
+        "empty_edge_result": edge_count == 0,
+        "content_bearing_witness": edge_count > 0,
         "reached_token_limit": reached_token_limit,
         "response_repair_enabled": False,
         "response_characters": len(content) if isinstance(content, str) else None,
@@ -532,10 +538,10 @@ async def run(
             "declared_deployment_delta_only": deployment_changed_paths
             == [
                 "extra_body.chat_template_kwargs",
+                "extra_body.min_p",
                 "extra_body.repetition_penalty",
                 "model",
-                "temperature",
-                "top_p",
+                "presence_penalty",
             ],
             "logical_identity": logical_identity
             == {

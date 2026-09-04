@@ -127,34 +127,53 @@ def _active_qa_pids(
     )
 
 
+def _parse_prometheus_metrics(payload: str) -> dict[str, float]:
+    """Parse Prometheus samples, including samples carrying label sets."""
+    parsed: dict[str, float] = {}
+    sample = re.compile(
+        r"^([a-zA-Z_:][a-zA-Z0-9_:]*)(?:\{[^\n]*\})?\s+"
+        r"([-+]?(?:\d+(?:\.\d*)?|\.\d+)(?:[eE][-+]?\d+)?|NaN|Inf|-Inf)"
+        r"(?:\s+\d+)?$"
+    )
+    for line in payload.splitlines():
+        line = line.strip()
+        if not line or line.startswith("#"):
+            continue
+        match = sample.match(line)
+        if not match:
+            continue
+        try:
+            parsed.setdefault(match.group(1), float(match.group(2)))
+        except ValueError:
+            continue
+    return parsed
+
+
 def _provider_metrics() -> dict[str, float | None]:
-    """Best-effort local vLLM metrics; missing metrics are recorded as null."""
+    """Read both measured replicas and expose stable heartbeat fields."""
     result: dict[str, float | None] = {
         "provider_running": None,
         "provider_waiting": None,
         "provider_kv_usage": None,
         "generation_tokens": None,
     }
-    try:
-        with urlopen("http://127.0.0.1:18200/metrics", timeout=2) as response:
-            payload = response.read().decode("utf-8", "replace")
-    except Exception:
-        return result
-    patterns = {
-        "provider_running": (r"(?:num_requests_running|requests_running)\s+([0-9.eE+-]+)",),
-        "provider_waiting": (r"(?:num_requests_waiting|requests_waiting)\s+([0-9.eE+-]+)",),
-        "provider_kv_usage": (r"(?:gpu_cache_usage_perc|kv_cache_usage_perc|kv_cache_usage)\s+([0-9.eE+-]+)",),
-        "generation_tokens": (r"(?:generation_tokens_total|num_generation_tokens_total)\s+([0-9.eE+-]+)",),
+    aliases = {
+        "provider_running": ("vllm:num_requests_running", "num_requests_running", "requests_running"),
+        "provider_waiting": ("vllm:num_requests_waiting", "num_requests_waiting", "requests_waiting"),
+        "provider_kv_usage": ("vllm:gpu_cache_usage_perc", "gpu_cache_usage_perc", "kv_cache_usage_perc", "kv_cache_usage"),
+        "generation_tokens": ("vllm:generation_tokens_total", "generation_tokens_total", "num_generation_tokens_total"),
     }
-    for key, candidates in patterns.items():
-        for pattern in candidates:
-            match = re.search(pattern, payload)
-            if match:
-                try:
-                    result[key] = float(match.group(1))
-                except ValueError:
-                    pass
-                break
+    for endpoint, prefix in (("native", "native"), ("prepare", "prepare")):
+        try:
+            with urlopen(f"http://127.0.0.1:{18200 if endpoint == 'native' else 18201}/metrics", timeout=2) as response:
+                metrics = _parse_prometheus_metrics(response.read().decode("utf-8", "replace"))
+        except Exception:
+            metrics = {}
+        for key, candidates in aliases.items():
+            value = next((metrics[name] for name in candidates if name in metrics), None)
+            result[f"{prefix}_{key}"] = value
+            if endpoint == "native" and value is not None:
+                result[key] = value
     return result
 
 

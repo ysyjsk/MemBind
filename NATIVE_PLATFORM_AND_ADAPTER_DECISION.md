@@ -1,6 +1,6 @@
 # Native Platform and Adapter Decision
 
-Status: `P2_STRICT_L1_PASSED_L2_PENDING`. Full-history L2 is authorized; formal execution is not yet authorized.
+Status: `P2_DEPLOYMENT_CORRECTION_PENDING_L1`. Historical P2 L1/L2 evidence is retained but not eligible for formal use; corrected deployment must pass a fresh content-bearing exact L1 before full-history L2.
 
 ## Formal substrate
 
@@ -28,11 +28,11 @@ That replay did not qualify the strict runtime. It used isolated witnesses and m
 
 `/data/predator/ly/Mem/experiments/local-qwen25-7b-awq-dualreplica-v1/strict-upstream-l1-exact-20260904T092622Z`
 
-The single next deployment hypothesis was P2, `Qwen/Qwen3-14B-AWQ` at revision `31c69efc29464b6bb0aee1398b5a7b50a99340c3`. The complete local snapshot uses the model's official non-thinking sampling: `temperature=0.6`, `top_p=0.95`, and `top_k=20`. P2 keeps Graphiti prompts, upstream response schemas, call graph, MAB8192, stable logical seeds, `max_tokens=16384`, zero SDK retries, routing semantics, dataset, and evaluator unchanged. No grid search or fallback mutation was used.
+The next deployment hypothesis is P2, `Qwen/Qwen3-14B-AWQ` at revision `31c69efc29464b6bb0aee1398b5a7b50a99340c3`. The corrected measured deployment uses non-thinking sampling `temperature=0.7`, `top_p=0.8`, `top_k=20`, `min_p=0`, `presence_penalty=1.5`, with `enable_thinking=false`. The downloaded generation config remains immutable snapshot metadata and is separate from this measured deployment override. Graphiti prompts, upstream response schemas, call graph, MAB8192, stable logical seeds, `max_tokens=16384`, zero SDK retries, routing semantics, dataset, and evaluator remain unchanged.
 
 The first P2 pre-measurement startup proved that the inherited GPU1 prepare allocation was too small: vLLM exposed 5.92 GiB KV memory versus 6.25 GiB required for one 40,960-token request. Before any P2 measured attempt, the shared prepare allocation was increased from 0.70 to 0.72 while embedding remained 0.25. The revalidated profile provides 69,760 native and 41,888 prepare KV tokens, passes both structured probes and the embedding probe, and is sealed at `/data/predator/ly/Mem/profiles/local-qwen3-14b-awq-dualreplica-v1/platform_manifest.20260904T095114Z.25205c46578a.json`, payload SHA-256 `25205c46578ac0954e121b909030aa07ede9871d8f8fc6818da21414e51ecaa0`.
 
-Exact strict L1 then submitted the authenticated growing-history edge request once with unchanged messages, upstream `ExtractedEdges` schema, stable seed, and `max_tokens=16384`; only the declared P2 deployment fields differed. It returned `finish_reason=stop` with 12,983 prompt tokens, 6 completion tokens, and JSON/Pydantic/schema-valid output. No repair or retry occurred and the preserved namespace was unchanged. The terminal result is `/data/predator/ly/Mem/experiments/local-qwen3-14b-awq-dualreplica-v1/strict-upstream-l1-exact-20260904T095439Z/L1_RESULT.json`, file SHA-256 `7b80d8b8e9e887693a9ffb8c73967573d58dbceedd5def27687974c27986c24c`. This selects P2 for full-history L2 only; formal execution remains gated on three complete L2 cells and the finalizer.
+The previous exact strict L1 used the superseded `0.6/0.95` deployment and is now non-authoritative. A fresh exact strict L1 must use the corrected fields and include a non-empty `ExtractedEdges.edges` content-bearing witness. A schema-valid `{"edges": []}` is structural compatibility only and cannot authorize L2. Formal execution remains gated on corrected L1, three complete L2 cells, graph sanity, QA, and the finalizer.
 
 The rejected P1 profile is `local-qwen25-7b-awq-dualreplica-v1`, with two identical single-GPU RTX 3090 Ti LLM replicas, `max_model_len=65536`, and static YaRN settings `factor=2.0`, `original_max_position_embeddings=32768`. Its authenticated platform manifest remains historical evidence at `/data/predator/ly/Mem/profiles/local-qwen25-7b-awq-dualreplica-v1/platform_manifest.20260903T163542Z.6c10750e6988.json`, payload SHA-256 `6c10750e6988944a0a31e08552ae8a4958fcec3f086560a20d78b119d7bb147c`. It is not a formal platform after the exact L1 failure.
 

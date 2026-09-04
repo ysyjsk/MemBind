@@ -8,12 +8,14 @@ import asyncio
 import hashlib
 import json
 import os
+import re
 import subprocess
 import sys
 import time
 from pathlib import Path
 from types import SimpleNamespace
 from typing import Any, Mapping
+from urllib.request import urlopen
 
 
 ROOT = Path(__file__).resolve().parents[2]
@@ -123,6 +125,47 @@ def _append(path: Path, row: Mapping[str, Any]) -> None:
         stream.write(json.dumps(dict(row), ensure_ascii=False, sort_keys=True) + "\n")
         stream.flush()
         os.fsync(stream.fileno())
+
+
+def _capture_resource_evidence() -> dict[str, Any]:
+    """Capture read-only endpoint/GPU evidence into the measured attempt."""
+    sample = re.compile(r"^([a-zA-Z_:][a-zA-Z0-9_:]*)(?:\{[^\n]*\})?\s+([-+]?(?:\d+(?:\.\d*)?|\.\d+)(?:[eE][-+]?\d+)?)")
+    aliases = {
+        "running": ("vllm:num_requests_running", "num_requests_running"),
+        "waiting": ("vllm:num_requests_waiting", "num_requests_waiting"),
+        "kv_cache_usage_perc": ("vllm:gpu_cache_usage_perc", "gpu_cache_usage_perc"),
+        "generation_tokens": ("vllm:generation_tokens_total", "generation_tokens_total"),
+    }
+    endpoints: dict[str, Any] = {}
+    for endpoint_id, port in (("native-replica", 18200), ("prepare-replica", 18201)):
+        values: dict[str, float] = {}
+        try:
+            with urlopen(f"http://127.0.0.1:{port}/metrics", timeout=2) as response:
+                for line in response.read().decode("utf-8", "replace").splitlines():
+                    match = sample.match(line.strip())
+                    if match:
+                        try:
+                            values.setdefault(match.group(1), float(match.group(2)))
+                        except ValueError:
+                            pass
+            endpoints[endpoint_id] = {"port": port, "status": "PASS", **{
+                key: next((values[name] for name in names if name in values), None)
+                for key, names in aliases.items()
+            }}
+        except Exception as exc:
+            endpoints[endpoint_id] = {"port": port, "status": "UNAVAILABLE", "error": str(exc)[:300]}
+    gpu: list[dict[str, Any]] = []
+    try:
+        completed = subprocess.run(
+            ["nvidia-smi", "--query-gpu=index,uuid,memory.used,memory.total,utilization.gpu", "--format=csv,noheader,nounits"],
+            check=True, capture_output=True, text=True,
+        )
+        for line in completed.stdout.splitlines():
+            index, uuid_value, used, total, utilization = [part.strip() for part in line.split(",", 4)]
+            gpu.append({"index": int(index), "uuid": uuid_value, "memory_used_mib": int(used), "memory_total_mib": int(total), "utilization_gpu_pct": float(utilization)})
+    except Exception as exc:
+        gpu = [{"status": "UNAVAILABLE", "error": str(exc)[:300]}]
+    return {"schema_version": "membind.resource-evidence.v1", "captured_unix": time.time(), "endpoints": endpoints, "gpu": gpu}
 
 
 def _persist_failure_transport_evidence(
@@ -495,6 +538,8 @@ async def _main(args: argparse.Namespace) -> int:
         if runtime is None:
             raise RuntimeError("measured attempt did not construct a runtime")
         verify_seal(block_root)
+        resource_path = block_root / "resource_evidence.json"
+        _write_new(resource_path, _capture_resource_evidence())
         route_runtime = runtime._membind_route_client.route_evidence()
         transport_count = len(runtime._membind_transport_telemetry)
         if transport_count != len(route_events):
@@ -525,6 +570,7 @@ async def _main(args: argparse.Namespace) -> int:
             "block/construction_seal.json": _file_sha256(
                 block_root / "construction_seal.json"
             ),
+            "block/resource_evidence.json": _file_sha256(resource_path),
         }
         route_seal = {
             "schema_version": "membind.upstream-route-seal.v1",

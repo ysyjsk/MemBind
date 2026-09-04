@@ -53,6 +53,22 @@ def _runner_module():
     return module
 
 
+def test_prometheus_labels_are_parsed_without_losing_metric_values() -> None:
+    runner = _runner_module()
+    payload = """
+# HELP vllm:num_requests_running Current requests
+vllm:num_requests_running{engine="0"} 2
+vllm:num_requests_waiting{engine="0"} 3.0
+vllm:gpu_cache_usage_perc{engine="0"} 0.42
+vllm:generation_tokens_total{engine="0"} 1.2e3
+"""
+    parsed = runner._parse_prometheus_metrics(payload)
+    assert parsed["vllm:num_requests_running"] == 2
+    assert parsed["vllm:num_requests_waiting"] == 3
+    assert parsed["vllm:gpu_cache_usage_perc"] == 0.42
+    assert parsed["vllm:generation_tokens_total"] == 1200
+
+
 def _sealed_manifest(root: Path) -> dict:
     h = _module()
     frozen = _frozen(h)

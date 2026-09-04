@@ -39,13 +39,13 @@ def test_p2_profile_environment_is_isolated_and_native_context(tmp_path: Path) -
     assert environment["MEMBIND_PREPARE_LLM_GPU_MEMORY_UTILIZATION"] == "0.72"
     assert environment["MEMBIND_EMBED_GPU_MEMORY_UTILIZATION"] == "0.25"
     assert environment["MEMBIND_GPU1_MAX_COMBINED_UTILIZATION"] == "0.97"
-    assert environment["MEMBIND_CONSTRUCTION_TEMPERATURE"] == "0.6"
-    assert environment["MEMBIND_CONSTRUCTION_TOP_P"] == "0.95"
+    assert environment["MEMBIND_CONSTRUCTION_TEMPERATURE"] == "0.7"
+    assert environment["MEMBIND_CONSTRUCTION_TOP_P"] == "0.8"
     assert environment["MEMBIND_CONSTRUCTION_TOP_K"] == "20"
     assert environment["MEMBIND_CONSTRUCTION_ENABLE_THINKING"] == "false"
     assert "MEMBIND_CONSTRUCTION_REPETITION_PENALTY" not in environment
-    assert "MEMBIND_CONSTRUCTION_MIN_P" not in environment
-    assert "MEMBIND_CONSTRUCTION_PRESENCE_PENALTY" not in environment
+    assert environment["MEMBIND_CONSTRUCTION_MIN_P"] == "0"
+    assert environment["MEMBIND_CONSTRUCTION_PRESENCE_PENALTY"] == "1.5"
     assert "MEMBIND_LLM_HF_OVERRIDES" not in environment
     assert environment["MEMBIND_NATIVE_LLM_TMUX_SESSION"] == "membind-qwen3-14b-native"
     assert environment["MEMBIND_PREPARE_LLM_TMUX_SESSION"] == "membind-qwen3-14b-prepare"

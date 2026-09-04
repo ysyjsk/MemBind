@@ -198,7 +198,7 @@ def build_manifest(
                     "platform_manifest_sha256": platform_payload_sha256,
                     "platform_manifest_path": platform_identity.get("path"),
                     "cache_warmup_policy": "reset_then_identical_structured_warmup_v1",
-                    "expected_construction_artifacts": ["attempt_preparation.json", "run_contract.json", "complete.json", "block/construction_seal.json", "block/metrics.json", "block/runtime_identity.json", "block/order_validation.json", "block/lifecycle_validation.json", "block/work_inventory.json", "route_events.jsonl", "route_runtime.json", "route_proof.json", "route_seal.json"],
+                    "expected_construction_artifacts": ["attempt_preparation.json", "run_contract.json", "complete.json", "block/construction_seal.json", "block/metrics.json", "block/runtime_identity.json", "block/order_validation.json", "block/lifecycle_validation.json", "block/work_inventory.json", "block/graph_diagnostics.json", "block/resource_evidence.json", "route_events.jsonl", "route_runtime.json", "route_proof.json", "route_seal.json"],
                     "expected_full_qa": {"scope": "FULL", "question_count": 60, "qa_seal": "qa_seal.json"},
                 })
     manifest = {

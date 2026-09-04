@@ -55,9 +55,9 @@ def main() -> int:
     )
     if config.get("max_position_embeddings") != 40960:
         raise RuntimeError("P2 model must retain its native 40960-token context")
-    expected_sampling = {"temperature": 0.6, "top_p": 0.95, "top_k": 20}
-    if any(generation.get(key) != value for key, value in expected_sampling.items()):
-        raise RuntimeError("P2 generation config differs from the official sampling")
+    # generation_config is immutable snapshot metadata.  Qwen's non-thinking
+    # deployment override is measured separately and must not be inferred from
+    # (or written back into) the downloaded snapshot.
     files = [
         {
             "path": path.name,
@@ -79,6 +79,19 @@ def main() -> int:
         "file_count": len(files),
         "weight_file_count": len(weights),
         "bytes": sum(int(row["bytes"]) for row in files),
+        "immutable_generation_config": {
+            key: generation.get(key)
+            for key in ("temperature", "top_p", "top_k")
+            if key in generation
+        },
+        "measured_deployment_sampling_override": {
+            "enable_thinking": False,
+            "temperature": 0.7,
+            "top_p": 0.8,
+            "top_k": 20,
+            "min_p": 0,
+            "presence_penalty": 1.5,
+        },
     }
     payload["payload_sha256"] = canonical_sha256(payload)
     target.parent.mkdir(parents=True, exist_ok=True)

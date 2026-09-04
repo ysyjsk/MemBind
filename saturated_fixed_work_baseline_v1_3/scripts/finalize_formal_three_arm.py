@@ -388,8 +388,9 @@ def paired_quality(
         "schema_version": "membind.paired-quality-analysis.v1",
         "status": "PASS",
         "replicate_pairs": pairs,
-        "mean_c_minus_a_accuracy": statistics.fmean(
-            row["c_minus_a_accuracy"] for row in pairs
+        "mean_c_minus_a_accuracy": (
+            math.fsum(row["c_minus_a_accuracy"] for row in pairs) / len(pairs)
+            if pairs else None
         ),
         "total_disagreements": sum(row["disagreement_count"] for row in pairs),
         "total_a_only_correct": sum(row["a_only_correct"] for row in pairs),

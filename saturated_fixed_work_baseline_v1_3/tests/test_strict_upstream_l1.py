@@ -83,7 +83,7 @@ def test_l1_response_gate_requires_stop_and_schema_validity() -> None:
         choices=[
             SimpleNamespace(
                 finish_reason="stop",
-                message=SimpleNamespace(content='{"edges": []}'),
+                message=SimpleNamespace(content='{"edges": [{"source_entity_name": "a", "target_entity_name": "b", "relation_type": "RELATED_TO", "fact": "a relates to b"}]}'),
             )
         ],
         usage=SimpleNamespace(
@@ -96,6 +96,8 @@ def test_l1_response_gate_requires_stop_and_schema_validity() -> None:
     result = module._evaluate_target_response(response)
 
     assert result["status"] == "PASS"
+    assert result["edge_count"] == 1
+    assert result["content_bearing_witness"] is True
     assert result["json_valid"] is True
     assert result["pydantic_valid"] is True
     assert result["schema_valid"] is True
@@ -125,6 +127,22 @@ def test_l1_response_gate_rejects_length_stop() -> None:
     assert result["reached_token_limit"] is True
 
 
+def test_l1_response_gate_rejects_schema_valid_empty_content_witness() -> None:
+    module = _module()
+    response = SimpleNamespace(
+        choices=[SimpleNamespace(finish_reason="stop", message=SimpleNamespace(content='{"edges": []}'))],
+        usage=SimpleNamespace(prompt_tokens=10, completion_tokens=2, total_tokens=12),
+    )
+    result = module._evaluate_target_response(response)
+    assert result["status"] == "FAIL"
+    assert result["json_valid"] is True
+    assert result["pydantic_valid"] is True
+    assert result["schema_valid"] is True
+    assert result["edge_count"] == 0
+    assert result["empty_edge_result"] is True
+    assert result["content_bearing_witness"] is False
+
+
 def test_p2_l1_expected_request_changes_only_declared_deployment_fields() -> None:
     module = _module()
     historical = {
@@ -146,19 +164,21 @@ def test_p2_l1_expected_request_changes_only_declared_deployment_fields() -> Non
     assert expected == {
         **historical,
         "model": "qwen3-14b-awq",
-        "temperature": 0.6,
-        "top_p": 0.95,
+        "temperature": 0.7,
+        "top_p": 0.8,
+        "presence_penalty": 1.5,
         "extra_body": {
             "top_k": 20,
+            "min_p": 0,
             "chat_template_kwargs": {"enable_thinking": False},
         },
     }
     assert changed_paths == [
         "extra_body.chat_template_kwargs",
+        "extra_body.min_p",
         "extra_body.repetition_penalty",
         "model",
-        "temperature",
-        "top_p",
+        "presence_penalty",
     ]
 
 

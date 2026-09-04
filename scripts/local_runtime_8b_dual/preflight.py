@@ -532,7 +532,7 @@ def structured_probe(client: httpx.Client, base_url: str) -> dict[str, Any]:
     elif policy_id == "P1_QWEN25_7B_AWQ":
         payload["repetition_penalty"] = 1.05
     elif policy_id == "P2_QWEN3_14B_AWQ":
-        payload["chat_template_kwargs"] = {"enable_thinking": False}
+        payload.update({"min_p": 0, "presence_penalty": 1.5, "chat_template_kwargs": {"enable_thinking": False}})
     else:
         raise RuntimeError(f"unknown deployment policy: {policy_id}")
     response = client.post(

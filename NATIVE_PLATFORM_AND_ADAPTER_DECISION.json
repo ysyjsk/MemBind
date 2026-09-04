@@ -1,6 +1,6 @@
 {
   "schema_version": "membind.native-platform-adapter-decision.v2",
-  "status": "P2_STRICT_L1_PASSED_L2_PENDING",
+  "status": "P2_DEPLOYMENT_CORRECTION_PENDING_L1",
   "formal_qualification_authorized": false,
   "sources": [
     {
@@ -39,11 +39,13 @@
       "project": "Qwen",
       "model": "Qwen/Qwen3-14B-AWQ",
       "revision": "31c69efc29464b6bb0aee1398b5a7b50a99340c3",
-      "role": "P2_STRICT_L1_PASSED_L2_CANDIDATE",
+      "role": "P2_DEPLOYMENT_CORRECTED_L1_PENDING",
       "directly_adopted": [
-        "temperature=0.6",
-        "top_p=0.95",
+        "temperature=0.7",
+        "top_p=0.8",
         "top_k=20",
+        "min_p=0",
+        "presence_penalty=1.5",
         "thinking disabled"
       ],
       "reference": "https://huggingface.co/Qwen/Qwen3-14B-AWQ/blob/31c69efc29464b6bb0aee1398b5a7b50a99340c3/generation_config.json"
@@ -78,7 +80,7 @@
   },
   "selected_platform": {
     "deployment_policy_id": "P2_QWEN3_14B_AWQ",
-    "qualification_status": "STRICT_L1_PASS_L2_PENDING",
+    "qualification_status": "CORRECTED_DEPLOYMENT_L1_PENDING",
     "profile_id": "local-qwen3-14b-awq-dualreplica-v1",
     "source_model": "Qwen/Qwen3-14B-AWQ",
     "served_model": "qwen3-14b-awq",
@@ -86,9 +88,11 @@
     "topology": "two identical single-GPU replicas on RTX 3090 Ti; tensor_parallel_size=1",
     "sampling": {
       "enable_thinking": false,
-      "temperature": 0.6,
-      "top_p": 0.95,
-      "top_k": 20
+      "temperature": 0.7,
+      "top_p": 0.8,
+      "top_k": 20,
+      "min_p": 0,
+      "presence_penalty": 1.5
     },
     "structured_output": {
       "mode": "json_schema",
@@ -105,8 +109,10 @@
     "logical_seed": "uint32(SHA256(dataset_revision,context_id,source_sequence,chunk_ordinal,prompt_name,canonical_messages_hash))",
     "platform_manifest": "/data/predator/ly/Mem/profiles/local-qwen3-14b-awq-dualreplica-v1/platform_manifest.20260904T095114Z.25205c46578a.json",
     "platform_manifest_payload_sha256": "25205c46578ac0954e121b909030aa07ede9871d8f8fc6818da21414e51ecaa0",
-    "strict_l1_result": "/data/predator/ly/Mem/experiments/local-qwen3-14b-awq-dualreplica-v1/strict-upstream-l1-exact-20260904T095439Z/L1_RESULT.json",
-    "strict_l1_result_file_sha256": "7b80d8b8e9e887693a9ffb8c73967573d58dbceedd5def27687974c27986c24c"
+    "strict_l1_result": null,
+    "strict_l1_result_file_sha256": null,
+    "historical_l1_status": "NON_AUTHORITATIVE_SUPERSEDED_SAMPLING",
+    "content_bearing_witness_required": true
   },
   "deployment_decision": {
     "p0": {
@@ -168,15 +174,17 @@
     },
     "p2": {
       "deployment_policy_id": "P2_QWEN3_14B_AWQ",
-      "decision": "SELECTED_FOR_FULL_HISTORY_L2_AFTER_EXACT_STRICT_L1_PASS",
+      "decision": "CORRECTED_DEPLOYMENT_PENDING_FRESH_EXACT_STRICT_L1",
       "source_model": "Qwen/Qwen3-14B-AWQ",
       "served_model": "qwen3-14b-awq",
       "revision": "31c69efc29464b6bb0aee1398b5a7b50a99340c3",
       "sampling": {
         "enable_thinking": false,
-        "temperature": 0.6,
-        "top_p": 0.95,
-        "top_k": 20
+        "temperature": 0.7,
+        "top_p": 0.8,
+        "top_k": 20,
+        "min_p": 0,
+        "presence_penalty": 1.5
       },
       "max_tokens": 16384,
       "native_max_position_embeddings": 40960,
@@ -197,8 +205,8 @@
         "observed_embedding_kv_tokens": 33760,
         "live_preflight_pass": true
       },
-      "exact_strict_l1": {
-        "status": "PASS",
+      "exact_strict_l1_historical": {
+        "status": "NON_AUTHORITATIVE_SUPERSEDED_SAMPLING",
         "terminal_artifact": "/data/predator/ly/Mem/experiments/local-qwen3-14b-awq-dualreplica-v1/strict-upstream-l1-exact-20260904T095439Z/L1_RESULT.json",
         "terminal_artifact_file_sha256": "7b80d8b8e9e887693a9ffb8c73967573d58dbceedd5def27687974c27986c24c",
         "upstream_identity_exact_except_declared_deployment": true,
@@ -212,8 +220,10 @@
         "schema_valid": true,
         "reached_token_limit": false,
         "response_repair_enabled": false,
-        "namespace_unchanged": true
+        "namespace_unchanged": true,
+        "content_bearing_witness": false
       },
+      "fresh_exact_strict_l1": {"status": "PENDING_CORRECTED_DEPLOYMENT", "content_bearing_witness_required": true},
       "selection_boundary": "Only the deployment/model and its official sampling may change. Graphiti prompt, upstream schema, call graph, MAB8192 adapter, stable seed policy, max_tokens, SDK retry count, routing semantics, dataset, and evaluator remain unchanged.",
       "next_gate": "Run fresh full-H0 L2 once in fixed A-to-C-to-B order. Formal execution remains unauthorized until all three L2 cells and the finalizer pass."
     }
@@ -221,7 +231,7 @@
   "evidence_boundary": [
     "Literature and official code support deployment and adapter choices only; they do not establish MemBind experimental success.",
     "The P1 compatibility replay was deployment evidence only and has been superseded by a deterministic exact strict L1 failure.",
-    "P2 passed exact strict L1 and is selected only for full-history L2; it is not yet formal-qualified.",
+    "Historical P2 exact strict L1 used superseded sampling and is non-authoritative; corrected deployment must produce a fresh non-empty content-bearing witness before full-history L2.",
     "No formal method freeze, formal authorization, performance claim, or quality claim exists until full-history L2 and all subsequent gates pass.",
     "MAB_ROLE_AWARE_LOSSLESS_8192_V1 is a shared project input adapter, not an upstream Graphiti or MemoryAgentBench interface."
   ]

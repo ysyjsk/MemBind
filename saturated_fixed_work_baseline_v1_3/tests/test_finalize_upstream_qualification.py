@@ -111,6 +111,18 @@ def _qualified_fixture(module, root: Path) -> dict:
                 "completed_count": 123,
             },
         )
+        _write(
+            attempt / "block/graph_diagnostics.json",
+            {
+                "status": "PASS",
+                "episodes": [
+                    {"source_sequence": sequence, "source_hash": f"h{sequence}", "session_id": "s"}
+                    for sequence in range(123)
+                ],
+                "entities": [{"name": "entity"}],
+                "edges": [{"fact": "entity relates to entity"}],
+            },
+        )
         runtime_identity = {
                 "status": "PASS",
                 "schema_version": "membind.formal-runtime-identity.v1",

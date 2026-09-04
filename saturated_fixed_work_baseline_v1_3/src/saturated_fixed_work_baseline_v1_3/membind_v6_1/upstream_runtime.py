@@ -79,9 +79,11 @@ P1_SAMPLING: dict[str, Any] = {
 P2_MODEL = "qwen3-14b-awq"
 P2_SAMPLING: dict[str, Any] = {
     "enable_thinking": False,
-    "temperature": 0.6,
-    "top_p": 0.95,
+    "temperature": 0.7,
+    "top_p": 0.8,
     "top_k": 20,
+    "min_p": 0,
+    "presence_penalty": 1.5,
     "structured_output_backend": "xgrammar",
 }
 
@@ -199,8 +201,10 @@ def deployment_wire_fields(policy: DeploymentPolicy, *, seed: int) -> dict[str, 
             "repetition_penalty": sampling["repetition_penalty"],
         }
     elif policy.policy_id == P2_DEPLOYMENT_POLICY_ID:
+        fields["presence_penalty"] = sampling["presence_penalty"]
         fields["extra_body"] = {
             "top_k": sampling["top_k"],
+            "min_p": sampling["min_p"],
             "chat_template_kwargs": {"enable_thinking": False},
         }
     else:  # pragma: no cover - DeploymentPolicy construction is internal.

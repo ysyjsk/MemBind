@@ -240,17 +240,21 @@ def test_p2_deployment_policy_uses_only_official_qwen3_14b_sampling() -> None:
     )
     assert dict(P2_DEPLOYMENT_POLICY.sampling) == {
         "enable_thinking": False,
-        "temperature": 0.6,
-        "top_p": 0.95,
+        "temperature": 0.7,
+        "top_p": 0.8,
         "top_k": 20,
+        "min_p": 0,
+        "presence_penalty": 1.5,
         "structured_output_backend": "xgrammar",
     }
     assert deployment_wire_fields(P2_DEPLOYMENT_POLICY, seed=123) == {
-        "temperature": 0.6,
-        "top_p": 0.95,
+        "temperature": 0.7,
+        "top_p": 0.8,
         "seed": 123,
+        "presence_penalty": 1.5,
         "extra_body": {
             "top_k": 20,
+            "min_p": 0,
             "chat_template_kwargs": {"enable_thinking": False},
         },
     }

@@ -117,13 +117,13 @@ def test_attempt_warmup_uses_frozen_p2_official_sampling() -> None:
         seed=7,
         deployment_policy_id="P2_QWEN3_14B_AWQ",
     )
-    assert payload["temperature"] == 0.6
-    assert payload["top_p"] == 0.95
+    assert payload["temperature"] == 0.7
+    assert payload["top_p"] == 0.8
     assert payload["top_k"] == 20
+    assert payload["min_p"] == 0
+    assert payload["presence_penalty"] == 1.5
     assert payload["chat_template_kwargs"] == {"enable_thinking": False}
     assert "repetition_penalty" not in payload
-    assert "presence_penalty" not in payload
-    assert "min_p" not in payload
 
 
 def test_8b_startup_recovers_neo4j_before_loading_models() -> None:

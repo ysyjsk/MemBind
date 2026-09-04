@@ -58,6 +58,8 @@ EXPECTED_ARTIFACTS = [
     "block/lifecycle_validation.json",
     "block/refinement_validation.json",
     "block/work_inventory.json",
+    "block/graph_diagnostics.json",
+    "block/resource_evidence.json",
     "route_events.jsonl",
     "route_runtime.json",
     "route_proof.json",
@@ -229,6 +231,38 @@ def _cell_result(root: Path, cell: dict[str, Any], returncode: int) -> dict[str,
     lifecycle = _read(attempt / "block/lifecycle_validation.json")
     order = _read(attempt / "block/order_validation.json")
     refinement = _read(attempt / "block/refinement_validation.json")
+    graph = _read(attempt / "block/graph_diagnostics.json")
+    episodes = graph.get("episodes") if isinstance(graph.get("episodes"), list) else []
+    entities = graph.get("entities") if isinstance(graph.get("entities"), list) else []
+    edges = graph.get("edges") if isinstance(graph.get("edges"), list) else []
+    episode_keys = [
+        (row.get("source_sequence"), row.get("source_hash"), row.get("session_id"))
+        for row in episodes if isinstance(row, Mapping)
+    ]
+    graph_sanity = {
+        "status": "PASS",
+        "expected_episode_count": expected,
+        "episodic_coverage_complete": len(episodes) == expected
+        and {row.get("source_sequence") for row in episodes if isinstance(row, Mapping)}
+        == set(range(expected or 0)),
+        "semantic_entity_count": len(entities),
+        "semantic_relationship_count": len(edges),
+        "episode_only_graph": bool(episodes) and not entities and not edges,
+        "duplicate_episode_rows": len(set(episode_keys)) != len(episode_keys),
+        "namespace_contamination": any(
+            isinstance(row, Mapping) and row.get("group_id") not in (None, cell["namespace"])
+            for row in [*entities, *edges]
+        ),
+    }
+    if not (
+        graph_sanity["episodic_coverage_complete"]
+        and graph_sanity["semantic_entity_count"] > 0
+        and graph_sanity["semantic_relationship_count"] > 0
+        and not graph_sanity["episode_only_graph"]
+        and not graph_sanity["duplicate_episode_rows"]
+        and not graph_sanity["namespace_contamination"]
+    ):
+        graph_sanity["status"] = "FAIL"
     expected = adapter.get("chunk_count")
     runtime_identity_errors = strict_formal_runtime_identity_errors(
         runtime_identity,
@@ -251,6 +285,7 @@ def _cell_result(root: Path, cell: dict[str, Any], returncode: int) -> dict[str,
             cell["arm"] != ARMS[1]
             or refinement.get("refinement_status") == "PASS"
         )
+        and graph_sanity["status"] == "PASS"
     )
     return {
         **cell,
@@ -263,6 +298,7 @@ def _cell_result(root: Path, cell: dict[str, Any], returncode: int) -> dict[str,
         "lifecycle_validation": lifecycle,
         "order_validation": order,
         "refinement_validation": refinement,
+        "graph_sanity": graph_sanity,
     }
 
 

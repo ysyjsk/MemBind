@@ -217,6 +217,7 @@ def _validate_qualification_artifacts(
         route_seal = _read(attempt / "route_seal.json")
         adapter = _read(attempt / "block/adapter_coverage.json")
         inventory = _read(attempt / "block/work_inventory.json")
+        graph = _read(attempt / "block/graph_diagnostics.json")
         runtime_identity = _read(attempt / "block/runtime_identity.json")
         runtime_identity_errors = strict_formal_runtime_identity_errors(
             runtime_identity,
@@ -232,6 +233,20 @@ def _validate_qualification_artifacts(
         verify_seal(attempt / "block")
         identity = seal.get("identity") if isinstance(seal.get("identity"), Mapping) else {}
         expected_chunks = adapter.get("chunk_count")
+        episodes = graph.get("episodes") if isinstance(graph.get("episodes"), list) else []
+        entities = graph.get("entities") if isinstance(graph.get("entities"), list) else []
+        edges = graph.get("edges") if isinstance(graph.get("edges"), list) else []
+        episode_sequences = {
+            row.get("source_sequence") for row in episodes if isinstance(row, Mapping)
+        }
+        graph_sanity = (
+            graph.get("status") in ("PASS", None)
+            and len(episodes) == expected_chunks
+            and episode_sequences == set(range(int(expected_chunks or 0)))
+            and len(entities) > 0
+            and len(edges) > 0
+            and not (episodes and not entities and not edges)
+        )
         if not (
             complete.get("status") == "PASS"
             and complete.get("attempt_id") == cell.get("attempt_id")
@@ -260,6 +275,7 @@ def _validate_qualification_artifacts(
             and inventory.get("expected_episode_count") == expected_chunks
             and inventory.get("submitted_count") == expected_chunks
             and inventory.get("completed_count") == expected_chunks
+            and graph_sanity
         ):
             raise RuntimeError("qualification cell artifact identity is invalid")
 
