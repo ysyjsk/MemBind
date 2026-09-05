@@ -1,0 +1,37 @@
+Traceback (most recent call last):
+  File "/data/predator/ly/MemBind/mab_quality_v2_final_qa/src/mab_quality_v2_final_qa/dataset_adapter.py", line 216, in from_file
+    raw = file_path.read_text(encoding="utf-8")
+          ^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^
+  File "/usr/lib/python3.12/pathlib.py", line 1029, in read_text
+    with self.open(mode='r', encoding=encoding, errors=errors) as f:
+         ^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^
+  File "/usr/lib/python3.12/pathlib.py", line 1015, in open
+    return io.open(self, mode, buffering, encoding, errors, newline)
+           ^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^
+FileNotFoundError: [Errno 2] No such file or directory: '/data/predator/ly/MemBind/../mab_quality_v2_final_qa/data/official_5_contexts.json'
+
+The above exception was the direct cause of the following exception:
+
+Traceback (most recent call last):
+  File "/data/predator/ly/MemBind/clean_membind/external_repro/run_mab_workload.py", line 93, in <module>
+    main()
+  File "/data/predator/ly/MemBind/clean_membind/external_repro/run_mab_workload.py", line 89, in main
+    asyncio.run(run(args.context_index, args.max_source_sequence, args.smoke_count, args.output))
+  File "/usr/lib/python3.12/asyncio/runners.py", line 194, in run
+    return runner.run(main)
+           ^^^^^^^^^^^^^^^^
+  File "/usr/lib/python3.12/asyncio/runners.py", line 118, in run
+    return self._loop.run_until_complete(task)
+           ^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^
+  File "/usr/lib/python3.12/asyncio/base_events.py", line 687, in run_until_complete
+    return future.result()
+           ^^^^^^^^^^^^^^^
+  File "/data/predator/ly/MemBind/clean_membind/external_repro/run_mab_workload.py", line 44, in run
+    context = load_main_contexts(DATASET)[context_index]
+              ^^^^^^^^^^^^^^^^^^^^^^^^^^^
+  File "/data/predator/ly/MemBind/mab_quality_v2_final_qa/src/mab_quality_v2_final_qa/mab_main_dataset.py", line 61, in load_main_contexts
+    adapter = MABDatasetAdapter.from_file(
+              ^^^^^^^^^^^^^^^^^^^^^^^^^^^^
+  File "/data/predator/ly/MemBind/mab_quality_v2_final_qa/src/mab_quality_v2_final_qa/dataset_adapter.py", line 218, in from_file
+    raise DatasetMappingError(
+mab_quality_v2_final_qa.dataset_adapter.DatasetMappingError: dataset file is unreadable: /data/predator/ly/MemBind/../mab_quality_v2_final_qa/data/official_5_contexts.json

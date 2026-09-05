@@ -1,0 +1,22 @@
+[build-system]
+requires = ["setuptools>=68"]
+build-backend = "setuptools.build_meta"
+
+[project]
+name = "clean-membind"
+version = "0.1.0"
+description = "Small, testable MemBind implementation with an upstream Graphiti Native boundary"
+requires-python = ">=3.11"
+dependencies = []
+
+[project.optional-dependencies]
+live = ["graphiti-core==0.29.3", "openai>=1.0", "neo4j>=5.0"]
+test = ["pytest>=8", "pytest-asyncio>=0.23"]
+
+[tool.pytest.ini_options]
+pythonpath = ["src"]
+testpaths = ["tests"]
+addopts = "-q"
+
+[tool.setuptools.packages.find]
+where = ["src"]

@@ -1,0 +1,23 @@
+Traceback (most recent call last):
+  File "/data/predator/ly/MemBind/clean_membind/external_repro/run_mab_workload.py", line 93, in <module>
+    main()
+  File "/data/predator/ly/MemBind/clean_membind/external_repro/run_mab_workload.py", line 89, in main
+    asyncio.run(run(args.context_index, args.max_source_sequence, args.smoke_count, args.output))
+  File "/usr/lib/python3.12/asyncio/runners.py", line 194, in run
+    return runner.run(main)
+           ^^^^^^^^^^^^^^^^
+  File "/usr/lib/python3.12/asyncio/runners.py", line 118, in run
+    return self._loop.run_until_complete(task)
+           ^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^
+  File "/usr/lib/python3.12/asyncio/base_events.py", line 687, in run_until_complete
+    return future.result()
+           ^^^^^^^^^^^^^^^
+  File "/data/predator/ly/MemBind/clean_membind/external_repro/run_mab_workload.py", line 69, in run
+    await GraphitiNative(graphiti).add_episode(_episode(chunk, group_id))
+  File "/data/predator/ly/MemBind/clean_membind/src/membind/native/graphiti_adapter.py", line 55, in add_episode
+    reference_time=parse_reference_time(episode.reference_time),
+                   ^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^
+  File "/data/predator/ly/MemBind/clean_membind/src/membind/native/graphiti_adapter.py", line 22, in parse_reference_time
+    return datetime.fromisoformat(normalized)
+           ^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^
+ValueError: Invalid isoformat string: '2022/11/17 (Thu) 12:04'
