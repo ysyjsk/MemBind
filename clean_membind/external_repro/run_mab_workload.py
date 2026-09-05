@@ -32,7 +32,7 @@ def _episode(chunk: object, group_id: str) -> GraphitiEpisode:
     )
 
 
-async def run(context_index: int, max_source_sequence: int | None, max_global_sequence: int | None, smoke_count: int | None, max_tokens: int, output: Path) -> None:
+async def run(context_index: int, max_source_sequence: int | None, max_global_sequence: int | None, smoke_count: int | None, max_tokens: int, model: str, structured_output_mode: str, output: Path) -> None:
     from mab_quality_v2_final_qa.mab_main_dataset import load_main_contexts
     from mab_quality_v2_final_qa.mab8192_adapter import MAB8192Manifest
     from graphiti_core import Graphiti
@@ -54,8 +54,8 @@ async def run(context_index: int, max_source_sequence: int | None, max_global_se
         raise ValueError("selected workload is empty")
 
     base_url = "http://127.0.0.1:11434/v1"
-    config = LLMConfig(api_key="ollama", model="qwen2.5:14b", small_model="qwen2.5:14b", base_url=base_url, temperature=0)
-    llm = OpenAIGenericClient(config=config, max_tokens=max_tokens, structured_output_mode="json_schema")
+    config = LLMConfig(api_key="ollama", model=model, small_model=model, base_url=base_url, temperature=0)
+    llm = OpenAIGenericClient(config=config, max_tokens=max_tokens, structured_output_mode=structured_output_mode)
     embedder = OpenAIEmbedder(config=OpenAIEmbedderConfig(api_key="ollama", embedding_model="nomic-embed-text", embedding_dim=768, base_url=base_url))
     reranker = OpenAIRerankerClient(client=llm, config=config)
     graphiti = Graphiti("bolt://127.0.0.1:7687", "neo4j", "password", llm_client=llm, embedder=embedder, cross_encoder=reranker, max_coroutines=2)
@@ -88,9 +88,11 @@ def main() -> None:
     parser.add_argument("--max-global-sequence", type=int)
     parser.add_argument("--smoke-count", type=int)
     parser.add_argument("--max-tokens", type=int, default=2048)
+    parser.add_argument("--model", default="qwen2.5:14b")
+    parser.add_argument("--structured-output-mode", choices=("json_schema", "json_object"), default="json_schema")
     parser.add_argument("--output", type=Path, required=True)
     args = parser.parse_args()
-    asyncio.run(run(args.context_index, args.max_source_sequence, args.max_global_sequence, args.smoke_count, args.max_tokens, args.output))
+    asyncio.run(run(args.context_index, args.max_source_sequence, args.max_global_sequence, args.smoke_count, args.max_tokens, args.model, args.structured_output_mode, args.output))
 
 
 if __name__ == "__main__":

@@ -1,0 +1,37 @@
+Traceback (most recent call last):
+  File "/data/predator/ly/MemBind/clean_membind/external_repro/run_mab_workload.py", line 99, in <module>
+    main()
+  File "/data/predator/ly/MemBind/clean_membind/external_repro/run_mab_workload.py", line 95, in main
+    asyncio.run(run(args.context_index, args.max_source_sequence, args.max_global_sequence, args.smoke_count, args.max_tokens, args.model, args.structured_output_mode, args.output))
+  File "/usr/lib/python3.12/asyncio/runners.py", line 194, in run
+    return runner.run(main)
+           ^^^^^^^^^^^^^^^^
+  File "/usr/lib/python3.12/asyncio/runners.py", line 118, in run
+    return self._loop.run_until_complete(task)
+           ^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^
+  File "/usr/lib/python3.12/asyncio/base_events.py", line 687, in run_until_complete
+    return future.result()
+           ^^^^^^^^^^^^^^^
+  File "/data/predator/ly/MemBind/clean_membind/external_repro/run_mab_workload.py", line 71, in run
+    await GraphitiNative(graphiti).add_episode(_episode(chunk, group_id))
+  File "/data/predator/ly/MemBind/clean_membind/src/membind/native/graphiti_adapter.py", line 73, in add_episode
+    return await result if inspect.isawaitable(result) else result
+           ^^^^^^^^^^^^
+  File "/data/predator/ly/Mem/envs/membind-local/lib/python3.12/site-packages/graphiti_core/graphiti.py", line 1228, in add_episode
+    raise e
+  File "/data/predator/ly/Mem/envs/membind-local/lib/python3.12/site-packages/graphiti_core/graphiti.py", line 1122, in add_episode
+    extracted_nodes, node_episode_index_map = await extract_nodes(
+                                              ^^^^^^^^^^^^^^^^^^^^
+  File "/data/predator/ly/Mem/envs/membind-local/lib/python3.12/site-packages/graphiti_core/utils/maintenance/node_operations.py", line 132, in extract_nodes
+    extracted_entities = await _extract_nodes_single(llm_client, primary_episode, context)
+                         ^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^
+  File "/data/predator/ly/Mem/envs/membind-local/lib/python3.12/site-packages/graphiti_core/utils/maintenance/node_operations.py", line 251, in _extract_nodes_single
+    response_object = ExtractedEntities(**llm_response)
+                      ^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^
+  File "/data/predator/ly/Mem/envs/membind-local/lib/python3.12/site-packages/pydantic/main.py", line 263, in __init__
+    validated_self = self.__pydantic_validator__.validate_python(data, self_instance=self)
+                     ^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^
+pydantic_core._pydantic_core.ValidationError: 1 validation error for ExtractedEntities
+extracted_entities
+  Field required [type=missing, input_value={'$defs': {'ExtractedEnti...ties', 'type': 'object'}, input_type=dict]
+    For further information visit https://errors.pydantic.dev/2.13/v/missing

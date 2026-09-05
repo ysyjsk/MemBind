@@ -2,7 +2,8 @@
 
 ## Arms and fairness
 
-After Native freeze, use the same model, Ollama runtime, Graphiti revision,
+The plan is conditional. It cannot start while `NATIVE_VALIDATION_SUMMARY.json`
+reports `NATIVE_NOT_READY`. After Native freeze, use the same model, Ollama runtime, Graphiti revision,
 embedding, database, workload adapter, source order, evaluator, and total GPU
 budget for all arms:
 
@@ -51,4 +52,3 @@ disagreement reporting.
 
 No result is labelled paper-ready automatically. The conclusion may be
 supported, mixed, quality-inconclusive, or a valid negative.
-

@@ -9,7 +9,7 @@ import time
 from membind.native import GraphitiEpisode, GraphitiNative
 
 
-async def run() -> None:
+async def run(model: str = "qwen2.5:14b", max_tokens: int = 2048, structured_output_mode: str = "json_schema") -> None:
     from graphiti_core import Graphiti
     from graphiti_core.cross_encoder.openai_reranker_client import OpenAIRerankerClient
     from graphiti_core.embedder.openai import OpenAIEmbedder, OpenAIEmbedderConfig
@@ -19,12 +19,12 @@ async def run() -> None:
     base_url = "http://127.0.0.1:11434/v1"
     config = LLMConfig(
         api_key="ollama",
-        model="qwen2.5:14b",
-        small_model="qwen2.5:14b",
+        model=model,
+        small_model=model,
         base_url=base_url,
         temperature=0,
     )
-    llm = OpenAIGenericClient(config=config, max_tokens=16384, structured_output_mode="json_schema")
+    llm = OpenAIGenericClient(config=config, max_tokens=max_tokens, structured_output_mode=structured_output_mode)
     embedder = OpenAIEmbedder(
         config=OpenAIEmbedderConfig(
             api_key="ollama",
@@ -59,4 +59,10 @@ async def run() -> None:
 
 
 if __name__ == "__main__":
-    asyncio.run(run())
+    import argparse
+    parser = argparse.ArgumentParser()
+    parser.add_argument("--model", default="qwen2.5:14b")
+    parser.add_argument("--max-tokens", type=int, default=2048)
+    parser.add_argument("--structured-output-mode", choices=("json_schema", "json_object"), default="json_schema")
+    args = parser.parse_args()
+    asyncio.run(run(args.model, args.max_tokens, args.structured_output_mode))

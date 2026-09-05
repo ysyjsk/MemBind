@@ -1,8 +1,14 @@
 # Native Decision
 
-## Primary candidate
+## Decision status: `NATIVE_NOT_READY`
 
-The clean mainline selects:
+No model/runtime combination tested on this host satisfies the Native freeze
+gate. The clean implementation is ready for a future backend, but the formal
+three-arm experiment is **not authorized** and no formal cell has been started.
+
+## Candidates tested
+
+The initial primary candidate was tested as follows:
 
 | Component | Frozen choice |
 | --- | --- |
@@ -11,33 +17,32 @@ The clean mainline selects:
 | Local runtime | Ollama OpenAI-compatible endpoint, `http://127.0.0.1:11434/v1` |
 | LLM | `qwen2.5:14b` (open weights; exact Ollama digest must be recorded before freeze) |
 | Embedding | Ollama `nomic-embed-text`, 768 dimensions |
-| Structured output | `json_schema` first, because it is Graphiti's constrained-output path; no repair/retry algorithm is added |
+| Structured output | `json_schema` first; no repair/retry algorithm is added |
 | Database | existing Neo4j deployment, with URI/version recorded at freeze |
 | GPU placement | one Ollama model server at a time during validation; two identical replicas only after resource measurement |
 
-This is the only primary candidate. `deepseek-r1:7b`, the official local
-example, is a documented backup for a deployment smoke test if qwen2.5 cannot
-be obtained, not a second formal method or a model zoo.
+The official `deepseek-r1:7b` example was tested as the single backup, not as a
+model zoo.
 
-## Why this candidate
+## Evidence and rejection
 
-1. It uses the official Graphiti client and untouched Graphiti extraction and
-   deduplication code.
-2. An independent open-source deployment actually uses `qwen2.5:14b` with
-   Ollama and Nomic embeddings, and recommends roughly 16 GB VRAM.
-3. A 14B model is a better fit for structured extraction than the smaller local
-   models that previously produced truncation and invalid JSON in this project.
-4. Ollama supplies a stable, inspectable OpenAI-compatible boundary; model
-   digest, runtime version, and structured-output request are recorded as
-   identity fields rather than inferred from a process name.
+* qwen2.5:14b + json_schema passed one short episode, then failed at global
+  chunk 18 with invalid JSON after four Graphiti retries (`max_tokens=2048`).
+  At `max_tokens=16384` the same state produced no durable result for 51
+  minutes and exhausted a local runner.
+* qwen2.5:14b + json_object immediately returned the schema document rather
+  than an `ExtractedEntities` object.
+* deepseek-r1:7b + json_schema passed one short episode, then failed at global
+  chunk 7 with an unterminated JSON string after four retries.
 
-The evidence is sufficient to justify a minimal real validation, not to skip
-it. The external project documents service operation and short smoke tests but
-does not prove full LongMemEval-scale reliability.
+These are real structured-output/deployment failures in the untouched Graphiti
+path. They are not repaired in clean code and do not justify changing the
+benchmark adapter. The external project evidence remains useful, but short
+MCP smoke tests do not establish LongMemEval-scale reliability.
 
 ## Freeze gate
 
-The candidate becomes `NATIVE_READY_FOR_MAIN_EXPERIMENT` only after:
+An eventual candidate may become `NATIVE_READY_FOR_MAIN_EXPERIMENT` only after:
 
 * the external deployment shape succeeds on this host;
 * the real adapter succeeds through a short prefix and the complete state near
@@ -47,4 +52,3 @@ The candidate becomes `NATIVE_READY_FOR_MAIN_EXPERIMENT` only after:
 Any failure is recorded as deployment evidence. The clean method is not
 modified to repair responses. A backend configuration change is allowed only
 before the freeze and must create a new identity record.
-

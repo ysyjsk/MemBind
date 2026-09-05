@@ -1,32 +1,25 @@
-Target entity not found in nodes for edge relation: HAS_FEATURE
-Target entity not found in nodes for edge relation: HAS_FEATURE
-Target entity not found in nodes for edge relation: HAS_ATTRIBUTE
-Target entity not found in nodes for edge relation: HAS_ATTRIBUTE
-Target entity not found in nodes for edge relation: HAS_ATTRIBUTE
-Target entity not found in nodes for edge relation: HAS_ATTRIBUTE
-Target entity not found in nodes for edge relation: HAS_ATTRIBUTE
-Target entity not found in nodes for edge relation: IS_SIMILAR_TO
-Target entity not found in nodes for edge relation: IS_SIMILAR_TO
-Target entity not found in nodes for edge relation: IS_SIMILAR_TO
-Target entity not found in nodes for edge relation: IS_DIFFERENT_FROM
-Target entity not found in nodes for edge relation: IS_DIFFERENT_FROM
-Target entity not found in nodes for edge relation: IS_DIFFERENT_FROM
-Target entity not found in nodes for edge relation: IS_SIMILAR_TO
-Target entity not found in nodes for edge relation: IS_RELATED_TO
-Target entity not found in nodes for edge relation: IS_RELATED_TO
-Target entity not found in nodes for edge relation: IS_RELATED_TO
-Error in generating LLM response: Expecting ',' delimiter: line 6 column 2040 (char 2140)
-Error in generating LLM response: Expecting ',' delimiter: line 6 column 2040 (char 2140)
+Source entity not found in nodes for edge relation: CREDIT_CARD
+Source entity not found in nodes for edge relation: INquiry ABOUT
+LLM returned summary for unknown entity (first 30 chars): Spirit Airlines
+LLM returned summary for unknown entity (first 30 chars): Delta SkyMiles
+Target entity not found in nodes for edge relation: DISCUSSED_ON FACEBOOK THEN READ
+Source entity not found in nodes for edge relation: AUTHORS
+Source entity not found in nodes for edge relation: TOOL
+Source entity not found in nodes for edge relation: TOOL
+LLM returned summary for unknown entity (first 30 chars): Taylor Jenkins Reid
+Source entity not found in nodes for edge relation: 
+Error in generating LLM response: Expecting property name enclosed in double quotes: line 286 column 25 (char 4636)
+Error in generating LLM response: Unterminated string starting at: line 277 column 6 (char 4958)
 Retrying _generate_response_with_retry after 2 attempts...
-Error in generating LLM response: Expecting ',' delimiter: line 6 column 2039 (char 2146)
+Error in generating LLM response: Unterminated string starting at: line 277 column 6 (char 4958)
 Retrying _generate_response_with_retry after 3 attempts...
-Error in generating LLM response: Expecting ',' delimiter: line 6 column 2039 (char 2146)
+Error in generating LLM response: Unterminated string starting at: line 277 column 6 (char 4958)
 Retrying _generate_response_with_retry after 4 attempts...
 Traceback (most recent call last):
-  File "/data/predator/ly/MemBind/clean_membind/external_repro/run_mab_workload.py", line 97, in <module>
+  File "/data/predator/ly/MemBind/clean_membind/external_repro/run_mab_workload.py", line 98, in <module>
     main()
-  File "/data/predator/ly/MemBind/clean_membind/external_repro/run_mab_workload.py", line 93, in main
-    asyncio.run(run(args.context_index, args.max_source_sequence, args.max_global_sequence, args.smoke_count, args.max_tokens, args.output))
+  File "/data/predator/ly/MemBind/clean_membind/external_repro/run_mab_workload.py", line 94, in main
+    asyncio.run(run(args.context_index, args.max_source_sequence, args.max_global_sequence, args.smoke_count, args.max_tokens, args.model, args.output))
   File "/usr/lib/python3.12/asyncio/runners.py", line 194, in run
     return runner.run(main)
            ^^^^^^^^^^^^^^^^
@@ -99,4 +92,4 @@ Traceback (most recent call last):
   File "/usr/lib/python3.12/json/decoder.py", line 353, in raw_decode
     obj, end = self.scan_once(s, idx)
                ^^^^^^^^^^^^^^^^^^^^^^
-json.decoder.JSONDecodeError: Expecting ',' delimiter: line 6 column 2039 (char 2146)
+json.decoder.JSONDecodeError: Unterminated string starting at: line 277 column 6 (char 4958)

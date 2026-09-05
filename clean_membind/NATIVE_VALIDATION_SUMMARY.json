@@ -1,0 +1,19 @@
+{
+  "schema_version": "clean-membind.native-validation.v1",
+  "status": "NATIVE_NOT_READY",
+  "graphiti": {"version": "0.29.3", "commit": "021d3a57d511f21b10adaf7fa923bd5c1fce5e9d"},
+  "workload": {
+    "dataset": "MemoryAgentBench LongMemEval",
+    "contexts": 5,
+    "sessions": 555,
+    "qa_per_context": 60,
+    "adapter": "MAB_ROLE_AWARE_LOSSLESS_8192_V1"
+  },
+  "attempts": [
+    {"model": "qwen2.5:14b", "mode": "json_schema", "max_tokens": 16384, "status": "INVALID_DEPLOYMENT_CONFIGURATION", "failure_global_sequence": 18, "reason": "no durable result for 51 minutes"},
+    {"model": "qwen2.5:14b", "mode": "json_schema", "max_tokens": 2048, "status": "INVALID_NATIVE_CANDIDATE", "failure_global_sequence": 18, "reason": "JSONDecodeError"},
+    {"model": "qwen2.5:14b", "mode": "json_object", "max_tokens": 2048, "status": "INVALID_NATIVE_CANDIDATE", "failure_global_sequence": 0, "reason": "schema document returned instead of ExtractedEntities"},
+    {"model": "deepseek-r1:7b", "mode": "json_schema", "max_tokens": 2048, "status": "INVALID_NATIVE_CANDIDATE", "failure_global_sequence": 7, "reason": "unterminated JSON string"}
+  ],
+  "formal_experiment_authorized": false
+}
