@@ -23,4 +23,3 @@ class AsyncNative:
                 return await self.native.add_episode(episode)
 
         return tuple(await asyncio.gather(*(one(item) for item in episodes)))
-

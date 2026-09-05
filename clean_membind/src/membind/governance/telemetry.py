@@ -27,4 +27,3 @@ class JsonlTelemetry:
 
     def __exit__(self, *_: object) -> None:
         self.close()
-

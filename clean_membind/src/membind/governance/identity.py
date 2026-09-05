@@ -15,4 +15,3 @@ def implementation_identity(root: str | Path) -> dict[str, Any]:
         commit = "UNAVAILABLE"
     payload = {"git_head": commit, "package": "clean-membind", "schema_version": "clean-membind.identity.v1"}
     return {**payload, "identity_sha256": canonical_sha256(payload)}
-

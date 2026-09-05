@@ -85,4 +85,3 @@ Graphiti's MCP server, Ollama `qwen2.5:14b`, Nomic embeddings, and a low
 concurrency semaphore. Its README demonstrates a persistent service, but does
 not establish LongMemEval-scale continuous ingestion; that gap is why Step 2
 and Step 3 validation remain mandatory.
-

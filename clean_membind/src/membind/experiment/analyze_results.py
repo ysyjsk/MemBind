@@ -15,4 +15,3 @@ def summarize(path: str | Path) -> dict[str, Any]:
         if row.get("status") == "PASS" and isinstance(row.get("makespan_ns"), (int, float)):
             by_arm[str(row.get("arm"))].append(float(row["makespan_ns"]))
     return {arm: {"count": len(values), "mean_makespan_ns": sum(values) / len(values)} for arm, values in sorted(by_arm.items())}
-

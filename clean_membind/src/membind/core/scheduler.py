@@ -103,4 +103,3 @@ class MemBindScheduler:
             await asyncio.gather(*tasks.values(), return_exceptions=True)
             raise
         return SchedulerResult(tuple(records))
-

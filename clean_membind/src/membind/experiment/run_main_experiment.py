@@ -32,4 +32,3 @@ async def run_cell(cell: ExperimentCell, episodes: Sequence[Any], runners: dict[
     if hasattr(result, "__await__"):
         return await result
     return result
-
