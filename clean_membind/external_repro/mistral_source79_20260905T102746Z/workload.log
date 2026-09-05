@@ -1,0 +1,89 @@
+LLM returned summary for unknown entity (first 30 chars): Evernote
+LLM returned summary for unknown entity (first 30 chars): Notion
+LLM returned invalid duplicate_facts idx values [0] (valid range: 0--1 for EXISTING FACTS)
+Target entity not found in nodes for edge relation: OFFERS
+Target entity not found in nodes for edge relation: OFFERS
+Target entity not found in nodes for edge relation: OFFERS
+Target entity not found in nodes for edge relation: OFFERS
+Error in generating LLM response: Expecting ',' delimiter: line 1 column 16532 (char 16531)
+Error in generating LLM response: Expecting ',' delimiter: line 1 column 16546 (char 16545)
+Retrying _generate_response_with_retry after 2 attempts...
+Error in generating LLM response: Expecting ',' delimiter: line 1 column 16546 (char 16545)
+Retrying _generate_response_with_retry after 3 attempts...
+Error in generating LLM response: Expecting ',' delimiter: line 1 column 16546 (char 16545)
+Retrying _generate_response_with_retry after 4 attempts...
+Traceback (most recent call last):
+  File "/data/predator/ly/MemBind/clean_membind/external_repro/run_mab_workload.py", line 112, in <module>
+    main()
+  File "/data/predator/ly/MemBind/clean_membind/external_repro/run_mab_workload.py", line 108, in main
+    asyncio.run(run(args.context_index, args.max_source_sequence, args.max_global_sequence, args.smoke_count, args.max_tokens, args.model, args.structured_output_mode, args.output, args.reasoning_effort))
+  File "/usr/lib/python3.12/asyncio/runners.py", line 194, in run
+    return runner.run(main)
+           ^^^^^^^^^^^^^^^^
+  File "/usr/lib/python3.12/asyncio/runners.py", line 118, in run
+    return self._loop.run_until_complete(task)
+           ^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^
+  File "/usr/lib/python3.12/asyncio/base_events.py", line 687, in run_until_complete
+    return future.result()
+           ^^^^^^^^^^^^^^^
+  File "/data/predator/ly/MemBind/clean_membind/external_repro/run_mab_workload.py", line 83, in run
+    await GraphitiNative(graphiti).add_episode(_episode(chunk, group_id))
+  File "/data/predator/ly/MemBind/clean_membind/src/membind/native/graphiti_adapter.py", line 73, in add_episode
+    return await result if inspect.isawaitable(result) else result
+           ^^^^^^^^^^^^
+  File "/data/predator/ly/Mem/envs/membind-local/lib/python3.12/site-packages/graphiti_core/graphiti.py", line 1228, in add_episode
+    raise e
+  File "/data/predator/ly/Mem/envs/membind-local/lib/python3.12/site-packages/graphiti_core/graphiti.py", line 1144, in add_episode
+    ) = await self._extract_and_resolve_edges(
+        ^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^
+  File "/data/predator/ly/Mem/envs/membind-local/lib/python3.12/site-packages/graphiti_core/graphiti.py", line 656, in _extract_and_resolve_edges
+    extracted_edges = await extract_edges(
+                      ^^^^^^^^^^^^^^^^^^^^
+  File "/data/predator/ly/Mem/envs/membind-local/lib/python3.12/site-packages/graphiti_core/utils/maintenance/edge_operations.py", line 202, in extract_edges
+    llm_response = await llm_client.generate_response(
+                   ^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^
+  File "/data/predator/ly/Mem/envs/membind-local/lib/python3.12/site-packages/graphiti_core/llm_client/openai_generic_client.py", line 222, in generate_response
+    return await self._generate_response_with_retry(
+           ^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^
+  File "/data/predator/ly/Mem/envs/membind-local/lib/python3.12/site-packages/tenacity/asyncio/__init__.py", line 193, in async_wrapped
+    return await copy(fn, *args, **kwargs)
+           ^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^
+  File "/data/predator/ly/Mem/envs/membind-local/lib/python3.12/site-packages/tenacity/asyncio/__init__.py", line 112, in __call__
+    do = await self.iter(retry_state=retry_state)
+         ^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^
+  File "/data/predator/ly/Mem/envs/membind-local/lib/python3.12/site-packages/tenacity/asyncio/__init__.py", line 157, in iter
+    result = await action(retry_state)
+             ^^^^^^^^^^^^^^^^^^^^^^^^^
+  File "/data/predator/ly/Mem/envs/membind-local/lib/python3.12/site-packages/tenacity/_utils.py", line 111, in inner
+    return call(*args, **kwargs)
+           ^^^^^^^^^^^^^^^^^^^^^
+  File "/data/predator/ly/Mem/envs/membind-local/lib/python3.12/site-packages/tenacity/__init__.py", line 413, in exc_check
+    raise retry_exc.reraise()
+          ^^^^^^^^^^^^^^^^^^^
+  File "/data/predator/ly/Mem/envs/membind-local/lib/python3.12/site-packages/tenacity/__init__.py", line 184, in reraise
+    raise self.last_attempt.result()
+          ^^^^^^^^^^^^^^^^^^^^^^^^^^
+  File "/usr/lib/python3.12/concurrent/futures/_base.py", line 449, in result
+    return self.__get_result()
+           ^^^^^^^^^^^^^^^^^^^
+  File "/usr/lib/python3.12/concurrent/futures/_base.py", line 401, in __get_result
+    raise self._exception
+  File "/data/predator/ly/Mem/envs/membind-local/lib/python3.12/site-packages/tenacity/asyncio/__init__.py", line 116, in __call__
+    result = await fn(*args, **kwargs)
+             ^^^^^^^^^^^^^^^^^^^^^^^^^
+  File "/data/predator/ly/Mem/envs/membind-local/lib/python3.12/site-packages/graphiti_core/llm_client/client.py", line 139, in _generate_response_with_retry
+    return await self._generate_response(messages, response_model, max_tokens, model_size)
+           ^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^
+  File "/data/predator/ly/Mem/envs/membind-local/lib/python3.12/site-packages/graphiti_core/llm_client/openai_generic_client.py", line 169, in _generate_response
+    return json.loads(self._strip_code_fences(result))
+           ^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^
+  File "/usr/lib/python3.12/json/__init__.py", line 346, in loads
+    return _default_decoder.decode(s)
+           ^^^^^^^^^^^^^^^^^^^^^^^^^^
+  File "/usr/lib/python3.12/json/decoder.py", line 337, in decode
+    obj, end = self.raw_decode(s, idx=_w(s, 0).end())
+               ^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^
+  File "/usr/lib/python3.12/json/decoder.py", line 353, in raw_decode
+    obj, end = self.scan_once(s, idx)
+               ^^^^^^^^^^^^^^^^^^^^^^
+json.decoder.JSONDecodeError: Expecting ',' delimiter: line 1 column 16546 (char 16545)
