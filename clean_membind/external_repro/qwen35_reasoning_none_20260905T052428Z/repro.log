@@ -1,0 +1,30 @@
+Traceback (most recent call last):
+  File "/data/predator/ly/MemBind/clean_membind/external_repro/run_ollama_graphiti.py", line 77, in <module>
+    asyncio.run(run(args.model, args.max_tokens, args.structured_output_mode, args.reasoning_effort))
+  File "/usr/lib/python3.12/asyncio/runners.py", line 194, in run
+    return runner.run(main)
+           ^^^^^^^^^^^^^^^^
+  File "/usr/lib/python3.12/asyncio/runners.py", line 118, in run
+    return self._loop.run_until_complete(task)
+           ^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^
+  File "/usr/lib/python3.12/asyncio/base_events.py", line 687, in run_until_complete
+    return future.result()
+           ^^^^^^^^^^^^^^^
+  File "/data/predator/ly/MemBind/clean_membind/external_repro/run_ollama_graphiti.py", line 56, in run
+    result = await GraphitiNative(graphiti).add_episode(
+             ^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^
+  File "/data/predator/ly/MemBind/clean_membind/src/membind/native/graphiti_adapter.py", line 73, in add_episode
+    return await result if inspect.isawaitable(result) else result
+           ^^^^^^^^^^^^
+  File "/data/predator/ly/Mem/envs/membind-local/lib/python3.12/site-packages/graphiti_core/graphiti.py", line 1228, in add_episode
+    raise e
+  File "/data/predator/ly/Mem/envs/membind-local/lib/python3.12/site-packages/graphiti_core/graphiti.py", line 1122, in add_episode
+    extracted_nodes, node_episode_index_map = await extract_nodes(
+                                              ^^^^^^^^^^^^^^^^^^^^
+  File "/data/predator/ly/Mem/envs/membind-local/lib/python3.12/site-packages/graphiti_core/utils/maintenance/node_operations.py", line 132, in extract_nodes
+    extracted_entities = await _extract_nodes_single(llm_client, primary_episode, context)
+                         ^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^
+  File "/data/predator/ly/Mem/envs/membind-local/lib/python3.12/site-packages/graphiti_core/utils/maintenance/node_operations.py", line 251, in _extract_nodes_single
+    response_object = ExtractedEntities(**llm_response)
+                      ^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^
+TypeError: graphiti_core.prompts.extract_nodes.ExtractedEntities() argument after ** must be a mapping, not list

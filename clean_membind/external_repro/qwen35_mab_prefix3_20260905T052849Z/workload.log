@@ -1,0 +1,48 @@
+Traceback (most recent call last):
+  File "/data/predator/ly/MemBind/clean_membind/external_repro/run_mab_workload.py", line 112, in <module>
+    main()
+  File "/data/predator/ly/MemBind/clean_membind/external_repro/run_mab_workload.py", line 108, in main
+    asyncio.run(run(args.context_index, args.max_source_sequence, args.max_global_sequence, args.smoke_count, args.max_tokens, args.model, args.structured_output_mode, args.output, args.reasoning_effort))
+  File "/usr/lib/python3.12/asyncio/runners.py", line 194, in run
+    return runner.run(main)
+           ^^^^^^^^^^^^^^^^
+  File "/usr/lib/python3.12/asyncio/runners.py", line 118, in run
+    return self._loop.run_until_complete(task)
+           ^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^
+  File "/usr/lib/python3.12/asyncio/base_events.py", line 687, in run_until_complete
+    return future.result()
+           ^^^^^^^^^^^^^^^
+  File "/data/predator/ly/MemBind/clean_membind/external_repro/run_mab_workload.py", line 83, in run
+    await GraphitiNative(graphiti).add_episode(_episode(chunk, group_id))
+  File "/data/predator/ly/MemBind/clean_membind/src/membind/native/graphiti_adapter.py", line 73, in add_episode
+    return await result if inspect.isawaitable(result) else result
+           ^^^^^^^^^^^^
+  File "/data/predator/ly/Mem/envs/membind-local/lib/python3.12/site-packages/graphiti_core/graphiti.py", line 1228, in add_episode
+    raise e
+  File "/data/predator/ly/Mem/envs/membind-local/lib/python3.12/site-packages/graphiti_core/graphiti.py", line 1144, in add_episode
+    ) = await self._extract_and_resolve_edges(
+        ^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^
+  File "/data/predator/ly/Mem/envs/membind-local/lib/python3.12/site-packages/graphiti_core/graphiti.py", line 669, in _extract_and_resolve_edges
+    resolved_edges, invalidated_edges, new_edges = await resolve_extracted_edges(
+                                                   ^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^
+  File "/data/predator/ly/Mem/envs/membind-local/lib/python3.12/site-packages/graphiti_core/utils/maintenance/edge_operations.py", line 490, in resolve_extracted_edges
+    await semaphore_gather(
+  File "/data/predator/ly/Mem/envs/membind-local/lib/python3.12/site-packages/graphiti_core/helpers.py", line 133, in semaphore_gather
+    return await asyncio.gather(*(_wrap_coroutine(coroutine) for coroutine in coroutines))
+           ^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^
+  File "/data/predator/ly/Mem/envs/membind-local/lib/python3.12/site-packages/graphiti_core/helpers.py", line 131, in _wrap_coroutine
+    return await coroutine
+           ^^^^^^^^^^^^^^^
+  File "/data/predator/ly/Mem/envs/membind-local/lib/python3.12/site-packages/graphiti_core/utils/maintenance/edge_operations.py", line 732, in resolve_extracted_edge
+    response_object = EdgeDuplicate(**llm_response)
+                      ^^^^^^^^^^^^^^^^^^^^^^^^^^^^^
+  File "/data/predator/ly/Mem/envs/membind-local/lib/python3.12/site-packages/pydantic/main.py", line 263, in __init__
+    validated_self = self.__pydantic_validator__.validate_python(data, self_instance=self)
+                     ^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^
+pydantic_core._pydantic_core.ValidationError: 2 validation errors for EdgeDuplicate
+duplicate_facts
+  Field required [type=missing, input_value={'properties': {'duplicat...ontradicted_facts': []}}, input_type=dict]
+    For further information visit https://errors.pydantic.dev/2.13/v/missing
+contradicted_facts
+  Field required [type=missing, input_value={'properties': {'duplicat...ontradicted_facts': []}}, input_type=dict]
+    For further information visit https://errors.pydantic.dev/2.13/v/missing

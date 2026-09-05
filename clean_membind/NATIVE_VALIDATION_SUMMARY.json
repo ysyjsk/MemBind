@@ -13,7 +13,11 @@
     {"model": "qwen2.5:14b", "mode": "json_schema", "max_tokens": 16384, "status": "INVALID_DEPLOYMENT_CONFIGURATION", "failure_global_sequence": 18, "reason": "no durable result for 51 minutes"},
     {"model": "qwen2.5:14b", "mode": "json_schema", "max_tokens": 2048, "status": "INVALID_NATIVE_CANDIDATE", "failure_global_sequence": 18, "reason": "JSONDecodeError"},
     {"model": "qwen2.5:14b", "mode": "json_object", "max_tokens": 2048, "status": "INVALID_NATIVE_CANDIDATE", "failure_global_sequence": 0, "reason": "schema document returned instead of ExtractedEntities"},
-    {"model": "deepseek-r1:7b", "mode": "json_schema", "max_tokens": 2048, "status": "INVALID_NATIVE_CANDIDATE", "failure_global_sequence": 7, "reason": "unterminated JSON string"}
+    {"model": "deepseek-r1:7b", "mode": "json_schema", "max_tokens": 2048, "status": "INVALID_NATIVE_CANDIDATE", "failure_global_sequence": 7, "reason": "unterminated JSON string"},
+    {"model": "qwen3.5:latest", "mode": "json_schema", "max_tokens": 4096, "reasoning_effort": "default", "status": "INVALID_BACKEND_CONFIGURATION", "reason": "empty content because reasoning channel was enabled"},
+    {"model": "qwen3.5:latest", "mode": "json_schema", "max_tokens": 4096, "reasoning_effort": "none", "status": "INVALID_NATIVE_CANDIDATE_CONFIGURATION", "failure_global_sequence": 0, "reason": "ExtractedEntities received a list instead of an object"},
+    {"model": "qwen3.5:latest", "mode": "json_object", "max_tokens": 4096, "reasoning_effort": "none", "status": "PASS_SINGLE_EPISODE_ONLY", "reason": "official one-episode Graphiti reproduction passed"},
+    {"model": "qwen3.5:latest", "mode": "json_object", "max_tokens": 4096, "reasoning_effort": "none", "status": "INVALID_NATIVE_CANDIDATE", "failure_global_sequence": 1, "reason": "EdgeDuplicate schema document missing duplicate_facts and contradicted_facts"}
   ],
   "formal_experiment_authorized": false
 }

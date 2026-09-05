@@ -9,12 +9,13 @@ import time
 from membind.native import GraphitiEpisode, GraphitiNative
 
 
-async def run(model: str = "qwen2.5:14b", max_tokens: int = 2048, structured_output_mode: str = "json_schema") -> None:
+async def run(model: str = "qwen2.5:14b", max_tokens: int = 2048, structured_output_mode: str = "json_schema", reasoning_effort: str | None = None) -> None:
     from graphiti_core import Graphiti
     from graphiti_core.cross_encoder.openai_reranker_client import OpenAIRerankerClient
     from graphiti_core.embedder.openai import OpenAIEmbedder, OpenAIEmbedderConfig
     from graphiti_core.llm_client.config import LLMConfig
     from graphiti_core.llm_client.openai_generic_client import OpenAIGenericClient
+    from membind.backends import ReasoningDisabledOpenAIClient
 
     base_url = "http://127.0.0.1:11434/v1"
     config = LLMConfig(
@@ -24,7 +25,14 @@ async def run(model: str = "qwen2.5:14b", max_tokens: int = 2048, structured_out
         base_url=base_url,
         temperature=0,
     )
-    llm = OpenAIGenericClient(config=config, max_tokens=max_tokens, structured_output_mode=structured_output_mode)
+    client = None
+    if reasoning_effort is not None:
+        from openai import AsyncOpenAI
+        client = ReasoningDisabledOpenAIClient(
+            AsyncOpenAI(api_key="ollama", base_url=base_url),
+            reasoning_effort=reasoning_effort,
+        )
+    llm = OpenAIGenericClient(config=config, client=client, max_tokens=max_tokens, structured_output_mode=structured_output_mode)
     embedder = OpenAIEmbedder(
         config=OpenAIEmbedderConfig(
             api_key="ollama",
@@ -64,5 +72,6 @@ if __name__ == "__main__":
     parser.add_argument("--model", default="qwen2.5:14b")
     parser.add_argument("--max-tokens", type=int, default=2048)
     parser.add_argument("--structured-output-mode", choices=("json_schema", "json_object"), default="json_schema")
+    parser.add_argument("--reasoning-effort", choices=("none", "low", "medium", "high", "max"))
     args = parser.parse_args()
-    asyncio.run(run(args.model, args.max_tokens, args.structured_output_mode))
+    asyncio.run(run(args.model, args.max_tokens, args.structured_output_mode, args.reasoning_effort))

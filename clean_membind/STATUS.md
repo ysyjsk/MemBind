@@ -1,6 +1,6 @@
 # Clean Mainline Status
 
-`clean_membind` implementation: **TDD GREEN** (14 tests).
+`clean_membind` implementation: **TDD GREEN** (16 tests).
 
 Native validation: **NOT READY**.
 
@@ -13,8 +13,13 @@ Native validation: **NOT READY**.
   Pydantic validation.
 * deepseek-r1:7b failed real MAB state at global 7 with an unterminated JSON
   string under `json_schema`.
+* qwen3.5:latest can return a single Graphiti episode when Ollama's
+  `reasoning_effort=none` is injected and `json_object` is used, but the real
+  MAB prefix failed at global 1 during the untouched `EdgeDuplicate` schema
+  validation. The model returned a schema document missing
+  `duplicate_facts`/`contradicted_facts`.
 
 No full-H0 Serial Native run and no formal A/B/C experiment is authorized.
-Historical artifacts are preserved. The next engineering action is to bring a
-new, genuinely constrained local backend or provider that can pass the same
-long-state check, then freeze its identity and execute the conditional plan.
+Historical artifacts and the failed qwen3.5 transport experiment are
+preserved. No additional model search or prompt repair is performed in this
+run; the repository remains explicitly `NATIVE_NOT_READY`.

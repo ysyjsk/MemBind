@@ -34,6 +34,11 @@ model zoo.
   than an `ExtractedEntities` object.
 * deepseek-r1:7b + json_schema passed one short episode, then failed at global
   chunk 7 with an unterminated JSON string after four retries.
+* qwen3.5:latest required Ollama's `reasoning_effort=none` request option;
+  with that option and `json_object`, one short episode passed, but the real
+  MAB prefix failed at global chunk 1 in upstream `EdgeDuplicate` validation
+  because the model returned the schema document rather than
+  `duplicate_facts` and `contradicted_facts`.
 
 These are real structured-output/deployment failures in the untouched Graphiti
 path. They are not repaired in clean code and do not justify changing the

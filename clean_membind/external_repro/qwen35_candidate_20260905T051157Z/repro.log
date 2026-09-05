@@ -1,0 +1,74 @@
+Error in generating LLM response: LLM returned an empty response
+Error in generating LLM response: LLM returned an empty response
+Retrying _generate_response_with_retry after 2 attempts...
+Error in generating LLM response: LLM returned an empty response
+Retrying _generate_response_with_retry after 3 attempts...
+Error in generating LLM response: LLM returned an empty response
+Retrying _generate_response_with_retry after 4 attempts...
+Traceback (most recent call last):
+  File "/data/predator/ly/MemBind/clean_membind/external_repro/run_ollama_graphiti.py", line 68, in <module>
+    asyncio.run(run(args.model, args.max_tokens, args.structured_output_mode))
+  File "/usr/lib/python3.12/asyncio/runners.py", line 194, in run
+    return runner.run(main)
+           ^^^^^^^^^^^^^^^^
+  File "/usr/lib/python3.12/asyncio/runners.py", line 118, in run
+    return self._loop.run_until_complete(task)
+           ^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^
+  File "/usr/lib/python3.12/asyncio/base_events.py", line 687, in run_until_complete
+    return future.result()
+           ^^^^^^^^^^^^^^^
+  File "/data/predator/ly/MemBind/clean_membind/external_repro/run_ollama_graphiti.py", line 48, in run
+    result = await GraphitiNative(graphiti).add_episode(
+             ^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^
+  File "/data/predator/ly/MemBind/clean_membind/src/membind/native/graphiti_adapter.py", line 73, in add_episode
+    return await result if inspect.isawaitable(result) else result
+           ^^^^^^^^^^^^
+  File "/data/predator/ly/Mem/envs/membind-local/lib/python3.12/site-packages/graphiti_core/graphiti.py", line 1228, in add_episode
+    raise e
+  File "/data/predator/ly/Mem/envs/membind-local/lib/python3.12/site-packages/graphiti_core/graphiti.py", line 1122, in add_episode
+    extracted_nodes, node_episode_index_map = await extract_nodes(
+                                              ^^^^^^^^^^^^^^^^^^^^
+  File "/data/predator/ly/Mem/envs/membind-local/lib/python3.12/site-packages/graphiti_core/utils/maintenance/node_operations.py", line 132, in extract_nodes
+    extracted_entities = await _extract_nodes_single(llm_client, primary_episode, context)
+                         ^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^
+  File "/data/predator/ly/Mem/envs/membind-local/lib/python3.12/site-packages/graphiti_core/utils/maintenance/node_operations.py", line 250, in _extract_nodes_single
+    llm_response = await _call_extraction_llm(llm_client, episode, context)
+                   ^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^
+  File "/data/predator/ly/Mem/envs/membind-local/lib/python3.12/site-packages/graphiti_core/utils/maintenance/node_operations.py", line 275, in _call_extraction_llm
+    return await llm_client.generate_response(
+           ^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^
+  File "/data/predator/ly/Mem/envs/membind-local/lib/python3.12/site-packages/graphiti_core/llm_client/openai_generic_client.py", line 222, in generate_response
+    return await self._generate_response_with_retry(
+           ^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^
+  File "/data/predator/ly/Mem/envs/membind-local/lib/python3.12/site-packages/tenacity/asyncio/__init__.py", line 193, in async_wrapped
+    return await copy(fn, *args, **kwargs)
+           ^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^
+  File "/data/predator/ly/Mem/envs/membind-local/lib/python3.12/site-packages/tenacity/asyncio/__init__.py", line 112, in __call__
+    do = await self.iter(retry_state=retry_state)
+         ^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^
+  File "/data/predator/ly/Mem/envs/membind-local/lib/python3.12/site-packages/tenacity/asyncio/__init__.py", line 157, in iter
+    result = await action(retry_state)
+             ^^^^^^^^^^^^^^^^^^^^^^^^^
+  File "/data/predator/ly/Mem/envs/membind-local/lib/python3.12/site-packages/tenacity/_utils.py", line 111, in inner
+    return call(*args, **kwargs)
+           ^^^^^^^^^^^^^^^^^^^^^
+  File "/data/predator/ly/Mem/envs/membind-local/lib/python3.12/site-packages/tenacity/__init__.py", line 413, in exc_check
+    raise retry_exc.reraise()
+          ^^^^^^^^^^^^^^^^^^^
+  File "/data/predator/ly/Mem/envs/membind-local/lib/python3.12/site-packages/tenacity/__init__.py", line 184, in reraise
+    raise self.last_attempt.result()
+          ^^^^^^^^^^^^^^^^^^^^^^^^^^
+  File "/usr/lib/python3.12/concurrent/futures/_base.py", line 449, in result
+    return self.__get_result()
+           ^^^^^^^^^^^^^^^^^^^
+  File "/usr/lib/python3.12/concurrent/futures/_base.py", line 401, in __get_result
+    raise self._exception
+  File "/data/predator/ly/Mem/envs/membind-local/lib/python3.12/site-packages/tenacity/asyncio/__init__.py", line 116, in __call__
+    result = await fn(*args, **kwargs)
+             ^^^^^^^^^^^^^^^^^^^^^^^^^
+  File "/data/predator/ly/Mem/envs/membind-local/lib/python3.12/site-packages/graphiti_core/llm_client/client.py", line 139, in _generate_response_with_retry
+    return await self._generate_response(messages, response_model, max_tokens, model_size)
+           ^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^
+  File "/data/predator/ly/Mem/envs/membind-local/lib/python3.12/site-packages/graphiti_core/llm_client/openai_generic_client.py", line 166, in _generate_response
+    raise EmptyResponseError('LLM returned an empty response')
+graphiti_core.llm_client.errors.EmptyResponseError: LLM returned an empty response
